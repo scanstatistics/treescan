@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="Source Files\calculation">
+      <UniqueIdentifier>{e6d21112-f53b-4820-a209-dbe7562a7694}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation">
+      <UniqueIdentifier>{9d26b16d-4911-422d-b146-4a4c20f6734d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\runner">
+      <UniqueIdentifier>{86327226-fa09-40d9-b3f7-5022191b53b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\runner">
+      <UniqueIdentifier>{22bec638-d6a7-40d5-af33-eb81476de229}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\batch_application">
+      <UniqueIdentifier>{8e84a003-2fd9-4e96-a31f-cfeaeb213231}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\print">
+      <UniqueIdentifier>{96e69410-3db5-435b-8201-0160002759c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\print">
+      <UniqueIdentifier>{4ad6e927-0231-45a4-89e1-46130caa6f36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\utility">
+      <UniqueIdentifier>{a2861da6-ea67-4485-be8f-49e6d8993427}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\utility">
+      <UniqueIdentifier>{541f14fa-e20f-426a-b683-7161bb8dd25b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="TreeScan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\runner\ScanRunner.cpp">
+      <Filter>Source Files\calculation\runner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\print\BasePrint.cpp">
+      <Filter>Source Files\calculation\print</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\print\PrintQueue.cpp">
+      <Filter>Source Files\calculation\print</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\print\PrintScreen.cpp">
+      <Filter>Source Files\calculation\print</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\PrjException.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\RandomDistribution.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\RandomNumberGenerator.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\UtilityFunctions.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\FileName.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\TimeStamp.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\calculation\runner\ScanRunner.h">
+      <Filter>Header Files\calculation\runner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\TreeScan.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\print\BasePrint.h">
+      <Filter>Header Files\calculation\print</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\print\PrintQueue.h">
+      <Filter>Header Files\calculation\print</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\print\PrintScreen.h">
+      <Filter>Header Files\calculation\print</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\PrjException.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\RandomDistribution.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\RandomNumberGenerator.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\UtilityFunctions.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\FileName.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\TimeStamp.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\ptr_vector.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
