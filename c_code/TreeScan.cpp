@@ -32,8 +32,8 @@ double RandomUniform(void);
 #define         DUPLICATES 0
 //#define         INPUT_FILE "C:\\Documents and Settings\\MKulldor\\My Documents\\ADRdata\\All_Sites\\inpdx_core_dxtree_res_mod_PIO_180.txt"      // Input file name
 //#define         OUTPUT_FILE "C:\\Documents and Settings\\MKulldor\\My Documents\\ADRdata\\All_Sites\\CONDITIONAL_inpdx_core_dxtree_res_mod_PIO_180_OUTPUT.txt"      // Output file name
-#define         INPUT_FILE "C:\\prj\\treescan\\treescan.development\\data\\alldx_core_dxtree_res_mod_CLO_180.txt"      // Input file name
-#define         OUTPUT_FILE "C:\\prj\\treescan\\\treescan.development\\data\alldx_core_dxtree_res_mod_CLO_180__output.txt"      // Output file name
+#define         INPUT_FILE "C:\\prj\\treescan\\treescan\\data\\alldx_core_dxtree_res_mod_CLO_180.txt"      // Input file name
+#define         OUTPUT_FILE "C:\\prj\\treescan\\treescan\\data\alldx_core_dxtree_res_mod_CLO_180__output.txt"      // Output file name
 bool            Conditional=1; // If Conditional=0, an unconditional analysis is performed
 //const int       nMCReplicas=99999;  // Number of Monte Carlo replicatons (simulations). Should be e.g. 999 or 9999.
 const int       nMCReplicas=99999;  // Number of Monte Carlo replicatons (simulations). Should be e.g. 999 or 9999.
@@ -90,8 +90,13 @@ time(&gStartTime); //get start time
 //----------------------- READING THE INPUT FILE -------------------------------
 int             id;
 
+if (argc != 2) {
+   cerr << "usage: " << argv[0] << " [input filename]\n\n";
+   return -1;
+}
+
 cout << "Reading the input file." << endl;
-ifstream infile(INPUT_FILE);
+ifstream infile(argv[1]);
 if(!infile) {
         cerr << "Unable to open input file.\n";
         cout << "Press any character to end." << endl; cin >> Temp;
@@ -311,10 +316,12 @@ else {                 // if unconditional
 
 
 //-------------------------- REPORT RESULTS ------------------------------------
-cout << "Creating the output file." << endl;
-ofstream outfile(OUTPUT_FILE);
+std::string outputfile(argv[1]);
+outputfile += "__output.txt";
+cout << "Creating the output file: " << outputfile.c_str() << endl;
+ofstream outfile(outputfile);
 if(!outfile) {
-        cerr << "Unable to open output file.\n";
+        cerr << "Unable to open output file: " << outputfile.c_str() << endl;
         cout << "Press any character to end." << endl; cin >> Temp;
         return -1;
         }
