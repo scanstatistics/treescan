@@ -86,7 +86,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\prj\satscan.development\boost\boost_1_46_0;C:\prj\treescan.development\treescan\calculation\utility;C:\prj\treescan.development\treescan\calculation\print;C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\prj\treescan.development\boost\boost_1_46_0;C:\prj\treescan.development\treescan\calculation\utility;C:\prj\treescan.development\treescan\calculation\print;C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -151,6 +151,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\cmdline.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\config_file.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\convert.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\options_description.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\parsers.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\positional_options.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\split.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\utf8_codecvt_facet.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\value_semantic.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\variables_map.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\winmain.cpp" />
     <ClCompile Include="..\calculation\print\BasePrint.cpp" />
     <ClCompile Include="..\calculation\print\PrintQueue.cpp" />
     <ClCompile Include="..\calculation\print\PrintScreen.cpp" />

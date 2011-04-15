@@ -8,6 +8,7 @@
 
 #include "ScanRunner.h"
 #include "UtilityFunctions.h"
+#include "FileName.h"
 
 /*
  Adds cases and measure through the tree from each node through the tree to
@@ -122,44 +123,53 @@ double ScanRunner::RandomUniform() {
  Reads count and population data from passed file. The file format is: <node identifier>, <count>, <population>
  */
 bool ScanRunner::readCounts(const std::string& filename) {
+    _print.Printf("Reading count file ...\n", BasePrint::P_STDOUT);
+
     bool readSuccess=true;
-    std::cout << filename.c_str() << std::endl;
-
     std::ifstream in;
-    //in.open(filename);
-    in.open("C:/prj/treescan.development/treescan/data/development/integer/counts.txt");
+    in.open(filename);
 
-    if (in.is_open()) {
-        // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
-        std::string line;
-        unsigned int record_number = 0;
-        while (getlinePortable(in, line)) {
-            ++record_number;
-            boost::tokenizer<boost::escaped_list_separator<char> > csv(line);
-            boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=csv.begin();
-            std::vector<std::string> values;
-            for (;itr != csv.end(); ++itr) {std::string identifier = (*itr); values.push_back(trimString(identifier));}
-            if (values.size() == 0) continue; // skip records with no data
-            if (values.size() < 3) {
+    if (!in) {
+        _print.Printf("Error: Unable to open count file: %s.\n", BasePrint::P_READERROR, filename.c_str());
+        return false;
+    }
+
+    // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
+    std::string line;
+    unsigned int record_number = 0;
+    while (getlinePortable(in, line)) {
+        ++record_number;
+        boost::tokenizer<boost::escaped_list_separator<char> > csv(line);
+        boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=csv.begin();
+        std::vector<std::string> values;
+        for (;itr != csv.end(); ++itr) {std::string identifier = (*itr); values.push_back(trimString(identifier));}
+        if (values.size() == 0) continue; // skip records with no data
+        if (values.size() < 3) {
+            readSuccess = false;
+            _print.Printf("Error: Record %ld in count file is missing data. Expecting <indentifier>, <count>, <population> but found only %ld value.\n", BasePrint::P_READERROR, record_number, values.size());
+        }
+        ScanRunner::Index_t index = getNodeIndex(values.at(0));
+        if (!index.first) {
+            readSuccess = false;
+            _print.Printf("Error: Record %ld in count file references unknown node (%s).\n", BasePrint::P_READERROR, record_number, values.at(0).c_str());
+        }
+        NodeStructure * node = _Nodes.at(index.second);
+        if  (!string_to_type<int>(values.at(1).c_str(), node->_IntC) || node->_IntC < 0) {
+            readSuccess = false;
+            _print.Printf("Error: Record %ld in count file references negative number of cases in node '%s'.\n", BasePrint::P_READERROR, record_number, node->_identifier.c_str());
+        }
+        if (_Duplicates) {
+            if  (!string_to_type<int>(values.at(2).c_str(), node->_Duplicates) || node->_Duplicates < 0) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in count file is missing data. Expecting <indentifier>, <count>, <population> but found only %ld value.\n", BasePrint::P_READERROR, record_number, values.size());
-            }
-            ScanRunner::Index_t index = getNodeIndex(values.at(0));
-            if (!index.first) {
-                readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references unknown node (%s).\n", BasePrint::P_READERROR, record_number, values.at(0).c_str());
-            }
-            NodeStructure * node = _Nodes.at(index.second);
-            if  (!string_to_type<int>(values.at(1).c_str(), node->_IntC) || node->_IntC < 0) {
-                readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references negative number of cases in node '%s'.\n", BasePrint::P_READERROR, record_number, node->_identifier.c_str());
-            }
-            if  (!string_to_type<double>(values.at(2).c_str(), node->_IntN) || node->_IntN < 0) {
-                readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references negative population in node '%s'.\n", BasePrint::P_READERROR, record_number, node->_identifier.c_str());
+                _print.Printf("Error: Record %ld in count file references negative number of duplicates in node '%s'.\n", BasePrint::P_READERROR, record_number, node->_identifier.c_str());
             }
         }
+        if  (!string_to_type<double>(values.at(_Duplicates ? 3 : 2).c_str(), node->_IntN) || node->_IntN < 0) {
+            readSuccess = false;
+            _print.Printf("Error: Record %ld in count file references negative population in node '%s'.\n", BasePrint::P_READERROR, record_number, node->_identifier.c_str());
+        }
     }
+
     return readSuccess;
 }
 
@@ -167,55 +177,58 @@ bool ScanRunner::readCounts(const std::string& filename) {
  Reads tree structure from passed file. The file format is: <node identifier>, <parent node identifier 1>, <parent node identifier 2>, ... <parent node identifier N>
  */
 bool ScanRunner::readTree(const std::string& filename) {
+    _print.Printf("Reading tree file ...\n", BasePrint::P_STDOUT);
+
     bool readSuccess=true;
-    std::cout << filename.c_str() << std::endl;
-
     std::ifstream in;
-    //in.open(filename);
-    in.open("C:/prj/treescan.development/treescan/data/development/integer/tree.txt");
+    in.open(filename);
 
-    if (in.is_open()) {
-        // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
-        std::string line;
-        while (getlinePortable(in, line)) {
-            boost::tokenizer<boost::escaped_list_separator<char> > csv(line);
-            boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=csv.begin();
-            if (itr != csv.end()) {
-                std::string identifier = (*itr);
-                std::auto_ptr<NodeStructure> node(new NodeStructure(trimString(identifier)));
-                NodeStructureContainer_t::iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
-                if (itr == _Nodes.end() || (*itr)->_identifier != node.get()->_identifier)
-                    _Nodes.insert(itr, node.release());
-            }
+    if (!in) {
+        _print.Printf("Error: Unable to open tree file: %s.\n", BasePrint::P_READERROR, filename.c_str());
+        return false;
+    }
+
+    // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
+    std::string line;
+    while (getlinePortable(in, line)) {
+        boost::tokenizer<boost::escaped_list_separator<char> > csv(line);
+        boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=csv.begin();
+        if (itr != csv.end()) {
+            std::string identifier = (*itr);
+            std::auto_ptr<NodeStructure> node(new NodeStructure(trimString(identifier)));
+            NodeStructureContainer_t::iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
+            if (itr == _Nodes.end() || (*itr)->_identifier != node.get()->_identifier)
+                _Nodes.insert(itr, node.release());
         }
+    }
 
-        //reset node identifiers to ordinal position in vector -- this is to keep the original algorithm intact since it uses vector indexes heavily
-        for (size_t i=0; i < _Nodes.size(); ++i) _Nodes.at(i)->_ID = i;
+    //reset node identifiers to ordinal position in vector -- this is to keep the original algorithm intact since it uses vector indexes heavily
+    for (size_t i=0; i < _Nodes.size(); ++i) _Nodes.at(i)->_ID = i;
 
-        // now set parent nodes
-        in.clear();
-        in.seekg(0L, std::ios::beg);
-        unsigned int record_number = 0;
-        while (getlinePortable(in, line)) {
-            ++record_number;
-            boost::tokenizer<boost::escaped_list_separator<char> > csv(line);
-            boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=csv.begin();
-            NodeStructure * node = 0;
-            // assign parent nodes to node
-            for (;itr != csv.end(); ++itr) {
-                std::string identifier = (*itr);
-                trimString(identifier);
-                ScanRunner::Index_t index = getNodeIndex(identifier);
-                if (!index.first) {
-                    readSuccess = false;
-                    _print.Printf("Error: Record %ld in tree file has unknown parent node (%s).\n", BasePrint::P_READERROR, record_number, identifier.c_str());
-                } else {
-                    if (node) node->_Parent.push_back(_Nodes.at(index.second)->_ID);
-                    else node = _Nodes.at(index.second);
-                }
+    // now set parent nodes
+    in.clear();
+    in.seekg(0L, std::ios::beg);
+    unsigned int record_number = 0;
+    while (getlinePortable(in, line)) {
+        ++record_number;
+        boost::tokenizer<boost::escaped_list_separator<char> > csv(line);
+        boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=csv.begin();
+        NodeStructure * node = 0;
+        // assign parent nodes to node
+        for (;itr != csv.end(); ++itr) {
+            std::string identifier = (*itr);
+            trimString(identifier);
+            ScanRunner::Index_t index = getNodeIndex(identifier);
+            if (!index.first) {
+                readSuccess = false;
+                _print.Printf("Error: Record %ld in tree file has unknown parent node (%s).\n", BasePrint::P_READERROR, record_number, identifier.c_str());
+            } else {
+                if (node) node->_Parent.push_back(_Nodes.at(index.second)->_ID);
+                else node = _Nodes.at(index.second);
             }
         }
     }
+
     return readSuccess;
 }
 
@@ -223,15 +236,22 @@ bool ScanRunner::readTree(const std::string& filename) {
  REPORT RESULTS
  */
 bool ScanRunner::reportResults(const std::string& filename) {
-    std::string outputfile(filename.c_str());
-    outputfile += "__output.txt";
-
-    _print.Printf("Creating the output file: %s\n", BasePrint::P_STDOUT, outputfile.c_str());
-    std::ofstream outfile(outputfile);
+    std::ofstream outfile(filename);
     if (!outfile) {
-        _print.Printf("Error: Unable to open output file: %s.\n", BasePrint::P_READERROR, outputfile.c_str());
-        return false;
-    }
+        _print.Printf("Unable to create specified output file: %s\n", BasePrint::P_READERROR, filename.c_str());
+        FileName currFilename(filename.c_str()), documentsfile(filename.c_str());
+        std::string buffer, temp;
+        documentsfile.setLocation(GetUserDocumentsDirectory(buffer, currFilename.getLocation(temp)).c_str());
+        documentsfile.getFullPath(buffer);
+        _print.Printf("Trying to create file in documents directory ...\n", BasePrint::P_STDOUT);
+        outfile.open(documentsfile.getFullPath(buffer));
+        if (!outfile) {
+            _print.Printf("Unable to create output file: %s\n", BasePrint::P_READERROR, buffer.c_str());
+            return false;
+        }
+        _print.Printf("Creating the output file in documents directory: %s\n", BasePrint::P_STDOUT, buffer.c_str());
+    } else
+        _print.Printf("Creating the output file: %s\n", BasePrint::P_STDOUT, filename.c_str());
 
     _print.Printf("\nRESULTS\n", BasePrint::P_STDOUT);
     outfile << "RESULTS" << std::endl;
@@ -247,9 +267,9 @@ bool ScanRunner::reportResults(const std::string& filename) {
     outfile << std::endl;
     outfile << "Cut# NodeID #Obs ";
 
-    if (_DUPLICATES) outfile << "#CasesWithoutDuplicates ";
+    if (_Duplicates) outfile << "#CasesWithoutDuplicates ";
     outfile << "#Exp O/E ";
-    if (_DUPLICATES) outfile << "O/EWithoutDuplicates ";
+    if (_Duplicates) outfile << "O/EWithoutDuplicates ";
     outfile << "LLR pvalue" << std::endl;
     if (_Cut.at(0)->_C == 0) _print.Printf("No clusters were found.\n", BasePrint::P_STDOUT);
     if (_Cut.at(0)->_C == 0) outfile << "No clusters were found." << std::endl;
@@ -264,7 +284,7 @@ bool ScanRunner::reportResults(const std::string& filename) {
         outfile << " " << _Nodes.at(_Cut.at(k)->_ID)->_identifier.c_str();
         _print.Printf("Number of Cases =%d\n", BasePrint::P_STDOUT, _Cut.at(k)->_C);
         outfile << " " << _Cut.at(k)->_C;
-        if (_DUPLICATES) {
+        if (_Duplicates) {
             _print.Printf("Number of Cases (duplicates removed) =%ld\n", BasePrint::P_STDOUT, _Cut.at(k)->_C - _Nodes.at(_Cut.at(k)->_ID)->_Duplicates);
             outfile << " " << _Cut.at(k)->_C - _Nodes.at(_Cut.at(k)->_ID)->_Duplicates;
         }
@@ -272,7 +292,7 @@ bool ScanRunner::reportResults(const std::string& filename) {
         outfile << " " << _Cut.at(k)->_N;
         _print.Printf("O/E =%lf\n", BasePrint::P_STDOUT, _Cut.at(k)->_C/_Cut.at(k)->_N);
         outfile << " " << _Cut.at(k)->_C/_Cut.at(k)->_N;
-        if (_DUPLICATES) {
+        if (_Duplicates) {
             _print.Printf("O/E (duplicates removed) =%lf\n", BasePrint::P_STDOUT, (_Cut.at(k)->_C - _Nodes.at(_Cut.at(k)->_ID)->_Duplicates)/_Cut.at(k)->_N);
             outfile << " " << (_Cut.at(k)->_C - _Nodes.at(_Cut.at(k)->_ID)->_Duplicates)/_Cut.at(k)->_N << std::endl;
         }
@@ -300,25 +320,24 @@ bool ScanRunner::reportResults(const std::string& filename) {
 /*
  Run Scan.
  */
-bool ScanRunner::run(const std::string& filename) {
+bool ScanRunner::run(const std::string& treefile, const std::string& countfile, const std::string& outputfile) {
     time_t gStartTime, gEndTime;
     time(&gStartTime); //get start time
 
-    if (!readTree(filename)) return false;
-    if (!readCounts(filename)) return false;
+    if (!readTree(treefile)) return false;
+    if (!readCounts(countfile)) return false;
     if (!setupTree()) return false;
     if (!scanTree()) return false;
     if (!runsimulations()) return false;
-    if (!reportResults(filename)) return false;
+    if (!reportResults(outputfile)) return false;
 
     time(&gEndTime); //get start time
-    _print.Printf("\nProgram run on: %s\n\n", BasePrint::P_STDOUT, ctime(&gStartTime));
-    _print.Printf("\nProgram finished on: %s\n\n", BasePrint::P_STDOUT, ctime(&gEndTime));
+    _print.Printf("\nProgram run on: %sProgram finished on: %s\n", BasePrint::P_STDOUT, ctime(&gStartTime), ctime(&gEndTime));
 
     return true;
 }
 
-/* 
+/*
  DOING THE MONTE CARLO SIMULATIONS
  */
 bool ScanRunner::runsimulations() {
@@ -404,7 +423,7 @@ bool ScanRunner::scanTree() {
 
     for (size_t i=0; i < _Nodes.size(); i++) {
         if (_Nodes.at(i)->_BrC > 1) {
-            if (_DUPLICATES)
+            if (_Duplicates)
                 loglikelihood = PoissonLogLikelihood(_Nodes.at(i)->_BrC - _Nodes.at(i)->_Duplicates, _Nodes.at(i)->_BrN, _TotalC, _TotalN);
             else {
                 if (_Conditional) loglikelihood = PoissonLogLikelihood(_Nodes.at(i)->_BrC, _Nodes.at(i)->_BrN, _TotalC, _TotalN);
@@ -434,7 +453,7 @@ bool ScanRunner::scanTree() {
     return true;
 }
 
-/* 
+/*
  SETTING UP THE TREE
  */
 bool ScanRunner::setupTree() {
@@ -506,7 +525,7 @@ bool ScanRunner::setupTree() {
     return true;
 }
 
-/* 
+/*
  Calculates the unconditional Poisson log likelihood
  */
 double ScanRunner::UnconditionalPoissonLogLikelihood(int c, double n) {

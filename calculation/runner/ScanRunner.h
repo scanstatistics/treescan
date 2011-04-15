@@ -80,13 +80,17 @@ public:
     int                         _TotalC;
     double                      _TotalN;
     bool                        _Conditional;
-    bool                        _DUPLICATES;
+    bool                        _Duplicates;
     int                         _nCuts;
     int                         _nMCReplicas;
 
-  ScanRunner(bool Conditional, bool DUPLICATES, int nCuts, int Replicas, BasePrint& print) : _print(print), _TotalC(0), _TotalN(0), _Conditional(Conditional), _DUPLICATES(DUPLICATES), _nCuts(nCuts), _nMCReplicas(Replicas) {}
+  ScanRunner(bool Conditional, 
+             bool Duplicates, 
+             int nCuts, 
+             int Replicas, 
+             BasePrint& print) : _print(print), _TotalC(0), _TotalN(0), _Conditional(Conditional), _Duplicates(Duplicates), _nCuts(nCuts), _nMCReplicas(Replicas) {}
 
-    bool                        run(const std::string& filename);
+    bool                        run(const std::string& treefile, const std::string& countfile, const std::string& outputfile);
 };
 //***************************************************************************
 #endif

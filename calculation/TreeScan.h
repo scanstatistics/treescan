@@ -6,7 +6,7 @@
 #define VERSION_ID      "1"  /** incremental version identifier - this value must
                                   be incremented for each released version in order
                                   for update feature to function correctly */
-#define VERSION_MAJOR   "0"
+#define VERSION_MAJOR   "1"
 #define VERSION_MINOR   "1"
 #define VERSION_RELEASE "0"
 #define VERSION_PHASE   "Development" /** testing phase name - leave blank for release */

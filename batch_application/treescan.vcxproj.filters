@@ -40,6 +40,12 @@
     <Filter Include="Source Files\calculation\utility">
       <UniqueIdentifier>{541f14fa-e20f-426a-b683-7161bb8dd25b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\boost">
+      <UniqueIdentifier>{2bbd1c0c-0da1-4753-81b8-e54ba1bb5a7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\boost\program_options">
+      <UniqueIdentifier>{eda9106b-c18b-4b55-8db8-b907d5177789}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TreeScan.cpp">
@@ -74,6 +80,39 @@
     </ClCompile>
     <ClCompile Include="..\calculation\utility\TimeStamp.cpp">
       <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\cmdline.cpp">
+      <Filter>Source Files\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\config_file.cpp">
+      <Filter>Source Files\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\convert.cpp">
+      <Filter>Source Files\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\options_description.cpp">
+      <Filter>Source Files\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\parsers.cpp">
+      <Filter>Source Files\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\positional_options.cpp">
+      <Filter>Source Files\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\split.cpp">
+      <Filter>Source Files\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\utf8_codecvt_facet.cpp">
+      <Filter>Source Files\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\value_semantic.cpp">
+      <Filter>Source Files\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\variables_map.cpp">
+      <Filter>Source Files\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\winmain.cpp">
+      <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
