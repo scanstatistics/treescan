@@ -35,19 +35,30 @@ int main(int argc, char* argv[]) {
     po::variables_map vm;
 
     try {
-        po::options_description desc("options");
-        desc.add_options()("help", "Help")
-                          ("version", "Program version")
-                          ("replications", po::value<int>(&replicas)->default_value(99999), "Number of Monte Carlo replicatons.")
-                          ("cuts", po::value<int>(&cuts)->default_value(2000), "Number of most likely cuts that are saved.")
-                          ("tree-file", po::value<std::string>(), "Input file defining tree structure.")
-                          ("count-file", po::value<std::string>(), "Input file identifer counts and population.")
-                          ("duplicates", po::bool_switch(&duplicates), "Expect duplicates in count file.")
-                          ("output-file", po::value<std::string>(), "Output filename to print results.")
-                          ("conditional", po::bool_switch(&conditional), "Perform conditional analysis.");
-        po::store(po::parse_command_line(argc, argv, desc), vm);
-        po::notify(vm);
-        if (vm.count("help")) {usage_message(argv[0], desc, console); return 0;}
+        /* general options */
+        po::options_description generic("options");
+        generic.add_options()("help,h", "Help")
+                             ("version,v", "Program version")
+                             ("replications,r", po::value<int>(&replicas)->default_value(99999), "Number of Monte Carlo replicatons.")
+                             ("cuts,s", po::value<int>(&cuts)->default_value(2000), "Number of most likely cuts that are saved.")
+                             ("tree-file,t", po::value<std::string>(), "Input file defining tree structure.")
+                             ("count-file,f", po::value<std::string>(), "Input file identifer counts and population.")
+                             ("duplicates,d", po::bool_switch(&duplicates), "Expect duplicates in count file.")
+                             ("output-file,p", po::value<std::string>(), "Output filename to print results.")
+                             ("conditional,n", po::bool_switch(&conditional), "Perform conditional analysis.");
+
+        /* parse program options */
+        po::options_description cmdline_options;
+        cmdline_options.add(generic);
+        try {
+            po::store(po::command_line_parser(argc, argv).options(cmdline_options).run(), vm);
+            po::notify(vm);
+        } catch (std::exception& x) {
+            console.Printf("Program options error: %s\n", BasePrint::P_ERROR, x.what());
+            return 1;
+        }
+
+        if (vm.count("help")) {usage_message(argv[0], generic, console); return 0;}
         if (vm.count("version")) {console.Printf("TreeScan %s.%s.%s %s.\n", BasePrint::P_STDOUT, VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE, VERSION_PHASE); return 0;}
         if (!vm.count("tree-file"))  {console.Printf("Missing tree-file parameter.\n", BasePrint::P_STDOUT); return 1;}
         if (!vm.count("count-file"))  {console.Printf("Missing count-file parameter.\n", BasePrint::P_STDOUT); return 1;}
