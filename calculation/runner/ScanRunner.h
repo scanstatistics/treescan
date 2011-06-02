@@ -4,6 +4,9 @@
 //***************************************************************************
 #include "TreeScan.h"
 #include "ptr_vector.h"
+#include "Loglikelihood.h"
+#include "boost/shared_ptr.hpp"
+#include "SimulationVariables.h"
 
 class CutStructure {
 public:
@@ -49,9 +52,10 @@ public:
 
 class ScanRunner {
 public:
-    typedef ptr_vector<NodeStructure>   NodeStructureContainer_t;
-    typedef ptr_vector<CutStructure>    CutStructureContainer_t;
-    typedef std::pair<bool,size_t>      Index_t;
+    typedef ptr_vector<NodeStructure>                   NodeStructureContainer_t;
+    typedef ptr_vector<CutStructure>                    CutStructureContainer_t;
+    typedef std::pair<bool,size_t>                      Index_t;
+    typedef boost::shared_ptr<AbstractLoglikelihood>    Loglikelihood_t; 
 
 private:
     BasePrint                 & _print;
@@ -62,15 +66,14 @@ private:
     int                         BinomialGenerator(int n, double p);
     Index_t                     getNodeIndex(const std::string& identifier) const;
     int                         PoissonGenerator(double lambda);
-    double                      PoissonLogLikelihood(int c, double n, int TotalC, double TotalN);
     double                      RandomUniform();
     bool                        readCounts(const std::string& filename);
     bool                        readTree(const std::string& filename);
     bool                        reportResults(const std::string& filename);
     bool                        runsimulations();
+    bool                        runsimulations_development();
     bool                        scanTree();
     bool                        setupTree();
-    double                      UnconditionalPoissonLogLikelihood(int c, double n);
 
 public:
     NodeStructureContainer_t    _Nodes;
@@ -83,6 +86,7 @@ public:
     bool                        _Duplicates;
     int                         _nCuts;
     int                         _nMCReplicas;
+    SimulationVariables         _simVars;
 
   ScanRunner(bool Conditional, 
              bool Duplicates, 
@@ -90,6 +94,7 @@ public:
              int Replicas, 
              BasePrint& print) : _print(print), _TotalC(0), _TotalN(0), _Conditional(Conditional), _Duplicates(Duplicates), _nCuts(nCuts), _nMCReplicas(Replicas) {}
 
+    Loglikelihood_t             getLoglikelihood() const;
     bool                        run(const std::string& treefile, const std::string& countfile, const std::string& outputfile);
 };
 //***************************************************************************

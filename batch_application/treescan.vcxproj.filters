@@ -46,11 +46,23 @@
     <Filter Include="Source Files\boost\program_options">
       <UniqueIdentifier>{eda9106b-c18b-4b55-8db8-b907d5177789}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\calculation\loglikelihood">
+      <UniqueIdentifier>{dc8c711d-5a10-4098-8f9e-8d30f81049d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\loglikelihood">
+      <UniqueIdentifier>{c2986de9-5e7d-41d8-822b-92eb2838daf5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\boost\threads">
+      <UniqueIdentifier>{5ac91196-827c-44d6-806d-c90665476da0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\randomization">
+      <UniqueIdentifier>{774b53e7-3a6b-4089-8a54-e4a125e173de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\randomization">
+      <UniqueIdentifier>{27045a0c-b44c-4404-909d-42382e805d79}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="TreeScan.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\calculation\runner\ScanRunner.cpp">
       <Filter>Source Files\calculation\runner</Filter>
     </ClCompile>
@@ -114,6 +126,30 @@
     <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\winmain.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\loglikelihood\Loglikelihood.cpp">
+      <Filter>Source Files\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\AsynchronouslyAccessible.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\contractor.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\thread\src\win32\thread.cpp">
+      <Filter>Source Files\boost\threads</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\MonteCarloSimFunctor.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\MCSimJobSource.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\randomization\Randomization.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="TreeScan.cpp">
+      <Filter>Source Files\batch_application</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\runner\ScanRunner.h">
@@ -151,6 +187,27 @@
     </ClInclude>
     <ClInclude Include="..\calculation\utility\ptr_vector.h">
       <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\loglikelihood\Loglikelihood.h">
+      <Filter>Header Files\calculation\loglikelihood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\AsynchronouslyAccessible.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\contractor.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\runner\SimulationVariables.h">
+      <Filter>Header Files\calculation\runner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\MonteCarloSimFunctor.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\MCSimJobSource.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\Randomization.h">
+      <Filter>Header Files\calculation\randomization</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

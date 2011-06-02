@@ -29,6 +29,13 @@
 #include <vector>
 #include <ctime>
 
+/** comparision tolerance for double precision numbers */
+#define DBL_CMP_TOLERANCE 1.0E-9
+/** determines equality between two numbers given some tolerance */
+#define macro_equal(x,y,tolerance) (std::fabs(x - y) < tolerance)
+/** determines whether number x is less than number y given some tolerance */
+#define macro_less_than(x,y,tolerance) (!macro_equal(x,y,tolerance) && x < y)
+
 #include "BasePrint.h"
 //*****************************************************************************
 #endif

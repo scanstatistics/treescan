@@ -9,6 +9,10 @@
 #include "ScanRunner.h"
 #include "UtilityFunctions.h"
 #include "FileName.h"
+#include "MonteCarloSimFunctor.h"
+#include "MCSimJobSource.h"
+#include "contractor.h"
+#include "Randomization.h"
 
 /*
  Adds cases and measure through the tree from each node through the tree to
@@ -66,6 +70,13 @@ int ScanRunner::BinomialGenerator(int n, double p) {
     return binomial;
 }
 
+ScanRunner::Loglikelihood_t ScanRunner::getLoglikelihood() const {
+    if (_Conditional)
+        return Loglikelihood_t(new PoissonLoglikelihood(_TotalC, _TotalN));
+    else
+        return Loglikelihood_t(new UnconditionalPoissonLoglikelihood());
+}
+
 /*
  Returns pair<bool,size_t> - first value indicates node existance, second is index into class vector _Nodes.
  */
@@ -95,16 +106,6 @@ int ScanRunner::PoissonGenerator(double lambda) {
     }
     // cout << endl << "lambda=" << lambda << " r=" << r << " x=" << x << " rr=" << rr;
     return x;
-}
-
-/*
- Calculates the conditional Poisson log likelihood.
- */
-double ScanRunner::PoissonLogLikelihood(int c, double n, int TotalC, double TotalN) {
-    // cout << "1: " << c << " " << n << " " << TotalC << " " << TotalN ;
-    if (c - n < 0.0001) return 0;
-    if (c == TotalC) return c * log(c/n);
-    return c * log(c/n) + (TotalC - c) * log((TotalC - c)/(TotalN - n));
 }
 
 /*
@@ -232,9 +233,7 @@ bool ScanRunner::readTree(const std::string& filename) {
     return readSuccess;
 }
 
-/*
- REPORT RESULTS
- */
+/* REPORT RESULTS */
 bool ScanRunner::reportResults(const std::string& filename) {
     std::ofstream outfile(filename);
     if (!outfile) {
@@ -337,11 +336,65 @@ bool ScanRunner::run(const std::string& treefile, const std::string& countfile, 
     return true;
 }
 
-/*
- DOING THE MONTE CARLO SIMULATIONS
- */
+bool ScanRunner::runsimulations_development() {
+    char                * sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %lf (%lf)\n";
+    unsigned long         ulParallelProcessCount = 1;//std::min(GetNumSystemProcessors(), (unsigned int)_nMCReplicas);
+
+    try {
+        if (_nMCReplicas == 0)
+            return true;
+        
+        _print.Printf("Doing the %d Monte Carlo simulations (new):\n", BasePrint::P_STDOUT, _nMCReplicas);
+        _Rank.resize(_nCuts, 1);
+
+        {
+            PrintQueue lclPrintDirection(_print, false);
+            MCSimJobSource jobSource(::GetCurrentTime_HighResolution(), lclPrintDirection, sReplicationFormatString, *this);
+            typedef contractor<MCSimJobSource> contractor_type;
+            contractor_type theContractor(jobSource);
+            
+            //run threads:
+            boost::thread_group tg;
+            boost::mutex        thread_mutex;
+            for (unsigned u=0; u < ulParallelProcessCount; ++u) {
+                try {
+                    MCSimSuccessiveFunctor mcsf(thread_mutex, boost::shared_ptr<AbstractRandomizer>(new PoissonRandomizer(_Conditional, _TotalC, _TotalN)), *this);
+                    tg.create_thread(subcontractor<contractor_type,MCSimSuccessiveFunctor>(theContractor,mcsf));
+                } catch (std::bad_alloc &b) {             
+                    if (u == 0) throw; // if this is the first thread, re-throw exception
+                    _print.Printf("Notice: Insufficient memory to create %u%s parallel simulation ... continuing analysis with %u parallel simulations.\n", BasePrint::P_NOTICE, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u);
+                    break;
+                } catch (prg_exception& x) {
+                    if (u == 0) throw; // if this is the first thread, re-throw exception
+                    _print.Printf("Error: Program exception occurred creating %u%s parallel simulation ... continuing analysis with %u parallel simulations.\nException:%s\n", BasePrint::P_ERROR, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u, x.what());
+                    break;
+                } catch (...) {
+                    if (u == 0) throw prg_error("Unknown program error occurred.\n","PerformSuccessiveSimulations_Parallel()"); // if this is the first thread, throw exception
+                    _print.Printf("Error: Unknown program exception occurred creating %u%s parallel simulation ... continuing analysis with %u parallel simulations.\n", BasePrint::P_ERROR, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u);
+                    break;
+                }
+            }
+            tg.join_all();
+
+            //propagate exceptions if needed:
+            theContractor.throw_unhandled_exception();
+            jobSource.Assert_NoExceptionsCaught();
+            if (jobSource.GetUnregisteredJobCount() > 0)
+                throw prg_error("At least %d jobs remain uncompleted.", "ScanRunner", jobSource.GetUnregisteredJobCount());
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("runsimulations()","ScanRunner");
+        throw;
+    }
+    return true;
+}
+
+/* DOING THE MONTE CARLO SIMULATIONS */
 bool ScanRunner::runsimulations() {
-    _print.Printf("Doing the %d Monte Carlo simulations:\n", BasePrint::P_STDOUT, _nMCReplicas);
+    return runsimulations_development();
+
+
+    _print.Printf("Doing the %d Monte Carlo simulation (old)s:\n", BasePrint::P_STDOUT, _nMCReplicas);
 
     _Rank.resize(_nCuts, 1);
     for (int replica=0; replica < _nMCReplicas; replica++) {
@@ -381,29 +434,18 @@ bool ScanRunner::runsimulations() {
         }
 
         //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
-        double loglikelihood=0;
         double SimLogLikelihood=0;
-        if (_Conditional) {
-            for (size_t i=0; i < _Nodes.size(); i++) {
-                if (_Nodes.at(i)->_SimBrC>1)
-                    loglikelihood = PoissonLogLikelihood(_Nodes.at(i)->_SimBrC, _Nodes.at(i)->_BrN, _TotalC, _TotalN);
-                if (loglikelihood > SimLogLikelihood )
-                    SimLogLikelihood=loglikelihood;
-                //cout << endl << "i=" << i << " c=" << Node[i].SimBrC <<" n=" << Node[i].BrN << " LL=" << loglikelihood << " SLL=" << SimLogLikelihood ;
-            } // for i<nNodes
-        } else {
-            for (size_t i=0; i < _Nodes.size(); i++) {
-                if (_Nodes.at(i)->_SimBrC>1)
-                    loglikelihood = UnconditionalPoissonLogLikelihood(_Nodes.at(i)->_SimBrC, _Nodes.at(i)->_BrN);
-                if (loglikelihood > SimLogLikelihood )
-                    SimLogLikelihood=loglikelihood;
-            } // for i<nNodes
-        }
+        ScanRunner::Loglikelihood_t calcLogLikelihood = ScanRunner::getLoglikelihood();
+
+        for (size_t i=0; i < _Nodes.size(); i++) {
+            if (_Nodes.at(i)->_SimBrC > 1)
+                SimLogLikelihood = std::max(SimLogLikelihood, calcLogLikelihood->LogLikelihood(_Nodes.at(i)->_SimBrC, _Nodes.at(i)->_BrN));
+        } // for i<nNodes
 
         double result=0;
         if (_Conditional) result = SimLogLikelihood - TotalSimC * log(TotalSimC/_TotalN);
         else result = SimLogLikelihood;
-        _print.Printf("The result of Monte Carlo replica #%d is: %lf\n", BasePrint::P_STDOUT, replica+1, result);
+        _print.Printf("The result of Monte Carlo replica #%d is: %lf (%lf)\n", BasePrint::P_STDOUT, replica+1, result, SimLogLikelihood);
         for (int k=0; k < _nCuts;k++)
             if (SimLogLikelihood > _Cut.at(k)->_LogLikelihood ) _Rank.at(k)++;
     } // for i<nMCReplicas
@@ -411,23 +453,22 @@ bool ScanRunner::runsimulations() {
     return true;
 }
 
-/*
- SCANNING THE TREE
- */
+/* SCANNING THE TREE */
 bool ScanRunner::scanTree() {
     _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
 
     double loglikelihood=0;
     double LogLikelihoodRatio=0;
+    ScanRunner::Loglikelihood_t calcLogLikelihood = ScanRunner::getLoglikelihood();
+
     for(int k=0; k < _nCuts; k++) _Cut.push_back(new CutStructure());
 
     for (size_t i=0; i < _Nodes.size(); i++) {
         if (_Nodes.at(i)->_BrC > 1) {
             if (_Duplicates)
-                loglikelihood = PoissonLogLikelihood(_Nodes.at(i)->_BrC - _Nodes.at(i)->_Duplicates, _Nodes.at(i)->_BrN, _TotalC, _TotalN);
+                loglikelihood = calcLogLikelihood->LogLikelihood(_Nodes.at(i)->_BrC - _Nodes.at(i)->_Duplicates, _Nodes.at(i)->_BrN);
             else {
-                if (_Conditional) loglikelihood = PoissonLogLikelihood(_Nodes.at(i)->_BrC, _Nodes.at(i)->_BrN, _TotalC, _TotalN);
-                else loglikelihood = UnconditionalPoissonLogLikelihood(_Nodes.at(i)->_BrC, _Nodes.at(i)->_BrN);
+                loglikelihood = calcLogLikelihood->LogLikelihood(_Nodes.at(i)->_BrC, _Nodes.at(i)->_BrN);
             }
 
             int k = 0;
@@ -523,12 +564,4 @@ bool ScanRunner::setupTree() {
     } // for i
 
     return true;
-}
-
-/*
- Calculates the unconditional Poisson log likelihood
- */
-double ScanRunner::UnconditionalPoissonLogLikelihood(int c, double n) {
-    if(c - n < 0.0001) return 0;
-    return (n - c) + c * log(c/n);
 }
