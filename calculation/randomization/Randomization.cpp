@@ -88,9 +88,7 @@ void PoissonRandomizer::addSimCAnforlust(int id, int c, const ScanRunner::NodeSt
     for(size_t j=0; j < treeNodes.at(id)->_Parent.size();j++) addSimCAnforlust(treeNodes.at(id)->_Parent[j], c, treeNodes, simData);
 }
 
-/*
- Returns a Poisson distributed random variable.
- */
+/* Returns a Poisson distributed random variable. */
 int PoissonRandomizer::PoissonGenerator(double lambda) {
     if (lambda==0) return 0;
 
@@ -109,19 +107,22 @@ int PoissonRandomizer::PoissonGenerator(double lambda) {
  Returns a uniform random number in the interval [0,1].
  Should be replaced by a better random number generator.
  */
-double PoissonRandomizer::RandomUniform() {
+double PoissonRandomizer::RandomUniform(bool classic) {
     //double rand_num = static_cast<double>(rand());
     //double return_value = (rand_num + 0.5) / static_cast<double>(RAND_MAX+1);
     //cout << "return_value " << return_value << endl;
     //return return_value;
-    return double(rand()+0.5)/(RAND_MAX+1); // This needs a "+0.05" and "+1" or RandomUniform is zero and one too often.
+
+    return classic ?  double(rand()+0.5)/(RAND_MAX+1) : _randomNumberGenerator.GetRandomDouble();
 }
 
 /*
  ------ Returns a binomial(n,p) distributed random variable -------------------
  Note: SaTScan has a faster way of doing this.
 */
-int PoissonRandomizer::BinomialGenerator(int n, double p) {
+int PoissonRandomizer::BinomialGenerator(int n, double p, bool classic) {
+    if (!classic) return gBinomialGenerator.GetBinomialDistributedVariable(n, static_cast<float>(p), _randomNumberGenerator);
+
     int     j;
     int     binomial;
 

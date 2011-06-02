@@ -63,15 +63,11 @@ private:
     void                        addCN(int id, int c, double n);
     void                        addSimC(int id, int c);
     void                        addSimCAnforlust(int id, int c);
-    int                         BinomialGenerator(int n, double p);
     Index_t                     getNodeIndex(const std::string& identifier) const;
-    int                         PoissonGenerator(double lambda);
-    double                      RandomUniform();
     bool                        readCounts(const std::string& filename);
     bool                        readTree(const std::string& filename);
     bool                        reportResults(const std::string& filename);
     bool                        runsimulations();
-    bool                        runsimulations_development();
     bool                        scanTree();
     bool                        setupTree();
 

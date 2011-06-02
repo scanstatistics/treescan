@@ -54,22 +54,6 @@ void ScanRunner::addSimCAnforlust(int id, int c) {
     for(size_t j=0; j < _Nodes.at(id)->_Parent.size();j++) addSimCAnforlust(_Nodes.at(id)->_Parent[j], c);
 }
 
-/*
- ------ Returns a binomial(n,p) distributed random variable -------------------
- Note: SaTScan has a faster way of doing this.
-*/
-int ScanRunner::BinomialGenerator(int n, double p) {
-    int     j;
-    int     binomial;
-
-    if(p==0) return 0;
-    binomial=0;
-    for (j=1;j<=n;j++) {
-        if (RandomUniform() < p) binomial += 1;
-    }
-    return binomial;
-}
-
 ScanRunner::Loglikelihood_t ScanRunner::getLoglikelihood() const {
     if (_Conditional)
         return Loglikelihood_t(new PoissonLoglikelihood(_TotalC, _TotalN));
@@ -89,35 +73,6 @@ ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) cons
       return std::make_pair(true, std::distance(_Nodes.begin(), itr));
     } else
         return std::make_pair(false, 0);
-}
-
-/*
- Returns a Poisson distributed random variable.
- */
-int ScanRunner::PoissonGenerator(double lambda) {
-    if (lambda==0) return 0;
-
-    int     x=0;
-    double  r=RandomUniform(), p=exp(-lambda), logfactorial=0;
-    while (p < r) {
-        x++;
-        logfactorial = logfactorial + log(static_cast<double>(x));
-        p = p + exp(-lambda + x * log(lambda) - logfactorial);
-    }
-    // cout << endl << "lambda=" << lambda << " r=" << r << " x=" << x << " rr=" << rr;
-    return x;
-}
-
-/*
- Returns a uniform random number in the interval [0,1].
- Should be replaced by a better random number generator.
- */
-double ScanRunner::RandomUniform() {
-    //double rand_num = static_cast<double>(rand());
-    //double return_value = (rand_num + 0.5) / static_cast<double>(RAND_MAX+1);
-    //cout << "return_value " << return_value << endl;
-    //return return_value;
-    return double(rand()+0.5)/(RAND_MAX+1); // This needs a "+0.05" and "+1" or RandomUniform is zero and one too often.
 }
 
 /*
@@ -336,8 +291,9 @@ bool ScanRunner::run(const std::string& treefile, const std::string& countfile, 
     return true;
 }
 
-bool ScanRunner::runsimulations_development() {
-    char                * sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %lf (%lf)\n";
+/* DOING THE MONTE CARLO SIMULATIONS */
+bool ScanRunner::runsimulations() {
+    char                * sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %lf\n";
     unsigned long         ulParallelProcessCount = 1;//std::min(GetNumSystemProcessors(), (unsigned int)_nMCReplicas);
 
     try {
@@ -386,70 +342,6 @@ bool ScanRunner::runsimulations_development() {
         x.addTrace("runsimulations()","ScanRunner");
         throw;
     }
-    return true;
-}
-
-/* DOING THE MONTE CARLO SIMULATIONS */
-bool ScanRunner::runsimulations() {
-    return runsimulations_development();
-
-
-    _print.Printf("Doing the %d Monte Carlo simulation (old)s:\n", BasePrint::P_STDOUT, _nMCReplicas);
-
-    _Rank.resize(_nCuts, 1);
-    for (int replica=0; replica < _nMCReplicas; replica++) {
-        //-------------------- GENERATING THE RANDOM DATA ------------------------------
-        int cases, CasesLeft, TotalSimC;
-        double  ExpectedLeft;
-
-        if (_Conditional) {
-            TotalSimC = _TotalC;
-            CasesLeft = _TotalC;
-            ExpectedLeft = _TotalN;
-            for (size_t i=0; i < _Nodes.size(); i++) {
-                cases = BinomialGenerator(CasesLeft, _Nodes.at(i)->_IntN / ExpectedLeft);
-                //if(cases>0 && Node[i].IntN<0.1) cout << "node=" << i <<  ", CasesLeft=" << CasesLeft << ", c=" << cases << ", exp=" << Node[i].IntN << ", ExpLeft=" << ExpectedLeft << endl;
-                _Nodes.at(i)->_SimIntC = cases;
-                CasesLeft -= cases;
-                ExpectedLeft -= _Nodes.at(i)->_IntN;
-                _Nodes.at(i)->_SimBrC = 0; // Initilazing the branch cases with zero
-            } // for i
-        }  else { // if unconditional
-            TotalSimC=0;
-            ExpectedLeft = _TotalN;
-            for(size_t i=0; i < _Nodes.size(); i++) {
-                cases = PoissonGenerator(_Nodes.at(i)->_IntN);
-                //if(cases>0 && Node[i].IntN<0.1) cout << "node=" << i <<  ",  c=" << cases << ", exp=" << Node[i].IntN << endl;
-                _Nodes.at(i)->_SimIntC=cases;
-                TotalSimC += cases;
-                ExpectedLeft -= _Nodes.at(i)->_IntN;
-                _Nodes.at(i)->_SimBrC = 0; // Initilazing the branch cases with zero
-            }
-        }
-
-        //------------------------ UPDATING THE TREE -----------------------------------
-        for (size_t i=0; i < _Nodes.size(); i++) {
-            if (_Nodes.at(i)->_Anforlust==false) addSimC(i,_Nodes.at(i)->_SimIntC);
-            else addSimCAnforlust(i,_Nodes.at(i)->_SimIntC);
-        }
-
-        //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
-        double SimLogLikelihood=0;
-        ScanRunner::Loglikelihood_t calcLogLikelihood = ScanRunner::getLoglikelihood();
-
-        for (size_t i=0; i < _Nodes.size(); i++) {
-            if (_Nodes.at(i)->_SimBrC > 1)
-                SimLogLikelihood = std::max(SimLogLikelihood, calcLogLikelihood->LogLikelihood(_Nodes.at(i)->_SimBrC, _Nodes.at(i)->_BrN));
-        } // for i<nNodes
-
-        double result=0;
-        if (_Conditional) result = SimLogLikelihood - TotalSimC * log(TotalSimC/_TotalN);
-        else result = SimLogLikelihood;
-        _print.Printf("The result of Monte Carlo replica #%d is: %lf (%lf)\n", BasePrint::P_STDOUT, replica+1, result, SimLogLikelihood);
-        for (int k=0; k < _nCuts;k++)
-            if (SimLogLikelihood > _Cut.at(k)->_LogLikelihood ) _Rank.at(k)++;
-    } // for i<nMCReplicas
-
     return true;
 }
 
