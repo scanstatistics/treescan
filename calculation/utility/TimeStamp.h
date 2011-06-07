@@ -35,7 +35,7 @@ public:
 
    inline bool     operator==  (const Timestamp &rhs) const  { return ( !memcmp ( gsStamp, rhs.gsStamp, STAMP_FLD_LEN ) ); }
 
-   inline bool     operator!=  (const Timestamp &rhs) const  { return ( memcmp ( gsStamp, rhs.gsStamp, STAMP_FLD_LEN ) ); }
+   inline bool     operator!=  (const Timestamp &rhs) const  { return ( memcmp ( gsStamp, rhs.gsStamp, STAMP_FLD_LEN ) != 0 ); }
    inline bool     operator>   (const Timestamp &rhs) const  { return ( memcmp ( gsStamp, rhs.gsStamp, STAMP_FLD_LEN ) > 0 ); }
    inline bool     operator<   (const Timestamp &rhs) const  { return ( memcmp ( gsStamp, rhs.gsStamp, STAMP_FLD_LEN ) < 0 ); };
    inline bool     operator>=  (const Timestamp &rhs) const  { return ( memcmp ( gsStamp, rhs.gsStamp, STAMP_FLD_LEN ) >= 0 ); }
@@ -114,7 +114,7 @@ inline bool Timestamp::IsValidDate ( const char *sRawDate, bool bAllowZeroMonth,
    int  i;
 
    for ( i = 0; i < DATE_FLD_LEN && bRetVal; i++ )
-      bRetVal = isdigit ( sRawDate[i] );
+      bRetVal = isdigit ( sRawDate[i] ) != 0;
 
    if ( bRetVal )
       {
@@ -209,7 +209,7 @@ class Date {
 
    inline bool     operator==  (const Date& rhs) const  { return !gStamp.DateCompare ( rhs.gStamp ); }
 
-   inline bool     operator!=  (const Date& rhs) const  { return gStamp.DateCompare ( rhs.gStamp ); }
+   inline bool     operator!=  (const Date& rhs) const  { return gStamp.DateCompare ( rhs.gStamp ) != 0; }
    inline bool     operator>   (const Date& rhs) const  { return gStamp.DateCompare ( rhs.gStamp ) > 0; }
    inline bool     operator<   (const Date& rhs) const  { return gStamp.DateCompare ( rhs.gStamp ) < 0; };
    inline bool     operator>=  (const Date& rhs) const  { return gStamp.DateCompare ( rhs.gStamp ) >= 0; }
@@ -256,7 +256,7 @@ class Time {
 
    inline bool     operator==  (const Time& rhs) const  { return !gStamp.TimeCompare ( rhs.gStamp ); }
 
-   inline bool     operator!=  (const Time& rhs) const  { return gStamp.TimeCompare ( rhs.gStamp ); }
+   inline bool     operator!=  (const Time& rhs) const  { return gStamp.TimeCompare ( rhs.gStamp ) != 0; }
    inline bool     operator>   (const Time& rhs) const  { return gStamp.TimeCompare ( rhs.gStamp ) > 0; }
    inline bool     operator<   (const Time& rhs) const  { return gStamp.TimeCompare ( rhs.gStamp ) < 0; };
    inline bool     operator>=  (const Time& rhs) const  { return gStamp.TimeCompare ( rhs.gStamp ) >= 0; }

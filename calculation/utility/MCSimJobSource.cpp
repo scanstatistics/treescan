@@ -14,7 +14,7 @@ MCSimJobSource::MCSimJobSource(boost::posix_time::ptime CurrentTime, PrintQueue 
  , grPrintDirection(rPrintDirection)
  , gszReplicationFormatString(szReplicationFormatString)
  , grRunner(rRunner)
- , guiJobCount(rRunner._nMCReplicas)
+ , guiJobCount(rRunner._parameters.getNumReplicationsRequested())
  , guiNextProcessingJobId(1)
  , guiJobsReported(0)
 {
@@ -280,10 +280,10 @@ void MCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, para
 
     //update ratios, significance, etc.
     double result=0;
-    if (grRunner._Conditional) result = rResult.dSuccessfulResult.first - rResult.dSuccessfulResult.second * log(rResult.dSuccessfulResult.second/grRunner._TotalN);
+    if (grRunner._parameters.isConditional()) result = rResult.dSuccessfulResult.first - rResult.dSuccessfulResult.second * log(rResult.dSuccessfulResult.second/grRunner._TotalN);
     else result = rResult.dSuccessfulResult.first;
         
-    for (int k=0; k < grRunner._nCuts; k++)
+    for (unsigned int k=0; k < grRunner._parameters.getCuts(); k++)
         if (rResult.dSuccessfulResult.first > grRunner._Cut.at(k)->_LogLikelihood ) grRunner._Rank.at(k)++;
 
     /// if (gRatioWriter.get()) gRatioWriter->Write(rResult);

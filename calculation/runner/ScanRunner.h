@@ -7,6 +7,9 @@
 #include "Loglikelihood.h"
 #include "boost/shared_ptr.hpp"
 #include "SimulationVariables.h"
+#include "Parameters.h"
+#include <iostream>
+#include <fstream>
 
 class CutStructure {
 public:
@@ -66,7 +69,7 @@ private:
     Index_t                     getNodeIndex(const std::string& identifier) const;
     bool                        readCounts(const std::string& filename);
     bool                        readTree(const std::string& filename);
-    bool                        reportResults(const std::string& filename);
+    bool                        reportResults(const std::string& filename, time_t start, time_t end) const;
     bool                        runsimulations();
     bool                        scanTree();
     bool                        setupTree();
@@ -74,21 +77,14 @@ private:
 public:
     NodeStructureContainer_t    _Nodes;
     CutStructureContainer_t     _Cut;
-    std::vector<int>            _Rank;
+    std::vector<unsigned int>   _Rank;
     std::vector<int>            _Ancestor;
     int                         _TotalC;
     double                      _TotalN;
-    bool                        _Conditional;
-    bool                        _Duplicates;
-    int                         _nCuts;
-    int                         _nMCReplicas;
     SimulationVariables         _simVars;
+    Parameters                  _parameters;
 
-  ScanRunner(bool Conditional, 
-             bool Duplicates, 
-             int nCuts, 
-             int Replicas, 
-             BasePrint& print) : _print(print), _TotalC(0), _TotalN(0), _Conditional(Conditional), _Duplicates(Duplicates), _nCuts(nCuts), _nMCReplicas(Replicas) {}
+  ScanRunner(const Parameters& parameters, BasePrint& print) : _parameters(parameters), _print(print), _TotalC(0), _TotalN(0) {}
 
     Loglikelihood_t             getLoglikelihood() const;
     bool                        run(const std::string& treefile, const std::string& countfile, const std::string& outputfile);

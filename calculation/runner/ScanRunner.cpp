@@ -1,8 +1,4 @@
 
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <iostream>
 #include<boost/tokenizer.hpp>
 #include <boost/regex.hpp>
 
@@ -13,6 +9,7 @@
 #include "MCSimJobSource.h"
 #include "contractor.h"
 #include "Randomization.h"
+#include "ParametersPrint.h"
 
 /*
  Adds cases and measure through the tree from each node through the tree to
@@ -55,7 +52,7 @@ void ScanRunner::addSimCAnforlust(int id, int c) {
 }
 
 ScanRunner::Loglikelihood_t ScanRunner::getLoglikelihood() const {
-    if (_Conditional)
+    if (_parameters.isConditional())
         return Loglikelihood_t(new PoissonLoglikelihood(_TotalC, _TotalN));
     else
         return Loglikelihood_t(new UnconditionalPoissonLoglikelihood());
@@ -114,13 +111,13 @@ bool ScanRunner::readCounts(const std::string& filename) {
             readSuccess = false;
             _print.Printf("Error: Record %ld in count file references negative number of cases in node '%s'.\n", BasePrint::P_READERROR, record_number, node->_identifier.c_str());
         }
-        if (_Duplicates) {
+        if (_parameters.isDuplicates()) {
             if  (!string_to_type<int>(values.at(2).c_str(), node->_Duplicates) || node->_Duplicates < 0) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in count file references negative number of duplicates in node '%s'.\n", BasePrint::P_READERROR, record_number, node->_identifier.c_str());
             }
         }
-        if  (!string_to_type<double>(values.at(_Duplicates ? 3 : 2).c_str(), node->_IntN) || node->_IntN < 0) {
+        if  (!string_to_type<double>(values.at(_parameters.isDuplicates() ? 3 : 2).c_str(), node->_IntN) || node->_IntN < 0) {
             readSuccess = false;
             _print.Printf("Error: Record %ld in count file references negative population in node '%s'.\n", BasePrint::P_READERROR, record_number, node->_identifier.c_str());
         }
@@ -189,7 +186,7 @@ bool ScanRunner::readTree(const std::string& filename) {
 }
 
 /* REPORT RESULTS */
-bool ScanRunner::reportResults(const std::string& filename) {
+bool ScanRunner::reportResults(const std::string& filename, time_t start, time_t end) const {
     std::ofstream outfile(filename);
     if (!outfile) {
         _print.Printf("Unable to create specified output file: %s\n", BasePrint::P_READERROR, filename.c_str());
@@ -207,67 +204,104 @@ bool ScanRunner::reportResults(const std::string& filename) {
     } else
         _print.Printf("Creating the output file: %s\n", BasePrint::P_STDOUT, filename.c_str());
 
-    _print.Printf("\nRESULTS\n", BasePrint::P_STDOUT);
-    outfile << "RESULTS" << std::endl;
-    if (_Conditional==1) _print.Printf( "Conditional Analysis,", BasePrint::P_STDOUT);
-    else _print.Printf( "Unconditional Analysis,", BasePrint::P_STDOUT);
-    if (_Conditional==1) outfile    << "Conditional Analysis,";
-    else outfile    << "Unconditional Analysis,";
+    AsciiPrintFormat PrintFormat;
 
-    _print.Printf(" Total Cases:%d", BasePrint::P_STDOUT, _TotalC);
-    outfile << " Total Cases:" << _TotalC;
-    _print.Printf("  Total Measure:%lf", BasePrint::P_STDOUT, _TotalN);
-    outfile << " Total Measure:" << _TotalN << std::endl;
-    outfile << std::endl;
-    outfile << "Cut# NodeID #Obs ";
+    PrintFormat.PrintVersionHeader(outfile);
+    std::string buffer = ctime(&start);
+    outfile << std::endl << "Program run on: " << buffer;
 
-    if (_Duplicates) outfile << "#CasesWithoutDuplicates ";
-    outfile << "#Exp O/E ";
-    if (_Duplicates) outfile << "O/EWithoutDuplicates ";
-    outfile << "LLR pvalue" << std::endl;
-    if (_Cut.at(0)->_C == 0) _print.Printf("No clusters were found.\n", BasePrint::P_STDOUT);
-    if (_Cut.at(0)->_C == 0) outfile << "No clusters were found." << std::endl;
+    PrintFormat.SetMarginsAsSummarySection();
+    PrintFormat.PrintSectionSeparatorString(outfile);
+    outfile << std::endl << "SUMMARY OF DATA" << std::endl << std::endl;
+    PrintFormat.PrintSectionLabel(outfile, "Analysis", false);
+    buffer = (_parameters.isConditional() ? "Conditional" : "Unconditional");
+    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+    PrintFormat.PrintSectionLabel(outfile, "Total Cases", false);
+    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _TotalC));    
+    PrintFormat.PrintSectionLabel(outfile, "Total Measure", false);
+    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%lf", _TotalN));    
+    PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
 
-    int k=0;
+    // write detected cuts
+    //if (_parameters.isDuplicates()) outfile << "#CasesWithoutDuplicates ";
+    //outfile << "#Exp O/E ";
+    //if (_parameters.isDuplicates()) outfile << "O/EWithoutDuplicates ";
+    //outfile << "LLR pvalue" << std::endl;
+
+    if (_Cut.at(0)->_C == 0) {
+        outfile << "No clusters were found." << std::endl;
+        outfile.close();
+        return true;
+    }
+
+    outfile << "Most Likely Cuts"<< std::endl << std::endl;
+
+    std::string format, replicas;
+
+    printString(replicas, "%u", _parameters.getNumReplicationsRequested());
+    printString(format, "%%.%dlf", replicas.size());
+
+    unsigned int k=0;
     outfile.setf(std::ios::fixed);
     outfile.precision(5);
-    while( k < _nCuts && _Cut.at(k)->_C > 0 && _Rank.at(k) < _nMCReplicas+1) {
-        _print.Printf("\nMost Likely Cut #%d:\n", BasePrint::P_STDOUT, k+1);
-        outfile << k+1;
-        _print.Printf("Node ID =%s\n", BasePrint::P_STDOUT, _Nodes.at(_Cut.at(k)->_ID)->_identifier.c_str());
-        outfile << " " << _Nodes.at(_Cut.at(k)->_ID)->_identifier.c_str();
-        _print.Printf("Number of Cases =%d\n", BasePrint::P_STDOUT, _Cut.at(k)->_C);
-        outfile << " " << _Cut.at(k)->_C;
-        if (_Duplicates) {
-            _print.Printf("Number of Cases (duplicates removed) =%ld\n", BasePrint::P_STDOUT, _Cut.at(k)->_C - _Nodes.at(_Cut.at(k)->_ID)->_Duplicates);
-            outfile << " " << _Cut.at(k)->_C - _Nodes.at(_Cut.at(k)->_ID)->_Duplicates;
-        }
-        _print.Printf("Expected =%lf\n", BasePrint::P_STDOUT, _Cut.at(k)->_N);
-        outfile << " " << _Cut.at(k)->_N;
-        _print.Printf("O/E =%lf\n", BasePrint::P_STDOUT, _Cut.at(k)->_C/_Cut.at(k)->_N);
-        outfile << " " << _Cut.at(k)->_C/_Cut.at(k)->_N;
-        if (_Duplicates) {
-            _print.Printf("O/E (duplicates removed) =%lf\n", BasePrint::P_STDOUT, (_Cut.at(k)->_C - _Nodes.at(_Cut.at(k)->_ID)->_Duplicates)/_Cut.at(k)->_N);
-            outfile << " " << (_Cut.at(k)->_C - _Nodes.at(_Cut.at(k)->_ID)->_Duplicates)/_Cut.at(k)->_N << std::endl;
-        }
-        if (_Conditional) _print.Printf("Log Likelihood Ratio =%lf\n", BasePrint::P_STDOUT, _Cut.at(k)->_LogLikelihood - _TotalC * log(_TotalC/_TotalN));
-        else _print.Printf("Log Likelihood Ratio =%lf\n", BasePrint::P_STDOUT, _Cut.at(k)->_LogLikelihood );
-        if (_Conditional) outfile << " " << _Cut.at(k)->_LogLikelihood - _TotalC * log(_TotalC/_TotalN);
-        else outfile << " " << _Cut.at(k)->_LogLikelihood;
+    while( k < _parameters.getCuts() && _Cut.at(k)->_C > 0 && _Rank.at(k) < _parameters.getNumReplicationsRequested() + 1) {
+        PrintFormat.SetMarginsAsClusterSection( k + 1);
+        outfile << k + 1 << ")";
+        PrintFormat.PrintSectionLabel(outfile, "Node Identifier", false);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, _Nodes.at(_Cut.at(k)->_ID)->_identifier);
 
-        _print.Printf("P-value =%lf\n", BasePrint::P_STDOUT, (float)_Rank.at(k) /(_nMCReplicas+1));
-        outfile << " " << (float)_Rank.at(k) /(_nMCReplicas+1) << std::endl;
+        PrintFormat.PrintSectionLabel(outfile, "Number of Cases", true);
+        printString(buffer, "%ld", _Cut.at(k)->_C);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+        if (_parameters.isDuplicates()) {
+            PrintFormat.PrintSectionLabel(outfile, "Cases (Duplicates Removed)", true);
+            printString(buffer, "%ld", _Cut.at(k)->_C - _Nodes.at(_Cut.at(k)->_ID)->_Duplicates);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+        }
+        PrintFormat.PrintSectionLabel(outfile, "Expected", true);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_Cut.at(k)->_N, buffer));
+        PrintFormat.PrintSectionLabel(outfile, "Observed/Expected", true);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_Cut.at(k)->_C/_Cut.at(k)->_N, buffer));
+        if (_parameters.isDuplicates()) {
+            PrintFormat.PrintSectionLabel(outfile, "O/E (Duplicates Removed)", true);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString((_Cut.at(k)->_C - _Nodes.at(_Cut.at(k)->_ID)->_Duplicates)/_Cut.at(k)->_N, buffer));
+        }
+        PrintFormat.PrintSectionLabel(outfile, "Log Likelihood Ratio", true);
+        if (_parameters.isConditional()) 
+            printString(buffer, "%lf", _Cut.at(k)->_LogLikelihood - _TotalC * log(_TotalC/_TotalN));
+        else 
+            printString(buffer, "%lf", _Cut.at(k)->_LogLikelihood);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+        PrintFormat.PrintSectionLabel(outfile, "P-value", true);
+        printString(buffer, format.c_str(), (double)_Rank.at(k) /(_parameters.getNumReplicationsRequested() + 1));
+        PrintFormat.PrintAlignedMarginsDataString(outfile, buffer, 2);
         k++;
     }
 
-    outfile << std::endl << std::endl;
-    outfile << "Information About Each Node" << std::endl;
-    outfile << "ID Obs Exp O/E" << std::endl;
+    //outfile << std::endl << std::endl;
+    //outfile << "Information About Each Node" << std::endl;
+    //outfile << "ID Obs Exp O/E" << std::endl;
     // outfile.width(10);
-    for (size_t i=0; i < _Nodes.size(); i++)
-        if (_Nodes.at(i)->_BrN > 0)
-            outfile << "0 " << _Nodes.at(i)->_identifier.c_str() << " " << _Nodes.at(i)->_BrC << " " << _Nodes.at(i)->_BrN << " " << _Nodes.at(i)->_BrC/_Nodes.at(i)->_BrN << " 0 0 " << std::endl;
+    //for (size_t i=0; i < _Nodes.size(); i++)
+    //    if (_Nodes.at(i)->_BrN > 0)
+    //        outfile << "0 " << _Nodes.at(i)->_identifier.c_str() << " " << _Nodes.at(i)->_BrC << " " << _Nodes.at(i)->_BrN << " " << _Nodes.at(i)->_BrC/_Nodes.at(i)->_BrN << " 0 0 " << std::endl;
+    
+    ParametersPrint(_parameters).Print(outfile);
+    double nTotalTime = difftime(end, start);
+    double nHours     = floor(nTotalTime/(60*60));
+    double nMinutes   = floor((nTotalTime - nHours*60*60)/60);
+    double nSeconds   = nTotalTime - (nHours*60*60) - (nMinutes*60);
+    outfile << "Program completed  : " << ctime(&end);
+    const char * szHours = (0 < nHours && nHours < 1.5 ? "hour" : "hours");
+    const char * szMinutes = (0 < nMinutes && nMinutes < 1.5 ? "minute" : "minutes");
+    const char * szSeconds = (0.5 <= nSeconds && nSeconds < 1.5 ? "second" : "seconds");
+    if (nHours > 0) printString(buffer, "Total Running Time : %.0f %s %.0f %s %.0f %s", nHours, szHours, nMinutes, szMinutes, nSeconds, szSeconds);
+    else if (nMinutes > 0) printString(buffer, "Total Running Time : %.0f %s %.0f %s", nMinutes, szMinutes, nSeconds, szSeconds);
+    else printString(buffer, "Total Running Time : %.0f %s",nSeconds, szSeconds);
+    outfile << buffer << std::endl;
+    if (_parameters.getNumParallelProcessesToExecute() > 1) outfile << "Processor Usage    : " << _parameters.getNumParallelProcessesToExecute() << " processors";
 
+    outfile.close();
     return true;
 }
 
@@ -283,10 +317,9 @@ bool ScanRunner::run(const std::string& treefile, const std::string& countfile, 
     if (!setupTree()) return false;
     if (!scanTree()) return false;
     if (!runsimulations()) return false;
-    if (!reportResults(outputfile)) return false;
 
-    time(&gEndTime); //get start time
-    _print.Printf("\nProgram run on: %sProgram finished on: %s\n", BasePrint::P_STDOUT, ctime(&gStartTime), ctime(&gEndTime));
+    time(&gEndTime); //get end time
+    if (!reportResults(outputfile, gStartTime, gEndTime)) return false;
 
     return true;
 }
@@ -294,14 +327,14 @@ bool ScanRunner::run(const std::string& treefile, const std::string& countfile, 
 /* DOING THE MONTE CARLO SIMULATIONS */
 bool ScanRunner::runsimulations() {
     char                * sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %lf\n";
-    unsigned long         ulParallelProcessCount = 1;//std::min(GetNumSystemProcessors(), (unsigned int)_nMCReplicas);
+    unsigned long         ulParallelProcessCount = std::min(_parameters.getNumParallelProcessesToExecute(), _parameters.getNumReplicationsRequested());
 
     try {
-        if (_nMCReplicas == 0)
+        if (_parameters.getNumReplicationsRequested() == 0)
             return true;
         
-        _print.Printf("Doing the %d Monte Carlo simulations (new):\n", BasePrint::P_STDOUT, _nMCReplicas);
-        _Rank.resize(_nCuts, 1);
+        _print.Printf("Doing the %d Monte Carlo simulations (new):\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
+        _Rank.resize(_parameters.getCuts(), 1);
 
         {
             PrintQueue lclPrintDirection(_print, false);
@@ -314,9 +347,9 @@ bool ScanRunner::runsimulations() {
             boost::mutex        thread_mutex;
             for (unsigned u=0; u < ulParallelProcessCount; ++u) {
                 try {
-                    MCSimSuccessiveFunctor mcsf(thread_mutex, boost::shared_ptr<AbstractRandomizer>(new PoissonRandomizer(_Conditional, _TotalC, _TotalN)), *this);
+                    MCSimSuccessiveFunctor mcsf(thread_mutex, boost::shared_ptr<AbstractRandomizer>(new PoissonRandomizer(_parameters.isConditional(), _TotalC, _TotalN)), *this);
                     tg.create_thread(subcontractor<contractor_type,MCSimSuccessiveFunctor>(theContractor,mcsf));
-                } catch (std::bad_alloc &b) {             
+                } catch (std::bad_alloc &) {             
                     if (u == 0) throw; // if this is the first thread, re-throw exception
                     _print.Printf("Notice: Insufficient memory to create %u%s parallel simulation ... continuing analysis with %u parallel simulations.\n", BasePrint::P_NOTICE, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u);
                     break;
@@ -353,20 +386,20 @@ bool ScanRunner::scanTree() {
     double LogLikelihoodRatio=0;
     ScanRunner::Loglikelihood_t calcLogLikelihood = ScanRunner::getLoglikelihood();
 
-    for(int k=0; k < _nCuts; k++) _Cut.push_back(new CutStructure());
+    for(unsigned int k=0; k < _parameters.getCuts(); k++) _Cut.push_back(new CutStructure());
 
     for (size_t i=0; i < _Nodes.size(); i++) {
         if (_Nodes.at(i)->_BrC > 1) {
-            if (_Duplicates)
+            if (_parameters.isDuplicates())
                 loglikelihood = calcLogLikelihood->LogLikelihood(_Nodes.at(i)->_BrC - _Nodes.at(i)->_Duplicates, _Nodes.at(i)->_BrN);
             else {
                 loglikelihood = calcLogLikelihood->LogLikelihood(_Nodes.at(i)->_BrC, _Nodes.at(i)->_BrN);
             }
 
-            int k = 0;
-            while(loglikelihood < _Cut.at(k)->_LogLikelihood && k < _nCuts) k++;
-            if (k < _nCuts) {
-                for (int m = _nCuts-1; m > k ; m--) {
+            unsigned int k = 0;
+            while(loglikelihood < _Cut.at(k)->_LogLikelihood && k < _parameters.getCuts()) k++;
+            if (k < _parameters.getCuts()) {
+                for (unsigned int m = _parameters.getCuts() - 1; m > k ; m--) {
                     _Cut.at(m)->_LogLikelihood = _Cut.at(m-1)->_LogLikelihood;
                     _Cut.at(m)->_ID = _Cut.at(m-1)->_ID;
                     _Cut.at(m)->_C = _Cut.at(m-1)->_C;
@@ -379,7 +412,7 @@ bool ScanRunner::scanTree() {
             }
         }
     }
-    if (_Conditional) LogLikelihoodRatio = _Cut.at(0)->_LogLikelihood- _TotalC * log(_TotalC/_TotalN);
+    if (_parameters.isConditional()) LogLikelihoodRatio = _Cut.at(0)->_LogLikelihood- _TotalC * log(_TotalC/_TotalN);
     else LogLikelihoodRatio = _Cut.at(0)->_LogLikelihood;
     _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, LogLikelihoodRatio);
 
@@ -410,7 +443,7 @@ bool ScanRunner::setupTree() {
     }
 
     // Calculates the expected counts for each node and the total.
-    if (_Conditional) {
+    if (_parameters.isConditional()) {
         adjustN = _TotalC/_TotalN;
     for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr)
         (*itr)->_IntN *= adjustN;

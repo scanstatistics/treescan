@@ -165,11 +165,14 @@
     <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\winmain.cpp" />
     <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\thread\src\win32\thread.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\Loglikelihood.cpp" />
+    <ClCompile Include="..\calculation\Parameters.cpp" />
+    <ClCompile Include="..\calculation\ParametersPrint.cpp" />
     <ClCompile Include="..\calculation\print\BasePrint.cpp" />
     <ClCompile Include="..\calculation\print\PrintQueue.cpp" />
     <ClCompile Include="..\calculation\print\PrintScreen.cpp" />
     <ClCompile Include="..\calculation\randomization\Randomization.cpp" />
     <ClCompile Include="..\calculation\runner\ScanRunner.cpp" />
+    <ClCompile Include="..\calculation\utility\AsciiPrintFormat.cpp" />
     <ClCompile Include="..\calculation\utility\AsynchronouslyAccessible.cpp" />
     <ClCompile Include="..\calculation\utility\contractor.cpp" />
     <ClCompile Include="..\calculation\utility\FileName.cpp" />
@@ -184,6 +187,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\loglikelihood\Loglikelihood.h" />
+    <ClInclude Include="..\calculation\Parameters.h" />
+    <ClInclude Include="..\calculation\ParametersPrint.h" />
     <ClInclude Include="..\calculation\print\BasePrint.h" />
     <ClInclude Include="..\calculation\print\PrintQueue.h" />
     <ClInclude Include="..\calculation\print\PrintScreen.h" />
@@ -191,6 +196,7 @@
     <ClInclude Include="..\calculation\runner\ScanRunner.h" />
     <ClInclude Include="..\calculation\runner\SimulationVariables.h" />
     <ClInclude Include="..\calculation\TreeScan.h" />
+    <ClInclude Include="..\calculation\utility\AsciiPrintFormat.h" />
     <ClInclude Include="..\calculation\utility\AsynchronouslyAccessible.h" />
     <ClInclude Include="..\calculation\utility\contractor.h" />
     <ClInclude Include="..\calculation\utility\FileName.h" />

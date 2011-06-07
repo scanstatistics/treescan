@@ -194,7 +194,7 @@ void TreeScan::Timestamp::AddYears ( long lAmt )
       if ( lYear <= 0 || lYear >= 10000 )
          throw prg_error ( "Dates only support years from 0 to 9999. %d is too large.", "Timestamp", lYear );
 
-      SetYear ( lYear );
+      SetYear ( static_cast<unsigned short>(lYear) );
       }
    catch ( prg_exception& x )
       {
@@ -799,16 +799,16 @@ void TreeScan::Timestamp::SetTimeInMilliseconds( unsigned long ulMilli )
 {
    try
       {
-      SetHour ( ulMilli / 3600000 );
+      SetHour ( static_cast<unsigned short>(ulMilli / 3600000) );
       ulMilli = ulMilli % 3600000;
 
-      SetMinute ( ulMilli / 60000 );
+      SetMinute ( static_cast<unsigned short>(ulMilli / 60000) );
       ulMilli = ulMilli % 60000;
 
-      SetSecond ( ulMilli / 1000 );
+      SetSecond ( static_cast<unsigned short>(ulMilli / 1000) );
       ulMilli = ulMilli % 1000;
 
-      SetMillisecond ( ulMilli );
+      SetMillisecond ( static_cast<unsigned short>(ulMilli) );
       }
    catch ( prg_exception& x )
       {

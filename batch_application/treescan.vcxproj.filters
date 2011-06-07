@@ -150,6 +150,15 @@
     <ClCompile Include="TreeScan.cpp">
       <Filter>Source Files\batch_application</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\Parameters.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\ParametersPrint.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\AsciiPrintFormat.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\runner\ScanRunner.h">
@@ -208,6 +217,15 @@
     </ClInclude>
     <ClInclude Include="..\calculation\randomization\Randomization.h">
       <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\Parameters.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\ParametersPrint.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\AsciiPrintFormat.h">
+      <Filter>Header Files\calculation\utility</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

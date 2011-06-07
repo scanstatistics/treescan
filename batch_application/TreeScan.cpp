@@ -10,6 +10,7 @@
 #include "ScanRunner.h"
 #include "PrintScreen.h"
 #include "FileName.h"
+#include "Parameters.h"
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
@@ -30,6 +31,7 @@ void usage_message(std::string program, po::options_description& desc, PrintScre
 
 int main(int argc, char* argv[]) {
     PrintScreen console(false);
+    Parameters parameters;
     int replicas, cuts;
     bool duplicates = false, conditional=false;
     po::variables_map vm;
@@ -72,7 +74,15 @@ int main(int argc, char* argv[]) {
     }
 
     try {
-        ScanRunner runner(conditional, duplicates, cuts, replicas, console);
+        parameters.setTreeFileName(vm["tree-file"].as<std::string>().c_str());
+        parameters.setCountFileName(vm["count-file"].as<std::string>().c_str());
+        parameters.setOutputFileName(vm["output-file"].as<std::string>().c_str());
+        parameters.setCuts(static_cast<unsigned int>(cuts));
+        parameters.setNumReplications(static_cast<unsigned int>(replicas));
+        parameters.setConditional(conditional);
+        parameters.setDuplicates(duplicates);
+
+        ScanRunner runner(parameters, console);
         runner.run(vm["tree-file"].as<std::string>(), vm["count-file"].as<std::string>(), vm["output-file"].as<std::string>());
     } catch (std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
