@@ -6,7 +6,7 @@
 #include "PrjException.h"
 #include "RandomNumberGenerator.h"
 
-const int Parameters::giNumParameters = 9;
+const int Parameters::giNumParameters = 10;
 
 bool  Parameters::operator==(const Parameters& rhs) const {
   if (_replications                   != rhs._replications) return false;
@@ -21,6 +21,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_randomlyGenerateSeed           != rhs._randomlyGenerateSeed) return false;
   if (_conditional                    != rhs._conditional) return false;
   if (_duplicates                     != rhs._duplicates) return false;  
+  if (_printColumnHeaders             != rhs._printColumnHeaders) return false;  
 
   return true;
 }
@@ -71,6 +72,7 @@ void Parameters::copy(const Parameters &rhs) {
   _randomlyGenerateSeed           = rhs._randomlyGenerateSeed;
   _conditional                    = rhs._conditional;
   _duplicates                     = rhs._duplicates;
+  _printColumnHeaders             = rhs._printColumnHeaders;
 }
 
 /** Returns number of parallel processes to run. */
@@ -141,6 +143,7 @@ void Parameters::setAsDefaulted() {
   _randomlyGenerateSeed           = false;
   _conditional                    = false;
   _duplicates                     = false;
+  _printColumnHeaders             = true;
 }
 
 /** Sets output data file name.

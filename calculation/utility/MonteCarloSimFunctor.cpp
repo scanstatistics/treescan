@@ -9,7 +9,7 @@
 MCSimSuccessiveFunctor::MCSimSuccessiveFunctor(boost::mutex& Mutex, 
                                                boost::shared_ptr<AbstractRandomizer> randomizer,
                                                const ScanRunner& scanRunner) : gMutex(Mutex), _randomizer(randomizer), _scanRunner(scanRunner) {
-    _simData.resize(_scanRunner._Nodes.size(), std::make_pair(0,0));
+                                               _simData.resize(_scanRunner.getNodes().size(), std::make_pair(0,0));
     _loglikelihood = _scanRunner.getLoglikelihood();
 }
 
@@ -17,7 +17,7 @@ MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuc
     result_type temp_result;
     try {
         //randomize data
-        int TotalSimC = _randomizer.get()->RandomizeData(param, _scanRunner._Nodes, _simData);
+        int TotalSimC = _randomizer.get()->RandomizeData(param, _scanRunner.getNodes(), _simData);
         
         //print simulation data to file, if requested
         //if (gDataHub.GetParameters().GetOutputSimulationData()) {
@@ -29,10 +29,10 @@ MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuc
         //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
         double SimLogLikelihood=0;
 
-        for (size_t i=0; i < _scanRunner._Nodes.size(); i++) {
+        for (size_t i=0; i < _scanRunner.getNodes().size(); i++) {
             //if (_Nodes.at(i)->_SimBrC > 1)
             if (_simData.at(i).second > 1)
-                SimLogLikelihood = std::max(SimLogLikelihood, _loglikelihood->LogLikelihood(_simData.at(i).second/*_Nodes.at(i)->_SimBrC*/, _scanRunner._Nodes.at(i)->_BrN));
+                SimLogLikelihood = std::max(SimLogLikelihood, _loglikelihood->LogLikelihood(_simData.at(i).second/*_Nodes.at(i)->_SimBrC*/, _scanRunner.getNodes().at(i)->getBrN()));
         } // for i<nNodes
 
         temp_result.dSuccessfulResult = std::make_pair(SimLogLikelihood,TotalSimC);

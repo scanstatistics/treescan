@@ -14,7 +14,7 @@ MCSimJobSource::MCSimJobSource(boost::posix_time::ptime CurrentTime, PrintQueue 
  , grPrintDirection(rPrintDirection)
  , gszReplicationFormatString(szReplicationFormatString)
  , grRunner(rRunner)
- , guiJobCount(rRunner._parameters.getNumReplicationsRequested())
+ , guiJobCount(rRunner.getParameters().getNumReplicationsRequested())
  , guiNextProcessingJobId(1)
  , guiJobsReported(0)
 {
@@ -91,7 +91,7 @@ unsigned int MCSimJobSource::GetSuccessfullyCompletedJobCount() const
 {
   unsigned int uiResult = guiUnregisteredJobLowerBound-1;
   if (AutoAbortConditionExists())
-     uiResult = grRunner._simVars.get_sim_count();
+     uiResult = grRunner.getSimulationVariables().get_sim_count();
   else
     uiResult += (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) - gvExceptions.size();
   return uiResult;
@@ -212,7 +212,7 @@ void MCSimJobSource::RegisterResult_AutoAbort(job_id_type const & rJobID, param_
          RegisterResult_NoAutoAbort(gmapOverflowResults.begin()->first, gmapOverflowResults.begin()->second.first, gmapOverflowResults.begin()->second.second);
          gmapOverflowResults.erase(gmapOverflowResults.begin());
          ++guiNextProcessingJobId;
-         if (grRunner._simVars.get_greater_llr_count() >= 0/* TODO grRunner.gParameters.GetExecuteEarlyTermThreshold()*/) {
+         if (grRunner.getSimulationVariables().get_greater_llr_count() >= 0/* TODO grRunner.gParameters.GetExecuteEarlyTermThreshold()*/) {
             //auto-abort is triggered
             gfnRegisterResult = &MCSimJobSource::RegisterResult_AutoAbortConditionExists;
             ReleaseAutoAbortCheckResources();
@@ -280,11 +280,11 @@ void MCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, para
 
     //update ratios, significance, etc.
     double result=0;
-    if (grRunner._parameters.isConditional()) result = rResult.dSuccessfulResult.first - rResult.dSuccessfulResult.second * log(rResult.dSuccessfulResult.second/grRunner._TotalN);
+    if (grRunner.getParameters().isConditional()) result = rResult.dSuccessfulResult.first - rResult.dSuccessfulResult.second * log(rResult.dSuccessfulResult.second/grRunner.getTotalN());
     else result = rResult.dSuccessfulResult.first;
         
-    for (unsigned int k=0; k < grRunner._parameters.getCuts(); k++)
-        if (rResult.dSuccessfulResult.first > grRunner._Cut.at(k)->_LogLikelihood ) grRunner._Rank.at(k)++;
+    for (unsigned int k=0; k < grRunner.getParameters().getCuts(); k++)
+        if (rResult.dSuccessfulResult.first > grRunner.getCuts().at(k)->getLogLikelihood() ) grRunner.getRanks().at(k)++;
 
     /// if (gRatioWriter.get()) gRatioWriter->Write(rResult);
     /// grRunner.gSimVars.add_llr(rResult);

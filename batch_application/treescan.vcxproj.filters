@@ -61,6 +61,12 @@
     <Filter Include="Source Files\calculation\randomization">
       <UniqueIdentifier>{27045a0c-b44c-4404-909d-42382e805d79}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\calculation\output">
+      <UniqueIdentifier>{260ad21d-8a31-4cf2-aa59-a805fa3ee69d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\output">
+      <UniqueIdentifier>{6ef6ed46-9894-479a-b227-daa07546427b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\calculation\runner\ScanRunner.cpp">
@@ -159,6 +165,12 @@
     <ClCompile Include="..\calculation\utility\AsciiPrintFormat.cpp">
       <Filter>Source Files\calculation\utility</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\utility\FieldDef.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\output\DataFileWriter.cpp">
+      <Filter>Source Files\calculation\output</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\runner\ScanRunner.h">
@@ -226,6 +238,12 @@
     </ClInclude>
     <ClInclude Include="..\calculation\utility\AsciiPrintFormat.h">
       <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\FieldDef.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\output\DataFileWriter.h">
+      <Filter>Header Files\calculation\output</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

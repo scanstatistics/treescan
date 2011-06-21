@@ -10,6 +10,7 @@
 #include "contractor.h"
 #include "Randomization.h"
 #include "ParametersPrint.h"
+#include "DataFileWriter.h"
 
 /*
  Adds cases and measure through the tree from each node through the tree to
@@ -19,10 +20,10 @@
  */
 void ScanRunner::addCN(int id, int c, double n) {
     _Ancestor.at(id) = 1;
-    _Nodes.at(id)->_BrC += c;
-    _Nodes.at(id)->_BrN += n;
-    for(size_t j=0; j < _Nodes.at(id)->_Parent.size(); j++) {
-      int parent = _Nodes.at(id)->_Parent.at(j);
+    _Nodes.at(id)->refBrC() += c;
+    _Nodes.at(id)->refBrN() += n;
+    for(size_t j=0; j < _Nodes.at(id)->getParent().size(); j++) {
+      int parent = _Nodes.at(id)->getParent().at(j);
         if(_Ancestor.at(parent) == 0)
           addCN(parent,c,n);
         else
@@ -35,8 +36,8 @@ void ScanRunner::addCN(int id, int c, double n) {
  for a node without anforlust.
  */
 void ScanRunner::addSimC(int id, int c) {
-    _Nodes.at(id)->_SimBrC += c;
-    for(size_t j=0; j < _Nodes.at(id)->_Parent.size(); j++) addSimC(_Nodes.at(id)->_Parent[j], c);
+    _Nodes.at(id)->refSimBrC() += c;
+    for(size_t j=0; j < _Nodes.at(id)->getParent().size(); j++) addSimC(_Nodes.at(id)->getParent()[j], c);
 }
 
 /*
@@ -47,8 +48,8 @@ void ScanRunner::addSimC(int id, int c) {
  with internal cases. To do sometime in the future.
  */
 void ScanRunner::addSimCAnforlust(int id, int c) {
-    _Nodes.at(id)->_SimBrC += c;
-    for(size_t j=0; j < _Nodes.at(id)->_Parent.size();j++) addSimCAnforlust(_Nodes.at(id)->_Parent[j], c);
+    _Nodes.at(id)->refSimBrC() += c;
+    for(size_t j=0; j < _Nodes.at(id)->getParent().size();j++) addSimCAnforlust(_Nodes.at(id)->getParent()[j], c);
 }
 
 ScanRunner::Loglikelihood_t ScanRunner::getLoglikelihood() const {
@@ -64,9 +65,9 @@ ScanRunner::Loglikelihood_t ScanRunner::getLoglikelihood() const {
 ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) const {
     std::auto_ptr<NodeStructure> node(new NodeStructure(identifier));
     NodeStructureContainer_t::const_iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
-    if (itr != _Nodes.end() && (*itr)->_identifier == node.get()->_identifier) {
+    if (itr != _Nodes.end() && (*itr)->getIdentifier() == node.get()->getIdentifier()) {
       size_t tt = std::distance(_Nodes.begin(), itr);
-      assert(tt == (*itr)->_ID);
+      assert(tt == (*itr)->getID());
       return std::make_pair(true, std::distance(_Nodes.begin(), itr));
     } else
         return std::make_pair(false, 0);
@@ -107,19 +108,19 @@ bool ScanRunner::readCounts(const std::string& filename) {
             _print.Printf("Error: Record %ld in count file references unknown node (%s).\n", BasePrint::P_READERROR, record_number, values.at(0).c_str());
         }
         NodeStructure * node = _Nodes.at(index.second);
-        if  (!string_to_type<int>(values.at(1).c_str(), node->_IntC) || node->_IntC < 0) {
+        if  (!string_to_type<int>(values.at(1).c_str(), node->refIntC()) || node->getIntC() < 0) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in count file references negative number of cases in node '%s'.\n", BasePrint::P_READERROR, record_number, node->_identifier.c_str());
+            _print.Printf("Error: Record %ld in count file references negative number of cases in node '%s'.\n", BasePrint::P_READERROR, record_number, node->getIdentifier().c_str());
         }
         if (_parameters.isDuplicates()) {
-            if  (!string_to_type<int>(values.at(2).c_str(), node->_Duplicates) || node->_Duplicates < 0) {
+            if  (!string_to_type<int>(values.at(2).c_str(), node->refDuplicates()) || node->getDuplicates() < 0) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references negative number of duplicates in node '%s'.\n", BasePrint::P_READERROR, record_number, node->_identifier.c_str());
+                _print.Printf("Error: Record %ld in count file references negative number of duplicates in node '%s'.\n", BasePrint::P_READERROR, record_number, node->getIdentifier().c_str());
             }
         }
-        if  (!string_to_type<double>(values.at(_parameters.isDuplicates() ? 3 : 2).c_str(), node->_IntN) || node->_IntN < 0) {
+        if  (!string_to_type<double>(values.at(_parameters.isDuplicates() ? 3 : 2).c_str(), node->refIntN()) || node->getIntN() < 0) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in count file references negative population in node '%s'.\n", BasePrint::P_READERROR, record_number, node->_identifier.c_str());
+            _print.Printf("Error: Record %ld in count file references negative population in node '%s'.\n", BasePrint::P_READERROR, record_number, node->getIdentifier().c_str());
         }
     }
 
@@ -150,13 +151,13 @@ bool ScanRunner::readTree(const std::string& filename) {
             std::string identifier = (*itr);
             std::auto_ptr<NodeStructure> node(new NodeStructure(trimString(identifier)));
             NodeStructureContainer_t::iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
-            if (itr == _Nodes.end() || (*itr)->_identifier != node.get()->_identifier)
+            if (itr == _Nodes.end() || (*itr)->getIdentifier() != node.get()->getIdentifier())
                 _Nodes.insert(itr, node.release());
         }
     }
 
     //reset node identifiers to ordinal position in vector -- this is to keep the original algorithm intact since it uses vector indexes heavily
-    for (size_t i=0; i < _Nodes.size(); ++i) _Nodes.at(i)->_ID = i;
+    for (size_t i=0; i < _Nodes.size(); ++i) _Nodes.at(i)->setID(i);
 
     // now set parent nodes
     in.clear();
@@ -176,7 +177,7 @@ bool ScanRunner::readTree(const std::string& filename) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in tree file has unknown parent node (%s).\n", BasePrint::P_READERROR, record_number, identifier.c_str());
             } else {
-                if (node) node->_Parent.push_back(_Nodes.at(index.second)->_ID);
+                if (node) node->refParent().push_back(_Nodes.at(index.second)->getID());
                 else node = _Nodes.at(index.second);
             }
         }
@@ -200,6 +201,7 @@ bool ScanRunner::reportResults(const std::string& filename, time_t start, time_t
             _print.Printf("Unable to create output file: %s\n", BasePrint::P_READERROR, buffer.c_str());
             return false;
         }
+        const_cast<Parameters&>(_parameters).setOutputFileName(buffer.c_str());
         _print.Printf("Creating the output file in documents directory: %s\n", BasePrint::P_STDOUT, buffer.c_str());
     } else
         _print.Printf("Creating the output file: %s\n", BasePrint::P_STDOUT, filename.c_str());
@@ -228,7 +230,7 @@ bool ScanRunner::reportResults(const std::string& filename, time_t start, time_t
     //if (_parameters.isDuplicates()) outfile << "O/EWithoutDuplicates ";
     //outfile << "LLR pvalue" << std::endl;
 
-    if (_Cut.at(0)->_C == 0) {
+    if (_Cut.at(0)->getC() == 0) {
         outfile << "No clusters were found." << std::endl;
         outfile.close();
         return true;
@@ -237,6 +239,7 @@ bool ScanRunner::reportResults(const std::string& filename, time_t start, time_t
     outfile << "Most Likely Cuts"<< std::endl << std::endl;
 
     std::string format, replicas;
+    CutsRecordWriter  cutsWriter(*this);
 
     printString(replicas, "%u", _parameters.getNumReplicationsRequested());
     printString(format, "%%.%dlf", replicas.size());
@@ -244,37 +247,39 @@ bool ScanRunner::reportResults(const std::string& filename, time_t start, time_t
     unsigned int k=0;
     outfile.setf(std::ios::fixed);
     outfile.precision(5);
-    while( k < _parameters.getCuts() && _Cut.at(k)->_C > 0 && _Rank.at(k) < _parameters.getNumReplicationsRequested() + 1) {
+    while( k < _parameters.getCuts() && _Cut.at(k)->getC() > 0 && _Rank.at(k) < _parameters.getNumReplicationsRequested() + 1) {
         PrintFormat.SetMarginsAsClusterSection( k + 1);
         outfile << k + 1 << ")";
         PrintFormat.PrintSectionLabel(outfile, "Node Identifier", false);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, _Nodes.at(_Cut.at(k)->_ID)->_identifier);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, _Nodes.at(_Cut.at(k)->getID())->getIdentifier());
 
         PrintFormat.PrintSectionLabel(outfile, "Number of Cases", true);
-        printString(buffer, "%ld", _Cut.at(k)->_C);
+        printString(buffer, "%ld", _Cut.at(k)->getC());
         PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
         if (_parameters.isDuplicates()) {
             PrintFormat.PrintSectionLabel(outfile, "Cases (Duplicates Removed)", true);
-            printString(buffer, "%ld", _Cut.at(k)->_C - _Nodes.at(_Cut.at(k)->_ID)->_Duplicates);
+            printString(buffer, "%ld", _Cut.at(k)->getC() - _Nodes.at(_Cut.at(k)->getID())->getDuplicates());
             PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
         }
         PrintFormat.PrintSectionLabel(outfile, "Expected", true);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_Cut.at(k)->_N, buffer));
+        PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_Cut.at(k)->getN(), buffer));
         PrintFormat.PrintSectionLabel(outfile, "Observed/Expected", true);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_Cut.at(k)->_C/_Cut.at(k)->_N, buffer));
+        PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_Cut.at(k)->getC()/_Cut.at(k)->getN(), buffer));
         if (_parameters.isDuplicates()) {
             PrintFormat.PrintSectionLabel(outfile, "O/E (Duplicates Removed)", true);
-            PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString((_Cut.at(k)->_C - _Nodes.at(_Cut.at(k)->_ID)->_Duplicates)/_Cut.at(k)->_N, buffer));
+            PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString((_Cut.at(k)->getC() - _Nodes.at(_Cut.at(k)->getID())->getDuplicates())/_Cut.at(k)->getN(), buffer));
         }
         PrintFormat.PrintSectionLabel(outfile, "Log Likelihood Ratio", true);
         if (_parameters.isConditional()) 
-            printString(buffer, "%lf", _Cut.at(k)->_LogLikelihood - _TotalC * log(_TotalC/_TotalN));
+            printString(buffer, "%lf", _Cut.at(k)->getLogLikelihood() - _TotalC * log(_TotalC/_TotalN));
         else 
-            printString(buffer, "%lf", _Cut.at(k)->_LogLikelihood);
+            printString(buffer, "%lf", _Cut.at(k)->getLogLikelihood());
         PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
         PrintFormat.PrintSectionLabel(outfile, "P-value", true);
         printString(buffer, format.c_str(), (double)_Rank.at(k) /(_parameters.getNumReplicationsRequested() + 1));
         PrintFormat.PrintAlignedMarginsDataString(outfile, buffer, 2);
+
+        cutsWriter.write(k);
         k++;
     }
 
@@ -389,31 +394,31 @@ bool ScanRunner::scanTree() {
     for(unsigned int k=0; k < _parameters.getCuts(); k++) _Cut.push_back(new CutStructure());
 
     for (size_t i=0; i < _Nodes.size(); i++) {
-        if (_Nodes.at(i)->_BrC > 1) {
+        if (_Nodes.at(i)->getBrC() > 1) {
             if (_parameters.isDuplicates())
-                loglikelihood = calcLogLikelihood->LogLikelihood(_Nodes.at(i)->_BrC - _Nodes.at(i)->_Duplicates, _Nodes.at(i)->_BrN);
+                loglikelihood = calcLogLikelihood->LogLikelihood(_Nodes.at(i)->getBrC() - _Nodes.at(i)->getDuplicates(), _Nodes.at(i)->getBrN());
             else {
-                loglikelihood = calcLogLikelihood->LogLikelihood(_Nodes.at(i)->_BrC, _Nodes.at(i)->_BrN);
+                loglikelihood = calcLogLikelihood->LogLikelihood(_Nodes.at(i)->getBrC(), _Nodes.at(i)->getBrN());
             }
 
             unsigned int k = 0;
-            while(loglikelihood < _Cut.at(k)->_LogLikelihood && k < _parameters.getCuts()) k++;
+            while(loglikelihood < _Cut.at(k)->getLogLikelihood() && k < _parameters.getCuts()) k++;
             if (k < _parameters.getCuts()) {
                 for (unsigned int m = _parameters.getCuts() - 1; m > k ; m--) {
-                    _Cut.at(m)->_LogLikelihood = _Cut.at(m-1)->_LogLikelihood;
-                    _Cut.at(m)->_ID = _Cut.at(m-1)->_ID;
-                    _Cut.at(m)->_C = _Cut.at(m-1)->_C;
-                    _Cut.at(m)->_N = _Cut.at(m-1)->_N;
+                    _Cut.at(m)->setLogLikelihood(_Cut.at(m-1)->getLogLikelihood());
+                    _Cut.at(m)->setID(_Cut.at(m-1)->getID());
+                    _Cut.at(m)->setC(_Cut.at(m-1)->getC());
+                    _Cut.at(m)->setN(_Cut.at(m-1)->getN());
                 }
-                _Cut.at(k)->_LogLikelihood = loglikelihood;
-                _Cut.at(k)->_ID = i;
-                _Cut.at(k)->_C = _Nodes.at(i)->_BrC;
-                _Cut.at(k)->_N = _Nodes.at(i)->_BrN;
+                _Cut.at(k)->setLogLikelihood(loglikelihood);
+                _Cut.at(k)->setID(i);
+                _Cut.at(k)->setC(_Nodes.at(i)->getBrC());
+                _Cut.at(k)->setN(_Nodes.at(i)->getBrN());
             }
         }
     }
-    if (_parameters.isConditional()) LogLikelihoodRatio = _Cut.at(0)->_LogLikelihood- _TotalC * log(_TotalC/_TotalN);
-    else LogLikelihoodRatio = _Cut.at(0)->_LogLikelihood;
+    if (_parameters.isConditional()) LogLikelihoodRatio = _Cut.at(0)->getLogLikelihood() - _TotalC * log(_TotalC/_TotalN);
+    else LogLikelihoodRatio = _Cut.at(0)->getLogLikelihood();
     _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, LogLikelihoodRatio);
 
     return true;
@@ -431,22 +436,21 @@ bool ScanRunner::setupTree() {
     // Initialize variables
     _TotalC=0;_TotalN=0;
     for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
-        (*itr)->_BrC = 0;
-        (*itr)->_BrN = 0;
-        (*itr)->_nChildren = 0;
+        (*itr)->setBrC(0);
+        (*itr)->setBrN(0);
     }
 
     // Calculates the total number of cases and the total population at risk
     for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
-        _TotalC += (*itr)->_IntC;
-        _TotalN += (*itr)->_IntN;
+        _TotalC += (*itr)->getIntC();
+        _TotalN += (*itr)->getIntN();
     }
 
     // Calculates the expected counts for each node and the total.
     if (_parameters.isConditional()) {
         adjustN = _TotalC/_TotalN;
     for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr)
-        (*itr)->_IntN *= adjustN;
+        (*itr)->refIntN() *= adjustN;
         _TotalN = _TotalC;
     }
 
@@ -457,20 +461,19 @@ bool ScanRunner::setupTree() {
     _Ancestor.resize(_Nodes.size(), 0);
     for (size_t i=0; i < _Nodes.size(); ++i) {
         for (size_t j=0; j < _Nodes.size(); ++j) _Ancestor[j]=0;
-        addCN(i, _Nodes.at(i)->_IntC, _Nodes.at(i)->_IntN);
+        addCN(i, _Nodes.at(i)->getIntC(), _Nodes.at(i)->getIntN());
         if (_Ancestor[i] > 1) {
-            _print.Printf("Error: Node '%s' has itself as an ancestor.\n", BasePrint::P_ERROR, _Nodes.at(i)->_identifier.c_str());
+            _print.Printf("Error: Node '%s' has itself as an ancestor.\n", BasePrint::P_ERROR, _Nodes.at(i)->getIdentifier().c_str());
             return false;
         } // if Ancestor[i]>1
-        for (size_t j=0; j < _Nodes.size(); ++j) if(_Ancestor[j] > 1) _Nodes.at(i)->_Anforlust=true;
+        for (size_t j=0; j < _Nodes.size(); ++j) if(_Ancestor[j] > 1) _Nodes.at(i)->setAnforlust(true);
     } // for i<nNodes
 
     // For each node calculates the number of children and sets up the list of child IDs
     for (size_t i=0; i < _Nodes.size(); ++i) {
-        for (size_t j=0; j < _Nodes.at(i)->_Parent.size(); ++j) {
-            parent = _Nodes.at(i)->_Parent.at(j);
-            _Nodes.at(parent)->_Child .push_back(i);
-            _Nodes.at(parent)->_nChildren += 1;
+        for (size_t j=0; j < _Nodes.at(i)->getParent().size(); ++j) {
+            parent = _Nodes.at(i)->getParent().at(j);
+            _Nodes.at(parent)->refChild().push_back(i);
         } // for j
     } // for i < nNodes
 
@@ -478,12 +481,12 @@ bool ScanRunner::setupTree() {
     // Checks that no node has negative expected cases or that a node with zero expected has observed cases.
     for (size_t i=0; i < _Nodes.size(); ++i) {
         // cout << "Node=" << i << ", BrC=" << Node[i].BrC << ", BrN=" << Node[i].BrN << endl;
-        if (_Nodes.at(i)->_BrN < 0 ) {
-            _print.Printf("Error: Node '%s' has negative expected cases.\n", BasePrint::P_ERROR, _Nodes.at(i)->_identifier.c_str());
+        if (_Nodes.at(i)->getBrN() < 0 ) {
+            _print.Printf("Error: Node '%s' has negative expected cases.\n", BasePrint::P_ERROR, _Nodes.at(i)->getIdentifier().c_str());
             return false;
         }
-        if (_Nodes.at(i)->_BrN == 0 && _Nodes.at(i)->_BrC > 0) {
-            _print.Printf("Error: Node '%s' has observed cases but zero expected.\n", BasePrint::P_ERROR, _Nodes.at(i)->_identifier.c_str());
+        if (_Nodes.at(i)->getBrN() == 0 && _Nodes.at(i)->getBrC() > 0) {
+            _print.Printf("Error: Node '%s' has observed cases but zero expected.\n", BasePrint::P_ERROR, _Nodes.at(i)->getIdentifier().c_str());
             return false;
         }
     } // for i

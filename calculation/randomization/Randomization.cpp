@@ -39,29 +39,29 @@ int PoissonRandomizer::RandomizeData(unsigned int iSimulation,
         CasesLeft = _TotalC;
         ExpectedLeft = _TotalN;
         for (size_t i=0; i < treeNodes.size(); i++) {
-            cases = BinomialGenerator(CasesLeft, treeNodes.at(i)->_IntN / ExpectedLeft);
+            cases = BinomialGenerator(CasesLeft, treeNodes.at(i)->getIntN() / ExpectedLeft);
             //if(cases>0 && Node[i].IntN<0.1) cout << "node=" << i <<  ", CasesLeft=" << CasesLeft << ", c=" << cases << ", exp=" << Node[i].IntN << ", ExpLeft=" << ExpectedLeft << endl;
             simData.at(i).first = cases; //treeNodes.at(i)->_SimIntC = cases;
             CasesLeft -= cases;
-            ExpectedLeft -= treeNodes.at(i)->_IntN;
+            ExpectedLeft -= treeNodes.at(i)->getIntN();
             simData.at(i).second = 0; //treeNodes.at(i)->_SimBrC = 0;  // Initilazing the branch cases with zero
         } // for i
     }  else { // if unconditional
         TotalSimC=0;
         ExpectedLeft = _TotalN;
         for(size_t i=0; i < treeNodes.size(); i++) {
-            cases = PoissonGenerator(treeNodes.at(i)->_IntN);
+            cases = PoissonGenerator(treeNodes.at(i)->getIntN());
             //if(cases>0 && Node[i].IntN<0.1) cout << "node=" << i <<  ",  c=" << cases << ", exp=" << Node[i].IntN << endl;
             simData.at(i).first = cases; //treeNodes.at(i)->_SimIntC=cases;
             TotalSimC += cases;
-            ExpectedLeft -= treeNodes.at(i)->_IntN;
+            ExpectedLeft -= treeNodes.at(i)->getIntN();
             simData.at(i).second = 0; //treeNodes.at(i)->_SimBrC = 0; // Initilazing the branch cases with zero
         }
     }
 
     //------------------------ UPDATING THE TREE -----------------------------------
     for (size_t i=0; i < treeNodes.size(); i++) {
-        if (treeNodes.at(i)->_Anforlust==false) addSimC(i, simData.at(i).first/*_Nodes.at(i)->_SimIntC*/, treeNodes, simData);
+        if (treeNodes.at(i)->getAnforlust()==false) addSimC(i, simData.at(i).first/*_Nodes.at(i)->_SimIntC*/, treeNodes, simData);
         else addSimCAnforlust(i, simData.at(i).first/*_Nodes.at(i)->_SimIntC*/, treeNodes, simData);
     }
     return TotalSimC;
@@ -73,7 +73,7 @@ int PoissonRandomizer::RandomizeData(unsigned int iSimulation,
  */
 void PoissonRandomizer::addSimC(int id, int c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimDataContainer_t& simData) {
     simData.at(id).second += c;  //treeNodes.at(id)->_SimBrC += c;
-    for(size_t j=0; j < treeNodes.at(id)->_Parent.size(); j++) addSimC(treeNodes.at(id)->_Parent[j], c, treeNodes, simData);
+    for(size_t j=0; j < treeNodes.at(id)->getParent().size(); j++) addSimC(treeNodes.at(id)->getParent()[j], c, treeNodes, simData);
 }
 
 /*
@@ -85,7 +85,7 @@ void PoissonRandomizer::addSimC(int id, int c, const ScanRunner::NodeStructureCo
  */
 void PoissonRandomizer::addSimCAnforlust(int id, int c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimDataContainer_t& simData) {
     simData.at(id).second += c;  //treeNodes.at(id)->_SimBrC += c;
-    for(size_t j=0; j < treeNodes.at(id)->_Parent.size();j++) addSimCAnforlust(treeNodes.at(id)->_Parent[j], c, treeNodes, simData);
+    for(size_t j=0; j < treeNodes.at(id)->getParent().size();j++) addSimCAnforlust(treeNodes.at(id)->getParent()[j], c, treeNodes, simData);
 }
 
 /* Returns a Poisson distributed random variable. */

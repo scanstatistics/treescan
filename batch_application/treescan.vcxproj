@@ -31,8 +31,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>Windows7.1SDK</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -69,11 +70,12 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectName)64</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -86,7 +88,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\prj\treescan.development\treescan\calculation\randomization;C:\prj\treescan.development\treescan\calculation\utility;C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation\print;C:\prj\treescan.development\treescan\calculation\loglikelihood;C:\prj\treescan.development\treescan\calculation;C:\prj\treescan.development\treescan\batch_application;C:\prj\treescan.development\boost\boost_1_46_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\prj\treescan.development\treescan\calculation\output;C:\prj\treescan.development\treescan\calculation\randomization;C:\prj\treescan.development\treescan\calculation\utility;C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation\print;C:\prj\treescan.development\treescan\calculation\loglikelihood;C:\prj\treescan.development\treescan\calculation;C:\prj\treescan.development\treescan\batch_application;C:\prj\treescan.development\boost\boost_1_46_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -104,7 +106,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\prj\treescan.development\treescan\calculation\output;C:\prj\treescan.development\treescan\calculation\randomization;C:\prj\treescan.development\treescan\calculation\utility;C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation\print;C:\prj\treescan.development\treescan\calculation\loglikelihood;C:\prj\treescan.development\treescan\calculation;C:\prj\treescan.development\treescan\batch_application;C:\prj\treescan.development\boost\boost_1_46_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -122,7 +124,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\prj\treescan.development\treescan\calculation\randomization;C:\prj\treescan.development\treescan\calculation\utility;C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation\print;C:\prj\treescan.development\treescan\calculation\loglikelihood;C:\prj\treescan.development\treescan\calculation;C:\prj\treescan.development\treescan\batch_application;C:\prj\treescan.development\boost\boost_1_46_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\prj\treescan.development\treescan\calculation\output;C:\prj\treescan.development\treescan\calculation\randomization;C:\prj\treescan.development\treescan\calculation\utility;C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation\print;C:\prj\treescan.development\treescan\calculation\loglikelihood;C:\prj\treescan.development\treescan\calculation;C:\prj\treescan.development\treescan\batch_application;C:\prj\treescan.development\boost\boost_1_46_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -136,19 +138,21 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;BOOST_ALL_NO_LIB;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>C:\prj\treescan.development\treescan\calculation\output;C:\prj\treescan.development\treescan\calculation\randomization;C:\prj\treescan.development\treescan\calculation\utility;C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation\print;C:\prj\treescan.development\treescan\calculation\loglikelihood;C:\prj\treescan.development\treescan\calculation;C:\prj\treescan.development\treescan\batch_application;C:\prj\treescan.development\boost\boost_1_46_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -165,6 +169,7 @@
     <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\winmain.cpp" />
     <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\thread\src\win32\thread.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\Loglikelihood.cpp" />
+    <ClCompile Include="..\calculation\output\DataFileWriter.cpp" />
     <ClCompile Include="..\calculation\Parameters.cpp" />
     <ClCompile Include="..\calculation\ParametersPrint.cpp" />
     <ClCompile Include="..\calculation\print\BasePrint.cpp" />
@@ -175,6 +180,7 @@
     <ClCompile Include="..\calculation\utility\AsciiPrintFormat.cpp" />
     <ClCompile Include="..\calculation\utility\AsynchronouslyAccessible.cpp" />
     <ClCompile Include="..\calculation\utility\contractor.cpp" />
+    <ClCompile Include="..\calculation\utility\FieldDef.cpp" />
     <ClCompile Include="..\calculation\utility\FileName.cpp" />
     <ClCompile Include="..\calculation\utility\PrjException.cpp" />
     <ClCompile Include="..\calculation\utility\RandomDistribution.cpp" />
@@ -187,6 +193,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\loglikelihood\Loglikelihood.h" />
+    <ClInclude Include="..\calculation\output\DataFileWriter.h" />
     <ClInclude Include="..\calculation\Parameters.h" />
     <ClInclude Include="..\calculation\ParametersPrint.h" />
     <ClInclude Include="..\calculation\print\BasePrint.h" />
@@ -199,6 +206,7 @@
     <ClInclude Include="..\calculation\utility\AsciiPrintFormat.h" />
     <ClInclude Include="..\calculation\utility\AsynchronouslyAccessible.h" />
     <ClInclude Include="..\calculation\utility\contractor.h" />
+    <ClInclude Include="..\calculation\utility\FieldDef.h" />
     <ClInclude Include="..\calculation\utility\FileName.h" />
     <ClInclude Include="..\calculation\utility\PrjException.h" />
     <ClInclude Include="..\calculation\utility\ptr_vector.h" />

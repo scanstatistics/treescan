@@ -7,7 +7,7 @@
 
 class Parameters {
   public:
-    enum ParameterType {TREEFILE=0, COUNTFILE, OUTPUTFILE, CUTS, REPLICATIONS, CONDITIONAL, DUPLICATES, RANDOMIZATION_SEED, RANDOMLY_GENERATE_SEED};
+    enum ParameterType {TREEFILE=0, COUNTFILE, OUTPUTFILE, CUTS, REPLICATIONS, CONDITIONAL, DUPLICATES, RANDOMIZATION_SEED, RANDOMLY_GENERATE_SEED, PRINT_COLUMN_HEADERS};
     struct CreationVersion {unsigned int iMajor; unsigned int iMinor; unsigned int iRelease;};
 
   private:
@@ -23,6 +23,7 @@ class Parameters {
     bool                                _randomlyGenerateSeed;
     bool                                _conditional;
     bool                                _duplicates;
+    bool                                _printColumnHeaders;
 
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
@@ -45,6 +46,7 @@ class Parameters {
     const std::string                 & getTreeFileName() const {return _treeFileName;}
     bool                                isConditional() const {return _conditional;}
     bool                                isDuplicates() const {return _duplicates;}
+    bool                                isPrintColumnHeaders() const {return _printColumnHeaders;}
     bool                                isRandomlyGeneratingSeed() const {return _randomlyGenerateSeed;}
     unsigned int                        getNumRequestedParallelProcesses() const {return _numRequestedParallelProcesses;}
     unsigned int                        getNumParallelProcessesToExecute() const;
@@ -60,6 +62,7 @@ class Parameters {
     void                                setConditional(bool b) {_conditional = b;}
     void                                setDuplicates(bool b) {_duplicates = b;}
     void                                setRandomlyGeneratingSeed(bool b) {_randomlyGenerateSeed = b;}
+    void                                setPrintColunHeaders(bool b) {_printColumnHeaders=b;}
     void                                setNumProcesses(unsigned int i) {_numRequestedParallelProcesses = i;}
     void                                setNumReplications(unsigned int replications) {_replications = replications;}
     void                                setOutputFileName(const char * sOutPutFileName, bool bCorrectForRelativePath=false);
