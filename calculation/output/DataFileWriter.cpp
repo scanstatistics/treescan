@@ -155,7 +155,7 @@ CSVDataFileWriter::CSVDataFileWriter(const Parameters& parameters, const ptr_vec
     _fileName.setFullPath(parameters.getOutputFileName().c_str());
     _fileName.setExtension(ext.c_str());
 
-    _outfile.open(_fileName.getFullPath(buffer));
+    _outfile.open(_fileName.getFullPath(buffer).c_str());
     if (!_outfile.is_open())
       throw resolvable_error("Unable to open/create file %s", "Setup()", _fileName.getFullPath(buffer).c_str());
 
@@ -274,7 +274,7 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
     Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getC()/_scanner.getCuts().at(cutIndex)->getN();
     if (_scanner.getParameters().isDuplicates())
       Record.GetFieldValue(OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD).AsDouble() = (_scanner.getCuts().at(cutIndex)->getC() - _scanner.getNodes().at(_scanner.getCuts().at(cutIndex)->getID())->getDuplicates())/_scanner.getCuts().at(cutIndex)->getN();
-    if (_scanner.getParameters().isConditional()) 
+    if (_scanner.getParameters().isConditional())
         Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getLogLikelihood() - _scanner.getTotalC() * log(_scanner.getTotalC()/_scanner.getTotalN());
     else
         Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getLogLikelihood();

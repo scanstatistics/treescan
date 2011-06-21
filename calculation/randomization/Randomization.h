@@ -42,9 +42,9 @@ protected:
     int             _TotalC;
     double          _TotalN;
 
-    int             BinomialGenerator(int n, double p, bool classic=true);
+    int             BinomialGenerator(int n, double p, bool classic=false);
     int             PoissonGenerator(double lambda);
-    double          RandomUniform(bool classic=true);
+    double          RandomUniform(bool classic=false);
 
     void            addSimC(size_t id, int c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimDataContainer_t& simData);
     void            addSimCAnforlust(size_t id, int c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimDataContainer_t& simData);

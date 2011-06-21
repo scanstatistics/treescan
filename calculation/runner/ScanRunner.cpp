@@ -81,7 +81,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
 
     bool readSuccess=true;
     std::ifstream in;
-    in.open(filename);
+    in.open(filename.c_str());
 
     if (!in) {
         _print.Printf("Error: Unable to open count file: %s.\n", BasePrint::P_READERROR, filename.c_str());
@@ -135,7 +135,7 @@ bool ScanRunner::readTree(const std::string& filename) {
 
     bool readSuccess=true;
     std::ifstream in;
-    in.open(filename);
+    in.open(filename.c_str());
 
     if (!in) {
         _print.Printf("Error: Unable to open tree file: %s.\n", BasePrint::P_READERROR, filename.c_str());
@@ -188,7 +188,7 @@ bool ScanRunner::readTree(const std::string& filename) {
 
 /* REPORT RESULTS */
 bool ScanRunner::reportResults(const std::string& filename, time_t start, time_t end) const {
-    std::ofstream outfile(filename);
+    std::ofstream outfile(filename.c_str());
     if (!outfile) {
         _print.Printf("Unable to create specified output file: %s\n", BasePrint::P_READERROR, filename.c_str());
         FileName currFilename(filename.c_str()), documentsfile(filename.c_str());
@@ -196,7 +196,7 @@ bool ScanRunner::reportResults(const std::string& filename, time_t start, time_t
         documentsfile.setLocation(GetUserDocumentsDirectory(buffer, currFilename.getLocation(temp)).c_str());
         documentsfile.getFullPath(buffer);
         _print.Printf("Trying to create file in documents directory ...\n", BasePrint::P_STDOUT);
-        outfile.open(documentsfile.getFullPath(buffer));
+        outfile.open(documentsfile.getFullPath(buffer).c_str());
         if (!outfile) {
             _print.Printf("Unable to create output file: %s\n", BasePrint::P_READERROR, buffer.c_str());
             return false;
@@ -219,9 +219,9 @@ bool ScanRunner::reportResults(const std::string& filename, time_t start, time_t
     buffer = (_parameters.isConditional() ? "Conditional" : "Unconditional");
     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
     PrintFormat.PrintSectionLabel(outfile, "Total Cases", false);
-    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _TotalC));    
+    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _TotalC));
     PrintFormat.PrintSectionLabel(outfile, "Total Measure", false);
-    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%lf", _TotalN));    
+    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%lf", _TotalN));
     PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
 
     // write detected cuts
@@ -270,9 +270,9 @@ bool ScanRunner::reportResults(const std::string& filename, time_t start, time_t
             PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString((_Cut.at(k)->getC() - _Nodes.at(_Cut.at(k)->getID())->getDuplicates())/_Cut.at(k)->getN(), buffer));
         }
         PrintFormat.PrintSectionLabel(outfile, "Log Likelihood Ratio", true);
-        if (_parameters.isConditional()) 
+        if (_parameters.isConditional())
             printString(buffer, "%lf", _Cut.at(k)->getLogLikelihood() - _TotalC * log(_TotalC/_TotalN));
-        else 
+        else
             printString(buffer, "%lf", _Cut.at(k)->getLogLikelihood());
         PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
         PrintFormat.PrintSectionLabel(outfile, "P-value", true);
@@ -290,7 +290,7 @@ bool ScanRunner::reportResults(const std::string& filename, time_t start, time_t
     //for (size_t i=0; i < _Nodes.size(); i++)
     //    if (_Nodes.at(i)->_BrN > 0)
     //        outfile << "0 " << _Nodes.at(i)->_identifier.c_str() << " " << _Nodes.at(i)->_BrC << " " << _Nodes.at(i)->_BrN << " " << _Nodes.at(i)->_BrC/_Nodes.at(i)->_BrN << " 0 0 " << std::endl;
-    
+
     ParametersPrint(_parameters).Print(outfile);
     double nTotalTime = difftime(end, start);
     double nHours     = floor(nTotalTime/(60*60));
@@ -337,7 +337,7 @@ bool ScanRunner::runsimulations() {
     try {
         if (_parameters.getNumReplicationsRequested() == 0)
             return true;
-        
+
         _print.Printf("Doing the %d Monte Carlo simulations (new):\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
         _Rank.resize(_parameters.getCuts(), 1);
 
@@ -346,7 +346,7 @@ bool ScanRunner::runsimulations() {
             MCSimJobSource jobSource(::GetCurrentTime_HighResolution(), lclPrintDirection, sReplicationFormatString, *this);
             typedef contractor<MCSimJobSource> contractor_type;
             contractor_type theContractor(jobSource);
-            
+
             //run threads:
             boost::thread_group tg;
             boost::mutex        thread_mutex;
@@ -354,7 +354,7 @@ bool ScanRunner::runsimulations() {
                 try {
                     MCSimSuccessiveFunctor mcsf(thread_mutex, boost::shared_ptr<AbstractRandomizer>(new PoissonRandomizer(_parameters.isConditional(), _TotalC, _TotalN)), *this);
                     tg.create_thread(subcontractor<contractor_type,MCSimSuccessiveFunctor>(theContractor,mcsf));
-                } catch (std::bad_alloc &) {             
+                } catch (std::bad_alloc &) {
                     if (u == 0) throw; // if this is the first thread, re-throw exception
                     _print.Printf("Notice: Insufficient memory to create %u%s parallel simulation ... continuing analysis with %u parallel simulations.\n", BasePrint::P_NOTICE, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u);
                     break;

@@ -1,0 +1,34 @@
+#!/bin/sh
+
+binaries="/home/hostovic/prj/treescan/build.area/binaries/linux"
+treescan_src="/home/hostovic/prj/treescan/build.area/treescan"
+boost_src="/home/hostovic/prj/treescan/build.area/boost/boost_1_46_0"
+processors="-j8"
+pthread="-pthread"
+lib_target="libtreescan.linux.so"
+
+rm -f $binaries/*
+
+echo building TreeScan for 32-bit system using gcc3.3.5
+./makescript.sh $binaries/treescan_gcc3.3.5_x86_64_32bit $treescan_src $boost_src -m32 -O3 /usr/local/gcc3.3.5/bin/g++-3.3.5 $processors $pthread
+
+## echo building TreeScan shared object for 32-bit system using gcc3.3.5
+## ./makescript.so.sh $lib_target $binaries/libtreescan.gcc3.3.5_x86_64_32bit.so $treescan_src $boost_src -m32 -O3 /usr/local/gcc3.3.5/bin/g++-3.3.5 $processors $pthread
+
+echo building TreeScan for 64-bit system using gcc3.3.5
+./makescript.sh $binaries/treescan_gcc3.3.5_x86_64_64bit $treescan_src $boost_src -m64 -O3 /usr/local/gcc3.3.5/bin/g++-3.3.5 $processors $pthread
+
+## echo building TreeScan shared object for 64-bit system using gcc3.3.5
+## ./makescript.so.sh $lib_target $binaries/libtreescan.gcc3.3.5_x86_64_64bit.so $treescan_src $boost_src -m64 -O3 /usr/local/gcc3.3.5/bin/g++-3.3.5 $processors $pthread
+
+echo building TreeScan for 32-bit system using gcc3.4.4
+./makescript.sh $binaries/treescan_gcc3.4.4_x86_64_32bit $treescan_src $boost_src -m32 -O3 /usr/local/gcc3.4.4/bin/g++ $processors $pthread
+
+## echo building TreeScan shared object for 32-bit system using gcc3.4.4
+## ./makescript.so.sh $lib_target $binaries/libtreescan.gcc3.4.4_x86_64_32bit.so $treescan_src $boost_src -m32 -O3 /usr/local/gcc3.4.4/bin/g++ $processors $pthread
+
+echo building TreeScan for 64-bit system using gcc3.4.4
+./makescript.sh $binaries/treescan_gcc3.4.4_x86_64_64bit $treescan_src $boost_src -m64 -O3 /usr/local/gcc3.4.4/bin/g++ $processors $pthread
+
+## echo building TreeScan shared object for 64-bit system using gcc3.4.4
+## ./makescript.so.sh $lib_target $binaries/libtreescan.gcc3.4.4_x86_64_64bit.so $treescan_src $boost_src -m64 -O3 /usr/local/gcc3.4.4/bin/g++ $processors $pthread

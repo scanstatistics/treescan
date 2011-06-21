@@ -16,6 +16,11 @@
 #include <Windows.h>
 #endif
 
+#ifndef _WINDOWS_
+  #define stricmp strcasecmp
+  #define strnicmp strncasecmp
+#endif
+
 #ifdef _MSC_VER
   /** default string buffer size for vsnprintf call */
   #define MSC_VSNPRINTF_DEFAULT_BUFFER_SIZE 1000
@@ -35,6 +40,13 @@
 #define macro_equal(x,y,tolerance) (std::fabs(x - y) < tolerance)
 /** determines whether number x is less than number y given some tolerance */
 #define macro_less_than(x,y,tolerance) (!macro_equal(x,y,tolerance) && x < y)
+
+/** va_copy not defined on all compilers */
+#if defined (_MSC_VER) || ( defined(__GNUC__) && (__GNUC__ < 3) )
+  #define macro_va_copy(dst,src) dst = src
+#else
+  #define macro_va_copy(dst,src) va_copy(dst,src);
+#endif
 
 #include "BasePrint.h"
 //*****************************************************************************

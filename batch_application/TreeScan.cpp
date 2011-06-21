@@ -18,7 +18,7 @@ namespace po = boost::program_options;
 // A helper function to simplify the main part.
 template<class T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
-    std::copy(v.begin(), v.end(), std::ostream_iterator<T>(cout, " ")); 
+    std::copy(v.begin(), v.end(), std::ostream_iterator<T>(std::cout, " "));
     return os;
 }
 
@@ -32,7 +32,7 @@ void usage_message(std::string program, po::options_description& desc, PrintScre
 int main(int argc, char* argv[]) {
     PrintScreen console(false);
     Parameters parameters;
-    int replicas, cuts;
+    int replicas, cuts, limit_threads;
     bool duplicates = false, conditional=false;
     po::variables_map vm;
 
@@ -47,6 +47,7 @@ int main(int argc, char* argv[]) {
                              ("count-file,f", po::value<std::string>(), "Input file identifer counts and population.")
                              ("duplicates,d", po::bool_switch(&duplicates), "Expect duplicates in count file.")
                              ("output-file,p", po::value<std::string>(), "Output filename to print results.")
+                             ("thread-limit,g", po::value<int>(&limit_threads)->default_value(0), "Limit threads in simulation.")
                              ("conditional,n", po::bool_switch(&conditional), "Perform conditional analysis.");
 
         /* parse program options */
@@ -65,6 +66,7 @@ int main(int argc, char* argv[]) {
         if (!vm.count("tree-file"))  {console.Printf("Missing tree-file parameter.\n", BasePrint::P_STDOUT); return 1;}
         if (!vm.count("count-file"))  {console.Printf("Missing count-file parameter.\n", BasePrint::P_STDOUT); return 1;}
         if (!vm.count("output-file"))  {console.Printf("Missing output-file parameter.\n", BasePrint::P_STDOUT); return 1;}
+        parameters.setNumProcesses(static_cast<unsigned int>(limit_threads));
     } catch (std::exception& e) {
         std::cerr << e.what() << std::endl;
         return 1;
