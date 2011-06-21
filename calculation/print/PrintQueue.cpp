@@ -57,7 +57,7 @@ PrintQueue::~PrintQueue()
 {
    try
    {
-      SetThreshold(gpThresholdPolicy->GetRecommendedThresholdValue_OnDestruction(glThreshold, gOutputLines.size()));
+      SetThreshold(gpThresholdPolicy->GetRecommendedThresholdValue_OnDestruction(glThreshold, static_cast<long>(gOutputLines.size())));
    }
    catch (...)
    {
@@ -140,7 +140,7 @@ void PrintQueue::PrintWarningQualifiedLineToTarget(BasePrint::PrintType ePrintTy
 //Set the threshold to the value recommended by the threshold policy.
 void PrintQueue::UpdateThreshold()
 {
-   SetThreshold(gpThresholdPolicy->GetRecommendedThresholdValue(glThreshold, gOutputLines.size()));
+   SetThreshold(gpThresholdPolicy->GetRecommendedThresholdValue(glThreshold, static_cast<long>(gOutputLines.size())));
 }
 
 
@@ -186,7 +186,7 @@ long TimedReleaseThresholdPolicy::GetRecommendedThresholdValue_OnDestruction(lon
       unsigned u((ulTimeDifference + 500) / 1000);
       //sleep...
       #if defined(_WINDOWS_)
-      _sleep(u);
+      Sleep(u);
       #else
       sleep(u);
       #endif

@@ -46,8 +46,8 @@ protected:
     int             PoissonGenerator(double lambda);
     double          RandomUniform(bool classic=true);
 
-    void            addSimC(int id, int c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimDataContainer_t& simData);
-    void            addSimCAnforlust(int id, int c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimDataContainer_t& simData);
+    void            addSimC(size_t id, int c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimDataContainer_t& simData);
+    void            addSimCAnforlust(size_t id, int c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimDataContainer_t& simData);
 
 public:
     PoissonRandomizer(bool conditional, int TotalC, double TotalN, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);

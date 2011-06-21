@@ -71,7 +71,7 @@ int PoissonRandomizer::RandomizeData(unsigned int iSimulation,
  Adds simulated cases up the tree from branhes to all its parents, and so on,
  for a node without anforlust.
  */
-void PoissonRandomizer::addSimC(int id, int c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimDataContainer_t& simData) {
+void PoissonRandomizer::addSimC(size_t id, int c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimDataContainer_t& simData) {
     simData.at(id).second += c;  //treeNodes.at(id)->_SimBrC += c;
     for(size_t j=0; j < treeNodes.at(id)->getParent().size(); j++) addSimC(treeNodes.at(id)->getParent()[j], c, treeNodes, simData);
 }
@@ -83,7 +83,7 @@ void PoissonRandomizer::addSimC(int id, int c, const ScanRunner::NodeStructureCo
  nodes that should be updated with additional simlated cases from the node
  with internal cases. To do sometime in the future.
  */
-void PoissonRandomizer::addSimCAnforlust(int id, int c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimDataContainer_t& simData) {
+void PoissonRandomizer::addSimCAnforlust(size_t id, int c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimDataContainer_t& simData) {
     simData.at(id).second += c;  //treeNodes.at(id)->_SimBrC += c;
     for(size_t j=0; j < treeNodes.at(id)->getParent().size();j++) addSimCAnforlust(treeNodes.at(id)->getParent()[j], c, treeNodes, simData);
 }
