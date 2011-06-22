@@ -90,7 +90,9 @@ bool ScanRunner::readCounts(const std::string& filename) {
 
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
     std::string line;
-    unsigned int record_number = 0;
+    unsigned int record_number=0;
+    int count=0, duplicates=0;
+    double population=0;
     while (getlinePortable(in, line)) {
         ++record_number;
         boost::tokenizer<boost::escaped_list_separator<char> > csv(line);
@@ -98,30 +100,44 @@ bool ScanRunner::readCounts(const std::string& filename) {
         std::vector<std::string> values;
         for (;itr != csv.end(); ++itr) {std::string identifier = (*itr); values.push_back(trimString(identifier));}
         if (values.size() == 0) continue; // skip records with no data
-        if (values.size() < 3) {
+        if (values.size() != (_parameters.isDuplicates() ? 4 : 3)) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in count file is missing data. Expecting <indentifier>, <count>, <population> but found only %ld value.\n", BasePrint::P_READERROR, record_number, values.size());
+            _print.Printf("Error: Record %ld in count file %s. Expecting <indentifier>, <count>,%s <population> but found %ld value%s.\n", 
+                          BasePrint::P_READERROR, record_number, (static_cast<int>(values.size()) > (_parameters.isDuplicates() ? 4 : 3)) ? "has extra data" : "is missing data",
+                          (_parameters.isDuplicates() ? " <duplicates>," : ""), values.size(), (values.size() == 1 ? "" : "s"));
+            continue;
         }
         ScanRunner::Index_t index = getNodeIndex(values.at(0));
         if (!index.first) {
             readSuccess = false;
             _print.Printf("Error: Record %ld in count file references unknown node (%s).\n", BasePrint::P_READERROR, record_number, values.at(0).c_str());
+            continue;
         }
         NodeStructure * node = _Nodes.at(index.second);
-        if  (!string_to_type<int>(values.at(1).c_str(), node->refIntC()) || node->getIntC() < 0) {
+        if  (!string_to_type<int>(values.at(1).c_str(), count) || count < 0) {
             readSuccess = false;
             _print.Printf("Error: Record %ld in count file references negative number of cases in node '%s'.\n", BasePrint::P_READERROR, record_number, node->getIdentifier().c_str());
+            continue;
         }
         if (_parameters.isDuplicates()) {
-            if  (!string_to_type<int>(values.at(2).c_str(), node->refDuplicates()) || node->getDuplicates() < 0) {
+            if  (!string_to_type<int>(values.at(2).c_str(), duplicates) || duplicates < 0) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in count file references negative number of duplicates in node '%s'.\n", BasePrint::P_READERROR, record_number, node->getIdentifier().c_str());
+                continue;
+            } else if (duplicates > count) {
+                readSuccess = false;
+                _print.Printf("Error: Record %ld in count file references more duplicates than count in node '%s'.\n", BasePrint::P_READERROR, record_number, node->getIdentifier().c_str());
+                continue;
             }
         }
-        if  (!string_to_type<double>(values.at(_parameters.isDuplicates() ? 3 : 2).c_str(), node->refIntN()) || node->getIntN() < 0) {
+        if  (!string_to_type<double>(values.at(_parameters.isDuplicates() ? 3 : 2).c_str(), population) || population < 0) {
             readSuccess = false;
             _print.Printf("Error: Record %ld in count file references negative population in node '%s'.\n", BasePrint::P_READERROR, record_number, node->getIdentifier().c_str());
+            continue;
         }
+        node->refIntC() += count;
+        node->refDuplicates() += duplicates;
+        node->refIntN() += population;
     }
 
     return readSuccess;
@@ -338,7 +354,7 @@ bool ScanRunner::runsimulations() {
         if (_parameters.getNumReplicationsRequested() == 0)
             return true;
 
-        _print.Printf("Doing the %d Monte Carlo simulations (new):\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
+        _print.Printf("Doing the %d Monte Carlo simulations:\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
         _Rank.resize(_parameters.getCuts(), 1);
 
         {
