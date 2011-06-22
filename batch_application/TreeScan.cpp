@@ -15,6 +15,17 @@
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
+/** Returns whether binary is 64-bit. */
+bool is64Bit() { return sizeof(int *) == 8; }
+
+/** Prints statement indicating program version and brief declaration of usage agreement. */
+void printProgramStatement(PrintScreen& console) {
+    console.Printf("You are running TreeScan v%s.%s.%s %s (%s).\n\n"
+                   ".\nIt may be used free of charge as long as proper "
+                   "citations are given\nto both the SaTScan software and the underlying "
+                   "statistical methodology.\n\n", BasePrint::P_STDOUT, VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE, VERSION_PHASE, is64Bit() ? " (64-bit)" : "");
+}
+
 // A helper function to simplify the main part.
 template<class T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
@@ -86,6 +97,10 @@ int main(int argc, char* argv[]) {
     }
 
     try {
+        console.Printf("You are running TreeScan v%s.%s.%s %s%s.\n\nIt may be used free of charge as long as proper "
+                       "citations are given\nto both the TreeScan software and the underlying statistical methodology.\n\n", 
+                       BasePrint::P_STDOUT, VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE, VERSION_PHASE, is64Bit() ? " (64-bit)" : "");
+
         parameters.setTreeFileName(vm["tree-file"].as<std::string>().c_str());
         parameters.setCountFileName(vm["count-file"].as<std::string>().c_str());
         parameters.setOutputFileName(vm["output-file"].as<std::string>().c_str());
