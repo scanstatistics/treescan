@@ -171,6 +171,9 @@
     <ClCompile Include="..\calculation\output\DataFileWriter.cpp">
       <Filter>Source Files\calculation\output</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\runner\DataSource.cpp">
+      <Filter>Source Files\calculation\runner</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\runner\ScanRunner.h">
@@ -244,6 +247,9 @@
     </ClInclude>
     <ClInclude Include="..\calculation\output\DataFileWriter.h">
       <Filter>Header Files\calculation\output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\runner\DataSource.h">
+      <Filter>Header Files\calculation\runner</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

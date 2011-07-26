@@ -11,6 +11,7 @@
 #include "Randomization.h"
 #include "ParametersPrint.h"
 #include "DataFileWriter.h"
+#include "DataSource.h"
 
 /*
  Adds cases and measure through the tree from each node through the tree to
@@ -78,61 +79,46 @@ ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) cons
  */
 bool ScanRunner::readCounts(const std::string& filename) {
     _print.Printf("Reading count file ...\n", BasePrint::P_STDOUT);
-
     bool readSuccess=true;
-    std::ifstream in;
-    in.open(filename.c_str());
-
-    if (!in) {
-        _print.Printf("Error: Unable to open count file: %s.\n", BasePrint::P_READERROR, filename.c_str());
-        return false;
-    }
+    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
 
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
-    std::string line;
-    unsigned int record_number=0;
     int count=0, duplicates=0;
     double population=0;
-    while (getlinePortable(in, line)) {
-        ++record_number;
-        boost::tokenizer<boost::escaped_list_separator<char> > csv(line);
-        boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=csv.begin();
-        std::vector<std::string> values;
-        for (;itr != csv.end(); ++itr) {std::string identifier = (*itr); values.push_back(trimString(identifier));}
-        if (values.size() == 0) continue; // skip records with no data
-        if (values.size() != (_parameters.isDuplicates() ? 4 : 3)) {
+    while (dataSource->readRecord()) {
+        if (dataSource->getNumValues() != (_parameters.isDuplicates() ? 4 : 3)) {
             readSuccess = false;
             _print.Printf("Error: Record %ld in count file %s. Expecting <indentifier>, <count>,%s <population> but found %ld value%s.\n", 
-                          BasePrint::P_READERROR, record_number, (static_cast<int>(values.size()) > (_parameters.isDuplicates() ? 4 : 3)) ? "has extra data" : "is missing data",
-                          (_parameters.isDuplicates() ? " <duplicates>," : ""), values.size(), (values.size() == 1 ? "" : "s"));
+                          BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), (static_cast<int>(dataSource->getNumValues()) > (_parameters.isDuplicates() ? 4 : 3)) ? "has extra data" : "is missing data",
+                          (_parameters.isDuplicates() ? " <duplicates>," : ""), dataSource->getNumValues(), (dataSource->getNumValues() == 1 ? "" : "s"));
             continue;
         }
-        ScanRunner::Index_t index = getNodeIndex(values.at(0));
+        ScanRunner::Index_t index = getNodeIndex(dataSource->getValueAt(0));
         if (!index.first) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in count file references unknown node (%s).\n", BasePrint::P_READERROR, record_number, values.at(0).c_str());
+            _print.Printf("Error: Record %ld in count file references unknown node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(0).c_str());
             continue;
         }
         NodeStructure * node = _Nodes.at(index.second);
-        if  (!string_to_type<int>(values.at(1).c_str(), count) || count < 0) {
+        if  (!string_to_type<int>(dataSource->getValueAt(1).c_str(), count) || count < 0) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in count file references negative number of cases in node '%s'.\n", BasePrint::P_READERROR, record_number, node->getIdentifier().c_str());
+            _print.Printf("Error: Record %ld in count file references negative number of cases in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
             continue;
         }
         if (_parameters.isDuplicates()) {
-            if  (!string_to_type<int>(values.at(2).c_str(), duplicates) || duplicates < 0) {
+            if  (!string_to_type<int>(dataSource->getValueAt(2).c_str(), duplicates) || duplicates < 0) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references negative number of duplicates in node '%s'.\n", BasePrint::P_READERROR, record_number, node->getIdentifier().c_str());
+                _print.Printf("Error: Record %ld in count file references negative number of duplicates in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
             } else if (duplicates > count) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references more duplicates than count in node '%s'.\n", BasePrint::P_READERROR, record_number, node->getIdentifier().c_str());
+                _print.Printf("Error: Record %ld in count file references more duplicates than count in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
             }
         }
-        if  (!string_to_type<double>(values.at(_parameters.isDuplicates() ? 3 : 2).c_str(), population) || population < 0) {
+        if  (!string_to_type<double>(dataSource->getValueAt(_parameters.isDuplicates() ? 3 : 2).c_str(), population) || population < 0) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in count file references negative population in node '%s'.\n", BasePrint::P_READERROR, record_number, node->getIdentifier().c_str());
+            _print.Printf("Error: Record %ld in count file references negative population in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
             continue;
         }
         node->refIntC() += count;
@@ -148,50 +134,32 @@ bool ScanRunner::readCounts(const std::string& filename) {
  */
 bool ScanRunner::readTree(const std::string& filename) {
     _print.Printf("Reading tree file ...\n", BasePrint::P_STDOUT);
-
     bool readSuccess=true;
-    std::ifstream in;
-    in.open(filename.c_str());
-
-    if (!in) {
-        _print.Printf("Error: Unable to open tree file: %s.\n", BasePrint::P_READERROR, filename.c_str());
-        return false;
-    }
+    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
 
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
-    std::string line;
-    while (getlinePortable(in, line)) {
-        boost::tokenizer<boost::escaped_list_separator<char> > csv(line);
-        boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=csv.begin();
-        if (itr != csv.end()) {
-            std::string identifier = (*itr);
-            std::auto_ptr<NodeStructure> node(new NodeStructure(trimString(identifier)));
-            NodeStructureContainer_t::iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
-            if (itr == _Nodes.end() || (*itr)->getIdentifier() != node.get()->getIdentifier())
-                _Nodes.insert(itr, node.release());
-        }
+    while (dataSource->readRecord()) {
+        std::string identifier = dataSource->getValueAt(0);
+        std::auto_ptr<NodeStructure> node(new NodeStructure(trimString(identifier)));
+        NodeStructureContainer_t::iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
+        if (itr == _Nodes.end() || (*itr)->getIdentifier() != node.get()->getIdentifier())
+            _Nodes.insert(itr, node.release());
     }
 
     //reset node identifiers to ordinal position in vector -- this is to keep the original algorithm intact since it uses vector indexes heavily
     for (size_t i=0; i < _Nodes.size(); ++i) _Nodes.at(i)->setID(i);
 
     // now set parent nodes
-    in.clear();
-    in.seekg(0L, std::ios::beg);
-    unsigned int record_number = 0;
-    while (getlinePortable(in, line)) {
-        ++record_number;
-        boost::tokenizer<boost::escaped_list_separator<char> > csv(line);
-        boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=csv.begin();
+    dataSource->gotoFirstRecord();
+    while (dataSource->readRecord()) {
         NodeStructure * node = 0;
         // assign parent nodes to node
-        for (;itr != csv.end(); ++itr) {
-            std::string identifier = (*itr);
-            trimString(identifier);
+        for (size_t t=0; t < dataSource->getNumValues(); ++t) {
+            std::string identifier = dataSource->getValueAt(t);
             ScanRunner::Index_t index = getNodeIndex(identifier);
             if (!index.first) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in tree file has unknown parent node (%s).\n", BasePrint::P_READERROR, record_number, identifier.c_str());
+                _print.Printf("Error: Record %ld in tree file has unknown parent node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), identifier.c_str());
             } else {
                 if (node) node->refParent().push_back(_Nodes.at(index.second)->getID());
                 else node = _Nodes.at(index.second);

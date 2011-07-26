@@ -147,13 +147,15 @@ const char * CSVDataFileWriter::CSV_FILE_EXT = ".csv";
 
 /** constructor */
 CSVDataFileWriter::CSVDataFileWriter(const Parameters& parameters, const ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension) {
-  std::string  buffer, ext(sFileExtension);
+  std::string  buffer;
   FileName     _fileName;
 
   try {
-    ext += CSV_FILE_EXT;
     _fileName.setFullPath(parameters.getOutputFileName().c_str());
-    _fileName.setExtension(ext.c_str());
+    buffer = _fileName.getFileName();
+    buffer += sFileExtension;
+    _fileName.setFileName(buffer.c_str());
+    _fileName.setExtension(CSV_FILE_EXT);
 
     _outfile.open(_fileName.getFullPath(buffer).c_str());
     if (!_outfile.is_open())
