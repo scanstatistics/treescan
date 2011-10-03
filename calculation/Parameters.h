@@ -13,7 +13,6 @@ class Parameters {
   private:
     unsigned int                        _numRequestedParallelProcesses;
     unsigned int                        _replications;
-    unsigned int                        _cuts;
     std::string                         _parametersSourceFileName;
     std::string                         _treeFileName;
     std::string                         _countFileName;
@@ -42,7 +41,6 @@ class Parameters {
 
     const std::string                 & getCountFileName() const {return _countFileName;}
     const CreationVersion             & getCreationVersion() const {return _creationVersion;}
-    unsigned int                        getCuts() const {return _cuts;}
     const std::string                 & getTreeFileName() const {return _treeFileName;}
     bool                                isConditional() const {return _conditional;}
     bool                                isDuplicates() const {return _duplicates;}
@@ -57,7 +55,6 @@ class Parameters {
     const std::string                 & getSourceFileName() const {return _parametersSourceFileName;}
     void                                setAsDefaulted();
     void                                setCountFileName(const char * sCountFileName, bool bCorrectForRelativePath=false);
-    void                                setCuts(unsigned int cuts) {_cuts = cuts;}
     void                                setTreeFileName(const char * sTreeFileName, bool bCorrectForRelativePath=false);
     void                                setConditional(bool b) {_conditional = b;}
     void                                setDuplicates(bool b) {_duplicates = b;}

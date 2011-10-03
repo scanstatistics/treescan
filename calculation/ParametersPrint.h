@@ -14,21 +14,22 @@ class DataSetHandler; /* forward class declaration */
 class ParametersPrint {
   private:
     typedef std::vector< std::pair<std::string, std::string> > SettingContainer_t;
-    const Parameters &  _parameters;
+    const Parameters & _parameters;
 
-    void                PrintInferenceParameters(std::ofstream& out) const;
-    void                PrintInputParameters(std::ofstream& out) const;
-    void                PrintOutputParameters(std::ofstream& out) const;
-    void                PrintRunOptionsParameters(std::ofstream& out) const;
-    void                PrintSystemParameters(std::ofstream& out) const;
+    SettingContainer_t & getInferenceParameters(SettingContainer_t & settings) const;
+    SettingContainer_t & getInputParameters(SettingContainer_t & settings) const;
+    SettingContainer_t & getOutputParameters(SettingContainer_t & settings) const;
+    SettingContainer_t & getRunOptionsParameters(SettingContainer_t & settings) const;
+    SettingContainer_t & getSystemParameters(SettingContainer_t & settings) const;
 
-    void                WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, std::ofstream& out) const;
+    void WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, std::ofstream& out) const;
+    void WriteSettingsContainerHTML(const SettingContainer_t& settings, const std::string& section, std::ofstream& out) const;
 
   public:
-    ParametersPrint(const Parameters& Parameters);
-    ~ParametersPrint();
+    ParametersPrint(const Parameters& Parameters) : _parameters(Parameters) {}
 
-    void                Print(std::ofstream& out) const;
+    void Print(std::ofstream& out) const;
+    void PrintHTML(std::ofstream& out) const;
 };
 //******************************************************************************
 #endif

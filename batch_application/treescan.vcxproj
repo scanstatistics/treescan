@@ -170,6 +170,7 @@
     <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\thread\src\win32\thread.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\Loglikelihood.cpp" />
     <ClCompile Include="..\calculation\output\DataFileWriter.cpp" />
+    <ClCompile Include="..\calculation\output\ResultsFileWriter.cpp" />
     <ClCompile Include="..\calculation\Parameters.cpp" />
     <ClCompile Include="..\calculation\ParametersPrint.cpp" />
     <ClCompile Include="..\calculation\print\BasePrint.cpp" />
@@ -195,6 +196,7 @@
   <ItemGroup>
     <ClInclude Include="..\calculation\loglikelihood\Loglikelihood.h" />
     <ClInclude Include="..\calculation\output\DataFileWriter.h" />
+    <ClInclude Include="..\calculation\output\ResultsFileWriter.h" />
     <ClInclude Include="..\calculation\Parameters.h" />
     <ClInclude Include="..\calculation\ParametersPrint.h" />
     <ClInclude Include="..\calculation\print\BasePrint.h" />

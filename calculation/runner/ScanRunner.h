@@ -126,7 +126,7 @@ private:
     Index_t                     getNodeIndex(const std::string& identifier) const;
     bool                        readCounts(const std::string& filename);
     bool                        readTree(const std::string& filename);
-    bool                        reportResults(const std::string& filename, time_t start, time_t end) const;
+    bool                        reportResults(const std::string& filename, bool htmlPrint, time_t start, time_t end) const;
     bool                        runsimulations();
     bool                        scanTree();
     bool                        setupTree();
@@ -138,12 +138,13 @@ public:
     const NodeStructureContainer_t   & getNodes() const {return _Nodes;}
     Loglikelihood_t                    getLoglikelihood() const;
     const Parameters                 & getParameters() const {return _parameters;}
+    BasePrint                        & getPrint() {return _print;}
     const RankContainer_t            & getRanks() const {return _Rank;}
     RankContainer_t                  & getRanks() {return _Rank;}
     SimulationVariables              & getSimulationVariables() {return _simVars;}
     int                                getTotalC() const {return _TotalC;}
     double                             getTotalN() const {return _TotalN;}
-    bool                               run(const std::string& treefile, const std::string& countfile, const std::string& outputfile);
+    bool                               run(const std::string& treefile, const std::string& countfile, const std::string& outputfile, bool htmlPrint);
 };
 //***************************************************************************
 #endif

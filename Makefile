@@ -38,7 +38,9 @@ M_LFLAGS      := $(COMPILATION) -Wl,-dynamic -lstdc++ -lm
 M_DLFLAGS     := -shared $(COMPILATION) -install_name $(MAC_LIBRARY)
 
 SRC         := $(RUNNER)/ScanRunner.cpp \
+               $(RUNNER)/DataSource.cpp \
                $(OUTPUT)/DataFileWriter.cpp \
+               $(OUTPUT)/ResultsFileWriter.cpp \
                $(PRINT)/BasePrint.cpp \
                $(PRINT)/PrintScreen.cpp \
                $(PRINT)/PrintQueue.cpp \

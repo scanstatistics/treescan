@@ -12,6 +12,7 @@
 #include "ParametersPrint.h"
 #include "DataFileWriter.h"
 #include "DataSource.h"
+#include "ResultsFileWriter.h"
 
 /*
  Adds cases and measure through the tree from each node through the tree to
@@ -171,133 +172,23 @@ bool ScanRunner::readTree(const std::string& filename) {
 }
 
 /* REPORT RESULTS */
-bool ScanRunner::reportResults(const std::string& filename, time_t start, time_t end) const {
-    std::ofstream outfile(filename.c_str());
-    if (!outfile) {
-        _print.Printf("Unable to create specified output file: %s\n", BasePrint::P_READERROR, filename.c_str());
-        FileName currFilename(filename.c_str()), documentsfile(filename.c_str());
-        std::string buffer, temp;
-        documentsfile.setLocation(GetUserDocumentsDirectory(buffer, currFilename.getLocation(temp)).c_str());
-        documentsfile.getFullPath(buffer);
-        _print.Printf("Trying to create file in documents directory ...\n", BasePrint::P_STDOUT);
-        outfile.open(documentsfile.getFullPath(buffer).c_str());
-        if (!outfile) {
-            _print.Printf("Unable to create output file: %s\n", BasePrint::P_READERROR, buffer.c_str());
-            return false;
-        }
-        const_cast<Parameters&>(_parameters).setOutputFileName(buffer.c_str());
-        _print.Printf("Creating the output file in documents directory: %s\n", BasePrint::P_STDOUT, buffer.c_str());
-    } else
-        _print.Printf("Creating the output file: %s\n", BasePrint::P_STDOUT, filename.c_str());
-
-    AsciiPrintFormat PrintFormat;
-
-    PrintFormat.PrintVersionHeader(outfile);
-    std::string buffer = ctime(&start);
-    outfile << std::endl << "Program run on: " << buffer;
-
-    PrintFormat.SetMarginsAsSummarySection();
-    PrintFormat.PrintSectionSeparatorString(outfile);
-    outfile << std::endl << "SUMMARY OF DATA" << std::endl << std::endl;
-    PrintFormat.PrintSectionLabel(outfile, "Analysis", false);
-    buffer = (_parameters.isConditional() ? "Conditional" : "Unconditional");
-    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-    PrintFormat.PrintSectionLabel(outfile, "Total Cases", false);
-    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _TotalC));
-    PrintFormat.PrintSectionLabel(outfile, "Total Measure", false);
-    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%lf", _TotalN));
-    PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
-
-    // write detected cuts
-    //if (_parameters.isDuplicates()) outfile << "#CasesWithoutDuplicates ";
-    //outfile << "#Exp O/E ";
-    //if (_parameters.isDuplicates()) outfile << "O/EWithoutDuplicates ";
-    //outfile << "LLR pvalue" << std::endl;
-
-    if (_Cut.at(0)->getC() == 0) {
-        outfile << "No clusters were found." << std::endl;
-        outfile.close();
-        return true;
-    }
-
-    outfile << "Most Likely Cuts"<< std::endl << std::endl;
-
-    std::string format, replicas;
-    CutsRecordWriter  cutsWriter(*this);
-
-    printString(replicas, "%u", _parameters.getNumReplicationsRequested());
-    printString(format, "%%.%dlf", replicas.size());
+bool ScanRunner::reportResults(const std::string& filename, bool htmlPrint, time_t start, time_t end) const {
+    ResultsFileWriter resultsWriter(*this);
+    bool status = htmlPrint ? resultsWriter.writeHTML(filename, start, end) : resultsWriter.writeASCII(filename, start, end);
 
     unsigned int k=0;
-    outfile.setf(std::ios::fixed);
-    outfile.precision(5);
-    while( k < _parameters.getCuts() && _Cut.at(k)->getC() > 0 && _Rank.at(k) < _parameters.getNumReplicationsRequested() + 1) {
-        PrintFormat.SetMarginsAsClusterSection( k + 1);
-        outfile << k + 1 << ")";
-        PrintFormat.PrintSectionLabel(outfile, "Node Identifier", false);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, _Nodes.at(_Cut.at(k)->getID())->getIdentifier());
-
-        PrintFormat.PrintSectionLabel(outfile, "Number of Cases", true);
-        printString(buffer, "%ld", _Cut.at(k)->getC());
-        PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-        if (_parameters.isDuplicates()) {
-            PrintFormat.PrintSectionLabel(outfile, "Cases (Duplicates Removed)", true);
-            printString(buffer, "%ld", _Cut.at(k)->getC() - _Nodes.at(_Cut.at(k)->getID())->getDuplicates());
-            PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-        }
-        PrintFormat.PrintSectionLabel(outfile, "Expected", true);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_Cut.at(k)->getN(), buffer));
-        PrintFormat.PrintSectionLabel(outfile, "Observed/Expected", true);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_Cut.at(k)->getC()/_Cut.at(k)->getN(), buffer));
-        if (_parameters.isDuplicates()) {
-            PrintFormat.PrintSectionLabel(outfile, "O/E (Duplicates Removed)", true);
-            PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString((_Cut.at(k)->getC() - _Nodes.at(_Cut.at(k)->getID())->getDuplicates())/_Cut.at(k)->getN(), buffer));
-        }
-        PrintFormat.PrintSectionLabel(outfile, "Log Likelihood Ratio", true);
-        if (_parameters.isConditional())
-            printString(buffer, "%lf", _Cut.at(k)->getLogLikelihood() - _TotalC * log(_TotalC/_TotalN));
-        else
-            printString(buffer, "%lf", _Cut.at(k)->getLogLikelihood());
-        PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-        PrintFormat.PrintSectionLabel(outfile, "P-value", true);
-        printString(buffer, format.c_str(), (double)_Rank.at(k) /(_parameters.getNumReplicationsRequested() + 1));
-        PrintFormat.PrintAlignedMarginsDataString(outfile, buffer, 2);
-
+    CutsRecordWriter cutsWriter(*this);
+    while(status && k < getCuts().size() && getCuts().at(k)->getC() > 0 && getRanks().at(k) < _parameters.getNumReplicationsRequested() + 1) {
         cutsWriter.write(k);
         k++;
     }
-
-    //outfile << std::endl << std::endl;
-    //outfile << "Information About Each Node" << std::endl;
-    //outfile << "ID Obs Exp O/E" << std::endl;
-    // outfile.width(10);
-    //for (size_t i=0; i < _Nodes.size(); i++)
-    //    if (_Nodes.at(i)->_BrN > 0)
-    //        outfile << "0 " << _Nodes.at(i)->_identifier.c_str() << " " << _Nodes.at(i)->_BrC << " " << _Nodes.at(i)->_BrN << " " << _Nodes.at(i)->_BrC/_Nodes.at(i)->_BrN << " 0 0 " << std::endl;
-
-    ParametersPrint(_parameters).Print(outfile);
-    double nTotalTime = difftime(end, start);
-    double nHours     = floor(nTotalTime/(60*60));
-    double nMinutes   = floor((nTotalTime - nHours*60*60)/60);
-    double nSeconds   = nTotalTime - (nHours*60*60) - (nMinutes*60);
-    outfile << "Program completed  : " << ctime(&end);
-    const char * szHours = (0 < nHours && nHours < 1.5 ? "hour" : "hours");
-    const char * szMinutes = (0 < nMinutes && nMinutes < 1.5 ? "minute" : "minutes");
-    const char * szSeconds = (0.5 <= nSeconds && nSeconds < 1.5 ? "second" : "seconds");
-    if (nHours > 0) printString(buffer, "Total Running Time : %.0f %s %.0f %s %.0f %s", nHours, szHours, nMinutes, szMinutes, nSeconds, szSeconds);
-    else if (nMinutes > 0) printString(buffer, "Total Running Time : %.0f %s %.0f %s", nMinutes, szMinutes, nSeconds, szSeconds);
-    else printString(buffer, "Total Running Time : %.0f %s",nSeconds, szSeconds);
-    outfile << buffer << std::endl;
-    if (_parameters.getNumParallelProcessesToExecute() > 1) outfile << "Processor Usage    : " << _parameters.getNumParallelProcessesToExecute() << " processors";
-
-    outfile.close();
-    return true;
+    return status;
 }
 
 /*
  Run Scan.
  */
-bool ScanRunner::run(const std::string& treefile, const std::string& countfile, const std::string& outputfile) {
+bool ScanRunner::run(const std::string& treefile, const std::string& countfile, const std::string& outputfile, bool htmlPrint) {
     time_t gStartTime, gEndTime;
     time(&gStartTime); //get start time
 
@@ -308,7 +199,7 @@ bool ScanRunner::run(const std::string& treefile, const std::string& countfile, 
     if (!runsimulations()) return false;
 
     time(&gEndTime); //get end time
-    if (!reportResults(outputfile, gStartTime, gEndTime)) return false;
+    if (!reportResults(outputfile, htmlPrint, gStartTime, gEndTime)) return false;
 
     return true;
 }
@@ -323,7 +214,7 @@ bool ScanRunner::runsimulations() {
             return true;
 
         _print.Printf("Doing the %d Monte Carlo simulations:\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
-        _Rank.resize(_parameters.getCuts(), 1);
+        _Rank.resize(_Cut.size(), 1);
 
         {
             PrintQueue lclPrintDirection(_print, false);
@@ -375,7 +266,8 @@ bool ScanRunner::scanTree() {
     double LogLikelihoodRatio=0;
     ScanRunner::Loglikelihood_t calcLogLikelihood = ScanRunner::getLoglikelihood();
 
-    for(unsigned int k=0; k < _parameters.getCuts(); k++) _Cut.push_back(new CutStructure());
+    unsigned int cuts = _Nodes.size(); // TODO: correct???
+    for(unsigned int k=0; k < cuts; k++) _Cut.push_back(new CutStructure());
 
     for (size_t i=0; i < _Nodes.size(); i++) {
         if (_Nodes.at(i)->getBrC() > 1) {
@@ -386,9 +278,9 @@ bool ScanRunner::scanTree() {
             }
 
             unsigned int k = 0;
-            while(loglikelihood < _Cut.at(k)->getLogLikelihood() && k < _parameters.getCuts()) k++;
-            if (k < _parameters.getCuts()) {
-                for (unsigned int m = _parameters.getCuts() - 1; m > k ; m--) {
+            while(loglikelihood < _Cut.at(k)->getLogLikelihood() && k < cuts) k++;
+            if (k < cuts) {
+                for (unsigned int m = cuts - 1; m > k ; m--) {
                     _Cut.at(m)->setLogLikelihood(_Cut.at(m-1)->getLogLikelihood());
                     _Cut.at(m)->setID(_Cut.at(m-1)->getID());
                     _Cut.at(m)->setC(_Cut.at(m-1)->getC());

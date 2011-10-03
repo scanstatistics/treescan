@@ -10,7 +10,6 @@ const int Parameters::giNumParameters = 10;
 
 bool  Parameters::operator==(const Parameters& rhs) const {
   if (_replications                   != rhs._replications) return false;
-  if (_cuts                           != rhs._cuts) return false;
   if (_treeFileName                   != rhs._treeFileName) return false;
   if (_countFileName                  != rhs._countFileName) return false;
   if (_outputFileName                 != rhs._outputFileName) return false;
@@ -61,7 +60,6 @@ void Parameters::assignMissingPath(std::string & sInputFilename, bool bCheckWrit
 /** Copies all class variables from the given Parameters object (rhs) into this one */
 void Parameters::copy(const Parameters &rhs) {
   _replications                   = rhs._replications;
-  _cuts                           = rhs._cuts;
   _treeFileName                   = rhs._treeFileName;
   _countFileName                  = rhs._countFileName;
   _outputFileName                 = rhs._outputFileName;
@@ -138,7 +136,6 @@ void Parameters::setAsDefaulted() {
   _treeFileName                   = "";
   _outputFileName                 = "";
   _replications                   = 999;
-  _cuts                           = 2000;
   _creationVersion.iMajor         = atoi(VERSION_MAJOR);
   _creationVersion.iMinor         = atoi(VERSION_MINOR);
   _creationVersion.iRelease       = atoi(VERSION_RELEASE);

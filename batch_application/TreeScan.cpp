@@ -3,7 +3,7 @@
 //                           TreeScan C++ code
 //
 //                      Written by: Martin Kulldorff
-//                  January, 2004; revised September 2007
+//                  January, 2004; revised September 2007; revised September 2011
 //
 //------------------------------------------------------------------------------
 #include <iostream>
@@ -49,8 +49,8 @@ void usage_message(std::string program, po::options_description& required, po::o
 int main(int argc, char* argv[]) {
     PrintScreen console(false);
     Parameters parameters;
-    int replicas, cuts, limit_threads;
-    bool duplicates = false, conditional=false;
+    int replicas, limit_threads;
+    bool duplicates = false, conditional=false, htmlPrint=false;
     po::variables_map vm;
 
     try {
@@ -65,10 +65,10 @@ int main(int argc, char* argv[]) {
         optional.add_options()("help,h", "Help")
                               ("version,v", "Program version")
                               ("replications,r", po::value<int>(&replicas)->default_value(99999), "Number of Monte Carlo replicatons.")
-                              ("cuts,s", po::value<int>(&cuts)->default_value(2000), "Number of most likely cuts that are saved.")
                               ("duplicates,d", po::bool_switch(&duplicates), "Expect duplicates in count file.")
                               ("limit-threads,l", po::value<int>(&limit_threads)->default_value(0), "Limit threads in simulation.")
-                              ("conditional,n", po::bool_switch(&conditional), "Perform conditional analysis.");
+                              ("conditional,n", po::bool_switch(&conditional), "Perform conditional analysis.")
+                              ("output-html,m", po::bool_switch(&htmlPrint), "Print results as html.");
 
         /* parse program options */
         po::options_description cmdline_options;
@@ -104,13 +104,12 @@ int main(int argc, char* argv[]) {
         parameters.setTreeFileName(vm["tree-file"].as<std::string>().c_str());
         parameters.setCountFileName(vm["count-file"].as<std::string>().c_str());
         parameters.setOutputFileName(vm["output-file"].as<std::string>().c_str());
-        parameters.setCuts(static_cast<unsigned int>(cuts));
         parameters.setNumReplications(static_cast<unsigned int>(replicas));
         parameters.setConditional(conditional);
         parameters.setDuplicates(duplicates);
 
         ScanRunner runner(parameters, console);
-        runner.run(vm["tree-file"].as<std::string>(), vm["count-file"].as<std::string>(), vm["output-file"].as<std::string>());
+        runner.run(vm["tree-file"].as<std::string>(), vm["count-file"].as<std::string>(), vm["output-file"].as<std::string>(), htmlPrint);
     } catch (std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;
