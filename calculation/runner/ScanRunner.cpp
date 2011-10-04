@@ -148,7 +148,7 @@ bool ScanRunner::readTree(const std::string& filename) {
     }
 
     //reset node identifiers to ordinal position in vector -- this is to keep the original algorithm intact since it uses vector indexes heavily
-    for (size_t i=0; i < _Nodes.size(); ++i) _Nodes.at(i)->setID(i);
+    for (size_t i=0; i < _Nodes.size(); ++i) _Nodes.at(i)->setID(static_cast<int>(i));
 
     // now set parent nodes
     dataSource->gotoFirstRecord();
@@ -156,7 +156,7 @@ bool ScanRunner::readTree(const std::string& filename) {
         NodeStructure * node = 0;
         // assign parent nodes to node
         for (size_t t=0; t < dataSource->getNumValues(); ++t) {
-            std::string identifier = dataSource->getValueAt(t);
+            std::string identifier = dataSource->getValueAt(static_cast<long>(t));
             ScanRunner::Index_t index = getNodeIndex(identifier);
             if (!index.first) {
                 readSuccess = false;
@@ -266,7 +266,7 @@ bool ScanRunner::scanTree() {
     double LogLikelihoodRatio=0;
     ScanRunner::Loglikelihood_t calcLogLikelihood = ScanRunner::getLoglikelihood();
 
-    unsigned int cuts = _Nodes.size(); // TODO: correct???
+    size_t cuts = _Nodes.size(); // TODO: correct???
     for(unsigned int k=0; k < cuts; k++) _Cut.push_back(new CutStructure());
 
     for (size_t i=0; i < _Nodes.size(); i++) {
@@ -277,17 +277,17 @@ bool ScanRunner::scanTree() {
                 loglikelihood = calcLogLikelihood->LogLikelihood(_Nodes.at(i)->getBrC(), _Nodes.at(i)->getBrN());
             }
 
-            unsigned int k = 0;
+            size_t k = 0;
             while(loglikelihood < _Cut.at(k)->getLogLikelihood() && k < cuts) k++;
             if (k < cuts) {
-                for (unsigned int m = cuts - 1; m > k ; m--) {
+                for (size_t m = cuts - 1; m > k ; m--) {
                     _Cut.at(m)->setLogLikelihood(_Cut.at(m-1)->getLogLikelihood());
                     _Cut.at(m)->setID(_Cut.at(m-1)->getID());
                     _Cut.at(m)->setC(_Cut.at(m-1)->getC());
                     _Cut.at(m)->setN(_Cut.at(m-1)->getN());
                 }
                 _Cut.at(k)->setLogLikelihood(loglikelihood);
-                _Cut.at(k)->setID(i);
+                _Cut.at(k)->setID(static_cast<int>(i));
                 _Cut.at(k)->setC(_Nodes.at(i)->getBrC());
                 _Cut.at(k)->setN(_Nodes.at(i)->getBrN());
             }
@@ -337,7 +337,7 @@ bool ScanRunner::setupTree() {
     _Ancestor.resize(_Nodes.size(), 0);
     for (size_t i=0; i < _Nodes.size(); ++i) {
         for (size_t j=0; j < _Nodes.size(); ++j) _Ancestor[j]=0;
-        addCN(i, _Nodes.at(i)->getIntC(), _Nodes.at(i)->getIntN());
+        addCN(static_cast<int>(i), _Nodes.at(i)->getIntC(), _Nodes.at(i)->getIntN());
         if (_Ancestor[i] > 1) {
             _print.Printf("Error: Node '%s' has itself as an ancestor.\n", BasePrint::P_ERROR, _Nodes.at(i)->getIdentifier().c_str());
             return false;
@@ -349,7 +349,7 @@ bool ScanRunner::setupTree() {
     for (size_t i=0; i < _Nodes.size(); ++i) {
         for (size_t j=0; j < _Nodes.at(i)->getParent().size(); ++j) {
             parent = _Nodes.at(i)->getParent().at(j);
-            _Nodes.at(parent)->refChild().push_back(i);
+            _Nodes.at(parent)->refChild().push_back(static_cast<int>(i));
         } // for j
     } // for i < nNodes
 

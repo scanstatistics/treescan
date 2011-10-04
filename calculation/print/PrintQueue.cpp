@@ -145,7 +145,7 @@ void PrintQueue::UpdateThreshold()
 
 
 
-//ClassDesc Begin SatScanBatchThresholdPolicy
+//ClassDesc Begin
 //This policy is:
 // --until FinalizationTime is past, ThresholdValue is "infinite".
 // --thereafter, ThresholdValue is 0.

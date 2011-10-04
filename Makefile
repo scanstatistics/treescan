@@ -19,9 +19,9 @@ PRINT          := $(TREESCAN)/calculation/print
 UTILITY        := $(TREESCAN)/calculation/utility
 RANDOMIZER     := $(TREESCAN)/calculation/randomization
 LOGLIKELIHOOD  := $(TREESCAN)/calculation/loglikelihood
-
+#JNI         :=
 BOOSTDIR    := $(TREESCAN)/../boost/boost_1_46_0
-INCLUDEDIRS := -I$(CALCULATION) -I$(UTILITY) -I$(OUTPUT) -I$(PRINT) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(RUNNER) -I$(BOOSTDIR)
+INCLUDEDIRS := -I$(CALCULATION) -I$(UTILITY) -I$(OUTPUT) -I$(PRINT) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(RUNNER) -I$(BOOSTDIR) -I$(JNI)
 DEFINES     := -DBOOST_ALL_NO_LIB
 
 CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE)
@@ -73,11 +73,11 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(BOOSTDIR)/libs/program_options/src/variables_map.cpp
 
 APP_SRC     := $(TREESCAN)/batch_application/TreeScan.cpp
-LIB_SRC     := $(TREESCAN)/java_application/shared_library/SharedLibrary.cpp \
-               $(TREESCAN)/java_application/shared_library/stsJNIPrintWindow.cpp \
-               $(TREESCAN)/java_application/shared_library/stsParametersUtility.cpp \
-               $(TREESCAN)/java_application/shared_library/JNIException.cpp \
-               $(TREESCAN)/java_application/shared_library/PrintCallback.cpp
+LIB_SRC     := $(TREESCAN)/library/SharedLibrary.cpp \
+               $(TREESCAN)/library/JNIPrintWindow.cpp \
+               $(TREESCAN)/library/ParametersUtility.cpp \
+               $(TREESCAN)/library/JNIException.cpp \
+               $(TREESCAN)/library/PrintCallback.cpp
 
 OBJS        := $(SRC:.cpp=.o)
 APP_OBJS    := $(APP_SRC:.cpp=.o)

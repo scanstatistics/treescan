@@ -23,15 +23,15 @@ lipo -create $binaries/treescan_gcc4.0.1_i386_32bit $binaries/treescan_gcc4.0.1_
 
 # Intel JNI libraries
 
-## echo building TreeScan shared object for 32-bit system using gcc4.0.1 - i386
-## ./makescript.so.mac.sh $binaries/libtreescan.gcc4.0.1_i386_32bit.jnilib $treescan_src $boost_src -m32 -O3 "/usr/bin/g++-4.0 -arch i386  -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk" $processors
+echo building TreeScan shared object for 32-bit system using gcc4.0.1 - i386
+./makescript.so.mac.sh $binaries/libtreescan.gcc4.0.1_i386_32bit.jnilib $treescan_src $boost_src -m32 -O3 "/usr/bin/g++-4.0 -arch i386  -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk" $processors
 
-## echo building TreeScan shared object for 64-bit system using gcc4.0.1 - x86_64
-## ./makescript.so.mac.sh $binaries/libtreescan.gcc4.0.1_x86_64_64bit.jnilib $treescan_src $boost_src -m64 -O3 "/usr/bin/g++-4.0 -arch x86_64  -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk" $processors
+echo building TreeScan shared object for 64-bit system using gcc4.0.1 - x86_64
+./makescript.so.mac.sh $binaries/libtreescan.gcc4.0.1_x86_64_64bit.jnilib $treescan_src $boost_src -m64 -O3 "/usr/bin/g++-4.0 -arch x86_64  -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk" $processors
 
 # Create universal binary - only interested in Intel architectures
-## echo creating universal shared object binary for 32-bit and 64-bit systems
-## lipo -create $binaries/libtreescan.gcc4.0.1_i386_32bit.jnilib $binaries/libtreescan.gcc4.0.1_x86_64_64bit.jnilib -output $binaries/libtreescan_gcc4.0.1_universal_intel.jnilib
+echo creating universal shared object binary for 32-bit and 64-bit systems
+lipo -create $binaries/libtreescan.gcc4.0.1_i386_32bit.jnilib $binaries/libtreescan.gcc4.0.1_x86_64_64bit.jnilib -output $binaries/libtreescan_gcc4.0.1_universal_intel.jnilib
 
 
 

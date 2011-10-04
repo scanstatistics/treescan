@@ -1,0 +1,248 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source Files\calculation">
+      <UniqueIdentifier>{e6d21112-f53b-4820-a209-dbe7562a7694}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation">
+      <UniqueIdentifier>{9d26b16d-4911-422d-b146-4a4c20f6734d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\runner">
+      <UniqueIdentifier>{86327226-fa09-40d9-b3f7-5022191b53b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\runner">
+      <UniqueIdentifier>{22bec638-d6a7-40d5-af33-eb81476de229}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\print">
+      <UniqueIdentifier>{96e69410-3db5-435b-8201-0160002759c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\print">
+      <UniqueIdentifier>{4ad6e927-0231-45a4-89e1-46130caa6f36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\utility">
+      <UniqueIdentifier>{a2861da6-ea67-4485-be8f-49e6d8993427}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\utility">
+      <UniqueIdentifier>{541f14fa-e20f-426a-b683-7161bb8dd25b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\boost">
+      <UniqueIdentifier>{2bbd1c0c-0da1-4753-81b8-e54ba1bb5a7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\loglikelihood">
+      <UniqueIdentifier>{dc8c711d-5a10-4098-8f9e-8d30f81049d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\loglikelihood">
+      <UniqueIdentifier>{c2986de9-5e7d-41d8-822b-92eb2838daf5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\boost\threads">
+      <UniqueIdentifier>{5ac91196-827c-44d6-806d-c90665476da0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\randomization">
+      <UniqueIdentifier>{774b53e7-3a6b-4089-8a54-e4a125e173de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\randomization">
+      <UniqueIdentifier>{27045a0c-b44c-4404-909d-42382e805d79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\output">
+      <UniqueIdentifier>{260ad21d-8a31-4cf2-aa59-a805fa3ee69d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\output">
+      <UniqueIdentifier>{6ef6ed46-9894-479a-b227-daa07546427b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\library">
+      <UniqueIdentifier>{7519d534-c5a6-41ec-9fc9-375c344207e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\library">
+      <UniqueIdentifier>{2ed7134b-1259-46f4-94ee-a9859e1a90e8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\calculation\runner\ScanRunner.cpp">
+      <Filter>Source Files\calculation\runner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\print\BasePrint.cpp">
+      <Filter>Source Files\calculation\print</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\print\PrintQueue.cpp">
+      <Filter>Source Files\calculation\print</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\print\PrintScreen.cpp">
+      <Filter>Source Files\calculation\print</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\PrjException.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\RandomDistribution.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\RandomNumberGenerator.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\UtilityFunctions.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\FileName.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\TimeStamp.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\loglikelihood\Loglikelihood.cpp">
+      <Filter>Source Files\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\AsynchronouslyAccessible.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\contractor.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\thread\src\win32\thread.cpp">
+      <Filter>Source Files\boost\threads</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\MonteCarloSimFunctor.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\MCSimJobSource.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\randomization\Randomization.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\Parameters.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\ParametersPrint.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\AsciiPrintFormat.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\FieldDef.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\output\DataFileWriter.cpp">
+      <Filter>Source Files\calculation\output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\runner\DataSource.cpp">
+      <Filter>Source Files\calculation\runner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\output\ResultsFileWriter.cpp">
+      <Filter>Source Files\calculation\output</Filter>
+    </ClCompile>
+    <ClCompile Include="JNIException.cpp">
+      <Filter>Source Files\library</Filter>
+    </ClCompile>
+    <ClCompile Include="PrintCallback.cpp">
+      <Filter>Source Files\library</Filter>
+    </ClCompile>
+    <ClCompile Include="SharedLibrary.cpp">
+      <Filter>Source Files\library</Filter>
+    </ClCompile>
+    <ClCompile Include="ParametersUtility.cpp">
+      <Filter>Source Files\library</Filter>
+    </ClCompile>
+    <ClCompile Include="JNIPrintWindow.cpp">
+      <Filter>Source Files\library</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\calculation\runner\ScanRunner.h">
+      <Filter>Header Files\calculation\runner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\TreeScan.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\print\BasePrint.h">
+      <Filter>Header Files\calculation\print</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\print\PrintQueue.h">
+      <Filter>Header Files\calculation\print</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\print\PrintScreen.h">
+      <Filter>Header Files\calculation\print</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\PrjException.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\RandomDistribution.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\RandomNumberGenerator.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\UtilityFunctions.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\FileName.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\TimeStamp.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\ptr_vector.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\loglikelihood\Loglikelihood.h">
+      <Filter>Header Files\calculation\loglikelihood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\AsynchronouslyAccessible.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\contractor.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\runner\SimulationVariables.h">
+      <Filter>Header Files\calculation\runner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\MonteCarloSimFunctor.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\MCSimJobSource.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\Randomization.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\Parameters.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\ParametersPrint.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\AsciiPrintFormat.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\FieldDef.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\output\DataFileWriter.h">
+      <Filter>Header Files\calculation\output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\runner\DataSource.h">
+      <Filter>Header Files\calculation\runner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\output\ResultsFileWriter.h">
+      <Filter>Header Files\calculation\output</Filter>
+    </ClInclude>
+    <ClInclude Include="JNIException.h">
+      <Filter>Header Files\library</Filter>
+    </ClInclude>
+    <ClInclude Include="PrintCallback.h">
+      <Filter>Header Files\library</Filter>
+    </ClInclude>
+    <ClInclude Include="ParametersUtility.h">
+      <Filter>Header Files\library</Filter>
+    </ClInclude>
+    <ClInclude Include="JNIPrintWindow.h">
+      <Filter>Header Files\library</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
