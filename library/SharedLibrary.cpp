@@ -16,13 +16,20 @@
 #include "FileName.h"
 #include "JNIException.h"
 #include "PrintCallback.h"
-
+#include "org_treescan_app_CalculationThread.h"
+#include "org_treescan_gui_ParameterSettingsFrame.h"
+#include "org_treescan_app_AppConstants.h"
+#include "Toolkit.h"
 //#pragma argsused
 
 void __TreeScanInit() {
 printf("__TreeScanInit called\n"); 
   reserve_memory_cache();
   std::set_new_handler(prg_new_handler);
+  std::string dir;
+  FileName::getCurDirectory(dir);
+  dir += "satscan.exe";
+  AppToolkit::ToolKitCreate(dir.c_str());
 }
 
 void __TreeScanExit() {
@@ -74,7 +81,7 @@ int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void* lpReserved
 void _runAnalysis(const Parameters& Parameters, BasePrint& Console) {
   std::string           sMessage;
 
-  // TODO Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
+  Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
 
   //create analysis runner object and execute analysis
   ScanRunner runner(Parameters, Console);
@@ -82,29 +89,29 @@ void _runAnalysis(const Parameters& Parameters, BasePrint& Console) {
 
 ///////////////////////////////// JNI Shared Library Methods ///////////////////////////////////////////
 
-/*JNIEXPORT jstring JNICALL Java_org_treescan_app_AppConstants_getVersion(JNIEnv *pEnv, jclass) {
+JNIEXPORT jstring JNICALL Java_org_treescan_app_AppConstants_getVersion(JNIEnv *pEnv, jclass) {
    return pEnv->NewStringUTF(AppToolkit::getToolkit().GetVersion());
-}*/
+}
 
-/*JNIEXPORT jstring JNICALL Java_org_treescan_app_AppConstants_getWebSite(JNIEnv *pEnv, jclass) {
+JNIEXPORT jstring JNICALL Java_org_treescan_app_AppConstants_getWebSite(JNIEnv *pEnv, jclass) {
    return pEnv->NewStringUTF(AppToolkit::getToolkit().GetWebSite());
-}*/
+}
 
-/*JNIEXPORT jstring JNICALL Java_org_treescan_app_AppConstants_getSubstantiveSupportEmail(JNIEnv *pEnv, jclass) {
+JNIEXPORT jstring JNICALL Java_org_treescan_app_AppConstants_getSubstantiveSupportEmail(JNIEnv *pEnv, jclass) {
    return pEnv->NewStringUTF(AppToolkit::getToolkit().GetSubstantiveSupportEmail());
-}*/
+}
 
-/*JNIEXPORT jstring JNICALL Java_org_treescan_app_AppConstants_getTechnicalSupportEmail(JNIEnv *pEnv, jclass) {
-   return pEnv->NewStringUTF(AppToolkit::getToolkit().GetTechnicalSupportEmail());
-}*/
+JNIEXPORT jstring JNICALL Java_org_treescan_app_AppConstants_getTechnicalSupportEmail(JNIEnv *pEnv, jclass) {
+  return pEnv->NewStringUTF(AppToolkit::getToolkit().GetTechnicalSupportEmail());
+}
 
-/*JNIEXPORT jstring JNICALL Java_org_treescan_app_AppConstants_getReleaseDate(JNIEnv *pEnv, jclass) {
-   return pEnv->NewStringUTF(VERSION_DATE);
-}*/
+JNIEXPORT jstring JNICALL Java_org_treescan_app_AppConstants_getReleaseDate(JNIEnv *pEnv, jclass) {
+  return pEnv->NewStringUTF(VERSION_DATE);
+}
 
-/*JNIEXPORT jstring JNICALL Java_org_treescan_app_AppConstants_getVersionId(JNIEnv *pEnv, jclass) {
+JNIEXPORT jstring JNICALL Java_org_treescan_app_AppConstants_getVersionId(JNIEnv *pEnv, jclass) {
    return pEnv->NewStringUTF(VERSION_ID);
-}*/
+}
 
 JNIEXPORT jint JNICALL Java_org_treescan_app_CalculationThread_RunAnalysis(JNIEnv *pEnv, jobject JCalculationThread, jobject JParameters) {
   try {

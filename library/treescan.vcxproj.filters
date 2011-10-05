@@ -152,6 +152,9 @@
     <ClCompile Include="JNIPrintWindow.cpp">
       <Filter>Source Files\library</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\Toolkit.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\runner\ScanRunner.h">
@@ -243,6 +246,24 @@
     </ClInclude>
     <ClInclude Include="JNIPrintWindow.h">
       <Filter>Header Files\library</Filter>
+    </ClInclude>
+    <ClInclude Include="org_treescan_app_AppConstants.h">
+      <Filter>Header Files\library</Filter>
+    </ClInclude>
+    <ClInclude Include="org_treescan_app_CalculationThread.h">
+      <Filter>Header Files\library</Filter>
+    </ClInclude>
+    <ClInclude Include="org_treescan_app_Parameters.h">
+      <Filter>Header Files\library</Filter>
+    </ClInclude>
+    <ClInclude Include="org_treescan_app_Parameters_AnalysisType.h">
+      <Filter>Header Files\library</Filter>
+    </ClInclude>
+    <ClInclude Include="org_treescan_gui_ParameterSettingsFrame.h">
+      <Filter>Header Files\library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\Toolkit.h">
+      <Filter>Header Files\calculation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

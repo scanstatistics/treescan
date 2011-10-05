@@ -8,43 +8,25 @@
 #include <iostream>
 
 /** Reads parameters from file 'filename' in C++ code and sets class members of Java JParameters class. */
-/*JNIEXPORT jboolean JNICALL Java_org_satscan_app_Parameters_Read(JNIEnv * pEnv, jobject jParameters, jstring filename) {
+JNIEXPORT jboolean JNICALL Java_org_treescan_app_Parameters_Read(JNIEnv * pEnv, jobject jParameters, jstring filename) {
   Parameters           Parameters;
   jboolean              iscopy;
-  jboolean              iscopy2;
 
   try {
-     //const char *sParameterFilename = pEnv->GetStringUTFChars(filename, &iscopy);
-     const jchar * sParameterFilename2 = pEnv->GetStringChars(filename, &iscopy2);
-     jsize len = pEnv->GetStringLength(filename);
-     printf("printf: %ls",sParameterFilename2);
-
-     std::wstring s(reinterpret_cast<const wchar_t*>(sParameterFilename2), len);
-     std::wcout << std::endl << "s: " << s;
-     std::wcout << std::endl << "s+: " << reinterpret_cast<const wchar_t*>(sParameterFilename2);
-
-     std::string s2(sParameterFilename2, sParameterFilename2 + len);
-     std::cout << std::endl  << "s2: " << s2;
-
-     std::string s3;
-     for (jsize i = 0; i < len; ++i) {
-         s3.push_back(sParameterFilename2[i]);
-     }
-     std::cout << std::endl  << "s3: "  << s3;
-
-     if (sParameterFilename2) {
+     const char *sParameterFilename = pEnv->GetStringUTFChars(filename, &iscopy);
+     if (sParameterFilename) {
        PrintNull NoPrint;
        //ParameterAccessCoordinator(Parameters).Read(sParameterFilename, NoPrint);
      }
      else {
        //New session - creation version is this version.
-       CParameters::CreationVersion vVersion = {atoi(VERSION_MAJOR), atoi(VERSION_MINOR), atoi(VERSION_RELEASE)};
-       Parameters.SetVersion(vVersion);
+       Parameters::CreationVersion vVersion = {atoi(VERSION_MAJOR), atoi(VERSION_MINOR), atoi(VERSION_RELEASE)};
+       Parameters.setVersion(vVersion);
      }
-     //if (iscopy == JNI_TRUE)
-     //	pEnv->ReleaseStringUTFChars(filename, sParameterFilename);
-     if (iscopy2 == JNI_TRUE)
-     	pEnv->ReleaseStringChars(filename, sParameterFilename2);
+     if (iscopy == JNI_TRUE)
+     	pEnv->ReleaseStringUTFChars(filename, sParameterFilename);
+
+     Parameters.setCountFileName("test");
      ParametersUtility::copyCParametersToJParameters(*pEnv, Parameters, jParameters);
   }
   catch (jni_error & x) {    
@@ -59,16 +41,16 @@
     return 1;
   }
   return true;
-}*/
+}
 
 /** Set parameters of C++ object from Java object and writes parameters to file 'filename'. */
-/*JNIEXPORT void JNICALL Java_org_satscan_app_Parameters_Write(JNIEnv * pEnv, jobject jParameters, jstring) {
+JNIEXPORT void JNICALL Java_org_treescan_app_Parameters_Write(JNIEnv * pEnv, jobject jParameters, jstring) {
   Parameters   Parameters;
 
   try {
     ParametersUtility::copyJParametersToCParameters(*pEnv, jParameters, Parameters);
     PrintNull NoPrint;
-    ParameterAccessCoordinator(Parameters).Write(Parameters.GetSourceFileName().c_str(), NoPrint);
+    //ParameterAccessCoordinator(Parameters).Write(Parameters.getSourceFileName().c_str(), NoPrint);
   }
   catch (jni_error & x) {    
     return; // let the Java exception to be handled in the caller of JNI function
@@ -81,7 +63,7 @@
 	  jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
     return;
   }
-}*/
+}
 
 /** Returns ordinal of enumeration gotten from 'sFunctionName' called. */
 int ParametersUtility::getEnumTypeOrdinalIndex(JNIEnv& Env, jobject& jParameters, const char * sFunctionName, const char * sEnumClassSignature) {
@@ -146,7 +128,7 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isPrintColumnHeaders());
   jni_error::_detectError(Env);
 
-  jfieldID vfid = _getFieldId_Checked(Env, clazz, "gCreationVersion", "Lorg/treescan/app/Parameters$CreationVersion;");
+  jfieldID vfid = _getFieldId_Checked(Env, clazz, "_creationversion", "Lorg/treescan/app/Parameters$CreationVersion;");
   jobject versionobject = Env.GetObjectField(jParameters, vfid);
   jclass vclazz = Env.GetObjectClass(versionobject);
   vfid = _getFieldId_Checked(Env, vclazz, "_major", "I");

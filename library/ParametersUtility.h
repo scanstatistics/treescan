@@ -3,7 +3,7 @@
 #define stsParametersUtilityH
 //******************************************************************************
 #include <jni.h>
-// TODO #include "org_satscan_app_Parameters.h"
+#include "org_treescan_app_Parameters.h"
 
 #include "Parameters.h"
 
