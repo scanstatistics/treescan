@@ -174,7 +174,7 @@ bool ScanRunner::readTree(const std::string& filename) {
 /* REPORT RESULTS */
 bool ScanRunner::reportResults(const std::string& filename, Parameters::ResultsFormat rptfmt, time_t start, time_t end) const {
     ResultsFileWriter resultsWriter(*this);
-    bool status = rptfmt == Parameters::ResultsFormat::HTML ? resultsWriter.writeHTML(filename, start, end) : resultsWriter.writeASCII(filename, start, end);
+    bool status = rptfmt == Parameters::HTML ? resultsWriter.writeHTML(filename, start, end) : resultsWriter.writeASCII(filename, start, end);
     // write cuts to supplemental reports file
     unsigned int k=0;
     CutsRecordWriter cutsWriter(*this);
