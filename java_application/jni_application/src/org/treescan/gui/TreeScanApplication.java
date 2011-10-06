@@ -158,8 +158,8 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
           }
 
           // educated guess has been determined 
-          String firstTryLibrary = is64BitVM ? "treescan64" : "treescan32";
-          String secondTryLibrary = is64BitVM ? "treescan32" : "treescan64";
+          String firstTryLibrary = is64BitVM ? "libtreescan64" : "libtreescan32";
+          String secondTryLibrary = is64BitVM ? "libtreescan32" : "libtreescan64";
           try {
             System.out.println("Loading " + firstTryLibrary);
             System.loadLibrary(firstTryLibrary);
