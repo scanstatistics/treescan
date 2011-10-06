@@ -120,8 +120,8 @@ bool ResultsFileWriter::writeASCII(const std::string& outputfile, time_t start, 
     //        outfile << "0 " << _Nodes.at(i)->_identifier.c_str() << " " << _Nodes.at(i)->_BrC << " " << _Nodes.at(i)->_BrN << " " << _Nodes.at(i)->_BrC/_Nodes.at(i)->_BrN << " 0 0 " << std::endl;
 
     ParametersPrint(parameters).Print(outfile);
+    outfile << "Program run on     : " << ctime(&start);
     outfile << "Program completed  : " << ctime(&end);
-    outfile << buffer << std::endl;
     outfile << "Total Running Time : " << getTotalRunningTime(start, end, buffer) << std::endl;
     if (parameters.getNumParallelProcessesToExecute() > 1) outfile << "Processor Usage    : " << parameters.getNumParallelProcessesToExecute() << " processors" << std::endl;
 

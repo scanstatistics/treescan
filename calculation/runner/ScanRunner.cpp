@@ -172,10 +172,10 @@ bool ScanRunner::readTree(const std::string& filename) {
 }
 
 /* REPORT RESULTS */
-bool ScanRunner::reportResults(const std::string& filename, bool htmlPrint, time_t start, time_t end) const {
+bool ScanRunner::reportResults(const std::string& filename, Parameters::ResultsFormat rptfmt, time_t start, time_t end) const {
     ResultsFileWriter resultsWriter(*this);
-    bool status = htmlPrint ? resultsWriter.writeHTML(filename, start, end) : resultsWriter.writeASCII(filename, start, end);
-
+    bool status = rptfmt == Parameters::ResultsFormat::HTML ? resultsWriter.writeHTML(filename, start, end) : resultsWriter.writeASCII(filename, start, end);
+    // write cuts to supplemental reports file
     unsigned int k=0;
     CutsRecordWriter cutsWriter(*this);
     while(status && k < getCuts().size() && getCuts().at(k)->getC() > 0 && getRanks().at(k) < _parameters.getNumReplicationsRequested() + 1) {
@@ -188,18 +188,18 @@ bool ScanRunner::reportResults(const std::string& filename, bool htmlPrint, time
 /*
  Run Scan.
  */
-bool ScanRunner::run(const std::string& treefile, const std::string& countfile, const std::string& outputfile, bool htmlPrint) {
+bool ScanRunner::run() {
     time_t gStartTime, gEndTime;
     time(&gStartTime); //get start time
 
-    if (!readTree(treefile)) return false;
-    if (!readCounts(countfile)) return false;
+    if (!readTree(_parameters.getTreeFileName())) return false;
+    if (!readCounts(_parameters.getCountFileName())) return false;
     if (!setupTree()) return false;
     if (!scanTree()) return false;
     if (!runsimulations()) return false;
 
     time(&gEndTime); //get end time
-    if (!reportResults(outputfile, htmlPrint, gStartTime, gEndTime)) return false;
+    if (!reportResults(_parameters.getOutputFileName(), _parameters.getResultsFormat(), gStartTime, gEndTime)) return false;
 
     return true;
 }

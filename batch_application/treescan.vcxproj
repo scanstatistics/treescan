@@ -179,6 +179,7 @@
     <ClCompile Include="..\calculation\randomization\Randomization.cpp" />
     <ClCompile Include="..\calculation\runner\DataSource.cpp" />
     <ClCompile Include="..\calculation\runner\ScanRunner.cpp" />
+    <ClCompile Include="..\calculation\Toolkit.cpp" />
     <ClCompile Include="..\calculation\utility\AsciiPrintFormat.cpp" />
     <ClCompile Include="..\calculation\utility\AsynchronouslyAccessible.cpp" />
     <ClCompile Include="..\calculation\utility\contractor.cpp" />
@@ -206,6 +207,7 @@
     <ClInclude Include="..\calculation\runner\DataSource.h" />
     <ClInclude Include="..\calculation\runner\ScanRunner.h" />
     <ClInclude Include="..\calculation\runner\SimulationVariables.h" />
+    <ClInclude Include="..\calculation\Toolkit.h" />
     <ClInclude Include="..\calculation\TreeScan.h" />
     <ClInclude Include="..\calculation\utility\AsciiPrintFormat.h" />
     <ClInclude Include="..\calculation\utility\AsynchronouslyAccessible.h" />

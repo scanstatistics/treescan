@@ -9,8 +9,8 @@
 
 /** Reads parameters from file 'filename' in C++ code and sets class members of Java JParameters class. */
 JNIEXPORT jboolean JNICALL Java_org_treescan_app_Parameters_Read(JNIEnv * pEnv, jobject jParameters, jstring filename) {
-  Parameters           Parameters;
-  jboolean              iscopy;
+  Parameters parameters;
+  jboolean iscopy;
 
   try {
      const char *sParameterFilename = pEnv->GetStringUTFChars(filename, &iscopy);
@@ -21,13 +21,15 @@ JNIEXPORT jboolean JNICALL Java_org_treescan_app_Parameters_Read(JNIEnv * pEnv, 
      else {
        //New session - creation version is this version.
        Parameters::CreationVersion vVersion = {atoi(VERSION_MAJOR), atoi(VERSION_MINOR), atoi(VERSION_RELEASE)};
-       Parameters.setVersion(vVersion);
+       parameters.setVersion(vVersion);
      }
      if (iscopy == JNI_TRUE)
      	pEnv->ReleaseStringUTFChars(filename, sParameterFilename);
 
-     Parameters.setCountFileName("test");
-     ParametersUtility::copyCParametersToJParameters(*pEnv, Parameters, jParameters);
+     parameters.setTreeFileName("C:/prj/treescan.development/treescan/data/development/tree.txt");
+     parameters.setCountFileName("C:/prj/treescan.development/treescan/data/development/counts.txt");
+     parameters.setOutputFileName("C:/prj/treescan.development/treescan/data/development/output.html");
+     ParametersUtility::copyCParametersToJParameters(*pEnv, parameters, jParameters);
   }
   catch (jni_error & x) {    
     return 1; // let the Java exception to be handled in the caller of JNI function
@@ -102,6 +104,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
 
   mid = _getMethodId_Checked(Env, clazz, "setOutputFileName", "(Ljava/lang/String;)V");
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getOutputFileName().c_str()));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setResultsFormat", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getResultsFormat());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setSourceFileName", "(Ljava/lang/String;)V");
@@ -181,6 +187,8 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
   Parameters.setOutputFileName(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+  Parameters.setResultsFormat((Parameters::ResultsFormat)getEnumTypeOrdinalIndex(Env, jParameters, "getResultsFormat", "Lorg/treescan/app/Parameters$ResultsFormat;"));
 
   mid = _getMethodId_Checked(Env, clazz, "getSourceFileName", "()Ljava/lang/String;");
   jstr = (jstring)Env.CallObjectMethod(jParameters, mid);

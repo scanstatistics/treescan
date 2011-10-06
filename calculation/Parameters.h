@@ -9,6 +9,7 @@ class Parameters {
   public:
     enum ParameterType {TREEFILE=0, COUNTFILE, OUTPUTFILE, CUTS, REPLICATIONS, CONDITIONAL, DUPLICATES, RANDOMIZATION_SEED, RANDOMLY_GENERATE_SEED, PRINT_COLUMN_HEADERS};
     struct CreationVersion {unsigned int iMajor; unsigned int iMinor; unsigned int iRelease;};
+    enum ResultsFormat {TEXT=0, HTML};
 
   private:
     unsigned int                        _numRequestedParallelProcesses;
@@ -17,6 +18,7 @@ class Parameters {
     std::string                         _treeFileName;
     std::string                         _countFileName;
     std::string                         _outputFileName;
+    ResultsFormat                       _resultsFormat;
     struct CreationVersion              _creationVersion;
     long                                _randomizationSeed;
     bool                                _randomlyGenerateSeed;
@@ -52,6 +54,7 @@ class Parameters {
     unsigned int                        getNumReplicationsRequested() const {return _replications;}
     const std::string                 & getOutputFileName() const {return _outputFileName; }
     long                                getRandomizationSeed() const {return _randomizationSeed;}
+    ResultsFormat                       getResultsFormat() const {return _resultsFormat;}
     const std::string                 & getSourceFileName() const {return _parametersSourceFileName;}
     void                                setAsDefaulted();
     void                                setCountFileName(const char * sCountFileName, bool bCorrectForRelativePath=false);
@@ -64,6 +67,7 @@ class Parameters {
     void                                setNumReplications(unsigned int replications) {_replications = replications;}
     void                                setOutputFileName(const char * sOutPutFileName, bool bCorrectForRelativePath=false);
     void                                setRandomizationSeed(long lSeed) {_randomizationSeed = lSeed;}
+    void                                setResultsFormat(ResultsFormat e) {_resultsFormat = e;}
     void                                setSourceFileName(const char * sParametersSourceFileName);
     void                                setVersion(const CreationVersion& vVersion) {_creationVersion = vVersion;}
 };

@@ -17,6 +17,7 @@ import org.treescan.utils.EmailClientLauncher;
 import org.treescan.app.Parameters;
 import org.treescan.gui.utils.JDocumentRenderer;
 import org.treescan.app.OutputFileRegister;
+import org.treescan.utils.BareBonesBrowserLaunch;
 
 /**
  * Analysis execution progress/cancellation and results window.
@@ -36,7 +37,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
      */
     public AnalysisRunInternalFrame(final Parameters parameters) {
         initComponents();
-        setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
+        setFrameIcon(new ImageIcon(getClass().getResource("/TreeScan.png")));
         addInternalFrameListener(this);
         _parameters = parameters;
         setTitle("Running " + (_parameters.getSourceFileName().equals("") ? "Session" : _parameters.getSourceFileName()));
@@ -136,16 +137,19 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     synchronized public void LoadFromFile(final String sFileName) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                _progressTextArea.setText("");
-                try {
-                    _progressTextArea.read(new FileReader(sFileName), null);
-                    setTitle(sFileName);
-                } catch (IOException e) {
-                    setTitle("Job Completed");
-                    _progressTextArea.append("\nSaTScan completed successfully but was unable to read results from file.\n" +
-                            "The results have been written to: \n" + _parameters.getOutputFileName() + "\n\n");
-                }
-                _progressTextArea.setCaretPosition(0);
+                if (_parameters.getResultsFormat() == Parameters.ResultsFormat.TEXT) {
+                    try {
+                        _progressTextArea.setText("");
+                        _progressTextArea.read(new FileReader(sFileName), null);
+                    } catch (IOException e) {
+                        setTitle("Job Completed");
+                        _progressTextArea.append("\nTreeScan completed successfully but was unable to read results from file.\n" +
+                                                 "The results have been written to: \n" + _parameters.getOutputFileName() + "\n\n");
+                    }
+                } else if (_parameters.getResultsFormat() == Parameters.ResultsFormat.HTML) {
+                    PrintProgressWindow("Opening results in web browser ...");
+                    BareBonesBrowserLaunch.openURL(sFileName.replace("\\", "/"));
+                } else {/* nop */}
                 OutputFileRegister.getInstance().release(_parameters.getOutputFileName());
             }
         });
@@ -157,10 +161,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     public void printWindow() {
         try {
             if (gbCanPrint) {
-                String sPrintText = _progressTextArea.getText() +
-                        "\n\n\nWARNINGS / ERRORS\n" +
-                        _warningsErrorsTextArea.getText();
-
+                String sPrintText = _progressTextArea.getText() + "\n\n\nWARNINGS / ERRORS\n" + _warningsErrorsTextArea.getText();
                 JDocumentRenderer documentRenderer = new JDocumentRenderer();
                 documentRenderer.print(new JEditorPane("text/plain", sPrintText));
             }

@@ -53,7 +53,7 @@ void AppToolkit::closeDebugFile() {
 /** Returns acknowledgment statement indicating program version, website, and
     brief declaration of usage agreement. */
 const char * AppToolkit::GetAcknowledgment(std::string & Acknowledgment) const {
-  printString(Acknowledgment, "You are running TreeScan v%s%s.\n\nSaTScan is free, available for download from %s"
+  printString(Acknowledgment, "You are running TreeScan v%s%s.\n\nTreeScan is free, available for download from %s"
                               ".\nIt may be used free of charge as long as proper "
                               "citations are given\nto both the TreeScan software and the underlying "
                               "statistical methodology.\n\n", GetVersion(), is64Bit() ? " (64-bit)" : "",GetWebSite());

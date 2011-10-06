@@ -3,7 +3,8 @@ import java.util.*;
 
 public class Parameters implements Cloneable {	
     public native boolean Read(String filename);  
-    public native void Write(String filename);  	
+    public native void Write(String filename);
+    public enum ResultsFormat {TEXT, HTML};
     public class CreationVersion {
     	public int _major;
     	public int _minor;
@@ -15,11 +16,12 @@ public class Parameters implements Cloneable {
             _release = release;
         }
     }        
-    private CreationVersion _creationversion;
+    private CreationVersion _creationversion = new CreationVersion(1,1,0);
     private String _sourcefilename="";
     private String _treefilename="";
     private String _countfilename="";
     private String _outputfilename="";
+    private ResultsFormat _resultsFormat=ResultsFormat.TEXT;
     private int _numprocesses=0;
     private int _replications=999;
     private int _randomizationSeed=12345678;
@@ -30,7 +32,6 @@ public class Parameters implements Cloneable {
 
     public Parameters() {
     	super();    	
-    	_creationversion = new CreationVersion(1,1,0);
     }
     @Override
     public Object clone() { 
@@ -41,8 +42,7 @@ public class Parameters implements Cloneable {
     	  newObject._countfilename = new String(_countfilename);
     	  newObject._outputfilename = new String(_outputfilename);
     	  return newObject; 
-      } 
-      catch (CloneNotSupportedException e) {
+      } catch (CloneNotSupportedException e) {
         throw new InternalError("clone() failed!");
       }
     }   
@@ -52,6 +52,7 @@ public class Parameters implements Cloneable {
     	  if (!_treefilename.equals(rhs._treefilename)) return false;
     	  if (!_countfilename.equals(rhs._countfilename)) return false;
     	  if (!_outputfilename.equals(rhs._outputfilename)) return false;
+          if (_resultsFormat != rhs._resultsFormat) return false;
     	  if (!_sourcefilename.equals(rhs._sourcefilename)) return false;
     	  if (_replications != rhs._replications) return false;
     	  if (_conditional != rhs._conditional) return false;
@@ -86,4 +87,7 @@ public class Parameters implements Cloneable {
     public void setDuplicates(boolean b) {_duplicates = b;}
     public final boolean isPrintColumnHeaders() {return _printColumnHeaders;}
     public void setPrintColunHeaders(boolean b) {_printColumnHeaders=b;}
+    public ResultsFormat getResultsFormat() {return _resultsFormat;}
+    public void setResultsFormat(int ord) {try {_resultsFormat = ResultsFormat.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, ResultsFormat.values());}}
+    public void ThrowEnumException(int ord, Enum[] e) {throw new RuntimeException("Ordinal index " + ord + " out of range [" + e[0].ordinal() + "," +  e[e.length - 1].ordinal() + "].");}
 }

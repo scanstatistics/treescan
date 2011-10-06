@@ -78,13 +78,14 @@ int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void* lpReserved
 #endif
 
 /** Run execution function given passed parameter file and base print. */
-void _runAnalysis(const Parameters& Parameters, BasePrint& Console) {
+void _runAnalysis(const Parameters& parameters, BasePrint& Console) {
   std::string           sMessage;
 
   Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
 
   //create analysis runner object and execute analysis
-  ScanRunner runner(Parameters, Console);
+  ScanRunner runner(parameters, Console);
+  runner.run();
 }
 
 ///////////////////////////////// JNI Shared Library Methods ///////////////////////////////////////////

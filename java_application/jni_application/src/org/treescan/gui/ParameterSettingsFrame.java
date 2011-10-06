@@ -171,14 +171,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             throw new SettingsException("Please specify a case file.", (Component) _countFileTextField);
         }
         if (!FileAccess.ValidateFileAccess(_countFileTextField.getText(), false)) {
-            throw new SettingsException("The case file could not be opened for reading.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to read\nfrom this directory and file.",  (Component) _countFileTextField);
+            throw new SettingsException("The count file could not be opened for reading.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to read\nfrom this directory and file.",  (Component) _countFileTextField);
         }
         //validate the tree file
         if (_treelFileTextField.getText().length() == 0) {
             throw new SettingsException("For the Bernoulli model, please specify a control file.", (Component) _treelFileTextField);
         }
         if (!FileAccess.ValidateFileAccess(_treelFileTextField.getText(), false)) {
-            throw new SettingsException("The control file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from\nthis directory and file.", (Component) _treelFileTextField);
+            throw new SettingsException("The tree file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from\nthis directory and file.", (Component) _treelFileTextField);
         }
     }
 
@@ -186,12 +186,15 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      * Verifies all parameters on the 'Output Files' tab. Returns whether tab is valid.
      */
     private void CheckOutputParams() {
-        if (_resultsFileTextField.getText().length() == 0) {
-            throw new SettingsException("Please specify a results file.", (Component) _resultsFileTextField);
+        if (_outputFileTextField.getText().length() == 0) {
+            throw new SettingsException("Please specify a results file.", (Component) _outputFileTextField);
         }
-        if (!FileAccess.ValidateFileAccess(_resultsFileTextField.getText(), true)) {
+        if (_reportResultsAsHTML.isSelected() && (!_outputFileTextField.getText().endsWith(".htm") || !_outputFileTextField.getText().endsWith(".html"))) {
+            throw new SettingsException("Outputting results as HTML requires a file extension of '.html'.", (Component) _outputFileTextField);
+        }
+        if (!FileAccess.ValidateFileAccess(_outputFileTextField.getText(), true)) {
             throw new SettingsException("Results file could not be opened for writing.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to write\nto this directory and file.",
-                    (Component) _resultsFileTextField);
+                    (Component) _outputFileTextField);
         }
     }
 
@@ -221,8 +224,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _countFileTextField.setText(parameters.getCountFileName());
         _countFileTextField.setCaretPosition(0);
         _duplicatesInCaseFile.setSelected(parameters.isDuplicates());
-        _resultsFileTextField.setText(parameters.getOutputFileName());
-        _resultsFileTextField.setCaretPosition(0);
+        _outputFileTextField.setText(parameters.getOutputFileName());
+        _outputFileTextField.setCaretPosition(0);
+        _reportResultsAsHTML.setSelected(parameters.getResultsFormat() == Parameters.ResultsFormat.HTML);
         _montCarloReplicationsTextField.setText(Integer.toString(parameters.getNumReplicationsRequested()));
         _conditionalAnalysis.setSelected(parameters.isConditional());
     }
@@ -232,7 +236,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         parameters.setTreeFileName(_treelFileTextField.getText());
         parameters.setCountFileName(_countFileTextField.getText());
         parameters.setDuplicates(_duplicatesInCaseFile.isSelected());
-        parameters.setOutputFileName(_resultsFileTextField.getText());
+        parameters.setOutputFileName(_outputFileTextField.getText());
+        parameters.setResultsFormat(_reportResultsAsHTML.isSelected() ? Parameters.ResultsFormat.HTML.ordinal() : Parameters.ResultsFormat.TEXT.ordinal());
         parameters.setNumReplications(Integer.parseInt(_montCarloReplicationsTextField.getText()));
         parameters.setConditional(_conditionalAnalysis.isSelected());
     }
@@ -271,7 +276,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _inputTab = new javax.swing.JPanel();
         _resultsFileLabel = new javax.swing.JLabel();
-        _resultsFileTextField = new javax.swing.JTextField();
+        _outputFileTextField = new javax.swing.JTextField();
         _resultsFileBrowseButton = new javax.swing.JButton();
         _caseFileLabel = new javax.swing.JLabel();
         _countFileTextField = new javax.swing.JTextField();
@@ -286,6 +291,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _labelMonteCarloReplications = new javax.swing.JLabel();
         _montCarloReplicationsTextField = new javax.swing.JTextField();
         _conditionalAnalysis = new javax.swing.JCheckBox();
+        _reportResultsAsHTML = new javax.swing.JCheckBox();
 
         setClosable(true);
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -298,10 +304,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
                 fc.setDialogTitle("Select Results File");
+                fc.addChoosableFileFilter(new InputFileFilter("html","Results Files (*.html)"));
                 fc.addChoosableFileFilter(new InputFileFilter("txt","Results Files (*.txt)"));
-                if (fc.showSaveDialog(ParameterSettingsFrame.this) == JFileChooser.APPROVE_OPTION)
-                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                _resultsFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
+                if (fc.showSaveDialog(ParameterSettingsFrame.this) == JFileChooser.APPROVE_OPTION) {
+                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
+                    _outputFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
+                }
             }
         });
 
@@ -312,9 +320,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _countFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                fc.setDialogTitle("Select Case File");
+                fc.setDialogTitle("Select Count File");
                 fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
-                fc.addChoosableFileFilter(new InputFileFilter("cas","Case Files (*.cas)"));
+                fc.addChoosableFileFilter(new InputFileFilter("cts","Count Files (*.cts)"));
                 int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
@@ -334,7 +342,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
                     fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));
                     fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("cas","Count Files (*.cts)"));
+                    fc.addChoosableFileFilter(new InputFileFilter("cts","Count Files (*.cts)"));
                     int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
@@ -353,9 +361,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _treeFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                fc.setDialogTitle("Select Control File");
+                fc.setDialogTitle("Select Tree File");
                 fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
-                fc.addChoosableFileFilter(new InputFileFilter("ctl","Control Files (*.ctl)"));
+                fc.addChoosableFileFilter(new InputFileFilter("tre","Tree Files (*.tre)"));
                 int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
@@ -375,7 +383,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
                     fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));
                     fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("ctl","Tree Files (*.tre)"));
+                    fc.addChoosableFileFilter(new InputFileFilter("tre","Tree Files (*.tre)"));
                     int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
@@ -438,38 +446,43 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _reportResultsAsHTML.setText("report results as HTML");
+
         javax.swing.GroupLayout _inputTabLayout = new javax.swing.GroupLayout(_inputTab);
         _inputTab.setLayout(_inputTabLayout);
         _inputTabLayout.setHorizontalGroup(
             _inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
+            .addGroup(_inputTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(_inputTabLayout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(_reportResultsAsHTML))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
                         .addComponent(_treelFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
                         .addGap(6, 6, 6)
                         .addComponent(_treeFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_treeFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(_controlFileLabel, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _inputTabLayout.createSequentialGroup()
+                    .addComponent(_controlFileLabel)
+                    .addGroup(_inputTabLayout.createSequentialGroup()
                         .addComponent(_countFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_countFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_countFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _inputTabLayout.createSequentialGroup()
+                    .addGroup(_inputTabLayout.createSequentialGroup()
                         .addGap(10, 10, 10)
                         .addComponent(_duplicatesInCaseFile, javax.swing.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _inputTabLayout.createSequentialGroup()
+                    .addGroup(_inputTabLayout.createSequentialGroup()
                         .addComponent(_caseFileLabel)
                         .addGap(521, 521, 521))
-                    .addGroup(_inputTabLayout.createSequentialGroup()
-                        .addComponent(_resultsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
+                        .addComponent(_outputFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
                         .addGap(16, 16, 16)
                         .addComponent(_resultsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(_resultsFileLabel, javax.swing.GroupLayout.Alignment.LEADING))
+                    .addComponent(_resultsFileLabel)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _inputTabLayout.setVerticalGroup(
@@ -499,11 +512,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_resultsFileLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_resultsFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_outputFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_resultsFileBrowseButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(_reportResultsAsHTML)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -519,8 +533,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_inputTab, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(_inputTab, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -537,9 +551,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JPanel _inputTab;
     private javax.swing.JLabel _labelMonteCarloReplications;
     private javax.swing.JTextField _montCarloReplicationsTextField;
+    private javax.swing.JTextField _outputFileTextField;
+    private javax.swing.JCheckBox _reportResultsAsHTML;
     private javax.swing.JButton _resultsFileBrowseButton;
     private javax.swing.JLabel _resultsFileLabel;
-    private javax.swing.JTextField _resultsFileTextField;
     private javax.swing.JButton _treeFileBrowseButton;
     private javax.swing.JButton _treeFileImportButton;
     private javax.swing.JTextField _treelFileTextField;

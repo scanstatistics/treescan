@@ -9,18 +9,19 @@
 const int Parameters::giNumParameters = 10;
 
 bool  Parameters::operator==(const Parameters& rhs) const {
-  if (_replications                   != rhs._replications) return false;
-  if (_treeFileName                   != rhs._treeFileName) return false;
-  if (_countFileName                  != rhs._countFileName) return false;
-  if (_outputFileName                 != rhs._outputFileName) return false;
-  if (_parametersSourceFileName       != rhs._parametersSourceFileName) return false;
-  //if (_creationVersion              != rhs._creationVersion) return false;
-  //if (_randomizationSeed            != rhs._randomizationSeed) return false;
-  if (_numRequestedParallelProcesses  != rhs._numRequestedParallelProcesses) return false;
-  if (_randomlyGenerateSeed           != rhs._randomlyGenerateSeed) return false;
-  if (_conditional                    != rhs._conditional) return false;
-  if (_duplicates                     != rhs._duplicates) return false;  
-  if (_printColumnHeaders             != rhs._printColumnHeaders) return false;  
+  if (_replications != rhs._replications) return false;
+  if (_treeFileName != rhs._treeFileName) return false;
+  if (_countFileName != rhs._countFileName) return false;
+  if (_outputFileName != rhs._outputFileName) return false;
+  if (_resultsFormat != rhs._resultsFormat) return false;
+  if (_parametersSourceFileName != rhs._parametersSourceFileName) return false;
+  //if (_creationVersion != rhs._creationVersion) return false;
+  //if (_randomizationSeed != rhs._randomizationSeed) return false;
+  if (_numRequestedParallelProcesses != rhs._numRequestedParallelProcesses) return false;
+  if (_randomlyGenerateSeed != rhs._randomlyGenerateSeed) return false;
+  if (_conditional != rhs._conditional) return false;
+  if (_duplicates != rhs._duplicates) return false;  
+  if (_printColumnHeaders != rhs._printColumnHeaders) return false;  
 
   return true;
 }
@@ -59,18 +60,19 @@ void Parameters::assignMissingPath(std::string & sInputFilename, bool bCheckWrit
 
 /** Copies all class variables from the given Parameters object (rhs) into this one */
 void Parameters::copy(const Parameters &rhs) {
-  _replications                   = rhs._replications;
-  _treeFileName                   = rhs._treeFileName;
-  _countFileName                  = rhs._countFileName;
-  _outputFileName                 = rhs._outputFileName;
-  _creationVersion                = rhs._creationVersion;
-  _parametersSourceFileName       = rhs._parametersSourceFileName;
-  _randomizationSeed              = rhs._randomizationSeed;
-  _numRequestedParallelProcesses  = rhs._numRequestedParallelProcesses;
-  _randomlyGenerateSeed           = rhs._randomlyGenerateSeed;
-  _conditional                    = rhs._conditional;
-  _duplicates                     = rhs._duplicates;
-  _printColumnHeaders             = rhs._printColumnHeaders;
+  _replications = rhs._replications;
+  _treeFileName = rhs._treeFileName;
+  _countFileName = rhs._countFileName;
+  _outputFileName = rhs._outputFileName;
+  _resultsFormat = rhs._resultsFormat;
+  _creationVersion = rhs._creationVersion;
+  _parametersSourceFileName = rhs._parametersSourceFileName;
+  _randomizationSeed = rhs._randomizationSeed;
+  _numRequestedParallelProcesses = rhs._numRequestedParallelProcesses;
+  _randomlyGenerateSeed = rhs._randomlyGenerateSeed;
+  _conditional = rhs._conditional;
+  _duplicates = rhs._duplicates;
+  _printColumnHeaders = rhs._printColumnHeaders;
 }
 
 /** Returns number of parallel processes to run. */
@@ -132,19 +134,20 @@ void Parameters::setTreeFileName(const char * sTreeFileName, bool bCorrectForRel
 
 /** initializes global variables to default values */
 void Parameters::setAsDefaulted() {
-  _countFileName                  = "";
-  _treeFileName                   = "";
-  _outputFileName                 = "";
-  _replications                   = 999;
-  _creationVersion.iMajor         = atoi(VERSION_MAJOR);
-  _creationVersion.iMinor         = atoi(VERSION_MINOR);
-  _creationVersion.iRelease       = atoi(VERSION_RELEASE);
-  _randomizationSeed              = RandomNumberGenerator::glDefaultSeed;
-  _numRequestedParallelProcesses  = 0;
-  _randomlyGenerateSeed           = false;
-  _conditional                    = false;
-  _duplicates                     = false;
-  _printColumnHeaders             = true;
+  _countFileName = "";
+  _treeFileName = "";
+  _outputFileName = "";
+  _resultsFormat = HTML;
+  _replications = 999;
+  _creationVersion.iMajor = atoi(VERSION_MAJOR);
+  _creationVersion.iMinor = atoi(VERSION_MINOR);
+  _creationVersion.iRelease = atoi(VERSION_RELEASE);
+  _randomizationSeed = RandomNumberGenerator::glDefaultSeed;
+  _numRequestedParallelProcesses = 0;
+  _randomlyGenerateSeed = false;
+  _conditional = false;
+  _duplicates = false;
+  _printColumnHeaders = true;
 }
 
 /** Sets output data file name.
