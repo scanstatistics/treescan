@@ -266,9 +266,10 @@ bool ScanRunner::scanTree() {
     double LogLikelihoodRatio=0;
     ScanRunner::Loglikelihood_t calcLogLikelihood = ScanRunner::getLoglikelihood();
 
-    size_t cuts = _Nodes.size(); // TODO: correct???
+    // determine the number of root nodes -- simple cuts = equal to number of nodes, excluding root nodes
+    size_t cuts = _Nodes.size();
+    for (NodeStructureContainer_t::const_iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) if ((*itr)->getParent().size() == 0) --cuts;
     for(unsigned int k=0; k < cuts; k++) _Cut.push_back(new CutStructure());
-
     for (size_t i=0; i < _Nodes.size(); i++) {
         if (_Nodes.at(i)->getBrC() > 1) {
             if (_parameters.isDuplicates())
@@ -369,3 +370,7 @@ bool ScanRunner::setupTree() {
 
     return true;
 }
+
+
+
+
