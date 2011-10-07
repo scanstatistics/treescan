@@ -173,11 +173,18 @@ bool ResultsFileWriter::writeHTML(const std::string& outputfile, time_t start, t
     //outfile << ".additional-clusters {display: none;}" << std::endl;
     outfile << "#id_more_clusters {text-decoration: underline;}" << std::endl;
     outfile << "#id_more_clusters:hover {cursor: pointer;}" << std::endl;
+    outfile << "#id_cuts th:hover {cursor: pointer;}" << std::endl;
     outfile << "</style>" << std::endl;
+
+    // TODO: host these from treescan website or link to local copy?
     outfile << "<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js\" type=\"text/javascript\"></script>" << std::endl;
+    // TODO: css and image resources for table sorter
+    outfile << "<script src=\"http://artknow.googlecode.com/svn-history/r14/trunk/Site/librarys/jquery.tablesorter.js\" type=\"text/javascript\"></script>" << std::endl;
+
     outfile << "<script type=\"text/javascript\" charset=\"utf-8\">$(document).ready(function() {" << std::endl;
-    outfile << "    $('.additional-clusters').hide();" << std::endl;
+    outfile << "    //$('.additional-clusters').hide();" << std::endl;
     outfile << "    $('#id_more_clusters').click(function(){$('.additional-clusters').toggle();});" << std::endl;
+    outfile << "    $('#id_cuts').tablesorter(); " << std::endl;
     outfile << "});</script>" << std::endl;
     printString(buffer, "TreeScan v%s.%s%s%s%s%s", VERSION_MAJOR, VERSION_MINOR, (!strcmp(VERSION_RELEASE, "0") ? "" : "."), (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE), (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE);
     outfile << "</head>" << std::endl << "<body><div id=\"banner\"><div id=\"title\">" << buffer << "</div></div>" << std::endl;
@@ -192,12 +199,12 @@ bool ResultsFileWriter::writeHTML(const std::string& outputfile, time_t start, t
     if (_scanRunner.getCuts().at(0)->getC() == 0) {
         outfile << "<h3>No clusters were found.</h3>" << std::endl;
     } else {
-        outfile << "<h3>Most Likely Cuts</h3><table><tbody>" << std::endl;
-        outfile << "<tr><th>No.</th><th>Node Identifier</th><th>Number of Cases</th>";
+        outfile << "<h3>Most Likely Cuts</h3><div style=\"overflow:auto;height:350px;\"><table id=\"id_cuts\">" << std::endl;
+        outfile << "<thead><tr><th>No.</th><th>Node Identifier</th><th>Number of Cases</th>";
         if (parameters.isDuplicates()) {outfile << "<th>Cases (Duplicates Removed)</th>";}
         outfile << "<th>Expected</th><th>Observed/Expected</th>";
         if (parameters.isDuplicates()) {outfile << "<th>O/E (Duplicates Removed)</th>";}
-        outfile << "<th>Log Likelihood Ratio</th><th>P-value</th></tr>" << std::endl;
+        outfile << "<th>Log Likelihood Ratio</th><th>P-value</th></tr></thead><tbody>" << std::endl;
         std::string format, replicas;
         printString(replicas, "%u", parameters.getNumReplicationsRequested());
         printString(format, "%%.%dlf", replicas.size());
@@ -222,9 +229,9 @@ bool ResultsFileWriter::writeHTML(const std::string& outputfile, time_t start, t
             outfile << "<td>" << printString(buffer, format.c_str(), (double)_scanRunner.getRanks().at(k) /(parameters.getNumReplicationsRequested() + 1)) << "</td><tr>" << std::endl;
             k++;
         }
-        outfile << "</tbody></table>" << std::endl;
+        outfile << "</tbody></table></div>" << std::endl;
         if (k > 10) {
-            outfile << "<span id=\"id_more_clusters\">Toggle Additional Clusters</span>" << std::endl;
+            outfile << "<!-- <span id=\"id_more_clusters\">Toggle Additional Clusters</span> -->" << std::endl;
         }
         outfile << "</div>" << std::endl;
     }
