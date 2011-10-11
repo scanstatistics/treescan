@@ -189,7 +189,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         if (_outputFileTextField.getText().length() == 0) {
             throw new SettingsException("Please specify a results file.", (Component) _outputFileTextField);
         }
-        if (_reportResultsAsHTML.isSelected() && (!_outputFileTextField.getText().endsWith(".htm") || !_outputFileTextField.getText().endsWith(".html"))) {
+        if (_reportResultsAsHTML.isSelected() && !(_outputFileTextField.getText().endsWith(".htm") || _outputFileTextField.getText().endsWith(".html"))) {
             throw new SettingsException("Outputting results as HTML requires a file extension of '.html'.", (Component) _outputFileTextField);
         }
         if (!FileAccess.ValidateFileAccess(_outputFileTextField.getText(), true)) {
