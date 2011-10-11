@@ -370,7 +370,3 @@ bool ScanRunner::setupTree() {
 
     return true;
 }
-
-
-
-

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+
+<!--
+    A TreeScan installation file.
+
+    To compile it :
+    - call /prj/treescan/installers/IzPack/bin/compile /prj/treescan/installers/IzPackInstaller/install_linux.xml -b . -o install_linux.jar -k standard
+-->
+
+<installation version="1.0">
+
+    <!--
+        The info section.
+        The meaning of the tags should be natural ...
+    -->
+    <info>
+        <appname>TreeScan</appname>
+        <appversion>1.1</appversion>
+        <appsubpath>TreeScan</appsubpath>
+        <authors>
+            <author name="Martin Kulldorff together with IMS Inc." email="kulldorff@treescan.org"/>
+        </authors>
+        <url>http://www.treescan.org/</url>
+        <javaversion>1.6</javaversion>
+        <writeinstallationinformation>no</writeinstallationinformation>
+        <run-privileged/>
+    </info>
+
+    <!--
+        The gui preferences indication.
+        Sets the installer window to 640x480. It will not be able to change the size.
+    -->
+    <guiprefs width="640" height="480" resizable="yes">
+        <modifier key="headingPanelCounter" value="progressbar"/>
+        <modifier key="headingPanelCounterPos" value="inNavigationPanel"/>
+    </guiprefs>
+
+    <!--
+        The locale section.
+        Asks here to include the English and French langpacks.
+    -->
+    <locale>
+        <langpack iso3="eng"/>
+    </locale>
+
+    <!--
+        The resources section.
+        The ids must be these ones if you want to use the LicencePanel and/or the InfoPanel.
+    -->
+    <resources>
+        <res id="HTMLLicencePanel.licence" src="/prj/treescan/build/treescan/installers/documents/eula.html" />
+        <res id="Unix_shortcutSpec.xml" src="/prj/treescan/build/treescan/installers/izpack/linux/Unix_shortcutSpec.xml" />
+        <res id="ProcessPanel.Spec.xml" src="/prj/treescan/build/treescan/installers/izpack/linux/ProcessPanel.Spec.xml" />
+        <res id="Installer.image" src="/prj/treescan/build/treescan/installers/resources/TreeScan.gif" />
+    </resources>
+
+    <variables>
+       <variable name="DesktopShortcutCheckboxEnabled" value="true"/>
+    </variables>
+
+    <!--
+        The panels section.
+        We indicate here which panels we want to use. The order will be respected.
+    -->
+    <panels>
+        <panel classname="HelloPanel"/>   <!-- consider CheckedHelloPanel -->
+        <panel classname="HTMLLicencePanel"/>
+
+        <!-- We might want this if we decide to use a run script
+        <panel classname="JDKPathPanel"/>
+        -->
+
+        <panel classname="TargetPanel"/>
+        <panel classname="InstallPanel"/>
+        <panel classname="ShortcutPanel"/>
+        <panel classname="ProcessPanel" os="unix"/>
+        <panel classname="SimpleFinishPanel"/>
+    </panels>
+
+    <!--
+        The packs section.
+        We specify here our packs.
+    -->
+    <packs>
+        <pack name="Base" required="yes">
+            <description>Base Application Files</description>
+            <file src="/prj/treescan/build/treescan/java_application/jni_application/dist/TreeScan.jar" targetdir="$INSTALL_PATH"/>
+            <file src="/prj/treescan/build/treescan/installers/documents/userguide.pdf" targetdir="$INSTALL_PATH"/>
+        </pack>
+
+        <pack name="Linux Specific Files" required="yes" os="unix" >
+            <description>Linux Specific Files</description>
+            <file src="/prj/treescan/build/binaries/linux/treescan_stdc++5_x86_64_32bit" targetdir="$INSTALL_PATH" />
+            <file src="/prj/treescan/build/binaries/linux/treescan_stdc++5_x86_64_64bit" targetdir="$INSTALL_PATH" />
+            <file src="/prj/treescan/build/binaries/linux/treescan_stdc++6_x86_64_32bit" targetdir="$INSTALL_PATH" />
+            <file src="/prj/treescan/build/binaries/linux/treescan_stdc++6_x86_64_64bit" targetdir="$INSTALL_PATH" />
+            <executable targetfile="$INSTALL_PATH/treescan_stdc++5_x86_64_32bit" type="bin" keep="true" stage="never" />
+            <executable targetfile="$INSTALL_PATH/treescan_stdc++5_x86_64_64bit" type="bin" keep="true" stage="never" />
+            <executable targetfile="$INSTALL_PATH/treescan_stdc++6_x86_64_32bit" type="bin" keep="true" stage="never" />
+            <executable targetfile="$INSTALL_PATH/treescan_stdc++6_x86_64_64bit" type="bin" keep="true" stage="never" />
+
+            <file src="/prj/treescan/build/treescan/installers/izpack/linux/symbolic.link.sh" targetdir="$INSTALL_PATH" />
+            <executable targetfile="$INSTALL_PATH/symbolic.link.sh" type="bin" keep="false" stage="never" />
+
+            <file src="/prj/treescan/build/binaries/linux/libtreescan_stdc++5_x86_64_32bit.so" targetdir="$INSTALL_PATH" />
+            <file src="/prj/treescan/build/binaries/linux/libtreescan_stdc++5_x86_64_64bit.so" targetdir="$INSTALL_PATH" />
+            <file src="/prj/treescan/build/binaries/linux/libtreescan_stdc++6_x86_64_32bit.so" targetdir="$INSTALL_PATH" />
+            <file src="/prj/treescan/build/binaries/linux/libtreescan_stdc++6_x86_64_64bit.so" targetdir="$INSTALL_PATH" />
+            <executable targetfile="$INSTALL_PATH/libtreescan_stdc++5_x86_64_32bit.so" type="bin" keep="true" stage="never" />
+            <executable targetfile="$INSTALL_PATH/libtreescan_stdc++6_x86_64_32bit.so" type="bin" keep="true" stage="never" />
+            <executable targetfile="$INSTALL_PATH/libtreescan_stdc++5_x86_64_64bit.so" type="bin" keep="true" stage="never" />
+            <executable targetfile="$INSTALL_PATH/libtreescan_stdc++6_x86_64_64bit.so" type="bin" keep="true" stage="never" />
+
+            <file src="/prj/treescan/build/treescan/java_application/jni_application/images/TreeScan.png" targetdir="$INSTALL_PATH" />
+        </pack>
+
+        <pack name="Java Support Libraries" required="yes" >
+            <description>Java Support Libraries</description>
+            <file src="/prj/treescan/build/treescan/java_application/jni_application/dist/lib" targetdir="$INSTALL_PATH"/> <!-- Reccursive adding -->
+        </pack>
+
+        <pack name="Example Data" required="no">
+            <description>Example Data Sets</description>
+            <file src="/prj/treescan/build/treescan/installers/examples" targetdir="$INSTALL_PATH"/> <!-- Reccursive adding -->
+        </pack>
+    </packs>
+
+</installation>

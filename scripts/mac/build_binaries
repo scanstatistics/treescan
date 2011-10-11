@@ -18,7 +18,7 @@ echo building TreeScan for 64-bit system using gcc4.0.1 - x86_64
 
 # Create universal binary - only interested in Intel architectures
 echo creating universal binary for 32-bit and 64-bit systems
-lipo -create $binaries/treescan_gcc4.0.1_i386_32bit $binaries/treescan_gcc4.0.1_x86_64_64bit -output $binaries/treescan_gcc4.0.1_universal_intel
+lipo -create $binaries/treescan_gcc4.0.1_i386_32bit $binaries/treescan_gcc4.0.1_x86_64_64bit -output $binaries/treescan
 
 
 # Intel JNI libraries
@@ -31,7 +31,7 @@ echo building TreeScan shared object for 64-bit system using gcc4.0.1 - x86_64
 
 # Create universal binary - only interested in Intel architectures
 echo creating universal shared object binary for 32-bit and 64-bit systems
-lipo -create $binaries/libtreescan.gcc4.0.1_i386_32bit.jnilib $binaries/libtreescan.gcc4.0.1_x86_64_64bit.jnilib -output $binaries/libtreescan_gcc4.0.1_universal_intel.jnilib
+lipo -create $binaries/libtreescan.gcc4.0.1_i386_32bit.jnilib $binaries/libtreescan.gcc4.0.1_x86_64_64bit.jnilib -output $binaries/libtreescan.jnilib
 
 
 

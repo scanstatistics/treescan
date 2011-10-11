@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+
+<!--
+    A TreeScan installation file.
+
+    To compile it :
+    - call /prj/treescan/installers/IzPack/bin/compile /prj/treescan/installers/IzPackInstaller/install_mac.xml -b . -o install_mac.jar -k standard
+-->
+
+<installation version="1.0">
+
+    <!--
+        The info section.
+        The meaning of the tags should be natural ...
+    -->
+    <info>
+        <appname>TreeScan</appname>
+        <appversion>1.1</appversion>
+        <appsubpath>TreeScan</appsubpath>
+        <authors>
+            <author name="Martin Kulldorff together with IMS Inc." email="kulldorff@treescan.org"/>
+        </authors>
+        <url>http://www.treescan.org/</url>
+        <javaversion>1.6</javaversion>
+        <writeinstallationinformation>no</writeinstallationinformation>
+        <run-privileged/>
+    </info>
+
+    <!--
+        The gui preferences indication.
+        Sets the installer window to 640x480. It will not be able to change the size.
+    -->
+    <guiprefs width="640" height="480" resizable="yes">
+        <modifier key="headingPanelCounter" value="progressbar"/>
+        <modifier key="headingPanelCounterPos" value="inNavigationPanel"/>
+    </guiprefs>
+
+    <!--
+        The locale section.
+        Asks here to include the English and French langpacks.
+    -->
+    <locale>
+        <langpack iso3="eng"/>
+    </locale>
+
+    <!--
+        The resources section.
+        The ids must be these ones if you want to use the LicencePanel and/or the InfoPanel.
+    -->
+    <resources>
+        <res id="HTMLLicencePanel.licence" src="/prj/treescan/build/treescan/installers/documents/eula.html" />
+        <res id="ProcessPanel.Spec.xml" src="/prj/treescan/build/treescan/installers/izpack/mac/ProcessPanel.Spec.xml" />
+        <res id="Installer.image" src="/prj/treescan/build/treescan/installers/resources/TreeScan.gif" />
+    </resources>
+
+    <!--
+        The panels section.
+        We indicate here which panels we want to use. The order will be respected.
+    -->
+    <panels>
+        <panel classname="HelloPanel"/>   <!-- consider CheckedHelloPanel -->
+        <panel classname="HTMLLicencePanel"/>
+        <panel classname="TargetPanel"/>
+        <panel classname="InstallPanel"/>
+        <panel classname="ProcessPanel" os="mac"/>
+        <panel classname="SimpleFinishPanel"/>
+    </panels>
+
+    <!--
+        The packs section.
+        We specify here our packs.
+    -->
+    <packs>
+        <pack name="Base" required="yes">
+            <description>Base Application Files</description>
+            <file src="/prj/treescan/build/treescan/installers/documents/userguide.pdf" targetdir="$INSTALL_PATH"/>
+        </pack>
+
+        <pack name="Command-line binaries" required="yes" >
+            <description>Mac Specific Files</description>
+            <file src="/prj/treescan/build/binaries/mac/treescan" targetdir="$INSTALL_PATH" />
+            <executable targetfile="$INSTALL_PATH/treescan" type="bin" keep="true" stage="never" />
+        </pack>
+
+        <pack name="Java Application Bundle" required="yes" >
+            <description>TreeScan Java Application Bundle</description>
+            <file src="/prj/treescan/build/treescan/installers/izpack/mac/treescan2app/TreeScan.app" targetdir="$INSTALL_PATH"/> <!-- Reccursive adding -->
+            <file src="/prj/treescan/build/treescan/installers/izpack/mac/setBundle.sh" targetdir="$INSTALL_PATH" />
+            <executable targetfile="$INSTALL_PATH/setBundle.sh" type="bin" />
+        </pack>
+
+        <pack name="Examples Data" required="no">
+            <description>Examples Data Sets</description>
+            <file src="/prj/treescan/build/treescan/installers/examples" targetdir="$INSTALL_PATH"/> <!-- Reccursive adding -->
+        </pack>
+    </packs>
+
+</installation>

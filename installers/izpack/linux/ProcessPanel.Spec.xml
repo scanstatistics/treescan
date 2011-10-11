@@ -1,0 +1,38 @@
+
+<processing>
+
+  <!-- unix jobs -->
+
+  <job name="32bit symbolic links for Java Native Interface">
+	    <description>Create symbolic links</description>
+	    <os family="unix"/>
+	    <executefile name="$INSTALL_PATH/symbolic.link.sh">
+	      <arg>$INSTALL_PATH/libtreescan32.so</arg><arg>$INSTALL_PATH/libtreescan_stdc++6_x86_64_32bit.so</arg><arg>$INSTALL_PATH/libtreescan_stdc++5_x86_64_32bit.so</arg>
+	    </executefile>
+  </job>
+
+  <job name="32bit symbolic links for TreeScan Commandline Application">
+	    <description>Create symbolic links</description>
+	    <os family="unix"/>
+	    <executefile name="$INSTALL_PATH/symbolic.link.sh">
+	      <arg>$INSTALL_PATH/treescan32</arg><arg>$INSTALL_PATH/treescan_stdc++6_x86_64_32bit</arg><arg>$INSTALL_PATH/treescan_stdc++5_x86_64_32bit</arg>
+	    </executefile>
+  </job>
+
+  <job name="64bit symbolic links for Java Native Interface">
+	    <description>Create symbolic links</description>
+	    <os family="unix"/>
+	    <executefile name="$INSTALL_PATH/symbolic.link.sh">
+	      <arg>$INSTALL_PATH/libtreescan64.so</arg><arg>$INSTALL_PATH/libtreescan_stdc++6_x86_64_64bit.so</arg><arg>$INSTALL_PATH/libtreescan_stdc++5_x86_64_64bit.so</arg>
+	    </executefile>
+  </job>
+
+  <job name="64bit symbolic links for TreeScan Commandline Application">
+	    <description>Create symbolic links</description>
+	    <os family="unix"/>
+	    <executefile name="$INSTALL_PATH/symbolic.link.sh">
+	      <arg>$INSTALL_PATH/treescan64</arg><arg>$INSTALL_PATH/treescan_stdc++6_x86_64_64bit</arg><arg>$INSTALL_PATH/treescan_stdc++5_x86_64_64bit</arg>
+	    </executefile>
+  </job>
+
+</processing>

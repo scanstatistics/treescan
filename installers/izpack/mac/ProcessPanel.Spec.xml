@@ -1,0 +1,10 @@
+
+<processing>
+  <job name="Unzipping TreeScan Application Bundle">
+	    <description>Unzipping TreeScan Application Bundle</description>
+	    <os family="mac"/>
+	    <executefile name="$INSTALL_PATH/setBundle.sh">
+	      <arg>$INSTALL_PATH/TreeScan.app</arg>
+	    </executefile>
+  </job>
+</processing>
