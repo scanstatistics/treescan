@@ -269,7 +269,7 @@
               <Connection code="new NewSessionFileAction()" type="code"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/New.png"/>
+              <Image iconType="3" name="/add.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="New Session" noResource="true"/>
             <Property name="hideActionText" type="boolean" value="true"/>
@@ -283,7 +283,7 @@
               <Connection code="new OpenSessionFileAction()" type="code"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/Folder.png"/>
+              <Image iconType="3" name="/folder_open.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Open Session" noResource="true"/>
             <Property name="hideActionText" type="boolean" value="true"/>
@@ -295,7 +295,7 @@
               <Connection code="_saveSessionAction" type="code"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/save.png"/>
+              <Image iconType="3" name="/down.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Save Session" noResource="true"/>
             <Property name="hideActionText" type="boolean" value="true"/>
@@ -303,29 +303,29 @@
         </Component>
         <Component class="javax.swing.JToolBar$Separator" name="jSeparator1">
         </Component>
-        <Component class="javax.swing.JButton" name="_executeSessionToolButton">
-          <Properties>
-            <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="_executeSessionAction" type="code"/>
-            </Property>
-            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/Execute.gif"/>
-            </Property>
-            <Property name="toolTipText" type="java.lang.String" value="Execute Session" noResource="true"/>
-            <Property name="hideActionText" type="boolean" value="true"/>
-          </Properties>
-        </Component>
-        <Component class="javax.swing.JToolBar$Separator" name="jSeparator2">
-        </Component>
         <Component class="javax.swing.JButton" name="_printToolButton">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection code="_printResultsAction" type="code"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/print.png"/>
+              <Image iconType="3" name="/printer.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Print Analysis Results" noResource="true"/>
+            <Property name="hideActionText" type="boolean" value="true"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JToolBar$Separator" name="jSeparator2">
+        </Component>
+        <Component class="javax.swing.JButton" name="_executeSessionToolButton">
+          <Properties>
+            <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="_executeSessionAction" type="code"/>
+            </Property>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/go.png"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" value="Execute Session" noResource="true"/>
             <Property name="hideActionText" type="boolean" value="true"/>
           </Properties>
         </Component>
@@ -337,7 +337,7 @@
               <Connection code="new CheckNewVersionAction()" type="code"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/update.png"/>
+              <Image iconType="3" name="/web.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Check for New Version" noResource="true"/>
             <Property name="hideActionText" type="boolean" value="true"/>
@@ -351,7 +351,7 @@
               <Connection code="new HelpSystemAction()" type="code"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/Help.gif"/>
+              <Image iconType="3" name="/help.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Help" noResource="true"/>
             <Property name="hideActionText" type="boolean" value="true"/>

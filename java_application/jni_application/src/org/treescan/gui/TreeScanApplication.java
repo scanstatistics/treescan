@@ -711,9 +711,9 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         _openSessionToolButton = new javax.swing.JButton();
         _saveSessionToolButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
-        _executeSessionToolButton = new javax.swing.JButton();
-        jSeparator2 = new javax.swing.JToolBar.Separator();
         _printToolButton = new javax.swing.JButton();
+        jSeparator2 = new javax.swing.JToolBar.Separator();
+        _executeSessionToolButton = new javax.swing.JButton();
         jSeparator4 = new javax.swing.JToolBar.Separator();
         _versionUpdateToolButton = new javax.swing.JButton();
         jSeparator5 = new javax.swing.JToolBar.Separator();
@@ -752,48 +752,48 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         _ToolBar.setFloatable(false);
 
         _newSessionToolButton.setAction(new NewSessionFileAction());
-        _newSessionToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/New.png"))); // NOI18N
+        _newSessionToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/add.png"))); // NOI18N
         _newSessionToolButton.setToolTipText("New Session"); // NOI18N
         _newSessionToolButton.setHideActionText(true);
         _ToolBar.add(_newSessionToolButton);
         _ToolBar.add(jSeparator3);
 
         _openSessionToolButton.setAction(new OpenSessionFileAction());
-        _openSessionToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Folder.png"))); // NOI18N
+        _openSessionToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/folder_open.png"))); // NOI18N
         _openSessionToolButton.setToolTipText("Open Session"); // NOI18N
         _openSessionToolButton.setHideActionText(true);
         _ToolBar.add(_openSessionToolButton);
 
         _saveSessionToolButton.setAction(_saveSessionAction);
-        _saveSessionToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/save.png"))); // NOI18N
+        _saveSessionToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/down.png"))); // NOI18N
         _saveSessionToolButton.setToolTipText("Save Session"); // NOI18N
         _saveSessionToolButton.setHideActionText(true);
         _ToolBar.add(_saveSessionToolButton);
         _ToolBar.add(jSeparator1);
 
-        _executeSessionToolButton.setAction(_executeSessionAction);
-        _executeSessionToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Execute.gif"))); // NOI18N
-        _executeSessionToolButton.setToolTipText("Execute Session"); // NOI18N
-        _executeSessionToolButton.setHideActionText(true);
-        _ToolBar.add(_executeSessionToolButton);
-        _ToolBar.add(jSeparator2);
-
         _printToolButton.setAction(_printResultsAction);
-        _printToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/print.png"))); // NOI18N
+        _printToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/printer.png"))); // NOI18N
         _printToolButton.setToolTipText("Print Analysis Results"); // NOI18N
         _printToolButton.setHideActionText(true);
         _ToolBar.add(_printToolButton);
+        _ToolBar.add(jSeparator2);
+
+        _executeSessionToolButton.setAction(_executeSessionAction);
+        _executeSessionToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/go.png"))); // NOI18N
+        _executeSessionToolButton.setToolTipText("Execute Session"); // NOI18N
+        _executeSessionToolButton.setHideActionText(true);
+        _ToolBar.add(_executeSessionToolButton);
         _ToolBar.add(jSeparator4);
 
         _versionUpdateToolButton.setAction(new CheckNewVersionAction());
-        _versionUpdateToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/update.png"))); // NOI18N
+        _versionUpdateToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/web.png"))); // NOI18N
         _versionUpdateToolButton.setToolTipText("Check for New Version"); // NOI18N
         _versionUpdateToolButton.setHideActionText(true);
         _ToolBar.add(_versionUpdateToolButton);
         _ToolBar.add(jSeparator5);
 
         helpSystemToolButton.setAction(new HelpSystemAction());
-        helpSystemToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Help.gif"))); // NOI18N
+        helpSystemToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/help.png"))); // NOI18N
         helpSystemToolButton.setToolTipText("Help"); // NOI18N
         helpSystemToolButton.setHideActionText(true);
         _ToolBar.add(helpSystemToolButton);

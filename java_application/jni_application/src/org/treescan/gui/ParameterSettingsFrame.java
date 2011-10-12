@@ -299,7 +299,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _resultsFileLabel.setText("Results File:"); // NOI18N
 
-        _resultsFileBrowseButton.setText("..."); // NOI18N
+        _resultsFileBrowseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/folder_open_small.png"))); // NOI18N
+        _resultsFileBrowseButton.setToolTipText("Browse for results file ...");
         _resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
@@ -315,7 +316,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _caseFileLabel.setText("Count File:"); // NOI18N
 
-        _countFileBrowseButton.setText("..."); // NOI18N
+        _countFileBrowseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/folder_open_small.png"))); // NOI18N
         _countFileBrowseButton.setToolTipText("Browse for count file ..."); // NOI18N
         _countFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -331,7 +332,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _countFileImportButton.setText("..."); // NOI18N
+        _countFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
         _countFileImportButton.setToolTipText("Import count file ..."); // NOI18N
         _countFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -356,7 +357,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _controlFileLabel.setText("Tree File:"); // NOI18N
 
-        _treeFileBrowseButton.setText("..."); // NOI18N
+        _treeFileBrowseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/folder_open_small.png"))); // NOI18N
         _treeFileBrowseButton.setToolTipText("Browse for tree file ..."); // NOI18N
         _treeFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -372,7 +373,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _treeFileImportButton.setText("..."); // NOI18N
+        _treeFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
         _treeFileImportButton.setToolTipText("Import tree file ..."); // NOI18N
         _treeFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -512,7 +513,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_resultsFileBrowseButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportResultsAsHTML)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
