@@ -23,14 +23,14 @@
         <url>http://www.treescan.org/</url>
         <javaversion>1.6</javaversion>
         <writeinstallationinformation>no</writeinstallationinformation>
-        <run-privileged/>
+        <!--<run-privileged/>-->
     </info>
 
     <!--
         The gui preferences indication.
         Sets the installer window to 640x480. It will not be able to change the size.
     -->
-    <guiprefs width="640" height="480" resizable="yes">
+    <guiprefs width="840" height="480" resizable="yes">
         <modifier key="headingPanelCounter" value="progressbar"/>
         <modifier key="headingPanelCounterPos" value="inNavigationPanel"/>
     </guiprefs>

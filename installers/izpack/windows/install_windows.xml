@@ -30,7 +30,7 @@
         The gui preferences indication.
         Sets the installer window to 640x480. It will not be able to change the size.
     -->
-    <guiprefs width="640" height="480" resizable="yes">
+    <guiprefs width="840" height="480" resizable="yes">
         <modifier key="headingPanelCounter" value="progressbar"/>
         <modifier key="headingPanelCounterPos" value="inNavigationPanel"/>
     </guiprefs>
@@ -112,9 +112,9 @@
             <description>Windows Specific Files</description>
             <file src="/prj/treescan/build/treescan/java_application/jni_application/dist/TreeScan.exe" targetdir="$INSTALL_PATH" /> />
             <file src="/prj/treescan/build/treescan/batch_application/Win32/Release/treescan32.exe" targetdir="$INSTALL_PATH" /> />
-            <file src="/prj/treescan/build/treescan/library/Win32/Release/libtreescan32.dll" targetdir="$INSTALL_PATH" />
+            <file src="/prj/treescan/build/treescan/library/Win32/Release/treescan32.dll" targetdir="$INSTALL_PATH" />
             <file src="/prj/treescan/build/treescan/batch_application/x64/Release/treescan64.exe" targetdir="$INSTALL_PATH" /> />
-            <file src="/prj/treescan/build/treescan/library/x64/Release/libtreescan64.dll" targetdir="$INSTALL_PATH" />
+            <file src="/prj/treescan/build/treescan/library/x64/Release/treescan64.dll" targetdir="$INSTALL_PATH" />
             <file src="/prj/treescan/build/treescan/installers/resources/TreeScan.ico" targetdir="$INSTALL_PATH" />
         </pack>
 

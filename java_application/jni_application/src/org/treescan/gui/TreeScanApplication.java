@@ -58,7 +58,7 @@ import org.treescan.gui.utils.MacOSApplication;
 public class TreeScanApplication extends javax.swing.JFrame implements WindowFocusListener, WindowListener, InternalFrameListener, ClipboardOwner {
 
     private static final String _application = System.getProperty("user.dir") + System.getProperty("file.separator") + "TreeScan.jar";
-    private static final String _user_guide = System.getProperty("user.dir") + System.getProperty("file.separator") + "TreeScan_Users_Guide.pdf";
+    private static final String _user_guide = System.getProperty("user.dir") + System.getProperty("file.separator") + "userguide.pdf";
     private static Boolean _debug_url = new Boolean(false);
     private static String _run_args[] = new String[]{};
     private static final long serialVersionUID = 1L;
@@ -158,8 +158,8 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
           }
 
           // educated guess has been determined 
-          String firstTryLibrary = is64BitVM ? "libtreescan64" : "libtreescan32";
-          String secondTryLibrary = is64BitVM ? "libtreescan32" : "libtreescan64";
+          String firstTryLibrary = is64BitVM ? "treescan64" : "treescan32";
+          String secondTryLibrary = is64BitVM ? "treescan32" : "treescan64";
           try {
             System.out.println("Loading " + firstTryLibrary);
             System.loadLibrary(firstTryLibrary);
