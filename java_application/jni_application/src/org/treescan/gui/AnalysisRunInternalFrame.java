@@ -1,8 +1,12 @@
 package org.treescan.gui;
 
+import java.awt.Desktop;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
@@ -148,7 +152,17 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                     }
                 } else if (_parameters.getResultsFormat() == Parameters.ResultsFormat.HTML) {
                     PrintProgressWindow("Opening results in web browser ...");
-                    BareBonesBrowserLaunch.openURL(sFileName.replace("\\", "/"));
+                    File path = new File(sFileName);
+                    if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                        try {
+                            Desktop.getDesktop().open(path);
+                        } catch (IOException ex) {
+                            PrintIssuesWindndow("Failed to open file: " + path.toString() + "\n");
+                        }
+                    } else {
+                        String resultsFile = "file://localhost/" + path.getAbsolutePath();
+                        BareBonesBrowserLaunch.openURL(resultsFile.replace('\\', '/'));
+                    }
                 } else {/* nop */}
                 OutputFileRegister.getInstance().release(_parameters.getOutputFileName());
             }

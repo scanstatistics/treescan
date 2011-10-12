@@ -78,8 +78,8 @@
                           <EmptySpace min="521" pref="521" max="521" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
-                          <Component id="_outputFileTextField" pref="534" max="32767" attributes="0"/>
-                          <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="_outputFileTextField" pref="544" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="_resultsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                       </Group>
                       <Component id="_resultsFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -103,20 +103,13 @@
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Component id="_caseFileLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="1" attributes="0">
-                      <Group type="102" alignment="1" attributes="0">
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="_countFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_countFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_duplicatesInCaseFile" min="-2" pref="14" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="1" attributes="0">
-                          <Component id="_countFileImportButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
-                      </Group>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="_countFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="_countFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="_countFileImportButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="_duplicatesInCaseFile" min="-2" pref="14" max="-2" attributes="0"/>
                   <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
                   <Component id="_resultsFileLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -126,7 +119,7 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="_reportResultsAsHTML" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="26" max="32767" attributes="0"/>
+                  <EmptySpace pref="30" max="32767" attributes="0"/>
                   <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
