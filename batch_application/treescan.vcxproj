@@ -90,7 +90,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\prj\treescan.development\treescan\calculation\output;C:\prj\treescan.development\treescan\calculation\randomization;C:\prj\treescan.development\treescan\calculation\utility;C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation\print;C:\prj\treescan.development\treescan\calculation\loglikelihood;C:\prj\treescan.development\treescan\calculation;C:\prj\treescan.development\treescan\batch_application;C:\prj\treescan.development\boost\boost_1_46_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\prj\treescan.development\treescan\calculation\output;C:\prj\treescan.development\treescan\calculation\randomization;C:\prj\treescan.development\treescan\calculation\utility;C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation\print;C:\prj\treescan.development\treescan\calculation\loglikelihood;C:\prj\treescan.development\treescan\calculation;C:\prj\treescan.development\treescan\batch_application;C:\prj\treescan.development\boost\boost_1_47_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -108,7 +108,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\prj\treescan.development\treescan\calculation\output;C:\prj\treescan.development\treescan\calculation\randomization;C:\prj\treescan.development\treescan\calculation\utility;C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation\print;C:\prj\treescan.development\treescan\calculation\loglikelihood;C:\prj\treescan.development\treescan\calculation;C:\prj\treescan.development\treescan\batch_application;C:\prj\treescan.development\boost\boost_1_46_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\prj\treescan.development\treescan\calculation\output;C:\prj\treescan.development\treescan\calculation\randomization;C:\prj\treescan.development\treescan\calculation\utility;C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation\print;C:\prj\treescan.development\treescan\calculation\loglikelihood;C:\prj\treescan.development\treescan\calculation;C:\prj\treescan.development\treescan\batch_application;C:\prj\treescan.development\boost\boost_1_47_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -126,7 +126,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\prj\treescan.development\treescan\calculation\output;C:\prj\treescan.development\treescan\calculation\randomization;C:\prj\treescan.development\treescan\calculation\utility;C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation\print;C:\prj\treescan.development\treescan\calculation\loglikelihood;C:\prj\treescan.development\treescan\calculation;C:\prj\treescan.development\treescan\batch_application;C:\prj\treescan.development\boost\boost_1_46_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\prj\treescan.development\treescan\calculation\output;C:\prj\treescan.development\treescan\calculation\randomization;C:\prj\treescan.development\treescan\calculation\utility;C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation\print;C:\prj\treescan.development\treescan\calculation\loglikelihood;C:\prj\treescan.development\treescan\calculation;C:\prj\treescan.development\treescan\batch_application;C:\prj\treescan.development\boost\boost_1_47_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -147,7 +147,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\prj\treescan.development\treescan\calculation\output;C:\prj\treescan.development\treescan\calculation\randomization;C:\prj\treescan.development\treescan\calculation\utility;C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation\print;C:\prj\treescan.development\treescan\calculation\loglikelihood;C:\prj\treescan.development\treescan\calculation;C:\prj\treescan.development\treescan\batch_application;C:\prj\treescan.development\boost\boost_1_46_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\prj\treescan.development\treescan\calculation\output;C:\prj\treescan.development\treescan\calculation\randomization;C:\prj\treescan.development\treescan\calculation\utility;C:\prj\treescan.development\treescan\calculation\runner;C:\prj\treescan.development\treescan\calculation\print;C:\prj\treescan.development\treescan\calculation\loglikelihood;C:\prj\treescan.development\treescan\calculation;C:\prj\treescan.development\treescan\batch_application;C:\prj\treescan.development\boost\boost_1_47_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -158,21 +158,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\cmdline.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\config_file.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\convert.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\options_description.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\parsers.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\positional_options.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\split.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\utf8_codecvt_facet.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\value_semantic.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\variables_map.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\program_options\src\winmain.cpp" />
-    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\thread\src\win32\thread.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_47_0\libs\program_options\src\cmdline.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_47_0\libs\program_options\src\config_file.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_47_0\libs\program_options\src\convert.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_47_0\libs\program_options\src\options_description.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_47_0\libs\program_options\src\parsers.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_47_0\libs\program_options\src\positional_options.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_47_0\libs\program_options\src\split.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_47_0\libs\program_options\src\utf8_codecvt_facet.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_47_0\libs\program_options\src\value_semantic.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_47_0\libs\program_options\src\variables_map.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_47_0\libs\program_options\src\winmain.cpp" />
+    <ClCompile Include="..\..\..\boost\boost_1_47_0\libs\thread\src\win32\thread.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\Loglikelihood.cpp" />
     <ClCompile Include="..\calculation\output\DataFileWriter.cpp" />
     <ClCompile Include="..\calculation\output\ResultsFileWriter.cpp" />
+    <ClCompile Include="..\calculation\ParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\Parameters.cpp" />
     <ClCompile Include="..\calculation\ParametersPrint.cpp" />
     <ClCompile Include="..\calculation\print\BasePrint.cpp" />
@@ -200,6 +201,7 @@
     <ClInclude Include="..\calculation\loglikelihood\Loglikelihood.h" />
     <ClInclude Include="..\calculation\output\DataFileWriter.h" />
     <ClInclude Include="..\calculation\output\ResultsFileWriter.h" />
+    <ClInclude Include="..\calculation\ParameterFileAccess.h" />
     <ClInclude Include="..\calculation\Parameters.h" />
     <ClInclude Include="..\calculation\ParametersPrint.h" />
     <ClInclude Include="..\calculation\print\BasePrint.h" />

@@ -5,6 +5,10 @@
 #include "Parameters.h"
 #include "PrjException.h"
 #include "RandomNumberGenerator.h"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 const int Parameters::giNumParameters = 10;
 
@@ -137,14 +141,14 @@ void Parameters::setAsDefaulted() {
   _countFileName = "";
   _treeFileName = "";
   _outputFileName = "";
-  _resultsFormat = HTML;
-  _replications = 999;
+  _resultsFormat = TEXT;
+  _replications = 99999;
   _creationVersion.iMajor = atoi(VERSION_MAJOR);
   _creationVersion.iMinor = atoi(VERSION_MINOR);
   _creationVersion.iRelease = atoi(VERSION_RELEASE);
   _randomizationSeed = RandomNumberGenerator::glDefaultSeed;
-  _numRequestedParallelProcesses = 0;
   _randomlyGenerateSeed = false;
+  _numRequestedParallelProcesses = 0;
   _conditional = false;
   _duplicates = false;
   _printColumnHeaders = true;
@@ -164,4 +168,55 @@ void Parameters::setSourceFileName(const char * sParametersSourceFileName) {
   //Use FileName class to ensure that a relative path is expanded to absolute path.
   std::string buffer;
   _parametersSourceFileName = FileName(sParametersSourceFileName).getFullPath(buffer);
+}
+
+void Parameters::read(const std::string &filename, ParametersFormat type) {
+    using boost::property_tree::ptree;
+    ptree pt;
+
+    switch (type) {
+        case INI: read_ini(filename, pt); break;
+        case JSON: read_json(filename, pt); break;
+        case XML: 
+        default: read_xml(filename, pt);
+    }
+    setSourceFileName(filename.c_str());
+    setTreeFileName(pt.get<std::string>(type == INI ? "input.tree-file" : "parameters.input.tree-file").c_str(), true);
+    setCountFileName(pt.get<std::string>(type == INI ? "input.count-file" : "parameters.input.count-file").c_str(), true);
+    _duplicates = pt.get<bool>(type == INI ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", false);
+    _replications = pt.get<unsigned int>(type == INI ? "analysis.replications" : "parameters.analysis.replications", 999);
+    _conditional = pt.get<bool>(type == INI ? "analysis.conditional" : "parameters.analysis.conditional", false);
+    setOutputFileName(pt.get<std::string>(type == INI ? "output.results-file" : "parameters.output.results-file").c_str(), true);
+    _resultsFormat = pt.get<bool>(type == INI ? "output.html" : "parameters.output.results-file.<xmlattr>.html", true) ? HTML : TEXT;
+    _printColumnHeaders = pt.get<bool>(type == INI ? "output.print-headers" : "parameters.output.print-headers", true);
+    _numRequestedParallelProcesses = pt.get<unsigned int>(type == INI ? "execute-options.processors" : "parameters.execute-options.processors", 0);
+    _randomizationSeed = pt.get<unsigned int>(type == INI ? "execute-options.seed" : "parameters.execute-options.seed", static_cast<unsigned int>(RandomNumberGenerator::glDefaultSeed));
+    _randomlyGenerateSeed = pt.get<bool>(type == INI ? "execute-options.generate-seed" : "parameters.execute-options.generate-seed", false);
+}
+
+void Parameters::write(const std::string &filename, ParametersFormat type) const {
+    using boost::property_tree::ptree;
+    using boost::property_tree::xml_writer_settings;
+    ptree pt;
+
+    pt.put(type != XML ? "input.tree-file" : "parameters.input.tree-file", _treeFileName);
+    pt.put(type != XML ? "input.count-file" : "parameters.input.count-file", _countFileName);
+    pt.put(type != XML ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", _duplicates);
+    pt.put(type != XML ? "analysis.replications" : "parameters.analysis.replications", _replications);
+    pt.put(type != XML ? "analysis.conditional" : "parameters.analysis.conditional", _conditional);
+    pt.put(type != XML ? "output.results-file" : "parameters.output.results-file", _outputFileName);
+    pt.put(type != XML ? "output.html" : "parameters.output.results-file.<xmlattr>.html", _resultsFormat == HTML);
+    pt.put(type != XML ? "output.print-headers" : "parameters.output.print-headers", _printColumnHeaders);
+    pt.put(type != XML ? "execute-options.processors" : "parameters.execute-options.processors", _numRequestedParallelProcesses);
+    pt.put(type != XML ? "execute-options.seed" : "parameters.execute-options.seed", _randomizationSeed);
+    pt.put(type != XML ? "execute-options.generate-seed" : "parameters.execute-options.generate-seed", _randomlyGenerateSeed);
+    switch (type) {
+        case INI: write_ini(filename, pt); break;
+        case JSON: write_json(filename, pt); break;
+        case XML:  
+        default: {
+            xml_writer_settings<char> w(' ', 4);
+            write_xml(filename, pt, std::locale(), w);
+        }
+    }
 }

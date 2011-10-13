@@ -20,6 +20,7 @@
 #include "org_treescan_gui_ParameterSettingsFrame.h"
 #include "org_treescan_app_AppConstants.h"
 #include "Toolkit.h"
+#include "ParameterFileAccess.h"
 //#pragma argsused
 
 void __TreeScanInit() {
@@ -168,13 +169,14 @@ JNIEXPORT jint JNICALL Java_org_treescan_app_CalculationThread_RunAnalysis(JNIEn
 */
 
 int DLL_EXP C_RunAnalysis(const char * filename, C_Callback* call_back) {
-  Parameters            Parameters;
+  Parameters            parameters;
   C_PrintCallback       Console(call_back, false);
      
   try {
     //TODO: ParameterAccessCoordinator reader(Parameters);
     //reader.Read(filename, Console);
-    _runAnalysis(Parameters, Console);
+    parameters.read(filename, Parameters::XML);
+    _runAnalysis(parameters, Console);
   } catch (resolvable_error & x) {
     Console.Printf("%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
     return 1;
@@ -204,13 +206,14 @@ int DLL_EXP PY_RunAnalysis(const char * filename, PY_Callback* call_back) {
 
   //(C_Callback(call_back))("hello");
   //return 978;
-  Parameters           Parameters;
+  Parameters           parameters;
   PY_PrintCallback       Console(call_back, false);
      
   try {
     //TODO: ParameterAccessCoordinator reader(Parameters);
     //reader.Read(filename, Console);
-    _runAnalysis(Parameters, Console);
+    parameters.read(filename, Parameters::XML);
+    _runAnalysis(parameters, Console);
   } catch (resolvable_error & x) {
     Console.Printf("%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
     return 1;
@@ -238,13 +241,14 @@ int DLL_EXP PY_RunAnalysis(const char * filename, PY_Callback* call_back) {
 
 #ifdef _WINDOWS_
 int DLL_EXP VB_RunAnalysis(const char * filename, long cbAddress) {
-  Parameters        Parameters;
+  Parameters        parameters;
   VB_PrintCallback  Console(cbAddress, false);
      
   try {
     // TODO ParameterAccessCoordinator reader(Parameters);
     //reader.Read(filename, Console);
-    _runAnalysis(Parameters, Console);
+    parameters.read(filename, Parameters::XML);
+    _runAnalysis(parameters, Console);
   } catch (resolvable_error & x) {
     Console.Printf("%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
     return 1;

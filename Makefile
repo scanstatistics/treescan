@@ -60,6 +60,7 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(UTILITY)/AsciiPrintFormat.cpp \
                $(CALCULATION)/Parameters.cpp \
                $(CALCULATION)/ParametersPrint.cpp \
+               $(CALCULATION)/ParameterFileAccess.cpp \
                $(CALCULATION)/Toolkit.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/once.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/thread.cpp \

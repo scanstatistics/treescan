@@ -65,15 +65,9 @@
     <panels>
         <panel classname="HelloPanel"/>   <!-- consider CheckedHelloPanel -->
         <panel classname="HTMLLicencePanel"/>
-
-        <!-- We might want this if we decide to use a run script
-        <panel classname="JDKPathPanel"/>
-        -->
-
         <panel classname="TargetPanel"/>
         <panel classname="InstallPanel"/>
         <panel classname="ShortcutPanel"/>
-        <panel classname="ProcessPanel" os="unix"/>
         <panel classname="SimpleFinishPanel"/>
     </panels>
 
@@ -90,27 +84,14 @@
 
         <pack name="Linux Specific Files" required="yes" os="unix" >
             <description>Linux Specific Files</description>
-            <file src="/prj/treescan/build/binaries/linux/treescan_stdc++5_x86_64_32bit" targetdir="$INSTALL_PATH" />
-            <file src="/prj/treescan/build/binaries/linux/treescan_stdc++5_x86_64_64bit" targetdir="$INSTALL_PATH" />
-            <file src="/prj/treescan/build/binaries/linux/treescan_stdc++6_x86_64_32bit" targetdir="$INSTALL_PATH" />
-            <file src="/prj/treescan/build/binaries/linux/treescan_stdc++6_x86_64_64bit" targetdir="$INSTALL_PATH" />
-            <executable targetfile="$INSTALL_PATH/treescan_stdc++5_x86_64_32bit" type="bin" keep="true" stage="never" />
-            <executable targetfile="$INSTALL_PATH/treescan_stdc++5_x86_64_64bit" type="bin" keep="true" stage="never" />
-            <executable targetfile="$INSTALL_PATH/treescan_stdc++6_x86_64_32bit" type="bin" keep="true" stage="never" />
-            <executable targetfile="$INSTALL_PATH/treescan_stdc++6_x86_64_64bit" type="bin" keep="true" stage="never" />
-
-            <file src="/prj/treescan/build/treescan/installers/izpack/linux/symbolic.link.sh" targetdir="$INSTALL_PATH" />
-            <executable targetfile="$INSTALL_PATH/symbolic.link.sh" type="bin" keep="false" stage="never" />
-
-            <file src="/prj/treescan/build/binaries/linux/libtreescan_stdc++5_x86_64_32bit.so" targetdir="$INSTALL_PATH" />
-            <file src="/prj/treescan/build/binaries/linux/libtreescan_stdc++5_x86_64_64bit.so" targetdir="$INSTALL_PATH" />
-            <file src="/prj/treescan/build/binaries/linux/libtreescan_stdc++6_x86_64_32bit.so" targetdir="$INSTALL_PATH" />
-            <file src="/prj/treescan/build/binaries/linux/libtreescan_stdc++6_x86_64_64bit.so" targetdir="$INSTALL_PATH" />
-            <executable targetfile="$INSTALL_PATH/libtreescan_stdc++5_x86_64_32bit.so" type="bin" keep="true" stage="never" />
-            <executable targetfile="$INSTALL_PATH/libtreescan_stdc++6_x86_64_32bit.so" type="bin" keep="true" stage="never" />
-            <executable targetfile="$INSTALL_PATH/libtreescan_stdc++5_x86_64_64bit.so" type="bin" keep="true" stage="never" />
-            <executable targetfile="$INSTALL_PATH/libtreescan_stdc++6_x86_64_64bit.so" type="bin" keep="true" stage="never" />
-
+            <file src="/prj/treescan/build/binaries/linux/treescan32" targetdir="$INSTALL_PATH" />
+            <file src="/prj/treescan/build/binaries/linux/treescan64" targetdir="$INSTALL_PATH" />
+            <executable targetfile="$INSTALL_PATH/treescan32" type="bin" keep="true" stage="never" />
+            <executable targetfile="$INSTALL_PATH/treescan64" type="bin" keep="true" stage="never" />
+            <file src="/prj/treescan/build/binaries/linux/libtreescan32.so" targetdir="$INSTALL_PATH" />
+            <file src="/prj/treescan/build/binaries/linux/libtreescan64.so" targetdir="$INSTALL_PATH" />
+            <executable targetfile="$INSTALL_PATH/libtreescan32.so" type="bin" keep="true" stage="never" />
+            <executable targetfile="$INSTALL_PATH/libtreescan64.so" type="bin" keep="true" stage="never" />
             <file src="/prj/treescan/build/treescan/java_application/jni_application/images/TreeScan.png" targetdir="$INSTALL_PATH" />
         </pack>
 

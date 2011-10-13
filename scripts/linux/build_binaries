@@ -2,33 +2,21 @@
 
 binaries="/prj/treescan/build/binaries/linux"
 treescan_src="/prj/treescan/build/treescan"
-boost_src="/prj/treescan/build/boost/boost_1_46_0"
+boost_src="/prj/treescan/build/boost/boost_1_47_0"
 processors="-j8"
 pthread="-pthread"
 lib_target="libtreescan.linux.so"
 
 rm -f $binaries/*
 
-echo building TreeScan for 32-bit system using gcc3.3.5
-./makescript.sh $binaries/treescan_stdc++5_x86_64_32bit $treescan_src $boost_src -m32 -O3 /usr/local/gcc3.3.5/bin/g++-3.3.5 $processors $pthread
-
-echo building TreeScan shared object for 32-bit system using gcc3.3.5
-./makescript.so.sh $lib_target $binaries/libtreescan_stdc++5_x86_64_32bit.so $treescan_src $boost_src -m32 -O3 /usr/local/gcc3.3.5/bin/g++-3.3.5 $processors $pthread
-
-echo building TreeScan for 64-bit system using gcc3.3.5
-./makescript.sh $binaries/treescan_stdc++5_x86_64_64bit $treescan_src $boost_src -m64 -O3 /usr/local/gcc3.3.5/bin/g++-3.3.5 $processors $pthread
-
-echo building TreeScan shared object for 64-bit system using gcc3.3.5
-./makescript.so.sh $lib_target $binaries/libtreescan_stdc++5_x86_64_64bit.so $treescan_src $boost_src -m64 -O3 /usr/local/gcc3.3.5/bin/g++-3.3.5 $processors $pthread
-
 echo building TreeScan for 32-bit system using gcc3.4.4
-./makescript.sh $binaries/treescan_stdc++6_x86_64_32bit $treescan_src $boost_src -m32 -O3 /usr/local/gcc3.4.4/bin/g++ $processors $pthread
+./makescript.sh $binaries/treescan32 $treescan_src $boost_src -m32 -O3 /usr/local/gcc3.4.4/bin/g++ $processors $pthread
 
 echo building TreeScan shared object for 32-bit system using gcc3.4.4
-./makescript.so.sh $lib_target $binaries/libtreescan_stdc++6_x86_64_32bit.so $treescan_src $boost_src -m32 -O3 /usr/local/gcc3.4.4/bin/g++ $processors $pthread
+./makescript.so.sh $lib_target $binaries/libtreescan32.so $treescan_src $boost_src -m32 -O3 /usr/local/gcc3.4.4/bin/g++ $processors $pthread
 
 echo building TreeScan for 64-bit system using gcc3.4.4
-./makescript.sh $binaries/treescan_stdc++6_x86_64_64bit $treescan_src $boost_src -m64 -O3 /usr/local/gcc3.4.4/bin/g++ $processors $pthread
+./makescript.sh $binaries/treescan64 $treescan_src $boost_src -m64 -O3 /usr/local/gcc3.4.4/bin/g++ $processors $pthread
 
 echo building TreeScan shared object for 64-bit system using gcc3.4.4
-./makescript.so.sh $lib_target $binaries/libtreescan_stdc++6_x86_64_64bit.so $treescan_src $boost_src -m64 -O3 /usr/local/gcc3.4.4/bin/g++ $processors $pthread
+./makescript.so.sh $lib_target $binaries/libtreescan64.so $treescan_src $boost_src -m64 -O3 /usr/local/gcc3.4.4/bin/g++ $processors $pthread

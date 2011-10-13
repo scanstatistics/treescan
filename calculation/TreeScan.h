@@ -20,7 +20,11 @@
   #define stricmp strcasecmp
   #define strnicmp strncasecmp
 #endif
-
+#ifdef _WINDOWS_
+  #include <io.h>
+#else
+  #include <unistd.h>
+#endif
 #ifdef _MSC_VER
   /** default string buffer size for vsnprintf call */
   #define MSC_VSNPRINTF_DEFAULT_BUFFER_SIZE 1000

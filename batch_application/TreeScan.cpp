@@ -12,6 +12,7 @@
 #include "FileName.h"
 #include "Parameters.h"
 #include "Toolkit.h"
+#include "ParameterFileAccess.h"
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
@@ -31,66 +32,69 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
     return os;
 }
 
-void usage_message(std::string program, po::options_description& required, po::options_description& optional, PrintScreen& console) {
+void usage_message(std::string program, po::options_description& primary, po::options_description& optional, po::options_description& help, PrintScreen& console) {
     FileName            exe(program.c_str());
     std::stringstream   message;
-    message << "Usage: " << exe.getFileName().c_str() << exe.getExtension().c_str();
+    message << "Usage: " << std::endl;
 #ifdef _WINDOWS_
-    message << " -t <tree file> -c <count file> -p <output file>";
+    message  << exe.getFileName().c_str() << exe.getExtension().c_str() << " -s <settings file> [options]" << std::endl;
+    message  << exe.getFileName().c_str() << exe.getExtension().c_str() << " -t <tree file> -c <count file> -p <output file> [options]" << std::endl;
 #else
-    message << " --tree-file <file> --count-file <file> --output-file <file>";
+    message  << exe.getFileName().c_str() << exe.getExtension().c_str() << " --settings-file <settings file> [options]" << std::endl;
+    message << " --tree-file <file> --count-file <file> --output-file <file> [options]" << std::endl;
 #endif
-    message << " [options]" << std::endl << std::endl << required << std::endl << optional;
+    message << std::endl << primary << std::endl << optional << std::endl << help << std::endl;
     console.Printf(message.str().c_str(), BasePrint::P_STDOUT);
 }
 
 int main(int argc, char* argv[]) {
     PrintScreen console(false);
     Parameters parameters;
-    int replicas, limit_threads;
-    bool duplicates = false, conditional=false, output_html=false;
     po::variables_map vm;
 
     try {
         __TreeScanInit(argv[0]);
         /* required */
-        po::options_description required("required");
-        required.add_options()("tree-file,t", po::value<std::string>(), "Input file defining tree structure.")
-                              ("count-file,c", po::value<std::string>(), "Input file identifer counts and population.")
-                              ("output-file,p", po::value<std::string>(), "Output filename to print results.");
+        po::options_description primary("primary options");
+        primary.add_options()("settings-file,s", po::value<std::string>(), "Settings file with saved settings.")
+                             ("tree-file,t", po::value<std::string>(), "Input file defining tree structure.")
+                             ("count-file,c", po::value<std::string>(), "Input file identifer counts and population.")
+                             ("output-file,p", po::value<std::string>(), "Output filename to print results.");
 
         /* options */
-        po::options_description optional("options");
-        optional.add_options()("help,h", "Help")
-                              ("version,v", "Program version")
-                              ("replications,r", po::value<int>(&replicas)->default_value(99999), "Number of Monte Carlo replicatons.")
-                              ("duplicates,d", po::bool_switch(&duplicates), "Expect duplicates in count file.")
-                              ("limit-threads,l", po::value<int>(&limit_threads)->default_value(0), "Limit threads in simulation.")
-                              ("conditional,n", po::bool_switch(&conditional), "Perform conditional analysis.")
-                              ("output-html,m", po::bool_switch(&output_html), "Print results as html.");
+        po::options_description optional("secondary options");
+        optional.add_options()("replications,r", po::value<int>(), "Number of Monte Carlo replicatons (default=99999).")
+                              ("duplicates,d", po::value<bool>(), "Expect duplicates in count file (default=false).")
+                              ("limit-threads,l", po::value<int>(), "Limit threads in simulation (default=0).")
+                              ("conditional,n", po::value<bool>(), "Perform conditional analysis (default=false).")
+                              ("output-html,m", po::value<bool>(), "Print results as html (default=false).");
+
+        /* help */
+        po::options_description help("help");
+        help.add_options()("help,h", "Help")
+                          ("version,v", "Program version");
 
         /* parse program options */
         po::options_description cmdline_options;
-        cmdline_options.add(required).add(optional);
+        cmdline_options.add(primary).add(help).add(optional);
         try {
             po::store(po::command_line_parser(argc, argv).options(cmdline_options).run(), vm);
             po::notify(vm);
         } catch (std::exception& x) {
             console.Printf("Program options error: %s\n\n", BasePrint::P_ERROR, x.what());
-            usage_message(argv[0], required, optional, console);
+            usage_message(argv[0], primary, optional, help, console);
             __TreeScanExit();
             return 1;
         }
 
-        if (vm.count("help")) {usage_message(argv[0], required, optional, console); return 0;}
+        if (vm.count("help")) {usage_message(argv[0], primary, optional, help, console); return 0;}
         if (vm.count("version")) {console.Printf("TreeScan %s.%s.%s %s.\n", BasePrint::P_STDOUT, VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE, VERSION_PHASE); return 0;}
-        if (!vm.count("tree-file"))  {console.Printf("Missing tree-file parameter.\n\n", BasePrint::P_STDOUT); usage_message(argv[0], required, optional, console); return 1;}
-        if (!vm.count("count-file"))  {console.Printf("Missing count-file parameter.\n\n", BasePrint::P_STDOUT); usage_message(argv[0], required, optional, console); return 1;}
-        if (!vm.count("output-file"))  {console.Printf("Missing output-file parameter.\n\n", BasePrint::P_STDOUT); usage_message(argv[0], required, optional, console); return 1;}
+        if (!vm.count("settings-file") && !vm.count("tree-file"))  {console.Printf("Missing tree-file parameter.\n\n", BasePrint::P_STDOUT); usage_message(argv[0], primary, optional, help, console); return 1;}
+        if (!vm.count("settings-file") && !vm.count("count-file"))  {console.Printf("Missing count-file parameter.\n\n", BasePrint::P_STDOUT); usage_message(argv[0], primary, optional, help, console); return 1;}
+        if (!vm.count("settings-file") && !vm.count("output-file"))  {console.Printf("Missing output-file parameter.\n\n", BasePrint::P_STDOUT); usage_message(argv[0], primary, optional, help, console); return 1;}
 
         std::string buffer;
-        console.Printf(AppToolkit::getToolkit().GetAcknowledgment(buffer), BasePrint::P_STDOUT);
-        parameters.setNumProcesses(static_cast<unsigned int>(limit_threads));
+        console.Printf(AppToolkit::getToolkit().GetAcknowledgment(buffer), BasePrint::P_STDOUT);        
     } catch (std::exception& e) {
         std::cerr << e.what() << std::endl;
         __TreeScanExit();
@@ -102,19 +106,20 @@ int main(int argc, char* argv[]) {
     }
 
     try {
-        parameters.setTreeFileName(vm["tree-file"].as<std::string>().c_str());
-        parameters.setCountFileName(vm["count-file"].as<std::string>().c_str());
-        parameters.setOutputFileName(vm["output-file"].as<std::string>().c_str());
-        parameters.setResultsFormat(output_html ? Parameters::HTML : Parameters::TEXT);
-        parameters.setNumReplications(static_cast<unsigned int>(replicas));
-        parameters.setConditional(conditional);
-        parameters.setDuplicates(duplicates);
+        if (vm.count("settings-file")) ParameterAccessCoordinator(parameters).read(vm["settings-file"].as<std::string>());
+        if (vm.count("tree-file")) parameters.setTreeFileName(vm["tree-file"].as<std::string>().c_str());
+        if (vm.count("count-file")) parameters.setCountFileName(vm["count-file"].as<std::string>().c_str());
+        if (vm.count("output-file")) parameters.setOutputFileName(vm["output-file"].as<std::string>().c_str());
+        if (vm.count("output-html")) parameters.setResultsFormat(vm["output-html"].as<bool>() ? Parameters::HTML : Parameters::TEXT);
+        if (vm.count("replications")) parameters.setNumReplications(vm["replications"].as<int>());
+        if (vm.count("conditional")) parameters.setConditional(vm["conditional"].as<bool>());
+        if (vm.count("duplicates")) parameters.setDuplicates(vm["duplicates"].as<bool>());
+        if (vm.count("limit-threads")) parameters.setNumProcesses(vm["limit-threads"].as<int>());
 
-        ScanRunner runner(parameters, console);
-        runner.run();
+        ScanRunner(parameters, console).run();
         __TreeScanExit();
     } catch (std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
         __TreeScanExit();
         return 1;
     } catch (...) {

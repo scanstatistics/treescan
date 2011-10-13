@@ -10,6 +10,7 @@ class Parameters {
     enum ParameterType {TREEFILE=0, COUNTFILE, OUTPUTFILE, CUTS, REPLICATIONS, CONDITIONAL, DUPLICATES, RANDOMIZATION_SEED, RANDOMLY_GENERATE_SEED, PRINT_COLUMN_HEADERS};
     struct CreationVersion {unsigned int iMajor; unsigned int iMinor; unsigned int iRelease;};
     enum ResultsFormat {TEXT=0, HTML};
+    enum ParametersFormat {XML=0, INI, JSON};
 
   private:
     unsigned int                        _numRequestedParallelProcesses;
@@ -70,6 +71,9 @@ class Parameters {
     void                                setResultsFormat(ResultsFormat e) {_resultsFormat = e;}
     void                                setSourceFileName(const char * sParametersSourceFileName);
     void                                setVersion(const CreationVersion& vVersion) {_creationVersion = vVersion;}
+
+    void read(const std::string &filename, ParametersFormat type);
+    void write(const std::string &filename, ParametersFormat type) const;
 };
 //*****************************************************************************
 #endif

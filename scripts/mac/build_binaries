@@ -2,7 +2,7 @@
 
 binaries="/Users/hostovic/prj/treescan.development/build.area/binaries/mac"
 treescan_src="/Users/hostovic/prj/treescan.development/build.area/treescan"
-boost_src="/Users/hostovic/prj/boost/boost_1_46_0"
+boost_src="/Users/hostovic/prj/boost/boost_1_47_0"
 processors="-j2"
 
 rm -f $binaries/*

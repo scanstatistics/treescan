@@ -3,7 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "ParametersUtility.h"
-//#include "ParameterFileAccess.h"
+#include "ParameterFileAccess.h"
 #include "JNIException.h"
 #include <iostream>
 
@@ -16,7 +16,7 @@ JNIEXPORT jboolean JNICALL Java_org_treescan_app_Parameters_Read(JNIEnv * pEnv, 
      const char *sParameterFilename = pEnv->GetStringUTFChars(filename, &iscopy);
      if (sParameterFilename) {
        PrintNull NoPrint;
-       //ParameterAccessCoordinator(Parameters).Read(sParameterFilename, NoPrint);
+       ParameterAccessCoordinator(parameters).read(sParameterFilename);
      }
      else {
        //New session - creation version is this version.
@@ -31,7 +31,7 @@ JNIEXPORT jboolean JNICALL Java_org_treescan_app_Parameters_Read(JNIEnv * pEnv, 
      parameters.setOutputFileName("C:/prj/treescan.development/treescan/data/development/output.html");
      ParametersUtility::copyCParametersToJParameters(*pEnv, parameters, jParameters);
   }
-  catch (jni_error & x) {    
+  catch (jni_error &) {    
     return 1; // let the Java exception to be handled in the caller of JNI function
   }
   catch (std::exception& x) {
@@ -47,14 +47,14 @@ JNIEXPORT jboolean JNICALL Java_org_treescan_app_Parameters_Read(JNIEnv * pEnv, 
 
 /** Set parameters of C++ object from Java object and writes parameters to file 'filename'. */
 JNIEXPORT void JNICALL Java_org_treescan_app_Parameters_Write(JNIEnv * pEnv, jobject jParameters, jstring) {
-  Parameters   Parameters;
+  Parameters   parameters;
 
   try {
-    ParametersUtility::copyJParametersToCParameters(*pEnv, jParameters, Parameters);
+    ParametersUtility::copyJParametersToCParameters(*pEnv, jParameters, parameters);
     PrintNull NoPrint;
-    //ParameterAccessCoordinator(Parameters).Write(Parameters.getSourceFileName().c_str(), NoPrint);
+    ParameterAccessCoordinator(parameters).write(parameters.getSourceFileName().c_str());
   }
-  catch (jni_error & x) {    
+  catch (jni_error&) {    
     return; // let the Java exception to be handled in the caller of JNI function
   }
   catch (std::exception& x) {

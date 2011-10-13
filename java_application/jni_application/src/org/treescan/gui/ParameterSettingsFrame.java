@@ -53,14 +53,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         boolean bSaved = true;
 
         JFileChooser fc = new JFileChooser(TreeScanApplication.getInstance().lastBrowseDirectory);
-        fc.setDialogTitle("Save Parameter Settings As");
-        fc.addChoosableFileFilter(new InputFileFilter("prm", "Parameter Files (*.prm)"));
+        fc.setDialogTitle("Save Settings As");
+        fc.addChoosableFileFilter(new InputFileFilter("tml", "Settings Files (*.tml)"));
         int returnVal = fc.showSaveDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
             String filename = fc.getSelectedFile().getAbsolutePath();
             if (fc.getSelectedFile().getName().indexOf('.') == -1){
-                filename = filename + ".prm";
+                filename = filename + ".tml";
             } 
             WriteSession(filename);
             setTitle(filename);

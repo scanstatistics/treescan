@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<parameters>
+  <input>
+        <tree-file>tree.tre</tree-file>
+        <count-file duplicates="false">counts.cts</count-file>
+  </input>
+  <analysis>
+    <replications>99999</replications>
+    <conditional>false</conditional>
+  </analysis>
+  <output>
+        <results-file html="false">output.txt</results-file>
+        <print-headers>true</print-headers>
+  </output>
+  <execute-options>
+    <processors>0</processors>
+        <seed>12345678</seed>
+        <generate-seed>false</generate-seed>
+  </execute-options>
+</parameters>

@@ -36,7 +36,7 @@ chmod a+x $installer_version/install-1_1_linux.jar
 # Build batch binaries archive for Linux.
 rm -f $installer_version/treescan.1.1_linux.tar.bz2
 cd $build/binaries/linux
-tar -cf $installer_version/treescan.1.1_linux.tar treescan_*
+tar -cf $installer_version/treescan.1.1_linux.tar treescan*
 cd $build/treescan/installers
 tar -rf $installer_version/treescan.1.1_linux.tar documents/*
 tar -rf $installer_version/treescan.1.1_linux.tar examples/*
