@@ -41,7 +41,7 @@ void usage_message(std::string program, po::options_description& primary, po::op
     message  << exe.getFileName().c_str() << exe.getExtension().c_str() << " -t <tree file> -c <count file> -p <output file> [options]" << std::endl;
 #else
     message  << exe.getFileName().c_str() << exe.getExtension().c_str() << " --settings-file <settings file> [options]" << std::endl;
-    message << " --tree-file <file> --count-file <file> --output-file <file> [options]" << std::endl;
+    message  << exe.getFileName().c_str() << exe.getExtension().c_str() << " --tree-file <tree file> --count-file <counts file> --output-file <output file> [options]" << std::endl;
 #endif
     message << std::endl << primary << std::endl << optional << std::endl << help << std::endl;
     console.Printf(message.str().c_str(), BasePrint::P_STDOUT);

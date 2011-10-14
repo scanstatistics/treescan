@@ -25,10 +25,6 @@ JNIEXPORT jboolean JNICALL Java_org_treescan_app_Parameters_Read(JNIEnv * pEnv, 
      }
      if (iscopy == JNI_TRUE)
      	pEnv->ReleaseStringUTFChars(filename, sParameterFilename);
-
-     parameters.setTreeFileName("C:/prj/treescan.development/treescan/data/development/tree.txt");
-     parameters.setCountFileName("C:/prj/treescan.development/treescan/data/development/counts.txt");
-     parameters.setOutputFileName("C:/prj/treescan.development/treescan/data/development/output.html");
      ParametersUtility::copyCParametersToJParameters(*pEnv, parameters, jParameters);
   }
   catch (jni_error &) {    

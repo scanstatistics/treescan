@@ -55,13 +55,13 @@ cp $build/treescan/java_application/jni_application/dist/lib/* $build/treescan/i
 $IzPack/bin/compile $build/treescan/installers/izpack/mac/install_mac.xml -b $installer_version -o $installer_version/install-1_1_mac.jar -k standard
 
 # Build Mac OS X Application Bundle from IzPack Java Installer
-rm -rf $installer_version/install-1_1_mac.app
+rm -rf $installer_version/install-1_1_mac.zip
 python $build/treescan/installers/izpack/mac/izpack2app/izpack2app.py $installer_version/install-1_1_mac.jar $build/treescan/installers/izpack/mac/Install.app
 cd $build/treescan/installers/izpack/mac
-zip $installer_version/install-1_1_mac.app -r ./Install.app/*
+zip $installer_version/install-1_1_mac.zip -r ./Install.app/*
 rm $installer_version/install-1_1_mac.jar
 rm -rf $build/treescan/installers/izpack/mac/Install.app
-chmod a+x $installer_version/install-1_1_mac.app
+chmod a+x $installer_version/install-1_1_mac.zip
 
 # Build batch binaries archive for Mac OS X.
 rm -f $installer_version/treescan.1.1_mac.tar.bz2

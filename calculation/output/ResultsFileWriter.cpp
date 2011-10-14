@@ -223,7 +223,7 @@ bool ResultsFileWriter::writeHTML(const std::string& outputfile, time_t start, t
             if (parameters.isDuplicates())
                 outfile << "<td>" << getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getN(), buffer) << "</td>";
             if (parameters.isConditional())
-                outfile << "<td>" << _scanRunner.getCuts().at(k)->getLogLikelihood() - _scanRunner.getTotalC() * log(_scanRunner.getTotalC()/_scanRunner.getTotalN())<< "/<td>";
+                outfile << "<td>" << _scanRunner.getCuts().at(k)->getLogLikelihood() - _scanRunner.getTotalC() * log(_scanRunner.getTotalC()/_scanRunner.getTotalN())<< "</td>";
             else
                 outfile << "<td>" << _scanRunner.getCuts().at(k)->getLogLikelihood() << "</td>";
             outfile << "<td>" << printString(buffer, format.c_str(), (double)_scanRunner.getRanks().at(k) /(parameters.getNumReplicationsRequested() + 1)) << "</td><tr>" << std::endl;

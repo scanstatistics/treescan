@@ -30,7 +30,7 @@
         The gui preferences indication.
         Sets the installer window to 640x480. It will not be able to change the size.
     -->
-    <guiprefs width="840" height="480" resizable="yes">
+    <guiprefs width="725" height="480" resizable="yes">
         <modifier key="headingPanelCounter" value="progressbar"/>
         <modifier key="headingPanelCounterPos" value="inNavigationPanel"/>
     </guiprefs>
@@ -50,7 +50,6 @@
     <resources>
         <res id="HTMLLicencePanel.licence" src="/prj/treescan/build/treescan/installers/documents/eula.html" />
         <res id="Unix_shortcutSpec.xml" src="/prj/treescan/build/treescan/installers/izpack/linux/Unix_shortcutSpec.xml" />
-        <res id="ProcessPanel.Spec.xml" src="/prj/treescan/build/treescan/installers/izpack/linux/ProcessPanel.Spec.xml" />
         <res id="Installer.image" src="/prj/treescan/build/treescan/installers/resources/TreeScan.gif" />
     </resources>
 
