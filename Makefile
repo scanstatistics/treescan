@@ -45,6 +45,9 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(PRINT)/PrintScreen.cpp \
                $(PRINT)/PrintQueue.cpp \
                $(RANDOMIZER)/Randomization.cpp \
+               $(RANDOMIZER)/DenominatorDataRandomizer.cpp \
+               $(RANDOMIZER)/BernoulliRandomizer.cpp \
+               $(RANDOMIZER)/PoissonRandomizer.cpp \
                $(LOGLIKELIHOOD)/Loglikelihood.cpp \
                $(UTILITY)/RandomDistribution.cpp \
                $(UTILITY)/RandomNumberGenerator.cpp \
@@ -61,6 +64,7 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(CALCULATION)/Parameters.cpp \
                $(CALCULATION)/ParametersPrint.cpp \
                $(CALCULATION)/ParameterFileAccess.cpp \
+               $(CALCULATION)/ParametersValidate.cpp \
                $(CALCULATION)/Toolkit.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/once.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/thread.cpp \

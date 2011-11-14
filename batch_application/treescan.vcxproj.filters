@@ -183,6 +183,18 @@
     <ClCompile Include="..\calculation\ParameterFileAccess.cpp">
       <Filter>Source Files\calculation</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\randomization\BernoulliRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\randomization\DenominatorDataRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\randomization\PoissonRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\ParametersValidate.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\runner\ScanRunner.h">
@@ -267,6 +279,18 @@
       <Filter>Header Files\calculation</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\ParameterFileAccess.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\BernoulliRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\DenominatorDataRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\PoissonRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\ParametersValidate.h">
       <Filter>Header Files\calculation</Filter>
     </ClInclude>
   </ItemGroup>

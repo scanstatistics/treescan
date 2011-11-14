@@ -172,6 +172,9 @@
     <ClCompile Include="..\calculation\print\BasePrint.cpp" />
     <ClCompile Include="..\calculation\print\PrintQueue.cpp" />
     <ClCompile Include="..\calculation\print\PrintScreen.cpp" />
+    <ClCompile Include="..\calculation\randomization\BernoulliRandomizer.cpp" />
+    <ClCompile Include="..\calculation\randomization\DenominatorDataRandomizer.cpp" />
+    <ClCompile Include="..\calculation\randomization\PoissonRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\Randomization.cpp" />
     <ClCompile Include="..\calculation\runner\DataSource.cpp" />
     <ClCompile Include="..\calculation\runner\ScanRunner.cpp" />
@@ -204,6 +207,9 @@
     <ClInclude Include="..\calculation\print\BasePrint.h" />
     <ClInclude Include="..\calculation\print\PrintQueue.h" />
     <ClInclude Include="..\calculation\print\PrintScreen.h" />
+    <ClInclude Include="..\calculation\randomization\BernoulliRandomizer.h" />
+    <ClInclude Include="..\calculation\randomization\DenominatorDataRandomizer.h" />
+    <ClInclude Include="..\calculation\randomization\PoissonRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\Randomization.h" />
     <ClInclude Include="..\calculation\runner\DataSource.h" />
     <ClInclude Include="..\calculation\runner\ScanRunner.h" />

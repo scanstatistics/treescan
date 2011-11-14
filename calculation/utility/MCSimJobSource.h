@@ -51,6 +51,7 @@ private://data members
   const char                              * gszReplicationFormatString;
   //std::auto_ptr<LoglikelihoodRatioWriter>   gRatioWriter;
   ScanRunner                              & grRunner;
+  ScanRunner::Loglikelihood_t               grLoglikelihood;
 
 private://functions
   void                      RegisterResult_NoAutoAbort(job_id_type const & rJobId, param_type const & rParam, result_type const & rResult);

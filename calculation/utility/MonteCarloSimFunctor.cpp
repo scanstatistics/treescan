@@ -9,8 +9,8 @@
 MCSimSuccessiveFunctor::MCSimSuccessiveFunctor(boost::mutex& Mutex, 
                                                boost::shared_ptr<AbstractRandomizer> randomizer,
                                                const ScanRunner& scanRunner) : gMutex(Mutex), _randomizer(randomizer), _scanRunner(scanRunner) {
-                                               _simData.resize(_scanRunner.getNodes().size(), std::make_pair(0,0));
-    _loglikelihood = _scanRunner.getLoglikelihood();
+    _simData.resize(_scanRunner.getNodes().size(), std::make_pair(0,0));
+    _loglikelihood.reset(AbstractLoglikelihood::getNewLoglikelihood(_scanRunner.getParameters(), _scanRunner.getTotalC(), _scanRunner.getTotalN()));
 }
 
 MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuccessiveFunctor::param_type const & param) {
@@ -27,8 +27,7 @@ MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuc
         //}
 
         //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
-        double SimLogLikelihood=0;
-
+        double SimLogLikelihood = -std::numeric_limits<double>::max();
         for (size_t i=0; i < _scanRunner.getNodes().size(); i++) {
             //if (_Nodes.at(i)->_SimBrC > 1)
             if (_simData.at(i).second > 1)

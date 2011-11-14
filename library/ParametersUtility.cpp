@@ -122,9 +122,9 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isConditional());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setDuplicates", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isDuplicates());
-  jni_error::_detectError(Env);
+  //mid = _getMethodId_Checked(Env, clazz, "setDuplicates", "(Z)V");
+  //Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isDuplicates());
+  //jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setPrintColunHeaders", "(Z)V");
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isPrintColumnHeaders());
@@ -142,6 +142,19 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   vfid = _getFieldId_Checked(Env, vclazz, "_release", "I");
   Env.SetIntField(versionobject, vfid, (jint)Parameters.getCreationVersion().iRelease);
   jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setModelType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getModelType());
+  jni_error::_detectError(Env);
+
+  Parameters::ratio_t ratio = Parameters.getProbabilityRatio();
+  mid = _getMethodId_Checked(Env, clazz, "setProbabilityRatioNumerator", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)ratio.first);
+  jni_error::_detectError(Env);
+  mid = _getMethodId_Checked(Env, clazz, "setProbabilityRatioDenominator", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)ratio.second);
+  jni_error::_detectError(Env);
+
 
   return jParameters;
 }
@@ -205,13 +218,24 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   Parameters.setConditional(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "isDuplicates", "()Z");
-  Parameters.setDuplicates(Env.CallBooleanMethod(jParameters, mid));
-  jni_error::_detectError(Env);
+  //mid = _getMethodId_Checked(Env, clazz, "isDuplicates", "()Z");
+  //Parameters.setDuplicates(Env.CallBooleanMethod(jParameters, mid));
+  //jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "isPrintColumnHeaders", "()Z");
   Parameters.setPrintColunHeaders(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
+
+  Parameters.setModelType((Parameters::ModelType)getEnumTypeOrdinalIndex(Env, jParameters, "getModelType", "Lorg/treescan/app/Parameters$ModelType;"));
+
+  Parameters::ratio_t ratio;
+  mid = _getMethodId_Checked(Env, clazz, "getProbabilityRatioNumerator", "()I");
+  ratio.first = static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+  mid = _getMethodId_Checked(Env, clazz, "getProbabilityRatioDenominator", "()I");
+  ratio.second = static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+  Parameters.setProbabilityRatio(ratio);
 
   return Parameters;
 }

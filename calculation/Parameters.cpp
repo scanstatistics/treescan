@@ -10,7 +10,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-const int Parameters::giNumParameters = 10;
+const int Parameters::giNumParameters = 11;
 
 bool  Parameters::operator==(const Parameters& rhs) const {
   if (_replications != rhs._replications) return false;
@@ -25,7 +25,9 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_randomlyGenerateSeed != rhs._randomlyGenerateSeed) return false;
   if (_conditional != rhs._conditional) return false;
   if (_duplicates != rhs._duplicates) return false;  
-  if (_printColumnHeaders != rhs._printColumnHeaders) return false;  
+  if (_printColumnHeaders != rhs._printColumnHeaders) return false; 
+  if (_modelType != rhs._modelType) return false;
+  if (_probablility_ratio != rhs._probablility_ratio) return false;
 
   return true;
 }
@@ -77,6 +79,8 @@ void Parameters::copy(const Parameters &rhs) {
   _conditional = rhs._conditional;
   _duplicates = rhs._duplicates;
   _printColumnHeaders = rhs._printColumnHeaders;
+  _modelType = rhs._modelType;
+  _probablility_ratio = rhs._probablility_ratio;
 }
 
 /** Returns number of parallel processes to run. */
@@ -152,6 +156,8 @@ void Parameters::setAsDefaulted() {
   _conditional = false;
   _duplicates = false;
   _printColumnHeaders = true;
+  _modelType = POISSON;
+  _probablility_ratio = ratio_t(1,2);
 }
 
 /** Sets output data file name.
@@ -184,6 +190,9 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     setTreeFileName(pt.get<std::string>(type == INI ? "input.tree-file" : "parameters.input.tree-file").c_str(), true);
     setCountFileName(pt.get<std::string>(type == INI ? "input.count-file" : "parameters.input.count-file").c_str(), true);
     _duplicates = pt.get<bool>(type == INI ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", false);
+    _modelType = static_cast<ModelType>(pt.get<unsigned int>(type == INI ? "analysis.model" : "parameters.analysis.model", POISSON));
+    _probablility_ratio.first = pt.get<unsigned int>(type == INI ? "analysis.probability-numerator" : "parameters.analysis.probability-numerator", 1);
+    _probablility_ratio.second = pt.get<unsigned int>(type == INI ? "analysis.probability-denominator" : "parameters.analysis.probability-denominator", 2);
     _replications = pt.get<unsigned int>(type == INI ? "analysis.replications" : "parameters.analysis.replications", 999);
     _conditional = pt.get<bool>(type == INI ? "analysis.conditional" : "parameters.analysis.conditional", false);
     setOutputFileName(pt.get<std::string>(type == INI ? "output.results-file" : "parameters.output.results-file").c_str(), true);
@@ -202,6 +211,9 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put(type != XML ? "input.tree-file" : "parameters.input.tree-file", _treeFileName);
     pt.put(type != XML ? "input.count-file" : "parameters.input.count-file", _countFileName);
     pt.put(type != XML ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", _duplicates);
+    pt.put(type != XML ? "analysis.model" : "parameters.analysis.model", static_cast<unsigned int>(_modelType));
+    pt.put(type != XML ? "analysis.probability-numerator" : "parameters.analysis.probability-numerator", _probablility_ratio.first);
+    pt.put(type != XML ? "analysis.probability-denominator" : "parameters.analysis.probability-denominator", _probablility_ratio.second);
     pt.put(type != XML ? "analysis.replications" : "parameters.analysis.replications", _replications);
     pt.put(type != XML ? "analysis.conditional" : "parameters.analysis.conditional", _conditional);
     pt.put(type != XML ? "output.results-file" : "parameters.output.results-file", _outputFileName);

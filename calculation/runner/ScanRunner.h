@@ -10,7 +10,9 @@
 #include "Parameters.h"
 #include <iostream>
 #include <fstream>
+#include <limits>
 
+class ScanRunner;
 class CutStructure {
 private:
     int     _ID;            // NodeID
@@ -19,12 +21,13 @@ private:
     double  _LogLikelihood; // Loglikelihood value.
 
 public:
-    CutStructure() : _ID(0), _C(0), _N(0), _LogLikelihood(0)  {}
+    CutStructure() : _ID(0), _C(0), _N(0), _LogLikelihood(-std::numeric_limits<double>::max())  {}
 
     int     getC() const {return _C;}
     int     getID() const {return _ID;}
     double  getLogLikelihood() const {return _LogLikelihood;}
     double  getN() const {return _N;}
+    double  getExpected(const ScanRunner& scanner);
 
     void    setC(int i) {_C = i;}
     void    setID(int i) {_ID = i;}
@@ -44,7 +47,7 @@ private:
     double              _IntN, _BrN;        // Expexted number of cases internal to the node, and with all decendants respectively.
     RelationContainer_t _Child;             // List of node IDs of the children and parents
     RelationContainer_t _Parent;
-    bool                _Anforlust;         // =1 if at least one node is an ancestor in more than one way, otherwise =0
+    bool                _Anforlust;         // =1 if at least one node is an ancestor in more than one way, otherwise =0 (anforlust is Swedish for 'pedigree collapse')
     int                 _Duplicates;        // Number of duplicates that needs to be removed.
 
 public:
@@ -100,6 +103,13 @@ public:
     }
 };
 
+class CompareCutsByLoglikelihood {
+public:
+    bool operator() (const CutStructure * lhs, const CutStructure * rhs) {
+        return lhs->getLogLikelihood() < rhs->getLogLikelihood();
+    }
+};
+
 class ScanRunner {
 public:
     typedef ptr_vector<NodeStructure>                   NodeStructureContainer_t;
@@ -116,13 +126,12 @@ private:
     RankContainer_t             _Rank;
     AncestorContainer_t         _Ancestor;
     int                         _TotalC;
+    int                         _TotalControls;
     double                      _TotalN;
     SimulationVariables         _simVars;
     Parameters                  _parameters;
 
     void                        addCN(int id, int c, double n);
-    void                        addSimC(int id, int c);
-    void                        addSimCAnforlust(int id, int c);
     Index_t                     getNodeIndex(const std::string& identifier) const;
     bool                        readCounts(const std::string& filename);
     bool                        readTree(const std::string& filename);
@@ -132,11 +141,10 @@ private:
     bool                        setupTree();
 
 public:
-  ScanRunner(const Parameters& parameters, BasePrint& print) : _parameters(parameters), _print(print), _TotalC(0), _TotalN(0) {}
+  ScanRunner(const Parameters& parameters, BasePrint& print) : _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0) {}
 
     const CutStructureContainer_t    & getCuts() const {return _Cut;}
     const NodeStructureContainer_t   & getNodes() const {return _Nodes;}
-    Loglikelihood_t                    getLoglikelihood() const;
     const Parameters                 & getParameters() const {return _parameters;}
     BasePrint                        & getPrint() {return _print;}
     const RankContainer_t            & getRanks() const {return _Rank;}

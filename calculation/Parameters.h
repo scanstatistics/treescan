@@ -7,10 +7,12 @@
 
 class Parameters {
   public:
-    enum ParameterType {TREEFILE=0, COUNTFILE, OUTPUTFILE, CUTS, REPLICATIONS, CONDITIONAL, DUPLICATES, RANDOMIZATION_SEED, RANDOMLY_GENERATE_SEED, PRINT_COLUMN_HEADERS};
+    typedef std::pair<unsigned int,unsigned int> ratio_t;
+    enum ParameterType {TREEFILE=0, COUNTFILE, OUTPUTFILE, CUTS, REPLICATIONS, CONDITIONAL, DUPLICATES, RANDOMIZATION_SEED, RANDOMLY_GENERATE_SEED, PRINT_COLUMN_HEADERS, MODEL};
     struct CreationVersion {unsigned int iMajor; unsigned int iMinor; unsigned int iRelease;};
     enum ResultsFormat {TEXT=0, HTML};
     enum ParametersFormat {XML=0, INI, JSON};
+    enum ModelType {POISSON=0, BERNOULLI};
 
   private:
     unsigned int                        _numRequestedParallelProcesses;
@@ -26,6 +28,8 @@ class Parameters {
     bool                                _conditional;
     bool                                _duplicates;
     bool                                _printColumnHeaders;
+    ModelType                           _modelType;    
+    ratio_t                             _probablility_ratio;
 
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
@@ -42,8 +46,11 @@ class Parameters {
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
 
+    ModelType                           getModelType() const {return _modelType;}
     const std::string                 & getCountFileName() const {return _countFileName;}
     const CreationVersion             & getCreationVersion() const {return _creationVersion;}
+    ratio_t                             getProbabilityRatio() const {return _probablility_ratio;}
+    double                              getProbability() const {return static_cast<double>(_probablility_ratio.first)/static_cast<double>(_probablility_ratio.second);}
     const std::string                 & getTreeFileName() const {return _treeFileName;}
     bool                                isConditional() const {return _conditional;}
     bool                                isDuplicates() const {return _duplicates;}
@@ -57,7 +64,9 @@ class Parameters {
     long                                getRandomizationSeed() const {return _randomizationSeed;}
     ResultsFormat                       getResultsFormat() const {return _resultsFormat;}
     const std::string                 & getSourceFileName() const {return _parametersSourceFileName;}
+    void                                setModelType(ModelType e) {_modelType = e;}
     void                                setAsDefaulted();
+    void                                setProbabilityRatio(ratio_t r) {_probablility_ratio = r;}
     void                                setCountFileName(const char * sCountFileName, bool bCorrectForRelativePath=false);
     void                                setTreeFileName(const char * sTreeFileName, bool bCorrectForRelativePath=false);
     void                                setConditional(bool b) {_conditional = b;}

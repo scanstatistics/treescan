@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
         /* options */
         po::options_description optional("secondary options");
         optional.add_options()("replications,r", po::value<int>(), "Number of Monte Carlo replicatons (default=99999).")
-                              ("duplicates,d", po::value<bool>(), "Expect duplicates in count file (default=false).")
+                              //("duplicates,d", po::value<bool>(), "Expect duplicates in count file (default=false).")
                               ("limit-threads,l", po::value<int>(), "Limit threads in simulation (default=0).")
                               ("conditional,n", po::value<bool>(), "Perform conditional analysis (default=false).")
                               ("output-html,m", po::value<bool>(), "Print results as html (default=false).");

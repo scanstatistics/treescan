@@ -15,8 +15,8 @@ void ParametersPrint::Print(std::ofstream& out) const {
     SettingContainer_t settings;
     //print 'Input' tab settings
     WriteSettingsContainer(getInputParameters(settings), "Input", out);
-    // print 'Inference' tab settings
-    WriteSettingsContainer(getInferenceParameters(settings), "Inference", out);
+    // print 'Analysis' tab settings
+    WriteSettingsContainer(getAnalysisParameters(settings), "Analysis", out);
     //print 'Output' tab settings
     WriteSettingsContainer(getOutputParameters(settings), "Output", out);
     //print 'RunOptions' settings
@@ -36,8 +36,8 @@ void ParametersPrint::PrintHTML(std::ofstream& out) const {
   out << "<div id=\"parameter-settings\"><h4>Parameter Settings</h4>" << std::endl;
   //print 'Input' tab settings
   WriteSettingsContainerHTML(getInputParameters(settings), "Input", out);
-  // print 'Inference' tab settings
-  WriteSettingsContainerHTML(getInferenceParameters(settings), "Inference", out);
+  // print 'Analysis' tab settings
+  WriteSettingsContainerHTML(getAnalysisParameters(settings), "Analysis", out);
   //print 'Output' tab settings
   WriteSettingsContainerHTML(getOutputParameters(settings), "Output", out);
   //print 'RunOptions' settings
@@ -48,15 +48,21 @@ void ParametersPrint::PrintHTML(std::ofstream& out) const {
 }
 
 /** Prints 'Analysis' tab parameters to file stream. */
-ParametersPrint::SettingContainer_t & ParametersPrint::getInferenceParameters(SettingContainer_t & settings) const {
+ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(SettingContainer_t & settings) const {
   std::string        buffer;
   settings.clear();
+  buffer = (_parameters.getModelType() == Parameters::POISSON ? "Poisson" : "Bernoulli");
+  settings.push_back(std::make_pair("Model",buffer));
   buffer = (_parameters.isConditional() ? "Conditional" : "Unconditional");
-  settings.push_back(std::make_pair("Analysis",buffer));
+  settings.push_back(std::make_pair("Scan Statistic",buffer));
+  if (_parameters.getModelType() == Parameters::BERNOULLI) {
+    printString(buffer, "%u/%u", _parameters.getProbabilityRatio().first, _parameters.getProbabilityRatio().second);
+    settings.push_back(std::make_pair("Event Probability",buffer));
+  }
   printString(buffer, "%u", _parameters.getNumReplicationsRequested());  
   settings.push_back(std::make_pair("Number of Replications",buffer));
-  buffer = (_parameters.isDuplicates() ? "Yes" : "No");
-  settings.push_back(std::make_pair("Duplicates",buffer));
+  //buffer = (_parameters.isDuplicates() ? "Yes" : "No");
+  //settings.push_back(std::make_pair("Duplicates",buffer));
   return settings;
 }
 

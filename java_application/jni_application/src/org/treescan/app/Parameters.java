@@ -5,6 +5,7 @@ public class Parameters implements Cloneable {
     public native boolean Read(String filename);  
     public native void Write(String filename);
     public enum ResultsFormat {TEXT, HTML};
+    public enum ModelType {POISSON, BERNOULLI};
     public class CreationVersion {
     	public int _major;
     	public int _minor;
@@ -26,9 +27,12 @@ public class Parameters implements Cloneable {
     private int _replications=999;
     private int _randomizationSeed=12345678;
     private boolean _conditional=false;
-    private boolean _duplicates=false;
+    //private boolean _duplicates=false;
     private boolean _randomlyGenerateSeed=false;
     private boolean _printColumnHeaders;
+    private ModelType _modelType=ModelType.POISSON;
+    private int _probability_ratio_numerator=1;
+    private int _probability_ratio_denominator=2;
 
     public Parameters() {
     	super();    	
@@ -56,11 +60,14 @@ public class Parameters implements Cloneable {
     	  if (!_sourcefilename.equals(rhs._sourcefilename)) return false;
     	  if (_replications != rhs._replications) return false;
     	  if (_conditional != rhs._conditional) return false;
-    	  if (_duplicates != rhs._duplicates) return false;
+    	  //if (_duplicates != rhs._duplicates) return false;
     	  if (_randomizationSeed != rhs._randomizationSeed) return false;
     	  if (_numprocesses != rhs._numprocesses) return false;
     	  if (_randomlyGenerateSeed != rhs._randomlyGenerateSeed) return false;
     	  if (_printColumnHeaders != rhs._printColumnHeaders) return false;
+          if (_modelType != rhs._modelType) return false;
+          if (_probability_ratio_numerator != rhs._probability_ratio_numerator) return false;
+          if (_probability_ratio_denominator != rhs._probability_ratio_denominator) return false;
     	  return true;
     }
     public final CreationVersion getCreationVersion() {return _creationversion;}
@@ -83,11 +90,17 @@ public class Parameters implements Cloneable {
     public void setRandomlyGeneratingSeed(boolean b) {_randomlyGenerateSeed = b;}
     public final boolean isConditional() {return _conditional;}
     public void setConditional(boolean b) {_conditional = b;}
-    public final boolean isDuplicates() {return _duplicates;}
-    public void setDuplicates(boolean b) {_duplicates = b;}
+    //public final boolean isDuplicates() {return _duplicates;}
+    //public void setDuplicates(boolean b) {_duplicates = b;}
     public final boolean isPrintColumnHeaders() {return _printColumnHeaders;}
     public void setPrintColunHeaders(boolean b) {_printColumnHeaders=b;}
     public ResultsFormat getResultsFormat() {return _resultsFormat;}
     public void setResultsFormat(int ord) {try {_resultsFormat = ResultsFormat.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, ResultsFormat.values());}}
+    public ModelType getModelType() {return _modelType;}
+    public void setModelType(int ord) {try {_modelType = ModelType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, ModelType.values());}}
+    public int getProbabilityRatioNumerator() {return _probability_ratio_numerator;}
+    public void setProbabilityRatioNumerator(int i) {_probability_ratio_numerator = i;}
+    public int getProbabilityRatioDenominator() {return _probability_ratio_denominator;}
+    public void setProbabilityRatioDenominator(int i) {_probability_ratio_denominator = i;}
     public void ThrowEnumException(int ord, Enum[] e) {throw new RuntimeException("Ordinal index " + ord + " out of range [" + e[0].ordinal() + "," +  e[e.length - 1].ordinal() + "].");}
 }

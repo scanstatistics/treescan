@@ -265,6 +265,7 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
 void CutsRecordWriter::write(unsigned int cutIndex) const {
   std::string   buffer;
   RecordBuffer  Record(_dataFieldDefinitions);
+  ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_scanner.getParameters(), _scanner.getTotalC(), _scanner.getTotalN()));
 
   try {
     Record.GetFieldValue(CUT_NUM_FIELD).AsDouble() = cutIndex + 1;
@@ -272,14 +273,11 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
     Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getC();
     if (_scanner.getParameters().isDuplicates())
         Record.GetFieldValue(OBSERVED_NO_DUPLICATES_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getC() - _scanner.getNodes().at(_scanner.getCuts().at(cutIndex)->getID())->getDuplicates();
-    Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getN();
-    Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getC()/_scanner.getCuts().at(cutIndex)->getN();
+    Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getExpected(_scanner);
+    Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getC()/_scanner.getCuts().at(cutIndex)->getExpected(_scanner);
     if (_scanner.getParameters().isDuplicates())
-      Record.GetFieldValue(OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD).AsDouble() = (_scanner.getCuts().at(cutIndex)->getC() - _scanner.getNodes().at(_scanner.getCuts().at(cutIndex)->getID())->getDuplicates())/_scanner.getCuts().at(cutIndex)->getN();
-    if (_scanner.getParameters().isConditional())
-        Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getLogLikelihood() - _scanner.getTotalC() * log(_scanner.getTotalC()/_scanner.getTotalN());
-    else
-        Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getLogLikelihood();
+      Record.GetFieldValue(OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD).AsDouble() = (_scanner.getCuts().at(cutIndex)->getC() - _scanner.getNodes().at(_scanner.getCuts().at(cutIndex)->getID())->getDuplicates())/_scanner.getCuts().at(cutIndex)->getExpected(_scanner);
+    Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = calcLogLikelihood->LogLikelihoodRatio(_scanner.getCuts().at(cutIndex)->getLogLikelihood());
     Record.GetFieldValue(P_VALUE_FLD).AsDouble() =  static_cast<double>(_scanner.getRanks().at(cutIndex)) /(_scanner.getParameters().getNumReplicationsRequested() + 1);
     _csvWriter->writeRecord(Record);
   } catch (prg_exception& x) {

@@ -14,6 +14,12 @@
 #include "DataSource.h"
 #include "ResultsFileWriter.h"
 
+double CutStructure::getExpected(const ScanRunner& scanner) {
+  if (scanner.getParameters().getModelType() == Parameters::BERNOULLI)
+    return _N * (scanner.getTotalC() / scanner.getTotalN());
+  return _N;
+}
+
 /*
  Adds cases and measure through the tree from each node through the tree to
  all its parents, and so on, to all its ancestors as well.
@@ -31,34 +37,6 @@ void ScanRunner::addCN(int id, int c, double n) {
         else
           _Ancestor.at(parent) = _Ancestor.at(parent) + 1;
     }
-}
-
-/*
- Adds simulated cases up the tree from branhes to all its parents, and so on,
- for a node without anforlust.
- */
-void ScanRunner::addSimC(int id, int c) {
-    _Nodes.at(id)->refSimBrC() += c;
-    for(size_t j=0; j < _Nodes.at(id)->getParent().size(); j++) addSimC(_Nodes.at(id)->getParent()[j], c);
-}
-
-/*
- Adds simulated cases up the tree from branhes to all its parents, and so on,
- for a node with anforlust.
- Note: This code can be made more efficient by storing in memory the ancestral
- nodes that should be updated with additional simlated cases from the node
- with internal cases. To do sometime in the future.
- */
-void ScanRunner::addSimCAnforlust(int id, int c) {
-    _Nodes.at(id)->refSimBrC() += c;
-    for(size_t j=0; j < _Nodes.at(id)->getParent().size();j++) addSimCAnforlust(_Nodes.at(id)->getParent()[j], c);
-}
-
-ScanRunner::Loglikelihood_t ScanRunner::getLoglikelihood() const {
-    if (_parameters.isConditional())
-        return Loglikelihood_t(new PoissonLoglikelihood(_TotalC, _TotalN));
-    else
-        return Loglikelihood_t(new UnconditionalPoissonLoglikelihood());
 }
 
 /*
@@ -84,7 +62,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
 
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
-    int count=0, duplicates=0;
+    int count=0, controls=0, duplicates=0;
     double population=0;
     while (dataSource->readRecord()) {
         if (dataSource->getNumValues() != (_parameters.isDuplicates() ? 4 : 3)) {
@@ -106,6 +84,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
             _print.Printf("Error: Record %ld in count file references negative number of cases in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
             continue;
         }
+        node->refIntC() += count;
         if (_parameters.isDuplicates()) {
             if  (!string_to_type<int>(dataSource->getValueAt(2).c_str(), duplicates) || duplicates < 0) {
                 readSuccess = false;
@@ -116,17 +95,25 @@ bool ScanRunner::readCounts(const std::string& filename) {
                 _print.Printf("Error: Record %ld in count file references more duplicates than count in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
             }
+            node->refDuplicates() += duplicates;
         }
-        if  (!string_to_type<double>(dataSource->getValueAt(_parameters.isDuplicates() ? 3 : 2).c_str(), population) || population < 0) {
-            readSuccess = false;
-            _print.Printf("Error: Record %ld in count file references negative population in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
-            continue;
-        }
-        node->refIntC() += count;
-        node->refDuplicates() += duplicates;
-        node->refIntN() += population;
+        if (_parameters.getModelType() == Parameters::POISSON) {
+            if  (!string_to_type<double>(dataSource->getValueAt(_parameters.isDuplicates() ? 3 : 2).c_str(), population) || population < 0) {
+                readSuccess = false;
+                _print.Printf("Error: Record %ld in count file references negative population in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                continue;
+            }
+            node->refIntN() += population;
+        } else if (_parameters.getModelType() == Parameters::BERNOULLI) { 
+            if  (!string_to_type<int>(dataSource->getValueAt(_parameters.isDuplicates() ? 3 : 2).c_str(), controls) || controls < 0) {
+                readSuccess = false;
+                _print.Printf("Error: Record %ld in count file references negative number of controls in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                continue;
+            }
+            node->refIntN() += count + controls;
+            _TotalControls += controls;
+        } else throw prg_error("Unknown model type (%d).", "readCounts()", _parameters.getModelType());
     }
-
     return readSuccess;
 }
 
@@ -227,7 +214,7 @@ bool ScanRunner::runsimulations() {
             boost::mutex        thread_mutex;
             for (unsigned u=0; u < ulParallelProcessCount; ++u) {
                 try {
-                    MCSimSuccessiveFunctor mcsf(thread_mutex, boost::shared_ptr<AbstractRandomizer>(new PoissonRandomizer(_parameters.isConditional(), _TotalC, _TotalN)), *this);
+                    MCSimSuccessiveFunctor mcsf(thread_mutex, boost::shared_ptr<AbstractRandomizer>(AbstractRandomizer::getNewRandomizer(_parameters, _TotalC, _TotalControls, _TotalN)), *this);
                     tg.create_thread(subcontractor<contractor_type,MCSimSuccessiveFunctor>(theContractor,mcsf));
                 } catch (std::bad_alloc &) {
                     if (u == 0) throw; // if this is the first thread, re-throw exception
@@ -263,8 +250,7 @@ bool ScanRunner::scanTree() {
     _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
 
     double loglikelihood=0;
-    double LogLikelihoodRatio=0;
-    ScanRunner::Loglikelihood_t calcLogLikelihood = ScanRunner::getLoglikelihood();
+    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN));
 
     // determine the number of root nodes -- simple cuts = equal to number of nodes, excluding root nodes
     size_t cuts = _Nodes.size();
@@ -279,7 +265,10 @@ bool ScanRunner::scanTree() {
             }
 
             size_t k = 0;
-            while(loglikelihood < _Cut.at(k)->getLogLikelihood() && k < cuts) k++;
+            while (loglikelihood < _Cut.at(k)->getLogLikelihood() && k < cuts) {
+                double test = _Cut.at(k)->getLogLikelihood();
+                k++;
+            }
             if (k < cuts) {
                 for (size_t m = cuts - 1; m > k ; m--) {
                     _Cut.at(m)->setLogLikelihood(_Cut.at(m-1)->getLogLikelihood());
@@ -294,10 +283,7 @@ bool ScanRunner::scanTree() {
             }
         }
     }
-    if (_parameters.isConditional()) LogLikelihoodRatio = _Cut.at(0)->getLogLikelihood() - _TotalC * log(_TotalC/_TotalN);
-    else LogLikelihoodRatio = _Cut.at(0)->getLogLikelihood();
-    _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, LogLikelihoodRatio);
-
+    _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.at(0)->getLogLikelihood()));
     return true;
 }
 
@@ -324,10 +310,10 @@ bool ScanRunner::setupTree() {
     }
 
     // Calculates the expected counts for each node and the total.
-    if (_parameters.isConditional()) {
+    if (_parameters.getModelType() == Parameters::POISSON && _parameters.isConditional()) {
         adjustN = _TotalC/_TotalN;
-    for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr)
-        (*itr)->refIntN() *= adjustN;
+        for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr)
+            (*itr)->refIntN() *= adjustN;
         _TotalN = _TotalC;
     }
 

@@ -25,6 +25,7 @@ MCSimJobSource::MCSimJobSource(boost::posix_time::ptime CurrentTime, PrintQueue 
     gfnRegisterResult = &MCSimJobSource::RegisterResult_NoAutoAbort;
   }
 
+  grLoglikelihood.reset((AbstractLoglikelihood::getNewLoglikelihood(grRunner.getParameters(), grRunner.getTotalC(), grRunner.getTotalN())));
   //if (rParameters.GetOutputSimLoglikeliRatiosFiles())
   //  gRatioWriter.reset(new LoglikelihoodRatioWriter(rParameters, grRunner.giAnalysisCount > 1));
 }
@@ -279,12 +280,9 @@ void MCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, para
     }
 
     //update ratios, significance, etc.
-    double result=0;
-    if (grRunner.getParameters().isConditional()) result = rResult.dSuccessfulResult.first - rResult.dSuccessfulResult.second * log(rResult.dSuccessfulResult.second/grRunner.getTotalN());
-    else result = rResult.dSuccessfulResult.first;
-        
+    double result = grLoglikelihood->LogLikelihoodRatio(rResult.dSuccessfulResult.first);        
     for (unsigned int k=0; k < grRunner.getCuts().size(); k++)
-        if (rResult.dSuccessfulResult.first > grRunner.getCuts().at(k)->getLogLikelihood() ) ++grRunner.getRanks().at(k);
+        if (rResult.dSuccessfulResult.first > grRunner.getCuts().at(k)->getLogLikelihood()) ++grRunner.getRanks().at(k);
 
     /// if (gRatioWriter.get()) gRatioWriter->Write(rResult);
     /// grRunner.gSimVars.add_llr(rResult);

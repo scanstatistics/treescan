@@ -39,6 +39,7 @@ bool ResultsFileWriter::writeASCII(const std::string& outputfile, time_t start, 
 
     AsciiPrintFormat PrintFormat;
     Parameters& parameters(const_cast<Parameters&>(_scanRunner.getParameters()));
+    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN()));
 
     PrintFormat.PrintVersionHeader(outfile);
     std::string buffer = ctime(&start);
@@ -47,12 +48,12 @@ bool ResultsFileWriter::writeASCII(const std::string& outputfile, time_t start, 
     PrintFormat.SetMarginsAsSummarySection();
     PrintFormat.PrintSectionSeparatorString(outfile);
     outfile << std::endl << "SUMMARY OF DATA" << std::endl << std::endl;
-    PrintFormat.PrintSectionLabel(outfile, "Analysis", false);
+    PrintFormat.PrintSectionLabel(outfile, "Scan Statistic:", false);
     buffer = (parameters.isConditional() ? "Conditional" : "Unconditional");
     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-    PrintFormat.PrintSectionLabel(outfile, "Total Cases", false);
+    PrintFormat.PrintSectionLabel(outfile, "Total Cases:", false);
     PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getTotalC()));
-    PrintFormat.PrintSectionLabel(outfile, "Total Measure", false);
+    PrintFormat.PrintSectionLabel(outfile, "Total Measure:", false);
     PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%lf", _scanRunner.getTotalN()));
     PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
 
@@ -92,18 +93,15 @@ bool ResultsFileWriter::writeASCII(const std::string& outputfile, time_t start, 
             PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
         }
         PrintFormat.PrintSectionLabel(outfile, "Expected", true);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getN(), buffer));
+        PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
         PrintFormat.PrintSectionLabel(outfile, "Observed/Expected", true);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getC()/_scanRunner.getCuts().at(k)->getN(), buffer));
+        PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getC()/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
         if (parameters.isDuplicates()) {
             PrintFormat.PrintSectionLabel(outfile, "O/E (Duplicates Removed)", true);
-            PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getN(), buffer));
+            PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
         }
         PrintFormat.PrintSectionLabel(outfile, "Log Likelihood Ratio", true);
-        if (parameters.isConditional())
-            printString(buffer, "%lf", _scanRunner.getCuts().at(k)->getLogLikelihood() - _scanRunner.getTotalC() * log(_scanRunner.getTotalC()/_scanRunner.getTotalN()));
-        else
-            printString(buffer, "%lf", _scanRunner.getCuts().at(k)->getLogLikelihood());
+        printString(buffer, "%lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood()));
         PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
         PrintFormat.PrintSectionLabel(outfile, "P-value", true);
         printString(buffer, format.c_str(), (double)_scanRunner.getRanks().at(k) /(parameters.getNumReplicationsRequested() + 1));
@@ -148,6 +146,7 @@ bool ResultsFileWriter::writeHTML(const std::string& outputfile, time_t start, t
     openStream(outputfile, outfile);
     if (!outfile) return false;
     Parameters& parameters(const_cast<Parameters&>(_scanRunner.getParameters()));
+    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN()));
     std::string buffer;
 
     outfile << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << std::endl; 
@@ -189,9 +188,9 @@ bool ResultsFileWriter::writeHTML(const std::string& outputfile, time_t start, t
     printString(buffer, "TreeScan v%s.%s%s%s%s%s", VERSION_MAJOR, VERSION_MINOR, (!strcmp(VERSION_RELEASE, "0") ? "" : "."), (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE), (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE);
     outfile << "</head>" << std::endl << "<body><div id=\"banner\"><div id=\"title\">" << buffer << "</div></div>" << std::endl;
     outfile << "<div class=\"program-info\"><table style=\"text-align: left;\"><tbody>" << std::endl;
-    outfile << "<tr><th>Analysis</th><td>" << (parameters.isConditional() ? "Conditional" : "Unconditional") << "</td></tr>" << std::endl;
-    outfile << "<tr><th>Total Cases</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
-    outfile << "<tr><th>Total Measure</th><td>" << _scanRunner.getTotalN() << "</td></tr>" << std::endl;
+    outfile << "<tr><th>Scan Statistic:</th><td>" << (parameters.isConditional() ? "Conditional" : "Unconditional") << "</td></tr>" << std::endl;
+    outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
+    outfile << "<tr><th>Total Measure:</th><td>" << _scanRunner.getTotalN() << "</td></tr>" << std::endl;
     outfile << "</tbody></table></div>" << std::endl;
     outfile << "<div class=\"hr\"></div>" << std::endl;
 
@@ -199,7 +198,7 @@ bool ResultsFileWriter::writeHTML(const std::string& outputfile, time_t start, t
     if (_scanRunner.getCuts().at(0)->getC() == 0) {
         outfile << "<h3>No clusters were found.</h3>" << std::endl;
     } else {
-        outfile << "<h3>Most Likely Cuts</h3><div style=\"overflow:auto;height:350px;\"><table id=\"id_cuts\">" << std::endl;
+        outfile << "<h3>Most Likely Cuts</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;
         outfile << "<thead><tr><th>No.</th><th>Node Identifier</th><th>Number of Cases</th>";
         if (parameters.isDuplicates()) {outfile << "<th>Cases (Duplicates Removed)</th>";}
         outfile << "<th>Expected</th><th>Observed/Expected</th>";
@@ -218,14 +217,11 @@ bool ResultsFileWriter::writeHTML(const std::string& outputfile, time_t start, t
                     << "<td>" << _scanRunner.getCuts().at(k)->getC() << "</td>";
             if (parameters.isDuplicates())
                 outfile << "<td>" << _scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates() << "</td>";
-            outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getN(), buffer) << "</td>";
-            outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getC()/_scanRunner.getCuts().at(k)->getN(), buffer) << "</td>";
+            outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
+            outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getC()/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
             if (parameters.isDuplicates())
-                outfile << "<td>" << getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getN(), buffer) << "</td>";
-            if (parameters.isConditional())
-                outfile << "<td>" << _scanRunner.getCuts().at(k)->getLogLikelihood() - _scanRunner.getTotalC() * log(_scanRunner.getTotalC()/_scanRunner.getTotalN())<< "</td>";
-            else
-                outfile << "<td>" << _scanRunner.getCuts().at(k)->getLogLikelihood() << "</td>";
+                outfile << "<td>" << getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
+            outfile << "<td>" << calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood()) << "</td>";
             outfile << "<td>" << printString(buffer, format.c_str(), (double)_scanRunner.getRanks().at(k) /(parameters.getNumReplicationsRequested() + 1)) << "</td><tr>" << std::endl;
             k++;
         }
