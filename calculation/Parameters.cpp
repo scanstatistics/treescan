@@ -189,7 +189,7 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     setSourceFileName(filename.c_str());
     setTreeFileName(pt.get<std::string>(type == INI ? "input.tree-file" : "parameters.input.tree-file").c_str(), true);
     setCountFileName(pt.get<std::string>(type == INI ? "input.count-file" : "parameters.input.count-file").c_str(), true);
-    _duplicates = pt.get<bool>(type == INI ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", false);
+    //_duplicates = pt.get<bool>(type == INI ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", false);
     _modelType = static_cast<ModelType>(pt.get<unsigned int>(type == INI ? "analysis.model" : "parameters.analysis.model", POISSON));
     _probablility_ratio.first = pt.get<unsigned int>(type == INI ? "analysis.probability-numerator" : "parameters.analysis.probability-numerator", 1);
     _probablility_ratio.second = pt.get<unsigned int>(type == INI ? "analysis.probability-denominator" : "parameters.analysis.probability-denominator", 2);
@@ -210,7 +210,7 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
 
     pt.put(type != XML ? "input.tree-file" : "parameters.input.tree-file", _treeFileName);
     pt.put(type != XML ? "input.count-file" : "parameters.input.count-file", _countFileName);
-    pt.put(type != XML ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", _duplicates);
+    //pt.put(type != XML ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", _duplicates);
     pt.put(type != XML ? "analysis.model" : "parameters.analysis.model", static_cast<unsigned int>(_modelType));
     pt.put(type != XML ? "analysis.probability-numerator" : "parameters.analysis.probability-numerator", _probablility_ratio.first);
     pt.put(type != XML ? "analysis.probability-denominator" : "parameters.analysis.probability-denominator", _probablility_ratio.second);

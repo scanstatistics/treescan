@@ -411,7 +411,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
      */
     protected void executeAnalysis() {
         if (_focusedInternalFrame != null && _focusedInternalFrame instanceof ParameterSettingsFrame) {
-            if (((ParameterSettingsFrame) _focusedInternalFrame).ValidateParams()) {
+            if (((ParameterSettingsFrame) _focusedInternalFrame).CheckSettings()) {
                 Parameters parameters = ((ParameterSettingsFrame) _focusedInternalFrame).getParameterSettings();
                 if (OutputFileRegister.getInstance().isRegistered(parameters.getOutputFileName())) {
                     JOptionPane.showMessageDialog(TreeScanApplication.this, "The results file for this analysis is currently being written.\n" +

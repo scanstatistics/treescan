@@ -149,8 +149,13 @@ bool ScanRunner::readTree(const std::string& filename) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in tree file has unknown parent node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), identifier.c_str());
             } else {
-                if (node) node->refParent().push_back(_Nodes.at(index.second)->getID());
-                else node = _Nodes.at(index.second);
+                if (node) {
+                    // prevent nodes from having more than one parent, see https://www.squishlist.com/ims/treescan/13/
+                    if (node->refParent().size()) {
+                        readSuccess = false;
+                        _print.Printf("Error: Record %ld in tree file has node with more than one parent node defined (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), identifier.c_str());
+                    } else node->refParent().push_back(_Nodes.at(index.second)->getID());
+                } else node = _Nodes.at(index.second);
             }
         }
     }

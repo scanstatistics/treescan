@@ -13,7 +13,7 @@
 #include "Parameters.h"
 #include "Toolkit.h"
 #include "ParameterFileAccess.h"
-
+#include "ParametersValidate.h"
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
@@ -115,6 +115,10 @@ int main(int argc, char* argv[]) {
         if (vm.count("conditional")) parameters.setConditional(vm["conditional"].as<bool>());
         if (vm.count("duplicates")) parameters.setDuplicates(vm["duplicates"].as<bool>());
         if (vm.count("limit-threads")) parameters.setNumProcesses(vm["limit-threads"].as<int>());
+
+        if (!ParametersValidate(parameters).Validate(console)) 
+            throw resolvable_error("\nThe parameter file contains incorrect settings that prevent TreeScan from continuing. "
+                                   "Please review above message(s) and modify parameter settings accordingly.");
 
         ScanRunner(parameters, console).run();
         __TreeScanExit();

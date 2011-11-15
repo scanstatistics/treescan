@@ -2,7 +2,7 @@
 <parameters>
     <input>
         <tree-file>tree.tre</tree-file>
-        <count-file duplicates="false">bernoulli.cts</count-file>
+        <count-file>bernoulli.cts</count-file>
     </input>
     <analysis>
         <model>1</model>

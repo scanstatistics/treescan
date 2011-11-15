@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <parameters>
-  <input>
-    <tree-file>tree.tre</tree-file>
-    <count-file duplicates="false">poisson.cts</count-file>
-  </input>
-  <analysis>
-    <model>0</model>
-    <probability-numerator>1</probability-numerator>
-    <probability-denominator>10</probability-denominator>
-    <replications>99999</replications>
-    <conditional>false</conditional>
-  </analysis>
-  <output>
-    <results-file html="true">poisson.html</results-file>
-    <print-headers>true</print-headers>
-  </output>
-  <execute-options>
-    <processors>0</processors>
-    <seed>12345678</seed>
-    <generate-seed>false</generate-seed>
-  </execute-options>
+    <input>
+        <tree-file>tree.tre</tree-file>
+        <count-file>poisson.cts</count-file>
+    </input>
+    <analysis>
+        <model>0</model>
+        <probability-numerator>1</probability-numerator>
+        <probability-denominator>10</probability-denominator>
+        <replications>99999</replications>
+        <conditional>false</conditional>
+    </analysis>
+    <output>
+        <results-file html="true">poisson.html</results-file>
+        <print-headers>true</print-headers>
+    </output>
+    <execute-options>
+        <processors>0</processors>
+        <seed>12345678</seed>
+        <generate-seed>false</generate-seed>
+    </execute-options>
 </parameters>

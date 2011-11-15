@@ -219,10 +219,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         }
     }
 
-    /**
-     *
-     */
-    public boolean ValidateParams() {
+    public boolean CheckSettings() {
         try {
             CheckInputSettings();
             CheckAnalysisSettings();
