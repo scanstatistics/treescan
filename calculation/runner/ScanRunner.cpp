@@ -265,9 +265,8 @@ bool ScanRunner::scanTree() {
         if (_Nodes.at(i)->getBrC() > 1) {
             if (_parameters.isDuplicates())
                 loglikelihood = calcLogLikelihood->LogLikelihood(_Nodes.at(i)->getBrC() - _Nodes.at(i)->getDuplicates(), _Nodes.at(i)->getBrN());
-            else {
+            else
                 loglikelihood = calcLogLikelihood->LogLikelihood(_Nodes.at(i)->getBrC(), _Nodes.at(i)->getBrN());
-            }
 
             size_t k = 0;
             while (loglikelihood < _Cut.at(k)->getLogLikelihood() && k < cuts) {

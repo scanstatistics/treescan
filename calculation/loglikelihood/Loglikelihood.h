@@ -26,7 +26,7 @@ public:
 
     /* Calculates the conditional Poisson log likelihood. */
     virtual double  LogLikelihood(int c, double n) const {
-        if (c - n < 0.0001) return 0;
+        if (c - n < 0.0001) return -std::numeric_limits<double>::max();
         if (c == _totalC) return c * log(c/n);
         return c * log(c/n) + (_totalC - c) * log((_totalC - c)/(_totalN - n));
     }
@@ -44,7 +44,7 @@ public:
 
     /* Calculates the unconditional Poisson log likelihood */
     virtual double  LogLikelihood(int c, double n) const {
-        if(c - n < 0.0001) return 0;
+        if(c - n < 0.0001) return -std::numeric_limits<double>::max();
         return (n - c) + c * log(c/n);
     }
     virtual double  LogLikelihoodRatio(double logLikelihood) const {
@@ -64,19 +64,19 @@ public:
 
     /* Calculates the conditional Poisson log likelihood. */
     virtual double  LogLikelihood(int c, double n) const {
-        if(c - n < 0.0001) return 0;
-        double nLL_A = 0.0, nLL_B = 0.0, nLL_C = 0.0, nLL_D = 0.0;
-
-        if (c != 0)
-            nLL_A = c*log(c/n);
-        if (c != n)
-            nLL_B = (n-c)*log(1-(c/n));
-        if (_totalC-c != 0)
-            nLL_C = (_totalC-c)*log((_totalC-c)/(_totalN-n));
-        if (_totalC-c != _totalN-n)
-            nLL_D = ((_totalN-n)-(_totalC-c))*log(1-((_totalC-c)/(_totalN-n)));
-
-        return nLL_A + nLL_B + nLL_C + nLL_D;
+        if(c/n > _totalC/_totalN) { 
+            double nLL_A = 0.0, nLL_B = 0.0, nLL_C = 0.0, nLL_D = 0.0;
+            if (c != 0)
+                nLL_A = c*log(c/n);
+            if (c != n)
+                nLL_B = (n-c)*log(1-(c/n));
+            if (_totalC-c != 0)
+                nLL_C = (_totalC-c)*log((_totalC-c)/(_totalN-n));
+            if (_totalC-c != _totalN-n)
+                nLL_D = ((_totalN-n)-(_totalC-c))*log(1-((_totalC-c)/(_totalN-n)));
+            return nLL_A + nLL_B + nLL_C + nLL_D;
+        }
+        return -std::numeric_limits<double>::max();
     }
     virtual double  LogLikelihoodRatio(double logLikelihood) const {
         if (logLikelihood == -std::numeric_limits<double>::max()) return 0.0;
@@ -96,7 +96,7 @@ public:
     virtual double  LogLikelihood(int c, double n) const {
         if (c/n > _event_probability)
           return c * log(c/(n * _event_probability)) + (n-c) * log((n-c)/(n*(1-_event_probability)));
-        return 0.0;
+        return -std::numeric_limits<double>::max();
     }
     virtual double  LogLikelihoodRatio(double logLikelihood) const {
         if (logLikelihood == -std::numeric_limits<double>::max()) return 0.0;
