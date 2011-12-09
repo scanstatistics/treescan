@@ -27,14 +27,77 @@ MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuc
         //}
 
         //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
-        double SimLogLikelihood = -std::numeric_limits<double>::max();
-        for (size_t i=0; i < _scanRunner.getNodes().size(); i++) {
-            //if (_Nodes.at(i)->_SimBrC > 1)
-            if (_simData.at(i).second > 1)
-                SimLogLikelihood = std::max(SimLogLikelihood, _loglikelihood->LogLikelihood(_simData.at(i).second/*_Nodes.at(i)->_SimBrC*/, _scanRunner.getNodes().at(i)->getBrN()));
+        const Parameters& parameter = _scanRunner.getParameters();
+        const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
+        double simLogLikelihood = -std::numeric_limits<double>::max();
+        for (size_t i=0; i < nodes.size(); ++i) {            
+            if (_simData.at(i).second > 1) { //if (_Nodes.at(i)->_SimBrC > 1)
+                const NodeStructure& thisNode(*(nodes.at(i)));
+                Parameters::CutType cutType = thisNode.getChildren().size() >= 3 ? parameter.getCutType() : Parameters::SIMPLE;
+                switch (cutType) {
+                    case Parameters::SIMPLE:
+                        simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(_simData.at(i).second/*_Nodes.at(i)->_SimBrC*/, nodes.at(i)->getBrN())); 
+                        break;
+                    case Parameters::ORDINAL:
+                        for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                            const NodeStructure& firstChildNode(*(nodes.at(thisNode.getChildren().at(i))));
+                            //buffer = firstChildNode.getIdentifier().c_str();
+                            int sumBranchC = _simData.at(i).second;
+                            double sumBranchN = firstChildNode.getBrN();
+                            for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                                const NodeStructure& childNode(*(nodes.at(thisNode.getChildren().at(j))));
+                                //buffer += ",";
+                                //buffer += childNode.getIdentifier();
+                                sumBranchC += _simData.at(static_cast<size_t>(childNode.getID())).second;
+                                sumBranchN += childNode.getBrN();
+                                //printf("Evaluating cut [%s]\n", buffer.c_str());
+                                simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(sumBranchC, sumBranchN)); 
+                                //++hits; printf("hits %d\n", hits);
+                            }
+                        } break;
+                    case Parameters::PAIRS:
+                        for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                            const NodeStructure& startChildNode(*(nodes.at(thisNode.getChildren().at(i))));
+                            for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                                const NodeStructure& stopChildNode(*(nodes.at(thisNode.getChildren().at(j))));
+                                //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
+                                simLogLikelihood = std::max(simLogLikelihood, 
+                                                            _loglikelihood->LogLikelihood(_simData.at(static_cast<size_t>(startChildNode.getID())).second + 
+                                                                                          _simData.at(static_cast<size_t>(stopChildNode.getID())).second, 
+                                                                                          startChildNode.getBrN() + stopChildNode.getBrN())); 
+                                //++hits; printf("hits %d\n", hits);
+                            }
+                        } break;
+                    case Parameters::TRIPLETS:
+                        for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                            const NodeStructure& startChildNode(*(nodes.at(thisNode.getChildren().at(i))));
+                            for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                                const NodeStructure& stopChildNode(*(nodes.at(thisNode.getChildren().at(j))));
+                                //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
+                                simLogLikelihood = std::max(simLogLikelihood, 
+                                                            _loglikelihood->LogLikelihood(_simData.at(static_cast<size_t>(startChildNode.getID())).second + 
+                                                                                          _simData.at(static_cast<size_t>(stopChildNode.getID())).second, 
+                                                                                          startChildNode.getBrN() + stopChildNode.getBrN())); 
+                                //++hits;printf("hits %d\n", hits);
+                                for (size_t k=i+1; k < j; ++k) {
+                                    const NodeStructure& middleChildNode(*(nodes.at(thisNode.getChildren().at(k))));
+                                    //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
+                                    simLogLikelihood = std::max(simLogLikelihood, 
+                                                                _loglikelihood->LogLikelihood(_simData.at(static_cast<size_t>(startChildNode.getID())).second + 
+                                                                                              _simData.at(static_cast<size_t>(middleChildNode.getID())).second + 
+                                                                                              _simData.at(static_cast<size_t>(stopChildNode.getID())).second, 
+                                                                                              startChildNode.getBrN() + middleChildNode.getBrN() + stopChildNode.getBrN())); 
+                                    //++hits; printf("hits %d\n", hits);
+                                }
+                            }
+                        } break;
+                    case Parameters::COMBINATORIAL:
+                    default: throw prg_error("Unknown cut type (%d).", "scanTree()", cutType);
+                };
+            }
         } // for i<nNodes
 
-        temp_result.dSuccessfulResult = std::make_pair(SimLogLikelihood,TotalSimC);
+        temp_result.dSuccessfulResult = std::make_pair(simLogLikelihood,TotalSimC);
         temp_result.bUnExceptional = true;
     } catch (memory_exception & e) {
         temp_result.eException_type = MCSimJobSource::result_type::memory;

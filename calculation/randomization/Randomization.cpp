@@ -21,7 +21,7 @@ AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const Parameters& para
  */
 void AbstractRandomizer::addSimC(size_t id, int c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimDataContainer_t& simData) {
     simData.at(id).second += c;  //treeNodes.at(id)->_SimBrC += c;
-    for(size_t j=0; j < treeNodes.at(id)->getParent().size(); j++) addSimC(treeNodes.at(id)->getParent()[j], c, treeNodes, simData);
+    for(size_t j=0; j < treeNodes.at(id)->getParents().size(); j++) addSimC(treeNodes.at(id)->getParents()[j], c, treeNodes, simData);
 }
 
 /*
@@ -33,7 +33,7 @@ void AbstractRandomizer::addSimC(size_t id, int c, const ScanRunner::NodeStructu
  */
 void AbstractRandomizer::addSimCAnforlust(size_t id, int c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimDataContainer_t& simData) {
     simData.at(id).second += c;  //treeNodes.at(id)->_SimBrC += c;
-    for(size_t j=0; j < treeNodes.at(id)->getParent().size();j++) addSimCAnforlust(treeNodes.at(id)->getParent()[j], c, treeNodes, simData);
+    for(size_t j=0; j < treeNodes.at(id)->getParents().size();j++) addSimCAnforlust(treeNodes.at(id)->getParents()[j], c, treeNodes, simData);
 }
 
 /** Reset seed of randomizer for particular simulation index. */

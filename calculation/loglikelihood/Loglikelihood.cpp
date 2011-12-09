@@ -3,6 +3,8 @@
 //******************************************************************************
 #include "Loglikelihood.h"
 
+double AbstractLoglikelihood::UNSET_LOGLIKELIHOOD = -std::numeric_limits<double>::max();
+
 /** returns new randomizer given parameter settings. */
 AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Parameters& parameters, int TotalC, double TotalN) {
     switch (parameters.getModelType()) {

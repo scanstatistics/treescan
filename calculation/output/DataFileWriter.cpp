@@ -278,7 +278,7 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
     if (_scanner.getParameters().isDuplicates())
       Record.GetFieldValue(OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD).AsDouble() = (_scanner.getCuts().at(cutIndex)->getC() - _scanner.getNodes().at(_scanner.getCuts().at(cutIndex)->getID())->getDuplicates())/_scanner.getCuts().at(cutIndex)->getExpected(_scanner);
     Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = calcLogLikelihood->LogLikelihoodRatio(_scanner.getCuts().at(cutIndex)->getLogLikelihood());
-    Record.GetFieldValue(P_VALUE_FLD).AsDouble() =  static_cast<double>(_scanner.getRanks().at(cutIndex)) /(_scanner.getParameters().getNumReplicationsRequested() + 1);
+    Record.GetFieldValue(P_VALUE_FLD).AsDouble() =  static_cast<double>(_scanner.getCuts().at(cutIndex)->getRank()) /(_scanner.getParameters().getNumReplicationsRequested() + 1);
     _csvWriter->writeRecord(Record);
   } catch (prg_exception& x) {
     x.addTrace("write()","CutsRecordWriter");

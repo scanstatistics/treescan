@@ -6,6 +6,14 @@
 #include "PrjException.h"
 #include <iostream>
 #include <fstream>
+#include <boost/math/special_functions/factorials.hpp>
+using namespace boost::math;
+
+/* returns number of combinations, given 'total' to choose from, choosing 'choose'; where order does not matter and repetition not allowed. */
+double getNumCombinations(size_t total, size_t choose) {
+    if (total < choose) return 0.0;
+    return (total == choose) ? 1.0 : factorial<double>(total)/(factorial<double>(choose)*factorial<double>(total - choose));
+}
 
 //What is the current time? (UTC | Coordinated Universal Time)
 #ifdef _WINDOWS_

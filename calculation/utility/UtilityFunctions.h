@@ -5,6 +5,7 @@
 #include "TreeScan.h"
 #include "boost/lexical_cast.hpp"
 
+double                          getNumCombinations(size_t total, size_t choose);
 unsigned int                    GetNumSystemProcessors();
 void                            ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection);
 boost::posix_time::ptime        GetCurrentTime_HighResolution();

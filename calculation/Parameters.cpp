@@ -28,6 +28,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_printColumnHeaders != rhs._printColumnHeaders) return false; 
   if (_modelType != rhs._modelType) return false;
   if (_probablility_ratio != rhs._probablility_ratio) return false;
+  if (_cut_type != rhs._cut_type) return false;
 
   return true;
 }
@@ -81,6 +82,7 @@ void Parameters::copy(const Parameters &rhs) {
   _printColumnHeaders = rhs._printColumnHeaders;
   _modelType = rhs._modelType;
   _probablility_ratio = rhs._probablility_ratio;
+  _cut_type = rhs._cut_type;
 }
 
 /** Returns number of parallel processes to run. */
@@ -158,6 +160,7 @@ void Parameters::setAsDefaulted() {
   _printColumnHeaders = true;
   _modelType = POISSON;
   _probablility_ratio = ratio_t(1,2);
+  _cut_type = SIMPLE;
 }
 
 /** Sets output data file name.
@@ -191,6 +194,7 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     setCountFileName(pt.get<std::string>(type == INI ? "input.count-file" : "parameters.input.count-file").c_str(), true);
     //_duplicates = pt.get<bool>(type == INI ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", false);
     _modelType = static_cast<ModelType>(pt.get<unsigned int>(type == INI ? "analysis.model" : "parameters.analysis.model", POISSON));
+    _cut_type = static_cast<CutType>(pt.get<unsigned int>(type == INI ? "analysis.cut-type" : "parameters.analysis.cut-type", SIMPLE));
     _probablility_ratio.first = pt.get<unsigned int>(type == INI ? "analysis.probability-numerator" : "parameters.analysis.probability-numerator", 1);
     _probablility_ratio.second = pt.get<unsigned int>(type == INI ? "analysis.probability-denominator" : "parameters.analysis.probability-denominator", 2);
     _replications = pt.get<unsigned int>(type == INI ? "analysis.replications" : "parameters.analysis.replications", 999);
@@ -212,6 +216,7 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put(type != XML ? "input.count-file" : "parameters.input.count-file", _countFileName);
     //pt.put(type != XML ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", _duplicates);
     pt.put(type != XML ? "analysis.model" : "parameters.analysis.model", static_cast<unsigned int>(_modelType));
+    pt.put(type != XML ? "analysis.cut-type" : "parameters.analysis.cut-type", static_cast<unsigned int>(_cut_type));
     pt.put(type != XML ? "analysis.probability-numerator" : "parameters.analysis.probability-numerator", _probablility_ratio.first);
     pt.put(type != XML ? "analysis.probability-denominator" : "parameters.analysis.probability-denominator", _probablility_ratio.second);
     pt.put(type != XML ? "analysis.replications" : "parameters.analysis.replications", _replications);

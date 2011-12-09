@@ -78,7 +78,7 @@ bool ResultsFileWriter::writeASCII(const std::string& outputfile, time_t start, 
     unsigned int k=0;
     outfile.setf(std::ios::fixed);
     outfile.precision(5);
-    while( k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && _scanRunner.getRanks().at(k) < parameters.getNumReplicationsRequested() + 1) {
+    while( k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1) {
         PrintFormat.SetMarginsAsClusterSection( k + 1);
         outfile << k + 1 << ")";
         PrintFormat.PrintSectionLabel(outfile, "Node Identifier", false);
@@ -104,7 +104,7 @@ bool ResultsFileWriter::writeASCII(const std::string& outputfile, time_t start, 
         printString(buffer, "%lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood()));
         PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
         PrintFormat.PrintSectionLabel(outfile, "P-value", true);
-        printString(buffer, format.c_str(), (double)_scanRunner.getRanks().at(k) /(parameters.getNumReplicationsRequested() + 1));
+        printString(buffer, format.c_str(), (double)_scanRunner.getCuts().at(k)->getRank() /(parameters.getNumReplicationsRequested() + 1));
         PrintFormat.PrintAlignedMarginsDataString(outfile, buffer, 2);
         k++;
     }
@@ -211,7 +211,7 @@ bool ResultsFileWriter::writeHTML(const std::string& outputfile, time_t start, t
         unsigned int k=0;
         outfile.setf(std::ios::fixed);
         outfile.precision(5);
-        while( k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && _scanRunner.getRanks().at(k) < parameters.getNumReplicationsRequested() + 1) {
+        while( k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1) {
             outfile << "<tr" << (k > 9 ? " class=\"additional-clusters\"" : "" ) << "><td>" << k + 1 << "</td>"
                     << "<td>" << _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier() << "</td>"
                     << "<td>" << _scanRunner.getCuts().at(k)->getC() << "</td>";
@@ -222,7 +222,7 @@ bool ResultsFileWriter::writeHTML(const std::string& outputfile, time_t start, t
             if (parameters.isDuplicates())
                 outfile << "<td>" << getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
             outfile << "<td>" << calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood()) << "</td>";
-            outfile << "<td>" << printString(buffer, format.c_str(), (double)_scanRunner.getRanks().at(k) /(parameters.getNumReplicationsRequested() + 1)) << "</td><tr>" << std::endl;
+            outfile << "<td>" << printString(buffer, format.c_str(), (double)_scanRunner.getCuts().at(k)->getRank() /(parameters.getNumReplicationsRequested() + 1)) << "</td><tr>" << std::endl;
             k++;
         }
         outfile << "</tbody></table></div>" << std::endl;

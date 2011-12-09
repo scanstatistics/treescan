@@ -13,6 +13,7 @@ class Parameters {
     enum ResultsFormat {TEXT=0, HTML};
     enum ParametersFormat {XML=0, INI, JSON};
     enum ModelType {POISSON=0, BERNOULLI};
+    enum CutType {SIMPLE=0, PAIRS, TRIPLETS, ORDINAL, COMBINATORIAL, MIXED};
 
   private:
     unsigned int                        _numRequestedParallelProcesses;
@@ -30,6 +31,7 @@ class Parameters {
     bool                                _printColumnHeaders;
     ModelType                           _modelType;    
     ratio_t                             _probablility_ratio;
+    CutType                             _cut_type;
 
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
@@ -46,6 +48,7 @@ class Parameters {
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
 
+    CutType                             getCutType() const {return _cut_type;}
     ModelType                           getModelType() const {return _modelType;}
     const std::string                 & getCountFileName() const {return _countFileName;}
     const CreationVersion             & getCreationVersion() const {return _creationVersion;}
@@ -64,6 +67,7 @@ class Parameters {
     long                                getRandomizationSeed() const {return _randomizationSeed;}
     ResultsFormat                       getResultsFormat() const {return _resultsFormat;}
     const std::string                 & getSourceFileName() const {return _parametersSourceFileName;}
+    void                                setCutType(CutType e) {_cut_type = e;}
     void                                setModelType(ModelType e) {_modelType = e;}
     void                                setAsDefaulted();
     void                                setProbabilityRatio(ratio_t r) {_probablility_ratio = r;}

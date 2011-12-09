@@ -47,7 +47,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jTabbedPane1" pref="223" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" pref="227" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -120,7 +120,7 @@
                           <Component id="_countFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="_countFileTextField" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="90" max="32767" attributes="0"/>
+                      <EmptySpace pref="94" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -217,8 +217,8 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="_probabilityModelPanel" min="0" pref="86" max="32767" attributes="1"/>
-                          <Component id="_scanStatisticPanel" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Component id="_scanStatisticPanel" max="32767" attributes="1"/>
+                          <Component id="_probabilityModelPanel" alignment="0" min="0" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                       <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
@@ -365,7 +365,7 @@
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_unconditionalButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="4" max="32767" attributes="0"/>
                           <Component id="_conditionalButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -434,9 +434,6 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Number of replications (0, 9, 999, or value ending in 999):" noResource="true"/>
                   </Properties>
-                  <AccessibilityProperties>
-                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Number of replications (0, 9, 999, or value ending in 999):"/>
-                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_montCarloReplicationsTextField">
                   <Properties>
@@ -496,7 +493,7 @@
                               <Component id="_reportResultsAsHTML" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace pref="119" max="32767" attributes="0"/>
+                      <EmptySpace pref="123" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

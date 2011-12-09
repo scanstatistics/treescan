@@ -19,20 +19,22 @@ private:
     int     _C;             // Number of cases.
     double  _N;             // Expected number of cases.
     double  _LogLikelihood; // Loglikelihood value.
+    unsigned int _rank;
 
 public:
-    CutStructure() : _ID(0), _C(0), _N(0), _LogLikelihood(-std::numeric_limits<double>::max())  {}
+    CutStructure() : _ID(0), _C(0), _N(0), _LogLikelihood(-std::numeric_limits<double>::max()), _rank(1)  {}
 
-    int     getC() const {return _C;}
-    int     getID() const {return _ID;}
-    double  getLogLikelihood() const {return _LogLikelihood;}
-    double  getN() const {return _N;}
-    double  getExpected(const ScanRunner& scanner);
-
-    void    setC(int i) {_C = i;}
-    void    setID(int i) {_ID = i;}
-    void    setLogLikelihood(double d) {_LogLikelihood = d;}
-    void    setN(double d) {_N = d;}
+    int          getC() const {return _C;}
+    int          getID() const {return _ID;}
+    double       getLogLikelihood() const {return _LogLikelihood;}
+    double       getN() const {return _N;}
+    double       getExpected(const ScanRunner& scanner);
+    unsigned int getRank() const {return _rank;}
+    unsigned int incrementRank() {return ++_rank;}
+    void         setC(int i) {_C = i;}
+    void         setID(int i) {_ID = i;}
+    void         setLogLikelihood(double d) {_LogLikelihood = d;}
+    void         setN(double d) {_N = d;}
 };
 
 class NodeStructure {
@@ -64,8 +66,8 @@ public:
     double                        getIntN() const {return _IntN;}
     double                        getBrN() const {return _BrN;}
     bool                          getAnforlust() const {return _Anforlust;}
-    const RelationContainer_t   & getChild() const {return _Child;}
-    const RelationContainer_t   & getParent() const {return _Parent;}
+    const RelationContainer_t   & getChildren() const {return _Child;}
+    const RelationContainer_t   & getParents() const {return _Parent;}
 
     double                      & refIntN() {return _IntN;}
     int                         & refIntC() {return _IntC;}
@@ -73,8 +75,8 @@ public:
     double                      & refBrN() {return _BrN;}
     int                         & refSimBrC() {return _SimBrC;}
     int                         & refDuplicates() {return _Duplicates;}
-    RelationContainer_t         & refChild() {return _Child;}
-    RelationContainer_t         & refParent() {return _Parent;}
+    RelationContainer_t         & refChildren() {return _Child;}
+    RelationContainer_t         & refParents() {return _Parent;}
 
     void                          setIdentifier(const std::string& s) {_identifier = s;}
     void                          setID(int i) {_ID = i;}
@@ -106,7 +108,7 @@ public:
 class CompareCutsByLoglikelihood {
 public:
     bool operator() (const CutStructure * lhs, const CutStructure * rhs) {
-        return lhs->getLogLikelihood() < rhs->getLogLikelihood();
+        return lhs->getLogLikelihood() > rhs->getLogLikelihood();
     }
 };
 
@@ -114,7 +116,6 @@ class ScanRunner {
 public:
     typedef ptr_vector<NodeStructure>                   NodeStructureContainer_t;
     typedef ptr_vector<CutStructure>                    CutStructureContainer_t;
-    typedef std::vector<unsigned int>                   RankContainer_t;
     typedef std::vector<int>                            AncestorContainer_t;
     typedef std::pair<bool,size_t>                      Index_t;
     typedef boost::shared_ptr<AbstractLoglikelihood>    Loglikelihood_t; 
@@ -123,7 +124,6 @@ private:
     BasePrint                 & _print;
     NodeStructureContainer_t    _Nodes;
     CutStructureContainer_t     _Cut;
-    RankContainer_t             _Rank;
     AncestorContainer_t         _Ancestor;
     int                         _TotalC;
     int                         _TotalControls;
@@ -139,6 +139,7 @@ private:
     bool                        runsimulations();
     bool                        scanTree();
     bool                        setupTree();
+    void                        updateCuts(int node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator);
 
 public:
   ScanRunner(const Parameters& parameters, BasePrint& print) : _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0) {}
@@ -147,8 +148,6 @@ public:
     const NodeStructureContainer_t   & getNodes() const {return _Nodes;}
     const Parameters                 & getParameters() const {return _parameters;}
     BasePrint                        & getPrint() {return _print;}
-    const RankContainer_t            & getRanks() const {return _Rank;}
-    RankContainer_t                  & getRanks() {return _Rank;}
     SimulationVariables              & getSimulationVariables() {return _simVars;}
     int                                getTotalC() const {return _TotalC;}
     double                             getTotalN() const {return _TotalN;}

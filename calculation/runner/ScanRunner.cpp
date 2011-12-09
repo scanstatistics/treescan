@@ -30,8 +30,8 @@ void ScanRunner::addCN(int id, int c, double n) {
     _Ancestor.at(id) = 1;
     _Nodes.at(id)->refBrC() += c;
     _Nodes.at(id)->refBrN() += n;
-    for(size_t j=0; j < _Nodes.at(id)->getParent().size(); j++) {
-      int parent = _Nodes.at(id)->getParent().at(j);
+    for(size_t j=0; j < _Nodes.at(id)->getParents().size(); j++) {
+      int parent = _Nodes.at(id)->getParents().at(j);
         if(_Ancestor.at(parent) == 0)
           addCN(parent,c,n);
         else
@@ -151,10 +151,10 @@ bool ScanRunner::readTree(const std::string& filename) {
             } else {
                 if (node) {
                     // prevent nodes from having more than one parent, see https://www.squishlist.com/ims/treescan/13/
-                    if (node->refParent().size()) {
+                    if (node->refParents().size()) {
                         readSuccess = false;
                         _print.Printf("Error: Record %ld in tree file has node with more than one parent node defined (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), identifier.c_str());
-                    } else node->refParent().push_back(_Nodes.at(index.second)->getID());
+                    } else node->refParents().push_back(_Nodes.at(index.second)->getID());
                 } else node = _Nodes.at(index.second);
             }
         }
@@ -170,7 +170,7 @@ bool ScanRunner::reportResults(const std::string& filename, Parameters::ResultsF
     // write cuts to supplemental reports file
     unsigned int k=0;
     CutsRecordWriter cutsWriter(*this);
-    while(status && k < getCuts().size() && getCuts().at(k)->getC() > 0 && getRanks().at(k) < _parameters.getNumReplicationsRequested() + 1) {
+    while(status && k < getCuts().size() && getCuts().at(k)->getC() > 0 && getCuts().at(k)->getRank() < _parameters.getNumReplicationsRequested() + 1) {
         cutsWriter.write(k);
         k++;
     }
@@ -206,7 +206,6 @@ bool ScanRunner::runsimulations() {
             return true;
 
         _print.Printf("Doing the %d Monte Carlo simulations:\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
-        _Rank.resize(_Cut.size(), 1);
 
         {
             PrintQueue lclPrintDirection(_print, false);
@@ -257,38 +256,99 @@ bool ScanRunner::scanTree() {
     double loglikelihood=0;
     ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN));
 
-    // determine the number of root nodes -- simple cuts = equal to number of nodes, excluding root nodes
-    size_t cuts = _Nodes.size();
-    for (NodeStructureContainer_t::const_iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) if ((*itr)->getParent().size() == 0) --cuts;
-    for(unsigned int k=0; k < cuts; k++) _Cut.push_back(new CutStructure());
-    for (size_t i=0; i < _Nodes.size(); i++) {
-        if (_Nodes.at(i)->getBrC() > 1) {
-            if (_parameters.isDuplicates())
-                loglikelihood = calcLogLikelihood->LogLikelihood(_Nodes.at(i)->getBrC() - _Nodes.at(i)->getDuplicates(), _Nodes.at(i)->getBrN());
-            else
-                loglikelihood = calcLogLikelihood->LogLikelihood(_Nodes.at(i)->getBrC(), _Nodes.at(i)->getBrN());
+    // determine number of cuts by each nodes cut type
+    size_t cuts = 0;
+    for (NodeStructureContainer_t::const_iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
+        if ((*itr)->getParents().size() == 0) // skip root nodes
+            continue;
+        Parameters::CutType cutType = (*itr)->getChildren().size() >= 2 ? _parameters.getCutType() : Parameters::SIMPLE;
+        size_t z = (*itr)->getChildren().size();
+        switch (cutType) {
+            case Parameters::SIMPLE : ++cuts; break;
+            case Parameters::ORDINAL: cuts += z * (z - 1)/2 - 1; break;
+            case Parameters::PAIRS: cuts += z * (z - 1)/2; break;
+            case Parameters::TRIPLETS: cuts += z * (z - 1)/2 + getNumCombinations(z, 3); break;
+            //case Parameters::COMBINATORIAL: cuts += std::pow(2.0,z) - z - 2.0; break;
+            default: throw prg_error("Unknown cut type (%d).", "scanTree()", cutType);
+        };
+    }
+    //for(unsigned int k=0; k < cuts; k++) _Cut.push_back(new CutStructure());
 
-            size_t k = 0;
-            while (loglikelihood < _Cut.at(k)->getLogLikelihood() && k < cuts) {
-                double test = _Cut.at(k)->getLogLikelihood();
-                k++;
-            }
-            if (k < cuts) {
-                for (size_t m = cuts - 1; m > k ; m--) {
-                    _Cut.at(m)->setLogLikelihood(_Cut.at(m-1)->getLogLikelihood());
-                    _Cut.at(m)->setID(_Cut.at(m-1)->getID());
-                    _Cut.at(m)->setC(_Cut.at(m-1)->getC());
-                    _Cut.at(m)->setN(_Cut.at(m-1)->getN());
-                }
-                _Cut.at(k)->setLogLikelihood(loglikelihood);
-                _Cut.at(k)->setID(static_cast<int>(i));
-                _Cut.at(k)->setC(_Nodes.at(i)->getBrC());
-                _Cut.at(k)->setN(_Nodes.at(i)->getBrN());
+    //std::string buffer;
+    //int hits=0;
+    for (size_t n=0; n < _Nodes.size(); n++) {
+        if (_Nodes.at(n)->getBrC() > 1) {
+            const NodeStructure& thisNode(*(_Nodes.at(n)));
+            Parameters::CutType cutType = thisNode.getChildren().size() >= 3 ? _parameters.getCutType() : Parameters::SIMPLE;
+            switch (cutType) {
+                case Parameters::SIMPLE:
+                    //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
+                    updateCuts(n, thisNode.getBrC(), thisNode.getBrN(), calcLogLikelihood);
+                    //++hits; printf("hits %d\n", hits);
+                    break;
+                case Parameters::ORDINAL:
+                    for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                        const NodeStructure& firstChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                        //buffer = firstChildNode.getIdentifier().c_str();
+                        int sumBranchC=firstChildNode.getBrC();
+                        double sumBranchN=firstChildNode.getBrN();
+                        for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                            const NodeStructure& childNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                            //buffer += ",";
+                            //buffer += childNode.getIdentifier();
+                            sumBranchC += childNode.getBrC();
+                            sumBranchN += childNode.getBrN();
+                            //printf("Evaluating cut [%s]\n", buffer.c_str());
+                            updateCuts(n, sumBranchC, sumBranchN, calcLogLikelihood);
+                            //++hits; printf("hits %d\n", hits);
+                        }
+                    } break;
+                case Parameters::PAIRS:
+                    for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                        const NodeStructure& startChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                        for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                            const NodeStructure& stopChildNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                            //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
+                            updateCuts(n, startChildNode.getBrC() + stopChildNode.getBrC(), startChildNode.getBrN() + stopChildNode.getBrN(), calcLogLikelihood);
+                            //++hits; printf("hits %d\n", hits);
+                        }
+                    } break;
+                case Parameters::TRIPLETS:
+                    for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                        const NodeStructure& startChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                        for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                            const NodeStructure& stopChildNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                            //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
+                            updateCuts(n, startChildNode.getBrC() + stopChildNode.getBrC(), startChildNode.getBrN() + stopChildNode.getBrN(), calcLogLikelihood);
+                            //++hits;printf("hits %d\n", hits);
+                            for (size_t k=i+1; k < j; ++k) {
+                                const NodeStructure& middleChildNode(*(_Nodes.at(thisNode.getChildren().at(k))));
+                                //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
+                                updateCuts(n, startChildNode.getBrC() + middleChildNode.getBrC() + stopChildNode.getBrC(), startChildNode.getBrN() + middleChildNode.getBrN() + stopChildNode.getBrN(), calcLogLikelihood);
+                                //++hits; printf("hits %d\n", hits);
+                            }
+                        }
+                    } break;
+                case Parameters::COMBINATORIAL:
+                default: throw prg_error("Unknown cut type (%d).", "scanTree()", cutType);
             }
         }
     }
     _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.at(0)->getLogLikelihood()));
     return true;
+}
+
+void ScanRunner::updateCuts(int node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator) {
+    double loglikelihood = logCalculator->LogLikelihood(BrC, BrN); 
+    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) return;
+
+    std::auto_ptr<CutStructure> cut(new CutStructure());
+    cut->setLogLikelihood(loglikelihood);
+    cut->setID(static_cast<int>(node_index));
+    cut->setC(BrC);
+    cut->setN(BrN);
+    CutStructureContainer_t::iterator itr = std::lower_bound(_Cut.begin(), _Cut.end(), cut.get(), CompareCutsByLoglikelihood());
+    _Cut.insert(itr, cut.release());
 }
 
 /*
@@ -338,9 +398,9 @@ bool ScanRunner::setupTree() {
 
     // For each node calculates the number of children and sets up the list of child IDs
     for (size_t i=0; i < _Nodes.size(); ++i) {
-        for (size_t j=0; j < _Nodes.at(i)->getParent().size(); ++j) {
-            parent = _Nodes.at(i)->getParent().at(j);
-            _Nodes.at(parent)->refChild().push_back(static_cast<int>(i));
+        for (size_t j=0; j < _Nodes.at(i)->getParents().size(); ++j) {
+            parent = _Nodes.at(i)->getParents().at(j);
+            _Nodes.at(parent)->refChildren().push_back(static_cast<int>(i));
         } // for j
     } // for i < nNodes
 
