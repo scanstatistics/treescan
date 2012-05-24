@@ -20,6 +20,7 @@ public class Parameters implements Cloneable {
     private CreationVersion _creationversion = new CreationVersion(1,1,0);
     private String _sourcefilename="";
     private String _treefilename="";
+    private String _cutsfilename="";
     private String _countfilename="";
     private String _outputfilename="";
     private ResultsFormat _resultsFormat=ResultsFormat.TEXT;
@@ -43,6 +44,7 @@ public class Parameters implements Cloneable {
     	  Parameters newObject = (Parameters)super.clone(); 
     	  newObject._sourcefilename = new String(_sourcefilename);
     	  newObject._treefilename = new String(_treefilename);
+    	  newObject._cutsfilename = new String(_cutsfilename);
     	  newObject._countfilename = new String(_countfilename);
     	  newObject._outputfilename = new String(_outputfilename);
     	  return newObject; 
@@ -54,6 +56,7 @@ public class Parameters implements Cloneable {
     public boolean equals(Object _rhs) {
     	  Parameters rhs = (Parameters)_rhs;    	  
     	  if (!_treefilename.equals(rhs._treefilename)) return false;
+    	  if (!_cutsfilename.equals(rhs._cutsfilename)) return false;
     	  if (!_countfilename.equals(rhs._countfilename)) return false;
     	  if (!_outputfilename.equals(rhs._outputfilename)) return false;
           if (_resultsFormat != rhs._resultsFormat) return false;
@@ -80,6 +83,8 @@ public class Parameters implements Cloneable {
     public void setSourceFileName(final String s) {_sourcefilename = s;}
     public final String getTreeFileName() {return _treefilename;}
     public void setTreeFileName(final String s) {_treefilename = s;}
+    public final String getCutsFileName() {return _cutsfilename;}
+    public void setCutsFileName(final String s) {_cutsfilename = s;}
     public final String getCountFileName() {return _countfilename;}
     public void setCountFileName(final String s) {_countfilename = s;}
     public final String getOutputFileName() {return _outputfilename; }

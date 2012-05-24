@@ -99,6 +99,9 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             case Tree:
                 _destinationFile = File.createTempFile(_importFilePrefix, ".tre", outputDirectory);
                 break;
+            case Cuts:
+                _destinationFile = File.createTempFile(_importFilePrefix, ".cut", outputDirectory);
+                break;
             default:
                 throw new UnknownEnumException(_fileType);
         }
@@ -379,6 +382,8 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                 return "Counts File";
             case Tree:
                 return "Tree File";
+            case Cuts:
+                return "Cuts File";
             default:
                 throw new UnknownEnumException(_fileType);
         }
@@ -526,6 +531,9 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             case Tree:
                 setTreeFileVariables();
                 break;
+            case Cuts:
+                setCutsFileVariables();
+                break;
             default:
                 throw new UnknownEnumException(_fileType);
         }
@@ -564,8 +572,8 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _importVariables.clear();
         _importVariables.addElement(new ImportVariable("Node ID", 0, true, null));
         _importVariables.addElement(new ImportVariable("Counts", 1, true, null));
-        _importVariables.addElement(new ImportVariable("Duplicate Counts", 2, false, null));
-        _importVariables.addElement(new ImportVariable("Population", 3, true, null));
+        //_importVariables.addElement(new ImportVariable("Duplicate Counts", 2, false, null));
+        _importVariables.addElement(new ImportVariable("Population", 2, true, null));
     }
 
     /**
@@ -575,6 +583,15 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _importVariables.clear();
         _importVariables.addElement(new ImportVariable("Node ID", 0, true, null));
         _importVariables.addElement(new ImportVariable("Node Parent ID", 1, false, null));
+    }
+
+    /**
+     * Setup field descriptors for control file.
+     */
+    private void setCutsFileVariables() {
+        _importVariables.clear();
+        _importVariables.addElement(new ImportVariable("Node ID", 0, true, null));
+        _importVariables.addElement(new ImportVariable("Cut Type", 1, true, null));
     }
 
     /**

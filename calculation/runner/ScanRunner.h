@@ -51,9 +51,10 @@ private:
     RelationContainer_t _Parent;
     bool                _Anforlust;         // =1 if at least one node is an ancestor in more than one way, otherwise =0 (anforlust is Swedish for 'pedigree collapse')
     int                 _Duplicates;        // Number of duplicates that needs to be removed.
+    Parameters::CutType _cut_type;
 
 public:
-    NodeStructure(const std::string& identifier) : _identifier(identifier), _ID(0), _IntC(0), _SimIntC(0), _BrC(0), _SimBrC(0), _IntN(0), _BrN(0), _Anforlust(false), _Duplicates(0) {}
+    NodeStructure(const std::string& identifier, Parameters::CutType cut_type) : _identifier(identifier), _ID(0), _IntC(0), _SimIntC(0), _BrC(0), _SimBrC(0), _IntN(0), _BrN(0), _Anforlust(false), _Duplicates(0), _cut_type(cut_type) {}
 
     const std::string           & getIdentifier() const {return _identifier;}
     int                           getID() const {return _ID;}
@@ -68,6 +69,7 @@ public:
     bool                          getAnforlust() const {return _Anforlust;}
     const RelationContainer_t   & getChildren() const {return _Child;}
     const RelationContainer_t   & getParents() const {return _Parent;}
+    Parameters::CutType           getCutType() const {return _cut_type;} 
 
     double                      & refIntN() {return _IntN;}
     int                         & refIntC() {return _IntC;}
@@ -88,6 +90,7 @@ public:
     void                          setIntN(double d) {_IntN = d;}
     void                          setBrN(double d) {_BrN = d;}
     void                          setAnforlust(bool b) {_Anforlust = b;}
+    void                          setCutType(Parameters::CutType cut_type) {_cut_type = cut_type;}
 };
 
 class CompareNodeStructureByIdentifier {
@@ -134,6 +137,7 @@ private:
     void                        addCN(int id, int c, double n);
     Index_t                     getNodeIndex(const std::string& identifier) const;
     bool                        readCounts(const std::string& filename);
+    bool                        readCuts(const std::string& filename);
     bool                        readTree(const std::string& filename);
     bool                        reportResults(const std::string& filename, Parameters::ResultsFormat rptfmt, time_t start, time_t end) const;
     bool                        runsimulations();

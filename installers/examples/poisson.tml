@@ -2,10 +2,12 @@
 <parameters>
     <input>
         <tree-file>tree.tre</tree-file>
+        <cuts-file>tree.cut</cuts-file>
         <count-file>poisson.cts</count-file>
     </input>
     <analysis>
         <model>0</model>
+        <cut-type>0</cut-type>
         <probability-numerator>1</probability-numerator>
         <probability-denominator>10</probability-denominator>
         <replications>99999</replications>

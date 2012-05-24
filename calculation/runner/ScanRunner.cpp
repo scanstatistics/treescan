@@ -1,6 +1,7 @@
 
 #include<boost/tokenizer.hpp>
 #include <boost/regex.hpp>
+#include <boost/assign.hpp>
 
 #include "ScanRunner.h"
 #include "UtilityFunctions.h"
@@ -43,7 +44,7 @@ void ScanRunner::addCN(int id, int c, double n) {
  Returns pair<bool,size_t> - first value indicates node existance, second is index into class vector _Nodes.
  */
 ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) const {
-    std::auto_ptr<NodeStructure> node(new NodeStructure(identifier));
+    std::auto_ptr<NodeStructure> node(new NodeStructure(identifier, _parameters.getCutType()));
     NodeStructureContainer_t::const_iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
     if (itr != _Nodes.end() && (*itr)->getIdentifier() == node.get()->getIdentifier()) {
       size_t tt = std::distance(_Nodes.begin(), itr);
@@ -128,7 +129,7 @@ bool ScanRunner::readTree(const std::string& filename) {
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
     while (dataSource->readRecord()) {
         std::string identifier = dataSource->getValueAt(0);
-        std::auto_ptr<NodeStructure> node(new NodeStructure(trimString(identifier)));
+        std::auto_ptr<NodeStructure> node(new NodeStructure(trimString(identifier), _parameters.getCutType()));
         NodeStructureContainer_t::iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
         if (itr == _Nodes.end() || (*itr)->getIdentifier() != node.get()->getIdentifier())
             _Nodes.insert(itr, node.release());
@@ -163,6 +164,44 @@ bool ScanRunner::readTree(const std::string& filename) {
     return readSuccess;
 }
 
+/*
+ Reads tree node cuts from passed file. The file format is: <node identifier>, <parent node identifier 1>, <parent node identifier 2>, ... <parent node identifier N>
+ */
+bool ScanRunner::readCuts(const std::string& filename) {
+    _print.Printf("Reading cuts file ...\n", BasePrint::P_STDOUT);
+    bool readSuccess=true;
+    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
+    Parameters::cut_map_t cut_type_map = Parameters::getCutTypeMap();
+
+    while (dataSource->readRecord()) {
+        if (dataSource->getNumValues() != 2) {
+            readSuccess = false;
+            _print.Printf("Error: Record %ld in cuts file %s. Expecting <indentifier>, <cut type [simple,pairs,triplets,ordinal]> but found %ld value%s.\n", 
+                          BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), (static_cast<int>(dataSource->getNumValues()) > 2) ? "has extra data" : "is missing data",
+                          dataSource->getNumValues(), (dataSource->getNumValues() == 1 ? "" : "s"));
+            continue;
+        }
+        std::string identifier = dataSource->getValueAt(static_cast<long>(0));
+        ScanRunner::Index_t index = getNodeIndex(identifier);
+        if (!index.first) {
+            readSuccess = false;
+            _print.Printf("Error: Record %ld in cut file has unknown node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), identifier.c_str());
+        } else {
+            NodeStructure * node = _Nodes.at(index.second);
+            std::string cut_type_string = lowerString(trimString(dataSource->getValueAt(static_cast<long>(1))));
+            Parameters::cut_map_t::iterator itr = cut_type_map.find(cut_type_string);
+            if (itr == cut_type_map.end()) {
+                readSuccess = false;
+                _print.Printf("Error: Record %ld in cut file has unknown cut type (%s). Choices are simple, pairs, triplets and ordinal.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(static_cast<long>(1)).c_str());
+            } else {
+                node->setCutType(itr->second);
+            }
+        }
+    }
+
+    return readSuccess;
+}
+
 /* REPORT RESULTS */
 bool ScanRunner::reportResults(const std::string& filename, Parameters::ResultsFormat rptfmt, time_t start, time_t end) const {
     ResultsFileWriter resultsWriter(*this);
@@ -185,6 +224,7 @@ bool ScanRunner::run() {
     time(&gStartTime); //get start time
 
     if (!readTree(_parameters.getTreeFileName())) return false;
+    if (_parameters.getCutsFileName().length() && !readCuts(_parameters.getCutsFileName())) return false;
     if (!readCounts(_parameters.getCountFileName())) return false;
     if (!setupTree()) return false;
     if (!scanTree()) return false;
@@ -261,7 +301,7 @@ bool ScanRunner::scanTree() {
     for (NodeStructureContainer_t::const_iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
         if ((*itr)->getParents().size() == 0) // skip root nodes
             continue;
-        Parameters::CutType cutType = (*itr)->getChildren().size() >= 2 ? _parameters.getCutType() : Parameters::SIMPLE;
+        Parameters::CutType cutType = (*itr)->getChildren().size() >= 2 ? (*itr)->getCutType() : Parameters::SIMPLE;
         size_t z = (*itr)->getChildren().size();
         switch (cutType) {
             case Parameters::SIMPLE : ++cuts; break;
@@ -279,7 +319,7 @@ bool ScanRunner::scanTree() {
     for (size_t n=0; n < _Nodes.size(); n++) {
         if (_Nodes.at(n)->getBrC() > 1) {
             const NodeStructure& thisNode(*(_Nodes.at(n)));
-            Parameters::CutType cutType = thisNode.getChildren().size() >= 3 ? _parameters.getCutType() : Parameters::SIMPLE;
+            Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
             switch (cutType) {
                 case Parameters::SIMPLE:
                     //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());

@@ -9,12 +9,19 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 11;
+const int Parameters::giNumParameters = 12;
+
+Parameters::cut_map_t Parameters::getCutTypeMap() {
+   cut_map_t cut_type_map = boost::assign::map_list_of("simple",Parameters::SIMPLE) ("pairs",Parameters::PAIRS) ("triplets",Parameters::TRIPLETS) ("ordinal",Parameters::ORDINAL);
+   return cut_type_map;
+}
 
 bool  Parameters::operator==(const Parameters& rhs) const {
   if (_replications != rhs._replications) return false;
   if (_treeFileName != rhs._treeFileName) return false;
+  if (_cutsFileName != rhs._cutsFileName) return false;  
   if (_countFileName != rhs._countFileName) return false;
   if (_outputFileName != rhs._outputFileName) return false;
   if (_resultsFormat != rhs._resultsFormat) return false;
@@ -69,6 +76,7 @@ void Parameters::assignMissingPath(std::string & sInputFilename, bool bCheckWrit
 void Parameters::copy(const Parameters &rhs) {
   _replications = rhs._replications;
   _treeFileName = rhs._treeFileName;
+  _cutsFileName = rhs._cutsFileName;
   _countFileName = rhs._countFileName;
   _outputFileName = rhs._outputFileName;
   _resultsFormat = rhs._resultsFormat;
@@ -133,6 +141,14 @@ void Parameters::setCountFileName(const char * sCountFileName, bool bCorrectForR
   if (bCorrectForRelativePath) assignMissingPath(_countFileName);
 }
 
+/** Sets cuts data file name.
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file does not exist. */
+void Parameters::setCutsFileName(const char * sCutsFileName, bool bCorrectForRelativePath) {
+  _cutsFileName = sCutsFileName;
+  if (bCorrectForRelativePath) assignMissingPath(_cutsFileName);
+}
+
 /** Sets counts data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
@@ -144,8 +160,9 @@ void Parameters::setTreeFileName(const char * sTreeFileName, bool bCorrectForRel
 
 /** initializes global variables to default values */
 void Parameters::setAsDefaulted() {
-  _countFileName = "";
   _treeFileName = "";
+  _cutsFileName = "";
+  _countFileName = "";
   _outputFileName = "";
   _resultsFormat = TEXT;
   _replications = 99999;
@@ -191,6 +208,7 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     }
     setSourceFileName(filename.c_str());
     setTreeFileName(pt.get<std::string>(type == INI ? "input.tree-file" : "parameters.input.tree-file").c_str(), true);
+    setCutsFileName(pt.get<std::string>(type == INI ? "input.cuts-file" : "parameters.input.cuts-file").c_str(), true);
     setCountFileName(pt.get<std::string>(type == INI ? "input.count-file" : "parameters.input.count-file").c_str(), true);
     //_duplicates = pt.get<bool>(type == INI ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", false);
     _modelType = static_cast<ModelType>(pt.get<unsigned int>(type == INI ? "analysis.model" : "parameters.analysis.model", POISSON));
@@ -213,6 +231,7 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     ptree pt;
 
     pt.put(type != XML ? "input.tree-file" : "parameters.input.tree-file", _treeFileName);
+    pt.put(type != XML ? "input.cuts-file" : "parameters.input.cuts-file", _cutsFileName);
     pt.put(type != XML ? "input.count-file" : "parameters.input.count-file", _countFileName);
     //pt.put(type != XML ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", _duplicates);
     pt.put(type != XML ? "analysis.model" : "parameters.analysis.model", static_cast<unsigned int>(_modelType));

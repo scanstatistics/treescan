@@ -33,7 +33,7 @@ MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuc
         for (size_t i=0; i < nodes.size(); ++i) {            
             if (_simData.at(i).second > 1) { //if (_Nodes.at(i)->_SimBrC > 1)
                 const NodeStructure& thisNode(*(nodes.at(i)));
-                Parameters::CutType cutType = thisNode.getChildren().size() >= 3 ? parameter.getCutType() : Parameters::SIMPLE;
+                Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
                 switch (cutType) {
                     case Parameters::SIMPLE:
                         simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(_simData.at(i).second/*_Nodes.at(i)->_SimBrC*/, nodes.at(i)->getBrN())); 
