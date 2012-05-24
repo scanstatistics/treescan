@@ -1,7 +1,7 @@
 #!/bin/sh
 
-binaries="/Users/hostovic/prj/treescan.development/build.area/binaries/mac"
-treescan_src="/Users/hostovic/prj/treescan.development/build.area/treescan"
+binaries="/Users/hostovic/prj/treescan.development/binaries/mac"
+treescan_src="/Users/hostovic/prj/treescan.development/treescan"
 boost_src="/Users/hostovic/prj/boost/boost_1_47_0"
 processors="-j2"
 
