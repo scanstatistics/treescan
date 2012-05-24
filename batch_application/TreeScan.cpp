@@ -58,6 +58,7 @@ int main(int argc, char* argv[]) {
         po::options_description primary("primary options");
         primary.add_options()("settings-file,s", po::value<std::string>(), "Settings file with saved settings.")
                              ("tree-file,t", po::value<std::string>(), "Input file defining tree structure.")
+                             ("cuts-file,u", po::value<std::string>(), "Input file defining node cuts.")
                              ("count-file,c", po::value<std::string>(), "Input file identifer counts and population.")
                              ("output-file,p", po::value<std::string>(), "Output filename to print results.");
 
@@ -108,6 +109,7 @@ int main(int argc, char* argv[]) {
     try {
         if (vm.count("settings-file")) ParameterAccessCoordinator(parameters).read(vm["settings-file"].as<std::string>());
         if (vm.count("tree-file")) parameters.setTreeFileName(vm["tree-file"].as<std::string>().c_str());
+        if (vm.count("cuts-file")) parameters.setCutsFileName(vm["cuts-file"].as<std::string>().c_str());
         if (vm.count("count-file")) parameters.setCountFileName(vm["count-file"].as<std::string>().c_str());
         if (vm.count("output-file")) parameters.setOutputFileName(vm["output-file"].as<std::string>().c_str());
         if (vm.count("output-html")) parameters.setResultsFormat(vm["output-html"].as<bool>() ? Parameters::HTML : Parameters::TEXT);
