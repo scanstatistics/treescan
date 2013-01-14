@@ -25,7 +25,7 @@ public:
     PoissonLoglikelihood(int totalC, double totalN) : AbstractLoglikelihood(), _totalC(totalC), _totalN(totalN)  {}
     virtual ~PoissonLoglikelihood(){}
 
-    /* Calculates the conditional Poisson log likelihood. */
+    /* Calculates the conditional Poisson loglikelihood. */
     virtual double  LogLikelihood(int c, double n) const {
         if (c - n < 0.0001) return UNSET_LOGLIKELIHOOD;
         if (c == _totalC) return c * log(c/n);
@@ -43,7 +43,7 @@ public:
     UnconditionalPoissonLoglikelihood() : AbstractLoglikelihood()  {}
     virtual ~UnconditionalPoissonLoglikelihood(){}
 
-    /* Calculates the unconditional Poisson log likelihood */
+    /* Calculates the unconditional Poisson loglikelihood */
     virtual double  LogLikelihood(int c, double n) const {
         if(c - n < 0.0001) return UNSET_LOGLIKELIHOOD;
         return (n - c) + c * log(c/n);
@@ -63,7 +63,7 @@ public:
     BernoulliLoglikelihood(int totalC, double totalN) : AbstractLoglikelihood(), _totalC(totalC), _totalN(totalN)  {}
     virtual ~BernoulliLoglikelihood(){}
 
-    /* Calculates the conditional Poisson log likelihood. */
+    /* Calculates the conditional Bernoulli loglikelihood. */
     virtual double  LogLikelihood(int c, double n) const {
         if(c/n > _totalC/_totalN) { 
             double nLL_A = 0.0, nLL_B = 0.0, nLL_C = 0.0, nLL_D = 0.0;
@@ -93,10 +93,12 @@ public:
     UnconditionalBernoulliLogLoglikelihood(double event_probability) : AbstractLoglikelihood(), _event_probability(event_probability)  {}
     virtual ~UnconditionalBernoulliLogLoglikelihood(){}
 
-    /* Calculates the unconditional Poisson log likelihood */
+    /* Calculates the unconditional Bernoulli loglikelihood */
     virtual double  LogLikelihood(int c, double n) const {
-        if (c/n > _event_probability)
-          return c * log(c/(n * _event_probability)) + (n-c) * log((n-c)/(n*(1-_event_probability)));
+		if (c > 0 && (n - static_cast<double>(c)) > 0.0) {
+			double dLogLikelihood = c * log(c/n) + (n-c) * log((n-c)/n);
+			return dLogLikelihood - (c * log(_event_probability) + (n-c) * log(1-_event_probability)); // actually return the loglikelihood ratio
+		}
         return UNSET_LOGLIKELIHOOD;
     }
     virtual double  LogLikelihoodRatio(double logLikelihood) const {

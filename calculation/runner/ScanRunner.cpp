@@ -16,8 +16,11 @@
 #include "ResultsFileWriter.h"
 
 double CutStructure::getExpected(const ScanRunner& scanner) {
-  if (scanner.getParameters().getModelType() == Parameters::BERNOULLI)
-    return _N * (scanner.getTotalC() / scanner.getTotalN());
+  if (scanner.getParameters().getModelType() == Parameters::BERNOULLI) {
+    if (scanner.getParameters().isConditional())
+		return _N * (scanner.getTotalC() / scanner.getTotalN());
+	return _N * scanner.getParameters().getProbability();
+  }
   return _N;
 }
 
