@@ -464,7 +464,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                    _countFileBrowseButton.setText(fc.getSelectedFile().getAbsolutePath());
+                    _countFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
                 }
             }
         });
@@ -549,7 +549,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_countFileBrowseButton)
                     .addComponent(_countFileImportButton)
                     .addComponent(_countFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(52, Short.MAX_VALUE))
+                .addContainerGap(56, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Input", _inputTab);
@@ -647,7 +647,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(_probabilityModelPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_PoissonButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
                 .addGroup(_probabilityModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_BernoulliButton)
                     .addComponent(_eventProbabilityLabel)
@@ -694,7 +694,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _scanStatisticPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_unconditionalButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
                 .addComponent(_conditionalButton)
                 .addContainerGap())
         );
@@ -818,7 +818,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_outputFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_reportResultsAsHTML)))
-                .addContainerGap(135, Short.MAX_VALUE))
+                .addContainerGap(139, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Output", _outputTab);
@@ -836,7 +836,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
                 .addContainerGap())
         );
 

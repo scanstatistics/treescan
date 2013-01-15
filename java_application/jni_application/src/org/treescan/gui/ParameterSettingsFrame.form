@@ -47,7 +47,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jTabbedPane1" pref="239" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" pref="243" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -136,7 +136,7 @@
                           <Component id="_countFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="_countFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="52" max="32767" attributes="0"/>
+                      <EmptySpace pref="56" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -215,7 +215,7 @@
                 <Property name="toolTipText" type="java.lang.String" value="Browse for count file ..." noResource="true"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_countFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select Count File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;cts&quot;,&quot;Count Files (*.cts)&quot;));&#xa;        int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _countFileBrowseButton.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_countFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select Count File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;cts&quot;,&quot;Count Files (*.cts)&quot;));&#xa;        int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _countFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JButton" name="_countFileImportButton">
@@ -317,7 +317,7 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_PoissonButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="14" max="32767" attributes="0"/>
+                          <EmptySpace pref="18" max="32767" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="_BernoulliButton" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_eventProbabilityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -410,7 +410,7 @@
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_unconditionalButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="16" max="32767" attributes="0"/>
+                          <EmptySpace pref="20" max="32767" attributes="0"/>
                           <Component id="_conditionalButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -538,7 +538,7 @@
                               <Component id="_reportResultsAsHTML" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace pref="135" max="32767" attributes="0"/>
+                      <EmptySpace pref="139" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
