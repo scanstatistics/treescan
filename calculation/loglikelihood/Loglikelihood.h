@@ -95,9 +95,11 @@ public:
 
     /* Calculates the unconditional Bernoulli loglikelihood */
     virtual double  LogLikelihood(int c, double n) const {
-		if (c > 0 && (n - static_cast<double>(c)) > 0.0) {
-			double dLogLikelihood = c * log(c/n) + (n-c) * log((n-c)/n);
-			return dLogLikelihood - (c * log(_event_probability) + (n-c) * log(1-_event_probability)); // actually return the loglikelihood ratio
+		if (c/n > _event_probability) {// currently scanning for high rates only
+			if (c > 0 && (n - static_cast<double>(c)) > 0.0) {
+				double dLogLikelihood = c * log(c/n) + (n-c) * log((n-c)/n);
+				return dLogLikelihood - (c * log(_event_probability) + (n-c) * log(1-_event_probability)); // actually return the loglikelihood ratio
+			}
 		}
         return UNSET_LOGLIKELIHOOD;
     }

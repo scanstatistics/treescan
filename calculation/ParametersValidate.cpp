@@ -102,14 +102,6 @@ bool ParametersValidate::ValidateOutputParameters(BasePrint & PrintDirection) co
                               "have permissions to write to this directory and file.\n",
                               BasePrint::P_PARAMERROR, _parameters.getOutputFileName().c_str());
       }
-      //vaildate that filename ends with '.html' if format is html
-      FileName fileName(_parameters.getOutputFileName().c_str());
-      std::string buffer(fileName.getExtension());
-      lowerString(buffer);
-      if (_parameters.getResultsFormat() == Parameters::HTML && !(buffer == ".html" || buffer == ".htm")) {
-          bValid = false;
-          PrintDirection.Printf("Invalid Parameter Setting:\nReporting results as HTML requires a file extension of '.html'.\n", BasePrint::P_PARAMERROR);
-      }
   } catch (prg_exception& x) {
     x.addTrace("ValidateOutputOptionParameters()","ParametersValidate");
     throw;

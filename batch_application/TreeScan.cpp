@@ -67,8 +67,7 @@ int main(int argc, char* argv[]) {
         optional.add_options()("replications,r", po::value<int>(), "Number of Monte Carlo replicatons (default=99999).")
                               //("duplicates,d", po::value<bool>(), "Expect duplicates in count file (default=false).")
                               ("limit-threads,l", po::value<int>(), "Limit threads in simulation (default=0).")
-                              ("conditional,n", po::value<bool>(), "Perform conditional analysis (default=false).")
-                              ("output-html,m", po::value<bool>(), "Print results as html (default=false).");
+                              ("conditional,n", po::value<bool>(), "Perform conditional analysis (default=false).");
 
         /* help */
         po::options_description help("help");
@@ -112,7 +111,6 @@ int main(int argc, char* argv[]) {
         if (vm.count("cuts-file")) parameters.setCutsFileName(vm["cuts-file"].as<std::string>().c_str());
         if (vm.count("count-file")) parameters.setCountFileName(vm["count-file"].as<std::string>().c_str());
         if (vm.count("output-file")) parameters.setOutputFileName(vm["output-file"].as<std::string>().c_str());
-        if (vm.count("output-html")) parameters.setResultsFormat(vm["output-html"].as<bool>() ? Parameters::HTML : Parameters::TEXT);
         if (vm.count("replications")) parameters.setNumReplications(vm["replications"].as<int>());
         if (vm.count("conditional")) parameters.setConditional(vm["conditional"].as<bool>());
         if (vm.count("duplicates")) parameters.setDuplicates(vm["duplicates"].as<bool>());

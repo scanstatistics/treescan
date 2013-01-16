@@ -139,7 +139,7 @@ private:
     bool                        readCounts(const std::string& filename);
     bool                        readCuts(const std::string& filename);
     bool                        readTree(const std::string& filename);
-    bool                        reportResults(const std::string& filename, Parameters::ResultsFormat rptfmt, time_t start, time_t end) const;
+    bool                        reportResults(time_t start, time_t end) const;
     bool                        runsimulations();
     bool                        scanTree();
     bool                        setupTree();

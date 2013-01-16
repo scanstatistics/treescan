@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "UtilityFunctions.h"
 #include "PrjException.h"
+#include "FileName.h"
 #include <iostream>
 #include <fstream>
 #include <boost/math/special_functions/factorials.hpp>
@@ -237,4 +238,15 @@ bool getlinePortable(std::ifstream& readstream, std::string& line) {
   }
   line = readStream.str();
   return line.size() > 0 ? true : readstream.eof() == false;
+}
+
+std::string & getDerivedFilename(const std::string& source, const std::string& suffix, const std::string& extension, std::string& destination) {
+  FileName     _fileName(source.c_str());
+  std::string buffer(_fileName.getFileName());
+
+  buffer += suffix;
+  _fileName.setFileName(buffer.c_str());
+  _fileName.setExtension(extension.c_str());
+
+  return _fileName.getFullPath(destination);
 }

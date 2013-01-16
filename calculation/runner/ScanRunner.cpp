@@ -206,16 +206,23 @@ bool ScanRunner::readCuts(const std::string& filename) {
 }
 
 /* REPORT RESULTS */
-bool ScanRunner::reportResults(const std::string& filename, Parameters::ResultsFormat rptfmt, time_t start, time_t end) const {
+bool ScanRunner::reportResults(time_t start, time_t end) const {
     ResultsFileWriter resultsWriter(*this);
-    bool status = rptfmt == Parameters::HTML ? resultsWriter.writeHTML(filename, start, end) : resultsWriter.writeASCII(filename, start, end);
+
+	bool status = resultsWriter.writeASCII(start, end);
+	if (status && _parameters.isGeneratingHtmlResults()) {
+		std::string buffer;
+		status = resultsWriter.writeHTML(start, end);
+	}
     // write cuts to supplemental reports file
-    unsigned int k=0;
-    CutsRecordWriter cutsWriter(*this);
-    while(status && k < getCuts().size() && getCuts().at(k)->getC() > 0 && getCuts().at(k)->getRank() < _parameters.getNumReplicationsRequested() + 1) {
-        cutsWriter.write(k);
-        k++;
-    }
+	if (_parameters.isGeneratingTableResults()) {
+		unsigned int k=0;
+		CutsRecordWriter cutsWriter(*this);
+		while(status && k < getCuts().size() && getCuts().at(k)->getC() > 0 && getCuts().at(k)->getRank() < _parameters.getNumReplicationsRequested() + 1) {
+			cutsWriter.write(k);
+			k++;
+		}
+	}
     return status;
 }
 
@@ -234,7 +241,7 @@ bool ScanRunner::run() {
     if (!runsimulations()) return false;
 
     time(&gEndTime); //get end time
-    if (!reportResults(_parameters.getOutputFileName(), _parameters.getResultsFormat(), gStartTime, gEndTime)) return false;
+    if (!reportResults(gStartTime, gEndTime)) return false;
 
     return true;
 }

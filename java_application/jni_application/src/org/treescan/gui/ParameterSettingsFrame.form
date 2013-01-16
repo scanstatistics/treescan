@@ -47,7 +47,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jTabbedPane1" pref="243" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" pref="247" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -136,7 +136,7 @@
                           <Component id="_countFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="_countFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="56" max="32767" attributes="0"/>
+                      <EmptySpace pref="60" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -317,7 +317,7 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_PoissonButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="18" max="32767" attributes="0"/>
+                          <EmptySpace pref="22" max="32767" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="_BernoulliButton" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_eventProbabilityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -410,7 +410,7 @@
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_unconditionalButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="20" max="32767" attributes="0"/>
+                          <EmptySpace pref="24" max="32767" attributes="0"/>
                           <Component id="_conditionalButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -507,18 +507,15 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="_reportResultsAsCsvTable" alignment="0" min="-2" pref="236" max="-2" attributes="0"/>
+                          <Component id="_reportResultsAsHTML" alignment="0" min="-2" pref="236" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                                      <Component id="_reportResultsAsHTML" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Component id="_outputFileTextField" pref="453" max="32767" attributes="0"/>
-                              </Group>
+                              <Component id="_outputFileTextField" pref="453" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_resultsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                           </Group>
                           <Component id="_resultsFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="_resultsFileLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -532,13 +529,15 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="_resultsFileBrowseButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="_outputFileTextField" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_reportResultsAsHTML" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="_outputFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="139" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_resultsFileLabel1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_reportResultsAsHTML" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_reportResultsAsCsvTable" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="95" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -566,6 +565,16 @@
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select Results File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;html&quot;,&quot;Results Files (*.html)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Results Files (*.txt)&quot;));&#xa;        if (fc.showSaveDialog(ParameterSettingsFrame.this) == JFileChooser.APPROVE_OPTION) {&#xa;            org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _outputFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
               </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="_resultsFileLabel1">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Additional Output Files:" noResource="true"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="_reportResultsAsCsvTable">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Report Results as CSV Table"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>

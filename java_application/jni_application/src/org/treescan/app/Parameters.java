@@ -4,7 +4,7 @@ import java.util.*;
 public class Parameters implements Cloneable {	
     public native boolean Read(String filename);  
     public native void Write(String filename);
-    public enum ResultsFormat {TEXT, HTML};
+    public enum ResultsFormat {TEXT};
     public enum ModelType {POISSON, BERNOULLI};
     public class CreationVersion {
     	public int _major;
@@ -30,6 +30,8 @@ public class Parameters implements Cloneable {
     private boolean _conditional=false;
     //private boolean _duplicates=false;
     private boolean _randomlyGenerateSeed=false;
+    private boolean _generateHtmlResults;
+    private boolean _generateTableResults;
     private boolean _printColumnHeaders;
     private ModelType _modelType=ModelType.POISSON;
     private int _probability_ratio_numerator=1;
@@ -67,6 +69,8 @@ public class Parameters implements Cloneable {
     	  if (_randomizationSeed != rhs._randomizationSeed) return false;
     	  if (_numprocesses != rhs._numprocesses) return false;
     	  if (_randomlyGenerateSeed != rhs._randomlyGenerateSeed) return false;
+    	  if (_generateHtmlResults != rhs._generateHtmlResults) return false;
+    	  if (_generateTableResults != rhs._generateTableResults) return false;
     	  if (_printColumnHeaders != rhs._printColumnHeaders) return false;
           if (_modelType != rhs._modelType) return false;
           if (_probability_ratio_numerator != rhs._probability_ratio_numerator) return false;
@@ -97,6 +101,10 @@ public class Parameters implements Cloneable {
     public void setConditional(boolean b) {_conditional = b;}
     //public final boolean isDuplicates() {return _duplicates;}
     //public void setDuplicates(boolean b) {_duplicates = b;}
+    public final boolean isGeneratingHtmlResults() {return _generateHtmlResults;}
+    public void setGeneratingHtmlResults(boolean b) {_generateHtmlResults=b;}
+    public final boolean isGeneratingTableResults() {return _generateTableResults;}
+    public void setGeneratingTableResults(boolean b) {_generateTableResults=b;}
     public final boolean isPrintColumnHeaders() {return _printColumnHeaders;}
     public void setPrintColunHeaders(boolean b) {_printColumnHeaders=b;}
     public ResultsFormat getResultsFormat() {return _resultsFormat;}

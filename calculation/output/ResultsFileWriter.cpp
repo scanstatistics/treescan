@@ -8,7 +8,11 @@
 #include "AsciiPrintFormat.h"
 #include "ParametersPrint.h"
 
-std::ofstream & ResultsFileWriter::openStream(const std::string& outputfile, std::ofstream & outfile) {
+std::string& ResultsFileWriter::getFilenameHTML(const Parameters& parameters, std::string& buffer) {
+  return getDerivedFilename(parameters.getOutputFileName(), "_web", ".html", buffer);
+}
+
+std::ofstream & ResultsFileWriter::openStream(const std::string& outputfile, std::ofstream & outfile, bool overwrite) {
     std::string buffer;
     BasePrint & print(const_cast<ScanRunner&>(_scanRunner).getPrint());
 
@@ -25,16 +29,16 @@ std::ofstream & ResultsFileWriter::openStream(const std::string& outputfile, std
             print.Printf("Unable to create output file: %s\n", BasePrint::P_READERROR, buffer.c_str());
             return outfile;
         }
-        const_cast<Parameters&>(_scanRunner.getParameters()).setOutputFileName(buffer.c_str());
+		if (overwrite) const_cast<Parameters&>(_scanRunner.getParameters()).setOutputFileName(buffer.c_str());
         print.Printf("Creating the output file in documents directory: %s\n", BasePrint::P_STDOUT, buffer.c_str());
     } else
         print.Printf("Creating the output file: %s\n", BasePrint::P_STDOUT, outputfile.c_str());
     return outfile;
 }
 
-bool ResultsFileWriter::writeASCII(const std::string& outputfile, time_t start, time_t end) {
+bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     std::ofstream outfile;
-    openStream(outputfile, outfile);
+	openStream(_scanRunner.getParameters().getOutputFileName(), outfile, true);
     if (!outfile) return false;
 
     AsciiPrintFormat PrintFormat;
@@ -141,13 +145,13 @@ std::string & ResultsFileWriter::getTotalRunningTime(time_t start, time_t end, s
     return buffer;
 }
 
-bool ResultsFileWriter::writeHTML(const std::string& outputfile, time_t start, time_t end) {
-    std::ofstream outfile;
-    openStream(outputfile, outfile);
-    if (!outfile) return false;
+bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
+	std::string buffer;
     Parameters& parameters(const_cast<Parameters&>(_scanRunner.getParameters()));
+    std::ofstream outfile;
+    openStream(getFilenameHTML(parameters, buffer), outfile);
+    if (!outfile) return false;
     ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN()));
-    std::string buffer;
 
     outfile << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << std::endl; 
     outfile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <!-- this has to be after the doctype so that IE6 doesn't use quirks mode -->" << std::endl;

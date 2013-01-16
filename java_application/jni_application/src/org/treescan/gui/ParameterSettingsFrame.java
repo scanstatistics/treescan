@@ -216,9 +216,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         if (_outputFileTextField.getText().length() == 0) {
             throw new SettingsException("Please specify a results file.", (Component) _outputFileTextField);
         }
-        if (_reportResultsAsHTML.isSelected() && !(_outputFileTextField.getText().endsWith(".htm") || _outputFileTextField.getText().endsWith(".html"))) {
-            throw new SettingsException("Outputting results as HTML requires a file extension of '.html'.", (Component) _outputFileTextField);
-        }
         if (!FileAccess.ValidateFileAccess(_outputFileTextField.getText(), true)) {
             throw new SettingsException("Results file could not be opened for writing.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to write\nto this directory and file.",
                     (Component) _outputFileTextField);
@@ -252,7 +249,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _countFileTextField.setCaretPosition(0);
         _outputFileTextField.setText(parameters.getOutputFileName());
         _outputFileTextField.setCaretPosition(0);
-        _reportResultsAsHTML.setSelected(parameters.getResultsFormat() == Parameters.ResultsFormat.HTML);
+        _reportResultsAsHTML.setSelected(parameters.isGeneratingHtmlResults());
+        _reportResultsAsCsvTable.setSelected(parameters.isGeneratingTableResults());
         _montCarloReplicationsTextField.setText(Integer.toString(parameters.getNumReplicationsRequested()));
         _PoissonButton.setSelected(parameters.getModelType() == Parameters.ModelType.POISSON);
         _BernoulliButton.setSelected(parameters.getModelType() == Parameters.ModelType.BERNOULLI);
@@ -267,8 +265,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         parameters.setTreeFileName(_treelFileTextField.getText());
         parameters.setCutsFileName(_cutFileTextField.getText());
         parameters.setCountFileName(_countFileTextField.getText());
+        parameters.setGeneratingHtmlResults(_reportResultsAsHTML.isSelected());
+        parameters.setGeneratingTableResults(_reportResultsAsCsvTable.isSelected());
         parameters.setOutputFileName(_outputFileTextField.getText());
-        parameters.setResultsFormat(_reportResultsAsHTML.isSelected() ? Parameters.ResultsFormat.HTML.ordinal() : Parameters.ResultsFormat.TEXT.ordinal());
         parameters.setNumReplications(Integer.parseInt(_montCarloReplicationsTextField.getText()));
         if (_PoissonButton.isSelected()) {
           parameters.setModelType(Parameters.ModelType.POISSON.ordinal());
@@ -358,6 +357,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _outputFileTextField = new javax.swing.JTextField();
         _resultsFileLabel = new javax.swing.JLabel();
         _resultsFileBrowseButton = new javax.swing.JButton();
+        _resultsFileLabel1 = new javax.swing.JLabel();
+        _reportResultsAsCsvTable = new javax.swing.JCheckBox();
 
         modelButtonGroup.add(_PoissonButton);
         modelButtonGroup.add(_BernoulliButton);
@@ -549,7 +550,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_countFileBrowseButton)
                     .addComponent(_countFileImportButton)
                     .addComponent(_countFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(56, Short.MAX_VALUE))
+                .addContainerGap(60, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Input", _inputTab);
@@ -647,7 +648,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(_probabilityModelPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_PoissonButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
                 .addGroup(_probabilityModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_BernoulliButton)
                     .addComponent(_eventProbabilityLabel)
@@ -694,7 +695,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _scanStatisticPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_unconditionalButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
                 .addComponent(_conditionalButton)
                 .addContainerGap())
         );
@@ -788,6 +789,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
+        _resultsFileLabel1.setText("Additional Output Files:"); // NOI18N
+
+        _reportResultsAsCsvTable.setText("Report Results as CSV Table");
+
         javax.swing.GroupLayout _outputTabLayout = new javax.swing.GroupLayout(_outputTab);
         _outputTab.setLayout(_outputTabLayout);
         _outputTabLayout.setHorizontalGroup(
@@ -795,15 +800,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(_outputTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_outputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_reportResultsAsCsvTable, javax.swing.GroupLayout.PREFERRED_SIZE, 236, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_reportResultsAsHTML, javax.swing.GroupLayout.PREFERRED_SIZE, 236, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(_outputTabLayout.createSequentialGroup()
-                        .addGroup(_outputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(_outputTabLayout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addComponent(_reportResultsAsHTML))
-                            .addComponent(_outputFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE))
+                        .addComponent(_outputFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_resultsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(_resultsFileLabel))
+                    .addComponent(_resultsFileLabel)
+                    .addComponent(_resultsFileLabel1))
                 .addContainerGap())
         );
         _outputTabLayout.setVerticalGroup(
@@ -814,11 +818,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_outputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_resultsFileBrowseButton)
-                    .addGroup(_outputTabLayout.createSequentialGroup()
-                        .addComponent(_outputFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_reportResultsAsHTML)))
-                .addContainerGap(139, Short.MAX_VALUE))
+                    .addComponent(_outputFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_resultsFileLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_reportResultsAsHTML)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_reportResultsAsCsvTable)
+                .addContainerGap(95, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Output", _outputTab);
@@ -836,7 +843,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -871,9 +878,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JTextField _outputFileTextField;
     private javax.swing.JPanel _outputTab;
     private javax.swing.JPanel _probabilityModelPanel;
+    private javax.swing.JCheckBox _reportResultsAsCsvTable;
     private javax.swing.JCheckBox _reportResultsAsHTML;
     private javax.swing.JButton _resultsFileBrowseButton;
     private javax.swing.JLabel _resultsFileLabel;
+    private javax.swing.JLabel _resultsFileLabel1;
     private javax.swing.JPanel _scanStatisticPanel;
     private javax.swing.JButton _treeFileBrowseButton;
     private javax.swing.JButton _treeFileImportButton;

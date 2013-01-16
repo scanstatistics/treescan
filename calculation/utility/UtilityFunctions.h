@@ -33,5 +33,6 @@ template <typename T>           bool type_to_string(T& t, std::string& s) {
                                     } 
                                     return true;
                                 }
+std::string                   & getDerivedFilename(const std::string& source, const std::string& suffix, const std::string& extension, std::string& destination);
 //******************************************************************************
 #endif

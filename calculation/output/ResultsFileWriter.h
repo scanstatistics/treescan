@@ -6,19 +6,22 @@
 #include <fstream>
 
 class ScanRunner;
+class Parameters;
 
 class ResultsFileWriter {
   protected:
     const ScanRunner & _scanRunner;
 
-    std::ofstream & openStream(const std::string& outputfile, std::ofstream & outfile);
+    std::ofstream & openStream(const std::string& outputfile, std::ofstream & outfile, bool overwrite=false);
     std::string & getTotalRunningTime(time_t start, time_t end, std::string & buffer);
 
   public:
     ResultsFileWriter(const ScanRunner& scanRunner) : _scanRunner(scanRunner) {}
 
-    bool writeASCII(const std::string& outputfile, time_t start, time_t end);
-    bool writeHTML(const std::string& outputfile, time_t start, time_t end);
+    static std::string & getFilenameHTML(const Parameters& parameters, std::string& buffer);
+
+    bool writeASCII(time_t start, time_t end);
+    bool writeHTML(time_t start, time_t end);
 };
 //******************************************************************************
 #endif

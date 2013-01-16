@@ -22,6 +22,7 @@ import org.treescan.app.Parameters;
 import org.treescan.gui.utils.JDocumentRenderer;
 import org.treescan.app.OutputFileRegister;
 import org.treescan.utils.BareBonesBrowserLaunch;
+import org.treescan.utils.FileAccess;
 
 /**
  * Analysis execution progress/cancellation and results window.
@@ -141,18 +142,17 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     synchronized public void LoadFromFile(final String sFileName) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (_parameters.getResultsFormat() == Parameters.ResultsFormat.TEXT) {
-                    try {
-                        _progressTextArea.setText("");
-                        _progressTextArea.read(new FileReader(sFileName), null);
-                    } catch (IOException e) {
-                        setTitle("Job Completed");
-                        _progressTextArea.append("\nTreeScan completed successfully but was unable to read results from file.\n" +
-                                                 "The results have been written to: \n" + _parameters.getOutputFileName() + "\n\n");
-                    }
-                } else if (_parameters.getResultsFormat() == Parameters.ResultsFormat.HTML) {
-                    PrintProgressWindow("Opening results in web browser ...");
-                    File path = new File(sFileName);
+                try {
+                    _progressTextArea.setText("");
+                    _progressTextArea.read(new FileReader(sFileName), null);
+                } catch (IOException e) {
+                    setTitle("Job Completed");
+                    _progressTextArea.append("\nTreeScan completed successfully but was unable to read results from file.\n" +
+                                             "The results have been written to: \n" + _parameters.getOutputFileName() + "\n\n");
+                }
+                if (_parameters.isGeneratingHtmlResults()) {
+                    PrintProgressWindow("\nOpening results in web browser ...");
+                    File path = new File(FileAccess.changeExtension(sFileName, "_web.html"));
                     if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
                         try {
                             Desktop.getDesktop().open(path);

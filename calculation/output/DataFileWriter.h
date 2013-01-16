@@ -35,7 +35,6 @@ class RecordBuffer {
 /** Base class for writing record based data to files. */
 class DataRecordWriter {
   public:
-    static const char         * CUT_FILE_EXT;
     static const size_t         DEFAULT_LOC_FIELD_SIZE;
     static const size_t         MAX_LOC_FIELD_SIZE;
     static const char         * CUT_NUM_FIELD;
@@ -67,14 +66,16 @@ class DataRecordWriter {
 
 /** CSV data writer. */
 class CSVDataFileWriter {
+   public:
+     static const char        * CSV_FILE_EXT;
+
    protected :
      std::ofstream              _outfile;
-     static const char        * CSV_FILE_EXT;
 
      void                       createFormatString(std::string& sValue, const FieldDef& FieldDef, const FieldValue& fv);
 
    public :
-      CSVDataFileWriter(const Parameters& parameters, const ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension);
+      CSVDataFileWriter(const std::string& filename, const ptr_vector<FieldDef>& vFieldDefs, bool printHeaders);
       virtual ~CSVDataFileWriter();
 
      virtual void	            writeRecord(const RecordBuffer& Record);
@@ -82,13 +83,18 @@ class CSVDataFileWriter {
 
 class ScanRunner; /* forward class declaration */
 class CutsRecordWriter : public DataRecordWriter {
-   private:
+  public:
+    static const char         * CUT_FILE_SUFFIX;
+
+  private:
        const ScanRunner                  &  _scanner;
        std::auto_ptr<CSVDataFileWriter>     _csvWriter;
 
    public:
        CutsRecordWriter(const ScanRunner& scanRunner);
        virtual ~CutsRecordWriter() {}
+
+       static std::string & getFilename(const Parameters& parameters, std::string& buffer);
 
        void                  write(unsigned int cutIndex) const;
 };

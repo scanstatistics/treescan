@@ -32,6 +32,8 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_randomlyGenerateSeed != rhs._randomlyGenerateSeed) return false;
   if (_conditional != rhs._conditional) return false;
   if (_duplicates != rhs._duplicates) return false;  
+  if (_generateHtmlResults != rhs._generateHtmlResults) return false;
+  if (_generateTableResults != rhs._generateTableResults) return false;
   if (_printColumnHeaders != rhs._printColumnHeaders) return false; 
   if (_modelType != rhs._modelType) return false;
   if (_probablility_ratio != rhs._probablility_ratio) return false;
@@ -87,6 +89,8 @@ void Parameters::copy(const Parameters &rhs) {
   _randomlyGenerateSeed = rhs._randomlyGenerateSeed;
   _conditional = rhs._conditional;
   _duplicates = rhs._duplicates;
+  _generateHtmlResults = rhs._generateHtmlResults;
+  _generateTableResults = rhs._generateTableResults;
   _printColumnHeaders = rhs._printColumnHeaders;
   _modelType = rhs._modelType;
   _probablility_ratio = rhs._probablility_ratio;
@@ -174,6 +178,8 @@ void Parameters::setAsDefaulted() {
   _numRequestedParallelProcesses = 0;
   _conditional = false;
   _duplicates = false;
+  _generateHtmlResults = false;
+  _generateTableResults = false;
   _printColumnHeaders = true;
   _modelType = POISSON;
   _probablility_ratio = ratio_t(1,2);
@@ -218,7 +224,9 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _replications = pt.get<unsigned int>(type == INI ? "analysis.replications" : "parameters.analysis.replications", 999);
     _conditional = pt.get<bool>(type == INI ? "analysis.conditional" : "parameters.analysis.conditional", false);
     setOutputFileName(pt.get<std::string>(type == INI ? "output.results-file" : "parameters.output.results-file").c_str(), true);
-    _resultsFormat = pt.get<bool>(type == INI ? "output.html" : "parameters.output.results-file.<xmlattr>.html", true) ? HTML : TEXT;
+    //_resultsFormat = pt.get<bool>(type == INI ? "output.html" : "parameters.output.results-file.<xmlattr>.html", true) ? HTML : TEXT;
+    _generateHtmlResults = pt.get<bool>(type == INI ? "output.generate-html-results" : "parameters.output.generate-html-results", true);
+    _generateTableResults = pt.get<bool>(type == INI ? "output.generate-table-results" : "parameters.output.generate-table-results", true);
     _printColumnHeaders = pt.get<bool>(type == INI ? "output.print-headers" : "parameters.output.print-headers", true);
     _numRequestedParallelProcesses = pt.get<unsigned int>(type == INI ? "execute-options.processors" : "parameters.execute-options.processors", 0);
     _randomizationSeed = pt.get<unsigned int>(type == INI ? "execute-options.seed" : "parameters.execute-options.seed", static_cast<unsigned int>(RandomNumberGenerator::glDefaultSeed));
@@ -241,7 +249,9 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put(type != XML ? "analysis.replications" : "parameters.analysis.replications", _replications);
     pt.put(type != XML ? "analysis.conditional" : "parameters.analysis.conditional", _conditional);
     pt.put(type != XML ? "output.results-file" : "parameters.output.results-file", _outputFileName);
-    pt.put(type != XML ? "output.html" : "parameters.output.results-file.<xmlattr>.html", _resultsFormat == HTML);
+    //pt.put(type != XML ? "output.html" : "parameters.output.results-file.<xmlattr>.html", _resultsFormat == HTML);
+    pt.put(type != XML ? "output.generate-html-results" : "parameters.output.generate-html-results", _generateHtmlResults);
+    pt.put(type != XML ? "output.generate-table-results" : "parameters.output.generate-table-results", _generateTableResults);
     pt.put(type != XML ? "output.print-headers" : "parameters.output.print-headers", _printColumnHeaders);
     pt.put(type != XML ? "execute-options.processors" : "parameters.execute-options.processors", _numRequestedParallelProcesses);
     pt.put(type != XML ? "execute-options.seed" : "parameters.execute-options.seed", _randomizationSeed);

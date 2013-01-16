@@ -146,23 +146,15 @@ void RecordBuffer::SetFieldIsBlank(unsigned int iFieldNumber, bool bBlank) {
 const char * CSVDataFileWriter::CSV_FILE_EXT = ".csv";
 
 /** constructor */
-CSVDataFileWriter::CSVDataFileWriter(const Parameters& parameters, const ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension) {
-  std::string  buffer;
-  FileName     _fileName;
+CSVDataFileWriter::CSVDataFileWriter(const std::string& filename, const ptr_vector<FieldDef>& vFieldDefs, bool printHeaders) {
 
   try {
-    _fileName.setFullPath(parameters.getOutputFileName().c_str());
-    buffer = _fileName.getFileName();
-    buffer += sFileExtension;
-    _fileName.setFileName(buffer.c_str());
-    _fileName.setExtension(CSV_FILE_EXT);
-
-    _outfile.open(_fileName.getFullPath(buffer).c_str());
+    _outfile.open(filename.c_str());
     if (!_outfile.is_open())
-      throw resolvable_error("Unable to open/create file %s", "Setup()", _fileName.getFullPath(buffer).c_str());
+      throw resolvable_error("Unable to open/create file %s", "Setup()", filename.c_str());
 
     //write column headers when requested
-    if (parameters.isPrintColumnHeaders()) {
+    if (printHeaders) {
         ptr_vector<FieldDef>::const_iterator itr=vFieldDefs.begin(), itr_end=vFieldDefs.end();
         for (; itr != itr_end; ++itr) {
             _outfile << (*itr)->GetName();
@@ -222,7 +214,6 @@ void CSVDataFileWriter::writeRecord(const RecordBuffer& Record) {
 
 ////////////////////////////////////////////////////////////
 
-const char * DataRecordWriter::CUT_FILE_EXT                              = "_cut";
 const char * DataRecordWriter::CUT_NUM_FIELD                             = "CUT";
 const char * DataRecordWriter::NODE_ID_FIELD   	                         = "NODE_ID";
 const char * DataRecordWriter::P_VALUE_FLD  	                         = "P_VALUE";
@@ -236,6 +227,8 @@ const size_t DataRecordWriter::DEFAULT_LOC_FIELD_SIZE                    = 30;
 const size_t DataRecordWriter::MAX_LOC_FIELD_SIZE                        = 254;
 
 ///////////// CutsRecordWriter ///////////////////////////////////
+
+const char * CutsRecordWriter::CUT_FILE_SUFFIX                            = "_cut";
 
 CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scanRunner) {
   unsigned short uwOffset=0;
@@ -254,12 +247,15 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
     CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
     printString(buffer, "%u", _scanner.getParameters().getNumReplicationsRequested());
     CreateField(_dataFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, static_cast<unsigned short>(buffer.size()));
-
-    _csvWriter.reset(new CSVDataFileWriter(_scanner.getParameters(), _dataFieldDefinitions, CUT_FILE_EXT));
+	_csvWriter.reset(new CSVDataFileWriter(getFilename(_scanner.getParameters(), buffer), _dataFieldDefinitions, _scanner.getParameters().isPrintColumnHeaders()));
   } catch (prg_exception& x) {
     x.addTrace("constructor()","CutsRecordWriter");
     throw;
   }
+}
+
+std::string& CutsRecordWriter::getFilename(const Parameters& parameters, std::string& buffer) {
+  return getDerivedFilename(parameters.getOutputFileName(), CutsRecordWriter::CUT_FILE_SUFFIX, CSVDataFileWriter::CSV_FILE_EXT, buffer);
 }
 
 void CutsRecordWriter::write(unsigned int cutIndex) const {

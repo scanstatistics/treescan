@@ -34,5 +34,13 @@ public class FileAccess {
         } catch (FileNotFoundException e) {} catch (SecurityException e) {}
         
         return bAccessible;
-    }    
+    }   
+    public static String changeExtension(String originalName, String newExtension) {
+        int lastDot = originalName.lastIndexOf(".");
+        if (lastDot != -1) {
+            return originalName.substring(0, lastDot) + newExtension;
+        } else {
+            return originalName + newExtension;
+        }
+    }//end changeExtension
 }

@@ -14,7 +14,9 @@
         <conditional>false</conditional>
     </analysis>
     <output>
-        <results-file html="true">poisson.html</results-file>
+        <results-file>poisson.txt</results-file>
+        <generate-html-results>false</generate-html-results>
+        <generate-table-results>false</generate-table-results>
         <print-headers>true</print-headers>
     </output>
     <execute-options>

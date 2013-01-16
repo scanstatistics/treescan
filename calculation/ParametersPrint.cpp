@@ -78,6 +78,8 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(Settin
 ParametersPrint::SettingContainer_t & ParametersPrint::getOutputParameters(SettingContainer_t & settings) const {
   settings.clear();
   settings.push_back(std::make_pair("Results File",_parameters.getOutputFileName()));
+  settings.push_back(std::make_pair("Report Results as HTML",(_parameters.isGeneratingHtmlResults() ? "Yes" : "No")));
+  settings.push_back(std::make_pair("Report Results as CSV Table",(_parameters.isGeneratingTableResults() ? "Yes" : "No")));
   return settings;
 }
 

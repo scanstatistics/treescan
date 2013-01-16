@@ -10,7 +10,7 @@ class Parameters {
     typedef std::pair<unsigned int,unsigned int> ratio_t;
     enum ParameterType {TREEFILE=0, CUTFILE, COUNTFILE, OUTPUTFILE, CUTS, REPLICATIONS, CONDITIONAL, DUPLICATES, RANDOMIZATION_SEED, RANDOMLY_GENERATE_SEED, PRINT_COLUMN_HEADERS, MODEL};
     struct CreationVersion {unsigned int iMajor; unsigned int iMinor; unsigned int iRelease;};
-    enum ResultsFormat {TEXT=0, HTML};
+    enum ResultsFormat {TEXT=0};
     enum ParametersFormat {XML=0, INI, JSON};
     enum ModelType {POISSON=0, BERNOULLI};
     enum CutType {SIMPLE=0, PAIRS, TRIPLETS, ORDINAL, COMBINATORIAL};
@@ -30,6 +30,8 @@ class Parameters {
     bool                                _randomlyGenerateSeed;
     bool                                _conditional;
     bool                                _duplicates;
+    bool                                _generateHtmlResults;
+    bool                                _generateTableResults;
     bool                                _printColumnHeaders;
     ModelType                           _modelType;    
     ratio_t                             _probablility_ratio;
@@ -62,6 +64,8 @@ class Parameters {
     const std::string                 & getTreeFileName() const {return _treeFileName;}
     bool                                isConditional() const {return _conditional;}
     bool                                isDuplicates() const {return _duplicates;}
+	bool                                isGeneratingHtmlResults() const {return _generateHtmlResults;}
+	bool                                isGeneratingTableResults() const {return _generateTableResults;}
     bool                                isPrintColumnHeaders() const {return _printColumnHeaders;}
     bool                                isRandomlyGeneratingSeed() const {return _randomlyGenerateSeed;}
     unsigned int                        getNumRequestedParallelProcesses() const {return _numRequestedParallelProcesses;}
@@ -81,6 +85,8 @@ class Parameters {
     void                                setTreeFileName(const char * sTreeFileName, bool bCorrectForRelativePath=false);
     void                                setConditional(bool b) {_conditional = b;}
     void                                setDuplicates(bool b) {_duplicates = b;}
+	void                                setGeneratingHtmlResults(bool b) {_generateHtmlResults = b;}
+	void                                setGeneratingTableResults(bool b) {_generateTableResults = b;}
     void                                setRandomlyGeneratingSeed(bool b) {_randomlyGenerateSeed = b;}
     void                                setPrintColunHeaders(bool b) {_printColumnHeaders=b;}
     void                                setNumProcesses(unsigned int i) {_numRequestedParallelProcesses = i;}

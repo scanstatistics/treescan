@@ -130,6 +130,14 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   //Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isDuplicates());
   //jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setGeneratingHtmlResults", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isGeneratingHtmlResults());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setGeneratingTableResults", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isGeneratingTableResults());
+  jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "setPrintColunHeaders", "(Z)V");
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isPrintColumnHeaders());
   jni_error::_detectError(Env);
@@ -232,6 +240,14 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   //mid = _getMethodId_Checked(Env, clazz, "isDuplicates", "()Z");
   //Parameters.setDuplicates(Env.CallBooleanMethod(jParameters, mid));
   //jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "isGeneratingHtmlResults", "()Z");
+  Parameters.setGeneratingHtmlResults(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "isGeneratingTableResults", "()Z");
+  Parameters.setGeneratingTableResults(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "isPrintColumnHeaders", "()Z");
   Parameters.setPrintColunHeaders(Env.CallBooleanMethod(jParameters, mid));
