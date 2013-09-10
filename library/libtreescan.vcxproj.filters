@@ -63,6 +63,9 @@
     <Filter Include="Header Files\library">
       <UniqueIdentifier>{2ed7134b-1259-46f4-94ee-a9859e1a90e8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\boost\system">
+      <UniqueIdentifier>{c4b54914-3077-4a0c-bc65-8b6d1b9a9859}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\calculation\runner\ScanRunner.cpp">
@@ -104,7 +107,7 @@
     <ClCompile Include="..\calculation\utility\contractor.cpp">
       <Filter>Source Files\calculation\utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\boost\boost_1_47_0\libs\thread\src\win32\thread.cpp">
+    <ClCompile Include="..\boost\boost_1_52_0\libs\thread\src\win32\thread.cpp">
       <Filter>Source Files\boost\threads</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\utility\MonteCarloSimFunctor.cpp">
@@ -165,6 +168,15 @@
       <Filter>Source Files\calculation\randomization</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\randomization\PoissonRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_52_0\libs\system\src\error_code.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\runner\DataTimeRanges.cpp">
+      <Filter>Source Files\calculation\runner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\randomization\TemporalRandomizer.cpp">
       <Filter>Source Files\calculation\randomization</Filter>
     </ClCompile>
   </ItemGroup>
@@ -287,6 +299,9 @@
       <Filter>Header Files\calculation\randomization</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\randomization\PoissonRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\TemporalRandomizer.h">
       <Filter>Header Files\calculation\randomization</Filter>
     </ClInclude>
   </ItemGroup>

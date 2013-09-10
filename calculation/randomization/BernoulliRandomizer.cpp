@@ -4,7 +4,6 @@
 //******************************************************************************
 #include "BernoulliRandomizer.h"
 
-
 /* constructor */
 BernoulliRandomizer::BernoulliRandomizer(double probability, bool conditional, int TotalC, int TotalControls, double TotalN, long lInitialSeed)
                     :AbstractDenominatorDataRandomizer(lInitialSeed), _probability(probability), _conditional(conditional), _TotalC(TotalC), _TotalN(TotalN), _TotalControls(TotalControls) {}
@@ -33,12 +32,12 @@ void BernoulliRandomizer::MakeDataB(int tTotalCounts, double tTotalMeasure, std:
 /** Distributes cases into simulation case array, where individuals are initially dichotomized into cases and
     controls then each randomly assigned to be a case or a control. Caller is responsible for ensuring that
     passed array pointers are allocated and dimensions match that of passed tract and locations variables. */
-int BernoulliRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimDataContainer_t& simData) {
+int BernoulliRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) {
   //reset seed of random number generator
   SetSeed(iSimulation);
 
   // reset simData
-  std::fill(simData.begin(), simData.end(), SimData_t(0,0));
+  std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
 
   std::vector<int> randCounts;
   int nCumCounts = _TotalC < _TotalControls ? _TotalC :_TotalControls;
@@ -51,29 +50,31 @@ int BernoulliRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunne
       for (size_t i=0; i < treeNodes.size(); ++i) {
           nCumMeasure -= static_cast<int>(treeNodes.at(i)->getIntN());
           while (nCumCounts > 0 && randCounts[nCumCounts-1] > nCumMeasure) {
-              simData.at(i).first++; //treeNodes.at(i)->_SimIntC += 1;
+              treeSimNodes.at(i).refIntC()++; //treeNodes.at(i)->_SimIntC += 1;
               nCumCounts--;
           }
-          simData.at(i).second = 0; //treeNodes.at(i)->_SimBrC = 0;  // Initilazing the branch cases with zero
+          treeSimNodes.at(i).refBrC() = 0; //treeNodes.at(i)->_SimBrC = 0;  // Initilazing the branch cases with zero
       }
       //now reverse everything if Controls < Cases
       if (_TotalC >= _TotalControls) {
         for  (size_t i=0; i < treeNodes.size(); ++i)
-           simData.at(i).first = static_cast<int>(treeNodes.at(i)->getIntN()) - simData.at(i).first;
+           treeSimNodes.at(i).refIntC() = static_cast<int>(treeNodes.at(i)->getIntN()) - treeSimNodes.at(i).refIntC();
       }
   } else {
     for (size_t i=0; i < treeNodes.size(); ++i) {
         int cases = gBinomialGenerator.GetBinomialDistributedVariable(static_cast<int>(treeNodes.at(i)->getIntN()), static_cast<float>(_probability), _randomNumberGenerator);
-        simData.at(i).first = cases; //treeNodes.at(i)->_SimIntC = cases;
+        treeSimNodes.at(i).refIntC() = cases; //treeNodes.at(i)->_SimIntC = cases;
         TotalSimC += cases;
-        simData.at(i).second = 0; //treeNodes.at(i)->_SimBrC = 0;  // Initilazing the branch cases with zero
+        treeSimNodes.at(i).refBrC() = 0; //treeNodes.at(i)->_SimBrC = 0;  // Initilazing the branch cases with zero
     } // for i
   }    
 
   //------------------------ UPDATING THE TREE -----------------------------------
   for (size_t i=0; i < treeNodes.size(); i++) {
-      if (treeNodes.at(i)->getAnforlust()==false) addSimC(i, simData.at(i).first/*_Nodes.at(i)->_SimIntC*/, treeNodes, simData);
-      else addSimCAnforlust(i, simData.at(i).first/*_Nodes.at(i)->_SimIntC*/, treeNodes, simData);
+      if (treeNodes.at(i)->getAnforlust()==false) 
+          addSimC_C(i, treeSimNodes.at(i).refIntC_C()/*_Nodes.at(i)->_SimIntC*/, treeNodes, treeSimNodes);
+      else 
+          addSimC_CAnforlust(i, treeSimNodes.at(i).refIntC_C()/*_Nodes.at(i)->_SimIntC*/, treeNodes, treeSimNodes);
   }
   return TotalSimC;
 }

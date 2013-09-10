@@ -254,6 +254,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _montCarloReplicationsTextField.setText(Integer.toString(parameters.getNumReplicationsRequested()));
         _PoissonButton.setSelected(parameters.getModelType() == Parameters.ModelType.POISSON);
         _BernoulliButton.setSelected(parameters.getModelType() == Parameters.ModelType.BERNOULLI);
+        _TemporalButton.setSelected(parameters.getModelType() == Parameters.ModelType.TEMPORALSCAN);
         _unconditionalButton.setSelected(!parameters.isConditional());
         _conditionalButton.setSelected(parameters.isConditional());
         _eventProbabiltyNumerator.setText(Integer.toString(parameters.getProbabilityRatioNumerator()));
@@ -273,6 +274,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
           parameters.setModelType(Parameters.ModelType.POISSON.ordinal());
         } else if (_BernoulliButton.isSelected()) {
           parameters.setModelType(Parameters.ModelType.BERNOULLI.ordinal());
+        } else if (_TemporalButton.isSelected()) {
+          parameters.setModelType(Parameters.ModelType.TEMPORALSCAN.ordinal());        
         }
         parameters.setConditional(_conditionalButton.isSelected() ? true : false);
         parameters.setProbabilityRatioNumerator(Integer.parseInt(_eventProbabiltyNumerator.getText()));
@@ -338,6 +341,20 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _countFileTextField = new javax.swing.JTextField();
         _countFileBrowseButton = new javax.swing.JButton();
         _countFileImportButton = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        _dataTimeRangeBegin = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        _dataTimeRangeEnd = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        _temporalStartWindowBegin = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        _temporalStartWindowEnd = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        _temporalEndWindowBegin = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        _temporalEndWindowEnd = new javax.swing.JTextField();
         _analysisTab = new javax.swing.JPanel();
         _probabilityModelPanel = new javax.swing.JPanel();
         _PoissonButton = new javax.swing.JRadioButton();
@@ -346,6 +363,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _eventProbabiltyNumerator = new javax.swing.JTextField();
         _eventProbabilityLabel = new javax.swing.JLabel();
         _eventProbabilityLabel2 = new javax.swing.JLabel();
+        _TemporalButton = new javax.swing.JRadioButton();
         _scanStatisticPanel = new javax.swing.JPanel();
         _conditionalButton = new javax.swing.JRadioButton();
         _unconditionalButton = new javax.swing.JRadioButton();
@@ -359,12 +377,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _resultsFileBrowseButton = new javax.swing.JButton();
         _resultsFileLabel1 = new javax.swing.JLabel();
         _reportResultsAsCsvTable = new javax.swing.JCheckBox();
-
-        modelButtonGroup.add(_PoissonButton);
-        modelButtonGroup.add(_BernoulliButton);
-
-        scanStatisticButtonGroup.add(_conditionalButton);
-        scanStatisticButtonGroup.add(_unconditionalButton);
 
         setClosable(true);
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -493,6 +505,201 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Data Time Range"));
+
+        jLabel1.setText("Data Time Range Start");
+
+        _dataTimeRangeBegin.setText("0");
+        _dataTimeRangeBegin.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_dataTimeRangeBegin.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _dataTimeRangeBegin.setText("0");
+            }
+        });
+        _dataTimeRangeBegin.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validateNumericKeyTyped(_dataTimeRangeBegin, e, 10);
+            }
+        });
+        _dataTimeRangeBegin.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        jLabel2.setText("Data Time Range End");
+
+        _dataTimeRangeEnd.setText("100");
+        _dataTimeRangeEnd.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_dataTimeRangeEnd.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _dataTimeRangeEnd.setText("100");
+            }
+        });
+        _dataTimeRangeEnd.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validateNumericKeyTyped(_dataTimeRangeEnd, e, 10);
+            }
+        });
+        _dataTimeRangeEnd.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        jLabel3.setText("Temporal Window");
+
+        jLabel4.setText("Start Window");
+
+        _temporalStartWindowBegin.setText("0");
+        _temporalStartWindowBegin.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_temporalStartWindowBegin.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _temporalStartWindowBegin.setText("999");
+            }
+        });
+        _temporalStartWindowBegin.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_temporalStartWindowBegin, e, 10);
+            }
+        });
+        _temporalStartWindowBegin.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        jLabel5.setText("To");
+
+        _temporalStartWindowEnd.setText("100");
+        _temporalStartWindowEnd.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_temporalStartWindowEnd.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _temporalStartWindowEnd.setText("999");
+            }
+        });
+        _temporalStartWindowEnd.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_temporalStartWindowEnd, e, 10);
+            }
+        });
+        _temporalStartWindowEnd.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        jLabel6.setText("End Window");
+
+        _temporalEndWindowBegin.setText("0");
+        _temporalEndWindowBegin.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_temporalEndWindowBegin.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _temporalEndWindowBegin.setText("999");
+            }
+        });
+        _temporalEndWindowBegin.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_temporalEndWindowBegin, e, 10);
+            }
+        });
+        _temporalEndWindowBegin.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        jLabel7.setText("To");
+
+        _temporalEndWindowEnd.setText("100");
+        _temporalEndWindowEnd.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_temporalEndWindowEnd.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _temporalEndWindowEnd.setText("999");
+            }
+        });
+        _temporalEndWindowEnd.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_temporalEndWindowEnd, e, 10);
+            }
+        });
+        _temporalEndWindowEnd.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_dataTimeRangeBegin, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_dataTimeRangeEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(29, 29, 29))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGap(10, 10, 10)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(jPanel2Layout.createSequentialGroup()
+                                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(_temporalEndWindowBegin, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(_temporalEndWindowEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(jPanel2Layout.createSequentialGroup()
+                                        .addComponent(_temporalStartWindowBegin, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(_temporalStartWindowEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGap(0, 0, Short.MAX_VALUE)))
+                        .addContainerGap())))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_dataTimeRangeEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_dataTimeRangeBegin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel2))
+                .addGap(18, 18, 18)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel4)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_temporalStartWindowEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_temporalStartWindowBegin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel5))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel6)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_temporalEndWindowEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_temporalEndWindowBegin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel7))
+                .addContainerGap(26, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout _inputTabLayout = new javax.swing.GroupLayout(_inputTab);
         _inputTab.setLayout(_inputTabLayout);
         _inputTabLayout.setHorizontalGroup(
@@ -500,8 +707,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(_inputTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_controlFileLabel)
-                    .addComponent(_cutFileLabel)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
                         .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(_cutFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
@@ -516,13 +722,18 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                                 .addComponent(_cutFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(_cutFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addComponent(_countFileLabel)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
                         .addComponent(_countFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_countFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_countFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(_countFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(_inputTabLayout.createSequentialGroup()
+                        .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(_controlFileLabel)
+                            .addComponent(_cutFileLabel)
+                            .addComponent(_countFileLabel))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         _inputTabLayout.setVerticalGroup(
@@ -550,13 +761,16 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_countFileBrowseButton)
                     .addComponent(_countFileImportButton)
                     .addComponent(_countFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(60, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab("Input", _inputTab);
 
         _probabilityModelPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Probability Model"));
 
+        modelButtonGroup.add(_PoissonButton);
         _PoissonButton.setSelected(true);
         _PoissonButton.setText("Poisson");
         _PoissonButton.addItemListener(new java.awt.event.ItemListener() {
@@ -566,12 +780,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 }
             }
         });
-        _PoissonButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _PoissonButtonActionPerformed(evt);
-            }
-        });
 
+        modelButtonGroup.add(_BernoulliButton);
         _BernoulliButton.setText("Bernoulli");
         _BernoulliButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -621,6 +831,16 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _eventProbabilityLabel2.setText("/");
 
+        modelButtonGroup.add(_TemporalButton);
+        _TemporalButton.setText("Temporal Scan");
+        _TemporalButton.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    enableSettingsForStatisticModelCombination();
+                }
+            }
+        });
+
         javax.swing.GroupLayout _probabilityModelPanelLayout = new javax.swing.GroupLayout(_probabilityModelPanel);
         _probabilityModelPanel.setLayout(_probabilityModelPanelLayout);
         _probabilityModelPanelLayout.setHorizontalGroup(
@@ -628,9 +848,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(_probabilityModelPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_probabilityModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_probabilityModelPanelLayout.createSequentialGroup()
-                        .addComponent(_PoissonButton)
-                        .addContainerGap(264, Short.MAX_VALUE))
                     .addGroup(_probabilityModelPanelLayout.createSequentialGroup()
                         .addComponent(_BernoulliButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 45, Short.MAX_VALUE)
@@ -641,25 +858,34 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_eventProbabilityLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_eventProbabiltyDenominator, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(34, 34, 34))))
+                        .addGap(34, 34, 34))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _probabilityModelPanelLayout.createSequentialGroup()
+                        .addComponent(_PoissonButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _probabilityModelPanelLayout.createSequentialGroup()
+                        .addComponent(_TemporalButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())))
         );
         _probabilityModelPanelLayout.setVerticalGroup(
             _probabilityModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_probabilityModelPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_PoissonButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addGroup(_probabilityModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_BernoulliButton)
                     .addComponent(_eventProbabilityLabel)
                     .addComponent(_eventProbabiltyNumerator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_eventProbabilityLabel2)
                     .addComponent(_eventProbabiltyDenominator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .addGap(18, 18, 18)
+                .addComponent(_TemporalButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         _scanStatisticPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Type of Scan Statistic"));
 
+        scanStatisticButtonGroup.add(_conditionalButton);
         _conditionalButton.setSelected(true);
         _conditionalButton.setText("Conditional");
         _conditionalButton.addItemListener(new java.awt.event.ItemListener() {
@@ -670,6 +896,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
+        scanStatisticButtonGroup.add(_unconditionalButton);
         _unconditionalButton.setText("Unconditional");
         _unconditionalButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -686,8 +913,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(_scanStatisticPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_scanStatisticPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_conditionalButton)
-                    .addComponent(_unconditionalButton))
+                    .addComponent(_unconditionalButton)
+                    .addComponent(_conditionalButton))
                 .addContainerGap(28, Short.MAX_VALUE))
         );
         _scanStatisticPanelLayout.setVerticalGroup(
@@ -695,9 +922,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _scanStatisticPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_unconditionalButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(_conditionalButton)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Replications"));
@@ -760,12 +987,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             _analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_analysisTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_scanStatisticPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_probabilityModelPanel, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(10, 10, 10)
+                .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_probabilityModelPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_scanStatisticPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(31, 31, 31))
+                .addContainerGap(128, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Analysis", _analysisTab);
@@ -825,7 +1052,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_reportResultsAsHTML)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportResultsAsCsvTable)
-                .addContainerGap(95, Short.MAX_VALUE))
+                .addContainerGap(223, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Output", _outputTab);
@@ -836,27 +1063,24 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void _PoissonButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__PoissonButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event__PoissonButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton _BernoulliButton;
     private javax.swing.JRadioButton _PoissonButton;
+    private javax.swing.JRadioButton _TemporalButton;
     private javax.swing.JPanel _analysisTab;
     private javax.swing.JRadioButton _conditionalButton;
     private javax.swing.JLabel _controlFileLabel;
@@ -868,6 +1092,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JButton _cutFileImportButton;
     private javax.swing.JLabel _cutFileLabel;
     private javax.swing.JTextField _cutFileTextField;
+    private javax.swing.JTextField _dataTimeRangeBegin;
+    private javax.swing.JTextField _dataTimeRangeEnd;
     private javax.swing.JLabel _eventProbabilityLabel;
     private javax.swing.JLabel _eventProbabilityLabel2;
     private javax.swing.JTextField _eventProbabiltyDenominator;
@@ -884,11 +1110,23 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JLabel _resultsFileLabel;
     private javax.swing.JLabel _resultsFileLabel1;
     private javax.swing.JPanel _scanStatisticPanel;
+    private javax.swing.JTextField _temporalEndWindowBegin;
+    private javax.swing.JTextField _temporalEndWindowEnd;
+    private javax.swing.JTextField _temporalStartWindowBegin;
+    private javax.swing.JTextField _temporalStartWindowEnd;
     private javax.swing.JButton _treeFileBrowseButton;
     private javax.swing.JButton _treeFileImportButton;
     private javax.swing.JTextField _treelFileTextField;
     private javax.swing.JRadioButton _unconditionalButton;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.ButtonGroup modelButtonGroup;
     private javax.swing.ButtonGroup scanStatisticButtonGroup;

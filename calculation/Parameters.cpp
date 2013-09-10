@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 12;
+const int Parameters::giNumParameters = 13;
 
 Parameters::cut_map_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map = boost::assign::map_list_of("simple",Parameters::SIMPLE) ("pairs",Parameters::PAIRS) ("triplets",Parameters::TRIPLETS) ("ordinal",Parameters::ORDINAL);
@@ -23,6 +23,9 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_treeFileName != rhs._treeFileName) return false;
   if (_cutsFileName != rhs._cutsFileName) return false;  
   if (_countFileName != rhs._countFileName) return false;
+  if (_dataTimeRangeSet.getDataTimeRangeSets() != rhs._dataTimeRangeSet.getDataTimeRangeSets()) return false;
+  if (_startDataTimeRange != rhs._startDataTimeRange) return false;
+  if (_endDataTimeRange != rhs._endDataTimeRange) return false;
   if (_outputFileName != rhs._outputFileName) return false;
   if (_resultsFormat != rhs._resultsFormat) return false;
   if (_parametersSourceFileName != rhs._parametersSourceFileName) return false;
@@ -80,6 +83,9 @@ void Parameters::copy(const Parameters &rhs) {
   _treeFileName = rhs._treeFileName;
   _cutsFileName = rhs._cutsFileName;
   _countFileName = rhs._countFileName;
+  _dataTimeRangeSet = rhs._dataTimeRangeSet;
+  _startDataTimeRange = rhs._startDataTimeRange;
+  _endDataTimeRange = rhs._endDataTimeRange;
   _outputFileName = rhs._outputFileName;
   _resultsFormat = rhs._resultsFormat;
   _creationVersion = rhs._creationVersion;
@@ -167,6 +173,9 @@ void Parameters::setAsDefaulted() {
   _treeFileName = "";
   _cutsFileName = "";
   _countFileName = "";
+  _dataTimeRangeSet = DataTimeRangeSet();
+  _startDataTimeRange = DataTimeRange();
+  _endDataTimeRange = DataTimeRange();
   _outputFileName = "";
   _resultsFormat = TEXT;
   _replications = 99999;
@@ -216,6 +225,7 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     setTreeFileName(pt.get<std::string>(type == INI ? "input.tree-file" : "parameters.input.tree-file").c_str(), true);
     setCutsFileName(pt.get<std::string>(type == INI ? "input.cuts-file" : "parameters.input.cuts-file").c_str(), true);
     setCountFileName(pt.get<std::string>(type == INI ? "input.count-file" : "parameters.input.count-file").c_str(), true);
+    _dataTimeRangeSet.assign(pt.get<std::string>(type == INI ? "input.data-time-range" : "parameters.input.data-time-range"));
     //_duplicates = pt.get<bool>(type == INI ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", false);
     _modelType = static_cast<ModelType>(pt.get<unsigned int>(type == INI ? "analysis.model" : "parameters.analysis.model", POISSON));
     _cut_type = static_cast<CutType>(pt.get<unsigned int>(type == INI ? "analysis.cut-type" : "parameters.analysis.cut-type", SIMPLE));
@@ -223,6 +233,8 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _probablility_ratio.second = pt.get<unsigned int>(type == INI ? "analysis.probability-denominator" : "parameters.analysis.probability-denominator", 2);
     _replications = pt.get<unsigned int>(type == INI ? "analysis.replications" : "parameters.analysis.replications", 999);
     _conditional = pt.get<bool>(type == INI ? "analysis.conditional" : "parameters.analysis.conditional", false);
+    _startDataTimeRange.assign(pt.get<std::string>(type == INI ? "analysis.start-time-range" : "parameters.analysis.start-time-range"));
+    _endDataTimeRange.assign(pt.get<std::string>(type == INI ? "analysis.end-time-range" : "parameters.analysis.end-time-range"));
     setOutputFileName(pt.get<std::string>(type == INI ? "output.results-file" : "parameters.output.results-file").c_str(), true);
     //_resultsFormat = pt.get<bool>(type == INI ? "output.html" : "parameters.output.results-file.<xmlattr>.html", true) ? HTML : TEXT;
     _generateHtmlResults = pt.get<bool>(type == INI ? "output.generate-html-results" : "parameters.output.generate-html-results", true);
@@ -237,10 +249,12 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     using boost::property_tree::ptree;
     using boost::property_tree::xml_writer_settings;
     ptree pt;
+    std::string buffer;
 
     pt.put(type != XML ? "input.tree-file" : "parameters.input.tree-file", _treeFileName);
     pt.put(type != XML ? "input.cuts-file" : "parameters.input.cuts-file", _cutsFileName);
     pt.put(type != XML ? "input.count-file" : "parameters.input.count-file", _countFileName);
+    pt.put(type != XML ? "input.data-time-range" : "parameters.input.data-time-range", _dataTimeRangeSet.toString(buffer));
     //pt.put(type != XML ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", _duplicates);
     pt.put(type != XML ? "analysis.model" : "parameters.analysis.model", static_cast<unsigned int>(_modelType));
     pt.put(type != XML ? "analysis.cut-type" : "parameters.analysis.cut-type", static_cast<unsigned int>(_cut_type));

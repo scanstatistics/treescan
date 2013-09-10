@@ -52,6 +52,9 @@
   #define macro_va_copy(dst,src) va_copy(dst,src);
 #endif
 
+namespace TreeScan {
+}
+
 #include "BasePrint.h"
 //*****************************************************************************
 #endif

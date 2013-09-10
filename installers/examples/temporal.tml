@@ -3,11 +3,11 @@
     <input>
         <tree-file>tree.tre</tree-file>
         <cuts-file>tree.cut</cuts-file>
-        <count-file>bernoulli.cts</count-file>
+        <count-file>temporal.cts</count-file>
         <data-time-range>[-16,100]</data-time-range>
     </input>
     <analysis>
-        <model>1</model>
+        <model>2</model>
         <cut-type>0</cut-type>
         <probability-numerator>1</probability-numerator>
         <probability-denominator>2</probability-denominator>
@@ -17,7 +17,7 @@
 	<end-time-range>25,35</end-time-range>
     </analysis>
     <output>
-        <results-file>bernoulli.txt</results-file>
+        <results-file>temporal.txt</results-file>
         <generate-html-results>false</generate-html-results>
         <generate-table-results>false</generate-table-results>
         <print-headers>true</print-headers>

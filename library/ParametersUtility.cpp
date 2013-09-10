@@ -266,4 +266,3 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
 
   return Parameters;
 }
-

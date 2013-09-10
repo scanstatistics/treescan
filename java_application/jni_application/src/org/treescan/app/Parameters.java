@@ -5,7 +5,7 @@ public class Parameters implements Cloneable {
     public native boolean Read(String filename);  
     public native void Write(String filename);
     public enum ResultsFormat {TEXT};
-    public enum ModelType {POISSON, BERNOULLI};
+    public enum ModelType {POISSON, BERNOULLI, TEMPORALSCAN};
     public class CreationVersion {
     	public int _major;
     	public int _minor;

@@ -3,7 +3,6 @@
 #pragma hdrstop
 //******************************************************************************
 #include "UtilityFunctions.h"
-#include "PrjException.h"
 #include "FileName.h"
 #include <iostream>
 #include <fstream>

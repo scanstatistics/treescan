@@ -4,15 +4,31 @@
 //*****************************************************************************
 #include "UtilityFunctions.h"
 #include "FileName.h"
+#include "DataTimeRanges.h"
 
 class Parameters {
   public:
     typedef std::pair<unsigned int,unsigned int> ratio_t;
-    enum ParameterType {TREEFILE=0, CUTFILE, COUNTFILE, OUTPUTFILE, CUTS, REPLICATIONS, CONDITIONAL, DUPLICATES, RANDOMIZATION_SEED, RANDOMLY_GENERATE_SEED, PRINT_COLUMN_HEADERS, MODEL};
+    enum ParameterType {TREEFILE=1, 
+                        CUTFILE, 
+                        COUNTFILE, 
+                        OUTPUTFILE, 
+                        CUTS, 
+                        REPLICATIONS, 
+                        CONDITIONAL, 
+                        DUPLICATES, 
+                        RANDOMIZATION_SEED, 
+                        RANDOMLY_GENERATE_SEED, 
+                        PRINT_COLUMN_HEADERS, 
+                        MODEL,
+                        DATA_TIME_RANGES,
+                        START_DATA_TIME_RANGE,
+                        END_DATA_TIME_RANGE
+    };
     struct CreationVersion {unsigned int iMajor; unsigned int iMinor; unsigned int iRelease;};
     enum ResultsFormat {TEXT=0};
     enum ParametersFormat {XML=0, INI, JSON};
-    enum ModelType {POISSON=0, BERNOULLI};
+    enum ModelType {POISSON=0, BERNOULLI, TEMPORALSCAN};
     enum CutType {SIMPLE=0, PAIRS, TRIPLETS, ORDINAL, COMBINATORIAL};
     typedef std::map<std::string,Parameters::CutType> cut_map_t;    
 
@@ -23,6 +39,9 @@ class Parameters {
     std::string                         _treeFileName;
     std::string                         _cutsFileName;
     std::string                         _countFileName;
+    DataTimeRangeSet                    _dataTimeRangeSet;
+    DataTimeRange                       _startDataTimeRange;
+    DataTimeRange                       _endDataTimeRange;
     std::string                         _outputFileName;
     ResultsFormat                       _resultsFormat;
     struct CreationVersion              _creationVersion;
@@ -59,6 +78,9 @@ class Parameters {
     const std::string                 & getCountFileName() const {return _countFileName;}
     const CreationVersion             & getCreationVersion() const {return _creationVersion;}
     const std::string                 & getCutsFileName() const {return _cutsFileName;}
+    const DataTimeRangeSet            & getDataTimeRangeSet() const {return _dataTimeRangeSet;}
+    const DataTimeRange               & getStartDataTimeRange() const {return _startDataTimeRange;}
+    const DataTimeRange               & getEndDataTimeRange() const {return _endDataTimeRange;}
     ratio_t                             getProbabilityRatio() const {return _probablility_ratio;}
     double                              getProbability() const {return static_cast<double>(_probablility_ratio.first)/static_cast<double>(_probablility_ratio.second);}
     const std::string                 & getTreeFileName() const {return _treeFileName;}
@@ -76,6 +98,9 @@ class Parameters {
     long                                getRandomizationSeed() const {return _randomizationSeed;}
     ResultsFormat                       getResultsFormat() const {return _resultsFormat;}
     const std::string                 & getSourceFileName() const {return _parametersSourceFileName;}
+    void                                setDataTimeRangeSet(const DataTimeRangeSet& set) {_dataTimeRangeSet = set;}
+    void                                setStartDataTimeRange(const DataTimeRange& range) {_startDataTimeRange = range;}
+    void                                setEndDataTimeRange(const DataTimeRange& range) {_endDataTimeRange = range;}
     void                                setCutType(CutType e) {_cut_type = e;}
     void                                setModelType(ModelType e) {_modelType = e;}
     void                                setAsDefaulted();

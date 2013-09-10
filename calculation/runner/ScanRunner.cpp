@@ -1,5 +1,7 @@
 
-#include<boost/tokenizer.hpp>
+#include <numeric>
+#include <algorithm>
+#include <boost/tokenizer.hpp>
 #include <boost/regex.hpp>
 #include <boost/assign.hpp>
 
@@ -16,30 +18,35 @@
 #include "ResultsFileWriter.h"
 
 double CutStructure::getExpected(const ScanRunner& scanner) {
-  if (scanner.getParameters().getModelType() == Parameters::BERNOULLI) {
-    if (scanner.getParameters().isConditional())
-		return _N * (scanner.getTotalC() / scanner.getTotalN());
-	return _N * scanner.getParameters().getProbability();
-  }
-  return _N;
+    if (scanner.getParameters().getModelType() == Parameters::BERNOULLI) {
+        if (scanner.getParameters().isConditional())
+            return _N * (scanner.getTotalC() / scanner.getTotalN());
+        return _N * scanner.getParameters().getProbability();
+    }
+    return _N;
+}
+
+ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0) {
+    // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
+    DataTimeRange min_max = _parameters.getModelType() == Parameters::TEMPORALSCAN ? _parameters.getDataTimeRangeSet().getMinMax() : DataTimeRange(0,0);
+    _zero_translation_additive = std::abs(std::min(0, min_max.getStart()));
 }
 
 /*
- Adds cases and measure through the tree from each node through the tree to
- all its parents, and so on, to all its ancestors as well.
- If a node is a decendant to an ancestor in more than one way, the cases and
- measure is only added once to that ancestor.
+ Adds cases and measure through the tree from each node through the tree to all its parents, and so on, to all its ancestors as well.
+ If a node is a decendant to an ancestor in more than one way, the cases and measure is only added once to that ancestor.
  */
-void ScanRunner::addCN(int id, int c, double n) {
+void ScanRunner::addCN_C(int id, NodeStructure::CountContainer_t& c, NodeStructure::ExpectedContainer_t& n/*int c, double n*/) {
     _Ancestor.at(id) = 1;
-    _Nodes.at(id)->refBrC() += c;
-    _Nodes.at(id)->refBrN() += n;
+
+    std::transform(c.begin(), c.end(), _Nodes.at(id)->refBrC_C().begin(), _Nodes.at(id)->refBrC_C().begin(), std::plus<NodeStructure::count_t>());
+    std::transform(n.begin(), n.end(), _Nodes.at(id)->refBrN_C().begin(), _Nodes.at(id)->refBrN_C().begin(), std::plus<NodeStructure::expected_t>());
     for(size_t j=0; j < _Nodes.at(id)->getParents().size(); j++) {
-      int parent = _Nodes.at(id)->getParents().at(j);
-        if(_Ancestor.at(parent) == 0)
-          addCN(parent,c,n);
+        int parent = _Nodes.at(id)->getParents().at(j);
+        if (_Ancestor.at(parent) == 0)
+            addCN_C(parent, c, n);
         else
-          _Ancestor.at(parent) = _Ancestor.at(parent) + 1;
+            _Ancestor.at(parent) = _Ancestor.at(parent) + 1;
     }
 }
 
@@ -47,12 +54,12 @@ void ScanRunner::addCN(int id, int c, double n) {
  Returns pair<bool,size_t> - first value indicates node existance, second is index into class vector _Nodes.
  */
 ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) const {
-    std::auto_ptr<NodeStructure> node(new NodeStructure(identifier, _parameters.getCutType()));
+    std::auto_ptr<NodeStructure> node(new NodeStructure(identifier));
     NodeStructureContainer_t::const_iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
     if (itr != _Nodes.end() && (*itr)->getIdentifier() == node.get()->getIdentifier()) {
-      size_t tt = std::distance(_Nodes.begin(), itr);
-      assert(tt == (*itr)->getID());
-      return std::make_pair(true, std::distance(_Nodes.begin(), itr));
+        size_t tt = std::distance(_Nodes.begin(), itr);
+        assert(tt == (*itr)->getID());
+        return std::make_pair(true, std::distance(_Nodes.begin(), itr));
     } else
         return std::make_pair(false, 0);
 }
@@ -66,7 +73,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
 
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
-    int count=0, controls=0, duplicates=0;
+    int count=0, controls=0, duplicates=0, daysSinceIncidence=0;
     double population=0;
     while (dataSource->readRecord()) {
         if (dataSource->getNumValues() != (_parameters.isDuplicates() ? 4 : 3)) {
@@ -88,7 +95,6 @@ bool ScanRunner::readCounts(const std::string& filename) {
             _print.Printf("Error: Record %ld in count file references negative number of cases in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
             continue;
         }
-        node->refIntC() += count;
         if (_parameters.isDuplicates()) {
             if  (!string_to_type<int>(dataSource->getValueAt(2).c_str(), duplicates) || duplicates < 0) {
                 readSuccess = false;
@@ -101,21 +107,40 @@ bool ScanRunner::readCounts(const std::string& filename) {
             }
             node->refDuplicates() += duplicates;
         }
+        // read model specific columns from data source
         if (_parameters.getModelType() == Parameters::POISSON) {
             if  (!string_to_type<double>(dataSource->getValueAt(_parameters.isDuplicates() ? 3 : 2).c_str(), population) || population < 0) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in count file references negative population in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
             }
-            node->refIntN() += population;
-        } else if (_parameters.getModelType() == Parameters::BERNOULLI) { 
+            node->refIntC_C().front() += count;
+            node->refIntN_C().front() += population;
+        } else if (_parameters.getModelType() == Parameters::BERNOULLI) {
             if  (!string_to_type<int>(dataSource->getValueAt(_parameters.isDuplicates() ? 3 : 2).c_str(), controls) || controls < 0) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in count file references negative number of controls in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
             }
-            node->refIntN() += count + controls;
+            node->refIntC_C().front() += count;
+            node->refIntN_C().front() += count + controls;
             _TotalControls += controls;
+        } else if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
+            if  (!string_to_type<int>(dataSource->getValueAt(_parameters.isDuplicates() ? 3 : 2).c_str(), daysSinceIncidence)) {
+                readSuccess = false;
+                _print.Printf("Error: Record %ld in count file references an invalid 'day since incidence' value in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                continue;
+            }
+            // check that the 'daysSinceIncidence' is within a defined data time range
+            DataTimeRangeSet::rangeset_index_t rangeIdx = _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
+            if (rangeIdx.first == false) {
+                readSuccess = false;
+                _print.Printf("Error: Record %ld in count file references an invalid 'day since incidence' value in node '%s'.\n"
+                              "The specified value is not within any of the data time ranges you have defined.",
+                              BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                continue;
+            }
+            node->refIntC_C().at(daysSinceIncidence + _zero_translation_additive) += count;
         } else throw prg_error("Unknown model type (%d).", "readCounts()", _parameters.getModelType());
     }
     return readSuccess;
@@ -129,10 +154,13 @@ bool ScanRunner::readTree(const std::string& filename) {
     bool readSuccess=true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
 
+    // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
+    size_t daysInDataTimeRange = _parameters.getModelType() == Parameters::TEMPORALSCAN ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() : 1;
+
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
     while (dataSource->readRecord()) {
         std::string identifier = dataSource->getValueAt(0);
-        std::auto_ptr<NodeStructure> node(new NodeStructure(trimString(identifier), _parameters.getCutType()));
+        std::auto_ptr<NodeStructure> node(new NodeStructure(trimString(identifier), _parameters.getCutType(), _parameters.getModelType(), daysInDataTimeRange));
         NodeStructureContainer_t::iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
         if (itr == _Nodes.end() || (*itr)->getIdentifier() != node.get()->getIdentifier())
             _Nodes.insert(itr, node.release());
@@ -163,7 +191,6 @@ bool ScanRunner::readTree(const std::string& filename) {
             }
         }
     }
-
     return readSuccess;
 }
 
@@ -237,7 +264,11 @@ bool ScanRunner::run() {
     if (_parameters.getCutsFileName().length() && !readCuts(_parameters.getCutsFileName())) return false;
     if (!readCounts(_parameters.getCountFileName())) return false;
     if (!setupTree()) return false;
-    if (!scanTree()) return false;
+    if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
+        if (!scanTreeTemporal()) return false;
+    } else {
+        if (!scanTree()) return false;
+    }
     if (!runsimulations()) return false;
 
     time(&gEndTime); //get end time
@@ -299,14 +330,8 @@ bool ScanRunner::runsimulations() {
     return true;
 }
 
-/* SCANNING THE TREE */
-bool ScanRunner::scanTree() {
-    _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
-
-    double loglikelihood=0;
-    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN));
-
-    // determine number of cuts by each nodes cut type
+/* Determines number of cuts in all nodes, given each nodes cut type. */
+size_t ScanRunner::calculateCutsCount() const {
     size_t cuts = 0;
     for (NodeStructureContainer_t::const_iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
         if ((*itr)->getParents().size() == 0) // skip root nodes
@@ -317,16 +342,23 @@ bool ScanRunner::scanTree() {
             case Parameters::SIMPLE : ++cuts; break;
             case Parameters::ORDINAL: cuts += z * (z - 1)/2 - 1; break;
             case Parameters::PAIRS: cuts += z * (z - 1)/2; break;
-            case Parameters::TRIPLETS: cuts += z * (z - 1)/2 + getNumCombinations(z, 3); break;
+            case Parameters::TRIPLETS: cuts += z * (z - 1)/2 + static_cast<size_t>(getNumCombinations(z, 3)); break;
             //case Parameters::COMBINATORIAL: cuts += std::pow(2.0,z) - z - 2.0; break;
             default: throw prg_error("Unknown cut type (%d).", "scanTree()", cutType);
         };
     }
     //for(unsigned int k=0; k < cuts; k++) _Cut.push_back(new CutStructure());
+    return cuts;
+}
+
+/* SCANNING THE TREE */
+bool ScanRunner::scanTree() {
+    _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
+    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN));
 
     //std::string buffer;
     //int hits=0;
-    for (size_t n=0; n < _Nodes.size(); n++) {
+    for (size_t n=0; n < _Nodes.size(); ++n) {
         if (_Nodes.at(n)->getBrC() > 1) {
             const NodeStructure& thisNode(*(_Nodes.at(n)));
             Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
@@ -388,8 +420,118 @@ bool ScanRunner::scanTree() {
     return true;
 }
 
-void ScanRunner::updateCuts(int node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator) {
-    double loglikelihood = logCalculator->LogLikelihood(BrC, BrN); 
+/* SCANNING THE TREE for temporal model */
+bool ScanRunner::scanTreeTemporal() {
+    _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
+    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN));
+
+    // Define the start and end windows with the zero index offset already incorporated.
+    DataTimeRange startWindow(_parameters.getStartDataTimeRange().getStart() + _zero_translation_additive,
+                              _parameters.getStartDataTimeRange().getEnd() + _zero_translation_additive),
+                  endWindow(_parameters.getEndDataTimeRange().getStart() + _zero_translation_additive,
+                            _parameters.getEndDataTimeRange().getEnd() + _zero_translation_additive);
+    //std::string buffer;
+    //int hits=0;
+    for (size_t n=0; n < _Nodes.size(); ++n) {
+        if (_Nodes.at(n)->getBrC() > 1) {
+            const NodeStructure& thisNode(*(_Nodes.at(n)));
+            Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
+            switch (cutType) {
+                case Parameters::SIMPLE:
+                    //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
+                    for (DataTimeRange::index_t end=endWindow.getStart(); end < endWindow.getEnd(); ++end) {
+                        for (DataTimeRange::index_t start=startWindow.getStart(); start < startWindow.getEnd(); ++start) {
+                            NodeStructure::count_t branchCount = thisNode.getBrC_C()[start] - thisNode.getBrC_C()[end];
+                            NodeStructure::expected_t branchControls = static_cast<NodeStructure::expected_t>(thisNode.getBrC() - branchCount);
+                            /*
+                                Cases inside the temporal window compares to cases in the conditional binomial and cases outside the temporal
+                                window corresponds to the controls in the conditional binomial. Also, in the conditional binomial the
+                                ratio/probability is fixed. Now it will vary by the temporal window and it will be equal to the length of the
+                                cluster defined by the temporal scan divided by the total number of days in the data time range. We'll have to
+                                discuss the formulas in detail when we come to this step.
+                            */
+                            updateCuts(n, branchCount, branchControls, calcLogLikelihood);
+                        }
+                    }
+                    //++hits; printf("hits %d\n", hits);
+                    break;
+                case Parameters::ORDINAL:
+                    for (DataTimeRange::index_t end=endWindow.getStart(); end < endWindow.getEnd(); ++end) {
+                        for (DataTimeRange::index_t start=startWindow.getStart(); start < startWindow.getEnd(); ++start) {
+                            for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                                const NodeStructure& firstChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                                //buffer = firstChildNode.getIdentifier().c_str();
+                                NodeStructure::count_t sumBranchC = firstChildNode.getBrC_C()[start] - firstChildNode.getBrC_C()[end];
+                                NodeStructure::expected_t sumBranchControls = static_cast<NodeStructure::expected_t>(firstChildNode.getBrC() - sumBranchC);
+                                for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                                    const NodeStructure& childNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                                    //buffer += ",";
+                                    //buffer += childNode.getIdentifier();
+                                    NodeStructure::count_t childBranchC = childNode.getBrC_C()[start] - childNode.getBrC_C()[end];
+                                    sumBranchC += childBranchC;
+                                    sumBranchControls += static_cast<NodeStructure::expected_t>(childNode.getBrC() - childBranchC);
+                                    //printf("Evaluating cut [%s]\n", buffer.c_str());
+                                    updateCuts(n, sumBranchC, sumBranchControls, calcLogLikelihood);
+                                    //++hits; printf("hits %d\n", hits);
+                                }
+                            }
+                        } 
+                    } break;
+                case Parameters::PAIRS:
+                    for (DataTimeRange::index_t end=endWindow.getStart(); end < endWindow.getEnd(); ++end) {
+                        for (DataTimeRange::index_t start=startWindow.getStart(); start < startWindow.getEnd(); ++start) {
+                            for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                                const NodeStructure& startChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                                for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                                    const NodeStructure& stopChildNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                                    //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
+                                    NodeStructure::count_t startChildBranchC = startChildNode.getBrC_C()[start] - startChildNode.getBrC_C()[end];
+                                    NodeStructure::expected_t startChildBranchControls = static_cast<NodeStructure::expected_t>(startChildNode.getBrC() - startChildBranchC);
+                                    NodeStructure::count_t stopChildBranchC = stopChildNode.getBrC_C()[start] - stopChildNode.getBrC_C()[end];
+                                    NodeStructure::expected_t stopChildBranchControls = static_cast<NodeStructure::expected_t>(stopChildNode.getBrC() - stopChildBranchC);
+                                    updateCuts(n, startChildBranchC + stopChildBranchC, startChildBranchControls + stopChildBranchControls, calcLogLikelihood);
+                                    //++hits; printf("hits %d\n", hits);
+                                }
+                            }
+                        }
+                    } break;
+                case Parameters::TRIPLETS:
+                    for (DataTimeRange::index_t end=endWindow.getStart(); end < endWindow.getEnd(); ++end) {
+                        for (DataTimeRange::index_t start=startWindow.getStart(); start < startWindow.getEnd(); ++start) {
+                            for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                                const NodeStructure& startChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                                for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                                    const NodeStructure& stopChildNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                                    //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
+                                    NodeStructure::count_t startChildBranchC = startChildNode.getBrC_C()[start] - startChildNode.getBrC_C()[end];
+                                    NodeStructure::expected_t startChildBranchControls = static_cast<NodeStructure::expected_t>(startChildNode.getBrC() - startChildBranchC);
+                                    NodeStructure::count_t stopChildBranchC = stopChildNode.getBrC_C()[start] - stopChildNode.getBrC_C()[end];
+                                    NodeStructure::expected_t stopChildBranchControls = static_cast<NodeStructure::expected_t>(stopChildNode.getBrC() - stopChildBranchC);
+                                    updateCuts(n, startChildBranchC + stopChildBranchC, startChildBranchControls + stopChildBranchControls, calcLogLikelihood);
+                                    //++hits;printf("hits %d\n", hits);
+                                    for (size_t k=i+1; k < j; ++k) {
+                                        const NodeStructure& middleChildNode(*(_Nodes.at(thisNode.getChildren().at(k))));
+                                        NodeStructure::count_t middleChildBranchC = middleChildNode.getBrC_C()[start] - middleChildNode.getBrC_C()[end];
+                                        NodeStructure::expected_t middleChildBranchControls = static_cast<NodeStructure::expected_t>(middleChildNode.getBrC() - middleChildBranchC);
+                                        //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
+                                        updateCuts(n, startChildBranchC + middleChildBranchC + stopChildBranchC, startChildBranchControls + middleChildBranchControls + stopChildBranchControls, calcLogLikelihood);
+                                        //++hits; printf("hits %d\n", hits);
+                                    }
+                                }
+                            }
+                        }
+                    } break;
+                case Parameters::COMBINATORIAL:
+                default: throw prg_error("Unknown cut type (%d).", "scanTreeTemporal()", cutType);
+            }
+        }
+    }
+    _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.at(0)->getLogLikelihood()));
+    return true;
+}
+
+void ScanRunner::updateCuts(int node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx) {
+    double loglikelihood = _parameters.getModelType() == Parameters::TEMPORALSCAN ? logCalculator->LogLikelihood(BrC, BrN, endIdx - startIdx + 1) : logCalculator->LogLikelihood(BrC, BrN); 
     if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) return;
 
     std::auto_ptr<CutStructure> cut(new CutStructure());
@@ -397,8 +539,18 @@ void ScanRunner::updateCuts(int node_index, int BrC, double BrN, const Loglikeli
     cut->setID(static_cast<int>(node_index));
     cut->setC(BrC);
     cut->setN(BrN);
+    cut->setStartIdx(startIdx);
+    cut->setEndIdx(endIdx);
     CutStructureContainer_t::iterator itr = std::lower_bound(_Cut.begin(), _Cut.end(), cut.get(), CompareCutsByLoglikelihood());
-    _Cut.insert(itr, cut.release());
+    if (itr != _Cut.end() && (*itr)->getID() == cut->getID()) {
+        if (cut->getLogLikelihood() > (*itr)->getLogLikelihood()) {
+            size_t idx = std::distance(_Cut.begin(), itr);
+            delete _Cut.at(idx); _Cut.at(idx)=0;
+            _Cut.at(idx) = cut.release();
+        }
+    } else {
+        _Cut.insert(itr, cut.release());
+    }
 }
 
 /*
@@ -408,26 +560,26 @@ bool ScanRunner::setupTree() {
     double   adjustN;
     int     parent;
 
-    _print.Printf("Setting up the tree.\n", BasePrint::P_STDOUT);
+    _print.Printf("Setting up the tree ...\n", BasePrint::P_STDOUT);
 
     // Initialize variables
     _TotalC=0;_TotalN=0;
     for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
-        (*itr)->setBrC(0);
-        (*itr)->setBrN(0);
+        std::fill((*itr)->refBrC_C().begin(), (*itr)->refBrC_C().end(), 0);
+        std::fill((*itr)->refBrN_C().begin(), (*itr)->refBrN_C().end(), 0);
     }
 
     // Calculates the total number of cases and the total population at risk
     for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
-        _TotalC += (*itr)->getIntC();
-        _TotalN += (*itr)->getIntN();
+        _TotalC = std::accumulate((*itr)->refIntC_C().begin(), (*itr)->refIntC_C().end(), _TotalC);
+        _TotalN = std::accumulate((*itr)->refIntN_C().begin(), (*itr)->refIntN_C().end(), _TotalN);
     }
 
     // Calculates the expected counts for each node and the total.
     if (_parameters.getModelType() == Parameters::POISSON && _parameters.isConditional()) {
         adjustN = _TotalC/_TotalN;
         for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr)
-            (*itr)->refIntN() *= adjustN;
+            std::transform((*itr)->getIntN_C().begin(), (*itr)->getIntN_C().end(), (*itr)->refIntN_C().begin(), std::bind1st(std::multiplies<double>(), adjustN)); // (*itr)->refIntN() *= adjustN;
         _TotalN = _TotalC;
     }
 
@@ -437,8 +589,8 @@ bool ScanRunner::setupTree() {
     // Also checks whether a node is an ancestor to itslef, which is not allowed.
     _Ancestor.resize(_Nodes.size(), 0);
     for (size_t i=0; i < _Nodes.size(); ++i) {
-        for (size_t j=0; j < _Nodes.size(); ++j) _Ancestor[j]=0;
-        addCN(static_cast<int>(i), _Nodes.at(i)->getIntC(), _Nodes.at(i)->getIntN());
+        std::fill(_Ancestor.begin(), _Ancestor.end(), 0);
+        addCN_C(static_cast<int>(i), _Nodes.at(i)->refIntC_C(), _Nodes.at(i)->refIntN_C());
         if (_Ancestor[i] > 1) {
             _print.Printf("Error: Node '%s' has itself as an ancestor.\n", BasePrint::P_ERROR, _Nodes.at(i)->getIdentifier().c_str());
             return false;
@@ -454,19 +606,23 @@ bool ScanRunner::setupTree() {
         } // for j
     } // for i < nNodes
 
+    if (_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI) {
+        // Checks that no node has negative expected cases or that a node with zero expected has observed cases.
+        for (size_t i=0; i < _Nodes.size(); ++i) {
+            // cout << "Node=" << i << ", BrC=" << Node[i].BrC << ", BrN=" << Node[i].BrN << endl;
+            if (_Nodes.at(i)->getBrN() < 0 ) {
+                _print.Printf("Error: Node '%s' has negative expected cases.\n", BasePrint::P_ERROR, _Nodes.at(i)->getIdentifier().c_str());
+                return false;
+            }
+            if (_Nodes.at(i)->getBrN() == 0 && _Nodes.at(i)->getBrC() > 0) {
+                _print.Printf("Error: Node '%s' has observed cases but zero expected.\n", BasePrint::P_ERROR, _Nodes.at(i)->getIdentifier().c_str());
+                return false;
+            }
+        } // for i
+    }
 
-    // Checks that no node has negative expected cases or that a node with zero expected has observed cases.
-    for (size_t i=0; i < _Nodes.size(); ++i) {
-        // cout << "Node=" << i << ", BrC=" << Node[i].BrC << ", BrN=" << Node[i].BrN << endl;
-        if (_Nodes.at(i)->getBrN() < 0 ) {
-            _print.Printf("Error: Node '%s' has negative expected cases.\n", BasePrint::P_ERROR, _Nodes.at(i)->getIdentifier().c_str());
-            return false;
-        }
-        if (_Nodes.at(i)->getBrN() == 0 && _Nodes.at(i)->getBrC() > 0) {
-            _print.Printf("Error: Node '%s' has observed cases but zero expected.\n", BasePrint::P_ERROR, _Nodes.at(i)->getIdentifier().c_str());
-            return false;
-        }
-    } // for i
+    // Now we can set the data structures of NodeStructure to cumulative -- only relevant for temporal model since other models have one element arrays.
+    std::for_each(_Nodes.begin(), _Nodes.end(), std::mem_fun(&NodeStructure::setCumulative));
 
     return true;
 }

@@ -12,7 +12,7 @@ PoissonRandomizer::PoissonRandomizer(bool conditional, int TotalC, double TotalN
     Random number generator seed initialized based upon 'iSimulation' index. */
 int PoissonRandomizer::RandomizeData(unsigned int iSimulation,
                                       const ScanRunner::NodeStructureContainer_t& treeNodes,
-                                      SimDataContainer_t& simData) {
+                                      SimNodeContainer_t& treeSimNodes) {
   SetSeed(iSimulation);
 
     //-------------------- GENERATING THE RANDOM DATA ------------------------------
@@ -26,10 +26,10 @@ int PoissonRandomizer::RandomizeData(unsigned int iSimulation,
         for (size_t i=0; i < treeNodes.size(); i++) {
             cases = BinomialGenerator(CasesLeft, treeNodes.at(i)->getIntN() / ExpectedLeft);
             //if(cases>0 && Node[i].IntN<0.1) cout << "node=" << i <<  ", CasesLeft=" << CasesLeft << ", c=" << cases << ", exp=" << Node[i].IntN << ", ExpLeft=" << ExpectedLeft << endl;
-            simData.at(i).first = cases; //treeNodes.at(i)->_SimIntC = cases;
+            treeSimNodes.at(i).refIntC() = cases; //treeNodes.at(i)->_SimIntC = cases;
             CasesLeft -= cases;
             ExpectedLeft -= treeNodes.at(i)->getIntN();
-            simData.at(i).second = 0; //treeNodes.at(i)->_SimBrC = 0;  // Initilazing the branch cases with zero
+            treeSimNodes.at(i).refBrC() = 0; //treeNodes.at(i)->_SimBrC = 0;  // Initilazing the branch cases with zero
         } // for i
     }  else { // if unconditional
         TotalSimC=0;
@@ -37,17 +37,19 @@ int PoissonRandomizer::RandomizeData(unsigned int iSimulation,
         for(size_t i=0; i < treeNodes.size(); i++) {
             cases = PoissonGenerator(treeNodes.at(i)->getIntN());
             //if(cases>0 && Node[i].IntN<0.1) cout << "node=" << i <<  ",  c=" << cases << ", exp=" << Node[i].IntN << endl;
-            simData.at(i).first = cases; //treeNodes.at(i)->_SimIntC=cases;
+            treeSimNodes.at(i).refIntC() = cases; //treeNodes.at(i)->_SimIntC=cases;
             TotalSimC += cases;
             ExpectedLeft -= treeNodes.at(i)->getIntN();
-            simData.at(i).second = 0; //treeNodes.at(i)->_SimBrC = 0; // Initilazing the branch cases with zero
+            treeSimNodes.at(i).refBrC() = 0; //treeNodes.at(i)->_SimBrC = 0; // Initilazing the branch cases with zero
         }
     }
 
     //------------------------ UPDATING THE TREE -----------------------------------
     for (size_t i=0; i < treeNodes.size(); i++) {
-        if (treeNodes.at(i)->getAnforlust()==false) addSimC(i, simData.at(i).first/*_Nodes.at(i)->_SimIntC*/, treeNodes, simData);
-        else addSimCAnforlust(i, simData.at(i).first/*_Nodes.at(i)->_SimIntC*/, treeNodes, simData);
+        if (treeNodes.at(i)->getAnforlust()==false) 
+            addSimC_C(i, treeSimNodes.at(i).refIntC_C()/*_Nodes.at(i)->_SimIntC*/, treeNodes, treeSimNodes);
+        else 
+            addSimC_CAnforlust(i, treeSimNodes.at(i).refIntC_C()/*_Nodes.at(i)->_SimIntC*/, treeNodes, treeSimNodes);
     }
     return TotalSimC;
 }

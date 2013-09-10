@@ -4,6 +4,7 @@
         <tree-file>tree.tre</tree-file>
         <cuts-file>tree.cut</cuts-file>
         <count-file>poisson.cts</count-file>
+        <data-time-range>[-16,10]</data-time-range>
     </input>
     <analysis>
         <model>0</model>
@@ -12,6 +13,8 @@
         <probability-denominator>10</probability-denominator>
         <replications>99999</replications>
         <conditional>false</conditional>
+	<start-time-range>0,5</start-time-range>
+	<end-time-range>25,35</end-time-range>
     </analysis>
     <output>
         <results-file>poisson.txt</results-file>

@@ -13,23 +13,22 @@ class MCSimSuccessiveFunctor {
 public:
     typedef unsigned int param_type;
     typedef MCSimJobSource::result_type result_type;
+    typedef MCSimJobSource::successful_result_type successful_result_type;
     
 private:
-  boost::mutex                                & gMutex;
-  SimDataContainer_t                            _simData;
-  ScanRunner::Loglikelihood_t                   _loglikelihood;
-  boost::shared_ptr<AbstractRandomizer>         _randomizer;
-  const ScanRunner                            & _scanRunner;
+    boost::mutex                             & _mutex;
+    SimNodeContainer_t                        _treeSimNodes;
+    ScanRunner::Loglikelihood_t               _loglikelihood;
+    boost::shared_ptr<AbstractRandomizer>     _randomizer;
+    const ScanRunner                        & _scanRunner;
+
+    successful_result_type scanTree(param_type const & param);
+    successful_result_type scanTreeTemporal(param_type const & param);
 
 public:
-  MCSimSuccessiveFunctor(boost::mutex& Mutex, 
-                         boost::shared_ptr<AbstractRandomizer> randomizer,
-                         const ScanRunner& scanRunner);
-  //~MCSimSuccessiveFunctor() {}
-
-  result_type operator() (param_type const & param);
-
+    MCSimSuccessiveFunctor(boost::mutex& mutex, boost::shared_ptr<AbstractRandomizer> randomizer, const ScanRunner& scanRunner);
+    //~MCSimSuccessiveFunctor() {}
+    result_type operator() (param_type const & param);
 };
 //******************************************************************************
 #endif
-

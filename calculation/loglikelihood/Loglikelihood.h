@@ -10,7 +10,12 @@ public:
     AbstractLoglikelihood(){}
     virtual ~AbstractLoglikelihood(){}
 
-    virtual double LogLikelihood(int c, double n) const = 0;
+    virtual double LogLikelihood(int c, double n) const {
+        throw prg_error("LogLikelihood(int,int) not implemented.", "LogLikelihood()");
+    }
+    virtual double LogLikelihood(int c, double n, size_t windowLength) const {
+        throw prg_error("LogLikelihood(int,int,size_t) not implemented.", "LogLikelihood()");
+    }
     virtual double LogLikelihoodRatio(double logLikelihood) const = 0;
     static AbstractLoglikelihood * getNewLoglikelihood(const Parameters& parameters, int TotalC, double TotalN);
     static double UNSET_LOGLIKELIHOOD;
@@ -109,6 +114,42 @@ public:
     virtual double  LogLikelihoodRatio(double logLikelihood) const {
         if (logLikelihood == UNSET_LOGLIKELIHOOD) return 0.0;
         return logLikelihood;
+    }
+};
+
+class TemporalLoglikelihood : public AbstractLoglikelihood {
+protected:
+    const int       _totalC;
+    const double    _totalN;
+    size_t          _totalDaysInRange;
+
+public:
+    TemporalLoglikelihood(int totalC, double totalN, size_t totalDaysInRange) 
+        : AbstractLoglikelihood(), _totalC(totalC), _totalN(totalN), _totalDaysInRange(totalDaysInRange) {}
+    virtual ~TemporalLoglikelihood(){}
+
+    /* Calculates the conditional temporal loglikelihood. */
+    virtual double  LogLikelihood(int c, double n, size_t windowLength) const {
+        if(c/n > windowLength/_totalDaysInRange) { 
+            double nLL_A = 0.0, nLL_B = 0.0, nLL_C = 0.0, nLL_D = 0.0;
+            if (c != 0)
+                nLL_A = c*log(c/n);
+            if (c != n)
+                nLL_B = (n-c)*log(1-(c/n));
+            if (_totalC-c != 0)
+                nLL_C = (_totalC-c)*log((_totalC-c)/(_totalN-n));
+            if (_totalC-c != _totalN-n)
+                nLL_D = ((_totalN-n)-(_totalC-c))*log(1-((_totalC-c)/(_totalN-n)));
+            return nLL_A + nLL_B + nLL_C + nLL_D;
+        }
+
+        //std::numeric_limits<double>::infinity;
+
+        return -std::numeric_limits<double>::max();
+    }
+    virtual double  LogLikelihoodRatio(double logLikelihood) const {
+        if (logLikelihood == UNSET_LOGLIKELIHOOD) return 0.0;
+        return logLikelihood - (_totalC * log(_totalC/_totalN) + (_totalN - _totalC) * log((_totalN - _totalC)/_totalN));
     }
 };
 //******************************************************************************

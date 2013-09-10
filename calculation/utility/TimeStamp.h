@@ -6,6 +6,8 @@
 #include <string>
 #include <cctype>
 
+using namespace TreeScan;
+
 namespace TreeScan {
 
 class Timestamp {

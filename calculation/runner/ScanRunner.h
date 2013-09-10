@@ -15,88 +15,116 @@
 class ScanRunner;
 class CutStructure {
 private:
-    int     _ID;            // NodeID
-    int     _C;             // Number of cases.
-    double  _N;             // Expected number of cases.
-    double  _LogLikelihood; // Loglikelihood value.
-    unsigned int _rank;
+    int                     _ID;            // NodeID
+    int                     _C;             // Number of cases.
+    double                  _N;             // Expected number of cases.
+    double                  _LogLikelihood; // Loglikelihood value.
+    unsigned int            _rank;
+    DataTimeRange::index_t _start_idx;      // temporal start window index
+    DataTimeRange::index_t _end_idx;        // temporal end window index
 
 public:
-    CutStructure() : _ID(0), _C(0), _N(0), _LogLikelihood(-std::numeric_limits<double>::max()), _rank(1)  {}
+    CutStructure() : _ID(0), _C(0), _N(0), _LogLikelihood(-std::numeric_limits<double>::max()), _rank(1), _start_idx(0), _end_idx(1) {}
 
-    int          getC() const {return _C;}
-    int          getID() const {return _ID;}
-    double       getLogLikelihood() const {return _LogLikelihood;}
-    double       getN() const {return _N;}
-    double       getExpected(const ScanRunner& scanner);
-    unsigned int getRank() const {return _rank;}
-    unsigned int incrementRank() {return ++_rank;}
-    void         setC(int i) {_C = i;}
-    void         setID(int i) {_ID = i;}
-    void         setLogLikelihood(double d) {_LogLikelihood = d;}
-    void         setN(double d) {_N = d;}
+    int                     getC() const {return _C;}
+    int                     getID() const {return _ID;}
+    double                  getLogLikelihood() const {return _LogLikelihood;}
+    double                  getN() const {return _N;}
+    double                  getExpected(const ScanRunner& scanner);
+    unsigned int            getRank() const {return _rank;}
+    DataTimeRange::index_t  getStartIdx() const {return _start_idx;}
+    DataTimeRange::index_t  getEndIdx() const {return _end_idx;}
+    unsigned int            incrementRank() {return ++_rank;}
+    void                    setC(int i) {_C = i;}
+    void                    setID(int i) {_ID = i;}
+    void                    setLogLikelihood(double d) {_LogLikelihood = d;}
+    void                    setN(double d) {_N = d;}
+    void                    setStartIdx(DataTimeRange::index_t idx) {_start_idx = idx;}
+    void                    setEndIdx(DataTimeRange::index_t idx) {_end_idx = idx;}
 };
 
 class NodeStructure {
 public:
-    typedef std::vector<int>  RelationContainer_t;
+    typedef int count_t;
+    typedef double expected_t;
+    typedef std::vector<int> RelationContainer_t;
+    typedef std::vector<count_t> CountContainer_t;
+    typedef std::vector<expected_t> ExpectedContainer_t;
+    enum CumulativeStatus {NON_CUMULATIVE=0, CUMULATIVE};
 
 private:
-    std::string         _identifier;
-    int                 _ID;                // The node ID.
-    int                 _IntC, _SimIntC;    // Number of true and simulated cases internal to the node, respectively.
-    int                 _BrC, _SimBrC;      // Number of true and simulated cases in the node and all decendants (children, grandchildren etc.)
-    double              _IntN, _BrN;        // Expexted number of cases internal to the node, and with all decendants respectively.
-    RelationContainer_t _Child;             // List of node IDs of the children and parents
-    RelationContainer_t _Parent;
-    bool                _Anforlust;         // =1 if at least one node is an ancestor in more than one way, otherwise =0 (anforlust is Swedish for 'pedigree collapse')
-    int                 _Duplicates;        // Number of duplicates that needs to be removed.
-    Parameters::CutType _cut_type;
+    std::string             _identifier;
+    int                     _ID;                // The node ID.
+    CountContainer_t        _IntC_C;            // Number of true and simulated cases internal to the node, respectively.
+    CountContainer_t        _BrC_C;             // Number of true and simulated cases in the node and all decendants (children, grandchildren etc.)
+    ExpectedContainer_t     _IntN_C, _BrN_C;    // Expected number of cases internal to the node, and with all decendants respectively.
+    RelationContainer_t     _Child;             // List of node IDs of the children and parents
+    RelationContainer_t     _Parent;
+    bool                    _Anforlust;         // =1 if at least one node is an ancestor in more than one way, otherwise =0 (anforlust is Swedish for 'pedigree collapse')
+    int                     _Duplicates;        // Number of duplicates that needs to be removed.
+    Parameters::CutType     _cut_type;
+    CumulativeStatus        _cumulative_status;
+
+    void initialize_containers(Parameters::ModelType model_type, size_t container_size) {
+        _IntC_C.resize(container_size);
+        _BrC_C.resize(container_size);
+        if (model_type == Parameters::POISSON || model_type == Parameters::BERNOULLI) {
+            _IntN_C.resize(container_size);
+            _BrN_C.resize(container_size);
+        }
+    }
 
 public:
-    NodeStructure(const std::string& identifier, Parameters::CutType cut_type) : _identifier(identifier), _ID(0), _IntC(0), _SimIntC(0), _BrC(0), _SimBrC(0), _IntN(0), _BrN(0), _Anforlust(false), _Duplicates(0), _cut_type(cut_type) {}
+    NodeStructure(const std::string& identifier) 
+        :_identifier(identifier), _ID(0), _Anforlust(false), _Duplicates(0), _cumulative_status(NON_CUMULATIVE) {}
+    NodeStructure(const std::string& identifier, Parameters::CutType cut_type, Parameters::ModelType model_type, size_t container_size) 
+        : _identifier(identifier), _ID(0), _Anforlust(false), _Duplicates(0), _cut_type(cut_type), _cumulative_status(NON_CUMULATIVE) {
+            initialize_containers(model_type, container_size);
+    }
 
     const std::string           & getIdentifier() const {return _identifier;}
     int                           getID() const {return _ID;}
-    int                           getIntC() const {return _IntC;}
-    int                           getSimIntC() const {return _SimIntC;}
-    int                           getBrC() const {return _BrC;}
-    int                           getSimBrC() const {return _SimBrC;}
+    const CountContainer_t      & getIntC_C() const {return _IntC_C;}
+    int                           getBrC() const {return _BrC_C.front();}
+    const CountContainer_t      & getBrC_C() const {return _BrC_C;}
     int                           getNChildren() const {return static_cast<int>(_Child.size());}
     int                           getDuplicates() const {return _Duplicates;}
-    double                        getIntN() const {return _IntN;}
-    double                        getBrN() const {return _BrN;}
+    double                        getIntN() const {return _IntN_C.front();}
+    const ExpectedContainer_t   & getIntN_C() const {return _IntN_C;}
+    double                        getBrN() const {return _BrN_C.front();}
+    const ExpectedContainer_t   & getBrN_C() const {return _BrN_C;}
     bool                          getAnforlust() const {return _Anforlust;}
     const RelationContainer_t   & getChildren() const {return _Child;}
     const RelationContainer_t   & getParents() const {return _Parent;}
     Parameters::CutType           getCutType() const {return _cut_type;} 
-
-    double                      & refIntN() {return _IntN;}
-    int                         & refIntC() {return _IntC;}
-    int                         & refBrC() {return _BrC;}
-    double                      & refBrN() {return _BrN;}
-    int                         & refSimBrC() {return _SimBrC;}
+    ExpectedContainer_t         & refIntN_C() {return _IntN_C;}
+    CountContainer_t            & refIntC_C() {return _IntC_C;}
+    CountContainer_t            & refBrC_C() {return _BrC_C;}
+    ExpectedContainer_t         & refBrN_C() {return _BrN_C;}
     int                         & refDuplicates() {return _Duplicates;}
     RelationContainer_t         & refChildren() {return _Child;}
     RelationContainer_t         & refParents() {return _Parent;}
 
     void                          setIdentifier(const std::string& s) {_identifier = s;}
     void                          setID(int i) {_ID = i;}
-    void                          setIntC(int i) {_IntC = i;}
-    void                          setSimIntC(int i) {_SimIntC = i;}
-    void                          setBrC(int i) {_BrC = i;}
-    void                          setSimBrC(int i) {_SimBrC = i;}
     void                          setDuplicates(int i) {_Duplicates = i;}
-    void                          setIntN(double d) {_IntN = d;}
-    void                          setBrN(double d) {_BrN = d;}
     void                          setAnforlust(bool b) {_Anforlust = b;}
     void                          setCutType(Parameters::CutType cut_type) {_cut_type = cut_type;}
+
+    void setCumulative() {
+        if (_cumulative_status == NON_CUMULATIVE) {
+            TreeScan::cumulative(_IntC_C);
+            TreeScan::cumulative(_BrC_C);
+            TreeScan::cumulative(_IntN_C);
+            TreeScan::cumulative(_BrN_C);
+        }
+        _cumulative_status = CUMULATIVE;
+    }
 };
 
 class CompareNodeStructureByIdentifier {
 public:
     bool operator() (const NodeStructure * lhs, const NodeStructure * rhs) {
-        //return atoi(lhs->_identifier.c_str()) < atoi(rhs->_identifier.c_str());
         return lhs->getIdentifier() < rhs->getIdentifier();
     }
 };
@@ -133,8 +161,11 @@ private:
     double                      _TotalN;
     SimulationVariables         _simVars;
     Parameters                  _parameters;
+    DataTimeRange::index_t      _zero_translation_additive;
 
-    void                        addCN(int id, int c, double n);
+    void                        addCN_C(int id, NodeStructure::CountContainer_t& c, NodeStructure::ExpectedContainer_t& n);
+    size_t                      calculateCutsCount() const;
+
     Index_t                     getNodeIndex(const std::string& identifier) const;
     bool                        readCounts(const std::string& filename);
     bool                        readCuts(const std::string& filename);
@@ -142,11 +173,12 @@ private:
     bool                        reportResults(time_t start, time_t end) const;
     bool                        runsimulations();
     bool                        scanTree();
+    bool                        scanTreeTemporal();
     bool                        setupTree();
-    void                        updateCuts(int node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator);
+    void                        updateCuts(int node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx=0, DataTimeRange::index_t endIdx=1);
 
 public:
-  ScanRunner(const Parameters& parameters, BasePrint& print) : _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0) {}
+    ScanRunner(const Parameters& parameters, BasePrint& print);
 
     const CutStructureContainer_t    & getCuts() const {return _Cut;}
     const NodeStructureContainer_t   & getNodes() const {return _Nodes;}
@@ -155,6 +187,7 @@ public:
     SimulationVariables              & getSimulationVariables() {return _simVars;}
     int                                getTotalC() const {return _TotalC;}
     double                             getTotalN() const {return _TotalN;}
+    DataTimeRange::index_t             getZeroTranslationAdditive() const {return _zero_translation_additive;}
     bool                               run();
 };
 //***************************************************************************

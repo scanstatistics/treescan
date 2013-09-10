@@ -36,36 +36,112 @@ bool ParametersValidate::Validate(BasePrint& printDirection) const {
 
 /** Validates input/output file parameters. */
 bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) const {
-  bool bValid=true;
-  try {
-      if (_parameters.getTreeFileName().empty()) {
-        bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\nNo tree file specified.\n", BasePrint::P_PARAMERROR);
-      } else if (!ValidateFileAccess(_parameters.getTreeFileName())) {
-        bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\n"
-                               "The tree file '%s' could not be opened for reading. "
-                               "Please confirm that the path and/or file name are valid and that you "
-                               "have permissions to read from this directory and file.\n",
-                               BasePrint::P_PARAMERROR, _parameters.getTreeFileName().c_str());
-      }
-      if (_parameters.getCountFileName().empty()) {
-        bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\nNo count file specified.\n", BasePrint::P_PARAMERROR);
-      } else if (!ValidateFileAccess(_parameters.getCountFileName())) {
-        bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\n"
-                               "The count file '%s' could not be opened for reading. "
-                               "Please confirm that the path and/or file name are valid and that you "
-                               "have permissions to read from this directory and file.\n",
-                               BasePrint::P_PARAMERROR, _parameters.getCountFileName().c_str());
-      }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ValidateFileParameters()","ParametersValidate");
-    throw;
-  }
-  return bValid;
+    bool bValid=true;
+    std::string buffer, buffer2;
+    try {
+        if (_parameters.getTreeFileName().empty()) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nNo tree file specified.\n", BasePrint::P_PARAMERROR);
+        } else if (!ValidateFileAccess(_parameters.getTreeFileName())) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                   "The tree file '%s' could not be opened for reading. "
+                                   "Please confirm that the path and/or file name are valid and that you "
+                                   "have permissions to read from this directory and file.\n",
+                                   BasePrint::P_PARAMERROR, _parameters.getTreeFileName().c_str());
+        }
+        if (_parameters.getCountFileName().empty()) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nNo count file specified.\n", BasePrint::P_PARAMERROR);
+        } else if (!ValidateFileAccess(_parameters.getCountFileName())) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                   "The count file '%s' could not be opened for reading. "
+                                   "Please confirm that the path and/or file name are valid and that you "
+                                   "have permissions to read from this directory and file.\n",
+                                   BasePrint::P_PARAMERROR, _parameters.getCountFileName().c_str());
+        }
+        if (!_parameters.getCutsFileName().empty() && !ValidateFileAccess(_parameters.getCutsFileName())) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                   "The cut file '%s' could not be opened for reading. "
+                                   "Please confirm that the path and/or file name are valid and that you "
+                                   "have permissions to read from this directory and file.\n",
+                                   BasePrint::P_PARAMERROR, _parameters.getCutsFileName().c_str());
+        }
+        if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
+            const DataTimeRangeSet::rangeset_t& rangeSets = _parameters.getDataTimeRangeSet().getDataTimeRangeSets();
+            if (rangeSets.size() == 0) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nA data time range was not specified.\n", BasePrint::P_PARAMERROR);
+            }
+            if (rangeSets.size() > 1) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nA single data time range may be defined, you have %u data time ranges.\n"
+                                      "(Multiple ranges are not implemented as of this version.)\n",
+                                      BasePrint::P_PARAMERROR, rangeSets.size());
+            }
+            const DataTimeRange& startRange = _parameters.getStartDataTimeRange();
+            const DataTimeRange& endRange = _parameters.getEndDataTimeRange();
+            if (startRange.getStart() < 0) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe start scanning window range '%s' must be defined with a starting index of zero or more.\n",
+                                      BasePrint::P_PARAMERROR, startRange.toString(buffer).c_str());
+            }
+            if (endRange.getStart() < 0) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe end scanning window range '%s' must be defined with a starting index of zero or more.\n",
+                                      BasePrint::P_PARAMERROR, endRange.toString(buffer).c_str());
+            }
+            bool positiveRange=false, startWindowInRange=false, endWindowInRange=false;
+            // validate the data time range indexes do not overlap
+            // validate the the start and end temporal windows are within a data time range
+            for (DataTimeRangeSet::rangeset_t::const_iterator itrOuter=rangeSets.begin(); itrOuter != rangeSets.end();++itrOuter) {
+                startWindowInRange |= itrOuter->encloses(startRange);
+                endWindowInRange |= itrOuter->encloses(endRange);
+                positiveRange |= itrOuter->getEnd() >= 0;
+                for (DataTimeRangeSet::rangeset_t::const_iterator itrInner=itrOuter+1; itrInner != rangeSets.end(); ++itrInner) {
+                    if (itrOuter->overlaps(*itrInner)) {
+                        bValid = false;
+                        PrintDirection.Printf("Invalid Parameter Setting:\nThe data time range '%s' overlaps with other range '%s'.\n",
+                                               BasePrint::P_PARAMERROR, itrOuter->toString(buffer).c_str(), itrInner->toString(buffer2).c_str());
+                    }
+                }
+            }
+            if (!positiveRange) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nA data time range with positve indices (zero or greater) was not defined.\n"
+                                      "At least one range must cross into positive indices.\n",
+                                      BasePrint::P_PARAMERROR, startRange.toString(buffer).c_str());
+            }
+            if (!startWindowInRange) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe start scanning window range '%s' is not within a defined data time range with a starting index of zero or more.\n",
+                                      BasePrint::P_PARAMERROR, startRange.toString(buffer).c_str());
+            }
+            if (!endWindowInRange) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe end scanning window range '%s' is not within a defined data time range with a starting index of zero or more.\n",
+                                      BasePrint::P_PARAMERROR, endRange.toString(buffer).c_str());
+            }
+            if (startRange.getEnd() > endRange.getEnd()) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                      "The upper index of the start scanning window range '%s' cannot be greater than upper index of the end scanning window range '%s'.\n",
+                                      BasePrint::P_PARAMERROR, startRange.toString(buffer).c_str(), endRange.toString(buffer2).c_str());
+            }
+            if (endRange.getStart() < startRange.getStart()) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                      "The lower index of the end scanning window range '%s' cannot be greater than lower index of the start scanning window range '%s'.\n",
+                                      BasePrint::P_PARAMERROR, endRange.toString(buffer).c_str(), startRange.toString(buffer2).c_str());
+            }
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ValidateFileParameters()","ParametersValidate");
+        throw;
+    }
+    return bValid;
 }
 
 /** Validates input/output file parameters. */

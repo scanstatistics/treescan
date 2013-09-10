@@ -24,7 +24,7 @@ class BernoulliRandomizer : public AbstractDenominatorDataRandomizer {
 
     virtual int RandomizeData(unsigned int iSimulation,
                               const ScanRunner::NodeStructureContainer_t& treeNodes,
-                              SimDataContainer_t& simData);
+                              SimNodeContainer_t& treeSimNodes);
 };
 //******************************************************************************
 #endif

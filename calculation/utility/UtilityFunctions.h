@@ -3,7 +3,24 @@
 #define __UTILITYFUNCTIONS_H
 //******************************************************************************
 #include "TreeScan.h"
+#include "PrjException.h"
 #include "boost/lexical_cast.hpp"
+
+using namespace TreeScan;
+
+namespace TreeScan {
+    template <class T>
+    T& cumulative(T& t) {
+        T::reverse_iterator from(t.end()), until(t.begin());
+        for (; from != until; ++from) {
+            T::reverse_iterator prior(from + 1);
+            if (prior != until) {
+                *prior += *from;
+            }
+        }
+        return t;
+    }
+}
 
 double                          getNumCombinations(size_t total, size_t choose);
 unsigned int                    GetNumSystemProcessors();
