@@ -39,6 +39,7 @@ M_DLFLAGS     := -shared $(COMPILATION) -install_name $(MAC_LIBRARY)
 
 SRC         := $(RUNNER)/ScanRunner.cpp \
                $(RUNNER)/DataSource.cpp \
+               $(RUNNER)/DataTimeRanges.cpp \
                $(OUTPUT)/DataFileWriter.cpp \
                $(OUTPUT)/ResultsFileWriter.cpp \
                $(PRINT)/BasePrint.cpp \
@@ -48,6 +49,7 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(RANDOMIZER)/DenominatorDataRandomizer.cpp \
                $(RANDOMIZER)/BernoulliRandomizer.cpp \
                $(RANDOMIZER)/PoissonRandomizer.cpp \
+               $(RANDOMIZER)/TemporalRandomizer.cpp \
                $(LOGLIKELIHOOD)/Loglikelihood.cpp \
                $(UTILITY)/RandomDistribution.cpp \
                $(UTILITY)/RandomNumberGenerator.cpp \
