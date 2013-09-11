@@ -1,8 +1,11 @@
 #!/bin/sh
 
+(
+cpp_compiler="/usr/bin/g++"
+osx_min_version="-mmacosx-version-min=10.6"
 binaries="/Users/hostovic/prj/treescan.development/binaries/mac"
 treescan_src="/Users/hostovic/prj/treescan.development/treescan"
-boost_src="/Users/hostovic/prj/boost/boost_1_47_0"
+boost_src="/Users/hostovic/prj/boost/boost_1_52_0"
 processors="-j2"
 
 rm -f $binaries/*
@@ -11,10 +14,10 @@ rm -f $binaries/*
 # Intel command-line binaries
 
 echo building TreeScan for 32-bit system using gcc4.0.1 - i386
-./makescript.mac.sh $binaries/treescan_gcc4.0.1_i386_32bit $treescan_src $boost_src -m32 -O3 "/usr/bin/g++-4.0 -arch i386 -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk" $processors
+./makescript.mac.sh $binaries/treescan_gcc4.0.1_i386_32bit $treescan_src $boost_src -m32 -O3 $cpp_compiler "-arch i386" $osx_min_version $processors
 
 echo building TreeScan for 64-bit system using gcc4.0.1 - x86_64
-./makescript.mac.sh $binaries/treescan_gcc4.0.1_x86_64_64bit $treescan_src $boost_src -m64 -O3 "/usr/bin/g++-4.0 -arch x86_64 -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk" $processors
+./makescript.mac.sh $binaries/treescan_gcc4.0.1_x86_64_64bit $treescan_src $boost_src -m64 -O3 $cpp_compiler "-arch x86_64" $osx_min_version $processors
 
 # Create universal binary - only interested in Intel architectures
 echo creating universal binary for 32-bit and 64-bit systems
@@ -24,38 +27,13 @@ lipo -create $binaries/treescan_gcc4.0.1_i386_32bit $binaries/treescan_gcc4.0.1_
 # Intel JNI libraries
 
 echo building TreeScan shared object for 32-bit system using gcc4.0.1 - i386
-./makescript.so.mac.sh $binaries/libtreescan.gcc4.0.1_i386_32bit.jnilib $treescan_src $boost_src -m32 -O3 "/usr/bin/g++-4.0 -arch i386  -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk" $processors
+./makescript.so.mac.sh $binaries/libtreescan.gcc4.0.1_i386_32bit.jnilib $treescan_src $boost_src -m32 -O3 $cpp_compiler "-arch i386" $osx_min_version $processors
 
 echo building TreeScan shared object for 64-bit system using gcc4.0.1 - x86_64
-./makescript.so.mac.sh $binaries/libtreescan.gcc4.0.1_x86_64_64bit.jnilib $treescan_src $boost_src -m64 -O3 "/usr/bin/g++-4.0 -arch x86_64  -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk" $processors
+./makescript.so.mac.sh $binaries/libtreescan.gcc4.0.1_x86_64_64bit.jnilib $treescan_src $boost_src -m64 -O3 $cpp_compiler "-arch x86_64" $osx_min_version $processors
 
 # Create universal binary - only interested in Intel architectures
 echo creating universal shared object binary for 32-bit and 64-bit systems
 lipo -create $binaries/libtreescan.gcc4.0.1_i386_32bit.jnilib $binaries/libtreescan.gcc4.0.1_x86_64_64bit.jnilib -output $binaries/libtreescan.jnilib
 
-
-
-# PowerPC command-line binaries
-
-echo building TreeScan for 32-bit system using gcc4.0.1 - PowerPC
-./makescript.mac.sh $binaries/treescan_gcc4.0.1_ppc_32bit $treescan_src $boost_src -m32 -O3 "/usr/bin/g++-4.0 -arch ppc" $processors
-
-
-## ppc64 support was dropped in Snow Leopard (10.6). You can still use ppc64 if you build and link against the Mac OS X 10.5 SDK.
-## http://stackoverflow.com/questions/2830931/g-on-macosx-doesnt-work-with-arch-ppc64
-## For treescan, we'll just drop building ppc64 binary -- what for user to request or recommend ppc architecture.
-
-##### echo building TreeScan for 64-bit system using gcc4.0.1 - PowerPC
-##### ./makescript.mac.sh $binaries/treescan_gcc4.0.1_ppc64_64bit $treescan_src $boost_src -m64 -O3 "/usr/bin/g++-4.0 -arch ppc64" $processors
-#####
-##### # Create universal binary for PPC
-##### echo creating universal binary for 32-bit and 64-bit systems
-##### lipo -create $binaries/treescan_gcc4.0.1_ppc_32bit $binaries/treescan_gcc4.0.1_ppc64_64bit -output $binaries/treescan_gcc4.0.1_universal_ppc
-
-
-##### # PowerPC JNI libraries --- TreeScan requires Java 1.6 or newer; so PPC libraries are not useful.
-##### echo building TreeScan shared object for 32-bit system using gcc4.0.1 - PowerPC
-##### ./makescript.so.mac.sh $binaries/libtreescan.gcc4.0.1_ppc_32bit.jnilib $treescan_src $boost_src -m32 -O3 "/usr/bin/g++-4.0 -arch ppc" $processors
-#####
-##### echo building TreeScan shared object for 64-bit system using gcc4.0.1 - PowerPC
-##### ./makescript.so.mac.sh $binaries/libtreescan.gcc4.0.1_ppc64_64bit.jnilib $treescan_src $boost_src -m64 -O3 "/usr/bin/g++-4.0 -arch ppc64" $processors
+) 1> build.stdout 2> build.stderr
