@@ -20,6 +20,10 @@
   #define stricmp strcasecmp
   #define strnicmp strncasecmp
 #endif
+
+#include <cstdlib>
+#include <stdio.h>
+
 #ifdef _WINDOWS_
   #include <io.h>
 #else

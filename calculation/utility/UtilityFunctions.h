@@ -11,9 +11,9 @@ using namespace TreeScan;
 namespace TreeScan {
     template <class T>
     T& cumulative(T& t) {
-        T::reverse_iterator from(t.end()), until(t.begin());
+        typename T::reverse_iterator from(t.end()), until(t.begin());
         for (; from != until; ++from) {
-            T::reverse_iterator prior(from + 1);
+            typename T::reverse_iterator prior(from + 1);
             if (prior != until) {
                 *prior += *from;
             }

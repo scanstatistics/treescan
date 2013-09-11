@@ -125,7 +125,7 @@ inline void ptr_vector<TYPE,VECTOR>::killAll() {
 template <typename TYPE, typename VECTOR>
 inline void ptr_vector<TYPE,VECTOR>::kill(iterator delMe) {
   delete *delMe;
-  erase(delMe);
+  this->erase(delMe);
 }
 
 // kill() goes through and delete's all objects in the given range and then
@@ -138,7 +138,7 @@ void ptr_vector<TYPE,VECTOR>::kill(iterator first, iterator last) {
       delete *pCopy;
       pCopy++;
   }
-  erase(first, last);
+  this->erase(first, last);
 }
 //******************************************************************************
 #endif

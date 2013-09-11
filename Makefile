@@ -78,7 +78,8 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(BOOSTDIR)/libs/program_options/src/split.cpp \
                $(BOOSTDIR)/libs/program_options/src/utf8_codecvt_facet.cpp \
                $(BOOSTDIR)/libs/program_options/src/value_semantic.cpp \
-               $(BOOSTDIR)/libs/program_options/src/variables_map.cpp
+               $(BOOSTDIR)/libs/program_options/src/variables_map.cpp \
+               $(BOOSTDIR)/libs/system/src/error_code.cpp               
 
 APP_SRC     := $(TREESCAN)/batch_application/TreeScan.cpp
 LIB_SRC     := $(TREESCAN)/library/SharedLibrary.cpp \

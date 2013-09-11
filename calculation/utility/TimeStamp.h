@@ -4,6 +4,7 @@
 //******************************************************************************
 #include <cmath>
 #include <string>
+#include <cstring>
 #include <cctype>
 
 using namespace TreeScan;

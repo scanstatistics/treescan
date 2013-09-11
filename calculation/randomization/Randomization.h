@@ -52,7 +52,7 @@ protected:
     void SetSeed(unsigned int iSimulationIndex);
 
 public:
-    AbstractRandomizer::AbstractRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : _randomNumberGenerator(lInitialSeed) {}
+    AbstractRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : _randomNumberGenerator(lInitialSeed) {}
     virtual ~AbstractRandomizer() {}
 
     virtual int RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) = 0;

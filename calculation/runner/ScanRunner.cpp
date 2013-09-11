@@ -279,7 +279,7 @@ bool ScanRunner::run() {
 
 /* DOING THE MONTE CARLO SIMULATIONS */
 bool ScanRunner::runsimulations() {
-    char                * sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %lf\n";
+    const char          * sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %lf\n";
     unsigned long         ulParallelProcessCount = std::min(_parameters.getNumParallelProcessesToExecute(), _parameters.getNumReplicationsRequested());
 
     try {
