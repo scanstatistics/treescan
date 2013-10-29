@@ -81,8 +81,8 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                                       "(Multiple ranges are not implemented as of this version.)\n",
                                       BasePrint::P_PARAMERROR, rangeSets.size());
             }
-            const DataTimeRange& startRange = _parameters.getStartDataTimeRange();
-            const DataTimeRange& endRange = _parameters.getEndDataTimeRange();
+            const DataTimeRange& startRange = _parameters.getTemporalStartRange();
+            const DataTimeRange& endRange = _parameters.getTemporalEndRange();
             if (startRange.getStart() < 0) {
                 bValid = false;
                 PrintDirection.Printf("Invalid Parameter Setting:\nThe start scanning window range '%s' must be defined with a starting index of zero or more.\n",

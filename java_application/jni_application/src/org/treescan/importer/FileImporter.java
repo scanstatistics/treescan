@@ -15,7 +15,7 @@ import org.treescan.app.*;
  * Imports from data source to SaTScan formatted data file.
  */
 public class FileImporter {
-    public enum InputFileType      {Tree, Cuts, Counts};
+    public enum InputFileType      {Tree, Cuts, Counts, Population};
     public enum SourceDataFileType {Delimited, dBase, Excel};
     
     private final InputFileType _fileType;

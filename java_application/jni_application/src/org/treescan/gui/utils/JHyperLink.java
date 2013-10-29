@@ -11,6 +11,7 @@ package org.treescan.gui.utils;
 
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
@@ -28,10 +29,11 @@ public class JHyperLink extends JLabel {
     protected final Color LINK_COLOR  = Color.blue;
     protected LinkedList<ActionListener> actionListenerList = new LinkedList<ActionListener>();
     protected boolean underline;
+    private JHyperLink _instance;
     
     protected MouseListener mouseListener = new MouseAdapter() {
         public void mouseEntered(MouseEvent me) {
-            underline = true;
+            underline = _instance.isEnabled();
             repaint();
         }
         
@@ -47,17 +49,25 @@ public class JHyperLink extends JLabel {
     
     public JHyperLink() {
         this("");
+        _instance = this;
     }
     
     public JHyperLink(String text) {
         super(text);
+        _instance = this;
         
-        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));        
+        setForeground(LINK_COLOR);        
+        addMouseListener( mouseListener );        
+    }
+
+    public JHyperLink(String text, Color color) {
+        super(text);
+        _instance = this;
         
-        setForeground(LINK_COLOR);
-        
-        addMouseListener( mouseListener );
-        
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));        
+        setForeground(color);        
+        addMouseListener( mouseListener );        
     }
     
     public void addActionListener(ActionListener l) {

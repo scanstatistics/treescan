@@ -64,6 +64,7 @@ class DataTimeRangeSet {
         bool operator==(const DataTimeRangeSet& rhs) const {return _rangesets == rhs._rangesets;}
         bool operator!=(const DataTimeRangeSet& rhs) const {return _rangesets != rhs._rangesets;}
 
+        void add(const DataTimeRange& range) {_rangesets.push_back(range);}
         void assign(const std::string& from) {_rangesets = parse(from);}
         const rangeset_t & getDataTimeRangeSets() const {return _rangesets;}
         std::string & toString(std::string& s) const;

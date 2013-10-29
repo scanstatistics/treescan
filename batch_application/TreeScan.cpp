@@ -112,7 +112,6 @@ int main(int argc, char* argv[]) {
         if (vm.count("count-file")) parameters.setCountFileName(vm["count-file"].as<std::string>().c_str());
         if (vm.count("output-file")) parameters.setOutputFileName(vm["output-file"].as<std::string>().c_str());
         if (vm.count("replications")) parameters.setNumReplications(vm["replications"].as<int>());
-        if (vm.count("conditional")) parameters.setConditional(vm["conditional"].as<bool>());
         if (vm.count("duplicates")) parameters.setDuplicates(vm["duplicates"].as<bool>());
         if (vm.count("limit-threads")) parameters.setNumProcesses(vm["limit-threads"].as<int>());
 

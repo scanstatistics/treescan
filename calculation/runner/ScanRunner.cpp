@@ -19,7 +19,7 @@
 
 double CutStructure::getExpected(const ScanRunner& scanner) {
     if (scanner.getParameters().getModelType() == Parameters::BERNOULLI) {
-        if (scanner.getParameters().isConditional())
+        if (scanner.getParameters().getConditionalType() == Parameters::CONDITIONAL)
             return _N * (scanner.getTotalC() / scanner.getTotalN());
         return _N * scanner.getParameters().getProbability();
     }
@@ -71,15 +71,14 @@ bool ScanRunner::readCounts(const std::string& filename) {
     _print.Printf("Reading count file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
+    int expectedColumns = (_parameters.getModelType() == Parameters::TEMPORALSCAN ? 3 : 2) + (_parameters.isDuplicates() ? 1 : 0);
 
-    // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
     int count=0, controls=0, duplicates=0, daysSinceIncidence=0;
-    double population=0;
     while (dataSource->readRecord()) {
-        if (dataSource->getNumValues() != (_parameters.isDuplicates() ? 4 : 3)) {
+        if (dataSource->getNumValues() != expectedColumns) {
             readSuccess = false;
             _print.Printf("Error: Record %ld in count file %s. Expecting <indentifier>, <count>,%s <population> but found %ld value%s.\n", 
-                          BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), (static_cast<int>(dataSource->getNumValues()) > (_parameters.isDuplicates() ? 4 : 3)) ? "has extra data" : "is missing data",
+                          BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), (static_cast<int>(dataSource->getNumValues()) > expectedColumns) ? "has extra data" : "is missing data",
                           (_parameters.isDuplicates() ? " <duplicates>," : ""), dataSource->getNumValues(), (dataSource->getNumValues() == 1 ? "" : "s"));
             continue;
         }
@@ -109,24 +108,11 @@ bool ScanRunner::readCounts(const std::string& filename) {
         }
         // read model specific columns from data source
         if (_parameters.getModelType() == Parameters::POISSON) {
-            if  (!string_to_type<double>(dataSource->getValueAt(_parameters.isDuplicates() ? 3 : 2).c_str(), population) || population < 0) {
-                readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references negative population in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
-                continue;
-            }
             node->refIntC_C().front() += count;
-            node->refIntN_C().front() += population;
         } else if (_parameters.getModelType() == Parameters::BERNOULLI) {
-            if  (!string_to_type<int>(dataSource->getValueAt(_parameters.isDuplicates() ? 3 : 2).c_str(), controls) || controls < 0) {
-                readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references negative number of controls in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
-                continue;
-            }
             node->refIntC_C().front() += count;
-            node->refIntN_C().front() += count + controls;
-            _TotalControls += controls;
         } else if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
-            if  (!string_to_type<int>(dataSource->getValueAt(_parameters.isDuplicates() ? 3 : 2).c_str(), daysSinceIncidence)) {
+            if  (!string_to_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), daysSinceIncidence)) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in count file references an invalid 'day since incidence' value in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
@@ -142,6 +128,56 @@ bool ScanRunner::readCounts(const std::string& filename) {
             }
             node->refIntC_C().at(daysSinceIncidence + _zero_translation_additive) += count;
         } else throw prg_error("Unknown model type (%d).", "readCounts()", _parameters.getModelType());
+    }
+    return readSuccess;
+}
+
+/*
+ Reads population data from passed file. The file format is: <node identifier>, <population>, <time>
+ */
+bool ScanRunner::readPopulation(const std::string& filename) {
+    if (_parameters.getModelType() == Parameters::TEMPORALSCAN) return true; // population is not used with temporal scan
+
+    _print.Printf("Reading population file ...\n", BasePrint::P_STDOUT);
+    bool readSuccess=true;
+    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
+    int expectedColumns = 2;
+
+    while (dataSource->readRecord()) {
+        if (dataSource->getNumValues() != expectedColumns) {
+            readSuccess = false;
+            _print.Printf("Error: Record %ld in population file %s. Expecting <indentifier>, <population> but found %ld value%s.\n", 
+                          BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), (static_cast<int>(dataSource->getNumValues()) > (_parameters.isDuplicates() ? 4 : 3)) ? "has extra data" : "is missing data",
+                          dataSource->getNumValues(), (dataSource->getNumValues() == 1 ? "" : "s"));
+            continue;
+        }
+        ScanRunner::Index_t index = getNodeIndex(dataSource->getValueAt(0));
+        if (!index.first) {
+            readSuccess = false;
+            _print.Printf("Error: Record %ld in count file references unknown node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(0).c_str());
+            continue;
+        }
+        NodeStructure * node = _Nodes.at(index.second);
+        // read model specific columns from data source
+        if (_parameters.getModelType() == Parameters::POISSON) {
+            double population=0;
+            if  (!string_to_type<double>(dataSource->getValueAt(expectedColumns - 1).c_str(), population) || population < 0) {
+                readSuccess = false;
+                _print.Printf("Error: Record %ld in population file references negative population in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                continue;
+            }
+            node->refIntN_C().front() += population;
+        } else if (_parameters.getModelType() == Parameters::BERNOULLI) {
+            int population=0;
+            if  (!string_to_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), population) || population < 0) {
+                readSuccess = false;
+                _print.Printf("Error: Record %ld in population file references negative number of cases and controls in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                continue;
+            }
+            // node->refIntC_C().front() += count; TODO -- we'll need a check for 
+            node->refIntN_C().front() += population;
+            _TotalControls += population;
+        } else throw prg_error("Unknown model type (%d).", "readPopulation()", _parameters.getModelType());
     }
     return readSuccess;
 }
@@ -201,7 +237,7 @@ bool ScanRunner::readCuts(const std::string& filename) {
     _print.Printf("Reading cuts file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
-    Parameters::cut_map_t cut_type_map = Parameters::getCutTypeMap();
+    Parameters::cut_maps_t cut_type_maps = Parameters::getCutTypeMap();
 
     while (dataSource->readRecord()) {
         if (dataSource->getNumValues() != 2) {
@@ -219,16 +255,17 @@ bool ScanRunner::readCuts(const std::string& filename) {
         } else {
             NodeStructure * node = _Nodes.at(index.second);
             std::string cut_type_string = lowerString(trimString(dataSource->getValueAt(static_cast<long>(1))));
-            Parameters::cut_map_t::iterator itr = cut_type_map.find(cut_type_string);
-            if (itr == cut_type_map.end()) {
+
+            Parameters::cut_map_t::iterator itr_abbr = cut_type_maps.first.find(cut_type_string);
+            Parameters::cut_map_t::iterator itr_full = cut_type_maps.second.find(cut_type_string);
+            if (itr_abbr == cut_type_maps.first.end() && itr_full == cut_type_maps.second.end()) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in cut file has unknown cut type (%s). Choices are simple, pairs, triplets and ordinal.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(static_cast<long>(1)).c_str());
             } else {
-                node->setCutType(itr->second);
+                node->setCutType(itr_abbr == cut_type_maps.first.end() ? itr_full->second : itr_abbr->second);
             }
         }
     }
-
     return readSuccess;
 }
 
@@ -263,6 +300,9 @@ bool ScanRunner::run() {
     if (!readTree(_parameters.getTreeFileName())) return false;
     if (_parameters.getCutsFileName().length() && !readCuts(_parameters.getCutsFileName())) return false;
     if (!readCounts(_parameters.getCountFileName())) return false;
+    if (_parameters.getModelType() != Parameters::TEMPORALSCAN) {
+        if (!readPopulation(_parameters.getPopulationFileName())) return false;
+    }
     if (!setupTree()) return false;
     if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
         if (!scanTreeTemporal()) return false;
@@ -426,10 +466,10 @@ bool ScanRunner::scanTreeTemporal() {
     ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN));
 
     // Define the start and end windows with the zero index offset already incorporated.
-    DataTimeRange startWindow(_parameters.getStartDataTimeRange().getStart() + _zero_translation_additive,
-                              _parameters.getStartDataTimeRange().getEnd() + _zero_translation_additive),
-                  endWindow(_parameters.getEndDataTimeRange().getStart() + _zero_translation_additive,
-                            _parameters.getEndDataTimeRange().getEnd() + _zero_translation_additive);
+    DataTimeRange startWindow(_parameters.getTemporalStartRange().getStart() + _zero_translation_additive,
+                              _parameters.getTemporalStartRange().getEnd() + _zero_translation_additive),
+                  endWindow(_parameters.getTemporalEndRange().getStart() + _zero_translation_additive,
+                            _parameters.getTemporalEndRange().getEnd() + _zero_translation_additive);
     //std::string buffer;
     //int hits=0;
     for (size_t n=0; n < _Nodes.size(); ++n) {
@@ -566,7 +606,7 @@ bool ScanRunner::setupTree() {
     }
 
     // Calculates the expected counts for each node and the total.
-    if (_parameters.getModelType() == Parameters::POISSON && _parameters.isConditional()) {
+    if (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::CONDITIONAL) {
         adjustN = _TotalC/_TotalN;
         for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr)
             std::transform((*itr)->getIntN_C().begin(), (*itr)->getIntN_C().end(), (*itr)->refIntN_C().begin(), std::bind1st(std::multiplies<double>(), adjustN)); // (*itr)->refIntN() *= adjustN;

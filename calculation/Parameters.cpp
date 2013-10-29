@@ -13,9 +13,10 @@
 
 const int Parameters::giNumParameters = 13;
 
-Parameters::cut_map_t Parameters::getCutTypeMap() {
+Parameters::cut_maps_t Parameters::getCutTypeMap() {
+   cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
    cut_map_t cut_type_map = boost::assign::map_list_of("simple",Parameters::SIMPLE) ("pairs",Parameters::PAIRS) ("triplets",Parameters::TRIPLETS) ("ordinal",Parameters::ORDINAL);
-   return cut_type_map;
+   return std::make_pair(cut_type_map_abbr, cut_type_map);
 }
 
 bool  Parameters::operator==(const Parameters& rhs) const {
@@ -24,8 +25,8 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_cutsFileName != rhs._cutsFileName) return false;  
   if (_countFileName != rhs._countFileName) return false;
   if (_dataTimeRangeSet.getDataTimeRangeSets() != rhs._dataTimeRangeSet.getDataTimeRangeSets()) return false;
-  if (_startDataTimeRange != rhs._startDataTimeRange) return false;
-  if (_endDataTimeRange != rhs._endDataTimeRange) return false;
+  if (_temporalStartRange != rhs._temporalStartRange) return false;
+  if (_temporalEndRange != rhs._temporalEndRange) return false;
   if (_outputFileName != rhs._outputFileName) return false;
   if (_resultsFormat != rhs._resultsFormat) return false;
   if (_parametersSourceFileName != rhs._parametersSourceFileName) return false;
@@ -33,7 +34,6 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   //if (_randomizationSeed != rhs._randomizationSeed) return false;
   if (_numRequestedParallelProcesses != rhs._numRequestedParallelProcesses) return false;
   if (_randomlyGenerateSeed != rhs._randomlyGenerateSeed) return false;
-  if (_conditional != rhs._conditional) return false;
   if (_duplicates != rhs._duplicates) return false;  
   if (_generateHtmlResults != rhs._generateHtmlResults) return false;
   if (_generateTableResults != rhs._generateTableResults) return false;
@@ -41,6 +41,8 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_modelType != rhs._modelType) return false;
   if (_probablility_ratio != rhs._probablility_ratio) return false;
   if (_cut_type != rhs._cut_type) return false;
+  if (_conditional_type != rhs._conditional_type) return false;
+  if (_scan_type != rhs._scan_type) return false;
 
   return true;
 }
@@ -79,28 +81,34 @@ void Parameters::assignMissingPath(std::string & sInputFilename, bool bCheckWrit
 
 /** Copies all class variables from the given Parameters object (rhs) into this one */
 void Parameters::copy(const Parameters &rhs) {
-  _replications = rhs._replications;
-  _treeFileName = rhs._treeFileName;
-  _cutsFileName = rhs._cutsFileName;
-  _countFileName = rhs._countFileName;
-  _dataTimeRangeSet = rhs._dataTimeRangeSet;
-  _startDataTimeRange = rhs._startDataTimeRange;
-  _endDataTimeRange = rhs._endDataTimeRange;
-  _outputFileName = rhs._outputFileName;
-  _resultsFormat = rhs._resultsFormat;
-  _creationVersion = rhs._creationVersion;
-  _parametersSourceFileName = rhs._parametersSourceFileName;
-  _randomizationSeed = rhs._randomizationSeed;
-  _numRequestedParallelProcesses = rhs._numRequestedParallelProcesses;
-  _randomlyGenerateSeed = rhs._randomlyGenerateSeed;
-  _conditional = rhs._conditional;
-  _duplicates = rhs._duplicates;
-  _generateHtmlResults = rhs._generateHtmlResults;
-  _generateTableResults = rhs._generateTableResults;
-  _printColumnHeaders = rhs._printColumnHeaders;
-  _modelType = rhs._modelType;
-  _probablility_ratio = rhs._probablility_ratio;
-  _cut_type = rhs._cut_type;
+    _treeFileName = rhs._treeFileName;
+    _countFileName = rhs._countFileName;
+    _populationFileName = rhs._populationFileName;
+    _dataTimeRangeSet = rhs._dataTimeRangeSet;
+    _cutsFileName = rhs._cutsFileName;
+    _duplicates = rhs._duplicates;
+
+    _scan_type = rhs._scan_type;
+    _conditional_type = rhs._conditional_type;
+    _modelType = rhs._modelType;
+    _probablility_ratio = rhs._probablility_ratio;
+    _temporalStartRange = rhs._temporalStartRange;
+    _temporalEndRange = rhs._temporalEndRange;
+    _replications = rhs._replications;
+    _cut_type = rhs._cut_type;
+
+    _outputFileName = rhs._outputFileName;
+    _resultsFormat = rhs._resultsFormat;
+    _generateHtmlResults = rhs._generateHtmlResults;
+    _generateTableResults = rhs._generateTableResults;
+    _printColumnHeaders = rhs._printColumnHeaders;
+
+    _randomizationSeed = rhs._randomizationSeed;
+    _numRequestedParallelProcesses = rhs._numRequestedParallelProcesses;
+    _randomlyGenerateSeed = rhs._randomlyGenerateSeed;
+
+    _parametersSourceFileName = rhs._parametersSourceFileName;
+    _creationVersion = rhs._creationVersion;
 }
 
 /** Returns number of parallel processes to run. */
@@ -151,6 +159,14 @@ void Parameters::setCountFileName(const char * sCountFileName, bool bCorrectForR
   if (bCorrectForRelativePath) assignMissingPath(_countFileName);
 }
 
+/** Sets population data file name.
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file does not exist. */
+void Parameters::setPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath) {
+  _populationFileName = sPopulationFileName;
+  if (bCorrectForRelativePath) assignMissingPath(_populationFileName);
+}
+
 /** Sets cuts data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
@@ -170,29 +186,34 @@ void Parameters::setTreeFileName(const char * sTreeFileName, bool bCorrectForRel
 
 /** initializes global variables to default values */
 void Parameters::setAsDefaulted() {
-  _treeFileName = "";
-  _cutsFileName = "";
-  _countFileName = "";
-  _dataTimeRangeSet = DataTimeRangeSet();
-  _startDataTimeRange = DataTimeRange();
-  _endDataTimeRange = DataTimeRange();
-  _outputFileName = "";
-  _resultsFormat = TEXT;
-  _replications = 99999;
-  _creationVersion.iMajor = atoi(VERSION_MAJOR);
-  _creationVersion.iMinor = atoi(VERSION_MINOR);
-  _creationVersion.iRelease = atoi(VERSION_RELEASE);
-  _randomizationSeed = RandomNumberGenerator::glDefaultSeed;
-  _randomlyGenerateSeed = false;
-  _numRequestedParallelProcesses = 0;
-  _conditional = false;
-  _duplicates = false;
-  _generateHtmlResults = false;
-  _generateTableResults = false;
-  _printColumnHeaders = true;
-  _modelType = POISSON;
-  _probablility_ratio = ratio_t(1,2);
-  _cut_type = SIMPLE;
+    _treeFileName = "";
+    _countFileName = "";
+    _populationFileName = "";
+    _dataTimeRangeSet = DataTimeRangeSet();
+    _cutsFileName = "";
+    _duplicates = false;
+
+    _scan_type = TREEONLY;
+    _conditional_type = UNCONDITIONAL;
+    _modelType = POISSON;
+    _probablility_ratio = ratio_t(1,2);
+    _temporalStartRange = DataTimeRange();
+    _temporalEndRange = DataTimeRange();
+    _replications = 99999;
+    _cut_type = SIMPLE;
+
+    _outputFileName = "";
+    _generateHtmlResults = false;
+    _generateTableResults = false;
+    _printColumnHeaders = true;
+    _resultsFormat = TEXT;
+
+    _creationVersion.iMajor = atoi(VERSION_MAJOR);
+    _creationVersion.iMinor = atoi(VERSION_MINOR);
+    _creationVersion.iRelease = atoi(VERSION_RELEASE);
+    _randomizationSeed = RandomNumberGenerator::glDefaultSeed;
+    _randomlyGenerateSeed = false;
+    _numRequestedParallelProcesses = 0;
 }
 
 /** Sets output data file name.
@@ -222,24 +243,30 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
         default: read_xml(filename, pt);
     }
     setSourceFileName(filename.c_str());
-    setTreeFileName(pt.get<std::string>(type == INI ? "input.tree-file" : "parameters.input.tree-file").c_str(), true);
-    setCutsFileName(pt.get<std::string>(type == INI ? "input.cuts-file" : "parameters.input.cuts-file").c_str(), true);
-    setCountFileName(pt.get<std::string>(type == INI ? "input.count-file" : "parameters.input.count-file").c_str(), true);
-    _dataTimeRangeSet.assign(pt.get<std::string>(type == INI ? "input.data-time-range" : "parameters.input.data-time-range"));
+
+    setTreeFileName(pt.get<std::string>(type == INI ? "input.tree-file" : "parameters.input.tree-file", "").c_str(), true);
+    setCountFileName(pt.get<std::string>(type == INI ? "input.case-file" : "parameters.input.case-file", "").c_str(), true);
+    setPopulationFileName(pt.get<std::string>(type == INI ? "input.population-file" : "parameters.input.population-file", "").c_str(), true);
+    _dataTimeRangeSet.assign(pt.get<std::string>(type == INI ? "input.data-time-range" : "parameters.input.data-time-range", "0,0"));
+    setCutsFileName(pt.get<std::string>(type == INI ? "input-advanced.cuts-file" : "parameters.input.advanced.cuts-file", "").c_str(), true);
     //_duplicates = pt.get<bool>(type == INI ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", false);
-    _modelType = static_cast<ModelType>(pt.get<unsigned int>(type == INI ? "analysis.model" : "parameters.analysis.model", POISSON));
-    _cut_type = static_cast<CutType>(pt.get<unsigned int>(type == INI ? "analysis.cut-type" : "parameters.analysis.cut-type", SIMPLE));
-    _probablility_ratio.first = pt.get<unsigned int>(type == INI ? "analysis.probability-numerator" : "parameters.analysis.probability-numerator", 1);
-    _probablility_ratio.second = pt.get<unsigned int>(type == INI ? "analysis.probability-denominator" : "parameters.analysis.probability-denominator", 2);
-    _replications = pt.get<unsigned int>(type == INI ? "analysis.replications" : "parameters.analysis.replications", 999);
-    _conditional = pt.get<bool>(type == INI ? "analysis.conditional" : "parameters.analysis.conditional", false);
-    _startDataTimeRange.assign(pt.get<std::string>(type == INI ? "analysis.start-time-range" : "parameters.analysis.start-time-range"));
-    _endDataTimeRange.assign(pt.get<std::string>(type == INI ? "analysis.end-time-range" : "parameters.analysis.end-time-range"));
-    setOutputFileName(pt.get<std::string>(type == INI ? "output.results-file" : "parameters.output.results-file").c_str(), true);
+
+    _scan_type = static_cast<ScanType>(pt.get<unsigned int>(type == INI ? "analysis.scan" : "parameters.analysis.scan", TREEONLY));
+    _conditional_type = static_cast<ConditionalType>(pt.get<unsigned int>(type == INI ? "analysis.conditional" : "parameters.analysis.conditional", UNCONDITIONAL));
+    _modelType = static_cast<ModelType>(pt.get<unsigned int>(type == INI ? "analysis.probability-model" : "parameters.analysis.probability-model", POISSON));
+    _probablility_ratio.first = pt.get<unsigned int>(type == INI ? "analysis.event-probability-numerator" : "parameters.analysis.event-probability.numerator", 1);
+    _probablility_ratio.second = pt.get<unsigned int>(type == INI ? "analysis.event-probability-denominator" : "parameters.analysis.event-probability.denominator", 2);
+    _temporalStartRange.assign(pt.get<std::string>(type == INI ? "analysis.start-time-range" : "parameters.analysis.temporal-window.start-range", "0,0"));
+    _temporalEndRange.assign(pt.get<std::string>(type == INI ? "analysis.end-time-range" : "parameters.analysis.temporal-window.end-range", "0,0"));
+    _replications = pt.get<unsigned int>(type == INI ? "analysis-advanced.replications" : "parameters.analysis.advanced.replications", 999);
+    _cut_type = static_cast<CutType>(pt.get<unsigned int>(type == INI ? "analysis-advanced.cut-type" : "parameters.analysis.advanced.cut-type", SIMPLE));
+
+    setOutputFileName(pt.get<std::string>(type == INI ? "output.results-file" : "parameters.output.results-file", "").c_str(), true);
     //_resultsFormat = pt.get<bool>(type == INI ? "output.html" : "parameters.output.results-file.<xmlattr>.html", true) ? HTML : TEXT;
     _generateHtmlResults = pt.get<bool>(type == INI ? "output.generate-html-results" : "parameters.output.generate-html-results", true);
     _generateTableResults = pt.get<bool>(type == INI ? "output.generate-table-results" : "parameters.output.generate-table-results", true);
     _printColumnHeaders = pt.get<bool>(type == INI ? "output.print-headers" : "parameters.output.print-headers", true);
+
     _numRequestedParallelProcesses = pt.get<unsigned int>(type == INI ? "execute-options.processors" : "parameters.execute-options.processors", 0);
     _randomizationSeed = pt.get<unsigned int>(type == INI ? "execute-options.seed" : "parameters.execute-options.seed", static_cast<unsigned int>(RandomNumberGenerator::glDefaultSeed));
     _randomlyGenerateSeed = pt.get<bool>(type == INI ? "execute-options.generate-seed" : "parameters.execute-options.generate-seed", false);
@@ -251,25 +278,33 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     ptree pt;
     std::string buffer;
 
-    pt.put(type != XML ? "input.tree-file" : "parameters.input.tree-file", _treeFileName);
-    pt.put(type != XML ? "input.cuts-file" : "parameters.input.cuts-file", _cutsFileName);
-    pt.put(type != XML ? "input.count-file" : "parameters.input.count-file", _countFileName);
-    pt.put(type != XML ? "input.data-time-range" : "parameters.input.data-time-range", _dataTimeRangeSet.toString(buffer));
-    //pt.put(type != XML ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", _duplicates);
-    pt.put(type != XML ? "analysis.model" : "parameters.analysis.model", static_cast<unsigned int>(_modelType));
-    pt.put(type != XML ? "analysis.cut-type" : "parameters.analysis.cut-type", static_cast<unsigned int>(_cut_type));
-    pt.put(type != XML ? "analysis.probability-numerator" : "parameters.analysis.probability-numerator", _probablility_ratio.first);
-    pt.put(type != XML ? "analysis.probability-denominator" : "parameters.analysis.probability-denominator", _probablility_ratio.second);
-    pt.put(type != XML ? "analysis.replications" : "parameters.analysis.replications", _replications);
-    pt.put(type != XML ? "analysis.conditional" : "parameters.analysis.conditional", _conditional);
-    pt.put(type != XML ? "output.results-file" : "parameters.output.results-file", _outputFileName);
-    //pt.put(type != XML ? "output.html" : "parameters.output.results-file.<xmlattr>.html", _resultsFormat == HTML);
-    pt.put(type != XML ? "output.generate-html-results" : "parameters.output.generate-html-results", _generateHtmlResults);
-    pt.put(type != XML ? "output.generate-table-results" : "parameters.output.generate-table-results", _generateTableResults);
-    pt.put(type != XML ? "output.print-headers" : "parameters.output.print-headers", _printColumnHeaders);
-    pt.put(type != XML ? "execute-options.processors" : "parameters.execute-options.processors", _numRequestedParallelProcesses);
-    pt.put(type != XML ? "execute-options.seed" : "parameters.execute-options.seed", _randomizationSeed);
-    pt.put(type != XML ? "execute-options.generate-seed" : "parameters.execute-options.generate-seed", _randomlyGenerateSeed);
+    pt.put(type == INI ? "input.tree-file" : "parameters.input.tree-file", _treeFileName);
+    pt.put(type == INI ? "input.case-file" : "parameters.input.case-file", _countFileName);
+    pt.put(type == INI ? "input.population-file" : "parameters.input.population-file", _populationFileName);
+    pt.put(type == INI ? "input.data-time-range" : "parameters.input.data-time-range", _dataTimeRangeSet.toString(buffer));
+    pt.put(type == INI ? "input-advanced.cuts-file" : "parameters.input.advanced.cuts-file", _cutsFileName);
+    //pt.put(type == INI ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", _duplicates);
+
+    pt.put(type == INI ? "analysis.scan" : "parameters.analysis.scan", static_cast<unsigned int>(_scan_type));
+    pt.put(type == INI ? "analysis.conditional" : "parameters.analysis.conditional", static_cast<unsigned int>(_conditional_type));
+    pt.put(type == INI ? "analysis.probability-model" : "parameters.analysis.probability-model", static_cast<unsigned int>(_modelType));
+    pt.put(type == INI ? "analysis.event-probability-numerator" : "parameters.analysis.event-probability.numerator", _probablility_ratio.first);
+    pt.put(type == INI ? "analysis.event-probability-denominator" : "parameters.analysis.event-probability.denominator", _probablility_ratio.second);
+    pt.put(type == INI ? "analysis.start-time-range" : "parameters.analysis.temporal-window.start-range", _temporalStartRange.toString(buffer));
+    pt.put(type == INI ? "analysis.end-time-range" : "parameters.analysis.temporal-window.end-range", _temporalEndRange.toString(buffer));
+    pt.put(type == INI ? "analysis-advanced.replications" : "parameters.analysis.advanced.replications", _replications);
+    pt.put(type == INI ? "analysis-advanced.cut-type" : "parameters.analysis.advanced.cut-type", static_cast<unsigned int>(_cut_type));
+
+    pt.put(type == INI ? "output.results-file" : "parameters.output.results-file", _outputFileName);
+    //pt.put(type == INI ? "output.html" : "parameters.output.results-file.<xmlattr>.html", _resultsFormat == HTML);
+    pt.put(type == INI ? "output.generate-html-results" : "parameters.output.generate-html-results", _generateHtmlResults);
+    pt.put(type == INI ? "output.generate-table-results" : "parameters.output.generate-table-results", _generateTableResults);
+    pt.put(type == INI ? "output.print-headers" : "parameters.output.print-headers", _printColumnHeaders);
+
+    pt.put(type == INI ? "execute-options.processors" : "parameters.execute-options.processors", _numRequestedParallelProcesses);
+    pt.put(type == INI ? "execute-options.seed" : "parameters.execute-options.seed", _randomizationSeed);
+    pt.put(type == INI ? "execute-options.generate-seed" : "parameters.execute-options.generate-seed", _randomlyGenerateSeed);
+
     switch (type) {
         case INI: write_ini(filename, pt); break;
         case JSON: write_json(filename, pt); break;

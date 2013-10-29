@@ -2,19 +2,29 @@
 <parameters>
     <input>
         <tree-file>tree.tre</tree-file>
-        <cuts-file>tree.cut</cuts-file>
-        <count-file>temporal.cts</count-file>
-        <data-time-range>[-16,100]</data-time-range>
+        <case-file>temporal.cas</case-file>
+        <population-file>temporal.pop</population-file>
+        <data-time-range>-16,100</data-time-range>
+        <advanced>
+            <cuts-file>tree.cut</cuts-file>
+        </advanced>
     </input>
     <analysis>
-        <model>2</model>
-        <cut-type>0</cut-type>
-        <probability-numerator>1</probability-numerator>
-        <probability-denominator>2</probability-denominator>
-        <replications>99999</replications>
-        <conditional>false</conditional>
-	<start-time-range>0,5</start-time-range>
-	<end-time-range>25,35</end-time-range>
+        <scan>1</scan>
+        <conditional>1</conditional>
+        <probability-model>2</probability-model>
+        <event-probability>
+            <numerator>1</numerator>
+            <denominator>10</denominator>
+        </event-probability>
+        <temporal-window>
+	          <start-range>0,5</start-range>
+	          <end-range>25,35</end-range>
+        </temporal-window>
+        <advanced>
+            <replications>99999</replications>
+            <cut-type>0</cut-type>
+        </advanced>
     </analysis>
     <output>
         <results-file>temporal.txt</results-file>

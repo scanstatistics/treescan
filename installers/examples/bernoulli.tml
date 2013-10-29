@@ -2,8 +2,8 @@
 <parameters>
     <input>
         <tree-file>tree.tre</tree-file>
-        <case-file>poisson.cas</case-file>
-        <population-file>poisson.pop</population-file>
+        <case-file>bernoulli.cas</case-file>
+        <population-file>bernoulli.pop</population-file>
         <data-time-range>0,0</data-time-range>
         <advanced>
             <cuts-file>tree.cut</cuts-file>
@@ -12,7 +12,7 @@
     <analysis>
         <scan>0</scan>
         <conditional>0</conditional>
-        <probability-model>0</probability-model>
+        <probability-model>1</probability-model>
         <event-probability>
             <numerator>1</numerator>
             <denominator>2</denominator>
@@ -27,7 +27,7 @@
         </advanced>
     </analysis>
     <output>
-        <results-file>poisson.txt</results-file>
+        <results-file>bernoulli.txt</results-file>
         <generate-html-results>false</generate-html-results>
         <generate-table-results>false</generate-table-results>
         <print-headers>true</print-headers>

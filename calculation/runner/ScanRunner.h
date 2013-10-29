@@ -169,6 +169,7 @@ private:
     Index_t                     getNodeIndex(const std::string& identifier) const;
     bool                        readCounts(const std::string& filename);
     bool                        readCuts(const std::string& filename);
+    bool                        readPopulation(const std::string& filename);
     bool                        readTree(const std::string& filename);
     bool                        reportResults(time_t start, time_t end) const;
     bool                        runsimulations();

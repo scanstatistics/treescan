@@ -19,6 +19,10 @@ void ParametersPrint::Print(std::ofstream& out) const {
         WriteSettingsContainer(getAnalysisParameters(settings), "Analysis", out);
         //print 'Output' tab settings
         WriteSettingsContainer(getOutputParameters(settings), "Output", out);
+        //print 'Advanced Input' tab settings
+        WriteSettingsContainer(getAdvancedInputParameters(settings), "Advanced Input", out);
+        //print 'Advanced Analysis' tab settings
+        WriteSettingsContainer(getAdvancedAnalysisParameters(settings), "Advanced Analysis", out);
         //print 'RunOptions' settings
         WriteSettingsContainer(getRunOptionsParameters(settings), "Run Options", out);
         //print 'System' parameters
@@ -47,44 +51,79 @@ void ParametersPrint::PrintHTML(std::ofstream& out) const {
     out << std::endl << "</div>" << std::endl;
 }
 
-/** Prints 'Analysis' tab parameters to file stream. */
-ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(SettingContainer_t & settings) const {
-    std::string        buffer;
-    settings.clear();
-    switch (_parameters.getModelType()) {
-        case Parameters::POISSON : settings.push_back(std::make_pair("Model","Poisson")); break;
-        case Parameters::BERNOULLI : settings.push_back(std::make_pair("Model","Bernoulli")); break;
-        case Parameters::TEMPORALSCAN : settings.push_back(std::make_pair("Model","Temporal Scan")); break;
-        default: break;
-    }
-    if (_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI) {
-        buffer = (_parameters.isConditional() ? "Conditional" : "Unconditional");
-        settings.push_back(std::make_pair("Scan Statistic",buffer));
-    }
-    if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
-        settings.push_back(std::make_pair("Temporal Scanning Window Start: %s", _parameters.getStartDataTimeRange().toString(buffer)));
-        settings.push_back(std::make_pair("Temporal Scanning Window End: %s", _parameters.getEndDataTimeRange().toString(buffer)));
-    }
-    if (_parameters.getModelType() == Parameters::BERNOULLI) {
-        printString(buffer, "%u/%u", _parameters.getProbabilityRatio().first, _parameters.getProbabilityRatio().second);
-        settings.push_back(std::make_pair("Event Probability",buffer));
-    }
-    printString(buffer, "%u", _parameters.getNumReplicationsRequested());  
-    settings.push_back(std::make_pair("Number of Replications",buffer));
-    //buffer = (_parameters.isDuplicates() ? "Yes" : "No");
-    //settings.push_back(std::make_pair("Duplicates",buffer));
-    return settings;
-}
-
 /** Prints 'Input' tab parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(SettingContainer_t & settings) const {
     std::string buffer;
     settings.clear();
     settings.push_back(std::make_pair("Tree File",_parameters.getTreeFileName()));
     settings.push_back(std::make_pair("Count File",_parameters.getCountFileName()));
-    settings.push_back(std::make_pair("Cut File",_parameters.getCutsFileName()));
+    if (_parameters.getModelType() != Parameters::TEMPORALSCAN)
+        settings.push_back(std::make_pair("Population File",_parameters.getPopulationFileName()));
     if (_parameters.getModelType() == Parameters::TEMPORALSCAN)
         settings.push_back(std::make_pair("Data Time Range",_parameters.getDataTimeRangeSet().toString(buffer)));
+    //buffer = (_parameters.isDuplicates() ? "Yes" : "No");
+    //settings.push_back(std::make_pair("Duplicates",buffer));
+    return settings;
+}
+
+/** Prints 'Advanced Input' tab parameters to file stream. */
+ParametersPrint::SettingContainer_t & ParametersPrint::getAdvancedInputParameters(SettingContainer_t & settings) const {
+    settings.clear();
+    settings.push_back(std::make_pair("Cut File",_parameters.getCutsFileName()));
+    return settings;
+}
+
+/** Prints 'Analysis' tab parameters to file stream. */
+ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(SettingContainer_t & settings) const {
+    std::string buffer;
+    settings.clear();
+
+    buffer = "Scan";
+    switch (_parameters.getScanType()) {
+        case Parameters::TREEONLY : settings.push_back(std::make_pair(buffer,"Tree Only")); break;
+        case Parameters::TREETIME : settings.push_back(std::make_pair(buffer,"Tree And Time")); break;
+        default: throw prg_error("Unknown scan type (%d).", "getAnalysisParameters()", _parameters.getScanType());
+    }
+    buffer = "Conditional";
+    switch (_parameters.getConditionalType()) {
+        case Parameters::UNCONDITIONAL : settings.push_back(std::make_pair(buffer,"No (unconditional)")); break;
+        case Parameters::TOTALCASES : settings.push_back(std::make_pair(buffer,"Total Cases")); break;
+        case Parameters::CASESEACHBRANCH : settings.push_back(std::make_pair(buffer,"Cases on Each Branch")); break;
+        default: throw prg_error("Unknown conditional type (%d).", "getAnalysisParameters()", _parameters.getConditionalType());
+    }
+
+    switch (_parameters.getModelType()) {
+        case Parameters::POISSON : settings.push_back(std::make_pair("Probability Model - Tree","Poisson")); break;
+        case Parameters::BERNOULLI : settings.push_back(std::make_pair("Probability Model - Tree","Bernoulli")); break;
+        case Parameters::TEMPORALSCAN : settings.push_back(std::make_pair("Probability Model - Time","Temporal Scan")); break;
+        default: throw prg_error("Unknown model type (%d).", "getAnalysisParameters()", _parameters.getModelType());
+    }
+    if (_parameters.getModelType() == Parameters::BERNOULLI) {
+        printString(buffer, "%u/%u", _parameters.getProbabilityRatio().first, _parameters.getProbabilityRatio().second);
+        settings.push_back(std::make_pair("Event Probability",buffer));
+    }
+    if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
+        settings.push_back(std::make_pair("Temporal Scanning Window Start: %s", _parameters.getTemporalStartRange().toString(buffer)));
+        settings.push_back(std::make_pair("Temporal Scanning Window End: %s", _parameters.getTemporalEndRange().toString(buffer)));
+    }
+    return settings;
+}
+
+/** Prints 'Advanced Analysis' tab parameters to file stream. */
+ParametersPrint::SettingContainer_t & ParametersPrint::getAdvancedAnalysisParameters(SettingContainer_t & settings) const {
+    std::string buffer;
+    settings.clear();
+    printString(buffer, "%u", _parameters.getNumReplicationsRequested());  
+    settings.push_back(std::make_pair("Number of Replications",buffer));
+    buffer = "Cut Type";
+    switch (_parameters.getCutType()) {
+        case Parameters::PAIRS : settings.push_back(std::make_pair(buffer,"Pairs")); break;
+        case Parameters::TRIPLETS : settings.push_back(std::make_pair(buffer,"Triplets")); break;
+        case Parameters::ORDINAL : settings.push_back(std::make_pair(buffer,"Ordinal")); break;
+        case Parameters::COMBINATORIAL : settings.push_back(std::make_pair(buffer,"Combinatorial")); break;
+        case Parameters::SIMPLE : //settings.push_back(std::make_pair(buffer,"Simple")); break;
+        default: break;
+    }
     return settings;
 }
 
@@ -94,6 +133,9 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getOutputParameters(Setti
     settings.push_back(std::make_pair("Results File",_parameters.getOutputFileName()));
     settings.push_back(std::make_pair("Report Results as HTML",(_parameters.isGeneratingHtmlResults() ? "Yes" : "No")));
     settings.push_back(std::make_pair("Report Results as CSV Table",(_parameters.isGeneratingTableResults() ? "Yes" : "No")));
+    if (_parameters.isGeneratingTableResults() && _parameters.isPrintColumnHeaders()) {
+        settings.push_back(std::make_pair("Print Column Headers","Yes"));
+    }
     return settings;
 }
 

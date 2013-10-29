@@ -10,8 +10,8 @@
 /** returns new randomizer given parameter settings. */
 AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const Parameters& parameters, int TotalC, int TotalControls, double TotalN) {
     switch (parameters.getModelType()) {
-        case Parameters::POISSON: return new PoissonRandomizer(parameters.isConditional(), TotalC, TotalN);
-        case Parameters::BERNOULLI: return new BernoulliRandomizer(parameters.getProbability(), parameters.isConditional(), TotalC, TotalControls, TotalN);
+        case Parameters::POISSON: return new PoissonRandomizer(parameters.getConditionalType() == Parameters::CONDITIONAL, TotalC, TotalN);
+        case Parameters::BERNOULLI: return new BernoulliRandomizer(parameters.getProbability(), parameters.getConditionalType() == Parameters::CONDITIONAL, TotalC, TotalControls, TotalN);
         case Parameters::TEMPORALSCAN : return new TemporalRandomizer(TotalC, TotalN, parameters.getDataTimeRangeSet());
         default: throw prg_error("Unknown model type (%d).", "getNewRandomizer()", parameters.getModelType());
     }

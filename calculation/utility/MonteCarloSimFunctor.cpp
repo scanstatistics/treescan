@@ -147,10 +147,10 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
     //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
     DataTimeRange::index_t idxAdditive = _scanRunner.getZeroTranslationAdditive();
     // Define the start and end windows with the zero index offset already incorporated.
-    DataTimeRange startWindow(_scanRunner.getParameters().getStartDataTimeRange().getStart() + idxAdditive,
-                              _scanRunner.getParameters().getStartDataTimeRange().getEnd() + idxAdditive),
-                  endWindow(_scanRunner.getParameters().getEndDataTimeRange().getStart() + idxAdditive,
-                              _scanRunner.getParameters().getEndDataTimeRange().getEnd() + idxAdditive);
+    DataTimeRange startWindow(_scanRunner.getParameters().getTemporalStartRange().getStart() + idxAdditive,
+                              _scanRunner.getParameters().getTemporalStartRange().getEnd() + idxAdditive),
+                  endWindow(_scanRunner.getParameters().getTemporalEndRange().getStart() + idxAdditive,
+                              _scanRunner.getParameters().getTemporalEndRange().getEnd() + idxAdditive);
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
     double simLogLikelihood = -std::numeric_limits<double>::max();
     for (size_t i=0; i < nodes.size(); ++i) {

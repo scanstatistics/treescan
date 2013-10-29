@@ -9,10 +9,10 @@ double AbstractLoglikelihood::UNSET_LOGLIKELIHOOD = -std::numeric_limits<double>
 AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Parameters& parameters, int TotalC, double TotalN) {
     switch (parameters.getModelType()) {
         case Parameters::POISSON: 
-            if (parameters.isConditional()) return new PoissonLoglikelihood(TotalC, TotalN);
+            if (parameters.getConditionalType() == Parameters::CONDITIONAL) return new PoissonLoglikelihood(TotalC, TotalN);
             else return new UnconditionalPoissonLoglikelihood();
         case Parameters::BERNOULLI: 
-            if (parameters.isConditional()) return new BernoulliLoglikelihood(TotalC, TotalN);
+            if (parameters.getConditionalType() == Parameters::CONDITIONAL) return new BernoulliLoglikelihood(TotalC, TotalN);
             else return new UnconditionalBernoulliLogLoglikelihood(parameters.getProbability());
         case Parameters::TEMPORALSCAN: { 
             return new TemporalLoglikelihood(TotalC, TotalN, parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());

@@ -94,6 +94,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getCountFileName().c_str()));
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setPopulationFileName", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getPopulationFileName().c_str()));
+  jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "setCutsFileName", "(Ljava/lang/String;)V");
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getCutsFileName().c_str()));
   jni_error::_detectError(Env);
@@ -120,10 +124,6 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
 
   mid = _getMethodId_Checked(Env, clazz, "setRandomizationSeed", "(I)V");
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getRandomizationSeed());
-  jni_error::_detectError(Env);
-
-  mid = _getMethodId_Checked(Env, clazz, "setConditional", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isConditional());
   jni_error::_detectError(Env);
 
   //mid = _getMethodId_Checked(Env, clazz, "setDuplicates", "(Z)V");
@@ -167,6 +167,34 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jint)ratio.second);
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setScanType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getScanType());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setConditionalType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getConditionalType());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setDataTimeRangeBegin", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getStart());
+  jni_error::_detectError(Env);
+  mid = _getMethodId_Checked(Env, clazz, "setDataTimeRangeClose", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getEnd());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setTemporalStartRangeBegin", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTemporalStartRange().getStart());
+  jni_error::_detectError(Env);
+  mid = _getMethodId_Checked(Env, clazz, "setTemporalStartRangeClose", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTemporalStartRange().getEnd());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setTemporalEndRangeBegin", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTemporalEndRange().getStart());
+  jni_error::_detectError(Env);
+  mid = _getMethodId_Checked(Env, clazz, "setTemporalEndRangeClose", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTemporalEndRange().getEnd());
+  jni_error::_detectError(Env);
 
   return jParameters;
 }
@@ -193,6 +221,13 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   jni_error::_detectError(Env);
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
   Parameters.setCountFileName(sFilename);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+  mid = _getMethodId_Checked(Env, clazz, "getPopulationFileName", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  Parameters.setPopulationFileName(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   mid = _getMethodId_Checked(Env, clazz, "getCutsFileName", "()Ljava/lang/String;");
@@ -226,15 +261,11 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   mid = _getMethodId_Checked(Env, clazz, "isRandomlyGeneratingSeed", "()Z");
-  Parameters.setRandomlyGeneratingSeed(Env.CallBooleanMethod(jParameters, mid));
+  Parameters.setRandomlyGeneratingSeed(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getRandomizationSeed", "()I");
   Parameters.setRandomizationSeed(static_cast<long>(Env.CallIntMethod(jParameters, mid)));
-  jni_error::_detectError(Env);
-
-  mid = _getMethodId_Checked(Env, clazz, "isConditional", "()Z");
-  Parameters.setConditional(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   //mid = _getMethodId_Checked(Env, clazz, "isDuplicates", "()Z");
@@ -242,15 +273,15 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   //jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "isGeneratingHtmlResults", "()Z");
-  Parameters.setGeneratingHtmlResults(Env.CallBooleanMethod(jParameters, mid));
+  Parameters.setGeneratingHtmlResults(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "isGeneratingTableResults", "()Z");
-  Parameters.setGeneratingTableResults(Env.CallBooleanMethod(jParameters, mid));
+  Parameters.setGeneratingTableResults(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "isPrintColumnHeaders", "()Z");
-  Parameters.setPrintColunHeaders(Env.CallBooleanMethod(jParameters, mid));
+  Parameters.setPrintColunHeaders(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   Parameters.setModelType((Parameters::ModelType)getEnumTypeOrdinalIndex(Env, jParameters, "getModelType", "Lorg/treescan/app/Parameters$ModelType;"));
@@ -263,6 +294,35 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   ratio.second = static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid));
   jni_error::_detectError(Env);
   Parameters.setProbabilityRatio(ratio);
+
+  Parameters.setScanType((Parameters::ScanType)getEnumTypeOrdinalIndex(Env, jParameters, "getScanType", "Lorg/treescan/app/Parameters$ScanType;"));
+  Parameters.setConditionalType((Parameters::ConditionalType)getEnumTypeOrdinalIndex(Env, jParameters, "getConditionalType", "Lorg/treescan/app/Parameters$ConditionalType;"));
+
+  mid = _getMethodId_Checked(Env, clazz, "getDataTimeRangeBegin", "()I");
+  int begin = Env.CallIntMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  mid = _getMethodId_Checked(Env, clazz, "getDataTimeRangeClose", "()I");
+  int close = Env.CallIntMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  DataTimeRangeSet range_set;
+  range_set.add(DataTimeRange(begin, close));
+  Parameters.setDataTimeRangeSet(range_set);
+
+  mid = _getMethodId_Checked(Env, clazz, "getTemporalStartRangeBegin", "()I");
+  begin = Env.CallIntMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  mid = _getMethodId_Checked(Env, clazz, "getTemporalStartRangeClose", "()I");
+  close = Env.CallIntMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  Parameters.setTemporalStartRange(DataTimeRange(begin, close));
+
+  mid = _getMethodId_Checked(Env, clazz, "getTemporalEndRangeBegin", "()I");
+  begin = Env.CallIntMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  mid = _getMethodId_Checked(Env, clazz, "getTemporalEndRangeClose", "()I");
+  close = Env.CallIntMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  Parameters.setTemporalEndRange(DataTimeRange(begin, close));
 
   return Parameters;
 }
