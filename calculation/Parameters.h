@@ -16,7 +16,6 @@ class Parameters {
                         OUTPUTFILE, 
                         CUTS, 
                         REPLICATIONS, 
-                        CONDITIONAL, 
                         DUPLICATES, 
                         RANDOMIZATION_SEED, 
                         RANDOMLY_GENERATE_SEED, 

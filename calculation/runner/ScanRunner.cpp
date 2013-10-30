@@ -19,7 +19,7 @@
 
 double CutStructure::getExpected(const ScanRunner& scanner) {
     if (scanner.getParameters().getModelType() == Parameters::BERNOULLI) {
-        if (scanner.getParameters().getConditionalType() == Parameters::CONDITIONAL)
+        if (scanner.getParameters().getConditionalType() == Parameters::TOTALCASES)
             return _N * (scanner.getTotalC() / scanner.getTotalN());
         return _N * scanner.getParameters().getProbability();
     }
@@ -68,7 +68,7 @@ ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) cons
  Reads count and population data from passed file. The file format is: <node identifier>, <count>, <population>
  */
 bool ScanRunner::readCounts(const std::string& filename) {
-    _print.Printf("Reading count file ...\n", BasePrint::P_STDOUT);
+    _print.Printf("Reading case file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
     int expectedColumns = (_parameters.getModelType() == Parameters::TEMPORALSCAN ? 3 : 2) + (_parameters.isDuplicates() ? 1 : 0);
@@ -77,31 +77,34 @@ bool ScanRunner::readCounts(const std::string& filename) {
     while (dataSource->readRecord()) {
         if (dataSource->getNumValues() != expectedColumns) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in count file %s. Expecting <indentifier>, <count>,%s <population> but found %ld value%s.\n", 
-                          BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), (static_cast<int>(dataSource->getNumValues()) > expectedColumns) ? "has extra data" : "is missing data",
-                          (_parameters.isDuplicates() ? " <duplicates>," : ""), dataSource->getNumValues(), (dataSource->getNumValues() == 1 ? "" : "s"));
+            _print.Printf("Error: Record %ld in case file %s. Expecting <indentifier>, <count>,%s %s but found %ld value%s.\n", 
+                          BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), 
+                          (static_cast<int>(dataSource->getNumValues()) > expectedColumns) ? "has extra data" : "is missing data",
+                          (_parameters.isDuplicates() ? " <duplicates>," : ""), 
+                          (_parameters.getModelType() == Parameters::TEMPORALSCAN ? "<time>" : ""),
+                          dataSource->getNumValues(), (dataSource->getNumValues() == 1 ? "" : "s"));
             continue;
         }
         ScanRunner::Index_t index = getNodeIndex(dataSource->getValueAt(0));
         if (!index.first) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in count file references unknown node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(0).c_str());
+            _print.Printf("Error: Record %ld in case file references unknown node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(0).c_str());
             continue;
         }
         NodeStructure * node = _Nodes.at(index.second);
         if  (!string_to_type<int>(dataSource->getValueAt(1).c_str(), count) || count < 0) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in count file references negative number of cases in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+            _print.Printf("Error: Record %ld in case file references negative number of cases in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
             continue;
         }
         if (_parameters.isDuplicates()) {
             if  (!string_to_type<int>(dataSource->getValueAt(2).c_str(), duplicates) || duplicates < 0) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references negative number of duplicates in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                _print.Printf("Error: Record %ld in case file references negative number of duplicates in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
             } else if (duplicates > count) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references more duplicates than count in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                _print.Printf("Error: Record %ld in case file references more duplicates than case in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
             }
             node->refDuplicates() += duplicates;
@@ -114,14 +117,14 @@ bool ScanRunner::readCounts(const std::string& filename) {
         } else if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
             if  (!string_to_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), daysSinceIncidence)) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references an invalid 'day since incidence' value in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                _print.Printf("Error: Record %ld in case file references an invalid 'day since incidence' value in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
             }
             // check that the 'daysSinceIncidence' is within a defined data time range
             DataTimeRangeSet::rangeset_index_t rangeIdx = _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
             if (rangeIdx.first == false) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references an invalid 'day since incidence' value in node '%s'.\n"
+                _print.Printf("Error: Record %ld in case file references an invalid 'day since incidence' value in node '%s'.\n"
                               "The specified value is not within any of the data time ranges you have defined.",
                               BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
@@ -606,7 +609,7 @@ bool ScanRunner::setupTree() {
     }
 
     // Calculates the expected counts for each node and the total.
-    if (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::CONDITIONAL) {
+    if (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::TOTALCASES) {
         adjustN = _TotalC/_TotalN;
         for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr)
             std::transform((*itr)->getIntN_C().begin(), (*itr)->getIntN_C().end(), (*itr)->refIntN_C().begin(), std::bind1st(std::multiplies<double>(), adjustN)); // (*itr)->refIntN() *= adjustN;

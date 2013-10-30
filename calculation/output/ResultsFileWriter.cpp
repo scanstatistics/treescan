@@ -53,7 +53,12 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     PrintFormat.PrintSectionSeparatorString(outfile);
     outfile << std::endl << "SUMMARY OF DATA" << std::endl << std::endl;
     PrintFormat.PrintSectionLabel(outfile, "Scan Statistic:", false);
-    buffer = (parameters.getConditionalType() == Parameters::CONDITIONAL ? "Conditional" : "Unconditional");
+    switch (parameters.getConditionalType()) {
+        case Parameters::UNCONDITIONAL : buffer = "Unconditional"; break;
+        case Parameters::TOTALCASES : buffer = "Total Cases"; break;
+        case Parameters::CASESEACHBRANCH : buffer = "Cases on Each Branch"; break;
+        default: throw prg_error("Unknown conditional type (%d).", "writeASCII()", parameters.getConditionalType());
+    }
     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
     PrintFormat.PrintSectionLabel(outfile, "Total Cases:", false);
     PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getTotalC()));
@@ -67,7 +72,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     //if (_parameters.isDuplicates()) outfile << "O/EWithoutDuplicates ";
     //outfile << "LLR pvalue" << std::endl;
 
-    if (_scanRunner.getCuts().at(0)->getC() == 0) {
+    if (_scanRunner.getCuts().at(0)->getC() == 0 || _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested()) {
         outfile << "No clusters were found." << std::endl;
         outfile.close();
         return true;
@@ -192,7 +197,15 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     printString(buffer, "TreeScan v%s.%s%s%s%s%s", VERSION_MAJOR, VERSION_MINOR, (!strcmp(VERSION_RELEASE, "0") ? "" : "."), (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE), (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE);
     outfile << "</head>" << std::endl << "<body><div id=\"banner\"><div id=\"title\">" << buffer << "</div></div>" << std::endl;
     outfile << "<div class=\"program-info\"><table style=\"text-align: left;\"><tbody>" << std::endl;
-    outfile << "<tr><th>Scan Statistic:</th><td>" << (parameters.getConditionalType() == Parameters::CONDITIONAL ? "Conditional" : "Unconditional") << "</td></tr>" << std::endl;
+
+    outfile << "<tr><th>Scan Statistic:</th><td>";
+    switch (parameters.getConditionalType()) {
+        case Parameters::UNCONDITIONAL : outfile << "Unconditional"; break;
+        case Parameters::TOTALCASES : outfile << "Total Cases"; break;
+        case Parameters::CASESEACHBRANCH : outfile << "Cases on Each Branch"; break;
+        default: throw prg_error("Unknown conditional type (%d).", "writeHTML()", parameters.getConditionalType());
+    }
+    outfile << "</td></tr>" << std::endl;
     outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
     outfile << "<tr><th>Total Measure:</th><td>" << _scanRunner.getTotalN() << "</td></tr>" << std::endl;
     outfile << "</tbody></table></div>" << std::endl;

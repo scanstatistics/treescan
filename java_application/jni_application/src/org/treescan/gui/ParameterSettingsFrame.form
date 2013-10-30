@@ -45,7 +45,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jTabbedPane1" pref="434" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -139,7 +139,7 @@
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="135" max="32767" attributes="0"/>
+                      <EmptySpace pref="139" max="32767" attributes="0"/>
                       <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -188,7 +188,7 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/folder_open_small.png"/>
                 </Property>
-                <Property name="toolTipText" type="java.lang.String" value="Browse for count file ..." noResource="true"/>
+                <Property name="toolTipText" type="java.lang.String" value="Browse for case file ..." noResource="true"/>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_countFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select Case File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;));&#xa;        int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _countFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
@@ -199,10 +199,10 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/document_add_small.png"/>
                 </Property>
-                <Property name="toolTipText" type="java.lang.String" value="Import count file ..." noResource="true"/>
+                <Property name="toolTipText" type="java.lang.String" value="Import case file ..." noResource="true"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_countFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Counts File Import Source&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Counts);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_countFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Case File Import Source&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Case);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
               </AuxValues>
             </Component>
             <Container class="javax.swing.JPanel" name="jPanel2">
@@ -366,7 +366,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_temporalWindowGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="35" max="32767" attributes="0"/>
+                      <EmptySpace pref="39" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -505,7 +505,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_unconditionalButton" min="-2" pref="155" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="_conditionalButton" max="32767" attributes="0"/>
+                          <Component id="_conditionalTotalCasesButton" max="32767" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_conditionalBranchCasesButton" min="-2" pref="161" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -517,7 +517,7 @@
                       <Group type="102" alignment="1" attributes="0">
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="_unconditionalButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_conditionalButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_conditionalTotalCasesButton" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_conditionalBranchCasesButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="32767" attributes="0"/>
@@ -526,7 +526,7 @@
                 </DimensionLayout>
               </Layout>
               <SubComponents>
-                <Component class="javax.swing.JRadioButton" name="_conditionalButton">
+                <Component class="javax.swing.JRadioButton" name="_conditionalTotalCasesButton">
                   <Properties>
                     <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                       <ComponentRef name="conditionalButtonGroup"/>
@@ -534,7 +534,7 @@
                     <Property name="text" type="java.lang.String" value="Total Cases"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_conditionalButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableSettingsForStatisticModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_conditionalTotalCasesButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableSettingsForStatisticModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_unconditionalButton">
@@ -846,7 +846,7 @@
                       <Component id="_reportResultsAsHTML" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportResultsAsCsvTable" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="282" max="32767" attributes="0"/>
+                      <EmptySpace pref="286" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

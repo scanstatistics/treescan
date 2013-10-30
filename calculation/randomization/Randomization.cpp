@@ -10,9 +10,30 @@
 /** returns new randomizer given parameter settings. */
 AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const Parameters& parameters, int TotalC, int TotalControls, double TotalN) {
     switch (parameters.getModelType()) {
-        case Parameters::POISSON: return new PoissonRandomizer(parameters.getConditionalType() == Parameters::CONDITIONAL, TotalC, TotalN);
-        case Parameters::BERNOULLI: return new BernoulliRandomizer(parameters.getProbability(), parameters.getConditionalType() == Parameters::CONDITIONAL, TotalC, TotalControls, TotalN);
-        case Parameters::TEMPORALSCAN : return new TemporalRandomizer(TotalC, TotalN, parameters.getDataTimeRangeSet());
+        case Parameters::POISSON: {
+            switch (parameters.getConditionalType()) {
+                case Parameters::UNCONDITIONAL : return new PoissonRandomizer(false, TotalC, TotalN);
+                case Parameters::TOTALCASES : return new PoissonRandomizer(true, TotalC, TotalN);
+                case Parameters::CASESEACHBRANCH :
+                default: throw prg_error("Unknown conditional type (%d).", "getNewRandomizer()", parameters.getConditionalType());
+            }
+        } break;
+        case Parameters::BERNOULLI: {
+            switch (parameters.getConditionalType()) {
+                case Parameters::UNCONDITIONAL : return new BernoulliRandomizer(parameters.getProbability(), false, TotalC, TotalControls, TotalN);
+                case Parameters::TOTALCASES : return new BernoulliRandomizer(parameters.getProbability(), true, TotalC, TotalControls, TotalN);
+                case Parameters::CASESEACHBRANCH :
+                default: throw prg_error("Unknown conditional type (%d).", "getNewRandomizer()", parameters.getConditionalType());
+            }
+        } break;
+        case Parameters::TEMPORALSCAN : {
+            switch (parameters.getConditionalType()) {
+                case Parameters::CASESEACHBRANCH : return new TemporalRandomizer(TotalC, TotalN, parameters.getDataTimeRangeSet());
+                case Parameters::UNCONDITIONAL :
+                case Parameters::TOTALCASES :
+                default: throw prg_error("Unknown conditional type (%d).", "getNewRandomizer()", parameters.getConditionalType());
+            }
+        } break;
         default: throw prg_error("Unknown model type (%d).", "getNewRandomizer()", parameters.getModelType());
     }
 }

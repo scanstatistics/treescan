@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<parameters>
+    <input>
+        <tree-file>dxtree.tre</tree-file>
+        <case-file>input_tree_MMR_330_v2.csv</case-file>
+        <population-file/>
+        <data-time-range>[0,56]</data-time-range>
+        <advanced>
+            <cuts-file/>
+        </advanced>
+    </input>
+    <analysis>
+        <scan>1</scan>
+        <conditional>2</conditional>
+        <probability-model>2</probability-model>
+        <event-probability>
+            <numerator>1</numerator>
+            <denominator>2</denominator>
+        </event-probability>
+        <temporal-window>
+            <start-range>[0,56]</start-range>
+            <end-range>[0,56]</end-range>
+        </temporal-window>
+        <advanced>
+            <replications>999</replications>
+            <cut-type>0</cut-type>
+        </advanced>
+    </analysis>
+    <output>
+        <results-file>MMR_330_v2.txt</results-file>
+        <generate-html-results>false</generate-html-results>
+        <generate-table-results>false</generate-table-results>
+        <print-headers>false</print-headers>
+    </output>
+    <execute-options>
+        <processors>0</processors>
+        <seed>12345678</seed>
+        <generate-seed>false</generate-seed>
+    </execute-options>
+</parameters>

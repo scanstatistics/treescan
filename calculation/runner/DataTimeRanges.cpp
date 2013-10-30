@@ -9,8 +9,12 @@
 #include <deque>
 
 DataTimeRange DataTimeRange::parse(const std::string& from) {
+    std::string val = from;
+    trimString(val, "[");
+    trimString(val, "]");
+
     boost::escaped_list_separator<char> separate_indices('\\', ',');
-    boost::tokenizer<boost::escaped_list_separator<char> > rangeCSV(from, separate_indices);
+    boost::tokenizer<boost::escaped_list_separator<char> > rangeCSV(val, separate_indices);
     std::deque<index_t> values;
     for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itrR=rangeCSV.begin(); itrR != rangeCSV.end(); ++itrR) {
          values.push_back(0);
@@ -42,8 +46,6 @@ DataTimeRangeSet::rangeset_t DataTimeRangeSet::parse(const std::string& from) {
     boost::tokenizer<boost::escaped_list_separator<char> > range_csv(from, separate_ranges);
     for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itrCSV=range_csv.begin(); itrCSV != range_csv.end(); ++itrCSV) {
         std::string val = *itrCSV;
-        trimString(val, "[");
-        trimString(val, "]");
         rangeset.push_back(DataTimeRange::parse(val));
     }
     return rangeset;
@@ -55,7 +57,7 @@ std::string & DataTimeRangeSet::toString(std::string& s) const {
     std::string buffer;
     std::stringstream worker;
     for (rangeset_t::const_iterator itr=_rangesets.begin(); itr != _rangesets.end(); ++itr) {
-        worker << itr->toString(buffer) << ((itr + 1) != _rangesets.end()) ? ";" : "";
+        worker << itr->toString(buffer).c_str() << ((itr + 1) != _rangesets.end() ? ";" : "");
     }
     s = worker.str();
     return s;

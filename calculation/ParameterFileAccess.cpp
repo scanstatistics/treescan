@@ -22,7 +22,7 @@ bool ParameterAccessCoordinator::read(const std::string& filename) {
             } catch (boost::property_tree::xml_parser::xml_parser_error&) {file_format = Parameters::ParametersFormat(file_format + 1);}
         }
         success=true;
-    } catch (prg_exception&) {
+    } catch (prg_exception& x) {
         throw resolvable_error("Unable to read parameters from file '%s'.\n", filename.c_str());
     }
     return success;

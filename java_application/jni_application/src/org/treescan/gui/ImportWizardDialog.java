@@ -93,7 +93,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
     private void createDestinationInformation() throws IOException {
         File outputDirectory = new File(_outputDirectoryTextField.getText());
         switch (_fileType) {
-            case Counts:
+            case Case:
                 _destinationFile = File.createTempFile(_importFilePrefix, ".cts", outputDirectory);
                 break;
             case Tree:
@@ -378,7 +378,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
      */
     private String getInputFileTypeString() {
         switch (_fileType) {
-            case Counts:
+            case Case:
                 return "Counts File";
             case Tree:
                 return "Tree File";
@@ -525,7 +525,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
      */
     private void configureForDestinationFileType() {
         switch (_fileType) {
-            case Counts:
+            case Case:
                 setCountsFileVariables();
                 break;
             case Tree:
@@ -572,7 +572,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _importVariables.clear();
         _importVariables.addElement(new ImportVariable("Node ID", 0, true, null));
         _importVariables.addElement(new ImportVariable("Counts", 1, true, null));
-        //_importVariables.addElement(new ImportVariable("Duplicate Counts", 2, false, null));
+        //_importVariables.addElement(new ImportVariable("Duplicate Case", 2, false, null));
         _importVariables.addElement(new ImportVariable("Population", 2, true, null));
     }
 

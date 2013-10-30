@@ -56,7 +56,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(Settin
     std::string buffer;
     settings.clear();
     settings.push_back(std::make_pair("Tree File",_parameters.getTreeFileName()));
-    settings.push_back(std::make_pair("Count File",_parameters.getCountFileName()));
+    settings.push_back(std::make_pair("Case File",_parameters.getCountFileName()));
     if (_parameters.getModelType() != Parameters::TEMPORALSCAN)
         settings.push_back(std::make_pair("Population File",_parameters.getPopulationFileName()));
     if (_parameters.getModelType() == Parameters::TEMPORALSCAN)
@@ -91,7 +91,6 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
         case Parameters::CASESEACHBRANCH : settings.push_back(std::make_pair(buffer,"Cases on Each Branch")); break;
         default: throw prg_error("Unknown conditional type (%d).", "getAnalysisParameters()", _parameters.getConditionalType());
     }
-
     switch (_parameters.getModelType()) {
         case Parameters::POISSON : settings.push_back(std::make_pair("Probability Model - Tree","Poisson")); break;
         case Parameters::BERNOULLI : settings.push_back(std::make_pair("Probability Model - Tree","Bernoulli")); break;

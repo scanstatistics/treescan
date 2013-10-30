@@ -38,10 +38,10 @@ void usage_message(std::string program, po::options_description& primary, po::op
     message << "Usage: " << std::endl;
 #ifdef _WINDOWS_
     message  << exe.getFileName().c_str() << exe.getExtension().c_str() << " -s <settings file> [options]" << std::endl;
-    message  << exe.getFileName().c_str() << exe.getExtension().c_str() << " -t <tree file> -c <count file> -p <output file> [options]" << std::endl;
+    message  << exe.getFileName().c_str() << exe.getExtension().c_str() << " -t <tree file> -c <case file> -p <population file> -o <output file> [options]" << std::endl;
 #else
     message  << exe.getFileName().c_str() << exe.getExtension().c_str() << " --settings-file <settings file> [options]" << std::endl;
-    message  << exe.getFileName().c_str() << exe.getExtension().c_str() << " --tree-file <tree file> --count-file <counts file> --output-file <output file> [options]" << std::endl;
+    message  << exe.getFileName().c_str() << exe.getExtension().c_str() << " --tree-file <tree file> --case-file <case file> --population-file <population file> --output-file <output file> [options]" << std::endl;
 #endif
     message << std::endl << primary << std::endl << optional << std::endl << help << std::endl;
     console.Printf(message.str().c_str(), BasePrint::P_STDOUT);
@@ -58,9 +58,10 @@ int main(int argc, char* argv[]) {
         po::options_description primary("primary options");
         primary.add_options()("settings-file,s", po::value<std::string>(), "Settings file with saved settings.")
                              ("tree-file,t", po::value<std::string>(), "Input file defining tree structure.")
+                             ("case-file,c", po::value<std::string>(), "Input file identifer case.")
+                             ("population-file,p", po::value<std::string>(), "Input file population.")
                              ("cuts-file,u", po::value<std::string>(), "Input file defining node cuts.")
-                             ("count-file,c", po::value<std::string>(), "Input file identifer counts and population.")
-                             ("output-file,p", po::value<std::string>(), "Output filename to print results.");
+                             ("output-file,o", po::value<std::string>(), "Output filename to print results.");
 
         /* options */
         po::options_description optional("secondary options");
@@ -89,12 +90,13 @@ int main(int argc, char* argv[]) {
 
         if (vm.count("help")) {usage_message(argv[0], primary, optional, help, console); return 0;}
         if (vm.count("version")) {console.Printf("TreeScan %s.%s.%s %s.\n", BasePrint::P_STDOUT, VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE, VERSION_PHASE); return 0;}
-        if (!vm.count("settings-file") && !vm.count("tree-file"))  {console.Printf("Missing tree-file parameter.\n\n", BasePrint::P_STDOUT); usage_message(argv[0], primary, optional, help, console); return 1;}
-        if (!vm.count("settings-file") && !vm.count("count-file"))  {console.Printf("Missing count-file parameter.\n\n", BasePrint::P_STDOUT); usage_message(argv[0], primary, optional, help, console); return 1;}
-        if (!vm.count("settings-file") && !vm.count("output-file"))  {console.Printf("Missing output-file parameter.\n\n", BasePrint::P_STDOUT); usage_message(argv[0], primary, optional, help, console); return 1;}
+        //if (!vm.count("settings-file") && !vm.count("tree-file"))  {console.Printf("Missing tree-file parameter.\n\n", BasePrint::P_STDOUT); usage_message(argv[0], primary, optional, help, console); return 1;}
+        //if (!vm.count("settings-file") && !vm.count("case-file"))  {console.Printf("Missing case-file parameter.\n\n", BasePrint::P_STDOUT); usage_message(argv[0], primary, optional, help, console); return 1;}
+        //if (!vm.count("settings-file") && !vm.count("population-file"))  {console.Printf("Missing population-file parameter.\n\n", BasePrint::P_STDOUT); usage_message(argv[0], primary, optional, help, console); return 1;}
+        //if (!vm.count("settings-file") && !vm.count("output-file"))  {console.Printf("Missing output-file parameter.\n\n", BasePrint::P_STDOUT); usage_message(argv[0], primary, optional, help, console); return 1;}
 
         std::string buffer;
-        console.Printf(AppToolkit::getToolkit().GetAcknowledgment(buffer), BasePrint::P_STDOUT);        
+        console.Printf(AppToolkit::getToolkit().GetAcknowledgment(buffer), BasePrint::P_STDOUT);
     } catch (std::exception& e) {
         std::cerr << e.what() << std::endl;
         __TreeScanExit();
@@ -108,14 +110,15 @@ int main(int argc, char* argv[]) {
     try {
         if (vm.count("settings-file")) ParameterAccessCoordinator(parameters).read(vm["settings-file"].as<std::string>());
         if (vm.count("tree-file")) parameters.setTreeFileName(vm["tree-file"].as<std::string>().c_str());
+        if (vm.count("case-file")) parameters.setCountFileName(vm["case-file"].as<std::string>().c_str());
+        if (vm.count("population-file")) parameters.setPopulationFileName(vm["population-file"].as<std::string>().c_str());
         if (vm.count("cuts-file")) parameters.setCutsFileName(vm["cuts-file"].as<std::string>().c_str());
-        if (vm.count("count-file")) parameters.setCountFileName(vm["count-file"].as<std::string>().c_str());
         if (vm.count("output-file")) parameters.setOutputFileName(vm["output-file"].as<std::string>().c_str());
         if (vm.count("replications")) parameters.setNumReplications(vm["replications"].as<int>());
         if (vm.count("duplicates")) parameters.setDuplicates(vm["duplicates"].as<bool>());
         if (vm.count("limit-threads")) parameters.setNumProcesses(vm["limit-threads"].as<int>());
 
-        if (!ParametersValidate(parameters).Validate(console)) 
+        if (!ParametersValidate(parameters).Validate(console))
             throw resolvable_error("\nThe parameter file contains incorrect settings that prevent TreeScan from continuing. "
                                    "Please review above message(s) and modify parameter settings accordingly.");
 
