@@ -177,9 +177,7 @@ bool ScanRunner::readPopulation(const std::string& filename) {
                 _print.Printf("Error: Record %ld in population file references negative number of cases and controls in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
             }
-            // node->refIntC_C().front() += count; TODO -- we'll need a check for 
             node->refIntN_C().front() += population;
-            _TotalControls += population;
         } else throw prg_error("Unknown model type (%d).", "readPopulation()", _parameters.getModelType());
     }
     return readSuccess;
@@ -606,6 +604,10 @@ bool ScanRunner::setupTree() {
     for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
         _TotalC = std::accumulate((*itr)->refIntC_C().begin(), (*itr)->refIntC_C().end(), _TotalC);
         _TotalN = std::accumulate((*itr)->refIntN_C().begin(), (*itr)->refIntN_C().end(), _TotalN);
+    }
+    // controls are read with population for Bernoulli -- so calculate total controls now
+    if (_parameters.getModelType() == Parameters::BERNOULLI) {
+        _TotalControls = std::max(static_cast<int>(_TotalN) - _TotalC, 0);
     }
 
     // Calculates the expected counts for each node and the total.

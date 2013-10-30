@@ -7,12 +7,12 @@
 #include "PrjException.h"
 #include <errno.h>
 
-/** width of label with one dataset for cluster section */
-const unsigned int AsciiPrintFormat::giOneDataSetClusterLabelWidth   = 22;
+/** width of label with one dataset for cut section */
+const unsigned int AsciiPrintFormat::giOneDataSetCutLabelWidth   = 22;
 /** width of label for summary section with one data set */
 const unsigned int AsciiPrintFormat::giOneDataSetSummuaryLabelWidth  = 30;
-/** width of label for cluster section with multiple datasets */
-const unsigned int AsciiPrintFormat::giMultiDataSetClusterLabelWidth = 32;
+/** width of label for cut section with multiple datasets */
+const unsigned int AsciiPrintFormat::giMultiDataSetCutLabelWidth = 32;
 /** width of label for summary section with multiple datasets */
 const unsigned int AsciiPrintFormat::giMultiDataSetSummaryLabelWidth = 38;
 /** width of label for run-time components section */
@@ -184,7 +184,7 @@ void AsciiPrintFormat::PrintVersionHeader(std::ofstream& out) {
 }
 
 /** Adjusts left margin give width of iNumber in text. */
-void AsciiPrintFormat::SetMarginsAsClusterSection(unsigned int iNumber) {
+void AsciiPrintFormat::SetMarginsAsCutSection(unsigned int iNumber) {
   giLeftMargin=2;
   int n = (int)floor(((double)iNumber)/10);
   while (n > 0) {
@@ -192,8 +192,8 @@ void AsciiPrintFormat::SetMarginsAsClusterSection(unsigned int iNumber) {
       n = (int)floor(((double)n)/10);
   }
   //set margin for data print
-  giDataLeftMargin = (gbOneDataSet ? giOneDataSetClusterLabelWidth : giMultiDataSetClusterLabelWidth) + giLeftMargin + strlen(": ");
-  giLabelWidth = (gbOneDataSet ? giOneDataSetClusterLabelWidth : giMultiDataSetClusterLabelWidth);
+  giDataLeftMargin = (gbOneDataSet ? giOneDataSetCutLabelWidth : giMultiDataSetCutLabelWidth) + giLeftMargin + strlen(": ");
+  giLabelWidth = (gbOneDataSet ? giOneDataSetCutLabelWidth : giMultiDataSetCutLabelWidth);
 }
 
 /** Adjusts margins for run overview section. The overview section contains

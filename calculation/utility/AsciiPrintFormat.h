@@ -17,9 +17,9 @@ class AsciiPrintFormat {
      unsigned int               giDataLeftMargin;
      unsigned int               giLabelWidth;
      bool                       gbOneDataSet;
-     static const unsigned int  giOneDataSetClusterLabelWidth;
+     static const unsigned int  giOneDataSetCutLabelWidth;
      static const unsigned int  giOneDataSetSummuaryLabelWidth;
-     static const unsigned int  giMultiDataSetClusterLabelWidth;
+     static const unsigned int  giMultiDataSetCutLabelWidth;
      static const unsigned int  giMultiDataSetSummaryLabelWidth;
      static const unsigned int  giRunTimeComponentsLabelWidth;
      static const unsigned int  giRightMargin;
@@ -34,7 +34,7 @@ class AsciiPrintFormat {
      void                       PrintSectionLabel(std::ofstream& out, const char* sText, bool bPadLeftMargin) const;
      static void                PrintSectionSeparatorString(std::ofstream& out, unsigned int iPreNewlines=0, unsigned int iPostNewlines=1, char cSeparator='_');
      static void                PrintVersionHeader(std::ofstream& out);
-     void                       SetMarginsAsClusterSection(unsigned int iNumber);
+     void                       SetMarginsAsCutSection(unsigned int iNumber);
      void                       SetMarginsAsOverviewSection();
      void                       SetMarginsAsRunTimeReportSection();
      void                       SetMarginsAsSummarySection();

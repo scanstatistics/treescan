@@ -18,7 +18,7 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
         } break;
         case Parameters::BERNOULLI: {
             switch (parameters.getConditionalType()) {
-                case Parameters::UNCONDITIONAL : new UnconditionalBernoulliLogLoglikelihood(parameters.getProbability());
+                case Parameters::UNCONDITIONAL : return new UnconditionalBernoulliLogLoglikelihood(parameters.getProbability());
                 case Parameters::TOTALCASES : return new BernoulliLoglikelihood(TotalC, TotalN);
                 case Parameters::CASESEACHBRANCH :
                 default: throw prg_error("Unknown conditional type (%d).", "getNewLoglikelihood()", parameters.getConditionalType());
@@ -34,4 +34,5 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
         } break;
         default: throw prg_error("Unknown model type (%d).", "getNewLoglikelihood()", parameters.getModelType());
     }
+    return 0;
 }

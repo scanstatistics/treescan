@@ -73,58 +73,47 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     //outfile << "LLR pvalue" << std::endl;
 
     if (_scanRunner.getCuts().at(0)->getC() == 0 || _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested()) {
-        outfile << "No clusters were found." << std::endl;
-        outfile.close();
-        return true;
-    }
+        outfile << "No cuts were found." << std::endl;
+    } else {
+        outfile << "Most Likely Cuts"<< std::endl << std::endl;
+        std::string format, replicas;
+        printString(replicas, "%u", parameters.getNumReplicationsRequested());
+        printString(format, "%%.%dlf", replicas.size());
 
-    outfile << "Most Likely Cuts"<< std::endl << std::endl;
+        unsigned int k=0;
+        outfile.setf(std::ios::fixed);
+        outfile.precision(5);
+        while( k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1) {
+            PrintFormat.SetMarginsAsCutSection( k + 1);
+            outfile << k + 1 << ")";
+            PrintFormat.PrintSectionLabel(outfile, "Node Identifier", false);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier());
 
-    std::string format, replicas;
-    printString(replicas, "%u", parameters.getNumReplicationsRequested());
-    printString(format, "%%.%dlf", replicas.size());
-
-    unsigned int k=0;
-    outfile.setf(std::ios::fixed);
-    outfile.precision(5);
-    while( k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1) {
-        PrintFormat.SetMarginsAsClusterSection( k + 1);
-        outfile << k + 1 << ")";
-        PrintFormat.PrintSectionLabel(outfile, "Node Identifier", false);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier());
-
-        PrintFormat.PrintSectionLabel(outfile, "Number of Cases", true);
-        printString(buffer, "%ld", _scanRunner.getCuts().at(k)->getC());
-        PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-        if (parameters.isDuplicates()) {
-            PrintFormat.PrintSectionLabel(outfile, "Cases (Duplicates Removed)", true);
-            printString(buffer, "%ld", _scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates());
+            PrintFormat.PrintSectionLabel(outfile, "Number of Cases", true);
+            printString(buffer, "%ld", _scanRunner.getCuts().at(k)->getC());
             PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+            if (parameters.isDuplicates()) {
+                PrintFormat.PrintSectionLabel(outfile, "Cases (Duplicates Removed)", true);
+                printString(buffer, "%ld", _scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates());
+                PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+            }
+            PrintFormat.PrintSectionLabel(outfile, "Expected", true);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
+            PrintFormat.PrintSectionLabel(outfile, "Observed/Expected", true);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getC()/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
+            if (parameters.isDuplicates()) {
+                PrintFormat.PrintSectionLabel(outfile, "O/E (Duplicates Removed)", true);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
+            }
+            PrintFormat.PrintSectionLabel(outfile, "Log Likelihood Ratio", true);
+            printString(buffer, "%lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood()));
+            PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+            PrintFormat.PrintSectionLabel(outfile, "P-value", true);
+            printString(buffer, format.c_str(), (double)_scanRunner.getCuts().at(k)->getRank() /(parameters.getNumReplicationsRequested() + 1));
+            PrintFormat.PrintAlignedMarginsDataString(outfile, buffer, 2);
+            k++;
         }
-        PrintFormat.PrintSectionLabel(outfile, "Expected", true);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
-        PrintFormat.PrintSectionLabel(outfile, "Observed/Expected", true);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getC()/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
-        if (parameters.isDuplicates()) {
-            PrintFormat.PrintSectionLabel(outfile, "O/E (Duplicates Removed)", true);
-            PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
-        }
-        PrintFormat.PrintSectionLabel(outfile, "Log Likelihood Ratio", true);
-        printString(buffer, "%lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood()));
-        PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-        PrintFormat.PrintSectionLabel(outfile, "P-value", true);
-        printString(buffer, format.c_str(), (double)_scanRunner.getCuts().at(k)->getRank() /(parameters.getNumReplicationsRequested() + 1));
-        PrintFormat.PrintAlignedMarginsDataString(outfile, buffer, 2);
-        k++;
     }
-
-    //outfile << std::endl << std::endl;
-    //outfile << "Information About Each Node" << std::endl;
-    //outfile << "ID Obs Exp O/E" << std::endl;
-    // outfile.width(10);
-    //for (size_t i=0; i < _Nodes.size(); i++)
-    //    if (_Nodes.at(i)->_BrN > 0)
-    //        outfile << "0 " << _Nodes.at(i)->_identifier.c_str() << " " << _Nodes.at(i)->_BrC << " " << _Nodes.at(i)->_BrN << " " << _Nodes.at(i)->_BrC/_Nodes.at(i)->_BrN << " 0 0 " << std::endl;
 
     ParametersPrint(parameters).Print(outfile);
     outfile << "Program run on     : " << ctime(&start);
@@ -165,22 +154,22 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "body {color: #353535;font: 0.75em Arial,Garuda,sans-serif;padding: 20px;}" << std::endl;
     outfile << "#banner {background: none repeat scroll 0 0 #7A991A;height: 40px;color: white;font-size: 2em;text-align: center;vertical-align: middle;padding: 10px 0 10px 0;}" << std::endl;
     outfile << ".program-info {background-color: #E5EECC;padding: 5px 0 5px 5px;font-size: 1.1em;}" << std::endl;
-    outfile << "#clusters table {border: 1px solid #BDBDBD;border-collapse: collapse;width: 100%;}" << std::endl;
-    outfile << "#clusters table th {background-color: #DADAD5;text-align: center;text-align: left;/*min-width:200px;*/}" << std::endl;
-    outfile << "#clusters table th, #clusters table td {border: 1px solid #C3C3C3;padding: 4px 6px;}" << std::endl;
+    outfile << "#cuts table {border: 1px solid #BDBDBD;border-collapse: collapse;width: 100%;}" << std::endl;
+    outfile << "#cuts table th {background-color: #DADAD5;text-align: center;text-align: left;/*min-width:200px;*/}" << std::endl;
+    outfile << "#cuts table th, #cuts table td {border: 1px solid #C3C3C3;padding: 4px 6px;}" << std::endl;
     outfile << ".hr {background-color: #E5EECC;border: 1px solid #000000;height: 1px;/*margin: 10px 0;*//*width: 760px;*/}" << std::endl;
-    outfile << "#clusters {padding: 10px;}" << std::endl;
-    outfile << "#clusters h3 {margin-top: 0px;margin-bottom: 4px;}" << std::endl;
-    outfile << ".reported-cluster {margin: 20px 0px 0px 20px;}" << std::endl;
+    outfile << "#cuts {padding: 10px;}" << std::endl;
+    outfile << "#cuts h3 {margin-top: 0px;margin-bottom: 4px;}" << std::endl;
+    outfile << ".reported-cut {margin: 20px 0px 0px 20px;}" << std::endl;
     outfile << "#parameter-settings {padding: 10px;}" << std::endl;
     outfile << "#parameter-settings h4 {margin-top: 2px;margin-bottom: 2px;}" << std::endl;
     outfile << ".parameter-section {margin-left: 20px;}" << std::endl;
     outfile << ".parameter-section h4 {font-weight: bold;margin-top: 2px;margin-bottom: 2px;}" << std::endl;
     outfile << ".parameter-section table {margin-left: 20px;}" << std::endl;
     outfile << ".parameter-section table th {text-align: left;}" << std::endl;
-    //outfile << ".additional-clusters {display: none;}" << std::endl;
-    outfile << "#id_more_clusters {text-decoration: underline;}" << std::endl;
-    outfile << "#id_more_clusters:hover {cursor: pointer;}" << std::endl;
+    //outfile << ".additional-cuts {display: none;}" << std::endl;
+    outfile << "#id_more_cuts {text-decoration: underline;}" << std::endl;
+    outfile << "#id_more_cuts:hover {cursor: pointer;}" << std::endl;
     outfile << "#id_cuts th:hover {cursor: pointer;}" << std::endl;
     outfile << "</style>" << std::endl;
 
@@ -190,8 +179,8 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<script src=\"http://artknow.googlecode.com/svn-history/r14/trunk/Site/librarys/jquery.tablesorter.js\" type=\"text/javascript\"></script>" << std::endl;
 
     outfile << "<script type=\"text/javascript\" charset=\"utf-8\">$(document).ready(function() {" << std::endl;
-    outfile << "    //$('.additional-clusters').hide();" << std::endl;
-    outfile << "    $('#id_more_clusters').click(function(){$('.additional-clusters').toggle();});" << std::endl;
+    outfile << "    //$('.additional-cuts').hide();" << std::endl;
+    outfile << "    $('#id_more_cuts').click(function(){$('.additional-cuts').toggle();});" << std::endl;
     outfile << "    $('#id_cuts').tablesorter(); " << std::endl;
     outfile << "});</script>" << std::endl;
     printString(buffer, "TreeScan v%s.%s%s%s%s%s", VERSION_MAJOR, VERSION_MINOR, (!strcmp(VERSION_RELEASE, "0") ? "" : "."), (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE), (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE);
@@ -211,9 +200,9 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "</tbody></table></div>" << std::endl;
     outfile << "<div class=\"hr\"></div>" << std::endl;
 
-    outfile << "<div id=\"clusters\">" << std::endl;
+    outfile << "<div id=\"cuts\">" << std::endl;
     if (_scanRunner.getCuts().at(0)->getC() == 0) {
-        outfile << "<h3>No clusters were found.</h3>" << std::endl;
+        outfile << "<h3>No cuts were found.</h3>" << std::endl;
     } else {
         outfile << "<h3>Most Likely Cuts</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;
         outfile << "<thead><tr><th>No.</th><th>Node Identifier</th><th>Number of Cases</th>";
@@ -229,7 +218,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile.setf(std::ios::fixed);
         outfile.precision(5);
         while( k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1) {
-            outfile << "<tr" << (k > 9 ? " class=\"additional-clusters\"" : "" ) << "><td>" << k + 1 << "</td>"
+            outfile << "<tr" << (k > 9 ? " class=\"additional-cuts\"" : "" ) << "><td>" << k + 1 << "</td>"
                     << "<td>" << _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier() << "</td>"
                     << "<td>" << _scanRunner.getCuts().at(k)->getC() << "</td>";
             if (parameters.isDuplicates())
@@ -244,7 +233,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         }
         outfile << "</tbody></table></div>" << std::endl;
         if (k > 10) {
-            outfile << "<!-- <span id=\"id_more_clusters\">Toggle Additional Clusters</span> -->" << std::endl;
+            outfile << "<!-- <span id=\"id_more_cuts\">Toggle Additional Cuts</span> -->" << std::endl;
         }
         outfile << "</div>" << std::endl;
     }

@@ -12,23 +12,23 @@ AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const Parameters& para
     switch (parameters.getModelType()) {
         case Parameters::POISSON: {
             switch (parameters.getConditionalType()) {
-                case Parameters::UNCONDITIONAL : return new PoissonRandomizer(false, TotalC, TotalN);
-                case Parameters::TOTALCASES : return new PoissonRandomizer(true, TotalC, TotalN);
+                case Parameters::UNCONDITIONAL : return new PoissonRandomizer(false, TotalC, TotalN); break;
+                case Parameters::TOTALCASES : return new PoissonRandomizer(true, TotalC, TotalN); break;
                 case Parameters::CASESEACHBRANCH :
                 default: throw prg_error("Unknown conditional type (%d).", "getNewRandomizer()", parameters.getConditionalType());
             }
         } break;
         case Parameters::BERNOULLI: {
             switch (parameters.getConditionalType()) {
-                case Parameters::UNCONDITIONAL : return new BernoulliRandomizer(parameters.getProbability(), false, TotalC, TotalControls, TotalN);
-                case Parameters::TOTALCASES : return new BernoulliRandomizer(parameters.getProbability(), true, TotalC, TotalControls, TotalN);
+                case Parameters::UNCONDITIONAL : return new BernoulliRandomizer(parameters.getProbability(), false, TotalC, TotalControls, TotalN); break;
+                case Parameters::TOTALCASES : return new BernoulliRandomizer(parameters.getProbability(), true, TotalC, TotalControls, TotalN); break;
                 case Parameters::CASESEACHBRANCH :
                 default: throw prg_error("Unknown conditional type (%d).", "getNewRandomizer()", parameters.getConditionalType());
             }
         } break;
         case Parameters::TEMPORALSCAN : {
             switch (parameters.getConditionalType()) {
-                case Parameters::CASESEACHBRANCH : return new TemporalRandomizer(TotalC, TotalN, parameters.getDataTimeRangeSet());
+                case Parameters::CASESEACHBRANCH : return new TemporalRandomizer(TotalC, TotalN, parameters.getDataTimeRangeSet()); break;
                 case Parameters::UNCONDITIONAL :
                 case Parameters::TOTALCASES :
                 default: throw prg_error("Unknown conditional type (%d).", "getNewRandomizer()", parameters.getConditionalType());

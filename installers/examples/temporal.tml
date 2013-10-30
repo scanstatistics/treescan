@@ -3,7 +3,7 @@
     <input>
         <tree-file>tree.tre</tree-file>
         <case-file>temporal.cas</case-file>
-        <population-file>temporal.pop</population-file>
+        <population-file></population-file>
         <data-time-range>-16,100</data-time-range>
         <advanced>
             <cuts-file>tree.cut</cuts-file>
@@ -11,7 +11,7 @@
     </input>
     <analysis>
         <scan>1</scan>
-        <conditional>1</conditional>
+        <conditional>2</conditional>
         <probability-model>2</probability-model>
         <event-probability>
             <numerator>1</numerator>
