@@ -5,7 +5,7 @@ build="/prj/treescan/build"
 installer_version="/prj/treescan/installers/v.1.1.x"
 
 launch4j=$build/packages/launch4j/launch4j-3.0.1
-IzPack=$build/packages/IzPack/IzPack4.3.4
+IzPack=$build/packages/IzPack/IzPack4.3.5
 
 ############ Windows ##############################################################################
 # Build Windows TreeScan executable from java jar file ... TreeScan.jar -> TreeScan.exe.
@@ -13,7 +13,7 @@ $launch4j/launch4j $build/treescan/installers/izpack/windows/launch4j_app.xml
 
 # prompt user to sign the exe file created by launch4j
 echo
-echo "Run the Windows batch file 'signSaTScanGuiApp.bat' now to sign SaTScan.exe. Hit <enter> once done ..."
+echo "Run the Windows batch file 'signGuiApp.bat' now to sign TreeScan.exe. Hit <enter> once done ..."
 read dummy
 
 # Build the IzPack Java installer for Windows.
@@ -27,7 +27,7 @@ rm $installer_version/install-1_1_windows.jar
 
 # prompt user to sign the exe file created by launch4j
 echo
-echo "Run the Windows batch file 'signWindowsInstaller.bat' now to sign install-9_2_windows.exe. Hit <enter> once done ..."
+echo "Run the Windows batch file 'signWindowsInstaller.bat' now to sign install-1_1_windows.exe. Hit <enter> once done ..."
 read dummy
 
 # Build Windows command-line only archive
