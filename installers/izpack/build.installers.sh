@@ -11,6 +11,11 @@ IzPack=$build/packages/IzPack/IzPack4.3.4
 # Build Windows TreeScan executable from java jar file ... TreeScan.jar -> TreeScan.exe.
 $launch4j/launch4j $build/treescan/installers/izpack/windows/launch4j_app.xml
 
+# prompt user to sign the exe file created by launch4j
+echo
+echo "Run the Windows batch file 'signSaTScanGuiApp.bat' now to sign SaTScan.exe. Hit <enter> once done ..."
+read dummy
+
 # Build the IzPack Java installer for Windows.
 $IzPack/bin/compile $build/treescan/installers/izpack/windows/install_windows.xml -b $installer_version -o $installer_version/install-1_1_windows.jar -k standard
 
@@ -19,6 +24,11 @@ $IzPack/bin/compile $build/treescan/installers/izpack/windows/install_windows.xm
 #  - we wanted a message to user when Java not installed
 $launch4j/launch4j $build/treescan/installers/izpack/windows/launch4j_install.xml
 rm $installer_version/install-1_1_windows.jar
+
+# prompt user to sign the exe file created by launch4j
+echo
+echo "Run the Windows batch file 'signWindowsInstaller.bat' now to sign install-9_2_windows.exe. Hit <enter> once done ..."
+read dummy
 
 # Build Windows command-line only archive
 rm -f $installer_version/treescan.1.1_windows.zip
