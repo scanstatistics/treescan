@@ -223,6 +223,8 @@ const char * DataRecordWriter::EXPECTED_FIELD	                         = "EXPECT
 const char * DataRecordWriter::OBSERVED_DIV_EXPECTED_FIELD               = "ODE";
 const char * DataRecordWriter::OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD = "ODE_NODUPL";
 const char * DataRecordWriter::LOG_LIKL_RATIO_FIELD                      = "LLR";
+const char * DataRecordWriter::START_WINDOW_FIELD                        = "START_WNDW";
+const char * DataRecordWriter::END_WINDOW_FIELD                          = "END_WNDW";
 const size_t DataRecordWriter::DEFAULT_LOC_FIELD_SIZE                    = 30;
 const size_t DataRecordWriter::MAX_LOC_FIELD_SIZE                        = 254;
 
@@ -247,6 +249,10 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
     CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
     printString(buffer, "%u", _scanner.getParameters().getNumReplicationsRequested());
     CreateField(_dataFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, static_cast<unsigned short>(buffer.size()));
+    if (_scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN) {
+        CreateField(_dataFieldDefinitions, START_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+        CreateField(_dataFieldDefinitions, END_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+    }
 	_csvWriter.reset(new CSVDataFileWriter(getFilename(_scanner.getParameters(), buffer), _dataFieldDefinitions, _scanner.getParameters().isPrintColumnHeaders()));
   } catch (prg_exception& x) {
     x.addTrace("constructor()","CutsRecordWriter");
@@ -275,6 +281,10 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
       Record.GetFieldValue(OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD).AsDouble() = (_scanner.getCuts().at(cutIndex)->getC() - _scanner.getNodes().at(_scanner.getCuts().at(cutIndex)->getID())->getDuplicates())/_scanner.getCuts().at(cutIndex)->getExpected(_scanner);
     Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = calcLogLikelihood->LogLikelihoodRatio(_scanner.getCuts().at(cutIndex)->getLogLikelihood());
     Record.GetFieldValue(P_VALUE_FLD).AsDouble() =  static_cast<double>(_scanner.getCuts().at(cutIndex)->getRank()) /(_scanner.getParameters().getNumReplicationsRequested() + 1);
+    if (_scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN) {
+        Record.GetFieldValue(START_WINDOW_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getStartIdx();
+        Record.GetFieldValue(END_WINDOW_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getEndIdx();
+    }
     _csvWriter->writeRecord(Record);
   } catch (prg_exception& x) {
     x.addTrace("write()","CutsRecordWriter");

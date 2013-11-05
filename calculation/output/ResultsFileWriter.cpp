@@ -62,8 +62,14 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
     PrintFormat.PrintSectionLabel(outfile, "Total Cases:", false);
     PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getTotalC()));
-    PrintFormat.PrintSectionLabel(outfile, "Total Measure:", false);
-    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%lf", _scanRunner.getTotalN()));
+    if (parameters.getModelType() != Parameters::TEMPORALSCAN) {
+        PrintFormat.PrintSectionLabel(outfile, "Total Measure:", false);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%lf", _scanRunner.getTotalN()));
+    }
+    if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
+        PrintFormat.PrintSectionLabel(outfile, "Data Time Range:", false);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, parameters.getDataTimeRangeSet().toString(buffer));
+    }
     PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
 
     // write detected cuts
@@ -104,6 +110,11 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
             if (parameters.isDuplicates()) {
                 PrintFormat.PrintSectionLabel(outfile, "O/E (Duplicates Removed)", true);
                 PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
+            }
+            if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
+                PrintFormat.PrintSectionLabel(outfile, "Scanning Window", true);
+                printString(buffer, "%ld - %ld", _scanRunner.getCuts().at(k)->getStartIdx(), _scanRunner.getCuts().at(k)->getEndIdx());
+                PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
             }
             PrintFormat.PrintSectionLabel(outfile, "Log Likelihood Ratio", true);
             printString(buffer, "%lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood()));
@@ -196,7 +207,12 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     }
     outfile << "</td></tr>" << std::endl;
     outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
-    outfile << "<tr><th>Total Measure:</th><td>" << _scanRunner.getTotalN() << "</td></tr>" << std::endl;
+    if (parameters.getModelType() != Parameters::TEMPORALSCAN) {
+        outfile << "<tr><th>Total Measure:</th><td>" << _scanRunner.getTotalN() << "</td></tr>" << std::endl;
+    }
+    if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
+        outfile << "<tr><th>Data Time Range:</th><td>" << parameters.getDataTimeRangeSet().toString(buffer).c_str() << "</td></tr>" << std::endl;
+    }
     outfile << "</tbody></table></div>" << std::endl;
     outfile << "<div class=\"hr\"></div>" << std::endl;
 
@@ -209,6 +225,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         if (parameters.isDuplicates()) {outfile << "<th>Cases (Duplicates Removed)</th>";}
         outfile << "<th>Expected</th><th>Observed/Expected</th>";
         if (parameters.isDuplicates()) {outfile << "<th>O/E (Duplicates Removed)</th>";}
+        if (parameters.getModelType() == Parameters::TEMPORALSCAN) {outfile << "<th>Scanning Window</th>";}
         outfile << "<th>Log Likelihood Ratio</th><th>P-value</th></tr></thead><tbody>" << std::endl;
         std::string format, replicas;
         printString(replicas, "%u", parameters.getNumReplicationsRequested());
@@ -227,6 +244,9 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getC()/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
             if (parameters.isDuplicates())
                 outfile << "<td>" << getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
+            if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
+                outfile << "<td>" << _scanRunner.getCuts().at(k)->getStartIdx() << " - " << _scanRunner.getCuts().at(k)->getEndIdx() << "</td>";
+            }
             outfile << "<td>" << calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood()) << "</td>";
             outfile << "<td>" << printString(buffer, format.c_str(), (double)_scanRunner.getCuts().at(k)->getRank() /(parameters.getNumReplicationsRequested() + 1)) << "</td><tr>" << std::endl;
             k++;

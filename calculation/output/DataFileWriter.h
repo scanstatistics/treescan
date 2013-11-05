@@ -46,6 +46,8 @@ class DataRecordWriter {
     static const char         * OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD;
     static const char         * LOG_LIKL_RATIO_FIELD;
     static const char         * P_VALUE_FLD;
+    static const char         * START_WINDOW_FIELD;
+    static const char         * END_WINDOW_FIELD;
 
   protected:
     ptr_vector<FieldDef>        _dataFieldDefinitions;       /** field definitions              */
