@@ -22,14 +22,48 @@ double CutStructure::getExpected(const ScanRunner& scanner) {
         if (scanner.getParameters().getConditionalType() == Parameters::TOTALCASES)
             return _N * (scanner.getTotalC() / scanner.getTotalN());
         return _N * scanner.getParameters().getProbability();
+    } else if (scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN) {
+        return _N * (getEndIdx() - getStartIdx() + 1) / scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets();
+    } else {
+        return _N;
     }
-    return _N;
+}
+
+double CutStructure::getODE(const ScanRunner& scanner) {
+    if (scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN) {
+        /*
+            C/(N*W/D) where
+                C = number of cases in the node as well as in the the temporal cluster found (below, 06.04 cases that are 7-11 days after vaccination) 
+                N = number of cases in the node, through the whole time period (below, all 0604 cases) 
+                W = number of days in the temporal cluster (below, 11-6=5) 
+                D = number of days for which cases wee recorded (e.g. D=56 if a 1-56 time interval was used)
+        */
+        double C = static_cast<double>(_C);
+        double N = _N;
+        double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+        double D = static_cast<double>(scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+        return C/(N*W/D);
+    } else {
+        return static_cast<double>(getC())/getExpected(scanner);
+    }
+}
+
+double CutStructure::getRelativeRisk(const ScanRunner& scanner) {
+    if (scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN) {
+        //RR = [ClusterCases / Cluster Window Length ] / [ (NodeCases-ClusterCases) / (StudyTime Length - ClusterWindowLength) ]
+        double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+        double D = static_cast<double>(scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+        return (static_cast<double>(_C) / W ) / ( (_N - static_cast<double>(_C) ) / (D - W) );
+    } else {
+        return 0;  
+    }
 }
 
 ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0) {
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     DataTimeRange min_max = _parameters.getModelType() == Parameters::TEMPORALSCAN ? _parameters.getDataTimeRangeSet().getMinMax() : DataTimeRange(0,0);
-    _zero_translation_additive = std::abs(std::min(0, min_max.getStart()));
+    // translate to ensure zero based additive
+    _zero_translation_additive = (min_max.getStart() <= 0) ? std::abs(min_max.getStart()) : min_max.getStart() * -1;
 }
 
 /*
@@ -71,7 +105,8 @@ bool ScanRunner::readCounts(const std::string& filename) {
     _print.Printf("Reading case file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
-    int expectedColumns = (_parameters.getModelType() == Parameters::TEMPORALSCAN ? 3 : 2) + (_parameters.isDuplicates() ? 1 : 0);
+    int expectedColumns = (_parameters.getModelType() == Parameters::TEMPORALSCAN ? 3 : 2) + (_parameters.isDuplicates() ? 1 : 0);    
+    _caselessWindows.resize(_parameters.getModelType() == Parameters::TEMPORALSCAN ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() : 1);
 
     int count=0, controls=0, duplicates=0, daysSinceIncidence=0;
     while (dataSource->readRecord()) {
@@ -130,9 +165,32 @@ bool ScanRunner::readCounts(const std::string& filename) {
                 continue;
             }
             node->refIntC_C().at(daysSinceIncidence + _zero_translation_additive) += count;
+            _caselessWindows.set(daysSinceIncidence + _zero_translation_additive);
         } else throw prg_error("Unknown model type (%d).", "readCounts()", _parameters.getModelType());
     }
+
+    if (_parameters.getModelType() == Parameters::TEMPORALSCAN && _caselessWindows.size() != _caselessWindows.count()) {
+        _caselessWindows.flip(); // flip so that windows without cases are on.
+        std::string buffer;
+        _print.Printf("Warning: Not all days in data time range have cases.\n"
+                      "The following values do not have cases: %s", BasePrint::P_WARNING, getCaselessWindowsAsString(buffer).c_str());
+    }
+
     return readSuccess;
+}
+
+std::string & ScanRunner::getCaselessWindowsAsString(std::string& s) const {
+    std::stringstream buffer;
+
+    boost::dynamic_bitset<>::size_type p = _caselessWindows.find_first();
+    while (p != boost::dynamic_bitset<>::npos) {
+        buffer << (static_cast<int>(p) - getZeroTranslationAdditive());
+        p = _caselessWindows.find_next(p);
+        if (p != boost::dynamic_bitset<>::npos)
+            buffer << ", ";
+    }
+    s = buffer.str().c_str();
+    return s;
 }
 
 /*
@@ -191,7 +249,7 @@ bool ScanRunner::readTree(const std::string& filename) {
     bool readSuccess=true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
 
-    // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
+    // TODO: Eventually this will need refactoring once we implement multiple data time ranges.    
     size_t daysInDataTimeRange = _parameters.getModelType() == Parameters::TEMPORALSCAN ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() : 1;
 
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
@@ -327,7 +385,7 @@ bool ScanRunner::runsimulations() {
         if (_parameters.getNumReplicationsRequested() == 0)
             return true;
 
-        _print.Printf("Doing the %d Monte Carlo simulations:\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
+        _print.Printf("Doing the %d Monte Carlo simulations ...\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
 
         {
             PrintQueue lclPrintDirection(_print, false);
@@ -394,7 +452,7 @@ size_t ScanRunner::calculateCutsCount() const {
 
 /* SCANNING THE TREE */
 bool ScanRunner::scanTree() {
-    _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
+    _print.Printf("Scanning the tree ...\n", BasePrint::P_STDOUT);
     ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN));
 
     //std::string buffer;
@@ -457,6 +515,7 @@ bool ScanRunner::scanTree() {
             }
         }
     }
+    std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
     _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.at(0)->getLogLikelihood()));
     return true;
 }
@@ -557,6 +616,7 @@ bool ScanRunner::scanTreeTemporal() {
             }
         }
     }
+    std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
     _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.at(0)->getLogLikelihood()));
     return true;
 }
@@ -572,7 +632,7 @@ void ScanRunner::updateCuts(int node_index, int BrC, double BrN, const Loglikeli
     cut->setN(BrN);
     cut->setStartIdx(startIdx);
     cut->setEndIdx(endIdx);
-    CutStructureContainer_t::iterator itr = std::lower_bound(_Cut.begin(), _Cut.end(), cut.get(), CompareCutsByLoglikelihood());
+    CutStructureContainer_t::iterator itr = std::lower_bound(_Cut.begin(), _Cut.end(), cut.get(), CompareCutsById());
     if (itr != _Cut.end() && (*itr)->getID() == cut->getID()) {
         if (cut->getLogLikelihood() > (*itr)->getLogLikelihood()) {
             size_t idx = std::distance(_Cut.begin(), itr);

@@ -45,6 +45,9 @@ class DataTimeRange {
         bool within(index_t idx) const {
             return getStart() <= idx && idx <= getEnd();
         }
+        size_t numDaysInRange() const {
+            return static_cast<size_t>(getEnd() - getStart() + 1);
+        }
 };
 
 class DataTimeRangeSet {
@@ -88,7 +91,7 @@ class DataTimeRangeSet {
         size_t getTotalDaysAcrossRangeSets() const {
             // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
             DataTimeRange min_max = getMinMax();
-            return static_cast<size_t>(min_max.getEnd() - min_max.getStart() + 1);
+            return min_max.numDaysInRange();
         }
 };
 //***************************************************************************

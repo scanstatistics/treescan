@@ -8,7 +8,8 @@
 TemporalRandomizer::TemporalRandomizer(int TotalC, double TotalN, const DataTimeRangeSet& timeRangeSets, long lInitialSeed)
                   : AbstractRandomizer(lInitialSeed), _TotalC(TotalC), _TotalN(TotalN), _timeRangeSets(timeRangeSets) {
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
-    _zero_translation_additive = std::abs(std::min(0, timeRangeSets.getMinMax().getStart()));
+    DataTimeRange min_max = timeRangeSets.getMinMax();
+    _zero_translation_additive = (min_max.getStart() <= 0) ? std::abs(min_max.getStart()) : min_max.getStart() * -1;
 }
 
 /** Creates randomized under the null hypothesis for Poisson model, assigning data to DataSet objects structures.

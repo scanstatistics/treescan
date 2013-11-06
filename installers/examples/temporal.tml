@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <parameters>
     <input>
-        <tree-file>tree.tre</tree-file>
-        <case-file>temporal.cas</case-file>
-        <population-file></population-file>
-        <data-time-range>-16,100</data-time-range>
+        <tree-file>C:\prj\treescan.development\treescan\installers\examples\tree.tre</tree-file>
+        <case-file>C:\prj\treescan.development\treescan\installers\examples\temporal.cas</case-file>
+        <population-file/>
+        <data-time-range>[-160,100]</data-time-range>
         <advanced>
-            <cuts-file>tree.cut</cuts-file>
+            <cuts-file>C:\prj\treescan.development\treescan\installers\examples\tree.cut</cuts-file>
         </advanced>
     </input>
     <analysis>
@@ -18,8 +18,8 @@
             <denominator>10</denominator>
         </event-probability>
         <temporal-window>
-	          <start-range>0,5</start-range>
-	          <end-range>25,35</end-range>
+            <start-range>[0,5]</start-range>
+            <end-range>[25,35]</end-range>
         </temporal-window>
         <advanced>
             <replications>99999</replications>
@@ -27,7 +27,7 @@
         </advanced>
     </analysis>
     <output>
-        <results-file>temporal.txt</results-file>
+        <results-file>C:\prj\treescan.development\treescan\installers\examples\temporal.txt</results-file>
         <generate-html-results>false</generate-html-results>
         <generate-table-results>false</generate-table-results>
         <print-headers>true</print-headers>

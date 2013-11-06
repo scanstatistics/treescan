@@ -102,8 +102,8 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
         settings.push_back(std::make_pair("Event Probability",buffer));
     }
     if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
-        settings.push_back(std::make_pair("Temporal Scanning Window Start: %s", _parameters.getTemporalStartRange().toString(buffer)));
-        settings.push_back(std::make_pair("Temporal Scanning Window End: %s", _parameters.getTemporalEndRange().toString(buffer)));
+        settings.push_back(std::make_pair("Temporal Scanning Window Start", _parameters.getTemporalStartRange().toString(buffer)));
+        settings.push_back(std::make_pair("Temporal Scanning Window End", _parameters.getTemporalEndRange().toString(buffer)));
     }
     return settings;
 }

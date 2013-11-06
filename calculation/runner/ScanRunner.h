@@ -6,6 +6,7 @@
 #include "ptr_vector.h"
 #include "Loglikelihood.h"
 #include "boost/shared_ptr.hpp"
+#include <boost/dynamic_bitset.hpp>
 #include "SimulationVariables.h"
 #include "Parameters.h"
 #include <iostream>
@@ -31,7 +32,9 @@ public:
     double                  getLogLikelihood() const {return _LogLikelihood;}
     double                  getN() const {return _N;}
     double                  getExpected(const ScanRunner& scanner);
+    double                  getODE(const ScanRunner& scanner);
     unsigned int            getRank() const {return _rank;}
+    double                  getRelativeRisk(const ScanRunner& scanner);
     DataTimeRange::index_t  getStartIdx() const {return _start_idx;}
     DataTimeRange::index_t  getEndIdx() const {return _end_idx;}
     unsigned int            incrementRank() {return ++_rank;}
@@ -136,6 +139,13 @@ public:
     }
 };
 
+class CompareCutsById {
+public:
+    bool operator() (const CutStructure * lhs, const CutStructure * rhs) {
+        return lhs->getID() > rhs->getID();
+    }
+};
+
 class CompareCutsByLoglikelihood {
 public:
     bool operator() (const CutStructure * lhs, const CutStructure * rhs) {
@@ -162,6 +172,7 @@ private:
     SimulationVariables         _simVars;
     Parameters                  _parameters;
     DataTimeRange::index_t      _zero_translation_additive;
+    boost::dynamic_bitset<>     _caselessWindows;
 
     void                        addCN_C(int id, NodeStructure::CountContainer_t& c, NodeStructure::ExpectedContainer_t& n);
     size_t                      calculateCutsCount() const;
@@ -181,6 +192,7 @@ private:
 public:
     ScanRunner(const Parameters& parameters, BasePrint& print);
 
+    std::string                      & getCaselessWindowsAsString(std::string& s) const;
     const CutStructureContainer_t    & getCuts() const {return _Cut;}
     const NodeStructureContainer_t   & getNodes() const {return _Nodes;}
     const Parameters                 & getParameters() const {return _parameters;}
