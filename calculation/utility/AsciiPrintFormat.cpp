@@ -18,7 +18,7 @@ const unsigned int AsciiPrintFormat::giMultiDataSetSummaryLabelWidth = 38;
 /** width of label for run-time components section */
 const unsigned int AsciiPrintFormat::giRunTimeComponentsLabelWidth   = 35;
 /** width of output area - this value is untested below 64 */
-const unsigned int AsciiPrintFormat::giRightMargin                   = 64;
+const unsigned int AsciiPrintFormat::giRightMargin                   = 80;
 /** width of version header section */
 const unsigned int AsciiPrintFormat::giVersionHeaderWidth            = 29;
 

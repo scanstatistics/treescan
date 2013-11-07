@@ -75,9 +75,8 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         std::string buffer;
         _scanRunner.getCaselessWindowsAsString(buffer);
         if (buffer.size()) {
-            outfile << "Warning: Not all days in data time range have cases." << std::endl;
-            outfile << "The following values do not have cases: ";
-            PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+            outfile << "Warning: The following days in the data time range do not have cases:" << std::endl;
+            PrintFormat.PrintNonRightMarginedDataString(outfile, buffer, false);
             PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
         }
     }
@@ -202,6 +201,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "#id_more_cuts {text-decoration: underline;}" << std::endl;
     outfile << "#id_more_cuts:hover {cursor: pointer;}" << std::endl;
     outfile << "#id_cuts th:hover {cursor: pointer;}" << std::endl;
+    outfile << ".warning {background-color:#816834;color:white;padding:10px;}" << std::endl;
     outfile << "</style>" << std::endl;
 
     // TODO: host these from treescan website or link to local copy?
@@ -282,10 +282,15 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "</div>" << std::endl;
     }
     outfile << "<div class=\"hr\"></div>" << std::endl;
-
+    if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
+        std::string buffer;
+        _scanRunner.getCaselessWindowsAsString(buffer);
+        if (buffer.size()) {
+            outfile << "<div class=\"warning\">Warning: The following days in the data time range do not have cases: " << buffer.c_str() << "</div><div class=\"hr\"></div>";
+        }
+    }
     ParametersPrint(parameters).PrintHTML(outfile);
     outfile << "<div class=\"hr\"></div>" << std::endl;
-
     outfile << "<div class=\"program-info\"><table style=\"text-align: left;\"><tbody>" << std::endl;
     outfile << "<tr><th>Program run on</th><td>" << ctime(&start) << "</td></tr>" << std::endl;
     outfile << "<tr><th>Program completed</th><td>" << ctime(&end) << "</td></tr>" << std::endl;

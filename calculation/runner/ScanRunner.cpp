@@ -29,10 +29,10 @@ double CutStructure::getExpected(const ScanRunner& scanner) {
     }
 }
 
+/** Returns cut's observed divided by expected. */
 double CutStructure::getODE(const ScanRunner& scanner) {
     if (scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN) {
-        /*
-            C/(N*W/D) where
+        /* C/(N*W/D) where
                 C = number of cases in the node as well as in the the temporal cluster found (below, 06.04 cases that are 7-11 days after vaccination) 
                 N = number of cases in the node, through the whole time period (below, all 0604 cases) 
                 W = number of days in the temporal cluster (below, 11-6=5) 
@@ -42,21 +42,25 @@ double CutStructure::getODE(const ScanRunner& scanner) {
         double N = _N;
         double W = static_cast<double>(_end_idx - _start_idx + 1.0);
         double D = static_cast<double>(scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-        return C/(N*W/D);
+        double denominator = D ? N * W / D : 0.0;
+        return denominator ? C/denominator : 0.0;
     } else {
-        return static_cast<double>(getC())/getExpected(scanner);
+        double expected = getExpected(scanner);
+        return expected ? static_cast<double>(getC())/expected : 0.0;
     }
 }
 
+/** Returns cut's relative risk. */
 double CutStructure::getRelativeRisk(const ScanRunner& scanner) {
     if (scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN) {
         //RR = [ClusterCases / Cluster Window Length ] / [ (NodeCases-ClusterCases) / (StudyTime Length - ClusterWindowLength) ]
         double W = static_cast<double>(_end_idx - _start_idx + 1.0);
         double D = static_cast<double>(scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-        return (static_cast<double>(_C) / W ) / ( (_N - static_cast<double>(_C) ) / (D - W) );
-    } else {
-        return 0;  
-    }
+        double diff_cases = _N - static_cast<double>(_C);
+        double denominator = diff_cases ? ( diff_cases / (D - W) ) : 0.0;
+        return denominator ? (static_cast<double>(_C) / W ) / denominator : 0.0;
+    } 
+    throw prg_error("Unknown model type (%d).", "getRelativeRisk()", scanner.getParameters().getModelType());
 }
 
 ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0) {
@@ -172,23 +176,40 @@ bool ScanRunner::readCounts(const std::string& filename) {
     if (_parameters.getModelType() == Parameters::TEMPORALSCAN && _caselessWindows.size() != _caselessWindows.count()) {
         _caselessWindows.flip(); // flip so that windows without cases are on.
         std::string buffer;
-        _print.Printf("Warning: Not all days in data time range have cases.\n"
-                      "The following values do not have cases: %s", BasePrint::P_WARNING, getCaselessWindowsAsString(buffer).c_str());
+        _print.Printf("Warning: The following days in the data time range do not have cases: %s\n", BasePrint::P_WARNING, getCaselessWindowsAsString(buffer).c_str());
     }
 
     return readSuccess;
 }
 
+/** Creates string detailing indexes and range of indexes which do not have cases. */
 std::string & ScanRunner::getCaselessWindowsAsString(std::string& s) const {
     std::stringstream buffer;
+    s.clear();
 
     boost::dynamic_bitset<>::size_type p = _caselessWindows.find_first();
-    while (p != boost::dynamic_bitset<>::npos) {
-        buffer << (static_cast<int>(p) - getZeroTranslationAdditive());
+    if (p == boost::dynamic_bitset<>::npos) return s;
+
+    boost::dynamic_bitset<>::size_type pS=p, pE=p;
+    do {
         p = _caselessWindows.find_next(p);
-        if (p != boost::dynamic_bitset<>::npos)
-            buffer << ", ";
-    }
+        if (p == boost::dynamic_bitset<>::npos || p > pE + 1) {
+            // print range if at end of bit set or gap in range found
+            if (pS == pE) {
+                buffer << (static_cast<int>(pS) - getZeroTranslationAdditive());
+            } else {
+                buffer << (static_cast<int>(pS) - getZeroTranslationAdditive()) << " to " << (static_cast<int>(pE) - getZeroTranslationAdditive());
+            }
+            if (p != boost::dynamic_bitset<>::npos) {
+                buffer << ", ";
+            }
+            pS=p;
+            pE=p;
+        } else {
+            pE = p; // increase end point of range
+        }
+    } while (p != boost::dynamic_bitset<>::npos);
+
     s = buffer.str().c_str();
     return s;
 }
