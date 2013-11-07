@@ -358,6 +358,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 case Case:
                     _countFileTextField.setText(wizard.getDestinationFilename());
                     break;
+                case Population:
+                    _populationFileTextField.setText(wizard.getDestinationFilename());
+                    break;
                 default:
                     throw new UnknownEnumException(eFileType);
             }
@@ -633,7 +636,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _countFileLabel1.setText("Population File:"); // NOI18N
 
         _populationFileBrowseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/folder_open_small.png"))); // NOI18N
-        _populationFileBrowseButton.setToolTipText("Browse for count file ..."); // NOI18N
+        _populationFileBrowseButton.setToolTipText("Browse for population file ..."); // NOI18N
         _populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
@@ -649,12 +652,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         });
 
         _populationFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
-        _populationFileImportButton.setToolTipText("Import count file ..."); // NOI18N
+        _populationFileImportButton.setToolTipText("Import population file ..."); // NOI18N
         _populationFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
                     JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                    fc.setDialogTitle("Select Counts File Import Source");
+                    fc.setDialogTitle("Select Population File Import Source");
                     fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
                     fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));
@@ -734,7 +737,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_populationFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 143, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 147, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -1135,7 +1138,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_temporalWindowGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 43, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 47, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -1197,7 +1200,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_reportResultsAsHTML)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportResultsAsCsvTable)
-                .addContainerGap(290, Short.MAX_VALUE))
+                .addContainerGap(294, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Output", _outputTab);

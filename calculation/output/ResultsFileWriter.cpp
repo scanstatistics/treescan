@@ -87,7 +87,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     //if (_parameters.isDuplicates()) outfile << "O/EWithoutDuplicates ";
     //outfile << "LLR pvalue" << std::endl;
 
-    if (_scanRunner.getCuts().at(0)->getC() == 0 || _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested()) {
+    if (_scanRunner.getCuts().size() == 0 || _scanRunner.getCuts().at(0)->getC() == 0 || _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested()) {
         outfile << "No cuts were found." << std::endl;
     } else {
         outfile << "Most Likely Cuts"<< std::endl << std::endl;
@@ -236,7 +236,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<div class=\"hr\"></div>" << std::endl;
 
     outfile << "<div id=\"cuts\">" << std::endl;
-    if (_scanRunner.getCuts().at(0)->getC() == 0) {
+    if (_scanRunner.getCuts().size() == 0 || _scanRunner.getCuts().at(0)->getC() == 0 || _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested()) {
         outfile << "<h3>No cuts were found.</h3>" << std::endl;
     } else {
         outfile << "<h3>Most Likely Cuts</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;

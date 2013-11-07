@@ -42,6 +42,7 @@ import org.treescan.gui.utils.AutofitTableColumns;
 import org.treescan.importer.XLSImportDataSource;
 import org.treescan.gui.utils.Utils;
 import org.treescan.gui.utils.WaitCursor;
+import static org.treescan.importer.FileImporter.InputFileType.Cuts;
 
 /**
  *
@@ -94,13 +95,16 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         File outputDirectory = new File(_outputDirectoryTextField.getText());
         switch (_fileType) {
             case Case:
-                _destinationFile = File.createTempFile(_importFilePrefix, ".cts", outputDirectory);
+                _destinationFile = File.createTempFile(_importFilePrefix, ".cas", outputDirectory);
                 break;
             case Tree:
                 _destinationFile = File.createTempFile(_importFilePrefix, ".tre", outputDirectory);
                 break;
             case Cuts:
                 _destinationFile = File.createTempFile(_importFilePrefix, ".cut", outputDirectory);
+                break;
+            case Population:
+                _destinationFile = File.createTempFile(_importFilePrefix, ".pop", outputDirectory);
                 break;
             default:
                 throw new UnknownEnumException(_fileType);
@@ -379,11 +383,13 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
     private String getInputFileTypeString() {
         switch (_fileType) {
             case Case:
-                return "Counts File";
+                return "Case File";
             case Tree:
                 return "Tree File";
             case Cuts:
                 return "Cuts File";
+            case Population:
+                return "Population File";
             default:
                 throw new UnknownEnumException(_fileType);
         }
@@ -534,6 +540,9 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             case Cuts:
                 setCutsFileVariables();
                 break;
+            case Population:
+                setPopulationFileVariables();
+                break;
             default:
                 throw new UnknownEnumException(_fileType);
         }
@@ -571,9 +580,9 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
     private void setCountsFileVariables() {
         _importVariables.clear();
         _importVariables.addElement(new ImportVariable("Node ID", 0, true, null));
-        _importVariables.addElement(new ImportVariable("Counts", 1, true, null));
+        _importVariables.addElement(new ImportVariable("Cases", 1, true, null));
         //_importVariables.addElement(new ImportVariable("Duplicate Case", 2, false, null));
-        _importVariables.addElement(new ImportVariable("Population", 2, true, null));
+        _importVariables.addElement(new ImportVariable("Time", 2, false, null));
     }
 
     /**
@@ -586,7 +595,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
     }
 
     /**
-     * Setup field descriptors for control file.
+     * Setup field descriptors for cuts file.
      */
     private void setCutsFileVariables() {
         _importVariables.clear();
@@ -594,6 +603,16 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _importVariables.addElement(new ImportVariable("Cut Type", 1, true, null));
     }
 
+    /**
+     * Setup field descriptors for population file.
+     */
+    private void setPopulationFileVariables() {
+        _importVariables.clear();
+        _importVariables.addElement(new ImportVariable("Node ID", 0, true, null));
+        _importVariables.addElement(new ImportVariable("population", 1, true, null));
+        _importVariables.addElement(new ImportVariable("Time", 2, false, null));
+    }    
+    
     /**
      * Invoked when task's progress property changes.
      */

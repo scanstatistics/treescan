@@ -384,12 +384,9 @@ bool ScanRunner::run() {
         if (!readPopulation(_parameters.getPopulationFileName())) return false;
     }
     if (!setupTree()) return false;
-    if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
-        if (!scanTreeTemporal()) return false;
-    } else {
-        if (!scanTree()) return false;
+    if ((_parameters.getModelType() == Parameters::TEMPORALSCAN ? scanTreeTemporal() : scanTree())) {
+        if (!runsimulations()) return false;
     }
-    if (!runsimulations()) return false;
 
     time(&gEndTime); //get end time
     if (!reportResults(gStartTime, gEndTime)) return false;
@@ -403,7 +400,7 @@ bool ScanRunner::runsimulations() {
     unsigned long         ulParallelProcessCount = std::min(_parameters.getNumParallelProcessesToExecute(), _parameters.getNumReplicationsRequested());
 
     try {
-        if (_parameters.getNumReplicationsRequested() == 0)
+        if (_parameters.getNumReplicationsRequested() == 0 || _Cut.size() == 0)
             return true;
 
         _print.Printf("Doing the %d Monte Carlo simulations ...\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
@@ -536,9 +533,11 @@ bool ScanRunner::scanTree() {
             }
         }
     }
-    std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
-    _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.at(0)->getLogLikelihood()));
-    return true;
+    if (_Cut.size()) {
+        std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
+        _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.at(0)->getLogLikelihood()));
+    }
+    return _Cut.size() != 0;
 }
 
 /* SCANNING THE TREE for temporal model */
@@ -637,9 +636,11 @@ bool ScanRunner::scanTreeTemporal() {
             }
         }
     }
-    std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
-    _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.at(0)->getLogLikelihood()));
-    return true;
+    if (_Cut.size()) {
+        std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
+        _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.at(0)->getLogLikelihood()));
+    }
+    return _Cut.size() != 0;
 }
 
 void ScanRunner::updateCuts(int node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx) {
