@@ -244,7 +244,9 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
     CreateField(_dataFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     if (_scanner.getParameters().isDuplicates())
         CreateField(_dataFieldDefinitions, OBSERVED_NO_DUPLICATES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-    CreateField(_dataFieldDefinitions, TOTAL_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+    if (_scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN) {
+        CreateField(_dataFieldDefinitions, TOTAL_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+    }
     CreateField(_dataFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     CreateField(_dataFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     if (_scanner.getParameters().isDuplicates())
@@ -279,7 +281,9 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
     Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getC();
     if (_scanner.getParameters().isDuplicates())
         Record.GetFieldValue(OBSERVED_NO_DUPLICATES_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getC() - _scanner.getNodes().at(_scanner.getCuts().at(cutIndex)->getID())->getDuplicates();
-    Record.GetFieldValue(TOTAL_CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getCuts().at(cutIndex)->getN());
+    if (_scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN) {
+        Record.GetFieldValue(TOTAL_CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getCuts().at(cutIndex)->getN());
+    }
     Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getExpected(_scanner);
     Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getODE(_scanner);
     if (_scanner.getParameters().isDuplicates())
