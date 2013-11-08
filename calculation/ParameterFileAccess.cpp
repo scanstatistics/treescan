@@ -100,7 +100,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::END_DATA_TIME_RANGE      : return _parameters.getTemporalEndRange().toString(s);
             /* Advanced Analysis */
             case Parameters::REPLICATIONS             : return AsString(s, _parameters.getNumReplicationsRequested());
-            case Parameters::RANDOMIZATION_SEED       : return AsString(s, _parameters.getRandomizationSeed());
+            case Parameters::RANDOMIZATION_SEED       : return AsString(s, static_cast<unsigned int>(_parameters.getRandomizationSeed()));
             case Parameters::RANDOMLY_GENERATE_SEED   : return AsString(s, _parameters.isRandomlyGeneratingSeed());
             /* Output */
             case Parameters::RESULTS_FILE             : s = _parameters.getOutputFileName(); return s;
@@ -242,7 +242,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::END_DATA_TIME_RANGE      : _parameters.setTemporalEndRange(DataTimeRange(value)); break;
             /* Advanced Analysis */
             case Parameters::REPLICATIONS             : _parameters.setNumReplications(ReadUnsignedInt(value, e)); break;
-            case Parameters::RANDOMIZATION_SEED       : _parameters.setRandomizationSeed(ReadInt(value, e)); break;
+            case Parameters::RANDOMIZATION_SEED       : _parameters.setRandomizationSeed(static_cast<long>(ReadInt(value, e))); break;
             case Parameters::RANDOMLY_GENERATE_SEED   : _parameters.setRandomlyGeneratingSeed(ReadBoolean(value, e)); break;
             /* Output */
             case Parameters::RESULTS_FILE             : _parameters.setOutputFileName(value.c_str()); break;
