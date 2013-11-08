@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 13;
+const int Parameters::giNumParameters = 21;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -237,39 +237,39 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     ptree pt;
 
     switch (type) {
-        case INI: read_ini(filename, pt); break;
         case JSON: read_json(filename, pt); break;
         case XML: 
         default: read_xml(filename, pt);
     }
     setSourceFileName(filename.c_str());
 
-    setTreeFileName(pt.get<std::string>(type == INI ? "input.tree-file" : "parameters.input.tree-file", "").c_str(), true);
-    setCountFileName(pt.get<std::string>(type == INI ? "input.case-file" : "parameters.input.case-file", "").c_str(), true);
-    setPopulationFileName(pt.get<std::string>(type == INI ? "input.population-file" : "parameters.input.population-file", "").c_str(), true);
-    _dataTimeRangeSet.assign(pt.get<std::string>(type == INI ? "input.data-time-range" : "parameters.input.data-time-range", "0,0"));
-    setCutsFileName(pt.get<std::string>(type == INI ? "input-advanced.cuts-file" : "parameters.input.advanced.cuts-file", "").c_str(), true);
-    //_duplicates = pt.get<bool>(type == INI ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", false);
-
-    _scan_type = static_cast<ScanType>(pt.get<unsigned int>(type == INI ? "analysis.scan" : "parameters.analysis.scan", TREEONLY));
-    _conditional_type = static_cast<ConditionalType>(pt.get<unsigned int>(type == INI ? "analysis.conditional" : "parameters.analysis.conditional", UNCONDITIONAL));
-    _modelType = static_cast<ModelType>(pt.get<unsigned int>(type == INI ? "analysis.probability-model" : "parameters.analysis.probability-model", POISSON));
-    _probablility_ratio.first = pt.get<unsigned int>(type == INI ? "analysis.event-probability-numerator" : "parameters.analysis.event-probability.numerator", 1);
-    _probablility_ratio.second = pt.get<unsigned int>(type == INI ? "analysis.event-probability-denominator" : "parameters.analysis.event-probability.denominator", 2);
-    _temporalStartRange.assign(pt.get<std::string>(type == INI ? "analysis.start-time-range" : "parameters.analysis.temporal-window.start-range", "0,0"));
-    _temporalEndRange.assign(pt.get<std::string>(type == INI ? "analysis.end-time-range" : "parameters.analysis.temporal-window.end-range", "0,0"));
-    _replications = pt.get<unsigned int>(type == INI ? "analysis-advanced.replications" : "parameters.analysis.advanced.replications", 999);
-    _cut_type = static_cast<CutType>(pt.get<unsigned int>(type == INI ? "analysis-advanced.cut-type" : "parameters.analysis.advanced.cut-type", SIMPLE));
-
-    setOutputFileName(pt.get<std::string>(type == INI ? "output.results-file" : "parameters.output.results-file", "").c_str(), true);
-    //_resultsFormat = pt.get<bool>(type == INI ? "output.html" : "parameters.output.results-file.<xmlattr>.html", true) ? HTML : TEXT;
-    _generateHtmlResults = pt.get<bool>(type == INI ? "output.generate-html-results" : "parameters.output.generate-html-results", true);
-    _generateTableResults = pt.get<bool>(type == INI ? "output.generate-table-results" : "parameters.output.generate-table-results", true);
-    _printColumnHeaders = pt.get<bool>(type == INI ? "output.print-headers" : "parameters.output.print-headers", true);
-
-    _numRequestedParallelProcesses = pt.get<unsigned int>(type == INI ? "execute-options.processors" : "parameters.execute-options.processors", 0);
-    _randomizationSeed = pt.get<unsigned int>(type == INI ? "execute-options.seed" : "parameters.execute-options.seed", static_cast<unsigned int>(RandomNumberGenerator::glDefaultSeed));
-    _randomlyGenerateSeed = pt.get<bool>(type == INI ? "execute-options.generate-seed" : "parameters.execute-options.generate-seed", false);
+    // Input
+    setTreeFileName(pt.get<std::string>("parameters.input.tree-filename", "").c_str(), true);
+    setCountFileName(pt.get<std::string>("parameters.input.case-filename", "").c_str(), true);
+    setPopulationFileName(pt.get<std::string>("parameters.input.population-filename", "").c_str(), true);
+    _dataTimeRangeSet.assign(pt.get<std::string>("parameters.input.data-time-range", "0,0"));
+    // Advanced Input
+    setCutsFileName(pt.get<std::string>("parameters.input.advanced.cuts-filename", "").c_str(), true);
+    _cut_type = static_cast<CutType>(pt.get<unsigned int>("parameters.input-advanced.cuts-type", SIMPLE));
+    _duplicates = pt.get<bool>("parameters.input.advanced.duplicates", false);
+    // Analysis
+    _scan_type = static_cast<ScanType>(pt.get<unsigned int>("parameters.analysis.scan", TREEONLY));
+    _conditional_type = static_cast<ConditionalType>(pt.get<unsigned int>("parameters.analysis.conditional", UNCONDITIONAL));
+    _modelType = static_cast<ModelType>(pt.get<unsigned int>("parameters.analysis.probability-model", POISSON));
+    _probablility_ratio.first = pt.get<unsigned int>("parameters.analysis.event-probability.numerator", 1);
+    _probablility_ratio.second = pt.get<unsigned int>("parameters.analysis.event-probability.denominator", 2);
+    _temporalStartRange.assign(pt.get<std::string>("parameters.analysis.temporal-window.start-range", "0,0"));
+    _temporalEndRange.assign(pt.get<std::string>("parameters.analysis.temporal-window.end-range", "0,0"));
+    // Advanced Analysis
+    _replications = pt.get<unsigned int>("parameters.analysis.advanced.replications", 999);
+    _randomizationSeed = pt.get<unsigned int>("parameters.analysis-advanced.seed", static_cast<unsigned int>(RandomNumberGenerator::glDefaultSeed));
+    _randomlyGenerateSeed = pt.get<bool>("parameters.analysis-advanced.generate-seed", false);
+    // Output
+    setOutputFileName(pt.get<std::string>("parameters.output.results-file", "").c_str(), true);
+    _generateHtmlResults = pt.get<bool>("parameters.output.generate-html-results", true);
+    _generateTableResults = pt.get<bool>("parameters.output.generate-table-results", true);
+    // Run Options
+    _numRequestedParallelProcesses = pt.get<unsigned int>("parameters.run-options.processors", 0);
 }
 
 void Parameters::write(const std::string &filename, ParametersFormat type) const {
@@ -278,35 +278,35 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     ptree pt;
     std::string buffer;
 
-    pt.put(type == INI ? "input.tree-file" : "parameters.input.tree-file", _treeFileName);
-    pt.put(type == INI ? "input.case-file" : "parameters.input.case-file", _countFileName);
-    pt.put(type == INI ? "input.population-file" : "parameters.input.population-file", _populationFileName);
-    pt.put(type == INI ? "input.data-time-range" : "parameters.input.data-time-range", _dataTimeRangeSet.toString(buffer));
-    pt.put(type == INI ? "input-advanced.cuts-file" : "parameters.input.advanced.cuts-file", _cutsFileName);
-    //pt.put(type == INI ? "input.duplicates" : "parameters.input.count-file.<xmlattr>.duplicates", _duplicates);
-
-    pt.put(type == INI ? "analysis.scan" : "parameters.analysis.scan", static_cast<unsigned int>(_scan_type));
-    pt.put(type == INI ? "analysis.conditional" : "parameters.analysis.conditional", static_cast<unsigned int>(_conditional_type));
-    pt.put(type == INI ? "analysis.probability-model" : "parameters.analysis.probability-model", static_cast<unsigned int>(_modelType));
-    pt.put(type == INI ? "analysis.event-probability-numerator" : "parameters.analysis.event-probability.numerator", _probablility_ratio.first);
-    pt.put(type == INI ? "analysis.event-probability-denominator" : "parameters.analysis.event-probability.denominator", _probablility_ratio.second);
-    pt.put(type == INI ? "analysis.start-time-range" : "parameters.analysis.temporal-window.start-range", _temporalStartRange.toString(buffer));
-    pt.put(type == INI ? "analysis.end-time-range" : "parameters.analysis.temporal-window.end-range", _temporalEndRange.toString(buffer));
-    pt.put(type == INI ? "analysis-advanced.replications" : "parameters.analysis.advanced.replications", _replications);
-    pt.put(type == INI ? "analysis-advanced.cut-type" : "parameters.analysis.advanced.cut-type", static_cast<unsigned int>(_cut_type));
-
-    pt.put(type == INI ? "output.results-file" : "parameters.output.results-file", _outputFileName);
-    //pt.put(type == INI ? "output.html" : "parameters.output.results-file.<xmlattr>.html", _resultsFormat == HTML);
-    pt.put(type == INI ? "output.generate-html-results" : "parameters.output.generate-html-results", _generateHtmlResults);
-    pt.put(type == INI ? "output.generate-table-results" : "parameters.output.generate-table-results", _generateTableResults);
-    pt.put(type == INI ? "output.print-headers" : "parameters.output.print-headers", _printColumnHeaders);
-
-    pt.put(type == INI ? "execute-options.processors" : "parameters.execute-options.processors", _numRequestedParallelProcesses);
-    pt.put(type == INI ? "execute-options.seed" : "parameters.execute-options.seed", _randomizationSeed);
-    pt.put(type == INI ? "execute-options.generate-seed" : "parameters.execute-options.generate-seed", _randomlyGenerateSeed);
+    // Input
+    pt.put("parameters.input.tree-file", _treeFileName);
+    pt.put("parameters.input.case-file", _countFileName);
+    pt.put("parameters.input.population-file", _populationFileName);
+    pt.put("parameters.input.data-time-range", _dataTimeRangeSet.toString(buffer));
+    // Advanced Input
+    pt.put("parameters.input.advanced.cuts-file", _cutsFileName);
+    pt.put("parameters.input-advanced.cuts-type", static_cast<unsigned int>(_cut_type));
+    pt.put("parameters.input.advanced.duplicates", _duplicates);
+    // Analysis
+    pt.put("parameters.analysis.scan", static_cast<unsigned int>(_scan_type));
+    pt.put("parameters.analysis.conditional", static_cast<unsigned int>(_conditional_type));
+    pt.put("parameters.analysis.probability-model", static_cast<unsigned int>(_modelType));
+    pt.put("parameters.analysis.event-probability.numerator", _probablility_ratio.first);
+    pt.put("parameters.analysis.event-probability.denominator", _probablility_ratio.second);
+    pt.put("parameters.analysis.temporal-window.start-range", _temporalStartRange.toString(buffer));
+    pt.put("parameters.analysis.temporal-window.end-range", _temporalEndRange.toString(buffer));
+    // Advanced Analysis
+    pt.put("parameters.analysis.advanced.replications", _replications);
+    pt.put("parameters.analysis.advanced.seed", _randomizationSeed);
+    pt.put("parameters.analysis.advanced.generate-seed", _randomlyGenerateSeed);
+    // Output
+    pt.put("parameters.output.results-file", _outputFileName);
+    pt.put("parameters.output.generate-html-results", _generateHtmlResults);
+    pt.put("parameters.output.generate-table-results", _generateTableResults);
+    // Run Options
+    pt.put("parameters.run-options.processors", _numRequestedParallelProcesses);
 
     switch (type) {
-        case INI: write_ini(filename, pt); break;
         case JSON: write_json(filename, pt); break;
         case XML:  
         default: {

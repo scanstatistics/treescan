@@ -1,0 +1,56 @@
+[Input]
+;tree structure filename
+tree-filename=tree.tre
+;case data filename
+case-filename=temporal.cas
+;population data filename
+population-filename=
+;data time ranges (integer - integer)
+data-time-range=[-16,9]
+
+[Analysis]
+;scan type (TREEONLY=0, TREETIME)
+scan-type=1
+;conditional type (UNCONDITIONAL=0, TOTALCASES, CASESEACHBRANCH)
+conditional-type=2
+;probability model type (POISSON=0, BERNOULLI=1, TEMPORALSCAN=3)
+probability-model=2
+;event probability (integer / integer)
+event-probability=1/2
+;start data time range (integer - integer)
+window-start-range=[0,9]
+;end data time range (integer - integer)
+window-end-range=[0,9]
+
+[Output]
+;results filename
+results-filename=temporal.txt
+;create HTML results
+results-html=n
+;create CSV results
+results-csv=n
+
+[Advanced Input]
+;cuts filename
+cut-filename=
+;default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)
+cut-type=0
+;duplicates in case data records
+duplicates=n
+
+[Advanced Analysis]
+;number of simulation replications (0,9,999, n999)
+monte-carlo-replications=99999
+;randomization seed (integer)
+randomization-seed=12345678
+;generate randomization seed (y/n)
+random-randomization-seed=n
+
+[Run Options]
+;number of parallel processes to execute (0=All Processors, x=At Most X Processors)
+parallel-processes=0
+
+[System]
+;parameters version - do not modify
+parameters-version=1.1.0
+

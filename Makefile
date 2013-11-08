@@ -63,11 +63,14 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(UTILITY)/contractor.cpp \
                $(UTILITY)/AsynchronouslyAccessible.cpp \
                $(UTILITY)/AsciiPrintFormat.cpp \
+               $(UTILITY)/Ini.cpp \
                $(CALCULATION)/Parameters.cpp \
                $(CALCULATION)/ParametersPrint.cpp \
                $(CALCULATION)/ParameterFileAccess.cpp \
                $(CALCULATION)/ParametersValidate.cpp \
                $(CALCULATION)/Toolkit.cpp \
+               $(CALCULATION)/IniParameterFileAccess.cpp \
+               $(CALCULATION)/IniParameterSpecification.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/once.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/thread.cpp \
                $(BOOSTDIR)/libs/program_options/src/cmdline.cpp \
@@ -79,9 +82,10 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(BOOSTDIR)/libs/program_options/src/utf8_codecvt_facet.cpp \
                $(BOOSTDIR)/libs/program_options/src/value_semantic.cpp \
                $(BOOSTDIR)/libs/program_options/src/variables_map.cpp \
-               $(BOOSTDIR)/libs/system/src/error_code.cpp               
+               $(BOOSTDIR)/libs/system/src/error_code.cpp
 
-APP_SRC     := $(TREESCAN)/batch_application/TreeScan.cpp
+APP_SRC     := $(TREESCAN)/batch_application/TreeScan.cpp \
+               $(TREESCAN)/batch_application/ParameterProgramOptions.cpp
 LIB_SRC     := $(TREESCAN)/library/SharedLibrary.cpp \
                $(TREESCAN)/library/JNIPrintWindow.cpp \
                $(TREESCAN)/library/ParametersUtility.cpp \

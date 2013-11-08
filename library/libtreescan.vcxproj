@@ -175,6 +175,8 @@
     <ClCompile Include="..\calculation\loglikelihood\Loglikelihood.cpp" />
     <ClCompile Include="..\calculation\output\DataFileWriter.cpp" />
     <ClCompile Include="..\calculation\output\ResultsFileWriter.cpp" />
+    <ClCompile Include="..\calculation\IniParameterFileAccess.cpp" />
+    <ClCompile Include="..\calculation\IniParameterSpecification.cpp" />
     <ClCompile Include="..\calculation\ParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\Parameters.cpp" />
     <ClCompile Include="..\calculation\ParametersPrint.cpp" />
@@ -202,6 +204,7 @@
     <ClCompile Include="..\calculation\utility\MonteCarloSimFunctor.cpp" />
     <ClCompile Include="..\calculation\utility\TimeStamp.cpp" />
     <ClCompile Include="..\calculation\utility\UtilityFunctions.cpp" />
+    <ClCompile Include="..\calculation\utility\Ini.cpp" />
     <ClCompile Include="JNIException.cpp" />
     <ClCompile Include="PrintCallback.cpp" />
     <ClCompile Include="SharedLibrary.cpp" />
@@ -212,6 +215,8 @@
     <ClInclude Include="..\calculation\loglikelihood\Loglikelihood.h" />
     <ClInclude Include="..\calculation\output\DataFileWriter.h" />
     <ClInclude Include="..\calculation\output\ResultsFileWriter.h" />
+    <ClInclude Include="..\calculation\IniParameterFileAccess.h" />
+    <ClInclude Include="..\calculation\IniParameterSpecification.h" />
     <ClInclude Include="..\calculation\ParameterFileAccess.h" />
     <ClInclude Include="..\calculation\Parameters.h" />
     <ClInclude Include="..\calculation\ParametersPrint.h" />
@@ -241,6 +246,7 @@
     <ClInclude Include="..\calculation\utility\MonteCarloSimFunctor.h" />
     <ClInclude Include="..\calculation\utility\TimeStamp.h" />
     <ClInclude Include="..\calculation\utility\UtilityFunctions.h" />
+    <ClInclude Include="..\calculation\utility\Ini.h" />
     <ClInclude Include="JNIException.h" />
     <ClInclude Include="org_treescan_app_AppConstants.h" />
     <ClInclude Include="org_treescan_app_CalculationThread.h" />

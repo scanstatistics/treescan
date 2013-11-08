@@ -29,11 +29,11 @@ class AsciiPrintFormat {
      AsciiPrintFormat(bool bOneDataSet=true);
      virtual ~AsciiPrintFormat();
 
-     void                       PrintAlignedMarginsDataString(std::ofstream& out, const std::string& sDataString, unsigned int iPostNewlines=1) const;
-     void                       PrintNonRightMarginedDataString(std::ofstream& out, const std::string& sDataString, bool bPadLeftMargin, unsigned int iPostNewlines=1) const;
-     void                       PrintSectionLabel(std::ofstream& out, const char* sText, bool bPadLeftMargin) const;
-     static void                PrintSectionSeparatorString(std::ofstream& out, unsigned int iPreNewlines=0, unsigned int iPostNewlines=1, char cSeparator='_');
-     static void                PrintVersionHeader(std::ofstream& out);
+     void                       PrintAlignedMarginsDataString(std::ostream& out, const std::string& sDataString, unsigned int iPostNewlines=1) const;
+     void                       PrintNonRightMarginedDataString(std::ostream& out, const std::string& sDataString, bool bPadLeftMargin, unsigned int iPostNewlines=1) const;
+     void                       PrintSectionLabel(std::ostream& out, const char* sText, bool bPadLeftMargin) const;
+     static void                PrintSectionSeparatorString(std::ostream& out, unsigned int iPreNewlines=0, unsigned int iPostNewlines=1, char cSeparator='_');
+     static void                PrintVersionHeader(std::ostream& out);
      void                       SetMarginsAsCutSection(unsigned int iNumber);
      void                       SetMarginsAsOverviewSection();
      void                       SetMarginsAsRunTimeReportSection();

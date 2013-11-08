@@ -180,12 +180,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
         switch (_focusedTabSet) {
             case ANALYSIS:
-                setTitle("Analysis: Advanced Options");
-                jTabbedPane1.addTab("Analysis: Advanced Options", null, _advancedanalysisTab, null);
+                setTitle("Advanced Analysis Options");
+                jTabbedPane1.addTab("Advanced Analysis", null, _advancedanalysisTab, null);
                 break;
             case INPUT:
             default:
-                setTitle("Input: Advanced Options");
+                setTitle("Advanced Input Options");
                 jTabbedPane1.addTab("Advanced Input", null, _advancedinputTab, null);
         }
     }
@@ -370,10 +370,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_cutFileBrowseButton)
                     .addComponent(_cutFileImportButton)
                     .addComponent(_cutFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(130, Short.MAX_VALUE))
+                .addContainerGap(134, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Input: Advanced Options", _advancedinputTab);
+        jTabbedPane1.addTab("Advanced Input Options", _advancedinputTab);
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Replications"));
 
@@ -431,10 +431,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advancedanalysisTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(121, Short.MAX_VALUE))
+                .addContainerGap(125, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Analysis: Advanced Options", _advancedanalysisTab);
+        jTabbedPane1.addTab("Advanced Analysis Options", _advancedanalysisTab);
 
         _closeButton.setText("Close"); // NOI18N
         _closeButton.addActionListener(new java.awt.event.ActionListener() {

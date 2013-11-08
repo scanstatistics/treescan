@@ -16,7 +16,7 @@ JNIEXPORT jboolean JNICALL Java_org_treescan_app_Parameters_Read(JNIEnv * pEnv, 
      const char *sParameterFilename = pEnv->GetStringUTFChars(filename, &iscopy);
      if (sParameterFilename) {
        PrintNull NoPrint;
-       ParameterAccessCoordinator(parameters).read(sParameterFilename);
+       ParameterAccessCoordinator(parameters).read(sParameterFilename, NoPrint);
      }
      else {
        //New session - creation version is this version.
@@ -48,7 +48,7 @@ JNIEXPORT void JNICALL Java_org_treescan_app_Parameters_Write(JNIEnv * pEnv, job
   try {
     ParametersUtility::copyJParametersToCParameters(*pEnv, jParameters, parameters);
     PrintNull NoPrint;
-    ParameterAccessCoordinator(parameters).write(parameters.getSourceFileName().c_str());
+    ParameterAccessCoordinator(parameters).write(parameters.getSourceFileName().c_str(), NoPrint);
   }
   catch (jni_error&) {    
     return; // let the Java exception to be handled in the caller of JNI function

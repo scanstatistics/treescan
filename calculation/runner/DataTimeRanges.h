@@ -16,7 +16,7 @@ class DataTimeRange {
     public:
         DataTimeRange() : _range(0,0) {}
         DataTimeRange(index_t start, index_t end) : _range(start,end) {}
-        DataTimeRange(const std::string& from);
+        DataTimeRange(const std::string& from) {assign(from);}
 
         iterator_t begin() {return boost::counting_iterator<int>(_range.first);}
         iterator_t end() {return boost::counting_iterator<int>(_range.second);}

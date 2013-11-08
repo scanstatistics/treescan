@@ -270,7 +270,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         JFileChooser fc = new JFileChooser(lastBrowseDirectory);
         fc.setDialogTitle("Select Settings File");
         fc.addChoosableFileFilter(new InputFileFilter("txt", "Text Files (*.txt)"));
-        fc.addChoosableFileFilter(new InputFileFilter("tml", "Settings Files (*.tml)"));
+        fc.addChoosableFileFilter(new InputFileFilter("prm", "Settings Files (*.prm)"));
         int returnVal = fc.showOpenDialog(TreeScanApplication.this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             lastBrowseDirectory = fc.getCurrentDirectory();

@@ -9,25 +9,38 @@
 class Parameters {
   public:
     typedef std::pair<unsigned int,unsigned int> ratio_t;
-    enum ParameterType {TREEFILE=1, 
-                        CUTFILE, 
-                        COUNTFILE, 
-                        POPULATIONFILE, 
-                        OUTPUTFILE, 
-                        CUTS, 
-                        REPLICATIONS, 
-                        DUPLICATES, 
-                        RANDOMIZATION_SEED, 
-                        RANDOMLY_GENERATE_SEED, 
-                        PRINT_COLUMN_HEADERS, 
-                        MODEL,
+    enum ParameterType {/* Input */
+                        TREE_FILE=1,
+                        COUNT_FILE,
+                        POPULATION_FILE,
                         DATA_TIME_RANGES,
+                        /* Advanced Input */
+                        CUT_FILE,
+                        CUT_TYPE,
+                        DUPLICATES,
+                        /* Analysis */
+                        SCAN_TYPE,
+                        CONDITIONAL_TYPE,
+                        MODEL_TYPE,
+                        EVENT_PROBABILITY,
                         START_DATA_TIME_RANGE,
-                        END_DATA_TIME_RANGE
+                        END_DATA_TIME_RANGE,
+                        /* Advanced Analysis */
+                        REPLICATIONS,
+                        RANDOMIZATION_SEED,
+                        RANDOMLY_GENERATE_SEED,
+                        /* Output */
+                        RESULTS_FILE,
+                        RESULTS_HTML,
+                        RESULTS_CSV,
+                        /* Run Options */
+                        PARALLEL_PROCESSES,
+                        /* System */
+                        CREATION_VERSION
     };
     struct CreationVersion {unsigned int iMajor; unsigned int iMinor; unsigned int iRelease;};
     enum ResultsFormat {TEXT=0};
-    enum ParametersFormat {XML=0, INI, JSON};
+    enum ParametersFormat {XML=0, JSON};
     enum ModelType {POISSON=0, BERNOULLI, TEMPORALSCAN};
     enum CutType {SIMPLE=0, PAIRS, TRIPLETS, ORDINAL, COMBINATORIAL};
     enum ScanType {TREEONLY=0, TREETIME};

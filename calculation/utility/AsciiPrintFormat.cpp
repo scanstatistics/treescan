@@ -38,7 +38,7 @@ AsciiPrintFormat::~AsciiPrintFormat() {}
           (giRightMargin - giDataLeftMargin)'th character beyond beginning of a
           line. Subsequent lines that wrap do incorporate appropriate padding of
           blanks. */
-void AsciiPrintFormat::PrintAlignedMarginsDataString(std::ofstream& out, const std::string& sDataString, unsigned int iPostNewlines) const {
+void AsciiPrintFormat::PrintAlignedMarginsDataString(std::ostream& out, const std::string& sDataString, unsigned int iPostNewlines) const {
   unsigned int  iStart, iScan, iPrint, iDataPrintWidth;
 
   iStart = 0;
@@ -85,7 +85,7 @@ void AsciiPrintFormat::PrintAlignedMarginsDataString(std::ofstream& out, const s
 }
 
 /** Prints data string to file stream without consideration to right margin. */
-void AsciiPrintFormat::PrintNonRightMarginedDataString(std::ofstream& out, const std::string& sDataString, bool bPadLeftMargin, unsigned int iPostNewlines) const {
+void AsciiPrintFormat::PrintNonRightMarginedDataString(std::ostream& out, const std::string& sDataString, bool bPadLeftMargin, unsigned int iPostNewlines) const {
   unsigned int  iPrint;
 
   //pad with blanks to align data
@@ -101,7 +101,7 @@ void AsciiPrintFormat::PrintNonRightMarginedDataString(std::ofstream& out, const
 }
 
 /** Prints section label to file stream. */
-void AsciiPrintFormat::PrintSectionLabel(std::ofstream& out, const char * sText, bool bPadLeftMargin) const {
+void AsciiPrintFormat::PrintSectionLabel(std::ostream& out, const char * sText, bool bPadLeftMargin) const {
   unsigned int   iStringLength, iFillLength, iPad=0;
 
   iStringLength = 0;
@@ -132,7 +132,7 @@ void AsciiPrintFormat::PrintSectionLabel(std::ofstream& out, const char * sText,
 
 /** Prints character cSeparator giRightMargin'th times. Prefixes/postfixes separator
     string newline character as specified by parameters, respectively. */
-void AsciiPrintFormat::PrintSectionSeparatorString(std::ofstream& out, unsigned int iPreNewlines, unsigned int iPostNewlines, char cSeparator) {
+void AsciiPrintFormat::PrintSectionSeparatorString(std::ostream& out, unsigned int iPreNewlines, unsigned int iPostNewlines, char cSeparator) {
   unsigned int iPrint = 0;
 
   while (iPreNewlines-- > 0)
@@ -146,7 +146,7 @@ void AsciiPrintFormat::PrintSectionSeparatorString(std::ofstream& out, unsigned 
 }
 
 /** Prints version header to file stream */
-void AsciiPrintFormat::PrintVersionHeader(std::ofstream& out) {
+void AsciiPrintFormat::PrintVersionHeader(std::ostream& out) {
   unsigned int  iSeparatorsMargin, iTextMargin, iPrint;
   std::string   buffer;
 

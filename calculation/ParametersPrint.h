@@ -24,14 +24,14 @@ class ParametersPrint {
     SettingContainer_t & getRunOptionsParameters(SettingContainer_t & settings) const;
     SettingContainer_t & getSystemParameters(SettingContainer_t & settings) const;
 
-    void WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, std::ofstream& out) const;
-    void WriteSettingsContainerHTML(const SettingContainer_t& settings, const std::string& section, std::ofstream& out) const;
+    void WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, std::ostream& out) const;
+    void WriteSettingsContainerHTML(const SettingContainer_t& settings, const std::string& section, std::ostream& out) const;
 
   public:
     ParametersPrint(const Parameters& Parameters) : _parameters(Parameters) {}
 
-    void Print(std::ofstream& out) const;
-    void PrintHTML(std::ofstream& out) const;
+    void Print(std::ostream& out) const;
+    void PrintHTML(std::ostream& out) const;
 };
 //******************************************************************************
 #endif

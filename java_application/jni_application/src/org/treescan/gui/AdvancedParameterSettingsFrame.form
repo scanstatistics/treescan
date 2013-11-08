@@ -57,9 +57,9 @@
         <Container class="javax.swing.JPanel" name="_advancedinputTab">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="Input: Advanced Options">
+              <JTabbedPaneConstraints tabName="Advanced Input Options">
                 <Property name="tabTitle" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <PlainString value="Input: Advanced Options"/>
+                  <PlainString value="Advanced Input Options"/>
                 </Property>
               </JTabbedPaneConstraints>
             </Constraint>
@@ -98,7 +98,7 @@
                           <Component id="_cutFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="_cutFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="130" max="32767" attributes="0"/>
+                      <EmptySpace pref="134" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -141,8 +141,8 @@
         <Container class="javax.swing.JPanel" name="_advancedanalysisTab">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="Analysis: Advanced Options">
-                <Property name="tabTitle" type="java.lang.String" value="Analysis: Advanced Options"/>
+              <JTabbedPaneConstraints tabName="Advanced Analysis Options">
+                <Property name="tabTitle" type="java.lang.String" value="Advanced Analysis Options"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -162,7 +162,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="121" max="32767" attributes="0"/>
+                      <EmptySpace pref="125" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

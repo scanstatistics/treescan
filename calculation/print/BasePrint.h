@@ -19,7 +19,6 @@ class BasePrint {
     std::map<eInputFileType, int>       gInputFileWarningsMap;
     bool                                gbSuppressWarnings;
 
-    virtual void                        Print(const char * sMessage, PrintType ePrintType);
     virtual void                        PrintError(const char * sMessage) = 0;
     virtual void                        PrintNotice(const char * sMessage) = 0;
     virtual void                        PrintReadError(const char * sMessage);
@@ -30,6 +29,7 @@ class BasePrint {
     BasePrint(bool bSuppressWarnings);
     virtual ~BasePrint();
 
+    virtual void                        Print(const char * sMessage, PrintType ePrintType);
     eInputFileType                      GetImpliedInputFileType() const {return geInputFileType;}
     const std::string                 & GetImpliedFileTypeString() const {return gsInputFileString;}
     virtual bool                        GetIsCanceled() const = 0;

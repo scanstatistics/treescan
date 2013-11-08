@@ -7,7 +7,7 @@
 #include "RandomNumberGenerator.h"
 
 /** Prints parameters, in a particular format, to passed ascii file. */
-void ParametersPrint::Print(std::ofstream& out) const {
+void ParametersPrint::Print(std::ostream& out) const {
     try {
         AsciiPrintFormat::PrintSectionSeparatorString(out, 0, 2);
         out << "PARAMETER SETTINGS" << std::endl;
@@ -35,7 +35,7 @@ void ParametersPrint::Print(std::ofstream& out) const {
 }
 
 /** Prints parameters, in a particular format, to passed ascii file. */
-void ParametersPrint::PrintHTML(std::ofstream& out) const {
+void ParametersPrint::PrintHTML(std::ostream& out) const {
     SettingContainer_t settings;
     out << "<div id=\"parameter-settings\"><h4>Parameter Settings</h4>" << std::endl;
     //print 'Input' tab settings
@@ -173,7 +173,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getSystemParameters(Setti
 }
 
 /** Writes settings container to file stream. */
-void ParametersPrint::WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, std::ofstream& out) const {
+void ParametersPrint::WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, std::ostream& out) const {
     try {
         if (!settings.size()) return;
         //print section label
@@ -205,7 +205,7 @@ void ParametersPrint::WriteSettingsContainer(const SettingContainer_t& settings,
 }
 
 /** Writes settings container to file stream. */
-void ParametersPrint::WriteSettingsContainerHTML(const SettingContainer_t& settings, const std::string& section, std::ofstream& out) const {
+void ParametersPrint::WriteSettingsContainerHTML(const SettingContainer_t& settings, const std::string& section, std::ostream& out) const {
     try {
         if (!settings.size()) return;
         //print section label

@@ -227,7 +227,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "</td></tr>" << std::endl;
     outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
     if (parameters.getModelType() != Parameters::TEMPORALSCAN) {
-        outfile << "<tr><th>Total Measure:</th><td>" << _scanRunner.getTotalN() << "</td></tr>" << std::endl;
+        outfile << "<tr><th>Total Measure:</th><td>" << getValueAsString(_scanRunner.getTotalN(), buffer).c_str() << "</td></tr>" << std::endl;
     }
     if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
         outfile << "<tr><th>Data Time Range:</th><td>" << parameters.getDataTimeRangeSet().toString(buffer).c_str() << "</td></tr>" << std::endl;

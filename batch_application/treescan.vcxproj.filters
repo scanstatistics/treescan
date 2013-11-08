@@ -70,6 +70,9 @@
     <Filter Include="Source Files\boost\system">
       <UniqueIdentifier>{f8506184-5527-4d9d-8dcd-dcd5f4e6694a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\batch_application">
+      <UniqueIdentifier>{77fb2ac1-ea23-4f6b-8a14-44c474fade13}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\calculation\runner\ScanRunner.cpp">
@@ -100,6 +103,9 @@
       <Filter>Source Files\calculation\utility</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\utility\TimeStamp.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\Ini.cpp">
       <Filter>Source Files\calculation\utility</Filter>
     </ClCompile>
     <ClCompile Include="..\boost\boost_1_52_0\libs\program_options\src\cmdline.cpp">
@@ -158,6 +164,15 @@
     </ClCompile>
     <ClCompile Include="TreeScan.cpp">
       <Filter>Source Files\batch_application</Filter>
+    </ClCompile>
+    <ClCompile Include="ParameterProgramOptions.cpp">
+      <Filter>Source Files\batch_application</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\IniParameterFileAccess.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\IniParameterSpecification.cpp">
+      <Filter>Source Files\calculation</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\Parameters.cpp">
       <Filter>Source Files\calculation</Filter>
@@ -239,6 +254,9 @@
     <ClInclude Include="..\calculation\utility\FileName.h">
       <Filter>Header Files\calculation\utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\utility\Ini.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
     <ClInclude Include="..\calculation\utility\TimeStamp.h">
       <Filter>Header Files\calculation\utility</Filter>
     </ClInclude>
@@ -293,6 +311,12 @@
     <ClInclude Include="..\calculation\ParameterFileAccess.h">
       <Filter>Header Files\calculation</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\IniParameterFileAccess.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\IniParameterSpecification.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
     <ClInclude Include="..\calculation\randomization\BernoulliRandomizer.h">
       <Filter>Header Files\calculation\randomization</Filter>
     </ClInclude>
@@ -310,6 +334,9 @@
     </ClInclude>
     <ClInclude Include="..\calculation\randomization\TemporalRandomizer.h">
       <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="ParameterProgramOptions.h">
+      <Filter>Header Files\batch_application</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

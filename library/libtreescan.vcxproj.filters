@@ -131,6 +131,9 @@
     <ClCompile Include="..\calculation\utility\FieldDef.cpp">
       <Filter>Source Files\calculation\utility</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\utility\Ini.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
     <ClCompile Include="..\calculation\output\DataFileWriter.cpp">
       <Filter>Source Files\calculation\output</Filter>
     </ClCompile>
@@ -156,6 +159,12 @@
       <Filter>Source Files\library</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\Toolkit.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\IniParameterFileAccess.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\IniParameterSpecification.cpp">
       <Filter>Source Files\calculation</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\ParameterFileAccess.cpp">
@@ -223,6 +232,9 @@
     <ClInclude Include="..\calculation\utility\AsynchronouslyAccessible.h">
       <Filter>Header Files\calculation\utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\utility\Ini.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
     <ClInclude Include="..\calculation\utility\contractor.h">
       <Filter>Header Files\calculation\utility</Filter>
     </ClInclude>
@@ -287,6 +299,12 @@
       <Filter>Header Files\library</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\Toolkit.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\IniParameterFileAccess.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\IniParameterSpecification.h">
       <Filter>Header Files\calculation</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\ParameterFileAccess.h">
