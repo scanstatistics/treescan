@@ -221,12 +221,12 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
     try {
         switch (e) {
             /* Input */
-            case Parameters::TREE_FILE                : _parameters.setTreeFileName(value.c_str()); break;
-            case Parameters::COUNT_FILE               : _parameters.setCountFileName(value.c_str()); break;
-            case Parameters::POPULATION_FILE          : _parameters.setPopulationFileName(value.c_str()); break;
+            case Parameters::TREE_FILE                : _parameters.setTreeFileName(value.c_str(), true); break;
+            case Parameters::COUNT_FILE               : _parameters.setCountFileName(value.c_str(), true); break;
+            case Parameters::POPULATION_FILE          : _parameters.setPopulationFileName(value.c_str(), true); break;
             case Parameters::DATA_TIME_RANGES         : _parameters.setDataTimeRangeSet(DataTimeRangeSet(value)); break;
             /* Advanced Input */
-            case Parameters::CUT_FILE                 : _parameters.setCutsFileName(value.c_str()); break;
+            case Parameters::CUT_FILE                 : _parameters.setCutsFileName(value.c_str(), true); break;
             case Parameters::CUT_TYPE                 : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::SIMPLE, Parameters::COMBINATORIAL);
                                                         _parameters.setCutType((Parameters::CutType)iValue); break;
             case Parameters::DUPLICATES               : _parameters.setDuplicates(ReadBoolean(value, e)); break;
@@ -245,7 +245,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::RANDOMIZATION_SEED       : _parameters.setRandomizationSeed(static_cast<long>(ReadInt(value, e))); break;
             case Parameters::RANDOMLY_GENERATE_SEED   : _parameters.setRandomlyGeneratingSeed(ReadBoolean(value, e)); break;
             /* Output */
-            case Parameters::RESULTS_FILE             : _parameters.setOutputFileName(value.c_str()); break;
+            case Parameters::RESULTS_FILE             : _parameters.setOutputFileName(value.c_str(), true); break;
             case Parameters::RESULTS_HTML             : _parameters.setGeneratingHtmlResults(ReadBoolean(value, e)); break;
             case Parameters::RESULTS_CSV              : _parameters.setGeneratingTableResults(ReadBoolean(value, e)); break;
             /* Run Options */
