@@ -1,32 +1,22 @@
 package org.treescan.gui;
 
-import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Vector;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoManager;
 import org.treescan.app.AdvFeaturesExpection;
-import org.treescan.app.AppConstants;
 import org.treescan.utils.FileAccess;
 import org.treescan.app.Parameters;
 import org.treescan.gui.utils.InputFileFilter;
 import org.treescan.gui.utils.Utils;
 import org.treescan.importer.FileImporter;
-import org.treescan.app.UnknownEnumException;
-import org.treescan.gui.utils.help.HelpLinkedLabel;
 
 /*
  * ParameterSettingsFrame.java

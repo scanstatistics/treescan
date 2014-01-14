@@ -173,8 +173,8 @@ bool ScanRunner::readCounts(const std::string& filename) {
         } else throw prg_error("Unknown model type (%d).", "readCounts()", _parameters.getModelType());
     }
 
-    if (_parameters.getModelType() == Parameters::TEMPORALSCAN && _caselessWindows.size() != _caselessWindows.count()) {
-        _caselessWindows.flip(); // flip so that windows without cases are on.
+    _caselessWindows.flip(); // flip so that windows without cases are on instead of off
+    if (_parameters.getModelType() == Parameters::TEMPORALSCAN && _caselessWindows.count() > 0) {
         std::string buffer;
         _print.Printf("Warning: The following days in the data time range do not have cases: %s\n", BasePrint::P_WARNING, getCaselessWindowsAsString(buffer).c_str());
     }
