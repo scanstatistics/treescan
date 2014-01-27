@@ -28,7 +28,7 @@ public class HelpShow {
      * @param helpID
      */
      public static void showHelp(String helpID) {
-        final String helpsetName = "SaTScan_Help";
+        final String helpsetName = "TreeScan_Help";
         final String defaultID = "introduction_htm";
         ShowType showType = helpID.contains("http://") ? HelpShow.ShowType.Website : HelpShow.ShowType.JavaHelp;
 
@@ -36,7 +36,7 @@ public class HelpShow {
             if (showType == ShowType.Website) {
                 BareBonesBrowserLaunch.openURL(helpID);
             } else {
-                SwingHelpUtilities.setContentViewerUI("org.satscan.gui.utils.ExternalLinkContentViewerUI");
+                SwingHelpUtilities.setContentViewerUI("org.treescan.gui.utils.ExternalLinkContentViewerUI");
                 ClassLoader cl = TreeScanApplication.class.getClassLoader();
                 URL url = HelpSet.findHelpSet(cl, helpsetName, "", Locale.getDefault());
                 if (url == null) {

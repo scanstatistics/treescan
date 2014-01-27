@@ -82,59 +82,42 @@ tar -rf $installer_version/treescan.1.1_mac.tar documents/*
 tar -rf $installer_version/treescan.1.1_mac.tar examples/*
 bzip2 -f $installer_version/treescan.1.1_mac.tar
 
-rm -rf $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app
+#rm -rf $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app
 
-#######  ############ Java Application Update Archive ######################################################
-#######  cd $installer_path
-#######
-#######  # Build update archive files -- relative paths are important; must be the same as installation
-#######
-#######  # Combined Windows/Linux update archive
-#######  #  -- Starting with the release featuring the Mac, this archive was not needed;
-#######  #     so only add Windows and Linux relevant files.
-#######  rm -f $installer_path/update_data_combined.zip
-#######
-#######  zip $installer_path/update_data_combined.zip -j ../windows/*
-#######  zip $installer_path/update_data_combined.zip -j ../linux/*
-#######  zip $installer_path/update_data_combined.zip -j ../users.guide/*.pdf
-#######  zip $installer_path/update_data_combined.zip -j ../java/*
-#######  cd $installer_version/java
-#######  zip $installer_path/update_data_combined.zip lib/*
-#######  cd $installer_version
-#######  zip $installer_path/update_data_combined.zip sample_data/*
-#######
-#######  # Windows update archive
-#######  cd $installer_path
-#######  rm -f $installer_path/update_data_windows.zip
-#######
-#######  zip $installer_path/update_data_windows.zip -j ../windows/*
-#######  zip $installer_path/update_data_windows.zip -j ../users.guide/*.pdf
-#######  zip $installer_path/update_data_windows.zip -j ../java/*
-#######  cd $installer_version/java
-#######  zip $installer_path/update_data_windows.zip lib/*
-#######  cd $installer_version
-#######  zip $installer_path/update_data_windows.zip sample_data/*
-#######
-#######  # Linux update archive
-#######  cd $installer_path
-#######  rm -f $installer_path/update_data_linux.zip
-#######
-#######  zip $installer_path/update_data_linux.zip -j ../linux/*
-#######  zip $installer_path/update_data_linux.zip -j ../users.guide/*.pdf
-#######  zip $installer_path/update_data_linux.zip -j ../java/*
-#######  cd $installer_version/java
-#######  zip $installer_path/update_data_linux.zip lib/*
-#######  cd $installer_version
-#######  zip $installer_path/update_data_linux.zip sample_data/*
-#######
-#######  # Mac update archive
-#######  cd $installer_path
-#######  rm -f $installer_path/update_data_mac.zip
-#######  cd $installer_path/mac/treescan2app
-#######  zip $installer_path/update_data_mac.zip -r TreeScan.app/*
-#######  cd $installer_path
-#######  zip $installer_path/update_data_mac.zip -j ../mac/treescan
-#######  zip $installer_path/update_data_mac.zip -j ../users.guide/*.pdf
-#######  cd $installer_version
-#######  zip $installer_path/update_data_mac.zip sample_data/*
-#######
+############ Java Application Update Archive ######################################################
+
+# Windows update archive
+rm -f $installer_version/update_data_windows.zip
+
+zip $installer_version/update_data_windows.zip -j $build/treescan/batch_application/Win32/Release/treescan32.exe
+zip $installer_version/update_data_windows.zip -j $build/treescan/library/Win32/Release/treescan32.dll
+zip $installer_version/update_data_windows.zip -j $build/treescan/batch_application/x64/Release/treescan64.exe
+zip $installer_version/update_data_windows.zip -j $build/treescan/library/x64/Release/treescan64.dll
+zip $installer_version/update_data_windows.zip -j $build/treescan/installers/documents/*
+zip $installer_version/update_data_windows.zip -j $build/treescan/java_application/jni_application/dist/TreeScan.jar
+zip $installer_version/update_data_windows.zip -j $build/treescan/java_application/jni_application/dist/TreeScan.exe
+cd $build/treescan/java_application/jni_application/dist
+zip $installer_version/update_data_windows.zip -r lib
+cd $build/treescan/installers
+zip $installer_version/update_data_windows.zip -r examples
+
+# Linux update archive
+rm -f $installer_version/update_data_linux.zip
+
+zip $installer_version/update_data_linux.zip -j $build/binaries/linux/*
+zip $installer_version/update_data_linux.zip -j $build/treescan/installers/documents/*
+zip $installer_version/update_data_linux.zip -j $build/treescan/java_application/jni_application/dist/TreeScan.jar
+cd $build/treescan/java_application/jni_application/dist
+zip $installer_version/update_data_linux.zip -r lib
+cd $build/treescan/installers
+zip $installer_version/update_data_linux.zip -r examples
+
+# Mac update archive
+rm -f $installer_version/update_data_mac.zip
+
+cd $build/treescan/installers/izpack/mac/treescan2app
+zip $installer_version/update_data_mac.zip -r TreeScan.app
+zip $installer_version/update_data_mac.zip -j $build/binaries/mac/treescan
+zip $installer_version/update_data_mac.zip -j $build/treescan/installers/documents/*
+cd $build/treescan/installers
+zip $installer_version/update_data_mac.zip -r examples
