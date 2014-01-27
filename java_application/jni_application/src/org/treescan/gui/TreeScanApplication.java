@@ -531,9 +531,6 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
 
         public void actionPerformed(ActionEvent e) {
             try {
-                JOptionPane.showMessageDialog(TreeScanApplication.this, "The lastest version of TreeScan can be found at " + AppConstants.getWebSite() + ".",
-                                              "TreeScan Update", JOptionPane.INFORMATION_MESSAGE);
-                /*
                 UpdateCheckDialog updateCheck = new UpdateCheckDialog(TreeScanApplication.this);
                 updateCheck.setVisible(true);
                 if (updateCheck.getRestartRequired()) {
@@ -544,7 +541,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
                     }
                     //trigger windowClosing event manually ...
                     windowClosing(new WindowEvent(TreeScanApplication.this, WindowEvent.WINDOW_CLOSING));
-                }*/
+                }
             } catch (Throwable t) {
                 new ExceptionDialog(TreeScanApplication.this, t).setVisible(true);
             }
@@ -735,7 +732,6 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         _executeSessionMenuItem = new javax.swing.JMenuItem();
         _executeOptionsMenuItem = new javax.swing.JMenuItem();
         _helpMenu = new javax.swing.JMenu();
-        _helpContentMenuItem = new javax.swing.JMenuItem();
         _userGuideMenuItem = new javax.swing.JMenuItem();
         _helpMenuSeparator1 = new javax.swing.JSeparator();
         _chechVersionMenuItem = new javax.swing.JMenuItem();
@@ -792,7 +788,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         _ToolBar.add(_versionUpdateToolButton);
         _ToolBar.add(jSeparator5);
 
-        helpSystemToolButton.setAction(new HelpSystemAction());
+        helpSystemToolButton.setAction(new UserGuideAction());
         helpSystemToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/help.png"))); // NOI18N
         helpSystemToolButton.setToolTipText("Help"); // NOI18N
         helpSystemToolButton.setHideActionText(true);
@@ -864,12 +860,6 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
 
         _helpMenu.setMnemonic(KeyEvent.VK_H);
         _helpMenu.setText("Help"); // NOI18N
-
-        _helpContentMenuItem.setAction(new HelpSystemAction());
-        _helpContentMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, 0));
-        _helpContentMenuItem.setText("Help Contents"); // NOI18N
-        _helpContentMenuItem.setIcon(null);
-        _helpMenu.add(_helpContentMenuItem);
 
         _userGuideMenuItem.setAction(new UserGuideAction());
         _userGuideMenuItem.setText("User Guide"); // NOI18N
@@ -1113,7 +1103,6 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     private javax.swing.JSeparator _fileMenuSeparator1;
     private javax.swing.JSeparator _fileMenuSeparator2;
     private javax.swing.JSeparator _fileMenuSeparator3;
-    private javax.swing.JMenuItem _helpContentMenuItem;
     private javax.swing.JMenu _helpMenu;
     private javax.swing.JSeparator _helpMenuSeparator1;
     private javax.swing.JSeparator _helpMenuSeparator2;

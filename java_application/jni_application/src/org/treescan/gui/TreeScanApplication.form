@@ -139,20 +139,6 @@
             <Property name="text" type="java.lang.String" value="Help" noResource="true"/>
           </Properties>
           <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="_helpContentMenuItem">
-              <Properties>
-                <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="new HelpSystemAction()" type="code"/>
-                </Property>
-                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
-                  <KeyStroke key="F1"/>
-                </Property>
-                <Property name="text" type="java.lang.String" value="Help Contents" noResource="true"/>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_helpContentMenuItem.setIcon(null);"/>
-              </AuxValues>
-            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="_userGuideMenuItem">
               <Properties>
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
@@ -349,7 +335,7 @@
         <Component class="javax.swing.JButton" name="helpSystemToolButton">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="new HelpSystemAction()" type="code"/>
+              <Connection code="new UserGuideAction()" type="code"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/help.png"/>
