@@ -328,7 +328,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
 
     class CheckUpdateTask extends SwingWorker<Void, Void> {
 
-        private final static String _baseDebugURL = "http://www118.imsweb.com/";
+        private final static String _baseDebugURL = "http://www88.imsweb.com/";
         private final static String _baseURL = "http://www.treescan.org/";
         private final static String _URLFormat = "%scgi-bin/treescan/update/treescan_version_update.pl?todo=return_update_version_info";
         private final static int _updateTokenCount = 9;
