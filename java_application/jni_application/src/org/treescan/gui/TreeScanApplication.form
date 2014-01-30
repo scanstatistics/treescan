@@ -76,6 +76,16 @@
             </MenuItem>
             <MenuItem class="javax.swing.JSeparator" name="_fileMenuSeparator2">
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="_appPreferences">
+              <Properties>
+                <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="_applicationPreferencesAction" type="code"/>
+                </Property>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_appPreferences.setIcon(null);&#xd;&#xa;_appPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));"/>
+              </AuxValues>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="_printMenuItem">
               <Properties>
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">

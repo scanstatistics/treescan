@@ -62,14 +62,15 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     private static Boolean _debug_url = new Boolean(false);
     private static String _run_args[] = new String[]{};
     private static final long serialVersionUID = 1L;
-    private final ExecuteSessionAction _executeSessionAction;
-    private final ExecuteOptionsAction _executeOptionsAction;
-    private final CloseSessionAction _closeSessionAction;
-    private final SaveSessionAction _saveSessionAction;
-    private final SaveSessionAsAction _saveSessionAsAction;
-    private final PrintResultsAction _printResultsAction;
+    private final ExecuteSessionAction _executeSessionAction = new ExecuteSessionAction();
+    private final ExecuteOptionsAction _executeOptionsAction = new ExecuteOptionsAction();
+    private final CloseSessionAction _closeSessionAction = new CloseSessionAction();
+    private final SaveSessionAction _saveSessionAction = new SaveSessionAction();
+    private final SaveSessionAsAction _saveSessionAsAction = new SaveSessionAsAction();
+    private final PrintResultsAction _printResultsAction = new PrintResultsAction();
+    private final ApplicationPreferencesAction _applicationPreferencesAction = new ApplicationPreferencesAction();
     private JInternalFrame _focusedInternalFrame = null;
-    private boolean gbShowStartWindow = true;
+    private boolean _firstShow = true;
     private Vector<JInternalFrame> allOpenFrames = new Vector<JInternalFrame>();
     private static TreeScanApplication _instance;
     public File lastBrowseDirectory = new File(System.getProperty("user.dir"));
@@ -80,6 +81,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     private final String DEFAULT_WIDTH = "1024";
     private static String RELAUNCH_ARGS_OPTION = "relaunch_args=";
     private static String RELAUNCH_TOKEN = "&";
+    private static String CHECK_UPDATE_START = "true";
     private MacOSApplication _mac_os_app = new MacOSApplication();
 
     /**
@@ -88,12 +90,6 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     public TreeScanApplication() {
         _instance = this;
         System.out.println(System.getProperties());
-        _executeSessionAction = new ExecuteSessionAction();
-        _executeOptionsAction = new ExecuteOptionsAction();
-        _closeSessionAction = new CloseSessionAction();
-        _saveSessionAction = new SaveSessionAction();
-        _saveSessionAsAction = new SaveSessionAsAction();
-        _printResultsAction = new PrintResultsAction();
         initComponents();
         Preferences _prefs = Preferences.userNodeForPackage(TreeScanApplication.class);
         setSize(Integer.parseInt(_prefs.get(WIDTH_KEY, DEFAULT_WIDTH)), Integer.parseInt(_prefs.get(HEIGHT_KEY, DEFAULT_HEIGHT)));
@@ -325,7 +321,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     }
 
     /**
-     * Close session action; attmepts to close active session window.
+     * Close session action; attempts to close active session window.
      */
     public class CloseSessionAction extends AbstractAction {
 
@@ -345,6 +341,27 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         }
     }
 
+    /**
+     * Displays application preferences window.
+     */
+    public class ApplicationPreferencesAction extends AbstractAction {
+
+        private static final long serialVersionUID = 1L;
+
+        public ApplicationPreferencesAction() {
+            super("Preferences");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            try {
+                ApplicationPreferences preferences = new ApplicationPreferences(_instance);
+                preferences.setVisible(true);
+            } catch (Throwable t) {
+                new ExceptionDialog(TreeScanApplication.this, t).setVisible(true);
+            }
+        }
+    }
+    
     /**
      * Print results action; attempts to print results from run window.
      */
@@ -386,7 +403,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     }
 
     /**
-     * Session execute action; attmepts to start execution of specified
+     * Session execute action; attempts to start execution of specified
      * analysis settings.
      */
     public class ExecuteSessionAction extends AbstractAction {
@@ -725,6 +742,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         _saveSessionMenuItem = new javax.swing.JMenuItem();
         _saveSessionAsMenuItem = new javax.swing.JMenuItem();
         _fileMenuSeparator2 = new javax.swing.JSeparator();
+        _appPreferences = new javax.swing.JMenuItem();
         _printMenuItem = new javax.swing.JMenuItem();
         _fileMenuSeparator3 = new javax.swing.JSeparator();
         _exitMenuItem = new javax.swing.JMenuItem();
@@ -829,6 +847,11 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         _saveSessionAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, (java.awt.event.InputEvent.SHIFT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));
         _fileMenu.add(_saveSessionAsMenuItem);
         _fileMenu.add(_fileMenuSeparator2);
+
+        _appPreferences.setAction(_applicationPreferencesAction);
+        _appPreferences.setIcon(null);
+        _appPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        _fileMenu.add(_appPreferences);
 
         _printMenuItem.setAction(_printResultsAction);
         _printMenuItem.setIcon(null);
@@ -951,11 +974,22 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
      * When the main window first shows, displays the start window.
      */
     public void windowGainedFocus(WindowEvent e) {
-        if (gbShowStartWindow) {
+        if (_firstShow) {
             try {
+                // Check for update on start-up based upon user preferences.
+                if (ApplicationPreferences.shouldCheckUpdate()) {
+                    _firstShow = false;
+                    UpdateCheckDialog updateCheck = new UpdateCheckDialog(TreeScanApplication.this);
+                    updateCheck.setVisible(true);                   
+                    if (updateCheck.getRestartRequired()) {
+                        //trigger windowClosing event manually ...
+                        windowClosing(new WindowEvent(TreeScanApplication.this, WindowEvent.WINDOW_CLOSING));
+                        return;
+                    }                    
+                }
                 StartDialog startDialog = new StartDialog(TreeScanApplication.this);
                 startDialog.setVisible(true);
-                gbShowStartWindow = false;
+                _firstShow = false;
                 switch (startDialog.GetOpenType()) {
                     case NEW:
                         openNewParameterSessionWindow("");
@@ -1093,6 +1127,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToolBar _ToolBar;
     private javax.swing.JMenuItem _aboutMenuItem;
+    private javax.swing.JMenuItem _appPreferences;
     private javax.swing.JMenuItem _chechVersionMenuItem;
     private javax.swing.JMenuItem _closeSessionMenuItem;
     private javax.swing.JMenuItem _executeOptionsMenuItem;

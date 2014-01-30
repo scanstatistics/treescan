@@ -47,6 +47,8 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
     public UpdateCheckDialog(java.awt.Frame parent) {
         super(parent, true);
         initComponents();
+        _checkFrequency.setModel(new javax.swing.DefaultComboBoxModel(ApplicationPreferences.updateFrequencyChoices()));
+        _checkFrequency.setSelectedItem(ApplicationPreferences.getUpdateFrequency());
         setLocationRelativeTo(parent);
     }
 
@@ -128,6 +130,8 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         _noUpdatePanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         _noUpdateOkButton = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        _checkFrequency = new javax.swing.JComboBox();
         _updatePanel = new javax.swing.JPanel();
         _updateLabel = new javax.swing.JLabel();
         _doUpdateButton = new javax.swing.JButton();
@@ -159,33 +163,37 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
             _checkingForUpdatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_checkingForUpdatePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 43, Short.MAX_VALUE)
+                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         _cardsPanel.add(_checkingForUpdatePanel, "check");
 
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel2.setText("You are running the most current version of TreeScan.");
 
         _noUpdateOkButton.setText("Ok");
         _noUpdateOkButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
+                ApplicationPreferences.setUpdateFrequency(_checkFrequency.getSelectedItem().toString());
                 setVisible(false);
             }
         });
+
+        jLabel3.setText("Check for application updates on startup:");
 
         javax.swing.GroupLayout _noUpdatePanelLayout = new javax.swing.GroupLayout(_noUpdatePanel);
         _noUpdatePanel.setLayout(_noUpdatePanelLayout);
         _noUpdatePanelLayout.setHorizontalGroup(
             _noUpdatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_noUpdatePanelLayout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(_noUpdatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_noUpdatePanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE))
-                    .addGroup(_noUpdatePanelLayout.createSequentialGroup()
-                        .addGap(132, 132, 132)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                    .addComponent(_checkFrequency, 0, 300, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _noUpdatePanelLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(_noUpdateOkButton)))
                 .addContainerGap())
         );
@@ -194,6 +202,10 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
             .addGroup(_noUpdatePanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_checkFrequency, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_noUpdateOkButton)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -223,12 +235,11 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         _updatePanelLayout.setHorizontalGroup(
             _updatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_updatePanelLayout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(_updatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_updateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
                     .addGroup(_updatePanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(_updateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE))
-                    .addGroup(_updatePanelLayout.createSequentialGroup()
-                        .addGap(107, 107, 107)
+                        .addGap(97, 97, 97)
                         .addComponent(_doUpdateButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_doNotUpdateButton)))
@@ -237,13 +248,13 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         _updatePanelLayout.setVerticalGroup(
             _updatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_updatePanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(37, 37, 37)
                 .addComponent(_updateLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_updatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_doUpdateButton)
                     .addComponent(_doNotUpdateButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(36, Short.MAX_VALUE))
         );
 
         _cardsPanel.add(_updatePanel, "update");
@@ -268,14 +279,14 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         );
         _downloadPanelLayout.setVerticalGroup(
             _downloadPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_downloadPanelLayout.createSequentialGroup()
-                .addContainerGap()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _downloadPanelLayout.createSequentialGroup()
+                .addContainerGap(38, Short.MAX_VALUE)
                 .addComponent(_stepLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_downloadPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 19, Short.MAX_VALUE)
-                    .addComponent(_downloadProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 19, Short.MAX_VALUE))
-                .addGap(30, 30, 30))
+                .addGroup(_downloadPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_downloadProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(35, 35, 35))
         );
 
         _cardsPanel.add(_downloadPanel, "download");
@@ -284,14 +295,12 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_cardsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+            .addComponent(_cardsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_cardsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 65, Short.MAX_VALUE)
+            .addComponent(_cardsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
-
-        getAccessibleContext().setAccessibleName("TreeScan Update");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -460,6 +469,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel _cardsPanel;
+    private javax.swing.JComboBox _checkFrequency;
     private javax.swing.JPanel _checkingForUpdatePanel;
     private javax.swing.JButton _doNotUpdateButton;
     private javax.swing.JButton _doUpdateButton;
@@ -473,6 +483,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     // End of variables declaration//GEN-END:variables
     /**
      * Download file information.
