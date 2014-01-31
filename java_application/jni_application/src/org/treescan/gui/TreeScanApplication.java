@@ -83,6 +83,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     private static String RELAUNCH_TOKEN = "&";
     private static String CHECK_UPDATE_START = "true";
     private MacOSApplication _mac_os_app = new MacOSApplication();
+    private final UpdateCheckDialog _updateCheck;
 
     /**
      * Creates new form TreeScanApplication
@@ -103,7 +104,9 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         addWindowFocusListener(this);
         addWindowListener(this);
         refreshOpenList();
+        softwareUpdateAvailable.setVisible(false);
         setLocationRelativeTo(null);
+        _updateCheck = new UpdateCheckDialog(this);
     }
 
     public static TreeScanApplication getInstance() {
@@ -111,7 +114,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     }
 
     /**
-     * Loads shared object libray.
+     * Loads shared object library.
      * @param is64bitEnabled
      */
     public static void loadSharedLibray() {
@@ -534,37 +537,52 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         }
     }
 
+    private void showUpdateDialog() {
+        try {
+            _updateCheck.setVisible(true);
+            if (_updateCheck.restartRequired()) {
+                if (getAnalysesRunning()) {
+                    JOptionPane.showMessageDialog(TreeScanApplication.this, "TreeScan can not update will analyses are executing. " +
+                              "Please cancel or wait for analyses then close TreeScan.", "Error", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+                //trigger windowClosing event manually ...
+                windowClosing(new WindowEvent(TreeScanApplication.this, WindowEvent.WINDOW_CLOSING));
+            }
+        } catch (Throwable t) {
+            new ExceptionDialog(TreeScanApplication.this, t).setVisible(true);
+        }
+    }    
+    
     /**
      * Check version action; checks whether a new version of TreeScan is available.
-     * TODO: download and updated process not implemented yet.
      */
     public class CheckNewVersionAction extends AbstractAction {
-
         private static final long serialVersionUID = 1L;
-
         public CheckNewVersionAction() {
             super("Check for New Version");
         }
-
         public void actionPerformed(ActionEvent e) {
-            try {
-                UpdateCheckDialog updateCheck = new UpdateCheckDialog(TreeScanApplication.this);
-                updateCheck.setVisible(true);
-                if (updateCheck.getRestartRequired()) {
-                    if (getAnalysesRunning()) {
-                        JOptionPane.showMessageDialog(TreeScanApplication.this, "TreeScan can not update will analyses are executing. " +
-                                "Please cancel or wait for analyses then close TreeScan.", "Error", JOptionPane.INFORMATION_MESSAGE);
-                        return;
-                    }
-                    //trigger windowClosing event manually ...
-                    windowClosing(new WindowEvent(TreeScanApplication.this, WindowEvent.WINDOW_CLOSING));
-                }
-            } catch (Throwable t) {
-                new ExceptionDialog(TreeScanApplication.this, t).setVisible(true);
-            }
+            showUpdateDialog();
         }
     }
 
+    /**
+     * Check version action; checks whether a new version of TreeScan is available.
+     */
+    public class DownloadNewVersionAction extends AbstractAction {
+
+        private static final long serialVersionUID = 1L;
+
+        public DownloadNewVersionAction() {
+            super("Download New Version");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            showUpdateDialog();
+        }
+    }
+    
     /**
      * returns whether there are actively running analyses
      */
@@ -725,11 +743,12 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         _openSessionToolButton = new javax.swing.JButton();
         _saveSessionToolButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
-        _printToolButton = new javax.swing.JButton();
-        jSeparator2 = new javax.swing.JToolBar.Separator();
         _executeSessionToolButton = new javax.swing.JButton();
         jSeparator4 = new javax.swing.JToolBar.Separator();
+        _printToolButton = new javax.swing.JButton();
+        jSeparator2 = new javax.swing.JToolBar.Separator();
         _versionUpdateToolButton = new javax.swing.JButton();
+        softwareUpdateAvailable = new javax.swing.JButton();
         jSeparator5 = new javax.swing.JToolBar.Separator();
         helpSystemToolButton = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
@@ -767,23 +786,30 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
 
         _newSessionToolButton.setAction(new NewSessionFileAction());
         _newSessionToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/add.png"))); // NOI18N
-        _newSessionToolButton.setToolTipText("New Session"); // NOI18N
+        _newSessionToolButton.setToolTipText("New Parameters Session"); // NOI18N
         _newSessionToolButton.setHideActionText(true);
         _ToolBar.add(_newSessionToolButton);
         _ToolBar.add(jSeparator3);
 
         _openSessionToolButton.setAction(new OpenSessionFileAction());
         _openSessionToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/folder_open.png"))); // NOI18N
-        _openSessionToolButton.setToolTipText("Open Session"); // NOI18N
+        _openSessionToolButton.setToolTipText("Open Session from Parameters File"); // NOI18N
         _openSessionToolButton.setHideActionText(true);
         _ToolBar.add(_openSessionToolButton);
 
         _saveSessionToolButton.setAction(_saveSessionAction);
-        _saveSessionToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/down.png"))); // NOI18N
-        _saveSessionToolButton.setToolTipText("Save Session"); // NOI18N
+        _saveSessionToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/save.png"))); // NOI18N
+        _saveSessionToolButton.setToolTipText("Save Session to Parameters File"); // NOI18N
         _saveSessionToolButton.setHideActionText(true);
         _ToolBar.add(_saveSessionToolButton);
         _ToolBar.add(jSeparator1);
+
+        _executeSessionToolButton.setAction(_executeSessionAction);
+        _executeSessionToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/go.png"))); // NOI18N
+        _executeSessionToolButton.setToolTipText("Start Analysis"); // NOI18N
+        _executeSessionToolButton.setHideActionText(true);
+        _ToolBar.add(_executeSessionToolButton);
+        _ToolBar.add(jSeparator4);
 
         _printToolButton.setAction(_printResultsAction);
         _printToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/printer.png"))); // NOI18N
@@ -792,23 +818,28 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         _ToolBar.add(_printToolButton);
         _ToolBar.add(jSeparator2);
 
-        _executeSessionToolButton.setAction(_executeSessionAction);
-        _executeSessionToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/go.png"))); // NOI18N
-        _executeSessionToolButton.setToolTipText("Execute Session"); // NOI18N
-        _executeSessionToolButton.setHideActionText(true);
-        _ToolBar.add(_executeSessionToolButton);
-        _ToolBar.add(jSeparator4);
-
         _versionUpdateToolButton.setAction(new CheckNewVersionAction());
-        _versionUpdateToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/web.png"))); // NOI18N
+        _versionUpdateToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/refresh.png"))); // NOI18N
         _versionUpdateToolButton.setToolTipText("Check for New Version"); // NOI18N
         _versionUpdateToolButton.setHideActionText(true);
         _ToolBar.add(_versionUpdateToolButton);
+
+        softwareUpdateAvailable.setAction(new DownloadNewVersionAction());
+        softwareUpdateAvailable.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        softwareUpdateAvailable.setForeground(new java.awt.Color(255, 255, 255));
+        softwareUpdateAvailable.setIcon(new javax.swing.ImageIcon(getClass().getResource("/download.png"))); // NOI18N
+        softwareUpdateAvailable.setText("");
+        softwareUpdateAvailable.setToolTipText("Software Update Ready for Download"); // NOI18N
+        softwareUpdateAvailable.setFocusable(false);
+        softwareUpdateAvailable.setHideActionText(true);
+        softwareUpdateAvailable.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        softwareUpdateAvailable.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        _ToolBar.add(softwareUpdateAvailable);
         _ToolBar.add(jSeparator5);
 
         helpSystemToolButton.setAction(new UserGuideAction());
-        helpSystemToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/help.png"))); // NOI18N
-        helpSystemToolButton.setToolTipText("Help"); // NOI18N
+        helpSystemToolButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/information.png"))); // NOI18N
+        helpSystemToolButton.setToolTipText("User's Guide"); // NOI18N
         helpSystemToolButton.setHideActionText(true);
         _ToolBar.add(helpSystemToolButton);
 
@@ -964,7 +995,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
                     return;
                 }
                 TreeScanApplication.setDebugURL(debugURL);
-                TreeScanApplication.setRunArgs(args);
+                TreeScanApplication.setRunArgs(args);                
                 new TreeScanApplication().setVisible(true);
             }
         });
@@ -976,17 +1007,6 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     public void windowGainedFocus(WindowEvent e) {
         if (_firstShow) {
             try {
-                // Check for update on start-up based upon user preferences.
-                if (ApplicationPreferences.shouldCheckUpdate()) {
-                    _firstShow = false;
-                    UpdateCheckDialog updateCheck = new UpdateCheckDialog(TreeScanApplication.this);
-                    updateCheck.setVisible(true);                   
-                    if (updateCheck.getRestartRequired()) {
-                        //trigger windowClosing event manually ...
-                        windowClosing(new WindowEvent(TreeScanApplication.this, WindowEvent.WINDOW_CLOSING));
-                        return;
-                    }                    
-                }
                 StartDialog startDialog = new StartDialog(TreeScanApplication.this);
                 startDialog.setVisible(true);
                 _firstShow = false;
@@ -1155,7 +1175,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     private javax.swing.JMenu _sessionMenu;
     private javax.swing.JMenuItem _suggestedCitationMenuItem;
     private javax.swing.JMenuItem _userGuideMenuItem;
-    private javax.swing.JButton _versionUpdateToolButton;
+    protected javax.swing.JButton _versionUpdateToolButton;
     private javax.swing.JDesktopPane desktopPane;
     private javax.swing.JButton helpSystemToolButton;
     private javax.swing.JToolBar.Separator jSeparator1;
@@ -1164,5 +1184,6 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     private javax.swing.JToolBar.Separator jSeparator4;
     private javax.swing.JToolBar.Separator jSeparator5;
     private javax.swing.JMenuBar menuBar;
+    protected javax.swing.JButton softwareUpdateAvailable;
     // End of variables declaration//GEN-END:variables
 }

@@ -116,7 +116,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         cancelButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
 
-        setTitle("Session Execution Options");
+        setTitle("Preferences");
         setModal(true);
         setResizable(false);
 

@@ -20,42 +20,42 @@ import javax.swing.SwingWorker;
 import org.treescan.app.AppConstants;
 import org.treescan.gui.utils.WaitCursor;
 
-/**
- *
- * @author  Hostovic
- */
+/** @author  Hostovic */
 public class UpdateCheckDialog extends javax.swing.JDialog {
+    private Preferences _prefs = Preferences.userNodeForPackage(getClass());
+    private final TreeScanApplication _applicationFrame;
 
     private boolean _updateExists = false;
-    public static File _updaterFilename = null;
     private FileInfo _updateApplication = null;
     private FileInfo _updateArchive = null;
     private String _updateVersion = "";
-    private boolean _completed = false;
+    private boolean _download_completed = false;
     private boolean _restartRequired = false;
-    private static String _cardCheckName = "check";
-    private static String _cardUpdateName = "update";
-    private static String _cardNoUpdateName = "noUpdate";
-    private static String _cardDownloadName = "download";
-    private Preferences _prefs = Preferences.userNodeForPackage(getClass());
-    public static File _updateArchiveName = null;
-    public static boolean _runUpdateOnTerminate = false;
+    
+    private static String CARD_CHECK = "check";
+    private static String CARD_UPDATE = "update";
+    private static String CARD_NOUPDATE = "noUpdate";
+    private static String CARD_DOWNLOAD = "download";
 
-    /**
-     * Creates new form UpdateCheckDialog
-     */
-    public UpdateCheckDialog(java.awt.Frame parent) {
-        super(parent, true);
+    public static boolean _runUpdateOnTerminate = false;
+    public static File _updaterFilename = null;
+    public static File _updateArchiveName = null;
+
+    /** Creates new form UpdateCheckDialogs */
+    public UpdateCheckDialog(TreeScanApplication applicationFrame) {
+        super(applicationFrame, true);
         initComponents();
+        _applicationFrame = applicationFrame;
         _checkFrequency.setModel(new javax.swing.DefaultComboBoxModel(ApplicationPreferences.updateFrequencyChoices()));
-        _checkFrequency.setSelectedItem(ApplicationPreferences.getUpdateFrequency());
-        setLocationRelativeTo(parent);
+        _checkFrequency.setSelectedItem(ApplicationPreferences.getUpdateFrequency());        
+        setLocationRelativeTo(applicationFrame);
+        if (ApplicationPreferences.shouldCheckUpdate()) {
+            new CheckUpdateTask().execute();
+        }        
     }
 
-    /**
-     * Returns whether the application has to restart for update.
-     */
-    public boolean getRestartRequired() {
+    /** Returns whether the application has to restart for update. */
+    public boolean restartRequired() {
         return _restartRequired;
     }
 
@@ -67,11 +67,11 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
      * Overrides setVisible() method
      */
     @Override
-    public void setVisible(boolean value) {
-        if (value) {
+    public void setVisible(boolean show) {
+        if (show && !_updateExists) {
             connectToServerForUpdateCheck();
         }
-        super.setVisible(value);
+        super.setVisible(show);
     }
 
     /**
@@ -80,7 +80,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
     private void connectToServerForUpdateCheck() {
         try {
             CardLayout cl = (CardLayout) (_cardsPanel.getLayout());
-            cl.show(_cardsPanel, _cardCheckName);
+            cl.show(_cardsPanel, CARD_CHECK);
             new CheckUpdateTask().execute();
         } catch (Throwable t) {
             throw new RuntimeException(t.getMessage(), t);
@@ -92,13 +92,15 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
      */
     private void showStatus() {
         try {
+            _applicationFrame.softwareUpdateAvailable.setVisible(_updateExists);
+            _applicationFrame._versionUpdateToolButton.setVisible(!_updateExists);
             if (_updateExists) {
                 _updateLabel.setText("TreeScan " + getNewVersionNumber() + " is available. Do you want to install now?");
                 CardLayout cl = (CardLayout) (_cardsPanel.getLayout());
-                cl.show(_cardsPanel, _cardUpdateName);
+                cl.show(_cardsPanel, CARD_UPDATE);                
             } else {
                 CardLayout cl = (CardLayout) (_cardsPanel.getLayout());
-                cl.show(_cardsPanel, _cardNoUpdateName);
+                cl.show(_cardsPanel, CARD_NOUPDATE);
             }
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
@@ -109,7 +111,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
     private void downloadFiles() {
         try {
             CardLayout cl = (CardLayout) (_cardsPanel.getLayout());
-            cl.show(_cardsPanel, _cardDownloadName);
+            cl.show(_cardsPanel, CARD_DOWNLOAD);
             new DownloadTask().execute();
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
@@ -304,13 +306,6 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-    /**
-     * Returns indication of whether download completed.
-     */
-    public boolean getDownloadCompleted() {
-        return _completed;
-    }
-
     /** returns full path of download file */
     private File getFile(String fileName) {
         try {
@@ -447,7 +442,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                     downloadFile(_updateApplication, 0);
                     _updaterFilename = _updateApplication._file;
                     downloadFile(_updateArchive, 1);
-                    _completed = true;
+                    _download_completed = true;
                     _restartRequired = true;
                 }
             } catch (Exception e) {
@@ -459,7 +454,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
 
         @Override
         public void done() {
-            if (getDownloadCompleted()) {
+            if (_download_completed) {
                 _updateArchiveName = _updateArchive._file;
                 _runUpdateOnTerminate = true;
             }
