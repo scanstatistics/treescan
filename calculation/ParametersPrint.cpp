@@ -81,7 +81,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
     buffer = "Scan";
     switch (_parameters.getScanType()) {
         case Parameters::TREEONLY : settings.push_back(std::make_pair(buffer,"Tree Only")); break;
-        case Parameters::TREETIME : settings.push_back(std::make_pair(buffer,"Tree And Time")); break;
+        case Parameters::TREETIME : settings.push_back(std::make_pair(buffer,"Tree and Time")); break;
         default: throw prg_error("Unknown scan type (%d).", "getAnalysisParameters()", _parameters.getScanType());
     }
     buffer = "Conditional";

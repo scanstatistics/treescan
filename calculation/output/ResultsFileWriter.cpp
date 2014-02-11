@@ -104,15 +104,15 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
             PrintFormat.PrintSectionLabel(outfile, "Node Identifier", false);
             PrintFormat.PrintAlignedMarginsDataString(outfile, _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier());
 
-            PrintFormat.PrintSectionLabel(outfile, "Number of Cases", true);
-            printString(buffer, "%ld", _scanRunner.getCuts().at(k)->getC());
-            PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
             if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
                 // also report total cases in node
                 PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
                 printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts().at(k)->getN()));
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
             }
+            PrintFormat.PrintSectionLabel(outfile, "Cluster Cases", true);
+            printString(buffer, "%ld", _scanRunner.getCuts().at(k)->getC());
+            PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
             if (parameters.isDuplicates()) {
                 PrintFormat.PrintSectionLabel(outfile, "Cases (Duplicates Removed)", true);
                 printString(buffer, "%ld", _scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates());
@@ -129,7 +129,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
             if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
                 PrintFormat.PrintSectionLabel(outfile, "Relative Risk", true);
                 PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer));
-                PrintFormat.PrintSectionLabel(outfile, "Scanning Window", true);
+                PrintFormat.PrintSectionLabel(outfile, "Temporal Window", true);
                 printString(buffer, "%ld - %ld", _scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive(), _scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive());
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
             }
@@ -240,13 +240,17 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "<h3>No cuts were found.</h3>" << std::endl;
     } else {
         outfile << "<h3>Most Likely Cuts</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;
-        outfile << "<thead><tr><th>No.</th><th>Node Identifier</th><th>Number of Cases</th><th>Node Cases</th>";
+        outfile << "<thead><tr><th>No.</th><th>Node Identifier</th>";
+        if (parameters.getModelType() == Parameters::TEMPORALSCAN) {            
+            outfile << "<th>Node Cases</th>";
+        }    
+        outfile << "<th>Cluster Cases</th>";
         if (parameters.isDuplicates()) {outfile << "<th>Cases (Duplicates Removed)</th>";}
         outfile << "<th>Expected</th><th>Observed/Expected</th>";
         if (parameters.isDuplicates()) {outfile << "<th>O/E (Duplicates Removed)</th>";}
         if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
             outfile << "<th>Relative Risk</th>";
-            outfile << "<th>Scanning Window</th>";
+            outfile << "<th>Temporal Window</th>";
         }
         outfile << "<th>Log Likelihood Ratio</th><th>P-value</th></tr></thead><tbody>" << std::endl;
         std::string format, replicas;
@@ -258,9 +262,11 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile.precision(5);
         while( k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1) {
             outfile << "<tr" << (k > 9 ? " class=\"additional-cuts\"" : "" ) << "><td>" << k + 1 << "</td>"
-                    << "<td>" << _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier() << "</td>"
-                    << "<td>" << _scanRunner.getCuts().at(k)->getC() << "</td>"
-                    << "<td>" << static_cast<int>(_scanRunner.getCuts().at(k)->getN()) << "</td>";
+                    << "<td>" << _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier() << "</td>";
+            if (parameters.getModelType() == Parameters::TEMPORALSCAN) {   
+                outfile << "<td>" << static_cast<int>(_scanRunner.getCuts().at(k)->getN()) << "</td>";
+            }
+            outfile << "<td>" << _scanRunner.getCuts().at(k)->getC() << "</td>";
             if (parameters.isDuplicates())
                 outfile << "<td>" << _scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates() << "</td>";
             outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
