@@ -14,6 +14,10 @@ public class InputFileFilter extends FileFilter {
         this.description = description;
     }
 
+    public String getFilter() {
+        return this.filter;
+    }
+            
     public boolean accept(File f) {
         if (f.isDirectory()) {
             return true;

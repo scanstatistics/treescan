@@ -19,7 +19,6 @@ import javax.help.HelpBroker;
 import javax.help.HelpSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JFileChooser;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -37,8 +36,10 @@ import org.treescan.gui.utils.WaitCursor;
 import org.treescan.gui.utils.WindowsMenu;
 import ca.guydavis.swing.desktop.CascadingWindowPositioner;
 import java.awt.Desktop;
+import java.awt.FileDialog;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.event.KeyEvent;
+import java.io.FilenameFilter;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -49,6 +50,7 @@ import java.util.prefs.Preferences;
  */
 import javax.help.SwingHelpUtilities;
 import javax.swing.KeyStroke;
+import org.treescan.gui.utils.FileSelectionDialog;
 import org.treescan.gui.utils.MacOSApplication;
 
 /**
@@ -266,14 +268,11 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
      */
     private void openParameterSessionWindow() {
         //Create a file chooser
-        JFileChooser fc = new JFileChooser(lastBrowseDirectory);
-        fc.setDialogTitle("Select Settings File");
-        fc.addChoosableFileFilter(new InputFileFilter("txt", "Text Files (*.txt)"));
-        fc.addChoosableFileFilter(new InputFileFilter("prm", "Settings Files (*.prm)"));
-        int returnVal = fc.showOpenDialog(TreeScanApplication.this);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            lastBrowseDirectory = fc.getCurrentDirectory();
-            openNewParameterSessionWindow(fc.getSelectedFile().getAbsolutePath());
+        FileSelectionDialog select = new FileSelectionDialog(this, "Select Settings File", new InputFileFilter[]{new InputFileFilter("txt", "Text Files (*.txt)"), new InputFileFilter("prm", "Settings Files (*.prm)")}, lastBrowseDirectory);
+        File file = select.browse_load(true);
+        if (file != null) {
+            openNewParameterSessionWindow(file.getAbsolutePath());   
+            lastBrowseDirectory = select.getDirectory();
         }
     }
 

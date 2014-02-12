@@ -19,7 +19,6 @@ import java.util.Vector;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollBar;
 import javax.swing.SwingWorker;
@@ -35,10 +34,10 @@ import org.treescan.importer.FileImporter;
 import org.treescan.importer.ImportDataSource;
 import org.treescan.importer.ImportException;
 import org.treescan.importer.ImportVariable;
-import org.treescan.app.Parameters;
 import org.treescan.importer.PreviewTableModel;
 import org.treescan.app.UnknownEnumException;
 import org.treescan.gui.utils.AutofitTableColumns;
+import org.treescan.gui.utils.FileSelectionDialog;
 import org.treescan.importer.XLSImportDataSource;
 import org.treescan.gui.utils.Utils;
 import org.treescan.gui.utils.WaitCursor;
@@ -905,8 +904,8 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             .addGroup(_fileFormatPanelLayout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addContainerGap())
-            .addComponent(_sourceFileTypeOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
+            .addComponent(_sourceFileTypeOptions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jScrollPane1)
             .addGroup(_fileFormatPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel4)
@@ -915,7 +914,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                 .addGap(5, 5, 5)
                 .addComponent(jLabel5)
                 .addGap(18, 18, 18)
-                .addComponent(_firstRowColumnHeadersCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                .addComponent(_firstRowColumnHeadersCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(164, 164, 164))
         );
         _fileFormatPanelLayout.setVerticalGroup(
@@ -1007,11 +1006,11 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _dataMappingPanel.setLayout(_dataMappingPanelLayout);
         _dataMappingPanelLayout.setHorizontalGroup(
             _dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
+            .addComponent(jSplitPane1)
         );
         _dataMappingPanelLayout.setVerticalGroup(
             _dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
+            .addComponent(jSplitPane1)
         );
 
         _basePanel.add(_dataMappingPanel, "Mapping Panel");
@@ -1023,14 +1022,11 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _changeSaveDirectoryButton.setText("Change"); // NOI18N
         _changeSaveDirectoryButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                fc.setDialogTitle("Select directory to save imported file");
-                fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                fc.setCurrentDirectory(new File(_outputDirectoryTextField.getText()));
-                int returnVal = fc.showOpenDialog(ImportWizardDialog.this);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                    _outputDirectoryTextField.setText(fc.getSelectedFile().getAbsolutePath());
+                FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select directory to save imported file", org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+                File file = select.browse_load(true);
+                if (file != null) {
+                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                    _outputDirectoryTextField.setText(file.getAbsolutePath());
                     _prefs.put(_prefLastBackup, _outputDirectoryTextField.getText());
                 }
             }
@@ -1082,14 +1078,14 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                         .addComponent(executeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(_basePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE))
+                    .addComponent(_basePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_basePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
+                .addComponent(_basePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelButton)

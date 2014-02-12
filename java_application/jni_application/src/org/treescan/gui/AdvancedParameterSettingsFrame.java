@@ -2,9 +2,9 @@ package org.treescan.gui;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.io.File;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
-import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.event.MouseInputAdapter;
@@ -14,6 +14,7 @@ import javax.swing.undo.UndoManager;
 import org.treescan.app.AdvFeaturesExpection;
 import org.treescan.utils.FileAccess;
 import org.treescan.app.Parameters;
+import org.treescan.gui.utils.FileSelectionDialog;
 import org.treescan.gui.utils.InputFileFilter;
 import org.treescan.gui.utils.Utils;
 import org.treescan.importer.FileImporter;
@@ -297,14 +298,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _cutFileBrowseButton.setToolTipText("Browse for cut file ..."); // NOI18N
         _cutFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                fc.setDialogTitle("Select Cut File");
-                fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
-                fc.addChoosableFileFilter(new InputFileFilter("cut","Cut Files (*.cut)"));
-                int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                    _cutFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
+                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("cut","Cut Files (*.cut)")};
+                FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Cut File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+                File file = select.browse_load(true);
+                if (file != null) {
+                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                    _cutFileTextField.setText(file.getAbsolutePath());
                 }
             }
         });
@@ -314,17 +313,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _cutFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
-                    JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                    fc.setDialogTitle("Select Cuts File Import Source");
-                    fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("cut","Cut Files (*.cut)"));
-                    int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                        _analysisSettingsWindow.LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Cuts);
+                    InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("dbf","dBase Files (*.dbf)"),
+                        new InputFileFilter("csv","Delimited Files (*.csv)"),
+                        new InputFileFilter("xls","Excel Files (*.xls)"),
+                        new InputFileFilter("txt","Text Files (*.txt)"),
+                        new InputFileFilter("cut","Cut Files (*.cut)")};
+
+                    FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Cuts File Import Source", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+                    File file = select.browse_load(true);
+                    if (file != null) {
+                        org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                        _analysisSettingsWindow.LaunchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Cuts);
                     }
                 } catch (Throwable t) {
                     new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);
@@ -360,7 +359,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_cutFileBrowseButton)
                     .addComponent(_cutFileImportButton)
                     .addComponent(_cutFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(134, Short.MAX_VALUE))
+                .addContainerGap(142, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced Input Options", _advancedinputTab);
@@ -421,7 +420,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advancedanalysisTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(125, Short.MAX_VALUE))
+                .addContainerGap(133, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced Analysis Options", _advancedanalysisTab);
@@ -455,7 +454,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)

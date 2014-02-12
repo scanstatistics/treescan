@@ -3,6 +3,7 @@ package org.treescan.gui;
 import java.awt.Component;
 import java.awt.Container;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -17,6 +18,7 @@ import org.treescan.importer.FileImporter;
 import org.treescan.app.ParameterHistory;
 import org.treescan.app.Parameters;
 import org.treescan.app.UnknownEnumException;
+import org.treescan.gui.utils.FileSelectionDialog;
 import org.treescan.gui.utils.InputFileFilter;
 import org.treescan.gui.utils.Utils;
 
@@ -52,14 +54,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     public boolean SaveAs() {
         boolean bSaved = true;
 
-        JFileChooser fc = new JFileChooser(TreeScanApplication.getInstance().lastBrowseDirectory);
-        fc.setDialogTitle("Save Settings As");
-        fc.addChoosableFileFilter(new InputFileFilter("tml", "Settings Files (*.prm)"));
-        int returnVal = fc.showSaveDialog(this);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-            String filename = fc.getSelectedFile().getAbsolutePath();
-            if (fc.getSelectedFile().getName().indexOf('.') == -1){
+        InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("prm", "Settings Files (*.prm)")};
+        FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Parameters File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+        File file = select.browse_saveas();
+        if (file != null) {
+            org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+            String filename = file.getAbsolutePath();
+            if (filename.indexOf('.') == -1){
                 filename = filename + ".prm";
             } 
             WriteSession(filename);
@@ -480,14 +481,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _treeFileBrowseButton.setToolTipText("Browse for tree file ..."); // NOI18N
         _treeFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                fc.setDialogTitle("Select Tree File");
-                fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
-                fc.addChoosableFileFilter(new InputFileFilter("tre","Tree Files (*.tre)"));
-                int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                    _treelFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
+                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("tre","Tree Files (*.tre)")};
+                FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Tree File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+                File file = select.browse_load(true);
+                if (file != null) {
+                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                    _treelFileTextField.setText(file.getAbsolutePath());
                 }
             }
         });
@@ -497,17 +496,17 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _treeFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
-                    JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                    fc.setDialogTitle("Select Tree File Import Source");
-                    fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("tre","Tree Files (*.tre)"));
-                    int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                        LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Tree);
+                    InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("dbf","dBase Files (*.dbf)"),
+                        new InputFileFilter("csv","Delimited Files (*.csv)"),
+                        new InputFileFilter("xls","Excel Files (*.xls)"),
+                        new InputFileFilter("txt","Text Files (*.txt)"),
+                        new InputFileFilter("tre","Tree Files (*.tre)")};
+
+                    FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Tree File Import Source", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+                    File file = select.browse_load(true);
+                    if (file != null) {
+                        org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                        LaunchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Tree);
                     }
                 } catch (Throwable t) {
                     new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);
@@ -521,14 +520,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _countFileBrowseButton.setToolTipText("Browse for case file ..."); // NOI18N
         _countFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                fc.setDialogTitle("Select Case File");
-                fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
-                fc.addChoosableFileFilter(new InputFileFilter("cas","Case Files (*.cas)"));
-                int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                    _countFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
+                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("cas","Case Files (*.cas)")};
+                FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Case File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+                File file = select.browse_load(true);
+                if (file != null) {
+                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                    _countFileTextField.setText(file.getAbsolutePath());
                 }
             }
         });
@@ -538,17 +535,17 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _countFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
-                    JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                    fc.setDialogTitle("Select Case File Import Source");
-                    fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("cas","Case Files (*.cas)"));
-                    int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                        LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Case);
+                    InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("dbf","dBase Files (*.dbf)"),
+                        new InputFileFilter("csv","Delimited Files (*.csv)"),
+                        new InputFileFilter("xls","Excel Files (*.xls)"),
+                        new InputFileFilter("txt","Text Files (*.txt)"),
+                        new InputFileFilter("cas","Case Files (*.cas)")};
+
+                    FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Case File Import Source", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+                    File file = select.browse_load(true);
+                    if (file != null) {
+                        org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                        LaunchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Case);
                     }
                 } catch (Throwable t) {
                     new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);
@@ -639,14 +636,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _populationFileBrowseButton.setToolTipText("Browse for population file ..."); // NOI18N
         _populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                fc.setDialogTitle("Select Population File");
-                fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
-                fc.addChoosableFileFilter(new InputFileFilter("pop","Population Files (*.pop)"));
-                int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                    _populationFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
+                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("pop","Population Files (*.pop)")};
+                FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Population File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+                File file = select.browse_load(true);
+                if (file != null) {
+                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                    _populationFileTextField.setText(file.getAbsolutePath());
                 }
             }
         });
@@ -656,17 +651,17 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _populationFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
-                    JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                    fc.setDialogTitle("Select Population File Import Source");
-                    fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
-                    fc.addChoosableFileFilter(new InputFileFilter("pop","Population Files (*.pop)"));
-                    int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                        LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Population);
+                    InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("dbf","dBase Files (*.dbf)"),
+                        new InputFileFilter("csv","Delimited Files (*.csv)"),
+                        new InputFileFilter("xls","Excel Files (*.xls)"),
+                        new InputFileFilter("txt","Text Files (*.txt)"),
+                        new InputFileFilter("pop","Population Files (*.pop)")};
+
+                    FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Population File Import Source", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+                    File file = select.browse_load(true);
+                    if (file != null) {
+                        org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                        LaunchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Population);
                     }
                 } catch (Throwable t) {
                     new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);
@@ -737,7 +732,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_populationFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 151, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 159, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -1138,7 +1133,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_temporalWindowGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 51, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -1153,13 +1148,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _resultsFileBrowseButton.setToolTipText("Browse for results file ...");
         _resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                JFileChooser fc = new JFileChooser(org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                fc.setDialogTitle("Select Results File");
-                fc.addChoosableFileFilter(new InputFileFilter("html","Results Files (*.html)"));
-                fc.addChoosableFileFilter(new InputFileFilter("txt","Results Files (*.txt)"));
-                if (fc.showSaveDialog(ParameterSettingsFrame.this) == JFileChooser.APPROVE_OPTION) {
-                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                    _outputFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
+                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("html","Results Files (*.html)"), new InputFileFilter("txt","Results Files (*.txt)")};
+                FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Results File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+                File file = select.browse_saveas();
+                if (file != null) {
+                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                    _outputFileTextField.setText(file.getAbsolutePath());
                 }
             }
         });
@@ -1200,7 +1194,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_reportResultsAsHTML)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportResultsAsCsvTable)
-                .addContainerGap(298, Short.MAX_VALUE))
+                .addContainerGap(306, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Output", _outputTab);
@@ -1218,7 +1212,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
