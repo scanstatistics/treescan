@@ -60,7 +60,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         if (file != null) {
             org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
             String filename = file.getAbsolutePath();
-            if (filename.indexOf('.') == -1){
+            if (new File(filename).getName().lastIndexOf('.') == -1){
                 filename = filename + ".prm";
             } 
             WriteSession(filename);
@@ -1153,7 +1153,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 File file = select.browse_saveas();
                 if (file != null) {
                     org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                    _outputFileTextField.setText(file.getAbsolutePath());
+                    String filename = file.getAbsolutePath();
+                    if (new File(filename).getName().lastIndexOf('.') == -1){
+                        filename = filename + ".txt";
+                    }
+                    _outputFileTextField.setText(filename);
                 }
             }
         });
