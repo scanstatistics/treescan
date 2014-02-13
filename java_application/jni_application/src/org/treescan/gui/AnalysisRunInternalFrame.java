@@ -44,7 +44,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         initComponents();
         setFrameIcon(new ImageIcon(getClass().getResource("/TreeScan.png")));
         addInternalFrameListener(this);
-        _parameters = parameters;
+        _parameters = (Parameters)parameters.clone();
         setTitle("Running " + (_parameters.getSourceFileName().equals("") ? "Session" : _parameters.getSourceFileName()));
         new CalculationThread(this, _parameters).start();
     }

@@ -9,7 +9,7 @@
 #define VERSION_MAJOR   "1"
 #define VERSION_MINOR   "1"
 #define VERSION_RELEASE "0"
-#define VERSION_PHASE   "Beta 7" /** testing phase name - leave blank for release */
+#define VERSION_PHASE   "Beta 8" /** testing phase name - leave blank for release */
 #define VERSION_DATE    "Not Released"
 
 #if defined(_MSC_VER)

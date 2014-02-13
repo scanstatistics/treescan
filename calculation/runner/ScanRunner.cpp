@@ -378,15 +378,27 @@ bool ScanRunner::run() {
     time(&gStartTime); //get start time
 
     if (!readTree(_parameters.getTreeFileName())) return false;
+    if (_print.GetIsCanceled()) return false;
+
     if (_parameters.getCutsFileName().length() && !readCuts(_parameters.getCutsFileName())) return false;
+    if (_print.GetIsCanceled()) return false;
+
     if (!readCounts(_parameters.getCountFileName())) return false;
+    if (_print.GetIsCanceled()) return false;
+
     if (_parameters.getModelType() != Parameters::TEMPORALSCAN) {
         if (!readPopulation(_parameters.getPopulationFileName())) return false;
     }
+    if (_print.GetIsCanceled()) return false;
+
     if (!setupTree()) return false;
+    if (_print.GetIsCanceled()) return false;
+
     if ((_parameters.getModelType() == Parameters::TEMPORALSCAN ? scanTreeTemporal() : scanTree())) {
+        if (_print.GetIsCanceled()) return false;
         if (!runsimulations()) return false;
     }
+    if (_print.GetIsCanceled()) return false;
 
     time(&gEndTime); //get end time
     if (!reportResults(gStartTime, gEndTime)) return false;
