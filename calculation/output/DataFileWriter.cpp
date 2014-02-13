@@ -242,6 +242,8 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
     CreateField(_dataFieldDefinitions, CUT_NUM_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     CreateField(_dataFieldDefinitions, NODE_ID_FIELD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()), 0, uwOffset, 0);
     if (_scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN) {
+        CreateField(_dataFieldDefinitions, START_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+        CreateField(_dataFieldDefinitions, END_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
         CreateField(_dataFieldDefinitions, TOTAL_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     }
     CreateField(_dataFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
@@ -253,8 +255,6 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
         CreateField(_dataFieldDefinitions, OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     if (_scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN) {
         CreateField(_dataFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-        CreateField(_dataFieldDefinitions, START_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-        CreateField(_dataFieldDefinitions, END_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     }
     CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
     printString(buffer, "%u", _scanner.getParameters().getNumReplicationsRequested());
@@ -292,8 +292,8 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
     Record.GetFieldValue(P_VALUE_FLD).AsDouble() =  static_cast<double>(_scanner.getCuts().at(cutIndex)->getRank()) /(_scanner.getParameters().getNumReplicationsRequested() + 1);
     if (_scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN) {
         Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getRelativeRisk(_scanner);
-        Record.GetFieldValue(START_WINDOW_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getStartIdx();
-        Record.GetFieldValue(END_WINDOW_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getEndIdx();
+        Record.GetFieldValue(START_WINDOW_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getStartIdx()  - _scanner.getZeroTranslationAdditive();
+        Record.GetFieldValue(END_WINDOW_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getEndIdx() - _scanner.getZeroTranslationAdditive();
     }
     _csvWriter->writeRecord(Record);
   } catch (prg_exception& x) {

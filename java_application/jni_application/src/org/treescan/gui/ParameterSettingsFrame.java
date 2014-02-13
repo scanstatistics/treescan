@@ -732,7 +732,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_populationFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 159, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 163, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -864,7 +864,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         });
 
         conditionalButtonGroup.add(_conditionalBranchCasesButton);
-        _conditionalBranchCasesButton.setText("Cases on Each Branch");
+        _conditionalBranchCasesButton.setText("Cases on each Branch");
         _conditionalBranchCasesButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
@@ -918,7 +918,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _temporalStartWindowToLabel.setText("To");
+        _temporalStartWindowToLabel.setText("to");
 
         _temporalStartWindowEnd.setText("100");
         _temporalStartWindowEnd.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -958,7 +958,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _temporalEndWindowToLabel.setText("To");
+        _temporalEndWindowToLabel.setText("to");
 
         _temporalEndWindowEnd.setText("100");
         _temporalEndWindowEnd.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -1133,7 +1133,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_temporalWindowGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 63, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -1194,7 +1194,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_reportResultsAsHTML)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportResultsAsCsvTable)
-                .addContainerGap(306, Short.MAX_VALUE))
+                .addContainerGap(310, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Output", _outputTab);
@@ -1212,7 +1212,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addContainerGap())
         );
 

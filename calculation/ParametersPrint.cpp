@@ -88,7 +88,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
     switch (_parameters.getConditionalType()) {
         case Parameters::UNCONDITIONAL : settings.push_back(std::make_pair(buffer,"No (unconditional)")); break;
         case Parameters::TOTALCASES : settings.push_back(std::make_pair(buffer,"Total Cases")); break;
-        case Parameters::CASESEACHBRANCH : settings.push_back(std::make_pair(buffer,"Cases on Each Branch")); break;
+        case Parameters::CASESEACHBRANCH : settings.push_back(std::make_pair(buffer,"Cases on each Branch")); break;
         default: throw prg_error("Unknown conditional type (%d).", "getAnalysisParameters()", _parameters.getConditionalType());
     }
     switch (_parameters.getModelType()) {

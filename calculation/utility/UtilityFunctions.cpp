@@ -75,16 +75,16 @@ void ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, in
   //print an estimation only if estimated time will be 30 seconds or more
   if (dEstimatedSecondsRemaining >= 30) {
     if (dEstimatedSecondsRemaining < 60.0)
-        pPrintDirection->Printf(".... this will approximately take at most %.0lf seconds.\n", BasePrint::P_STDOUT, dEstimatedSecondsRemaining);
+        pPrintDirection->Printf(".... this will take approximately %.0lf seconds.\n", BasePrint::P_STDOUT, dEstimatedSecondsRemaining);
     else if (dEstimatedSecondsRemaining < 3600.0) {
       double dMinutes = std::ceil(dEstimatedSecondsRemaining/60.0);
-      pPrintDirection->Printf(".... this will approximately take at most %.0lf minute%s.\n",
+      pPrintDirection->Printf(".... this will take approximately %.0lf minute%s.\n",
                               BasePrint::P_STDOUT, dMinutes, (dMinutes == 1.0 ? "" : "s"));
     }
     else {
       double dHours = std::floor(dEstimatedSecondsRemaining/3600.0);
       double dMinutes = std::ceil((dEstimatedSecondsRemaining - dHours * 3600.0)/60.0);
-      pPrintDirection->Printf(".... this will approximately take at most %.0lf hour%s %.0lf minute%s.\n",
+      pPrintDirection->Printf(".... this will take approximately %.0lf hour%s %.0lf minute%s.\n",
                               BasePrint::P_STDOUT, dHours, (dHours == 1.0 ? "" : "s"), dMinutes, (dMinutes == 1.0 ? "" : "s"));
     }
   }

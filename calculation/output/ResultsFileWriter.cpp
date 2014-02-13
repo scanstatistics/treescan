@@ -105,6 +105,9 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
             PrintFormat.PrintAlignedMarginsDataString(outfile, _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier());
 
             if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
+                PrintFormat.PrintSectionLabel(outfile, "Time Window", true);
+                printString(buffer, "%ld - %ld", _scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive(), _scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive());
+                PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                 // also report total cases in node
                 PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
                 printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts().at(k)->getN()));
@@ -129,9 +132,6 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
             if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
                 PrintFormat.PrintSectionLabel(outfile, "Relative Risk", true);
                 PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer));
-                PrintFormat.PrintSectionLabel(outfile, "Temporal Window", true);
-                printString(buffer, "%ld - %ld", _scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive(), _scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive());
-                PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
             }
             PrintFormat.PrintSectionLabel(outfile, "Log Likelihood Ratio", true);
             printString(buffer, "%.1lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood()));
@@ -242,6 +242,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "<h3>Most Likely Cuts</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;
         outfile << "<thead><tr><th>No.</th><th>Node Identifier</th>";
         if (parameters.getModelType() == Parameters::TEMPORALSCAN) {            
+            outfile << "<th>Time Window</th>";
             outfile << "<th>Node Cases</th>";
         }    
         outfile << "<th>Cluster Cases</th>";
@@ -250,7 +251,6 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         if (parameters.isDuplicates()) {outfile << "<th>O/E (Duplicates Removed)</th>";}
         if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
             outfile << "<th>Relative Risk</th>";
-            outfile << "<th>Temporal Window</th>";
         }
         outfile << "<th>Log Likelihood Ratio</th><th>P-value</th></tr></thead><tbody>" << std::endl;
         std::string format, replicas;
@@ -264,6 +264,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             outfile << "<tr" << (k > 9 ? " class=\"additional-cuts\"" : "" ) << "><td>" << k + 1 << "</td>"
                     << "<td>" << _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier() << "</td>";
             if (parameters.getModelType() == Parameters::TEMPORALSCAN) {   
+                outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " - " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
                 outfile << "<td>" << static_cast<int>(_scanRunner.getCuts().at(k)->getN()) << "</td>";
             }
             outfile << "<td>" << _scanRunner.getCuts().at(k)->getC() << "</td>";
@@ -275,7 +276,6 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                 outfile << "<td>" << getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
             if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
                 outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer) << "</td>";
-                outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " - " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
             }
             outfile << "<td>" << printString(buffer, "%.1lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood())).c_str() << "</td>";
             outfile << "<td>" << printString(buffer, format.c_str(), (double)_scanRunner.getCuts().at(k)->getRank() /(parameters.getNumReplicationsRequested() + 1)) << "</td><tr>" << std::endl;
