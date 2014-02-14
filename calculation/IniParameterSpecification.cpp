@@ -68,6 +68,7 @@ void IniParameterSpecification::Build_1_1_x_ParameterList() {
     gvParameterInfo.push_back(std::make_pair(Output, (const char*)"results-filename"));
     gvParameterInfo.push_back(std::make_pair(Output, (const char*)"results-html"));
     gvParameterInfo.push_back(std::make_pair(Output, (const char*)"results-csv"));
+    gvParameterInfo.push_back(std::make_pair(Output, (const char*)"results-llr"));
 
     gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"parallel-processes"));
 

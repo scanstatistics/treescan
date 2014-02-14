@@ -146,10 +146,10 @@ void RecordBuffer::SetFieldIsBlank(unsigned int iFieldNumber, bool bBlank) {
 const char * CSVDataFileWriter::CSV_FILE_EXT = ".csv";
 
 /** constructor */
-CSVDataFileWriter::CSVDataFileWriter(const std::string& filename, const ptr_vector<FieldDef>& vFieldDefs, bool printHeaders) {
+CSVDataFileWriter::CSVDataFileWriter(const std::string& filename, const ptr_vector<FieldDef>& vFieldDefs, bool printHeaders, bool append) {
 
   try {
-    _outfile.open(filename.c_str());
+    _outfile.open(filename.c_str(), append ? std::ofstream::app : std::ofstream::trunc);
     if (!_outfile.is_open())
       throw resolvable_error("Unable to open/create file %s", "Setup()", filename.c_str());
 
@@ -300,4 +300,38 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
     x.addTrace("write()","CutsRecordWriter");
     throw;
   }
+}
+
+///////////// LoglikelihoodRatioWriter ///////////////////////////////////
+
+const char * LoglikelihoodRatioWriter::LLR_FILE_SUFFIX       = "_llr";
+const char * LoglikelihoodRatioWriter::LOG_LIKL_RATIO_FIELD  = "LLR";
+
+LoglikelihoodRatioWriter::LoglikelihoodRatioWriter(const ScanRunner& scanRunner, bool append) : _scanner(scanRunner) {
+  unsigned short uwOffset=0;
+  std::string buffer;
+  try {
+    CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
+    _csvWriter.reset(new CSVDataFileWriter(getFilename(_scanner.getParameters(), buffer), _dataFieldDefinitions, _scanner.getParameters().isPrintColumnHeaders(), append));
+  } catch (prg_exception& x) {
+    x.addTrace("constructor()","LoglikelihoodRatioWriter");
+    throw;
+  }
+}
+
+std::string& LoglikelihoodRatioWriter::getFilename(const Parameters& parameters, std::string& buffer) {
+  return getDerivedFilename(parameters.getOutputFileName(), LoglikelihoodRatioWriter::LLR_FILE_SUFFIX, CSVDataFileWriter::CSV_FILE_EXT, buffer);
+}
+
+void LoglikelihoodRatioWriter::write(double llr) const {
+    std::string  buffer;
+    RecordBuffer Record(_dataFieldDefinitions);
+
+    try {
+        Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = llr;
+        _csvWriter->writeRecord(Record);
+    } catch (prg_exception& x) {
+        x.addTrace("write()","LoglikelihoodRatioWriter");
+        throw;
+    }
 }

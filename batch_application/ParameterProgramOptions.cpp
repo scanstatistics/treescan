@@ -44,7 +44,8 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
     opt_descriptions.back()->get<0>().add_options()
         (getOption(Parameters::RESULTS_FILE, true), po::value<std::string>(), GetParameterComment(Parameters::RESULTS_FILE))
         (getOption(Parameters::RESULTS_HTML, true), po::value<std::string>(), GetParameterComment(Parameters::RESULTS_HTML))
-        (getOption(Parameters::RESULTS_CSV, true), po::value<std::string>(), GetParameterComment(Parameters::RESULTS_CSV));
+        (getOption(Parameters::RESULTS_CSV, true), po::value<std::string>(), GetParameterComment(Parameters::RESULTS_CSV))
+        (getOption(Parameters::RESULTS_LLR, true), po::value<std::string>(), GetParameterComment(Parameters::RESULTS_LLR));
 
     /* Advanced Input tab options */
     opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::AdvancedInput), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));

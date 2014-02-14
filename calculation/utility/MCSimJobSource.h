@@ -7,7 +7,7 @@
 #include <deque>
 #include "boost/dynamic_bitset.hpp"
 #include "ScanRunner.h"
-//#include "LoglikelihoodRatioWriter.h"
+#include "DataFileWriter.h"
 #include "PrintQueue.h"
 #include "PrjException.h"
 
@@ -49,7 +49,7 @@ private://data members
   const boost::posix_time::ptime            gConstructionTime;
   PrintQueue                              & grPrintDirection;
   const char                              * gszReplicationFormatString;
-  //std::auto_ptr<LoglikelihoodRatioWriter>   gRatioWriter;
+  std::auto_ptr<LoglikelihoodRatioWriter>   _ratio_writer;
   ScanRunner                              & grRunner;
   ScanRunner::Loglikelihood_t               grLoglikelihood;
 

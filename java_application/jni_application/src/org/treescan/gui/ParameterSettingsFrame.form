@@ -140,7 +140,7 @@
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="163" max="32767" attributes="0"/>
+                      <EmptySpace pref="167" max="32767" attributes="0"/>
                       <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -367,7 +367,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_temporalWindowGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="63" max="32767" attributes="0"/>
+                      <EmptySpace pref="67" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -817,15 +817,19 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="_reportResultsAsCsvTable" alignment="0" min="-2" pref="236" max="-2" attributes="0"/>
-                          <Component id="_reportResultsAsHTML" alignment="0" min="-2" pref="236" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="_outputFileTextField" pref="461" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_resultsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="_resultsFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="_resultsFileLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="_resultsFileLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          </Group>
+                          <Component id="_reportLLRResultsAsCsvTable" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_reportResultsAsCsvTable" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_reportResultsAsHTML" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_resultsFileLabel1" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -847,7 +851,9 @@
                       <Component id="_reportResultsAsHTML" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportResultsAsCsvTable" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="310" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_reportLLRResultsAsCsvTable" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="291" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -884,6 +890,11 @@
             <Component class="javax.swing.JCheckBox" name="_reportResultsAsCsvTable">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Report Results as CSV Table"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="_reportLLRResultsAsCsvTable">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Report Simulated Loglikelihood Ratios as CSV Table"/>
               </Properties>
             </Component>
           </SubComponents>

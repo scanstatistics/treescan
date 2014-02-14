@@ -79,7 +79,7 @@ class CSVDataFileWriter {
      void                       createFormatString(std::string& sValue, const FieldDef& FieldDef, const FieldValue& fv);
 
    public :
-      CSVDataFileWriter(const std::string& filename, const ptr_vector<FieldDef>& vFieldDefs, bool printHeaders);
+      CSVDataFileWriter(const std::string& filename, const ptr_vector<FieldDef>& vFieldDefs, bool printHeaders, bool append=false);
       virtual ~CSVDataFileWriter();
 
      virtual void	            writeRecord(const RecordBuffer& Record);
@@ -103,6 +103,23 @@ class CutsRecordWriter : public DataRecordWriter {
        void                  write(unsigned int cutIndex) const;
 };
 
+/** Loglikelihood ratio data file writer. */
+class LoglikelihoodRatioWriter : public DataRecordWriter {
+    protected:
+        static const char * LLR_FILE_SUFFIX;
+        static const char * LOG_LIKL_RATIO_FIELD;
+
+        const ScanRunner &  _scanner;
+        std::auto_ptr<CSVDataFileWriter> _csvWriter;
+
+    public:
+        LoglikelihoodRatioWriter(const ScanRunner& scanRunner, bool append);
+        virtual ~LoglikelihoodRatioWriter() {}
+
+        static std::string & getFilename(const Parameters& parameters, std::string& buffer);
+
+        void write(double llr) const;
+};
 //******************************************************************************
 #endif
 

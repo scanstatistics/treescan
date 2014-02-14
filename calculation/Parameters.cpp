@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 21;
+const int Parameters::giNumParameters = 22;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -43,6 +43,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_cut_type != rhs._cut_type) return false;
   if (_conditional_type != rhs._conditional_type) return false;
   if (_scan_type != rhs._scan_type) return false;
+  if (_generate_llr_results != rhs._generate_llr_results) return false;
 
   return true;
 }
@@ -102,6 +103,7 @@ void Parameters::copy(const Parameters &rhs) {
     _generateHtmlResults = rhs._generateHtmlResults;
     _generateTableResults = rhs._generateTableResults;
     _printColumnHeaders = rhs._printColumnHeaders;
+    _generate_llr_results = rhs._generate_llr_results;
 
     _randomizationSeed = rhs._randomizationSeed;
     _numRequestedParallelProcesses = rhs._numRequestedParallelProcesses;
@@ -207,6 +209,7 @@ void Parameters::setAsDefaulted() {
     _generateTableResults = false;
     _printColumnHeaders = true;
     _resultsFormat = TEXT;
+    _generate_llr_results = false;
 
     _creationVersion.iMajor = atoi(VERSION_MAJOR);
     _creationVersion.iMinor = atoi(VERSION_MINOR);
@@ -268,6 +271,7 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     setOutputFileName(pt.get<std::string>("parameters.output.results-file", "").c_str(), true);
     _generateHtmlResults = pt.get<bool>("parameters.output.generate-html-results", true);
     _generateTableResults = pt.get<bool>("parameters.output.generate-table-results", true);
+    _generate_llr_results = pt.get<bool>("parameters.output.generate-llr-results", true);
     // Run Options
     _numRequestedParallelProcesses = pt.get<unsigned int>("parameters.run-options.processors", 0);
 }
@@ -303,6 +307,8 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.output.results-file", _outputFileName);
     pt.put("parameters.output.generate-html-results", _generateHtmlResults);
     pt.put("parameters.output.generate-table-results", _generateTableResults);
+    pt.put("parameters.output.generate-llr-results", _generate_llr_results);
+
     // Run Options
     pt.put("parameters.run-options.processors", _numRequestedParallelProcesses);
 

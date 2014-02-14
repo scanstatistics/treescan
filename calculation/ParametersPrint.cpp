@@ -132,6 +132,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getOutputParameters(Setti
     settings.push_back(std::make_pair("Results File",_parameters.getOutputFileName()));
     settings.push_back(std::make_pair("Report Results as HTML",(_parameters.isGeneratingHtmlResults() ? "Yes" : "No")));
     settings.push_back(std::make_pair("Report Results as CSV Table",(_parameters.isGeneratingTableResults() ? "Yes" : "No")));
+    settings.push_back(std::make_pair("Report Simulated Loglikelihood Ratios as CSV Table",(_parameters.isGeneratingLLRResults() ? "Yes" : "No")));
     if (_parameters.isGeneratingTableResults() && _parameters.isPrintColumnHeaders()) {
         settings.push_back(std::make_pair("Print Column Headers","Yes"));
     }

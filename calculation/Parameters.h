@@ -33,6 +33,7 @@ class Parameters {
                         RESULTS_FILE,
                         RESULTS_HTML,
                         RESULTS_CSV,
+                        RESULTS_LLR,
                         /* Run Options */
                         PARALLEL_PROCESSES,
                         /* System */
@@ -73,6 +74,7 @@ class Parameters {
     CutType                             _cut_type;
     ScanType                            _scan_type;
     ConditionalType                     _conditional_type;
+    bool                                _generate_llr_results;
 
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
@@ -107,6 +109,7 @@ class Parameters {
     const std::string                 & getTreeFileName() const {return _treeFileName;}
     bool                                isDuplicates() const {return _duplicates;}
 	bool                                isGeneratingHtmlResults() const {return _generateHtmlResults;}
+	bool                                isGeneratingLLRResults() const {return _generate_llr_results;}
 	bool                                isGeneratingTableResults() const {return _generateTableResults;}
     bool                                isPrintColumnHeaders() const {return _printColumnHeaders;}
     bool                                isRandomlyGeneratingSeed() const {return _randomlyGenerateSeed;}
@@ -132,6 +135,7 @@ class Parameters {
     void                                setTreeFileName(const char * sTreeFileName, bool bCorrectForRelativePath=false);
     void                                setDuplicates(bool b) {_duplicates = b;}
 	void                                setGeneratingHtmlResults(bool b) {_generateHtmlResults = b;}
+    void                                setGeneratingLLRResults(bool b) {_generate_llr_results = b;}
 	void                                setGeneratingTableResults(bool b) {_generateTableResults = b;}
     void                                setRandomlyGeneratingSeed(bool b) {_randomlyGenerateSeed = b;}
     void                                setPrintColunHeaders(bool b) {_printColumnHeaders=b;}

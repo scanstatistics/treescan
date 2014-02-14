@@ -196,6 +196,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTemporalEndRange().getEnd());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setGeneratingLLRResults", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isGeneratingLLRResults());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -323,6 +327,10 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   close = Env.CallIntMethod(jParameters, mid);
   jni_error::_detectError(Env);
   Parameters.setTemporalEndRange(DataTimeRange(begin, close));
+
+  mid = _getMethodId_Checked(Env, clazz, "isGeneratingLLRResults", "()Z");
+  Parameters.setGeneratingLLRResults(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
 
   return Parameters;
 }

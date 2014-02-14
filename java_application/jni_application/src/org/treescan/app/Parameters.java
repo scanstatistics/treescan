@@ -46,6 +46,7 @@ public class Parameters implements Cloneable {
     private int _temporal_start_range_close=0;
     private int _temporal_end_range_begin=0;
     private int _temporal_end_range_close=0;
+    private boolean _generate_llr_results=false;
 
     public Parameters() {
     	super();    	
@@ -93,6 +94,7 @@ public class Parameters implements Cloneable {
    	  if (_temporal_start_range_close != rhs._temporal_start_range_close) return false;
    	  if (_temporal_end_range_begin != rhs._temporal_end_range_begin) return false;
    	  if (_temporal_end_range_close != rhs._temporal_end_range_close) return false;
+          if (_generate_llr_results != rhs._generate_llr_results) return false;
           return true;
     }
     public int getDataTimeRangeBegin() {return _data_time_range_start;}
@@ -154,4 +156,6 @@ public class Parameters implements Cloneable {
     public void setScanType(int ord) {try {_scanType = ScanType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, ScanType.values());}}
     public ConditionalType getConditionalType() {return _conditionalType;}
     public void setConditionalType(int ord) {try {_conditionalType = ConditionalType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, ConditionalType.values());}}
+    public final boolean isGeneratingLLRResults() {return _generate_llr_results;}
+    public void setGeneratingLLRResults(boolean b) {_generate_llr_results=b;}    
 }

@@ -54,8 +54,8 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTree(
     //randomize data
     int TotalSimC = _randomizer.get()->RandomizeData(param, _scanRunner.getNodes(), _treeSimNodes);
 
-    //print simulation data to file, if requested
-    //if (gDataHub.GetParameters().GetOutputSimulationData()) {
+    // print simulation data to file, if requested
+    //if (_scanRunner.getParameters().GetOutputSimulationData()) {
     //    boost::mutex::scoped_lock     lock(_mutex);
     //    for (size_t t=0; t < gpSimulationDataContainer->size(); ++t)
     //        gDataWriter->write((*(*gpSimulationDataContainer)[t]), gDataHub.GetParameters());

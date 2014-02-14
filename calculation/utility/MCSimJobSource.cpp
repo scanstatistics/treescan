@@ -26,8 +26,8 @@ MCSimJobSource::MCSimJobSource(boost::posix_time::ptime CurrentTime, PrintQueue 
   }
 
   grLoglikelihood.reset((AbstractLoglikelihood::getNewLoglikelihood(grRunner.getParameters(), grRunner.getTotalC(), grRunner.getTotalN())));
-  //if (rParameters.GetOutputSimLoglikeliRatiosFiles())
-  //  gRatioWriter.reset(new LoglikelihoodRatioWriter(rParameters, grRunner.giAnalysisCount > 1));
+  if (grRunner.getParameters().isGeneratingLLRResults())
+    _ratio_writer.reset(new LoglikelihoodRatioWriter(grRunner, false));
 }
 
 
@@ -284,7 +284,7 @@ void MCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, para
     for (unsigned int k=0; k < grRunner.getCuts().size(); k++)
         if (rResult.dSuccessfulResult.first > grRunner.getCuts().at(k)->getLogLikelihood()) grRunner.getCuts().at(k)->incrementRank();
 
-    /// if (gRatioWriter.get()) gRatioWriter->Write(rResult);
+    if (_ratio_writer.get()) _ratio_writer->write(result);
     /// grRunner.gSimVars.add_llr(rResult);
     /// grRunner.gSimVars.increment_sim_count();
 
