@@ -61,6 +61,14 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(Parameters::RANDOMIZATION_SEED, true), po::value<std::string>(), GetParameterComment(Parameters::RANDOMIZATION_SEED))
         (getOption(Parameters::RANDOMLY_GENERATE_SEED, true), po::value<std::string>(), GetParameterComment(Parameters::RANDOMLY_GENERATE_SEED));
 
+    /* Power Simulations options */
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::PowerSimulations), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
+        (getOption(Parameters::READ_SIMULATIONS, true), po::value<std::string>(), GetParameterComment(Parameters::READ_SIMULATIONS))
+        (getOption(Parameters::INPUT_SIM_FILE, true), po::value<std::string>(), GetParameterComment(Parameters::INPUT_SIM_FILE))
+        (getOption(Parameters::WRITE_SIMULATIONS, true), po::value<std::string>(), GetParameterComment(Parameters::WRITE_SIMULATIONS))
+        (getOption(Parameters::OUTPUT_SIM_FILE, true), po::value<std::string>(), GetParameterComment(Parameters::OUTPUT_SIM_FILE));
+
     /* Run Options tab options */
     opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::RunOptions), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
     opt_descriptions.back()->get<0>().add_options()

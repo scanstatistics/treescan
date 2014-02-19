@@ -16,15 +16,13 @@ class BernoulliRandomizer : public AbstractDenominatorDataRandomizer {
 
     void MakeDataB(int tTotalCounts, double tTotalMeasure, std::vector<int>& RandCounts);
 
+    virtual int randomize(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes);
+
   public:
-    BernoulliRandomizer(double probability, bool conditional, int TotalC, int TotalControls, double TotalN, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+    BernoulliRandomizer(double probability, bool conditional, int TotalC, int TotalControls, double TotalN, const Parameters& parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~BernoulliRandomizer() {}
 
     virtual BernoulliRandomizer * Clone() const {return new BernoulliRandomizer(*this);}
-
-    virtual int RandomizeData(unsigned int iSimulation,
-                              const ScanRunner::NodeStructureContainer_t& treeNodes,
-                              SimNodeContainer_t& treeSimNodes);
 };
 //******************************************************************************
 #endif

@@ -118,6 +118,7 @@ void IniParameterFileAccess::Write(const char* sFilename) {
         WriteOutputSettings(WriteFile);
         WriteAdvancedInputSettings(WriteFile);
         WriteAdvancedAnalysisSettings(WriteFile);
+        WritePowerEvaluationsSettings(WriteFile);
         WriteRunOptionSettings(WriteFile);
         WriteSystemSettings(WriteFile);
 
@@ -194,6 +195,20 @@ void IniParameterFileAccess::WriteAdvancedAnalysisSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, Parameters::RANDOMLY_GENERATE_SEED, GetParameterString(Parameters::RANDOMLY_GENERATE_SEED, s).c_str(), GetParameterComment(Parameters::RANDOMLY_GENERATE_SEED));
     } catch (prg_exception& x) {
         x.addTrace("WriteAdvancedAnalysisSettings()","IniParameterFileAccess");
+        throw;
+    }
+}
+
+/** Writes parameter settings grouped under 'Power Evaluations'. */
+void IniParameterFileAccess::WritePowerEvaluationsSettings(IniFile& WriteFile) {
+    std::string s;
+    try {
+        WriteIniParameter(WriteFile, Parameters::READ_SIMULATIONS, GetParameterString(Parameters::READ_SIMULATIONS, s).c_str(), GetParameterComment(Parameters::READ_SIMULATIONS));
+        WriteIniParameter(WriteFile, Parameters::INPUT_SIM_FILE, GetParameterString(Parameters::INPUT_SIM_FILE, s).c_str(), GetParameterComment(Parameters::INPUT_SIM_FILE));
+        WriteIniParameter(WriteFile, Parameters::WRITE_SIMULATIONS, GetParameterString(Parameters::WRITE_SIMULATIONS, s).c_str(), GetParameterComment(Parameters::WRITE_SIMULATIONS));
+        WriteIniParameter(WriteFile, Parameters::OUTPUT_SIM_FILE, GetParameterString(Parameters::OUTPUT_SIM_FILE, s).c_str(), GetParameterComment(Parameters::OUTPUT_SIM_FILE));
+    } catch (prg_exception& x) {
+        x.addTrace("WritePowerEvaluationsSettings()","IniParameterFileAccess");
         throw;
     }
 }

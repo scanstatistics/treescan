@@ -30,6 +30,10 @@ MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuc
         temp_result.eException_type = MCSimJobSource::result_type::memory;
         temp_result.Exception = prg_exception(e.what(), "MCSimSuccessiveFunctor");
         temp_result.bUnExceptional = false;
+    } catch (resolvable_error & e) {
+        temp_result.eException_type = MCSimJobSource::result_type::resolvable;
+        temp_result.Exception = prg_exception(e.what(), "MCSimSuccessiveFunctor");
+        temp_result.bUnExceptional = false;
     } catch (prg_exception & e) {
         temp_result.eException_type = MCSimJobSource::result_type::prg;
         temp_result.Exception = e;
@@ -52,14 +56,7 @@ MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuc
 /* This function randomizes data and scans tree for either the Poisson or Bernoulli model. */
 MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTree(MCSimSuccessiveFunctor::param_type const & param) {
     //randomize data
-    int TotalSimC = _randomizer.get()->RandomizeData(param, _scanRunner.getNodes(), _treeSimNodes);
-
-    // print simulation data to file, if requested
-    //if (_scanRunner.getParameters().GetOutputSimulationData()) {
-    //    boost::mutex::scoped_lock     lock(_mutex);
-    //    for (size_t t=0; t < gpSimulationDataContainer->size(); ++t)
-    //        gDataWriter->write((*(*gpSimulationDataContainer)[t]), gDataHub.GetParameters());
-    //}
+    int TotalSimC = _randomizer.get()->RandomizeData(param, _scanRunner.getNodes(), _mutex, _treeSimNodes);
 
     //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
@@ -135,14 +132,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTree(
 /* This function randomizes data and scans tree for either the temporal model. */
 MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeTemporal(MCSimSuccessiveFunctor::param_type const & param) {
     //randomize data
-    int TotalSimC = _randomizer.get()->RandomizeData(param, _scanRunner.getNodes(), _treeSimNodes);
-        
-    //print simulation data to file, if requested
-    //if (gDataHub.GetParameters().GetOutputSimulationData()) {
-    //    boost::mutex::scoped_lock     lock(_mutex);
-    //    for (size_t t=0; t < gpSimulationDataContainer->size(); ++t)
-    //        gDataWriter->write((*(*gpSimulationDataContainer)[t]), gDataHub.GetParameters());
-    //}
+    int TotalSimC = _randomizer.get()->RandomizeData(param, _scanRunner.getNodes(), _mutex, _treeSimNodes);
 
     //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
     DataTimeRange::index_t idxAdditive = _scanRunner.getZeroTranslationAdditive();

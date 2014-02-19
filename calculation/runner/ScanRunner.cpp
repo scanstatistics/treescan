@@ -417,6 +417,10 @@ bool ScanRunner::runsimulations() {
 
         _print.Printf("Doing the %d Monte Carlo simulations ...\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
 
+        if (_parameters.isWritingSimulationData()) {
+            remove(_parameters.getOutputSimulationsFilename().c_str());
+        }
+
         {
             PrintQueue lclPrintDirection(_print, false);
             MCSimJobSource jobSource(::GetCurrentTime_HighResolution(), lclPrintDirection, sReplicationFormatString, *this);

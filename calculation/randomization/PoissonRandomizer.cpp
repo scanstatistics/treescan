@@ -5,15 +5,14 @@
 #include "PoissonRandomizer.h"
 
 /* constructor */
-PoissonRandomizer::PoissonRandomizer(bool conditional, int TotalC, double TotalN, long lInitialSeed)
-                  : AbstractDenominatorDataRandomizer(lInitialSeed), _conditional(conditional), _TotalC(TotalC), _TotalN(TotalN) {}
+PoissonRandomizer::PoissonRandomizer(bool conditional, int TotalC, double TotalN, const Parameters& parameters, long lInitialSeed)
+                  : AbstractDenominatorDataRandomizer(parameters, lInitialSeed), _conditional(conditional), _TotalC(TotalC), _TotalN(TotalN) {}
 
 /** Creates randomized under the null hypothesis for Poisson model, assigning data to DataSet objects structures.
     Random number generator seed initialized based upon 'iSimulation' index. */
-int PoissonRandomizer::RandomizeData(unsigned int iSimulation,
-                                      const ScanRunner::NodeStructureContainer_t& treeNodes,
-                                      SimNodeContainer_t& treeSimNodes) {
-  SetSeed(iSimulation);
+int PoissonRandomizer::randomize(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) {
+    //reset seed of random number generator
+    SetSeed(iSimulation);
 
     //-------------------- GENERATING THE RANDOM DATA ------------------------------
     int cases, CasesLeft, TotalSimC;
@@ -42,14 +41,6 @@ int PoissonRandomizer::RandomizeData(unsigned int iSimulation,
             ExpectedLeft -= treeNodes.at(i)->getIntN();
             treeSimNodes.at(i).refBrC() = 0; //treeNodes.at(i)->_SimBrC = 0; // Initilazing the branch cases with zero
         }
-    }
-
-    //------------------------ UPDATING THE TREE -----------------------------------
-    for (size_t i=0; i < treeNodes.size(); i++) {
-        if (treeNodes.at(i)->getAnforlust()==false) 
-            addSimC_C(i, treeSimNodes.at(i).refIntC_C()/*_Nodes.at(i)->_SimIntC*/, treeNodes, treeSimNodes);
-        else 
-            addSimC_CAnforlust(i, treeSimNodes.at(i).refIntC_C()/*_Nodes.at(i)->_SimIntC*/, treeNodes, treeSimNodes);
     }
     return TotalSimC;
 }

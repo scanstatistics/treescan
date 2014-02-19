@@ -50,7 +50,7 @@ void MCSimJobSource::Assert_NoExceptionsCaught() const
   static const char * szExceptionCallPathTitle = "\nException call path:\n";
 
   if (GetExceptionCount() > 0) {
-    //scan collection of exceptions for ZdMemory exception type, this type trumps all -- take first
+    //scan collection of exceptions for Memory exception type, this type trumps all -- take first
     std::deque<exception_type>::const_iterator itr = gvExceptions.begin();
     for (; itr != gvExceptions.end(); ++itr) {
        if (itr->second.second.eException_type == job_result::memory) {
@@ -67,6 +67,11 @@ void MCSimJobSource::Assert_NoExceptionsCaught() const
 
     CarrierException<exception_sequence_type> lclException(gvExceptions, "", "MCSimJobSource");
     exception_type const & rFirstException(lclException->front());
+
+    // reconstitute resolvable_error and throw
+    if (rFirstException.second.second.eException_type == job_result::resolvable)
+        throw resolvable_error(rFirstException.second.second.Exception.what());
+
     std::string sTemp;
     printString(sTemp, szExceptionIntroFormatString, rFirstException.first);
     lclException.addWhat(sTemp.c_str());

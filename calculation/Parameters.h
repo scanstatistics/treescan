@@ -34,6 +34,11 @@ class Parameters {
                         RESULTS_HTML,
                         RESULTS_CSV,
                         RESULTS_LLR,
+                        /* power simulations */
+                        READ_SIMULATIONS,
+                        INPUT_SIM_FILE,
+                        WRITE_SIMULATIONS,
+                        OUTPUT_SIM_FILE,
                         /* Run Options */
                         PARALLEL_PROCESSES,
                         /* System */
@@ -75,6 +80,10 @@ class Parameters {
     ScanType                            _scan_type;
     ConditionalType                     _conditional_type;
     bool                                _generate_llr_results;
+    bool                                _read_simulations;
+    std::string                         _input_sim_file;
+    bool                                _write_simulations;
+    std::string                         _output_sim_file;
 
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
@@ -101,6 +110,8 @@ class Parameters {
     const CreationVersion             & getCreationVersion() const {return _creationVersion;}
     const std::string                 & getCutsFileName() const {return _cutsFileName;}
     const DataTimeRangeSet            & getDataTimeRangeSet() const {return _dataTimeRangeSet;}
+    const std::string                 & getInputSimulationsFilename() const {return _input_sim_file;}
+    const std::string                 & getOutputSimulationsFilename() const {return _output_sim_file;}
     const DataTimeRange               & getTemporalStartRange() const {return _temporalStartRange;}
     const DataTimeRange               & getTemporalEndRange() const {return _temporalEndRange;}
     ratio_t                             getProbabilityRatio() const {return _probablility_ratio;}
@@ -108,11 +119,13 @@ class Parameters {
     ScanType                            getScanType() const {return _scan_type;}
     const std::string                 & getTreeFileName() const {return _treeFileName;}
     bool                                isDuplicates() const {return _duplicates;}
-	bool                                isGeneratingHtmlResults() const {return _generateHtmlResults;}
-	bool                                isGeneratingLLRResults() const {return _generate_llr_results;}
-	bool                                isGeneratingTableResults() const {return _generateTableResults;}
+    bool                                isGeneratingHtmlResults() const {return _generateHtmlResults;}
+    bool                                isGeneratingLLRResults() const {return _generate_llr_results;}
+    bool                                isGeneratingTableResults() const {return _generateTableResults;}
     bool                                isPrintColumnHeaders() const {return _printColumnHeaders;}
     bool                                isRandomlyGeneratingSeed() const {return _randomlyGenerateSeed;}
+    bool                                isReadingSimulationData() const {return _read_simulations;}
+    bool                                isWritingSimulationData() const {return _write_simulations;}
     unsigned int                        getNumRequestedParallelProcesses() const {return _numRequestedParallelProcesses;}
     unsigned int                        getNumParallelProcessesToExecute() const;
     int                                 getNumReadParameters() const {return giNumParameters;}
@@ -122,6 +135,8 @@ class Parameters {
     ResultsFormat                       getResultsFormat() const {return _resultsFormat;}
     const std::string                 & getSourceFileName() const {return _parametersSourceFileName;}
     void                                setDataTimeRangeSet(const DataTimeRangeSet& set) {_dataTimeRangeSet = set;}
+    void                                setInputSimulationsFilename(const char * s, bool bCorrectForRelativePath=false);
+    void                                setOutputSimulationsFilename(const char * s, bool bCorrectForRelativePath=false);
     void                                setTemporalStartRange(const DataTimeRange& range) {_temporalStartRange = range;}
     void                                setTemporalEndRange(const DataTimeRange& range) {_temporalEndRange = range;}
     void                                setConditionalType(ConditionalType e) {_conditional_type = e;}
@@ -134,9 +149,11 @@ class Parameters {
     void                                setCutsFileName(const char * sCutsFileName, bool bCorrectForRelativePath=false);
     void                                setTreeFileName(const char * sTreeFileName, bool bCorrectForRelativePath=false);
     void                                setDuplicates(bool b) {_duplicates = b;}
-	void                                setGeneratingHtmlResults(bool b) {_generateHtmlResults = b;}
+    void                                setGeneratingHtmlResults(bool b) {_generateHtmlResults = b;}
     void                                setGeneratingLLRResults(bool b) {_generate_llr_results = b;}
-	void                                setGeneratingTableResults(bool b) {_generateTableResults = b;}
+    void                                setGeneratingTableResults(bool b) {_generateTableResults = b;}
+    void                                setReadingSimulationData(bool b) {_read_simulations = b;}
+    void                                setWritingSimulationData(bool b) {_write_simulations = b;}
     void                                setRandomlyGeneratingSeed(bool b) {_randomlyGenerateSeed = b;}
     void                                setPrintColunHeaders(bool b) {_printColumnHeaders=b;}
     void                                setNumProcesses(unsigned int i) {_numRequestedParallelProcesses = i;}

@@ -13,13 +13,14 @@ protected:
     const DataTimeRangeSet    & _timeRangeSets;
     DataTimeRange::index_t      _zero_translation_additive;
 
+    virtual int read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes);
+    virtual void write(const std::string& filename, const SimNodeContainer_t& treeSimNodes);
+
 public:
-    TemporalRandomizer(int TotalC, double TotalN, const DataTimeRangeSet& timeRangeSets, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+    TemporalRandomizer(int TotalC, double TotalN, const DataTimeRangeSet& timeRangeSets, const Parameters& parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~TemporalRandomizer() {}
 
-    virtual int     RandomizeData(unsigned int iSimulation,
-                                  const ScanRunner::NodeStructureContainer_t& treeNodes,
-                                  SimNodeContainer_t& treeSimNodes);
+    virtual int RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes);
 };
 //******************************************************************************
 #endif

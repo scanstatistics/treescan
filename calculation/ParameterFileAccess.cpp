@@ -65,6 +65,11 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::RESULTS_HTML            : return "create HTML results";
             case Parameters::RESULTS_CSV             : return "create CSV results";
             case Parameters::RESULTS_LLR             : return "create LLR results";
+            /* Power Simulations */
+            case Parameters::READ_SIMULATIONS        : return "input simulation data (y/n)";
+            case Parameters::INPUT_SIM_FILE          : return "input simulation filename";
+            case Parameters::WRITE_SIMULATIONS       : return "output simulation data (y/n)";
+            case Parameters::OUTPUT_SIM_FILE         : return "output simulation filename";
             /* Runtime Options */
             case Parameters::PARALLEL_PROCESSES      : return "number of parallel processes to execute (0=All Processors, x=At Most X Processors)";
             /* System */
@@ -108,6 +113,11 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::RESULTS_HTML             : return AsString(s, _parameters.isGeneratingHtmlResults());
             case Parameters::RESULTS_CSV              : return AsString(s, _parameters.isGeneratingTableResults());
             case Parameters::RESULTS_LLR              : return AsString(s, _parameters.isGeneratingLLRResults());
+            /* Power Evaluations */
+            case Parameters::READ_SIMULATIONS         : return AsString(s, _parameters.isReadingSimulationData());
+            case Parameters::INPUT_SIM_FILE           : s = _parameters.getInputSimulationsFilename(); return s;
+            case Parameters::WRITE_SIMULATIONS        : return AsString(s, _parameters.isWritingSimulationData());
+            case Parameters::OUTPUT_SIM_FILE          : s = _parameters.getOutputSimulationsFilename(); return s;
             /* Runtime Options */
             case Parameters::PARALLEL_PROCESSES       : return AsString(s, _parameters.getNumRequestedParallelProcesses());
             /* System */
@@ -251,6 +261,11 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::RESULTS_HTML             : _parameters.setGeneratingHtmlResults(ReadBoolean(value, e)); break;
             case Parameters::RESULTS_CSV              : _parameters.setGeneratingTableResults(ReadBoolean(value, e)); break;
             case Parameters::RESULTS_LLR              : _parameters.setGeneratingLLRResults(ReadBoolean(value, e)); break;
+            /* Power Simulations */
+            case Parameters::READ_SIMULATIONS         : _parameters.setReadingSimulationData(ReadBoolean(value, e)); break;
+            case Parameters::INPUT_SIM_FILE           : _parameters.setInputSimulationsFilename(value.c_str(), true); break;
+            case Parameters::WRITE_SIMULATIONS        : _parameters.setWritingSimulationData(ReadBoolean(value, e)); break;
+            case Parameters::OUTPUT_SIM_FILE          : _parameters.setOutputSimulationsFilename(value.c_str(), true); break;
             /* Run Options */
             case Parameters::PARALLEL_PROCESSES       : _parameters.setNumProcesses(ReadUnsignedInt(value, e)); break;
             /* System */

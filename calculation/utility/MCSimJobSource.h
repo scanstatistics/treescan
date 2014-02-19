@@ -17,7 +17,7 @@ public://types/enums
   typedef std::pair<double,int> successful_result_type;
 
   struct job_result {
-    enum                        exception_type {unknown=0, std, prg, memory};
+    enum                        exception_type {unknown=0, std, prg, memory, resolvable};
 
     bool                        bUnExceptional;
     exception_type              eException_type;

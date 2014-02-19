@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 22;
+const int Parameters::giNumParameters = 26;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -44,6 +44,10 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_conditional_type != rhs._conditional_type) return false;
   if (_scan_type != rhs._scan_type) return false;
   if (_generate_llr_results != rhs._generate_llr_results) return false;
+  if (_read_simulations != rhs._read_simulations) return false;
+  if (_input_sim_file != rhs._input_sim_file) return false;
+  if (_write_simulations != rhs._write_simulations) return false;
+  if (_output_sim_file != rhs._output_sim_file) return false;
 
   return true;
 }
@@ -104,6 +108,11 @@ void Parameters::copy(const Parameters &rhs) {
     _generateTableResults = rhs._generateTableResults;
     _printColumnHeaders = rhs._printColumnHeaders;
     _generate_llr_results = rhs._generate_llr_results;
+
+    _read_simulations = rhs._read_simulations;
+    _input_sim_file = rhs._input_sim_file;
+    _write_simulations = rhs._write_simulations;
+    _output_sim_file = rhs._output_sim_file;
 
     _randomizationSeed = rhs._randomizationSeed;
     _numRequestedParallelProcesses = rhs._numRequestedParallelProcesses;
@@ -211,6 +220,11 @@ void Parameters::setAsDefaulted() {
     _resultsFormat = TEXT;
     _generate_llr_results = false;
 
+    _read_simulations = false;
+    _input_sim_file = "";
+    _write_simulations = false;
+    _output_sim_file = "";
+
     _creationVersion.iMajor = atoi(VERSION_MAJOR);
     _creationVersion.iMinor = atoi(VERSION_MINOR);
     _creationVersion.iRelease = atoi(VERSION_RELEASE);
@@ -233,6 +247,16 @@ void Parameters::setSourceFileName(const char * sParametersSourceFileName) {
   //Use FileName class to ensure that a relative path is expanded to absolute path.
   std::string buffer;
   _parametersSourceFileName = FileName(sParametersSourceFileName).getFullPath(buffer);
+}
+
+void Parameters::setInputSimulationsFilename(const char * s, bool bCorrectForRelativePath) {
+  _input_sim_file = s;
+  if (bCorrectForRelativePath) assignMissingPath(_input_sim_file);
+}
+
+void Parameters::setOutputSimulationsFilename(const char * s, bool bCorrectForRelativePath) {
+  _output_sim_file = s;
+  if (bCorrectForRelativePath) assignMissingPath(_output_sim_file);
 }
 
 void Parameters::read(const std::string &filename, ParametersFormat type) {
@@ -272,6 +296,11 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _generateHtmlResults = pt.get<bool>("parameters.output.generate-html-results", true);
     _generateTableResults = pt.get<bool>("parameters.output.generate-table-results", true);
     _generate_llr_results = pt.get<bool>("parameters.output.generate-llr-results", true);
+    // Power Simulations
+    _read_simulations = pt.get<bool>("parameters.power-simulations.input-simulations", true);
+    setInputSimulationsFilename(pt.get<std::string>("parameters.power-simulations.input-simulations-file", "").c_str(), true);
+    _write_simulations = pt.get<bool>("parameters.power-simulations.output-simulations", true);
+    setOutputSimulationsFilename(pt.get<std::string>("parameters.power-simulations.output-simulations-file", "").c_str(), true);
     // Run Options
     _numRequestedParallelProcesses = pt.get<unsigned int>("parameters.run-options.processors", 0);
 }
@@ -308,7 +337,11 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.output.generate-html-results", _generateHtmlResults);
     pt.put("parameters.output.generate-table-results", _generateTableResults);
     pt.put("parameters.output.generate-llr-results", _generate_llr_results);
-
+    // Power Simulations
+    pt.put("parameters.power-simulations.input-simulations", _read_simulations);
+    pt.put("parameters.power-simulations.input-simulations-file", _input_sim_file);
+    pt.put("parameters.power-simulations.output-simulations", _write_simulations);
+    pt.put("parameters.power-simulations.output-simulations-file", _output_sim_file);
     // Run Options
     pt.put("parameters.run-options.processors", _numRequestedParallelProcesses);
 
