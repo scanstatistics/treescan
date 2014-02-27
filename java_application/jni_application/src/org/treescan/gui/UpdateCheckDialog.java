@@ -182,7 +182,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel3.setText("Check for application updates on startup:");
+        jLabel3.setText("Automatically check for updates:");
 
         javax.swing.GroupLayout _noUpdatePanelLayout = new javax.swing.GroupLayout(_noUpdatePanel);
         _noUpdatePanel.setLayout(_noUpdatePanelLayout);

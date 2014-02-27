@@ -26,8 +26,8 @@ public class ApplicationPreferences extends javax.swing.JDialog {
     private static String KEY_DATE_FORAMT = "yyyy-MM-dd";
     private static String CHECK_WEEKLY_KEY = "Once a week";
     private static String CHECK_MONTHLY_KEY = "Once a month";
-    private static String CHECK_EVERYTIME_KEY = "Each time application starts";
-    private static String CHECK_NEVER_KEY = "Never";
+    private static String CHECK_EVERYTIME_KEY = "Each time TreeScan starts";
+    private static String CHECK_MANUALLY_KEY = "Manually Only";
 
     /** Creates new form ExecutionOptionsDialog */
     public ApplicationPreferences(java.awt.Frame parent) {
@@ -43,7 +43,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
      * Returns application update frequency choices
      */
     public static String[] updateFrequencyChoices() {
-        return new String[] { CHECK_EVERYTIME_KEY, CHECK_WEEKLY_KEY, CHECK_MONTHLY_KEY, CHECK_NEVER_KEY };
+        return new String[] { CHECK_EVERYTIME_KEY, CHECK_WEEKLY_KEY, CHECK_MONTHLY_KEY, CHECK_MANUALLY_KEY };
     }
     
     /*
@@ -79,7 +79,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         try {
             Preferences prefs = Preferences.userNodeForPackage(TreeScanApplication.class);
             String frequency = prefs.get(CHECK_FREQUENCY_KEY, CHECK_WEEKLY_KEY);
-            if (frequency.equalsIgnoreCase(CHECK_NEVER_KEY)) {
+            if (frequency.equalsIgnoreCase(CHECK_MANUALLY_KEY)) {
                 return false;
             } else if (frequency.equalsIgnoreCase(CHECK_EVERYTIME_KEY)) {
                     return true;
@@ -120,9 +120,9 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         setModal(true);
         setResizable(false);
 
-        parallelProcessorsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Automatic Updates"));
+        parallelProcessorsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Software Updates"));
 
-        jLabel1.setText("Check for application updates on startup:");
+        jLabel1.setText("Automatically check for updates:");
 
         javax.swing.GroupLayout parallelProcessorsGroupLayout = new javax.swing.GroupLayout(parallelProcessorsGroup);
         parallelProcessorsGroup.setLayout(parallelProcessorsGroupLayout);
