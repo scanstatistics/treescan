@@ -43,7 +43,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
      * Returns application update frequency choices
      */
     public static String[] updateFrequencyChoices() {
-        return new String[] { CHECK_WEEKLY_KEY, CHECK_MONTHLY_KEY, CHECK_EVERYTIME_KEY, CHECK_NEVER_KEY };
+        return new String[] { CHECK_EVERYTIME_KEY, CHECK_WEEKLY_KEY, CHECK_MONTHLY_KEY, CHECK_NEVER_KEY };
     }
     
     /*
@@ -59,7 +59,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
      */
     public static String getUpdateFrequency() {
         Preferences prefs = Preferences.userNodeForPackage(TreeScanApplication.class);
-        return prefs.get(CHECK_FREQUENCY_KEY, CHECK_WEEKLY_KEY);
+        return prefs.get(CHECK_FREQUENCY_KEY, CHECK_MONTHLY_KEY);
     }
     
     /*
