@@ -63,7 +63,10 @@
         <panel classname="TargetPanel"/>
         <panel classname="InstallPanel"/>
         <panel classname="ProcessPanel" os="mac"/>
+		<!--
         <panel classname="SimpleFinishPanel"/>
+		-->
+        <panel classname="FinishPanel"/>
     </panels>
 
     <!--
