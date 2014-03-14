@@ -484,7 +484,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _treeFileBrowseButton.setToolTipText("Browse for tree file ..."); // NOI18N
         _treeFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("tre","Tree Files (*.tre)")};
+                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("csv","CSV Files (*.csv)"), new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("tre","Tree Files (*.tre)")};
                 FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Tree File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
                 File file = select.browse_load(true);
                 if (file != null) {
@@ -523,7 +523,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _countFileBrowseButton.setToolTipText("Browse for case file ..."); // NOI18N
         _countFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("cas","Case Files (*.cas)")};
+                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("csv","CSV Files (*.csv)"), new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("cas","Case Files (*.cas)")};
                 FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Case File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
                 File file = select.browse_load(true);
                 if (file != null) {
@@ -639,7 +639,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _populationFileBrowseButton.setToolTipText("Browse for population file ..."); // NOI18N
         _populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("pop","Population Files (*.pop)")};
+                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("csv","CSV Files (*.csv)"), new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("pop","Population Files (*.pop)")};
                 FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Population File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
                 File file = select.browse_load(true);
                 if (file != null) {
@@ -735,7 +735,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_populationFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 167, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 171, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -1136,7 +1136,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_temporalWindowGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 67, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 71, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -1151,7 +1151,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _resultsFileBrowseButton.setToolTipText("Browse for results file ...");
         _resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("html","Results Files (*.html)"), new InputFileFilter("txt","Results Files (*.txt)")};
+                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("txt","Results Files (*.txt)")};
                 FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Results File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
                 File file = select.browse_saveas();
                 if (file != null) {
@@ -1208,7 +1208,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_reportResultsAsCsvTable)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportLLRResultsAsCsvTable)
-                .addContainerGap(291, Short.MAX_VALUE))
+                .addContainerGap(295, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Output", _outputTab);
@@ -1226,7 +1226,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
                 .addContainerGap())
         );
 

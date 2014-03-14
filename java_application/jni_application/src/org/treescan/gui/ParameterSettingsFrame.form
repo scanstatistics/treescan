@@ -18,7 +18,6 @@
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
-    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
@@ -46,7 +45,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jTabbedPane1" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" pref="470" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -140,7 +139,7 @@
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="167" max="32767" attributes="0"/>
+                      <EmptySpace pref="171" max="32767" attributes="0"/>
                       <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -163,7 +162,7 @@
                 <Property name="toolTipText" type="java.lang.String" value="Browse for tree file ..." noResource="true"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_treeFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;tre&quot;,&quot;Tree Files (*.tre)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Tree File&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                _treelFileTextField.setText(file.getAbsolutePath());  &#xa;            }&#xa;    }&#xa;});"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_treeFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;csv&quot;,&quot;CSV Files (*.csv)&quot;), new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;tre&quot;,&quot;Tree Files (*.tre)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Tree File&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                _treelFileTextField.setText(file.getAbsolutePath());  &#xa;            }&#xa;    }&#xa;});"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JButton" name="_treeFileImportButton">
@@ -192,7 +191,7 @@
                 <Property name="toolTipText" type="java.lang.String" value="Browse for case file ..." noResource="true"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_countFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Case File&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                _countFileTextField.setText(file.getAbsolutePath());  &#xa;            }&#xa;    }&#xa;});&#xa;"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_countFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;csv&quot;,&quot;CSV Files (*.csv)&quot;), new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Case File&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                _countFileTextField.setText(file.getAbsolutePath());  &#xa;            }&#xa;    }&#xa;});&#xa;"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JButton" name="_countFileImportButton">
@@ -303,7 +302,7 @@
                 <Property name="toolTipText" type="java.lang.String" value="Browse for population file ..." noResource="true"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;pop&quot;,&quot;Population Files (*.pop)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Population File&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                _populationFileTextField.setText(file.getAbsolutePath());  &#xa;            }&#xa;    }&#xa;});&#xa;"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;csv&quot;,&quot;CSV Files (*.csv)&quot;), new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;pop&quot;,&quot;Population Files (*.pop)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Population File&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                _populationFileTextField.setText(file.getAbsolutePath());  &#xa;            }&#xa;    }&#xa;});&#xa;"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JButton" name="_populationFileImportButton">
@@ -367,7 +366,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_temporalWindowGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="67" max="32767" attributes="0"/>
+                      <EmptySpace pref="71" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -853,7 +852,7 @@
                       <Component id="_reportResultsAsCsvTable" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportLLRResultsAsCsvTable" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="291" max="32767" attributes="0"/>
+                      <EmptySpace pref="295" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -879,7 +878,7 @@
                 <Property name="toolTipText" type="java.lang.String" value="Browse for results file ..."/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;html&quot;,&quot;Results Files (*.html)&quot;), new InputFileFilter(&quot;txt&quot;,&quot;Results Files (*.txt)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Results File&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_saveas();&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                String filename = file.getAbsolutePath();&#xa;                if (new File(filename).getName().lastIndexOf(&apos;.&apos;) == -1){&#xa;                    filename = filename + &quot;.txt&quot;;&#xa;                } &#xa;                _outputFileTextField.setText(filename);  &#xa;            }&#xa;    }&#xa;});&#xa;"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;txt&quot;,&quot;Results Files (*.txt)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Results File&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_saveas();&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                String filename = file.getAbsolutePath();&#xa;                if (new File(filename).getName().lastIndexOf(&apos;.&apos;) == -1){&#xa;                    filename = filename + &quot;.txt&quot;;&#xa;                } &#xa;                _outputFileTextField.setText(filename);  &#xa;            }&#xa;    }&#xa;});&#xa;"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JLabel" name="_resultsFileLabel1">

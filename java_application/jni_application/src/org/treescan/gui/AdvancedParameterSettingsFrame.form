@@ -35,7 +35,7 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <Component id="jTabbedPane1" pref="229" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" pref="233" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="_setDefaultButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -98,7 +98,7 @@
                           <Component id="_cutFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="_cutFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="142" max="32767" attributes="0"/>
+                      <EmptySpace pref="146" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -122,7 +122,7 @@
                 <Property name="toolTipText" type="java.lang.String" value="Browse for cut file ..." noResource="true"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_cutFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;cut&quot;,&quot;Cut Files (*.cut)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Cut File&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                _cutFileTextField.setText(file.getAbsolutePath());  &#xa;            }&#xa;    }&#xa;});&#xa;"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_cutFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;csv&quot;,&quot;CSV Files (*.csv)&quot;), new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;cut&quot;,&quot;Cut Files (*.cut)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Cut File&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                _cutFileTextField.setText(file.getAbsolutePath());  &#xa;            }&#xa;    }&#xa;});&#xa;"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JButton" name="_cutFileImportButton">
@@ -162,7 +162,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="133" max="32767" attributes="0"/>
+                      <EmptySpace pref="137" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
