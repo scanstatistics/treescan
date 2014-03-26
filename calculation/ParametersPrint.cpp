@@ -5,6 +5,8 @@
 #include "ParametersPrint.h"
 #include "PrjException.h"
 #include "RandomNumberGenerator.h"
+#include "ResultsFileWriter.h"
+#include "DataFileWriter.h"
 
 /** Prints parameters, in a particular format, to passed ascii file. */
 void ParametersPrint::Print(std::ostream& out) const {
@@ -21,8 +23,8 @@ void ParametersPrint::Print(std::ostream& out) const {
         WriteSettingsContainer(getOutputParameters(settings), "Output", out);
         //print 'Advanced Input' tab settings
         WriteSettingsContainer(getAdvancedInputParameters(settings), "Advanced Input", out);
-        //print 'Advanced Analysis' tab settings
-        WriteSettingsContainer(getAdvancedAnalysisParameters(settings), "Advanced Analysis", out);
+        //print 'Inference' tab settings
+        WriteSettingsContainer(getInferenceParameters(settings), "Inference", out);
         //print 'RunOptions' settings
         WriteSettingsContainer(getRunOptionsParameters(settings), "Run Options", out);
         //print 'System' parameters
@@ -108,8 +110,8 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
     return settings;
 }
 
-/** Prints 'Advanced Analysis' tab parameters to file stream. */
-ParametersPrint::SettingContainer_t & ParametersPrint::getAdvancedAnalysisParameters(SettingContainer_t & settings) const {
+/** Prints 'Inference' tab parameters to file stream. */
+ParametersPrint::SettingContainer_t & ParametersPrint::getInferenceParameters(SettingContainer_t & settings) const {
     std::string buffer;
     settings.clear();
     printString(buffer, "%u", _parameters.getNumReplicationsRequested());  
@@ -128,11 +130,21 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdvancedAnalysisParame
 
 /** Prints 'Output' tab parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getOutputParameters(SettingContainer_t & settings) const {
+   std::string buffer;
     settings.clear();
     settings.push_back(std::make_pair("Results File",_parameters.getOutputFileName()));
     settings.push_back(std::make_pair("Report Results as HTML",(_parameters.isGeneratingHtmlResults() ? "Yes" : "No")));
+    if (_parameters.isGeneratingHtmlResults()) {
+        settings.push_back(std::make_pair("Results HTML", ResultsFileWriter::getFilenameHTML(_parameters, buffer)));
+    }
     settings.push_back(std::make_pair("Report Results as CSV Table",(_parameters.isGeneratingTableResults() ? "Yes" : "No")));
-    settings.push_back(std::make_pair("Report Simulated Loglikelihood Ratios as CSV Table",(_parameters.isGeneratingLLRResults() ? "Yes" : "No")));
+    if (_parameters.isGeneratingTableResults()) {
+        settings.push_back(std::make_pair("Results CSV Table", CutsRecordWriter::getFilename(_parameters, buffer)));
+    }
+    settings.push_back(std::make_pair("Report Simulated Log Likelihood Ratios",(_parameters.isGeneratingLLRResults() ? "Yes" : "No")));
+    if (_parameters.isGeneratingLLRResults()) {
+        settings.push_back(std::make_pair("Simulated Log Likelihood Ratios", LoglikelihoodRatioWriter::getFilename(_parameters, buffer)));
+    }
     if (_parameters.isGeneratingTableResults() && _parameters.isPrintColumnHeaders()) {
         settings.push_back(std::make_pair("Print Column Headers","Yes"));
     }

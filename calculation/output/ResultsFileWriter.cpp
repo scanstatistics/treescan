@@ -7,9 +7,10 @@
 #include "ScanRunner.h"
 #include "AsciiPrintFormat.h"
 #include "ParametersPrint.h"
+#include "UtilityFunctions.h"
 
 std::string& ResultsFileWriter::getFilenameHTML(const Parameters& parameters, std::string& buffer) {
-  return getDerivedFilename(parameters.getOutputFileName(), "_web", ".html", buffer);
+  return getDerivedFilename(parameters.getOutputFileName(), "", ".html", buffer);
 }
 
 std::ofstream & ResultsFileWriter::openStream(const std::string& outputfile, std::ofstream & outfile, bool overwrite) {
@@ -47,23 +48,17 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
 
     PrintFormat.PrintVersionHeader(outfile);
     std::string buffer = ctime(&start);
-    outfile << std::endl << "Program run on: " << buffer;
+    outfile << std::endl << "Program run on: " << buffer << std::endl;
+    PrintFormat.PrintNonRightMarginedDataString(outfile, getAnalysisSuccinctStatement(buffer), false);
 
     PrintFormat.SetMarginsAsSummarySection();
     PrintFormat.PrintSectionSeparatorString(outfile);
     outfile << std::endl << "SUMMARY OF DATA" << std::endl << std::endl;
-    PrintFormat.PrintSectionLabel(outfile, "Scan:", false);
-    switch (parameters.getScanType()) {
-        case Parameters::TREEONLY : buffer = "Tree Only"; break;
-        case Parameters::TREETIME : buffer = "Tree and Time"; break;
-        default: throw prg_error("Unknown scan type (%d).", "writeASCII()", parameters.getScanType());
-    }
-    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
     PrintFormat.PrintSectionLabel(outfile, "Total Cases:", false);
     PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getTotalC()));
     if (parameters.getModelType() != Parameters::TEMPORALSCAN) {
-        PrintFormat.PrintSectionLabel(outfile, "Total Measure:", false);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%lf", _scanRunner.getTotalN()));
+        PrintFormat.PrintSectionLabel(outfile, "Total Expected:", false);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getTotalN(), buffer, 1));
     }
     if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
         PrintFormat.PrintSectionLabel(outfile, "Data Time Range:", false);
@@ -90,7 +85,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     if (_scanRunner.getCuts().size() == 0 || _scanRunner.getCuts().at(0)->getC() == 0 || _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested()) {
         outfile << "No cuts were found." << std::endl;
     } else {
-        outfile << "Most Likely Cuts"<< std::endl << std::endl;
+        outfile << "MOST LIKELY CUTS"<< std::endl << std::endl;
         std::string format, replicas;
         printString(replicas, "%u", parameters.getNumReplicationsRequested());
         printString(format, "%%.%dlf", replicas.size());
@@ -113,7 +108,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts().at(k)->getN()));
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
             }
-            PrintFormat.PrintSectionLabel(outfile, "Cluster Cases", true);
+            PrintFormat.PrintSectionLabel(outfile, "Observed Cases", true);
             printString(buffer, "%ld", _scanRunner.getCuts().at(k)->getC());
             PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
             if (parameters.isDuplicates()) {
@@ -155,7 +150,31 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     return true;
 }
 
-std::string & ResultsFileWriter::getTotalRunningTime(time_t start, time_t end, std::string & buffer) {
+/** Returns a string which is */
+std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buffer) const {
+    switch (_scanRunner.getParameters().getScanType()) {
+        case Parameters::TREEONLY : {
+            buffer = "Tree Scan";
+            switch (_scanRunner.getParameters().getConditionalType()) {
+                case Parameters::UNCONDITIONAL : buffer += " with Unconditional"; break;
+                case Parameters::TOTALCASES : buffer += " with Conditional"; break;
+                case Parameters::CASESEACHBRANCH : break;
+                default: throw prg_error("Unknown conditional type (%d).", "writeASCII()", _scanRunner.getParameters().getConditionalType());
+            }
+            switch (_scanRunner.getParameters().getModelType()) {
+                case Parameters::POISSON : buffer += " Poisson Model"; break;
+                case Parameters::BERNOULLI : buffer += " Bernoulli Model"; break;
+                case Parameters::TEMPORALSCAN : break;
+                default: throw prg_error("Unknown nodel type (%d).", "writeASCII()", _scanRunner.getParameters().getModelType());
+            }
+        } break;
+        case Parameters::TREETIME : buffer = "Tree Temporal Scan"; break;
+        default: throw prg_error("Unknown scan type (%d).", "writeASCII()", _scanRunner.getParameters().getScanType());
+    }
+    return buffer;
+}
+
+std::string & ResultsFileWriter::getTotalRunningTime(time_t start, time_t end, std::string & buffer) const {
     double nTotalTime = difftime(end, start);
     double nHours     = floor(nTotalTime/(60*60));
     double nMinutes   = floor((nTotalTime - nHours*60*60)/60);
@@ -184,6 +203,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "body {color: #353535;font: 0.75em Arial,Garuda,sans-serif;padding: 20px;}" << std::endl;
     outfile << "#banner {background: none repeat scroll 0 0 #7A991A;height: 40px;color: white;font-size: 2em;text-align: center;vertical-align: middle;padding: 10px 0 10px 0;}" << std::endl;
     outfile << ".program-info {background-color: #E5EECC;padding: 5px 0 5px 5px;font-size: 1.1em;}" << std::endl;
+    outfile << ".program-info h4 {margin: 2px 0 10px 0;}" << std::endl;
     outfile << "#cuts table {border: 1px solid #BDBDBD;border-collapse: collapse;width: 100%;}" << std::endl;
     outfile << "#cuts table th {background-color: #DADAD5;text-align: center;text-align: left;/*min-width:200px;*/}" << std::endl;
     outfile << "#cuts table th, #cuts table td {border: 1px solid #C3C3C3;padding: 4px 6px;}" << std::endl;
@@ -216,8 +236,11 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "});</script>" << std::endl;
     printString(buffer, "TreeScan v%s.%s%s%s%s%s", VERSION_MAJOR, VERSION_MINOR, (!strcmp(VERSION_RELEASE, "0") ? "" : "."), (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE), (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE);
     outfile << "</head>" << std::endl << "<body><div id=\"banner\"><div id=\"title\">" << buffer << "</div></div>" << std::endl;
-    outfile << "<div class=\"program-info\"><table style=\"text-align: left;\"><tbody>" << std::endl;
+    outfile << "<div class=\"program-info\">" << std::endl;
 
+    outfile << getAnalysisSuccinctStatement(buffer);
+
+    outfile << "<table style=\"text-align: left;\"><tbody>" << std::endl;
     outfile << "<tr><th>Scan:</th><td>";
     switch (parameters.getScanType()) {
         case Parameters::TREEONLY : outfile << "Tree Only"; break;
@@ -227,7 +250,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "</td></tr>" << std::endl;
     outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
     if (parameters.getModelType() != Parameters::TEMPORALSCAN) {
-        outfile << "<tr><th>Total Measure:</th><td>" << getValueAsString(_scanRunner.getTotalN(), buffer).c_str() << "</td></tr>" << std::endl;
+        outfile << "<tr><th>Total Expected:</th><td>" << getValueAsString(_scanRunner.getTotalN(), buffer).c_str() << "</td></tr>" << std::endl;
     }
     if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
         outfile << "<tr><th>Data Time Range:</th><td>" << parameters.getDataTimeRangeSet().toString(buffer).c_str() << "</td></tr>" << std::endl;
@@ -239,13 +262,13 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     if (_scanRunner.getCuts().size() == 0 || _scanRunner.getCuts().at(0)->getC() == 0 || _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested()) {
         outfile << "<h3>No cuts were found.</h3>" << std::endl;
     } else {
-        outfile << "<h3>Most Likely Cuts</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;
+        outfile << "<h3>MOST LIKELY CUTS</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;
         outfile << "<thead><tr><th>No.</th><th>Node Identifier</th>";
         if (parameters.getModelType() == Parameters::TEMPORALSCAN) {            
             outfile << "<th>Time Window</th>";
             outfile << "<th>Node Cases</th>";
         }    
-        outfile << "<th>Cluster Cases</th>";
+        outfile << "<th>Observed Cases</th>";
         if (parameters.isDuplicates()) {outfile << "<th>Cases (Duplicates Removed)</th>";}
         outfile << "<th>Expected</th><th>Observed/Expected</th>";
         if (parameters.isDuplicates()) {outfile << "<th>O/E (Duplicates Removed)</th>";}

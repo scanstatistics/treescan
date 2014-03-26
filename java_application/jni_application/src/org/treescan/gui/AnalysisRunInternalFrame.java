@@ -152,7 +152,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                 }
                 if (_parameters.isGeneratingHtmlResults()) {
                     PrintProgressWindow("\nOpening results in web browser ...");
-                    File path = new File(FileAccess.changeExtension(sFileName, "_web.html"));
+                    File path = new File(FileAccess.changeExtension(sFileName, ".html"));
                     if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
                         try {
                             Desktop.getDesktop().open(path);

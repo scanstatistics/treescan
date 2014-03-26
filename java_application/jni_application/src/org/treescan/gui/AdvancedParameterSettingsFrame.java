@@ -147,7 +147,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     
     public boolean getDefaultsSetForAnalysisOptions() {
         boolean bReturn = true;
-        bReturn &= (Integer.parseInt(_montCarloReplicationsTextField.getText()) == 99999);
+        bReturn &= (Integer.parseInt(_montCarloReplicationsTextField.getText()) == 999);
         return bReturn;
     }    
     
@@ -172,7 +172,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         switch (_focusedTabSet) {
             case ANALYSIS:
                 setTitle("Advanced Analysis Options");
-                jTabbedPane1.addTab("Advanced Analysis", null, _advancedanalysisTab, null);
+                jTabbedPane1.addTab("Inference", null, _advancedanalysisTab, null);
                 break;
             case INPUT:
             default:
@@ -227,7 +227,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * controls pulled these default values from the CParameter class
      */
     private void setDefaultsForAnalysisTabs() {
-        _montCarloReplicationsTextField.setText("99999");
+        _montCarloReplicationsTextField.setText("999");
     }
     
     private void setupInterface(final Parameters parameters) {
@@ -359,7 +359,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_cutFileBrowseButton)
                     .addComponent(_cutFileImportButton)
                     .addComponent(_cutFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(146, Short.MAX_VALUE))
+                .addContainerGap(150, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced Input Options", _advancedinputTab);
@@ -368,11 +368,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _labelMonteCarloReplications.setText("Number of replications (0, 9, 999, or value ending in 999):"); // NOI18N
 
-        _montCarloReplicationsTextField.setText("99999"); // NOI18N
+        _montCarloReplicationsTextField.setText("999"); // NOI18N
         _montCarloReplicationsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
                 while (_montCarloReplicationsTextField.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _montCarloReplicationsTextField.setText("99999");
+                if (undo.canUndo()) undo.undo(); else _montCarloReplicationsTextField.setText("999");
             }
         });
         _montCarloReplicationsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -420,10 +420,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advancedanalysisTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(137, Short.MAX_VALUE))
+                .addContainerGap(141, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Advanced Analysis Options", _advancedanalysisTab);
+        jTabbedPane1.addTab("Inference", _advancedanalysisTab);
 
         _closeButton.setText("Close"); // NOI18N
         _closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -454,7 +454,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)

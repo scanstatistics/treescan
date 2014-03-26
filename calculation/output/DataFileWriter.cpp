@@ -232,7 +232,7 @@ const size_t DataRecordWriter::MAX_LOC_FIELD_SIZE                        = 254;
 
 ///////////// CutsRecordWriter ///////////////////////////////////
 
-const char * CutsRecordWriter::CUT_FILE_SUFFIX                            = "_cut";
+const char * CutsRecordWriter::CUT_FILE_SUFFIX                            = "";
 
 CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scanRunner) {
   unsigned short uwOffset=0;

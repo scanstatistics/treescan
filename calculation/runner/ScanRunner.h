@@ -187,7 +187,7 @@ private:
     bool                        scanTree();
     bool                        scanTreeTemporal();
     bool                        setupTree();
-    void                        updateCuts(int node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx=0, DataTimeRange::index_t endIdx=1);
+    void                        updateCuts(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx=0, DataTimeRange::index_t endIdx=1);
 
 public:
     ScanRunner(const Parameters& parameters, BasePrint& print);

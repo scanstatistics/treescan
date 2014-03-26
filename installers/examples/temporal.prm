@@ -38,9 +38,9 @@ cut-type=0
 ;duplicates in case data records
 duplicates=n
 
-[Advanced Analysis]
+[Inference]
 ;number of simulation replications (0,9,999, n999)
-monte-carlo-replications=99999
+monte-carlo-replications=999
 ;randomization seed (integer)
 randomization-seed=12345678
 ;generate randomization seed (y/n)

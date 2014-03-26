@@ -566,6 +566,9 @@ bool ScanRunner::scanTreeTemporal() {
                               _parameters.getTemporalStartRange().getEnd() + _zero_translation_additive),
                   endWindow(_parameters.getTemporalEndRange().getStart() + _zero_translation_additive,
                             _parameters.getTemporalEndRange().getEnd() + _zero_translation_additive);
+
+    DataTimeRange::index_t minimumTemporalWindow = 5;
+
     //std::string buffer;
     //int hits=0;
     for (size_t n=0; n < _Nodes.size(); ++n) {
@@ -576,7 +579,9 @@ bool ScanRunner::scanTreeTemporal() {
                 case Parameters::SIMPLE:
                     //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
                     for (DataTimeRange::index_t end=endWindow.getStart(); end < endWindow.getEnd(); ++end) {
-                        for (DataTimeRange::index_t start=startWindow.getStart(); start < startWindow.getEnd(); ++start) {
+                        DataTimeRange::index_t startWindowEnd = std::min(startWindow.getEnd() + 1, end - minimumTemporalWindow + 1);
+                        for (DataTimeRange::index_t start=startWindow.getStart(); start < startWindowEnd; ++start) {
+                            //_print.Printf("%d to %d\n", BasePrint::P_STDOUT,start,end);
                             updateCuts(n, thisNode.getBrC_C()[start] - thisNode.getBrC_C()[end], static_cast<NodeStructure::expected_t>(thisNode.getBrC()), calcLogLikelihood, start, end);
                         }
                     }
@@ -659,7 +664,7 @@ bool ScanRunner::scanTreeTemporal() {
     return _Cut.size() != 0;
 }
 
-void ScanRunner::updateCuts(int node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx) {
+void ScanRunner::updateCuts(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx) {
     double loglikelihood = _parameters.getModelType() == Parameters::TEMPORALSCAN ? logCalculator->LogLikelihood(BrC, BrN, endIdx - startIdx + 1) : logCalculator->LogLikelihood(BrC, BrN); 
     if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) return;
 

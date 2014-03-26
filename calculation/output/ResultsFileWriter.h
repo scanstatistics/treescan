@@ -13,7 +13,8 @@ class ResultsFileWriter {
     const ScanRunner & _scanRunner;
 
     std::ofstream & openStream(const std::string& outputfile, std::ofstream & outfile, bool overwrite=false);
-    std::string & getTotalRunningTime(time_t start, time_t end, std::string & buffer);
+    std::string & getTotalRunningTime(time_t start, time_t end, std::string & buffer) const;
+    std::string & getAnalysisSuccinctStatement(std::string & buffer) const;
 
   public:
     ResultsFileWriter(const ScanRunner& scanRunner) : _scanRunner(scanRunner) {}

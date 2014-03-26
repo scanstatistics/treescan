@@ -54,8 +54,8 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(Parameters::CUT_TYPE, true), po::value<std::string>(), GetParameterComment(Parameters::CUT_TYPE))
         (getOption(Parameters::DUPLICATES, true), po::value<std::string>(), GetParameterComment(Parameters::DUPLICATES));
 
-    /* Advanced Input tab options */
-    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::AdvancedAnalysis), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    /* Inference tab options */
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::Inference), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
     opt_descriptions.back()->get<0>().add_options()
         (getOption(Parameters::REPLICATIONS, true), po::value<std::string>(), GetParameterComment(Parameters::REPLICATIONS))
         (getOption(Parameters::RANDOMIZATION_SEED, true), po::value<std::string>(), GetParameterComment(Parameters::RANDOMIZATION_SEED))

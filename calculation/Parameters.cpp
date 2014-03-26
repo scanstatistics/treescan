@@ -210,7 +210,7 @@ void Parameters::setAsDefaulted() {
     _probablility_ratio = ratio_t(1,2);
     _temporalStartRange = DataTimeRange();
     _temporalEndRange = DataTimeRange();
-    _replications = 99999;
+    _replications = 999;
     _cut_type = SIMPLE;
 
     _outputFileName = "";

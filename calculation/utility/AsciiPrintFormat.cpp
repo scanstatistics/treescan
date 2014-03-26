@@ -112,7 +112,7 @@ void AsciiPrintFormat::PrintSectionLabel(std::ostream& out, const char * sText, 
   }
   //add label
   out << sText;
-  iStringLength += strlen(sText); //+= fprintf(fp, sText);
+  iStringLength += static_cast<unsigned int>(strlen(sText)); //+= fprintf(fp, sText);
 
   //check that created label isn't greater than defined maximum width of label
   if (iStringLength > (bPadLeftMargin ? giLabelWidth + giLeftMargin : giLabelWidth))
@@ -192,7 +192,7 @@ void AsciiPrintFormat::SetMarginsAsCutSection(unsigned int iNumber) {
       n = (int)floor(((double)n)/10);
   }
   //set margin for data print
-  giDataLeftMargin = (gbOneDataSet ? giOneDataSetCutLabelWidth : giMultiDataSetCutLabelWidth) + giLeftMargin + strlen(": ");
+  giDataLeftMargin = (gbOneDataSet ? giOneDataSetCutLabelWidth : giMultiDataSetCutLabelWidth) + giLeftMargin + static_cast<unsigned int>(strlen(": "));
   giLabelWidth = (gbOneDataSet ? giOneDataSetCutLabelWidth : giMultiDataSetCutLabelWidth);
 }
 
@@ -207,7 +207,7 @@ void AsciiPrintFormat::SetMarginsAsOverviewSection() {
 void AsciiPrintFormat::SetMarginsAsRunTimeReportSection() {
   giLeftMargin = 2;
   giLabelWidth = giRunTimeComponentsLabelWidth;
-  giDataLeftMargin = giLabelWidth + giLeftMargin + strlen(": ");
+  giDataLeftMargin = giLabelWidth + giLeftMargin + static_cast<unsigned int>(strlen(": "));
 }
 
 /** Adjusts margins for summary of data section. The left margin is zero and the
@@ -215,6 +215,6 @@ void AsciiPrintFormat::SetMarginsAsRunTimeReportSection() {
 void AsciiPrintFormat::SetMarginsAsSummarySection() {
   giLeftMargin = 0;
   giLabelWidth = (gbOneDataSet ? giOneDataSetSummuaryLabelWidth : giMultiDataSetSummaryLabelWidth);
-  giDataLeftMargin = giLabelWidth + giLeftMargin + strlen(": ");
+  giDataLeftMargin = giLabelWidth + giLeftMargin + static_cast<unsigned int>(strlen(": "));
 }
 
