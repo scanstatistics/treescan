@@ -6,7 +6,7 @@ case-filename=temporal.cas
 ;population data filename
 population-filename=
 ;data time ranges (integer - integer)
-data-time-range=[-16,9]
+data-time-range=[-16,10]
 
 [Analysis]
 ;scan type (TREEONLY=0, TREETIME)
@@ -18,9 +18,9 @@ probability-model=2
 ;event probability (integer / integer)
 event-probability=1/2
 ;start data time range (integer - integer)
-window-start-range=[0,9]
+window-start-range=[0,10]
 ;end data time range (integer - integer)
-window-end-range=[0,9]
+window-end-range=[0,10]
 
 [Output]
 ;results filename
