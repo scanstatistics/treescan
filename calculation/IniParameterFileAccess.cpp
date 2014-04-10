@@ -118,6 +118,7 @@ void IniParameterFileAccess::Write(const char* sFilename) {
         WriteOutputSettings(WriteFile);
         WriteAdvancedInputSettings(WriteFile);
         WriteAdvancedAnalysisSettings(WriteFile);
+        WriteAdvancedOutputSettings(WriteFile);
         WritePowerEvaluationsSettings(WriteFile);
         WriteRunOptionSettings(WriteFile);
         WriteSystemSettings(WriteFile);
@@ -148,8 +149,8 @@ void IniParameterFileAccess::WriteAnalysisSettings(IniFile& WriteFile) {
     std::string s;
     try {
         WriteIniParameter(WriteFile, Parameters::SCAN_TYPE, GetParameterString(Parameters::SCAN_TYPE, s).c_str(), GetParameterComment(Parameters::SCAN_TYPE));
-        WriteIniParameter(WriteFile, Parameters::CONDITIONAL_TYPE, GetParameterString(Parameters::CONDITIONAL_TYPE, s).c_str(), GetParameterComment(Parameters::CONDITIONAL_TYPE));
         WriteIniParameter(WriteFile, Parameters::MODEL_TYPE, GetParameterString(Parameters::MODEL_TYPE, s).c_str(), GetParameterComment(Parameters::MODEL_TYPE));
+        WriteIniParameter(WriteFile, Parameters::CONDITIONAL_TYPE, GetParameterString(Parameters::CONDITIONAL_TYPE, s).c_str(), GetParameterComment(Parameters::CONDITIONAL_TYPE));
         WriteIniParameter(WriteFile, Parameters::EVENT_PROBABILITY, GetParameterString(Parameters::EVENT_PROBABILITY, s).c_str(), GetParameterComment(Parameters::EVENT_PROBABILITY));
         WriteIniParameter(WriteFile, Parameters::START_DATA_TIME_RANGE, GetParameterString(Parameters::START_DATA_TIME_RANGE, s).c_str(), GetParameterComment(Parameters::START_DATA_TIME_RANGE));
         WriteIniParameter(WriteFile, Parameters::END_DATA_TIME_RANGE, GetParameterString(Parameters::END_DATA_TIME_RANGE, s).c_str(), GetParameterComment(Parameters::END_DATA_TIME_RANGE));
@@ -166,7 +167,6 @@ void IniParameterFileAccess::WriteOutputSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, Parameters::RESULTS_FILE, GetParameterString(Parameters::RESULTS_FILE, s).c_str(), GetParameterComment(Parameters::RESULTS_FILE));
     WriteIniParameter(WriteFile, Parameters::RESULTS_HTML, GetParameterString(Parameters::RESULTS_HTML, s).c_str(), GetParameterComment(Parameters::RESULTS_HTML));
     WriteIniParameter(WriteFile, Parameters::RESULTS_CSV, GetParameterString(Parameters::RESULTS_CSV, s).c_str(), GetParameterComment(Parameters::RESULTS_CSV));
-    WriteIniParameter(WriteFile, Parameters::RESULTS_LLR, GetParameterString(Parameters::RESULTS_LLR, s).c_str(), GetParameterComment(Parameters::RESULTS_LLR));
   } catch (prg_exception& x) {
     x.addTrace("WriteOutputSettings()","IniParameterFileAccess");
     throw;
@@ -195,6 +195,17 @@ void IniParameterFileAccess::WriteAdvancedAnalysisSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, Parameters::RANDOMLY_GENERATE_SEED, GetParameterString(Parameters::RANDOMLY_GENERATE_SEED, s).c_str(), GetParameterComment(Parameters::RANDOMLY_GENERATE_SEED));
     } catch (prg_exception& x) {
         x.addTrace("WriteAdvancedAnalysisSettings()","IniParameterFileAccess");
+        throw;
+    }
+}
+
+/** Writes parameter settings grouped under 'Advanced Output'. */
+void IniParameterFileAccess::WriteAdvancedOutputSettings(IniFile& WriteFile) {
+    std::string s;
+    try {
+        WriteIniParameter(WriteFile, Parameters::RESULTS_LLR, GetParameterString(Parameters::RESULTS_LLR, s).c_str(), GetParameterComment(Parameters::RESULTS_LLR));
+    } catch (prg_exception& x) {
+        x.addTrace("WriteAdvancedOutputSettings()","IniParameterFileAccess");
         throw;
     }
 }

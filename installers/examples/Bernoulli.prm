@@ -2,29 +2,29 @@
 ;tree structure filename
 tree-filename=tree.tre
 ;case data filename
-case-filename=temporal.cas
+case-filename=Bernoulli.cas
 ;population data filename
-population-filename=
+population-filename=Bernoulli.pop
 ;data time ranges (integer - integer)
-data-time-range=[-16,10]
+data-time-range=[0,0]
 
 [Analysis]
 ;scan type (TREEONLY=0, TREETIME)
-scan-type=1
-;conditional type (UNCONDITIONAL=0, TOTALCASES, CASESEACHBRANCH)
-conditional-type=2
+scan-type=0
 ;probability model type (POISSON=0, BERNOULLI=1, TEMPORALSCAN=3)
-probability-model=2
-;event probability (integer / integer)
+probability-model=1
+;conditional type (UNCONDITIONAL=0, TOTALCASES, CASESEACHBRANCH)
+conditional-type=0
+;case probability (integer / integer)
 event-probability=1/2
 ;start data time range (integer - integer)
-window-start-range=[0,10]
+window-start-range=[0,0]
 ;end data time range (integer - integer)
-window-end-range=[0,10]
+window-end-range=[0,0]
 
 [Output]
 ;results filename
-results-filename=temporal.txt
+results-filename=Bernoulli.txt
 ;create HTML results
 results-html=n
 ;create CSV results
@@ -45,6 +45,20 @@ monte-carlo-replications=999
 randomization-seed=12345678
 ;generate randomization seed (y/n)
 random-randomization-seed=n
+
+[Additional Output]
+;create LLR results
+results-llr=n
+
+[Power Simulations]
+;input simulation data (y/n)
+input-simulations=n
+;input simulation filename
+input-simulations-file=
+;output simulation data (y/n)
+output-simulations=n
+;output simulation filename
+output-simulations-file=
 
 [Run Options]
 ;number of parallel processes to execute (0=All Processors, x=At Most X Processors)

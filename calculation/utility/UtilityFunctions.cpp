@@ -167,10 +167,14 @@ unsigned int getFormatPrecision(double value, unsigned int iSignificant) {
     The 'g' format specifier might have sufficed but Martin wanted this format.
 */
 std::string& getValueAsString(double value, std::string& s, unsigned int iSignificant) {
-    unsigned int iPrecision = getFormatPrecision(value, iSignificant);
-    std::string format;
-    printString(format, "%%.%dlf", iPrecision);
-    printString(s, format.c_str(), value);
+    if (value == std::numeric_limits<double>::infinity())
+        s = "Infinity";
+    else {
+        unsigned int iPrecision = getFormatPrecision(value, iSignificant);
+        std::string format;
+        printString(format, "%%.%dlf", iPrecision);
+        printString(s, format.c_str(), value);
+    }
     return s;
 }
 

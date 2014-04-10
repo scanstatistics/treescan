@@ -80,7 +80,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
     std::string buffer;
     settings.clear();
 
-    buffer = "Scan";
+    buffer = "Type of Scan";
     switch (_parameters.getScanType()) {
         case Parameters::TREEONLY : settings.push_back(std::make_pair(buffer,"Tree Only")); break;
         case Parameters::TREETIME : settings.push_back(std::make_pair(buffer,"Tree and Time")); break;
@@ -101,11 +101,11 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
     }
     if (_parameters.getModelType() == Parameters::BERNOULLI) {
         printString(buffer, "%u/%u", _parameters.getProbabilityRatio().first, _parameters.getProbabilityRatio().second);
-        settings.push_back(std::make_pair("Event Probability",buffer));
+        settings.push_back(std::make_pair("Case Probability",buffer));
     }
     if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
-        settings.push_back(std::make_pair("Temporal Scanning Window Start", _parameters.getTemporalStartRange().toString(buffer)));
-        settings.push_back(std::make_pair("Temporal Scanning Window End", _parameters.getTemporalEndRange().toString(buffer)));
+        settings.push_back(std::make_pair("Temporal Time Window Start", _parameters.getTemporalStartRange().toString(buffer)));
+        settings.push_back(std::make_pair("Temporal Time Window End", _parameters.getTemporalEndRange().toString(buffer)));
     }
     return settings;
 }

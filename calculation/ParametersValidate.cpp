@@ -98,12 +98,12 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
             const DataTimeRange& endRange = _parameters.getTemporalEndRange();
             if (startRange.getStart() < 0) {
                 bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nThe start scanning window range '%s' must be defined with a starting index of zero or more.\n",
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe start time window range '%s' must be defined with a starting index of zero or more.\n",
                                       BasePrint::P_PARAMERROR, startRange.toString(buffer).c_str());
             }
             if (endRange.getStart() < 0) {
                 bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nThe end scanning window range '%s' must be defined with a starting index of zero or more.\n",
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe end time window range '%s' must be defined with a starting index of zero or more.\n",
                                       BasePrint::P_PARAMERROR, endRange.toString(buffer).c_str());
             }
             bool positiveRange=false, startWindowInRange=false, endWindowInRange=false;
@@ -129,24 +129,24 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
             }
             if (!startWindowInRange) {
                 bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nThe start scanning window range '%s' is not within a defined data time range with a starting index of zero or more.\n",
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe start time window range '%s' is not within a defined data time range with a starting index of zero or more.\n",
                                       BasePrint::P_PARAMERROR, startRange.toString(buffer).c_str());
             }
             if (!endWindowInRange) {
                 bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nThe end scanning window range '%s' is not within a defined data time range with a starting index of zero or more.\n",
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe end time window range '%s' is not within a defined data time range with a starting index of zero or more.\n",
                                       BasePrint::P_PARAMERROR, endRange.toString(buffer).c_str());
             }
             if (startRange.getEnd() > endRange.getEnd()) {
                 bValid = false;
                 PrintDirection.Printf("Invalid Parameter Setting:\n"
-                                      "The upper index of the start scanning window range '%s' cannot be greater than upper index of the end scanning window range '%s'.\n",
+                                      "The upper index of the start time window range '%s' cannot be greater than upper index of the end time window range '%s'.\n",
                                       BasePrint::P_PARAMERROR, startRange.toString(buffer).c_str(), endRange.toString(buffer2).c_str());
             }
             if (endRange.getStart() < startRange.getStart()) {
                 bValid = false;
                 PrintDirection.Printf("Invalid Parameter Setting:\n"
-                                      "The lower index of the end scanning window range '%s' cannot be greater than lower index of the start scanning window range '%s'.\n",
+                                      "The lower index of the end time window range '%s' cannot be greater than lower index of the start time window range '%s'.\n",
                                       BasePrint::P_PARAMERROR, endRange.toString(buffer).c_str(), startRange.toString(buffer2).c_str());
             }
         }
@@ -165,7 +165,7 @@ bool ParametersValidate::ValidateAnalysisParameters(BasePrint& PrintDirection) c
           (_parameters.getProbabilityRatio().first == 0 || _parameters.getProbabilityRatio().second == 0 || 
           _parameters.getProbabilityRatio().first >= _parameters.getProbabilityRatio().second)) {
           bValid = false;
-          PrintDirection.Printf("Invalid Parameter Setting:\nEvent probabilty must be between zero and one.\n", BasePrint::P_PARAMERROR);
+          PrintDirection.Printf("Invalid Parameter Setting:\Case probabilty must be between zero and one.\n", BasePrint::P_PARAMERROR);
       }
   }
   catch (prg_exception& x) {

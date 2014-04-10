@@ -53,7 +53,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::SCAN_TYPE               : return "scan type (TREEONLY=0, TREETIME)";
             case Parameters::CONDITIONAL_TYPE        : return "conditional type (UNCONDITIONAL=0, TOTALCASES, CASESEACHBRANCH)";
             case Parameters::MODEL_TYPE              : return "probability model type (POISSON=0, BERNOULLI=1, TEMPORALSCAN=3)";
-            case Parameters::EVENT_PROBABILITY       : return "event probability (integer / integer)";
+            case Parameters::EVENT_PROBABILITY       : return "case probability (integer / integer)";
             case Parameters::START_DATA_TIME_RANGE   : return "start data time range (integer - integer)";
             case Parameters::END_DATA_TIME_RANGE     : return "end data time range (integer - integer)";
             /* Advanced Analysis */

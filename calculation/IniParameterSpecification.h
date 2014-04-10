@@ -16,6 +16,7 @@ class IniParameterSpecification {
     static const char * Analysis;
     static const char * Inference;
     static const char * Output;
+    static const char * AdditionalOutput;
     static const char * PowerSimulations;
 
     static const char * RunOptions;

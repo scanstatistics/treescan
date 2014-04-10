@@ -31,6 +31,7 @@ public:
     int                     getID() const {return _ID;}
     double                  getLogLikelihood() const {return _LogLikelihood;}
     double                  getN() const {return _N;}
+    double                  getExcessCases(const ScanRunner& scanner);
     double                  getExpected(const ScanRunner& scanner);
     double                  getODE(const ScanRunner& scanner);
     unsigned int            getRank() const {return _rank;}

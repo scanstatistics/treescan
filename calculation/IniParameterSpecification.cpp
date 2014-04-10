@@ -9,6 +9,7 @@ const char * IniParameterSpecification::AdvancedInput           = "Advanced Inpu
 const char * IniParameterSpecification::Analysis                = "Analysis";
 const char * IniParameterSpecification::Inference               = "Inference";
 const char * IniParameterSpecification::Output                  = "Output";
+const char * IniParameterSpecification::AdditionalOutput        = "Additional Output";
 const char * IniParameterSpecification::PowerSimulations        = "Power Simulations";
 
 const char * IniParameterSpecification::RunOptions              = "Run Options";
@@ -69,7 +70,8 @@ void IniParameterSpecification::Build_1_1_x_ParameterList() {
     gvParameterInfo.push_back(std::make_pair(Output, (const char*)"results-filename"));
     gvParameterInfo.push_back(std::make_pair(Output, (const char*)"results-html"));
     gvParameterInfo.push_back(std::make_pair(Output, (const char*)"results-csv"));
-    gvParameterInfo.push_back(std::make_pair(Output, (const char*)"results-llr"));
+
+    gvParameterInfo.push_back(std::make_pair(AdditionalOutput, (const char*)"results-llr"));
 
     gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"input-simulations"));
     gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"input-simulations-file"));

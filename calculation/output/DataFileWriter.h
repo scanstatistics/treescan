@@ -39,15 +39,20 @@ class DataRecordWriter {
     static const size_t         MAX_LOC_FIELD_SIZE;
     static const char         * CUT_NUM_FIELD;
     static const char         * NODE_ID_FIELD;
-    static const char         * OBSERVED_FIELD;
-    static const char         * OBSERVED_NO_DUPLICATES_FIELD;
-    static const char         * TOTAL_CASES_FIELD;
-    static const char         * EXPECTED_FIELD;
-    static const char         * OBSERVED_DIV_EXPECTED_FIELD;
-    static const char         * RELATIVE_RISK_FIELD;
-    static const char         * OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD;
+    static const char         * NODE_CASES_FIELD;
     static const char         * START_WINDOW_FIELD;
     static const char         * END_WINDOW_FIELD;
+    static const char         * OBSERVATIONS_FIELD;
+    static const char         * WNDW_CASES_FIELD;
+    static const char         * CASES_FIELD;
+    static const char         * OBSERVED_CASES_FIELD;
+    static const char         * OBSERVED_NO_DUPLICATES_FIELD;
+    static const char         * EXPECTED_FIELD;
+    static const char         * EXPECTED_CASES_FIELD;
+    static const char         * OBSERVED_DIV_EXPECTED_FIELD;
+    static const char         * RELATIVE_RISK_FIELD;
+    static const char         * EXCESS_CASES_FIELD;
+    static const char         * OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD;
     static const char         * LOG_LIKL_RATIO_FIELD;
     static const char         * P_VALUE_FLD;
 

@@ -152,8 +152,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }    
     
     public boolean getDefaultsSetForOutputOptions() {
-        boolean bReturn = true;
-        return bReturn;
+        return _reportLLRResultsAsCsvTable.isSelected() == false;
     }    
     
     private synchronized void startModal(FocusedTabSet focusedTabSet) {
@@ -170,6 +169,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _focusedTabSet = focusedTabSet;
         }
         switch (_focusedTabSet) {
+            case OUTPUT: 
+                setTitle("Advanced Output Options");
+                jTabbedPane1.addTab("Additional Output", null, _advancedoutputtab, null);
+                break;
             case ANALYSIS:
                 setTitle("Advanced Analysis Options");
                 jTabbedPane1.addTab("Inference", null, _advancedanalysisTab, null);
@@ -190,11 +193,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * sets CParameters class with settings in form
+     * sets Parameters class with settings in form
      */
     public void saveParameterSettings(Parameters parameters) {
         parameters.setCutsFileName(_cutFileTextField.getText());
         parameters.setNumReplications(Integer.parseInt(_montCarloReplicationsTextField.getText()));
+        parameters.setGeneratingLLRResults(_reportLLRResultsAsCsvTable.isSelected());
     }
 
     /**
@@ -233,7 +237,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private void setupInterface(final Parameters parameters) {
         _cutFileTextField.setText(parameters.getCutsFileName());
         _cutFileTextField.setCaretPosition(0);      
-        _montCarloReplicationsTextField.setText(Integer.toString(parameters.getNumReplicationsRequested()));        
+        _montCarloReplicationsTextField.setText(Integer.toString(parameters.getNumReplicationsRequested()));    
+        _reportLLRResultsAsCsvTable.setSelected(parameters.isGeneratingLLRResults());
     }
 
     /**
@@ -241,6 +246,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * these default values from the CParameter class
      */
     private void setDefaultsForOutputTab() {
+        _reportLLRResultsAsCsvTable.setSelected(false);
     }    
     
     /**
@@ -287,6 +293,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         jPanel1 = new javax.swing.JPanel();
         _labelMonteCarloReplications = new javax.swing.JLabel();
         _montCarloReplicationsTextField = new javax.swing.JTextField();
+        _advancedoutputtab = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        _reportLLRResultsAsCsvTable = new javax.swing.JCheckBox();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
@@ -359,10 +368,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_cutFileBrowseButton)
                     .addComponent(_cutFileImportButton)
                     .addComponent(_cutFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(150, Short.MAX_VALUE))
+                .addContainerGap(162, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Advanced Input Options", _advancedinputTab);
+        jTabbedPane1.addTab("Advanced Input", _advancedinputTab);
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Replications"));
 
@@ -420,10 +429,55 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advancedanalysisTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(141, Short.MAX_VALUE))
+                .addContainerGap(153, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _advancedanalysisTab);
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Log Likelihood Ratios"));
+
+        _reportLLRResultsAsCsvTable.setText("Report Simulated Log Likelihood Ratios");
+        _reportLLRResultsAsCsvTable.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_reportLLRResultsAsCsvTable, javax.swing.GroupLayout.DEFAULT_SIZE, 558, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_reportLLRResultsAsCsvTable)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout _advancedoutputtabLayout = new javax.swing.GroupLayout(_advancedoutputtab);
+        _advancedoutputtab.setLayout(_advancedoutputtabLayout);
+        _advancedoutputtabLayout.setHorizontalGroup(
+            _advancedoutputtabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advancedoutputtabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _advancedoutputtabLayout.setVerticalGroup(
+            _advancedoutputtabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advancedoutputtabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(147, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Additional Output", _advancedoutputtab);
 
         _closeButton.setText("Close"); // NOI18N
         _closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -454,7 +508,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -469,6 +523,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel _advancedanalysisTab;
     private javax.swing.JPanel _advancedinputTab;
+    private javax.swing.JPanel _advancedoutputtab;
     private javax.swing.JButton _closeButton;
     private javax.swing.JButton _cutFileBrowseButton;
     private javax.swing.JButton _cutFileImportButton;
@@ -476,8 +531,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public javax.swing.JTextField _cutFileTextField;
     private javax.swing.JLabel _labelMonteCarloReplications;
     private javax.swing.JTextField _montCarloReplicationsTextField;
+    private javax.swing.JCheckBox _reportLLRResultsAsCsvTable;
     private javax.swing.JButton _setDefaultButton;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
 }

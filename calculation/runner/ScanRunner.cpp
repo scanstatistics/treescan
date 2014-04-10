@@ -17,15 +17,51 @@
 #include "DataSource.h"
 #include "ResultsFileWriter.h"
 
+/* Calculates the excess number of cases. See user guide for formula explanation. */
+double CutStructure::getExcessCases(const ScanRunner& scanner) {
+    double C = static_cast<double>(_C);
+    double totalC = static_cast<double>(scanner.getTotalC());
+
+    switch (scanner.getParameters().getModelType()) {
+        case Parameters::POISSON :
+            if (scanner.getParameters().getConditionalType() == Parameters::UNCONDITIONAL)
+                return C - _N;
+            if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", scanner.getParameters().getModelType(), scanner.getTotalN(), _N);
+            return C - _N * (totalC - C)/(scanner.getTotalN() - _N);
+        case Parameters::BERNOULLI:
+            if (scanner.getParameters().getConditionalType() == Parameters::UNCONDITIONAL)
+                return C - _N * scanner.getParameters().getProbability();
+            if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", scanner.getParameters().getModelType(), scanner.getTotalN(), _N);
+            return C - _N * (totalC - C)/(scanner.getTotalN() - _N);
+        case Parameters::TEMPORALSCAN : {
+            double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+            double T = static_cast<double>(scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+            if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getExcessCases()", scanner.getParameters().getModelType(), T, W);
+            return C - W * (_N - C)/(T - W);
+        }
+        default : throw prg_error("Unknown model type (%d).", "getExcessCases()", scanner.getParameters().getModelType());
+    }
+}
+
+/** Returns cut's expected count. See user guide for formula explanation. */
 double CutStructure::getExpected(const ScanRunner& scanner) {
-    if (scanner.getParameters().getModelType() == Parameters::BERNOULLI) {
-        if (scanner.getParameters().getConditionalType() == Parameters::TOTALCASES)
+    double C = static_cast<double>(_C);
+    double totalC = static_cast<double>(scanner.getTotalC());
+    switch (scanner.getParameters().getModelType()) {
+        case Parameters::POISSON :
+            if (scanner.getParameters().getConditionalType() == Parameters::UNCONDITIONAL)
+                return _N;
+            return _N * totalC/scanner.getTotalN();
+        case Parameters::BERNOULLI:
+            if (scanner.getParameters().getConditionalType() == Parameters::UNCONDITIONAL)
+                return _N * scanner.getParameters().getProbability();
             return _N * (scanner.getTotalC() / scanner.getTotalN());
-        return _N * scanner.getParameters().getProbability();
-    } else if (scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN) {
-        return _N * (getEndIdx() - getStartIdx() + 1) / scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets();
-    } else {
-        return _N;
+        case Parameters::TEMPORALSCAN : {
+            double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+            double T = static_cast<double>(scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+            return _N * W / T;
+        }
+        default : throw prg_error("Unknown model type (%d).", "getExpected()", scanner.getParameters().getModelType());
     }
 }
 
@@ -36,13 +72,13 @@ double CutStructure::getODE(const ScanRunner& scanner) {
                 C = number of cases in the node as well as in the the temporal cluster found (below, 06.04 cases that are 7-11 days after vaccination) 
                 N = number of cases in the node, through the whole time period (below, all 0604 cases) 
                 W = number of days in the temporal cluster (below, 11-6=5) 
-                D = number of days for which cases wee recorded (e.g. D=56 if a 1-56 time interval was used)
+                D = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used)
         */
         double C = static_cast<double>(_C);
         double N = _N;
         double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-        double D = static_cast<double>(scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-        double denominator = D ? N * W / D : 0.0;
+        double T = static_cast<double>(scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+        double denominator = N * W / T;
         return denominator ? C/denominator : 0.0;
     } else {
         double expected = getExpected(scanner);
@@ -50,17 +86,42 @@ double CutStructure::getODE(const ScanRunner& scanner) {
     }
 }
 
-/** Returns cut's relative risk. */
+/** Returns cut's relative risk. See user guide for formula explanation. */
 double CutStructure::getRelativeRisk(const ScanRunner& scanner) {
-    if (scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN) {
-        //RR = [ClusterCases / Cluster Window Length ] / [ (NodeCases-ClusterCases) / (StudyTime Length - ClusterWindowLength) ]
-        double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-        double D = static_cast<double>(scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-        double diff_cases = _N - static_cast<double>(_C);
-        double denominator = diff_cases ? ( diff_cases / (D - W) ) : 0.0;
-        return denominator ? (static_cast<double>(_C) / W ) / denominator : 0.0;
-    } 
-    throw prg_error("Unknown model type (%d).", "getRelativeRisk()", scanner.getParameters().getModelType());
+    double relative_risk=0;
+    double C = static_cast<double>(_C);
+    double totalC = static_cast<double>(scanner.getTotalC());
+    switch (scanner.getParameters().getModelType()) {
+        case Parameters::POISSON : {
+            if (scanner.getParameters().getConditionalType() == Parameters::UNCONDITIONAL)
+                relative_risk = C / _N;
+            else {
+                double NN = scanner.getTotalN() - _N;
+                if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", scanner.getParameters().getModelType(), scanner.getTotalN(), _N);
+                double CC = totalC - C;
+                relative_risk = CC ? (C / _N) / (CC /  NN): 0;
+            }
+        } break;
+        case Parameters::BERNOULLI: {
+            if (scanner.getParameters().getConditionalType() == Parameters::UNCONDITIONAL)
+                relative_risk = C / (_N * scanner.getParameters().getProbability());
+            else {
+                double NN = scanner.getTotalN() - _N;
+                if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", scanner.getParameters().getModelType(), scanner.getTotalN(), _N);
+                double CC = totalC - C;
+                relative_risk = CC ? (C / _N) / (CC /  NN): 0;
+            }
+        } break;
+        case Parameters::TEMPORALSCAN : {
+            double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+            double T = static_cast<double>(scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+            if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getRelativeRisk()", scanner.getParameters().getModelType(), T, W);
+            double CC = _N - static_cast<double>(_C);
+            relative_risk = CC ? (static_cast<double>(_C) / W ) / ( CC / (T - W) ) : 0.0;
+        } break;
+        default : throw prg_error("Unknown model type (%d).", "getRelativeRisk()", scanner.getParameters().getModelType());
+    }
+    return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
 }
 
 ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0) {

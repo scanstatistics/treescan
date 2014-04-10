@@ -28,7 +28,7 @@ public class Parameters implements Cloneable {
     private String _outputfilename="";
     private ResultsFormat _resultsFormat=ResultsFormat.TEXT;
     private int _numprocesses=0;
-    private int _replications=99999;
+    private int _replications=999;
     private int _randomizationSeed=12345678;
     //private boolean _duplicates=false;
     private boolean _randomlyGenerateSeed=false;
