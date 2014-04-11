@@ -243,6 +243,7 @@
     <ClInclude Include="..\calculation\runner\DataTimeRanges.h" />
     <ClInclude Include="..\calculation\runner\ScanRunner.h" />
     <ClInclude Include="..\calculation\runner\SimulationVariables.h" />
+    <ClInclude Include="..\calculation\runner\WindowLength.h" />
     <ClInclude Include="..\calculation\Toolkit.h" />
     <ClInclude Include="..\calculation\TreeScan.h" />
     <ClInclude Include="..\calculation\utility\AsciiPrintFormat.h" />

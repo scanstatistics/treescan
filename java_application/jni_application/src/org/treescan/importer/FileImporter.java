@@ -12,7 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import org.treescan.app.*;
 
 /**
- * Imports from data source to SaTScan formatted data file.
+ * Imports from data source to TreeScan formatted data file.
  */
 public class FileImporter {
     public enum InputFileType      {Tree, Cuts, Case, Population};
@@ -35,9 +35,8 @@ public class FileImporter {
         _progress = progress;
     }
     
-    /** This a temporary hack function that formats date fields to sFormat. This is needed because SaTScan
-     * expects dates in human readable form such as '12/08/2002' as apposed to raw data form of 20021208.
-     * This function should be removed once the zdfile interface for satscan is implementated! */
+    /** This a temporary hack function that formats date fields to sFormat. This is needed because TreeScan
+     * expects dates in human readable form such as '12/08/2002' as apposed to raw data form of 20021208. */
     private String formatDateField(String dateString) {
         StringBuilder builder = new StringBuilder();
         builder.append(dateString.substring(0, 4));
@@ -106,9 +105,9 @@ public class FileImporter {
                     //TODO: what about grouping character?
 
                     //if (StringUtils.isEmpty(value) || StringUtils.isBlank(value)) {
-                    //    throw new ImportException(String.format("Record %d contains a 'Source File Variable' that is blank.\nSaTScan does not permit blank variables in data.", _dataSource.getCurrentRecordNum()));
+                    //    throw new ImportException(String.format("Record %d contains a 'Source File Variable' that is blank.\nTreeScan does not permit blank variables in data.", _dataSource.getCurrentRecordNum()));
                     //} else if (StringUtils.contains(value, " ")) {
-                    //    throw new ImportException(String.format("Record %d contains a 'Source File Variable' that contains whitespace.\nSaTScan does not permit variable data to contain whitespace.", _dataSource.getCurrentRecordNum()));
+                    //    throw new ImportException(String.format("Record %d contains a 'Source File Variable' that contains whitespace.\nTreeScan does not permit variable data to contain whitespace.", _dataSource.getCurrentRecordNum()));
                     //} else {
                         record.set(mappedVariables.get(i).getTargetFieldIndex(), new String(value));
                     //}

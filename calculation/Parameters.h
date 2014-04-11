@@ -74,11 +74,13 @@ class Parameters {
     bool                                _generateHtmlResults;
     bool                                _generateTableResults;
     bool                                _printColumnHeaders;
-    ModelType                           _modelType;    
+    ModelType                           _modelType;
     ratio_t                             _probablility_ratio;
     CutType                             _cut_type;
     ScanType                            _scan_type;
     ConditionalType                     _conditional_type;
+    double                              _maximum_window_percentage;
+    unsigned int                        _minimum_window_length;
     bool                                _generate_llr_results;
     bool                                _read_simulations;
     std::string                         _input_sim_file;
@@ -111,6 +113,8 @@ class Parameters {
     const std::string                 & getCutsFileName() const {return _cutsFileName;}
     const DataTimeRangeSet            & getDataTimeRangeSet() const {return _dataTimeRangeSet;}
     const std::string                 & getInputSimulationsFilename() const {return _input_sim_file;}
+    double                              getMaximumWindowPercentage() const {return _maximum_window_percentage;}
+    unsigned int                        getMinimumWindowLength() const {return _minimum_window_length;}
     const std::string                 & getOutputSimulationsFilename() const {return _output_sim_file;}
     const DataTimeRange               & getTemporalStartRange() const {return _temporalStartRange;}
     const DataTimeRange               & getTemporalEndRange() const {return _temporalEndRange;}
@@ -136,6 +140,8 @@ class Parameters {
     const std::string                 & getSourceFileName() const {return _parametersSourceFileName;}
     void                                setDataTimeRangeSet(const DataTimeRangeSet& set) {_dataTimeRangeSet = set;}
     void                                setInputSimulationsFilename(const char * s, bool bCorrectForRelativePath=false);
+    void                                setMaximumWindowPercentage(double d) {_maximum_window_percentage = d;}
+    void                                setMinimumWindowLength(unsigned int u) {_minimum_window_length = u;}
     void                                setOutputSimulationsFilename(const char * s, bool bCorrectForRelativePath=false);
     void                                setTemporalStartRange(const DataTimeRange& range) {_temporalStartRange = range;}
     void                                setTemporalEndRange(const DataTimeRange& range) {_temporalEndRange = range;}

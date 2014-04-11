@@ -43,6 +43,8 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_cut_type != rhs._cut_type) return false;
   if (_conditional_type != rhs._conditional_type) return false;
   if (_scan_type != rhs._scan_type) return false;
+  if (_maximum_window_percentage != rhs._maximum_window_percentage) return false;
+  if (_minimum_window_length != rhs._minimum_window_length) return false;
   if (_generate_llr_results != rhs._generate_llr_results) return false;
   if (_read_simulations != rhs._read_simulations) return false;
   if (_input_sim_file != rhs._input_sim_file) return false;
@@ -101,6 +103,8 @@ void Parameters::copy(const Parameters &rhs) {
     _temporalEndRange = rhs._temporalEndRange;
     _replications = rhs._replications;
     _cut_type = rhs._cut_type;
+    _maximum_window_percentage = rhs._maximum_window_percentage;
+    _minimum_window_length = rhs._minimum_window_length;
 
     _outputFileName = rhs._outputFileName;
     _resultsFormat = rhs._resultsFormat;
@@ -212,6 +216,8 @@ void Parameters::setAsDefaulted() {
     _temporalEndRange = DataTimeRange();
     _replications = 999;
     _cut_type = SIMPLE;
+    _maximum_window_percentage = 50.0;
+    _minimum_window_length = 1;
 
     _outputFileName = "";
     _generateHtmlResults = false;

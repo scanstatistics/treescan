@@ -363,12 +363,12 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         }
         selectionColumn.setCellEditor(new DefaultCellEditor(model.comboBox));
         model.fireTableDataChanged();
-        clearSaTScanVariableFieldIndexes();
+        clearTreeScanVariableFieldIndexes();
 
     }
 
     /** Clears field mapping selections. */
-    private void clearSaTScanVariableFieldIndexes() {
+    private void clearTreeScanVariableFieldIndexes() {
         for (int t = 0; t < _importVariables.size(); ++t) {
             _importVariables.get(t).setInputFileVariableIndex(0);
         }
@@ -395,8 +395,8 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
     }
 
     /**
-     * Validates that required SaTScan Variables has been specified with an input
-     * file field to import from. Displays message if variables are missings.
+     * Validates that required TreeScan Variables has been specified with an input
+     * file field to import from. Displays message if variables are missing.
      */
     private boolean checkForRequiredVariables() {
         StringBuilder message = new StringBuilder();
@@ -412,8 +412,8 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
 
         if (missing.size() > 0) {
             message.append("For the " + getInputFileTypeString());
-            message.append(", the following SaTScan Variable(s) are required\nand an Input File Variable must");
-            message.append(" be selected for each before import can proceed.\n\nSaTScan Variable(s): ");
+            message.append(", the following TreeScan Variable(s) are required\nand an Input File Variable must");
+            message.append(" be selected for each before import can proceed.\n\nTreeScan Variable(s): ");
             for (int t = 0; t < missing.size(); ++t) {
                 message.append(missing.get(t).getVariableName());
                 if (t < missing.size() - 1) {
@@ -946,7 +946,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _clearSelectionButton.setText("Clear"); // NOI18N
         _clearSelectionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                clearSaTScanVariableFieldIndexes();
+                clearTreeScanVariableFieldIndexes();
             }
         });
 
@@ -1145,7 +1145,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
     class VariableMappingTableModel extends AbstractTableModel {
 
         private static final long serialVersionUID = 1L;
-        private String[] columnNames = {"SaTScan Variable", "Source File Variable"};
+        private String[] columnNames = {"TreeScan Variable", "Source File Variable"};
         private final Vector<ImportVariable> variables_static;
         private Vector<ImportVariable> variables_visible;
         public JComboBox comboBox = new JComboBox();

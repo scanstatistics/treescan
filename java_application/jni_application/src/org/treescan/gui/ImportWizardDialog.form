@@ -512,7 +512,7 @@
                         <Property name="text" type="java.lang.String" value="Clear" noResource="true"/>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_clearSelectionButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        clearSaTScanVariableFieldIndexes();&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_clearSelectionButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        clearTreeScanVariableFieldIndexes();&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                   </SubComponents>

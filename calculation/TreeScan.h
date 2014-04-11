@@ -41,6 +41,7 @@
 #include <string>
 #include <vector>
 #include <ctime>
+#include "boost/tuple/tuple.hpp"
 
 /** comparision tolerance for double precision numbers */
 #define DBL_CMP_TOLERANCE 1.0E-9
@@ -48,6 +49,8 @@
 #define macro_equal(x,y,tolerance) (std::fabs(x - y) < tolerance)
 /** determines whether number x is less than number y given some tolerance */
 #define macro_less_than(x,y,tolerance) (!macro_equal(x,y,tolerance) && x < y)
+/** interval range type */
+typedef boost::tuple<int,int,int,int>  IntervalRange_t;
 
 /** va_copy not defined on all compilers */
 #if defined (_MSC_VER) || ( defined(__GNUC__) && (__GNUC__ < 3) )

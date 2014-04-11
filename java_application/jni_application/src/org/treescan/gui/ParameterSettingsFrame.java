@@ -224,6 +224,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 throw new SettingsException("The population file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.",  (Component) _populationFileTextField);
             }
         }
+        if (_treetimeScanType.isSelected()) {
+            if (Integer.parseInt(_dataTimeRangeBegin.getText().trim()) >= Integer.parseInt(_dataTimeRangeEnd.getText().trim())) {
+                throw new SettingsException("The data time range start must be before the data time range end.", (Component) _temporalEndWindowBegin);
+            }                   
+        }        
     }
 
     /**
@@ -236,6 +241,18 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             if (eventProbNumerator == 0 || eventProbDenominator == 0 || eventProbNumerator >= eventProbDenominator) {
                 throw new SettingsException("Please specify an event probabilty that is between zero and one.", (Component) _eventProbabiltyNumerator);
             }
+        }
+        if (_treetimeScanType.isSelected()) {
+            int temporalStartWindowBegin = Integer.parseInt(_temporalStartWindowBegin.getText().trim());
+            int temporalStartWindowEnd = Integer.parseInt(_temporalStartWindowEnd.getText().trim());
+            if (temporalStartWindowBegin > temporalStartWindowEnd) {
+                throw new SettingsException("The temporal window start time range is invalid.\nThe start time must be less than or equal to end time.", (Component) _temporalStartWindowBegin);
+            }                              
+            int temporalEndWindowBegin = Integer.parseInt(_temporalEndWindowBegin.getText().trim());
+            int temporalEndWindowEnd = Integer.parseInt(_temporalEndWindowEnd.getText().trim());
+            if (temporalEndWindowBegin > temporalEndWindowEnd) {
+                throw new SettingsException("The temporal window end time range is invalid.\nThe start time must be less than or equal to end time.", (Component) _temporalEndWindowBegin);
+            }                   
         }
     }
 

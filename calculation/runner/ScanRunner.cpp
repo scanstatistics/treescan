@@ -4,6 +4,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/regex.hpp>
 #include <boost/assign.hpp>
+#include "boost/dynamic_bitset.hpp"
 
 #include "ScanRunner.h"
 #include "UtilityFunctions.h"
@@ -16,6 +17,7 @@
 #include "DataFileWriter.h"
 #include "DataSource.h"
 #include "ResultsFileWriter.h"
+#include "WindowLength.h"
 
 /* Calculates the excess number of cases. See user guide for formula explanation. */
 double CutStructure::getExcessCases(const ScanRunner& scanner) {
@@ -346,6 +348,9 @@ bool ScanRunner::readTree(const std::string& filename) {
     //reset node identifiers to ordinal position in vector -- this is to keep the original algorithm intact since it uses vector indexes heavily
     for (size_t i=0; i < _Nodes.size(); ++i) _Nodes.at(i)->setID(static_cast<int>(i));
 
+    // create bitset which will help determine if there exists at least one root node
+    boost::dynamic_bitset<> nodesWithParents(_Nodes.size());
+
     // now set parent nodes
     dataSource->gotoFirstRecord();
     while (dataSource->readRecord()) {
@@ -363,11 +368,23 @@ bool ScanRunner::readTree(const std::string& filename) {
                     if (node->refParents().size()) {
                         readSuccess = false;
                         _print.Printf("Error: Record %ld in tree file has node with more than one parent node defined (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), identifier.c_str());
-                    } else node->refParents().push_back(_Nodes.at(index.second)->getID());
+                    } else {
+                        node->refParents().push_back(_Nodes.at(index.second)->getID());
+                        nodesWithParents.set(node->getID());
+                    }
                 } else node = _Nodes.at(index.second);
             }
         }
     }
+
+    // now confirm that there exists at least one root node
+    size_t c = nodesWithParents.count();
+    size_t s = nodesWithParents.size();
+    if (nodesWithParents.count() == nodesWithParents.size()) {
+        readSuccess = false;
+        _print.Printf("Error: The tree file must contain at least one node which does not have a parent.\n", BasePrint::P_READERROR);
+    }
+
     return readSuccess;
 }
 
@@ -627,8 +644,10 @@ bool ScanRunner::scanTreeTemporal() {
                               _parameters.getTemporalStartRange().getEnd() + _zero_translation_additive),
                   endWindow(_parameters.getTemporalEndRange().getStart() + _zero_translation_additive,
                             _parameters.getTemporalEndRange().getEnd() + _zero_translation_additive);
-
-    DataTimeRange::index_t minimumTemporalWindow = 5;
+    // Define the minimum and maximujm window lengths.
+    WindowLength window(static_cast<int>(_parameters.getMinimumWindowLength()), 
+                        static_cast<int>(std::floor(static_cast<double>(_parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets()) * _parameters.getMaximumWindowPercentage() / 100.0)));
+    int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
 
     //std::string buffer;
     //int hits=0;
@@ -639,74 +658,85 @@ bool ScanRunner::scanTreeTemporal() {
             switch (cutType) {
                 case Parameters::SIMPLE:
                     //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
-                    for (DataTimeRange::index_t end=endWindow.getStart(); end < endWindow.getEnd(); ++end) {
-                        DataTimeRange::index_t startWindowEnd = std::min(startWindow.getEnd() + 1, end - minimumTemporalWindow + 1);
-                        for (DataTimeRange::index_t start=startWindow.getStart(); start < startWindowEnd; ++start) {
-                            //_print.Printf("%d to %d\n", BasePrint::P_STDOUT,start,end);
-                            updateCuts(n, thisNode.getBrC_C()[start] - thisNode.getBrC_C()[end], static_cast<NodeStructure::expected_t>(thisNode.getBrC()), calcLogLikelihood, start, end);
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
+                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                            //_print.Printf("%d to %d\n", BasePrint::P_STDOUT,iWindowStart, iWindowEnd);
+                            updateCuts(n, thisNode.getBrC_C()[iWindowStart] - thisNode.getBrC_C()[iWindowEnd], static_cast<NodeStructure::expected_t>(thisNode.getBrC()), calcLogLikelihood, iWindowStart, iWindowEnd);
                         }
                     }
                     //++hits; printf("hits %d\n", hits);
                     break;
                 case Parameters::ORDINAL:
-                    for (DataTimeRange::index_t end=endWindow.getStart(); end < endWindow.getEnd(); ++end) {
-                        for (DataTimeRange::index_t start=startWindow.getStart(); start < startWindow.getEnd(); ++start) {
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
+                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                                 const NodeStructure& firstChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
                                 //buffer = firstChildNode.getIdentifier().c_str();
-                                NodeStructure::count_t branchWindow = firstChildNode.getBrC_C()[start] - firstChildNode.getBrC_C()[end];
+                                NodeStructure::count_t branchWindow = firstChildNode.getBrC_C()[iWindowStart] - firstChildNode.getBrC_C()[iWindowEnd];
                                 NodeStructure::expected_t branchSum = static_cast<NodeStructure::expected_t>(firstChildNode.getBrC());
                                 for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
                                     const NodeStructure& childNode(*(_Nodes.at(thisNode.getChildren().at(j))));
                                     //buffer += ",";
                                     //buffer += childNode.getIdentifier();
-                                    branchWindow += childNode.getBrC_C()[start] - childNode.getBrC_C()[end];
+                                    branchWindow += childNode.getBrC_C()[iWindowStart] - childNode.getBrC_C()[iWindowEnd];
                                     branchSum += static_cast<NodeStructure::expected_t>(childNode.getBrC());
                                     //printf("Evaluating cut [%s]\n", buffer.c_str());
-                                    updateCuts(n, branchWindow, branchSum, calcLogLikelihood, start, end);
+                                    updateCuts(n, branchWindow, branchSum, calcLogLikelihood, iWindowStart, iWindowEnd);
                                     //++hits; printf("hits %d\n", hits);
                                 }
                             }
                         } 
                     } break;
                 case Parameters::PAIRS:
-                    for (DataTimeRange::index_t end=endWindow.getStart(); end < endWindow.getEnd(); ++end) {
-                        for (DataTimeRange::index_t start=startWindow.getStart(); start < startWindow.getEnd(); ++start) {
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
+                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                                 const NodeStructure& startChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
-                                NodeStructure::count_t startBranchWindow = startChildNode.getBrC_C()[start] - startChildNode.getBrC_C()[end];
+                                NodeStructure::count_t startBranchWindow = startChildNode.getBrC_C()[iWindowStart] - startChildNode.getBrC_C()[iWindowEnd];
                                 NodeStructure::expected_t startBranchSum = static_cast<NodeStructure::expected_t>(startChildNode.getBrC());
                                 for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
                                     const NodeStructure& stopChildNode(*(_Nodes.at(thisNode.getChildren().at(j))));
                                     //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
-                                    NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[start] - stopChildNode.getBrC_C()[end];
+                                    NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd];
                                     NodeStructure::expected_t stopBranchSum = static_cast<NodeStructure::expected_t>(stopChildNode.getBrC());
-                                    updateCuts(n, startBranchWindow + stopBranchWindow, startBranchSum + stopBranchSum, calcLogLikelihood, start, end);
+                                    updateCuts(n, startBranchWindow + stopBranchWindow, startBranchSum + stopBranchSum, calcLogLikelihood, iWindowStart, iWindowEnd);
                                     //++hits; printf("hits %d\n", hits);
                                 }
                             }
                         }
                     } break;
                 case Parameters::TRIPLETS:
-                    for (DataTimeRange::index_t end=endWindow.getStart(); end < endWindow.getEnd(); ++end) {
-                        for (DataTimeRange::index_t start=startWindow.getStart(); start < startWindow.getEnd(); ++start) {
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
+                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                                 const NodeStructure& startChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
-                                NodeStructure::count_t startBranchWindow = startChildNode.getBrC_C()[start] - startChildNode.getBrC_C()[end];
+                                NodeStructure::count_t startBranchWindow = startChildNode.getBrC_C()[iWindowStart] - startChildNode.getBrC_C()[iWindowEnd];
                                 NodeStructure::expected_t startBranchSum = static_cast<NodeStructure::expected_t>(startChildNode.getBrC());
                                 for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
                                     const NodeStructure& stopChildNode(*(_Nodes.at(thisNode.getChildren().at(j))));
                                     //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
-                                    NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[start] - stopChildNode.getBrC_C()[end];
+                                    NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd];
                                     NodeStructure::expected_t stopBranchSum = static_cast<NodeStructure::expected_t>(stopChildNode.getBrC());
-                                    updateCuts(n, startBranchWindow + stopBranchWindow, startBranchSum + stopBranchSum, calcLogLikelihood, start, end);
+                                    updateCuts(n, startBranchWindow + stopBranchWindow, startBranchSum + stopBranchSum, calcLogLikelihood, iWindowStart, iWindowEnd);
                                     //++hits;printf("hits %d\n", hits);
                                     for (size_t k=i+1; k < j; ++k) {
                                         const NodeStructure& middleChildNode(*(_Nodes.at(thisNode.getChildren().at(k))));
-                                        NodeStructure::count_t middleBranchWindow = middleChildNode.getBrC_C()[start] - middleChildNode.getBrC_C()[end];
+                                        NodeStructure::count_t middleBranchWindow = middleChildNode.getBrC_C()[iWindowStart] - middleChildNode.getBrC_C()[iWindowEnd];
                                         NodeStructure::expected_t middleBranchSum = static_cast<NodeStructure::expected_t>(middleChildNode.getBrC());
                                         //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
-                                        updateCuts(n, startBranchWindow + middleBranchWindow + stopBranchWindow, startBranchSum + middleBranchSum + stopBranchSum, calcLogLikelihood, start, end);
+                                        updateCuts(n, startBranchWindow + middleBranchWindow + stopBranchWindow, startBranchSum + middleBranchSum + stopBranchSum, calcLogLikelihood, iWindowStart, iWindowEnd);
                                         //++hits; printf("hits %d\n", hits);
                                     }
                                 }

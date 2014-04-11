@@ -86,7 +86,8 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     //if (_parameters.isDuplicates()) outfile << "O/EWithoutDuplicates ";
     //outfile << "LLR pvalue" << std::endl;
 
-    if (_scanRunner.getCuts().size() == 0 || _scanRunner.getCuts().at(0)->getC() == 0 || _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested()) {
+    if (_scanRunner.getCuts().size() == 0 || _scanRunner.getCuts().at(0)->getC() == 0 || 
+        (parameters.getNumReplicationsRequested() > 0 && _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested())) {
         outfile << "No cuts were found." << std::endl;
     } else {
         outfile << "MOST LIKELY CUTS"<< std::endl << std::endl;
@@ -97,7 +98,8 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         unsigned int k=0;
         outfile.setf(std::ios::fixed);
         outfile.precision(5);
-        while( k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1) {
+        while( k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && 
+               (parameters.getNumReplicationsRequested() == 0 || _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1)) {
             PrintFormat.SetMarginsAsCutSection( k + 1);
             outfile << k + 1 << ")";
             PrintFormat.PrintSectionLabel(outfile, "Node Identifier", false);
@@ -263,7 +265,8 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<div class=\"hr\"></div>" << std::endl;
 
     outfile << "<div id=\"cuts\">" << std::endl;
-    if (_scanRunner.getCuts().size() == 0 || _scanRunner.getCuts().at(0)->getC() == 0 || _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested()) {
+    if (_scanRunner.getCuts().size() == 0 || _scanRunner.getCuts().at(0)->getC() == 0 || 
+        (parameters.getNumReplicationsRequested() > 0 && _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested())) {
         outfile << "<h3>No cuts were found.</h3>" << std::endl;
     } else {
         outfile << "<h3>MOST LIKELY CUTS</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;
@@ -289,7 +292,8 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         unsigned int k=0;
         outfile.setf(std::ios::fixed);
         outfile.precision(5);
-        while( k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1) {
+        while( k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && 
+              (parameters.getNumReplicationsRequested() == 0 || _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1)) {
             outfile << "<tr" << (k > 9 ? " class=\"additional-cuts\"" : "" ) << "><td>" << k + 1 << "</td>"
                     << "<td>" << _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier() << "</td>";
             if (parameters.getModelType() == Parameters::TEMPORALSCAN) {   

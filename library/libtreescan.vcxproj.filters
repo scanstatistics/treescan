@@ -322,5 +322,8 @@
     <ClInclude Include="..\calculation\randomization\TemporalRandomizer.h">
       <Filter>Header Files\calculation\randomization</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\runner\WindowLength.h">
+      <Filter>Header Files\calculation\runner</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
