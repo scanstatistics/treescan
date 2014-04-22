@@ -200,6 +200,22 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isGeneratingLLRResults());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setMaximumWindowPercentage", "(D)V");
+  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getMaximumWindowPercentage());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setMaximumWindowLength", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getMaximumWindowLength());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setMaximumWindowType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getMaximumWindowType());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setMinimumWindowLength", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getMinimumWindowLength());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -330,6 +346,20 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
 
   mid = _getMethodId_Checked(Env, clazz, "isGeneratingLLRResults", "()Z");
   Parameters.setGeneratingLLRResults(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getMaximumWindowPercentage", "()D");
+  Parameters.setMaximumWindowPercentage(Env.CallDoubleMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getMaximumWindowLength", "()I");
+  Parameters.setMaximumWindowLength(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  Parameters.setMaximumWindowType((Parameters::MaximumWindowType)getEnumTypeOrdinalIndex(Env, jParameters, "getMaximumWindowType", "Lorg/treescan/app/Parameters$MaximumWindowType;"));
+
+  mid = _getMethodId_Checked(Env, clazz, "getMinimumWindowLength", "()I");
+  Parameters.setMinimumWindowLength(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   return Parameters;

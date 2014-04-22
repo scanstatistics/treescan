@@ -23,7 +23,8 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                WriteAnalysisSettings(IniFile& WriteFile);
     void                                WriteOutputSettings(IniFile& WriteFile);
     void                                WriteAdvancedInputSettings(IniFile& WriteFile);
-    void                                WriteAdvancedAnalysisSettings(IniFile& WriteFile);
+    void                                WriteAdvancedAnalysisTemporalWindowSettings(IniFile& WriteFile);
+    void                                WriteAdvancedAnalysisInferenceSettings(IniFile& WriteFile);
     void                                WriteAdvancedOutputSettings(IniFile& WriteFile);
     void                                WriteRunOptionSettings(IniFile& WriteFile);
     void                                WritePowerEvaluationsSettings(IniFile& WriteFile);

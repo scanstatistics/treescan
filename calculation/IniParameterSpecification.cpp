@@ -7,6 +7,7 @@
 const char * IniParameterSpecification::Input                   = "Input";
 const char * IniParameterSpecification::AdvancedInput           = "Advanced Input";
 const char * IniParameterSpecification::Analysis                = "Analysis";
+const char * IniParameterSpecification::TemporalWindow          = "Temporal Window";
 const char * IniParameterSpecification::Inference               = "Inference";
 const char * IniParameterSpecification::Output                  = "Output";
 const char * IniParameterSpecification::AdditionalOutput        = "Additional Output";
@@ -63,6 +64,12 @@ void IniParameterSpecification::Build_1_1_x_ParameterList() {
     gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"event-probability"));
     gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"window-start-range"));
     gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"window-end-range"));
+
+    gvParameterInfo.push_back(std::make_pair(TemporalWindow, (const char*)"maximum-window-percentage"));
+    gvParameterInfo.push_back(std::make_pair(TemporalWindow, (const char*)"maximum-window-fixed"));
+    gvParameterInfo.push_back(std::make_pair(TemporalWindow, (const char*)"maximum-window-type"));
+    gvParameterInfo.push_back(std::make_pair(TemporalWindow, (const char*)"minimum-window-fixed"));
+
     gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"monte-carlo-replications"));
     gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"randomization-seed"));
     gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"random-randomization-seed"));

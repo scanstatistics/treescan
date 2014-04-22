@@ -12,6 +12,7 @@ import javax.swing.event.InternalFrameListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoManager;
+import org.treescan.app.AdvFeaturesExpection;
 import org.treescan.utils.FileAccess;
 import org.treescan.importer.FileImporter;
 import org.treescan.app.ParameterHistory;
@@ -231,6 +232,15 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         }        
     }
 
+    public int getNumDaysInRange() {
+        int start = Integer.parseInt(_dataTimeRangeBegin.getText().trim());
+        int end = Integer.parseInt(_dataTimeRangeEnd.getText().trim());
+        if (start >= end) {
+            throw new SettingsException("The data time range start must be before the data time range end.", (Component) _temporalEndWindowBegin);
+        }
+        return end - start + 1;
+    }
+    
     /**
      * checks 'Analysis' tab
      */
@@ -280,6 +290,15 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             e.setControlFocus();
             return false;
         }
+        try {
+            getAdvancedParameterInternalFrame().validateParameters();
+        } catch (AdvFeaturesExpection e) {
+            focusWindow();
+            JOptionPane.showInternalMessageDialog(this, e.getMessage());
+            getAdvancedParameterInternalFrame().setVisible(e.focusTab, e.focusComponent);
+            enableAdvancedButtons();
+            return false;
+        }        
         return true;
     }
     /** setup interface from parameter settings */
@@ -424,6 +443,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _temporalEndWindowBegin.setEnabled(_temporalWindowGroup.isEnabled());
         _temporalEndWindowToLabel.setEnabled(_temporalWindowGroup.isEnabled());
         _temporalEndWindowEnd.setEnabled(_temporalWindowGroup.isEnabled());
+        _advancedParametersSetting.enableTemporalOptionsGroup(treeAndTime);
     }
 
     /** This method is called from within the constructor to

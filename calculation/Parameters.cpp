@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 26;
+const int Parameters::giNumParameters = 30;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -50,6 +50,10 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_input_sim_file != rhs._input_sim_file) return false;
   if (_write_simulations != rhs._write_simulations) return false;
   if (_output_sim_file != rhs._output_sim_file) return false;
+  if (_maximum_window_percentage != rhs._maximum_window_percentage) return false;
+  if (_maximum_window_length != rhs._maximum_window_length) return false;
+  if (_maximum_window_type != rhs._maximum_window_type) return false;
+  if (_minimum_window_length != rhs._minimum_window_length) return false;
 
   return true;
 }
@@ -104,6 +108,8 @@ void Parameters::copy(const Parameters &rhs) {
     _replications = rhs._replications;
     _cut_type = rhs._cut_type;
     _maximum_window_percentage = rhs._maximum_window_percentage;
+    _maximum_window_length = rhs._maximum_window_length;
+    _maximum_window_type = rhs._maximum_window_type;
     _minimum_window_length = rhs._minimum_window_length;
 
     _outputFileName = rhs._outputFileName;
@@ -124,6 +130,16 @@ void Parameters::copy(const Parameters &rhs) {
 
     _parametersSourceFileName = rhs._parametersSourceFileName;
     _creationVersion = rhs._creationVersion;
+}
+
+/* Returns the maximum temporal window in data time units. */
+unsigned int Parameters::getMaximumWindowInTimeUnits() const {
+    switch (_maximum_window_type) {
+        case Parameters::PERCENTAGE_WINDOW :
+            return static_cast<unsigned int>(std::floor(static_cast<double>(_dataTimeRangeSet.getTotalDaysAcrossRangeSets()) * _maximum_window_percentage / 100.0));
+        case Parameters::FIXED_LENGTH : return _maximum_window_length;
+        default: throw prg_error("Unknown maximum window type (%d).", "getMaximumWindowInTimeUnits()", _maximum_window_type);
+    }
 }
 
 /** Returns number of parallel processes to run. */
@@ -217,7 +233,9 @@ void Parameters::setAsDefaulted() {
     _replications = 999;
     _cut_type = SIMPLE;
     _maximum_window_percentage = 50.0;
-    _minimum_window_length = 1;
+    _maximum_window_length = 1;
+    _maximum_window_type = PERCENTAGE_WINDOW;
+    _minimum_window_length = 2;
 
     _outputFileName = "";
     _generateHtmlResults = false;
@@ -293,7 +311,12 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _probablility_ratio.second = pt.get<unsigned int>("parameters.analysis.event-probability.denominator", 2);
     _temporalStartRange.assign(pt.get<std::string>("parameters.analysis.temporal-window.start-range", "0,0"));
     _temporalEndRange.assign(pt.get<std::string>("parameters.analysis.temporal-window.end-range", "0,0"));
-    // Advanced Analysis
+    // Advanced Analysis - Temporal Window
+    _maximum_window_percentage = pt.get<double>("parameters.analysis.advanced.maximum-window-percentage", 50);
+    _maximum_window_length = pt.get<unsigned int>("parameters.analysis.advanced.maximum-window-length", 1);
+    _maximum_window_type = static_cast<MaximumWindowType>(pt.get<unsigned int>("parameters.analysis.advanced.maximum-window-type", PERCENTAGE_WINDOW));
+    _minimum_window_length = pt.get<unsigned int>("parameters.analysis.advanced.minimum-window-length", 2);
+    // Advanced Analysis - Inference
     _replications = pt.get<unsigned int>("parameters.analysis.advanced.replications", 999);
     _randomizationSeed = pt.get<unsigned int>("parameters.analysis-advanced.seed", static_cast<unsigned int>(RandomNumberGenerator::glDefaultSeed));
     _randomlyGenerateSeed = pt.get<bool>("parameters.analysis-advanced.generate-seed", false);
@@ -334,7 +357,12 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.analysis.event-probability.denominator", _probablility_ratio.second);
     pt.put("parameters.analysis.temporal-window.start-range", _temporalStartRange.toString(buffer));
     pt.put("parameters.analysis.temporal-window.end-range", _temporalEndRange.toString(buffer));
-    // Advanced Analysis
+    // Advanced Analysis - Temporal Window
+    pt.put("parameters.analysis.advanced.maximum-window-percentage", _maximum_window_percentage);
+    pt.put("parameters.analysis.advanced.maximum-window-length", _maximum_window_length);
+    pt.put("parameters.analysis.advanced.maximum-window-type", static_cast<unsigned int>(_maximum_window_type));
+    pt.put("parameters.analysis.advanced.minimum-window-length", _minimum_window_length);
+    // Advanced Analysis - Inference
     pt.put("parameters.analysis.advanced.replications", _replications);
     pt.put("parameters.analysis.advanced.seed", _randomizationSeed);
     pt.put("parameters.analysis.advanced.generate-seed", _randomlyGenerateSeed);

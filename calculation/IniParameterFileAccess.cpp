@@ -104,8 +104,7 @@ void IniParameterFileAccess::WriteIniParameterAsKey(IniFile& WriteFile, const ch
     }
 }
 
-/** Writes parameters of associated CParameters object to ini file, of most recent
-    format specification. */
+/** Writes parameters of associated CParameters object to ini file, of most recent format specification. */
 void IniParameterFileAccess::Write(const char* sFilename) {
     try {
         IniFile WriteFile;
@@ -117,7 +116,8 @@ void IniParameterFileAccess::Write(const char* sFilename) {
         WriteAnalysisSettings(WriteFile);
         WriteOutputSettings(WriteFile);
         WriteAdvancedInputSettings(WriteFile);
-        WriteAdvancedAnalysisSettings(WriteFile);
+        WriteAdvancedAnalysisTemporalWindowSettings(WriteFile);
+        WriteAdvancedAnalysisInferenceSettings(WriteFile);
         WriteAdvancedOutputSettings(WriteFile);
         WritePowerEvaluationsSettings(WriteFile);
         WriteRunOptionSettings(WriteFile);
@@ -186,15 +186,29 @@ void IniParameterFileAccess::WriteAdvancedInputSettings(IniFile& WriteFile) {
     }
 }
 
-/** Writes parameter settings grouped under 'Advanced Analysis'. */
-void IniParameterFileAccess::WriteAdvancedAnalysisSettings(IniFile& WriteFile) {
+/** Writes parameter settings grouped under 'Advanced Analysis - Temporal Window'. */
+void IniParameterFileAccess::WriteAdvancedAnalysisTemporalWindowSettings(IniFile& WriteFile) {
+    std::string s;
+    try {
+        WriteIniParameter(WriteFile, Parameters::MAXIMUM_WINDOW_PERCENTAGE, GetParameterString(Parameters::MAXIMUM_WINDOW_PERCENTAGE, s).c_str(), GetParameterComment(Parameters::MAXIMUM_WINDOW_PERCENTAGE));
+        WriteIniParameter(WriteFile, Parameters::MAXIMUM_WINDOW_FIXED, GetParameterString(Parameters::MAXIMUM_WINDOW_FIXED, s).c_str(), GetParameterComment(Parameters::MAXIMUM_WINDOW_FIXED));
+        WriteIniParameter(WriteFile, Parameters::MAXIMUM_WINDOW_TYPE, GetParameterString(Parameters::MAXIMUM_WINDOW_TYPE, s).c_str(), GetParameterComment(Parameters::MAXIMUM_WINDOW_TYPE));
+        WriteIniParameter(WriteFile, Parameters::MINIMUM_WINDOW_FIXED, GetParameterString(Parameters::MINIMUM_WINDOW_FIXED, s).c_str(), GetParameterComment(Parameters::MINIMUM_WINDOW_FIXED));
+    } catch (prg_exception& x) {
+        x.addTrace("WriteAdvancedAnalysisTemporalWindowSettings()","IniParameterFileAccess");
+        throw;
+    }
+}
+
+/** Writes parameter settings grouped under 'Advanced Analysis - Inference'. */
+void IniParameterFileAccess::WriteAdvancedAnalysisInferenceSettings(IniFile& WriteFile) {
     std::string s;
     try {
         WriteIniParameter(WriteFile, Parameters::REPLICATIONS, GetParameterString(Parameters::REPLICATIONS, s).c_str(), GetParameterComment(Parameters::REPLICATIONS));
         WriteIniParameter(WriteFile, Parameters::RANDOMIZATION_SEED, GetParameterString(Parameters::RANDOMIZATION_SEED, s).c_str(), GetParameterComment(Parameters::RANDOMIZATION_SEED));
         WriteIniParameter(WriteFile, Parameters::RANDOMLY_GENERATE_SEED, GetParameterString(Parameters::RANDOMLY_GENERATE_SEED, s).c_str(), GetParameterComment(Parameters::RANDOMLY_GENERATE_SEED));
     } catch (prg_exception& x) {
-        x.addTrace("WriteAdvancedAnalysisSettings()","IniParameterFileAccess");
+        x.addTrace("WriteAdvancedAnalysisInferenceSettings()","IniParameterFileAccess");
         throw;
     }
 }

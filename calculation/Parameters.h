@@ -25,7 +25,12 @@ class Parameters {
                         EVENT_PROBABILITY,
                         START_DATA_TIME_RANGE,
                         END_DATA_TIME_RANGE,
-                        /* Advanced Analysis */
+                        /* Advanced Analysis - Temporal Window */
+                        MAXIMUM_WINDOW_PERCENTAGE,
+                        MAXIMUM_WINDOW_FIXED,
+                        MAXIMUM_WINDOW_TYPE,
+                        MINIMUM_WINDOW_FIXED,
+                        /* Advanced Analysis - Inference */
                         REPLICATIONS,
                         RANDOMIZATION_SEED,
                         RANDOMLY_GENERATE_SEED,
@@ -51,6 +56,7 @@ class Parameters {
     enum CutType {SIMPLE=0, PAIRS, TRIPLETS, ORDINAL, COMBINATORIAL};
     enum ScanType {TREEONLY=0, TREETIME};
     enum ConditionalType {UNCONDITIONAL=0, TOTALCASES, CASESEACHBRANCH};
+    enum MaximumWindowType {PERCENTAGE_WINDOW=0, FIXED_LENGTH};
     typedef std::map<std::string,Parameters::CutType> cut_map_t;
     typedef std::pair<cut_map_t, cut_map_t> cut_maps_t;
 
@@ -80,6 +86,8 @@ class Parameters {
     ScanType                            _scan_type;
     ConditionalType                     _conditional_type;
     double                              _maximum_window_percentage;
+    unsigned int                        _maximum_window_length;
+    MaximumWindowType                   _maximum_window_type;
     unsigned int                        _minimum_window_length;
     bool                                _generate_llr_results;
     bool                                _read_simulations;
@@ -96,7 +104,7 @@ class Parameters {
     Parameters(const Parameters &other) {setAsDefaulted(); copy(other);}
     ~Parameters() {}
 
-    static const int                    giNumParameters;                        /** number enumerated parameters */
+    static const int                    giNumParameters; /** number enumerated parameters */
 
     Parameters                        & operator=(const Parameters &rhs)  {if (this != &rhs) copy(rhs); return (*this);}
     bool                                operator==(const Parameters& rhs) const;
@@ -114,6 +122,9 @@ class Parameters {
     const DataTimeRangeSet            & getDataTimeRangeSet() const {return _dataTimeRangeSet;}
     const std::string                 & getInputSimulationsFilename() const {return _input_sim_file;}
     double                              getMaximumWindowPercentage() const {return _maximum_window_percentage;}
+    unsigned int                        getMaximumWindowLength() const {return _maximum_window_length;}
+    unsigned int                        getMaximumWindowInTimeUnits() const;
+    MaximumWindowType                   getMaximumWindowType() const {return _maximum_window_type;}
     unsigned int                        getMinimumWindowLength() const {return _minimum_window_length;}
     const std::string                 & getOutputSimulationsFilename() const {return _output_sim_file;}
     const DataTimeRange               & getTemporalStartRange() const {return _temporalStartRange;}
@@ -141,6 +152,8 @@ class Parameters {
     void                                setDataTimeRangeSet(const DataTimeRangeSet& set) {_dataTimeRangeSet = set;}
     void                                setInputSimulationsFilename(const char * s, bool bCorrectForRelativePath=false);
     void                                setMaximumWindowPercentage(double d) {_maximum_window_percentage = d;}
+    void                                setMaximumWindowLength(unsigned int u) {_maximum_window_length = u;}
+    void                                setMaximumWindowType(MaximumWindowType e) {_maximum_window_type = e;}
     void                                setMinimumWindowLength(unsigned int u) {_minimum_window_length = u;}
     void                                setOutputSimulationsFilename(const char * s, bool bCorrectForRelativePath=false);
     void                                setTemporalStartRange(const DataTimeRange& range) {_temporalStartRange = range;}

@@ -14,6 +14,7 @@ class IniParameterSpecification {
     static const char * Input;
     static const char * AdvancedInput;
     static const char * Analysis;
+    static const char * TemporalWindow;
     static const char * Inference;
     static const char * Output;
     static const char * AdditionalOutput;

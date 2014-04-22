@@ -646,7 +646,7 @@ bool ScanRunner::scanTreeTemporal() {
                             _parameters.getTemporalEndRange().getEnd() + _zero_translation_additive);
     // Define the minimum and maximujm window lengths.
     WindowLength window(static_cast<int>(_parameters.getMinimumWindowLength()) - 1,
-                        static_cast<int>(std::floor(static_cast<double>(_parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets()) * _parameters.getMaximumWindowPercentage() / 100.0)) - 1);
+                        static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1);
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
 
     //std::string buffer;

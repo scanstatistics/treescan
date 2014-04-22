@@ -8,6 +8,7 @@ public class Parameters implements Cloneable {
     public enum ModelType {POISSON, BERNOULLI, TEMPORALSCAN};
     public enum ScanType {TREEONLY, TREETIME};
     public enum ConditionalType {UNCONDITIONAL, TOTALCASES, CASESEACHBRANCH};
+    public enum MaximumWindowType {PERCENTAGE_WINDOW, FIXED_LENGTH};
     public class CreationVersion {
     	public int _major;
     	public int _minor;
@@ -47,6 +48,10 @@ public class Parameters implements Cloneable {
     private int _temporal_end_range_begin=0;
     private int _temporal_end_range_close=0;
     private boolean _generate_llr_results=false;
+    private double _maximum_window_percentage=50.0;
+    private int _maximum_window_length=1;
+    private MaximumWindowType _maximum_window_type=MaximumWindowType.PERCENTAGE_WINDOW;
+    private int _minimum_window_length=2;
 
     public Parameters() {
     	super();    	
@@ -95,8 +100,24 @@ public class Parameters implements Cloneable {
    	  if (_temporal_end_range_begin != rhs._temporal_end_range_begin) return false;
    	  if (_temporal_end_range_close != rhs._temporal_end_range_close) return false;
           if (_generate_llr_results != rhs._generate_llr_results) return false;
+          if (_maximum_window_percentage != rhs._maximum_window_percentage) return false;
+          if (_maximum_window_length != rhs._maximum_window_length) return false;
+          if (_maximum_window_type != rhs._maximum_window_type) return false;
+          if (_minimum_window_length != rhs._minimum_window_length) return false;
+          
           return true;
     }
+    
+    public double getMaximumWindowPercentage() {return _maximum_window_percentage;}
+    public void setMaximumWindowPercentage(double d) {_maximum_window_percentage = d;}
+    public int getMaximumWindowLength() {return _maximum_window_length;}
+    public void setMaximumWindowLength(int u) {_maximum_window_length = u;}
+    public MaximumWindowType getMaximumWindowType() {return _maximum_window_type;}
+    public void setMaximumWindowType(MaximumWindowType e) {_maximum_window_type = e;}
+    public void setMaximumWindowType(int ord) {try {_maximum_window_type = MaximumWindowType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, MaximumWindowType.values());}}
+    public int getMinimumWindowLength() {return _minimum_window_length;}    
+    public void setMinimumWindowLength(int u) {_minimum_window_length = u;}     
+    
     public int getDataTimeRangeBegin() {return _data_time_range_start;}
     public void setDataTimeRangeBegin(int i) {_data_time_range_start = i;}
     public int getDataTimeRangeClose() {return _data_time_range_end;}

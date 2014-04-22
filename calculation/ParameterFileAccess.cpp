@@ -56,7 +56,12 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::EVENT_PROBABILITY       : return "case probability (integer / integer)";
             case Parameters::START_DATA_TIME_RANGE   : return "start data time range (integer - integer)";
             case Parameters::END_DATA_TIME_RANGE     : return "end data time range (integer - integer)";
-            /* Advanced Analysis */
+            /* Advanced Analysis - Temporal Window */
+            case Parameters::MAXIMUM_WINDOW_PERCENTAGE : return "maximum temporal size as percentage of data time range (0 < x <= 50.0)";
+            case Parameters::MAXIMUM_WINDOW_FIXED    : return "maximum temporal size as fixed time length (integer)";
+            case Parameters::MAXIMUM_WINDOW_TYPE     : return "maximum temporal size selection (PERCENTAGE_WINDOW=0, FIXED_LENGTH=1)";
+            case Parameters::MINIMUM_WINDOW_FIXED    : return "minimum temporal size as fixed time length (integer)";
+            /* Advanced Analysis - Inference */
             case Parameters::REPLICATIONS            : return "number of simulation replications (0,9,999, n999)";
             case Parameters::RANDOMIZATION_SEED      : return "randomization seed (integer)";
             case Parameters::RANDOMLY_GENERATE_SEED  : return "generate randomization seed (y/n)";
@@ -104,7 +109,12 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::EVENT_PROBABILITY        : return AsString(s, _parameters.getProbabilityRatio());
             case Parameters::START_DATA_TIME_RANGE    : return _parameters.getTemporalStartRange().toString(s);
             case Parameters::END_DATA_TIME_RANGE      : return _parameters.getTemporalEndRange().toString(s);
-            /* Advanced Analysis */
+            /* Advanced Analysis - Temporal Window */
+            case Parameters::MAXIMUM_WINDOW_PERCENTAGE: return AsString(s, _parameters.getMaximumWindowPercentage());
+            case Parameters::MAXIMUM_WINDOW_FIXED     : return AsString(s, _parameters.getMaximumWindowLength());
+            case Parameters::MAXIMUM_WINDOW_TYPE      : return AsString(s, _parameters.getMaximumWindowType());
+            case Parameters::MINIMUM_WINDOW_FIXED     : return AsString(s, _parameters.getMinimumWindowLength());
+            /* Advanced Analysis - Inference */
             case Parameters::REPLICATIONS             : return AsString(s, _parameters.getNumReplicationsRequested());
             case Parameters::RANDOMIZATION_SEED       : return AsString(s, static_cast<unsigned int>(_parameters.getRandomizationSeed()));
             case Parameters::RANDOMLY_GENERATE_SEED   : return AsString(s, _parameters.isRandomlyGeneratingSeed());
@@ -252,7 +262,13 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::EVENT_PROBABILITY        : _parameters.setProbabilityRatio(ReadRatio(value)); break;
             case Parameters::START_DATA_TIME_RANGE    : _parameters.setTemporalStartRange(DataTimeRange(value)); break;
             case Parameters::END_DATA_TIME_RANGE      : _parameters.setTemporalEndRange(DataTimeRange(value)); break;
-            /* Advanced Analysis */
+            /* Advanced Analysis - Temporal Window */
+            case Parameters::MAXIMUM_WINDOW_PERCENTAGE: _parameters.setMaximumWindowPercentage(ReadDouble(value, e)); break;
+            case Parameters::MAXIMUM_WINDOW_FIXED     : _parameters.setMaximumWindowLength(ReadUnsignedInt(value, e)); break;
+            case Parameters::MAXIMUM_WINDOW_TYPE      : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::PERCENTAGE_WINDOW, Parameters::FIXED_LENGTH);
+                                                        _parameters.setMaximumWindowType((Parameters::MaximumWindowType)iValue); break;
+            case Parameters::MINIMUM_WINDOW_FIXED     : _parameters.setMinimumWindowLength(ReadUnsignedInt(value, e)); break;
+            /* Advanced Analysis Inference */
             case Parameters::REPLICATIONS             : _parameters.setNumReplications(ReadUnsignedInt(value, e)); break;
             case Parameters::RANDOMIZATION_SEED       : _parameters.setRandomizationSeed(static_cast<long>(ReadInt(value, e))); break;
             case Parameters::RANDOMLY_GENERATE_SEED   : _parameters.setRandomlyGeneratingSeed(ReadBoolean(value, e)); break;

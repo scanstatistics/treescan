@@ -23,6 +23,8 @@ bool ParametersValidate::Validate(BasePrint& printDirection) const {
       bValid = false;
     if (! ValidateOutputParameters(printDirection))
       bValid = false;
+    if (! ValidateTemporalWindowParameters(printDirection))
+      bValid = false;
     if (! ValidateRandomizationSeed(printDirection))
       bValid = false;
   }
@@ -209,6 +211,39 @@ bool ParametersValidate::ValidateOutputParameters(BasePrint & PrintDirection) co
     throw;
   }
   return bValid;
+}
+
+/** Validates temporal window settings. */
+bool ParametersValidate::ValidateTemporalWindowParameters(BasePrint & PrintDirection) const {
+    bool bValid=true;
+    if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
+        switch (_parameters.getMaximumWindowType()) {
+            case Parameters::PERCENTAGE_WINDOW: {
+                if (_parameters.getMaximumWindowPercentage() < 0 || _parameters.getMaximumWindowPercentage() > 50.0) {
+                    bValid = false;
+                    PrintDirection.Printf("Invalid Parameter Setting:\nThe percent of the maximum window must be greater than zero and less than or equal to 50.\n", BasePrint::P_PARAMERROR);
+                }
+                unsigned int max_length = static_cast<unsigned int>(std::floor(static_cast<double>(_parameters.getDataTimeRangeSet().getMinMax().numDaysInRange()) * _parameters.getMaximumWindowPercentage()/100.0));
+                if (_parameters.getMinimumWindowLength() < 0 || _parameters.getMinimumWindowLength() > max_length) {
+                    bValid = false;
+                    PrintDirection.Printf("Invalid Parameter Setting:\nThe minimum window length must be greater than zero and no greater than the specified maximum window length.\nWith a specifed maximum as %g%%, the maximum window length is %u.\n", BasePrint::P_PARAMERROR, _parameters.getMaximumWindowPercentage(), max_length);
+                }
+            } break;
+            case Parameters::FIXED_LENGTH: {
+                unsigned int max_length = static_cast<unsigned int>(std::floor(static_cast<double>(_parameters.getDataTimeRangeSet().getMinMax().numDaysInRange()) * 0.5));
+                if (_parameters.getMaximumWindowLength() < 0 || _parameters.getMaximumWindowLength() > max_length) {
+                    bValid = false;
+                    PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum window length must be greater than zero and no greater than 50%% of data time range (%u).\n", BasePrint::P_PARAMERROR, max_length);
+                }
+                if (_parameters.getMinimumWindowLength() < 0 || _parameters.getMinimumWindowLength() > _parameters.getMaximumWindowLength()) {
+                    bValid = false;
+                    PrintDirection.Printf("Invalid Parameter Setting:\nThe minimum window length must be greater than zero and no greater than the specified maximum window length.\n", BasePrint::P_PARAMERROR);
+                }
+            } break;
+            default: throw prg_error("Unknown maximum window type (%d).", "getTemporalWindowParameters()", _parameters.getMaximumWindowType());
+        }
+    }
+    return bValid;
 }
 
 /** Validates parameters parameters related to randomization seed.

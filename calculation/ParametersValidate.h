@@ -14,6 +14,7 @@ class ParametersValidate {
     bool ValidateInputParameters(BasePrint & PrintDirection) const;
     bool ValidateAnalysisParameters(BasePrint & PrintDirection) const;
     bool ValidateOutputParameters(BasePrint & PrintDirection) const;
+    bool ValidateTemporalWindowParameters(BasePrint & PrintDirection) const;
     bool ValidateRandomizationSeed(BasePrint& PrintDirection) const;
 
   public:

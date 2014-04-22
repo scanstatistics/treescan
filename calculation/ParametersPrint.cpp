@@ -23,6 +23,8 @@ void ParametersPrint::Print(std::ostream& out) const {
         WriteSettingsContainer(getOutputParameters(settings), "Output", out);
         //print 'Advanced Input' tab settings
         WriteSettingsContainer(getAdvancedInputParameters(settings), "Advanced Input", out);
+        //print 'Temporal Window' tab settings
+        WriteSettingsContainer(getTemporalWindowParameters(settings), "Temporal Window", out);
         //print 'Inference' tab settings
         WriteSettingsContainer(getInferenceParameters(settings), "Inference", out);
         //print 'RunOptions' settings
@@ -107,6 +109,26 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
         settings.push_back(std::make_pair("Temporal Time Window Start", _parameters.getTemporalStartRange().toString(buffer)));
         settings.push_back(std::make_pair("Temporal Time Window End", _parameters.getTemporalEndRange().toString(buffer)));
     }
+    return settings;
+}
+
+/** Prints 'Temporal Window' tab parameters to file stream. */
+ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParameters(SettingContainer_t & settings) const {
+    std::string buffer;
+    settings.clear();    
+    switch (_parameters.getMaximumWindowType()) {
+        case Parameters::PERCENTAGE_WINDOW :
+            printString(buffer, "%g%% of Data Time Range", _parameters.getMaximumWindowPercentage());
+            settings.push_back(std::make_pair("Maximum Temporal Window", buffer)); 
+            break;
+        case Parameters::FIXED_LENGTH :
+            printString(buffer, "%u Time Units", _parameters.getMaximumWindowLength());
+            settings.push_back(std::make_pair("Maximum Temporal Window",buffer)); 
+            break;
+        default: throw prg_error("Unknown maximum window type (%d).", "getTemporalWindowParameters()", _parameters.getMaximumWindowType());
+    }
+    printString(buffer, "%u Time Units", _parameters.getMinimumWindowLength());
+    settings.push_back(std::make_pair("Minimum Temporal Window",buffer));
     return settings;
 }
 

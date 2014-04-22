@@ -144,7 +144,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                               _scanRunner.getParameters().getTemporalEndRange().getEnd() + idxAdditive);
     // Define the minimum and maximujm window lengths.
     WindowLength window(static_cast<int>(_scanRunner.getParameters().getMinimumWindowLength()) - 1,
-                        static_cast<int>(std::floor(static_cast<double>(_scanRunner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets()) * _scanRunner.getParameters().getMaximumWindowPercentage() / 100.0)) - 1);
+                        static_cast<int>(_scanRunner.getParameters().getMaximumWindowInTimeUnits()) - 1);
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
 
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
