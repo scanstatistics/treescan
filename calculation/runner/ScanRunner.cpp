@@ -644,7 +644,7 @@ bool ScanRunner::scanTreeTemporal() {
                               _parameters.getTemporalStartRange().getEnd() + _zero_translation_additive),
                   endWindow(_parameters.getTemporalEndRange().getStart() + _zero_translation_additive,
                             _parameters.getTemporalEndRange().getEnd() + _zero_translation_additive);
-    // Define the minimum and maximujm window lengths.
+    // Define the minimum and maximum window lengths.
     WindowLength window(static_cast<int>(_parameters.getMinimumWindowLength()) - 1,
                         static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1);
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;

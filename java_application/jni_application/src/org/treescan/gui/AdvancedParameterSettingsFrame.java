@@ -267,25 +267,23 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportLLRResultsAsCsvTable.setSelected(false);
     }    
     
-    /**
-     * validates all the settings in this dialog
-     */
-    public void validateParameters() {
-        validateInputSettings();
-        validateInferenceSettings();
-        validateTemporalSize();
+    /** validates all the settings in this dialog */
+    public void CheckSettings() {
+        CheckInputSettings();
+        CheckInferenceSettings();
+        CheckTemporalWindowSize();
     }
     
-    private void validateInputSettings() {
+    private void CheckInputSettings() {
         //validate the cuts file
         if (_cutFileTextField.getText().length() > 0 && !FileAccess.ValidateFileAccess(_cutFileTextField.getText(), false)) {
             throw new AdvFeaturesExpection("The cuts file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", FocusedTabSet.INPUT, (Component) _cutFileTextField);
         }
     }   
     
-    private void validateTemporalSize() {
+    private void CheckTemporalWindowSize() {
         String sErrorMessage;
-        double dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits = 0;
+        double unitsInDataTimeRange, maximumUnitsTemporalSize = 0;
 
         //check whether we are specifiying temporal information
         if (!_maxTemporalOptionsGroup.isEnabled()) {
@@ -296,45 +294,58 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (_maxTemporalClusterSizeTextField.getText().length() == 0 || Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 0) {
                 throw new AdvFeaturesExpection("Please specify a maximum temporal size.", FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeTextField);
             }
-            //check maximum temporal cluster size(as percentage of population) is less than maximum for given probability model
+            //check maximum temporal size does not exceed maximum value of 50%
             if (Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) > 50.0) {
                 sErrorMessage = "For the maximum temporal size, as a percent of the data time range, is 50 percent.";
                 throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeTextField);
             }
-            //validate that the time aggregation length agrees with the study period and maximum temporal cluster size
-            dStudyPeriodLengthInUnits = _settings_window.getNumDaysInRange();
-            dMaxTemporalLengthInUnits = Math.floor(dStudyPeriodLengthInUnits * Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) / 100.0);
-            if (dMaxTemporalLengthInUnits < 1) {
-                sErrorMessage = "A maximum temporal cluster size as " + Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) + " percent of a " + Math.floor(dStudyPeriodLengthInUnits) + " units data time range\n" + "results in a maximum temporal size that is less than one time unit\n";
+            //check that the maximum temporal size of the data time range is at least one time unit
+            unitsInDataTimeRange = _settings_window.getNumUnitsInRange();
+            maximumUnitsTemporalSize = Math.floor(unitsInDataTimeRange * Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) / 100.0);
+            if (maximumUnitsTemporalSize < 1) {
+                sErrorMessage = "A maximum temporal cluster size as " + _maxTemporalClusterSizeTextField.getText() + "% of a " + unitsInDataTimeRange + " unit data time range\n" + "results in a maximum temporal size that is less than one time unit.\n";
                 throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeTextField);
             }
         } else if (_timeTemporalRadioButton.isSelected()) {
             if (_maxTemporalClusterSizeUnitsTextField.getText().length() == 0 || Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()) == 0) {
                 throw new AdvFeaturesExpection("Please specify a maximum temporal size.", FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeUnitsTextField);
             }
-            dStudyPeriodLengthInUnits = _settings_window.getNumDaysInRange();
-            dMaxTemporalLengthInUnits = Math.floor(dStudyPeriodLengthInUnits * (50.0) / 100.0);
-            if (Double.parseDouble(_maxTemporalClusterSizeUnitsTextField.getText()) > dMaxTemporalLengthInUnits) {
-                sErrorMessage = "A maximum temporal size of " + Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()) + " time units exceeds 50 percent of a " + Math.floor(dStudyPeriodLengthInUnits) + " unit data time range.\n" + "Note that current settings limit the maximum to " + Math.floor(dMaxTemporalLengthInUnits) + " time units.";
+            unitsInDataTimeRange = _settings_window.getNumUnitsInRange();
+            maximumUnitsTemporalSize = Math.floor(unitsInDataTimeRange * (50.0) / 100.0);
+            if (Double.parseDouble(_maxTemporalClusterSizeUnitsTextField.getText()) > maximumUnitsTemporalSize) {
+                sErrorMessage = "A maximum temporal size of " + _maxTemporalClusterSizeUnitsTextField.getText() + " time units exceeds 50% of a " + unitsInDataTimeRange + " unit data time range.\n" + "Note that current settings limit the maximum to " + Math.floor(maximumUnitsTemporalSize) + " time units.";
                 throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeUnitsTextField);
             }
-            dMaxTemporalLengthInUnits = Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText());
+            maximumUnitsTemporalSize = Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText());
         }
 
         // validate the minimum temporal cluster size setting
-        int minTemporalClusterSize = Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText());
-        if (minTemporalClusterSize < 1) {
+        int minimumUnitsTemporalSize = Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText());
+        if (minimumUnitsTemporalSize < 1) {
             sErrorMessage = "The minimum temporal size is 1 time unit";
             throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField);
         }
         // compare the maximum temporal cluster size to the minimum temporal cluster size
-        if (minTemporalClusterSize > dMaxTemporalLengthInUnits) {
-            sErrorMessage = "The minimum temporal size is greater than the maximum temporal cluster size of " + dMaxTemporalLengthInUnits + " time units.";
+        if (minimumUnitsTemporalSize > maximumUnitsTemporalSize) {
+            sErrorMessage = "The minimum temporal size is greater than the maximum temporal cluster size of " + maximumUnitsTemporalSize + " time units.";
             throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField);
+        }
+        
+        int shortestTemporalWindow = _settings_window.getNumUnitsInShortestTemporalWindow();
+        // check whether any cuts will be evaluated given the specified maximum temporal window size and temporal window ranges
+        if (maximumUnitsTemporalSize < shortestTemporalWindow) {
+            throw new AdvFeaturesExpection("No cuts will be evaluated since the maximum window size is " + maximumUnitsTemporalSize + " time units\nyet the minimum number of time units in temporal window is " + shortestTemporalWindow + ".", 
+                                           FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField);        
+        }        
+        // check whether any cuts will be evaluated given the specified minimum temporal window size and temporal window ranges
+        int unitsInTemporalWindow = _settings_window.getNumUnitsInTemporalWindow();
+        if (minimumUnitsTemporalSize > unitsInTemporalWindow) {
+            throw new AdvFeaturesExpection("No cuts will be evaluated since the minimum window size is " + minimumUnitsTemporalSize + "\nyet the maximum number of time units in temporal window is " + unitsInTemporalWindow + ".", 
+                                           FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField);        
         }
     }
     
-    private void validateInferenceSettings() {
+    private void CheckInferenceSettings() {
         int dNumReplications;
         if (_montCarloReplicationsTextField.getText().trim().length() == 0) {
             throw new AdvFeaturesExpection("Please specify a number of Monte Carlo replications.\nChoices are: 0, 9, 999, or value ending in 999.", FocusedTabSet.ANALYSIS, (Component)_montCarloReplicationsTextField);

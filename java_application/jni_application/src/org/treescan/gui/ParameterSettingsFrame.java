@@ -232,14 +232,29 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         }        
     }
 
-    public int getNumDaysInRange() {
+    /* Returns the number of time units in the specified data time range. */
+    public int getNumUnitsInRange() {
         int start = Integer.parseInt(_dataTimeRangeBegin.getText().trim());
         int end = Integer.parseInt(_dataTimeRangeEnd.getText().trim());
-        if (start >= end) {
-            throw new SettingsException("The data time range start must be before the data time range end.", (Component) _temporalEndWindowBegin);
-        }
-        return end - start + 1;
+        return start >= end ? 0 : end - start + 1;
     }
+    
+    /* Returns the number of time units in the specified temporal window. */
+    public int getNumUnitsInTemporalWindow() {
+        int start = Integer.parseInt(_temporalStartWindowBegin.getText().trim());
+        int end = Integer.parseInt(_temporalEndWindowEnd.getText().trim());
+        return start > end ? 0 : end - start + 1;
+    }
+   
+    /* Returns the number of time units in the shortest period of specified temporal window. */
+    public int getNumUnitsInShortestTemporalWindow() {
+        int start_end = Integer.parseInt(_temporalStartWindowEnd.getText().trim());
+        int end_start = Integer.parseInt(_temporalEndWindowBegin.getText().trim());
+        // if the end of the start range overlaps the end range, the minimum is one unit.
+        if (start_end >= end_start) return 1;        
+        int end_end = Integer.parseInt(_temporalEndWindowEnd.getText().trim());
+        return start_end > end_end ? 0 : end_end - start_end + 1;
+    }    
     
     /**
      * checks 'Analysis' tab
@@ -291,7 +306,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             return false;
         }
         try {
-            getAdvancedParameterInternalFrame().validateParameters();
+            getAdvancedParameterInternalFrame().CheckSettings();
         } catch (AdvFeaturesExpection e) {
             focusWindow();
             JOptionPane.showInternalMessageDialog(this, e.getMessage());
