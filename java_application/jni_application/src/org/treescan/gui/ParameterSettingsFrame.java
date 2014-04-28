@@ -402,7 +402,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     }
     /** Modally shows import dialog. */
     public void LaunchImporter(String sFileName, FileImporter.InputFileType eFileType) {
-        ImportWizardDialog wizard = new ImportWizardDialog(TreeScanApplication.getInstance(), sFileName, eFileType);
+        ImportWizardDialog wizard = new ImportWizardDialog(TreeScanApplication.getInstance(), sFileName, _parameters.getSourceFileName(), eFileType);
         wizard.setVisible(true);
         if (!wizard.getCancelled()) {
             switch (eFileType) {  // set parameters

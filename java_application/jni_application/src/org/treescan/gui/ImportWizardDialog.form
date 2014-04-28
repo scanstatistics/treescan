@@ -582,13 +582,13 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jLabel3" max="32767" attributes="0"/>
                           <Component id="_progressBar" alignment="0" pref="521" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="_outputDirectoryTextField" pref="446" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_changeSaveDirectoryButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -614,12 +614,12 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="jLabel3">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Save imported file in directory:" noResource="true"/>
+                <Property name="text" type="java.lang.String" value="Save imported file as:" noResource="true"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="_outputDirectoryTextField">
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_outputDirectoryTextField.setText(_prefs.get(_prefLastBackup, System.getProperty(&quot;user.home&quot;)));"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_outputDirectoryTextField.setText(_suggested_import_filename.getAbsolutePath());"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JButton" name="_changeSaveDirectoryButton">
@@ -627,7 +627,7 @@
                 <Property name="text" type="java.lang.String" value="Change" noResource="true"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_changeSaveDirectoryButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select directory to save imported file&quot;, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                _outputDirectoryTextField.setText(file.getAbsolutePath());&#xa;                _prefs.put(_prefLastBackup, _outputDirectoryTextField.getText());&#xa;            }&#xa;    }&#xa;});"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_changeSaveDirectoryButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        InputFileFilter[] filters = new InputFileFilter[]{};&#xa;        FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select filename to save imported file&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_saveas();&#xa;        if (file != null) {&#xa;            org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            _outputDirectoryTextField.setText(file.getAbsolutePath());&#xa;            _prefs.put(_prefLastBackup, select.getDirectory().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JProgressBar" name="_progressBar">

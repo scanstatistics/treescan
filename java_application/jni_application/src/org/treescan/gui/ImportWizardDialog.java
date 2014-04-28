@@ -38,10 +38,12 @@ import org.treescan.importer.PreviewTableModel;
 import org.treescan.app.UnknownEnumException;
 import org.treescan.gui.utils.AutofitTableColumns;
 import org.treescan.gui.utils.FileSelectionDialog;
+import org.treescan.gui.utils.InputFileFilter;
 import org.treescan.importer.XLSImportDataSource;
 import org.treescan.gui.utils.Utils;
 import org.treescan.gui.utils.WaitCursor;
 import static org.treescan.importer.FileImporter.InputFileType.Cuts;
+import static org.treescan.importer.FileImporter.InputFileType.Tree;
 
 /**
  *
@@ -70,44 +72,56 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
     private PreviewTableModel _previewTableModel = null;
     private boolean _cancelled = true;
     private File _destinationFile = null;
+    private File _suggested_import_filename;    
 
     /** Creates new form ImportWizardDialog */
-    public ImportWizardDialog(java.awt.Frame parent, final String sourceFile, FileImporter.InputFileType fileType) {
+    public ImportWizardDialog(java.awt.Frame parent, 
+                              final String sourceFile, 
+                              final String suggested_filename,
+                              FileImporter.InputFileType fileType) {
         super(parent, true);
+        setSuggestedImportName(sourceFile, suggested_filename, fileType);
         initComponents();
         _sourceFile = sourceFile;
         _fileType = fileType;
+        
         _sourceDataFileType = getSourceFileType();
         _progressBar.setVisible(false);
         configureForDestinationFileType();
         setLocationRelativeTo(parent);
     }
 
+    private void setSuggestedImportName(final String sourceFile, final String suggested_filename, final FileImporter.InputFileType filetype) {
+        String defaultName = "";
+        String extension = "";
+        switch (filetype) {
+            case Tree : defaultName = "Tree"; extension =  ".tre"; break;
+            case Case: defaultName = "Cases"; extension =  ".cas"; break;
+            case Population: defaultName = "Population"; extension =  ".pop";  break;
+            case Cuts : defaultName = "Cuts"; extension =  ".cut"; break;
+            default: throw new UnknownEnumException(filetype);
+        }
+        if (suggested_filename.trim().isEmpty()) {
+            _suggested_import_filename = new File(_prefs.get(_prefLastBackup, System.getProperty("user.home")) + System.getProperty("file.separator") + defaultName + extension);
+        } else {
+            int lastDot = suggested_filename.trim().lastIndexOf(".");
+            if (lastDot != -1) 
+                _suggested_import_filename = new File(suggested_filename.trim().substring(0, lastDot) + extension); 
+            else 
+                _suggested_import_filename = new File(suggested_filename.trim() + extension); 
+        }
+    }
+    
     /**
-     * Returned whether the user completed the import or cancelled operation.
+     * Returns whether the user canceled import.
      */
     public boolean getCancelled() {
         return _cancelled;
     }
     /* Create import target file. */
     private void createDestinationInformation() throws IOException {
-        File outputDirectory = new File(_outputDirectoryTextField.getText());
-        switch (_fileType) {
-            case Case:
-                _destinationFile = File.createTempFile(_importFilePrefix, ".cas", outputDirectory);
-                break;
-            case Tree:
-                _destinationFile = File.createTempFile(_importFilePrefix, ".tre", outputDirectory);
-                break;
-            case Cuts:
-                _destinationFile = File.createTempFile(_importFilePrefix, ".cut", outputDirectory);
-                break;
-            case Population:
-                _destinationFile = File.createTempFile(_importFilePrefix, ".pop", outputDirectory);
-                break;
-            default:
-                throw new UnknownEnumException(_fileType);
-        }
+        _destinationFile = new File(_outputDirectoryTextField.getText());
+        _destinationFile.createNewFile();
     }
 
     /**
@@ -1016,19 +1030,20 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
 
         _basePanel.add(_dataMappingPanel, "Mapping Panel");
 
-        jLabel3.setText("Save imported file in directory:"); // NOI18N
+        jLabel3.setText("Save imported file as:"); // NOI18N
 
-        _outputDirectoryTextField.setText(_prefs.get(_prefLastBackup, System.getProperty("user.home")));
+        _outputDirectoryTextField.setText(_suggested_import_filename.getAbsolutePath());
 
         _changeSaveDirectoryButton.setText("Change"); // NOI18N
         _changeSaveDirectoryButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select directory to save imported file", org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                File file = select.browse_load(true);
+                InputFileFilter[] filters = new InputFileFilter[]{};
+                FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select filename to save imported file", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+                File file = select.browse_saveas();
                 if (file != null) {
                     org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
                     _outputDirectoryTextField.setText(file.getAbsolutePath());
-                    _prefs.put(_prefLastBackup, _outputDirectoryTextField.getText());
+                    _prefs.put(_prefLastBackup, select.getDirectory().getAbsolutePath());
                 }
             }
         });
@@ -1040,12 +1055,12 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             .addGroup(_outputSettingsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_outputSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _outputSettingsPanelLayout.createSequentialGroup()
                         .addComponent(_outputDirectoryTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_changeSaveDirectoryButton))
-                    .addComponent(jLabel3))
+                        .addComponent(_changeSaveDirectoryButton)))
                 .addContainerGap())
         );
         _outputSettingsPanelLayout.setVerticalGroup(
