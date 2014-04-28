@@ -244,7 +244,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _percentageTemporalRadioButton.setSelected(true);
         _maxTemporalClusterSizeTextField.setText("50");
         _maxTemporalClusterSizeUnitsTextField.setText("1");
-        _minTemporalClusterSizeUnitsTextField.setText("1");
+        _minTemporalClusterSizeUnitsTextField.setText("2");
     }
     
     private void setupInterface(final Parameters parameters) {

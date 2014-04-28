@@ -333,17 +333,25 @@ bool ScanRunner::readTree(const std::string& filename) {
     bool readSuccess=true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
 
-    // TODO: Eventually this will need refactoring once we implement multiple data time ranges.    
+    // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     size_t daysInDataTimeRange = _parameters.getModelType() == Parameters::TEMPORALSCAN ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
 
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
     while (dataSource->readRecord()) {
+        if (dataSource->getNumValues() > 2) {
+            readSuccess = false;
+            _print.Printf("Error: Record %ld in tree file has %ld values but expecting 2: <node id>, <parent node id>(optional).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getNumValues());
+            continue;
+        }
         std::string identifier = dataSource->getValueAt(0);
         std::auto_ptr<NodeStructure> node(new NodeStructure(trimString(identifier), _parameters.getCutType(), _parameters.getModelType(), daysInDataTimeRange));
         NodeStructureContainer_t::iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
         if (itr == _Nodes.end() || (*itr)->getIdentifier() != node.get()->getIdentifier())
             _Nodes.insert(itr, node.release());
     }
+
+    // stop reading tree file if we're already determined there are problems in the file.
+    if (!readSuccess) return readSuccess;
 
     //reset node identifiers to ordinal position in vector -- this is to keep the original algorithm intact since it uses vector indexes heavily
     for (size_t i=0; i < _Nodes.size(); ++i) _Nodes.at(i)->setID(static_cast<int>(i));
@@ -360,8 +368,11 @@ bool ScanRunner::readTree(const std::string& filename) {
             std::string identifier = dataSource->getValueAt(static_cast<long>(t));
             ScanRunner::Index_t index = getNodeIndex(identifier);
             if (!index.first) {
-                readSuccess = false;
-                _print.Printf("Error: Record %ld in tree file has unknown parent node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), identifier.c_str());
+                /* If this current node being read is a parent field and value is not blank and id is not known, then signal reading a bad record. */
+                if (node != 0 && identifier.size() != 0) {
+                    readSuccess = false;
+                    _print.Printf("Error: Record %ld in tree file has unknown parent node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), identifier.c_str());
+                }
             } else {
                 if (node) {
                     // prevent nodes from having more than one parent, see https://www.squishlist.com/ims/treescan/13/

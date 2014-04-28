@@ -523,6 +523,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         }
         JScrollBar vbar = jScrollPane1.getVerticalScrollBar();
         vbar.setValue(vbar.getMinimum());
+        _fileContentsTextArea.setCaretPosition(0);
     }
 
     /**
@@ -590,7 +591,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
     private void setTreeFileVariables() {
         _importVariables.clear();
         _importVariables.addElement(new ImportVariable("Node ID", 0, true, null));
-        _importVariables.addElement(new ImportVariable("Node Parent ID", 1, false, null));
+        _importVariables.addElement(new ImportVariable("Node Parent ID", 1, true, null));
     }
 
     /**
