@@ -4,7 +4,8 @@
 //******************************************************************************
 #include "TreeScan.h"
 #include "PrjException.h"
-#include "boost/lexical_cast.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/math/special_functions/fpclassify.hpp>
 
 using namespace TreeScan;
 
@@ -37,6 +38,7 @@ bool                            getlinePortable(std::ifstream& readstream, std::
 template <typename T>           bool string_to_type(const char * s, T& t) {
                                     try {
                                         t = boost::lexical_cast<T>(s);
+                                        return boost::math::isfinite<T>(t);
                                     } catch (boost::bad_lexical_cast&) {
                                         return false;
                                     } 

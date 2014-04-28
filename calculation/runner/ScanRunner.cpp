@@ -4,7 +4,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/regex.hpp>
 #include <boost/assign.hpp>
-#include "boost/dynamic_bitset.hpp"
+#include <boost/dynamic_bitset.hpp>
 
 #include "ScanRunner.h"
 #include "UtilityFunctions.h"
@@ -196,17 +196,19 @@ bool ScanRunner::readCounts(const std::string& filename) {
         NodeStructure * node = _Nodes.at(index.second);
         if  (!string_to_type<int>(dataSource->getValueAt(1).c_str(), count) || count < 0) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in case file references negative number of cases in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+            _print.Printf("Error: Record %ld in case file references an invalid number of cases for node '%s'.\n"
+                          "       The number of cases must be an integer value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
             continue;
         }
         if (_parameters.isDuplicates()) {
             if  (!string_to_type<int>(dataSource->getValueAt(2).c_str(), duplicates) || duplicates < 0) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in case file references negative number of duplicates in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                _print.Printf("Error: Record %ld in case file references an invalid number of duplicates for node '%s'.\n"
+                              "       The number of duplicates must be an integer value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
             } else if (duplicates > count) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in case file references more duplicates than case in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                _print.Printf("Error: Record %ld in case file references more duplicates than case for node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
             }
             node->refDuplicates() += duplicates;
@@ -219,14 +221,15 @@ bool ScanRunner::readCounts(const std::string& filename) {
         } else if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
             if  (!string_to_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), daysSinceIncidence)) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in case file references an invalid 'day since incidence' value in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                _print.Printf("Error: Record %ld in case file references an invalid 'day since incidence' value for node '%s'.\n"
+                              "       The 'day since incidence' variable must be an integer.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
             }
             // check that the 'daysSinceIncidence' is within a defined data time range
             DataTimeRangeSet::rangeset_index_t rangeIdx = _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
             if (rangeIdx.first == false) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in case file references an invalid 'day since incidence' value in node '%s'.\n"
+                _print.Printf("Error: Record %ld in case file references an invalid 'day since incidence' value for node '%s'.\n"
                               "The specified value is not within any of the data time ranges you have defined.",
                               BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
@@ -308,7 +311,8 @@ bool ScanRunner::readPopulation(const std::string& filename) {
             double population=0;
             if  (!string_to_type<double>(dataSource->getValueAt(expectedColumns - 1).c_str(), population) || population < 0) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in population file references negative population in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                _print.Printf("Error: Record %ld in population file references an invalid population for node '%s'.\n"
+                              "       The population must be a numeric value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
             }
             node->refIntN_C().front() += population;
@@ -316,7 +320,8 @@ bool ScanRunner::readPopulation(const std::string& filename) {
             int population=0;
             if  (!string_to_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), population) || population < 0) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in population file references negative number of cases and controls in node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                _print.Printf("Error: Record %ld in population file references an invalid number of cases and controls for node '%s'.\n"
+                              "       The population must be a numeric value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
                 continue;
             }
             node->refIntN_C().front() += population;
