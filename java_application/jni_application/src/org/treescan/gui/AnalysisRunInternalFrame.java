@@ -32,6 +32,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
 
     private boolean gbCancel = false;
     private boolean gbCanClose = false;
+    private boolean _has_warnings_errors = false;
     private boolean gbCanPrint;
     private final Parameters _parameters;
     private String gsProgramErrorCallPath = "";
@@ -130,6 +131,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
      * Prints warning/error string to output textarea.
      */
     synchronized public void PrintIssuesWindndow(final String ProgressString) {
+        _has_warnings_errors = true;
         final String progress = getNewInvokeLaterString(ProgressString);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -185,7 +187,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     }
 
     /**
-     * Launches default emial application and creates message detailing error.
+     * Launches default email application and creates message detailing error.
      */
     private void launchDefaultClientEmail() {
         StringBuilder messageBody = new StringBuilder();
@@ -228,7 +230,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
      *
      */
     public void CancelJob() {
-        if (getErrorsEncountered() == false) {
+        if (getWarningsErrorsEncountered() == false) {
             _progressTextArea.append("Job cancelled. Please review 'Warnings/Errors' window below.");
         } else {
             _progressTextArea.append("Job cancelled.");
@@ -259,11 +261,11 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     }
 
     /**
-     *
+     * Returns whether any warnings or errors were posted.
      */
-    public boolean getErrorsEncountered() {
+    public boolean getWarningsErrorsEncountered() {
         try {
-            return _warningsErrorsTextArea.getText().length() > 0;
+            return _has_warnings_errors;
         } catch (Throwable t) {return false;}
     }
 

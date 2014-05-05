@@ -471,21 +471,26 @@ bool ScanRunner::run() {
     time_t gStartTime, gEndTime;
     time(&gStartTime); //get start time
 
-    if (!readTree(_parameters.getTreeFileName())) return false;
+    if (!readTree(_parameters.getTreeFileName())) 
+        throw resolvable_error("\nProblem encountered when reading the data from the tree file.");
     if (_print.GetIsCanceled()) return false;
 
-    if (_parameters.getCutsFileName().length() && !readCuts(_parameters.getCutsFileName())) return false;
+    if (_parameters.getCutsFileName().length() && !readCuts(_parameters.getCutsFileName()))
+        throw resolvable_error("\nProblem encountered when reading the data from the cut file.");
     if (_print.GetIsCanceled()) return false;
 
-    if (!readCounts(_parameters.getCountFileName())) return false;
+    if (!readCounts(_parameters.getCountFileName()))
+        throw resolvable_error("\nProblem encountered when reading the data from the case file.");
     if (_print.GetIsCanceled()) return false;
 
     if (_parameters.getModelType() != Parameters::TEMPORALSCAN) {
-        if (!readPopulation(_parameters.getPopulationFileName())) return false;
+        if (!readPopulation(_parameters.getPopulationFileName()))
+            throw resolvable_error("\nProblem encountered when reading the data from the population file.");
     }
     if (_print.GetIsCanceled()) return false;
 
-    if (!setupTree()) return false;
+    if (!setupTree()) 
+        throw resolvable_error("\nProblem encountered when setting up tree.");
     if (_print.GetIsCanceled()) return false;
 
     if ((_parameters.getModelType() == Parameters::TEMPORALSCAN ? scanTreeTemporal() : scanTree())) {

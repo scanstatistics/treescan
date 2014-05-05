@@ -51,7 +51,7 @@ public class CalculationThread extends Thread {
         try {
             if (RunAnalysis(Parameters) == 0) {
                 if (AnalysisRun.IsJobCanceled()) {
-                    //analysis cancelled by user -- acknowledge that engine has teminated
+                    //analysis cancelled by user -- acknowledge that engine has terminated
                     AnalysisRun.setTitle("Job cancelled");
                     AnalysisRun.PrintProgressWindow("Job cancelled by user.");
                 } else {
@@ -66,7 +66,7 @@ public class CalculationThread extends Thread {
             AnalysisRun.setCanClose(true);
             AnalysisRun.setCloseButton();
             AnalysisRun.setPrintEnabled();
-            if (!AnalysisRun.getErrorsEncountered()) {
+            if (!AnalysisRun.getWarningsErrorsEncountered()) {
                 AnalysisRun.PrintIssuesWindndow("No Warnings or Errors.");
             }
         } catch (Throwable t) {
