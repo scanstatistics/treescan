@@ -16,7 +16,7 @@ protected:
     int             PoissonGenerator(double lambda);
     double          RandomUniform(bool classic=false);
 
-    virtual int randomize(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes);
+    virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
 
 public:
     PoissonRandomizer(bool conditional, int TotalC, double TotalN, const Parameters& parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);

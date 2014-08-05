@@ -18,6 +18,8 @@
 #include "DataSource.h"
 #include "ResultsFileWriter.h"
 #include "WindowLength.h"
+#include "AlternativeHypothesisRandomizer.h"
+#include "RelativeRiskAdjustment.h"
 
 /* Calculates the excess number of cases. See user guide for formula explanation. */
 double CutStructure::getExcessCases(const ScanRunner& scanner) {
@@ -151,9 +153,7 @@ void ScanRunner::addCN_C(int id, NodeStructure::CountContainer_t& c, NodeStructu
     }
 }
 
-/*
- Returns pair<bool,size_t> - first value indicates node existance, second is index into class vector _Nodes.
- */
+/* Returns pair<bool,size_t> - first value indicates node existance, second is index into class vector _Nodes. */
 ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) const {
     std::auto_ptr<NodeStructure> node(new NodeStructure(identifier));
     NodeStructureContainer_t::const_iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
@@ -165,9 +165,112 @@ ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) cons
         return std::make_pair(false, 0);
 }
 
-/*
- Reads count and population data from passed file. The file format is: <node identifier>, <count>, <population>
- */
+/** Read the relative risks file
+    -- unlike other input files of system, records read from relative risks
+       file are applied directly to the measure structure, just post calculation
+       of measure and prior to temporal adjustments and making cumulative. */
+bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskAdjustmentsContainer_t& rrAdjustments, bool consolidate) {
+    _print.Printf("Reading alternative hypothesis file ...\n", BasePrint::P_STDOUT);
+
+    bool bValid=true, bEmpty=true;
+    ScanRunner::Index_t nodeIndex;
+    const long nodeIdIdx=0, uAdjustmentIndex=1;
+    bool readSuccess=true;
+    boost::dynamic_bitset<> nodeSet;
+    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
+    bool testMultipleNodeRecords(_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL);
+
+    // if unconditional Bernoulli, limit this file to a single entry for each node
+    if (testMultipleNodeRecords)
+        nodeSet.resize(_Nodes.size());
+
+    // start with one collection of adjustments
+    rrAdjustments.clear();
+    rrAdjustments.push_back(RiskAdjustments_t(new RelativeRiskAdjustmentHandler()));
+    RiskAdjustments_t adjustments = rrAdjustments.front();
+    while (dataSource->readRecord()) {
+        // if not consolidating adjustments, then we'll use blank record as trigger to create new adjustment collection
+        if (!consolidate && dataSource->detectBlankRecordFlag()) {
+            if (adjustments->get().size()) { // create new collection of adjustments
+                rrAdjustments.push_back(RiskAdjustments_t(new RelativeRiskAdjustmentHandler()));
+                adjustments = rrAdjustments.back();
+                nodeSet.reset();
+            }
+            dataSource->clearBlankRecordFlag();
+        }
+        bEmpty=false;
+        //read node identifier
+        std::string nodeId = dataSource->getValueAt(nodeIdIdx);
+        if (lowerString(nodeId) != "all") {
+            nodeIndex = getNodeIndex(dataSource->getValueAt(nodeIdIdx));
+            if (!nodeIndex.first) {
+                bValid = false;
+                _print.Printf("Error: Record %ld in alternative hypothesis file references unknown node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
+                continue;
+            }
+        }
+        //read alternative hypothesis value
+        double alternative_hypothesis;
+        if (dataSource->getValueAt(uAdjustmentIndex).size() < 1) {
+            _print.Printf("Error: Record %ld of alternative hypothesis file missing %s.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), 
+                          _parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL ? "event probability" : "relative risk");
+            bValid = false;
+            continue;
+        }
+        if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
+            if (!string_to_type<double>(dataSource->getValueAt(uAdjustmentIndex).c_str(), alternative_hypothesis) || alternative_hypothesis < 0.0 || alternative_hypothesis > 1.0) {
+                readSuccess = false;
+                _print.Printf("Error: Record %ld in alternative hypothesis file references an invalid event probability for node '%s'.\n"
+                              "       The event probability must be a numeric value between zero and one (inclusive).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
+                continue;
+            }
+        } else {
+            if (!string_to_type<double>(dataSource->getValueAt(uAdjustmentIndex).c_str(), alternative_hypothesis) || alternative_hypothesis < 0) {
+                readSuccess = false;
+                _print.Printf("Error: Record %ld in alternative hypothesis file references an invalid relative risk for node '%s'.\n"
+                              "       The relative risk must be a numeric value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
+                continue;
+            }
+        }
+
+        size_t iNumWords = dataSource->getNumValues();
+        if (iNumWords > 2) {
+            _print.Printf("Error: Record %i of alternative hypothesis file contains are columns of data.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
+            bValid = false;
+            continue;
+        }
+        size_t nodeIdx = (nodeId == "all" ? 0 : nodeIndex.second);
+        size_t nodeIdxStop = (nodeId == "all" ? _Nodes.size() : nodeIndex.second + 1);
+        for (; nodeIdx < nodeIdxStop; ++nodeIdx) {
+            if (testMultipleNodeRecords && nodeSet.test(nodeIdx)) {
+                _print.Printf("Error: Multiple records specified for node '%s'. Each node is limited to one entry.\n", BasePrint::P_READERROR, getNodes().at(nodeIdx)->getIdentifier().c_str());
+                bValid = false;
+            } else {
+                nodeSet.set(nodeIdx);
+                adjustments->add(nodeIdx, alternative_hypothesis);
+            }
+
+        }
+    }
+
+    //if invalid at this point then read encountered problems with data format,
+    //inform user of section to refer to in user guide for assistance
+    if (!bValid)
+      _print.Printf("Please see the 'Alternative Hypothesis File' section in the user guide for help.\n", BasePrint::P_ERROR);
+    //print indication if file contained no data
+    else if (bEmpty) {
+      _print.Printf("Error: Alternative hypothesis file contains no data.\n", BasePrint::P_ERROR);
+      bValid = false;
+    } else {
+        // safety check - remove any collections that have no adjustments
+        for (RiskAdjustmentsContainer_t::iterator itr=rrAdjustments.begin(); itr != rrAdjustments.end(); ++itr) {
+            if (itr->get()->get().size() == 0) itr = rrAdjustments.erase(itr);
+        }
+    }
+    return bValid;
+}
+
+/* Reads count and population data from passed file. The file format is: <node identifier>, <count>, <population> */
 bool ScanRunner::readCounts(const std::string& filename) {
     _print.Printf("Reading case file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
@@ -447,26 +550,24 @@ bool ScanRunner::readCuts(const std::string& filename) {
 bool ScanRunner::reportResults(time_t start, time_t end) const {
     ResultsFileWriter resultsWriter(*this);
 
-	bool status = resultsWriter.writeASCII(start, end);
-	if (status && _parameters.isGeneratingHtmlResults()) {
-		std::string buffer;
-		status = resultsWriter.writeHTML(start, end);
-	}
+    bool status = resultsWriter.writeASCII(start, end);
+    if (status && _parameters.isGeneratingHtmlResults()) {
+        std::string buffer;
+        status = resultsWriter.writeHTML(start, end);
+    }
     // write cuts to supplemental reports file
-	if (_parameters.isGeneratingTableResults()) {
-		unsigned int k=0;
-		CutsRecordWriter cutsWriter(*this);
-		while(status && k < getCuts().size() && getCuts().at(k)->getC() > 0 && getCuts().at(k)->getRank() < _parameters.getNumReplicationsRequested() + 1) {
-			cutsWriter.write(k);
-			k++;
-		}
-	}
+    if (_parameters.isGeneratingTableResults()) {
+        unsigned int k=0;
+        CutsRecordWriter cutsWriter(*this);
+        while(status && k < getCuts().size() && getCuts().at(k)->getC() > 0 && getCuts().at(k)->getRank() < _parameters.getNumReplicationsRequested() + 1) {
+            cutsWriter.write(k);
+            k++;
+        }
+    }
     return status;
 }
 
-/*
- Run Scan.
- */
+/* Run Scan. */
 bool ScanRunner::run() {
     time_t gStartTime, gEndTime;
     time(&gStartTime); //get start time
@@ -493,68 +594,136 @@ bool ScanRunner::run() {
         throw resolvable_error("\nProblem encountered when setting up tree.");
     if (_print.GetIsCanceled()) return false;
 
-    if ((_parameters.getModelType() == Parameters::TEMPORALSCAN ? scanTreeTemporal() : scanTree())) {
-        if (_print.GetIsCanceled()) return false;
-        if (!runsimulations()) return false;
+    // Track critical values if requested or we're performing power evaluations and we're actually calculating the critical values.
+    if (_parameters.getReportCriticalValues() || (_parameters.getPerformPowerEvaluations() && _parameters.getCriticalValuesType() == Parameters::CV_MONTECARLO)) {
+        _critical_values.reset(new CriticalValues(_parameters.getNumReplicationsRequested()));
     }
-    if (_print.GetIsCanceled()) return false;
 
+    if (!_parameters.getPerformPowerEvaluations() || (_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
+        if ((_parameters.getModelType() == Parameters::TEMPORALSCAN ? scanTreeTemporal() : scanTree())) {
+            if (_print.GetIsCanceled()) return false;
+            if (!(_parameters.getNumReplicationsRequested() == 0 || _Cut.size() == 0)) {
+                _print.Printf("Doing the %d Monte Carlo simulations ...\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
+                boost::shared_ptr<AbstractRandomizer> randomizer(AbstractRandomizer::getNewRandomizer(_parameters, _TotalC, _TotalControls, _TotalN));
+                if (_parameters.isReadingSimulationData())
+                    randomizer->setReading(_parameters.getInputSimulationsFilename());
+                if (_parameters.isWritingSimulationData()) {
+                    remove(_parameters.getOutputSimulationsFilename().c_str());
+                    randomizer->setWriting(_parameters.getOutputSimulationsFilename());
+                }
+                if (!runsimulations(randomizer, _parameters.getNumReplicationsRequested(), false)) return false;
+            }
+        }
+    }
+
+    if (_print.GetIsCanceled()) return false;
+    if (_parameters.getPerformPowerEvaluations()) {
+        if (!runPowerEvaluations()) return false;
+    }
+
+    if (_print.GetIsCanceled()) return false;
     time(&gEndTime); //get end time
     if (!reportResults(gStartTime, gEndTime)) return false;
 
     return true;
 }
 
+/* Runs power evaluations. */
+bool ScanRunner::runPowerEvaluations() {
+    switch (_parameters.getCriticalValuesType()) {
+        case Parameters::CV_MONTECARLO:
+            // if simulations not already done is analysis stage, perform them now
+            if (!_simVars.get_sim_count()) {
+                _print.Printf("Doing the %d Monte Carlo simulations ...\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
+                boost::shared_ptr<AbstractRandomizer> randomizer(AbstractRandomizer::getNewRandomizer(_parameters, _TotalC, _TotalControls, _TotalN));
+                if (_parameters.isReadingSimulationData())
+                    randomizer->setReading(_parameters.getInputSimulationsFilename());
+                if (_parameters.isWritingSimulationData()) {
+                    remove(_parameters.getOutputSimulationsFilename().c_str());
+                    randomizer->setWriting(_parameters.getOutputSimulationsFilename());
+                }
+                if (!runsimulations(randomizer, _parameters.getNumReplicationsRequested(), false)) return false;
+            }
+            // sim vars to track those LLRs
+            _simVars.reset(_critical_values->getAlpha05().second);
+            _simVars.add_additional_mlc(_critical_values->getAlpha01().second);
+            _simVars.add_additional_mlc(_critical_values->getAlpha001().second);
+            break;
+        case Parameters::CV_POWER_VALUES:
+            // sim vars to track those LLRs
+            _simVars.reset(_parameters.getCriticalValue05());
+            _simVars.add_additional_mlc(_parameters.getCriticalValue01());
+            _simVars.add_additional_mlc(_parameters.getCriticalValue001());
+            break;
+        default: throw prg_error("Unknown type '%d'.", "runPowerEvaluations()", _parameters.getCriticalValuesType());
+    };
+    if (_print.GetIsCanceled()) return false;
+    // read power evaluation adjustments
+    RiskAdjustmentsContainer_t riskAdjustments;
+    if (!readRelativeRisksAdjustments(_parameters.getPowerEvaluationAltHypothesisFilename(), riskAdjustments, false))
+        throw resolvable_error("There were problems reading the alternative hypothesis file.", "runPowerEvaluations()");
+    if (!riskAdjustments.size())
+        throw resolvable_error("Power evaluations can not be performed. No adjustments found in the alternative hypothesis file.", "runPowerEvaluations()");
+    SimulationVariables simVarsCopy(_simVars);
+    for (size_t t=0; t < riskAdjustments.size(); ++t) {
+        _print.Printf("\nDoing the alternative replications for power set %d\n", BasePrint::P_STDOUT, t+1);
+        boost::shared_ptr<AbstractRandomizer> core_randomizer(AbstractRandomizer::getNewRandomizer(_parameters, _TotalC, _TotalControls, _TotalN));
+        boost::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, riskAdjustments[t], _parameters));
+        if (_parameters.isWritingSimulationData()) {
+            if (t == 0 && _parameters.getCriticalValuesType() == Parameters::CV_POWER_VALUES)
+                // if we didn't perform monte carlo simulations, truncate simulations write file on first power simulation
+                remove(_parameters.getOutputSimulationsFilename().c_str());
+            randomizer->setWriting(_parameters.getOutputSimulationsFilename());
+        }
+        if (!runsimulations(randomizer, _parameters.getPowerEvaluationReplications(), true)) return false;
+        _power_estimations.push_back(PowerEstimationSet_t(static_cast<double>(_simVars.get_llr_counters().at(0).second)/static_cast<double>(_parameters.getPowerEvaluationReplications()),
+                                                          static_cast<double>(_simVars.get_llr_counters().at(1).second)/static_cast<double>(_parameters.getPowerEvaluationReplications()),
+                                                          static_cast<double>(_simVars.get_llr_counters().at(2).second)/static_cast<double>(_parameters.getPowerEvaluationReplications())));
+        // reset simulation variables for next power estimation iteration
+        _simVars = simVarsCopy;
+    }
+    return true;
+}
+
 /* DOING THE MONTE CARLO SIMULATIONS */
-bool ScanRunner::runsimulations() {
-    const char          * sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %lf\n";
-    unsigned long         ulParallelProcessCount = std::min(_parameters.getNumParallelProcessesToExecute(), _parameters.getNumReplicationsRequested());
+bool ScanRunner::runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep) {
+    const char * sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %lf\n";
+    unsigned long ulParallelProcessCount = std::min(_parameters.getNumParallelProcessesToExecute(), num_relica);
 
     try {
-        if (_parameters.getNumReplicationsRequested() == 0 || _Cut.size() == 0)
-            return true;
+        PrintQueue lclPrintDirection(_print, false);
+        MCSimJobSource jobSource(::GetCurrentTime_HighResolution(), lclPrintDirection, sReplicationFormatString, *this, num_relica, isPowerStep);
+        typedef contractor<MCSimJobSource> contractor_type;
+        contractor_type theContractor(jobSource);
 
-        _print.Printf("Doing the %d Monte Carlo simulations ...\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
-
-        if (_parameters.isWritingSimulationData()) {
-            remove(_parameters.getOutputSimulationsFilename().c_str());
-        }
-
-        {
-            PrintQueue lclPrintDirection(_print, false);
-            MCSimJobSource jobSource(::GetCurrentTime_HighResolution(), lclPrintDirection, sReplicationFormatString, *this);
-            typedef contractor<MCSimJobSource> contractor_type;
-            contractor_type theContractor(jobSource);
-
-            //run threads:
-            boost::thread_group tg;
-            boost::mutex        thread_mutex;
-            for (unsigned u=0; u < ulParallelProcessCount; ++u) {
-                try {
-                    MCSimSuccessiveFunctor mcsf(thread_mutex, boost::shared_ptr<AbstractRandomizer>(AbstractRandomizer::getNewRandomizer(_parameters, _TotalC, _TotalControls, _TotalN)), *this);
-                    tg.create_thread(subcontractor<contractor_type,MCSimSuccessiveFunctor>(theContractor,mcsf));
-                } catch (std::bad_alloc &) {
-                    if (u == 0) throw; // if this is the first thread, re-throw exception
-                    _print.Printf("Notice: Insufficient memory to create %u%s parallel simulation ... continuing analysis with %u parallel simulations.\n", BasePrint::P_NOTICE, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u);
-                    break;
-                } catch (prg_exception& x) {
-                    if (u == 0) throw; // if this is the first thread, re-throw exception
-                    _print.Printf("Error: Program exception occurred creating %u%s parallel simulation ... continuing analysis with %u parallel simulations.\nException:%s\n", BasePrint::P_ERROR, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u, x.what());
-                    break;
-                } catch (...) {
-                    if (u == 0) throw prg_error("Unknown program error occurred.\n","PerformSuccessiveSimulations_Parallel()"); // if this is the first thread, throw exception
-                    _print.Printf("Error: Unknown program exception occurred creating %u%s parallel simulation ... continuing analysis with %u parallel simulations.\n", BasePrint::P_ERROR, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u);
-                    break;
-                }
+        //run threads:
+        boost::thread_group tg;
+        boost::mutex        thread_mutex;
+        for (unsigned u=0; u < ulParallelProcessCount; ++u) {
+            try {
+                MCSimSuccessiveFunctor mcsf(thread_mutex, randomizer, *this);
+                tg.create_thread(subcontractor<contractor_type,MCSimSuccessiveFunctor>(theContractor,mcsf));
+            } catch (std::bad_alloc &) {
+                if (u == 0) throw; // if this is the first thread, re-throw exception
+                _print.Printf("Notice: Insufficient memory to create %u%s parallel simulation ... continuing analysis with %u parallel simulations.\n", BasePrint::P_NOTICE, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u);
+                break;
+            } catch (prg_exception& x) {
+                if (u == 0) throw; // if this is the first thread, re-throw exception
+                _print.Printf("Error: Program exception occurred creating %u%s parallel simulation ... continuing analysis with %u parallel simulations.\nException:%s\n", BasePrint::P_ERROR, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u, x.what());
+                break;
+            } catch (...) {
+                if (u == 0) throw prg_error("Unknown program error occurred.\n","runsimulations()"); // if this is the first thread, throw exception
+                _print.Printf("Error: Unknown program exception occurred creating %u%s parallel simulation ... continuing analysis with %u parallel simulations.\n", BasePrint::P_ERROR, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u);
+                break;
             }
-            tg.join_all();
-
-            //propagate exceptions if needed:
-            theContractor.throw_unhandled_exception();
-            jobSource.Assert_NoExceptionsCaught();
-            if (jobSource.GetUnregisteredJobCount() > 0)
-                throw prg_error("At least %d jobs remain uncompleted.", "ScanRunner", jobSource.GetUnregisteredJobCount());
         }
+        tg.join_all();
+
+        //propagate exceptions if needed
+        theContractor.throw_unhandled_exception();
+        jobSource.Assert_NoExceptionsCaught();
+        if (jobSource.GetUnregisteredJobCount() > 0)
+            throw prg_error("At least %d jobs remain uncompleted.", "ScanRunner", jobSource.GetUnregisteredJobCount());
     } catch (prg_exception& x) {
         x.addTrace("runsimulations()","ScanRunner");
         throw;
@@ -799,15 +968,12 @@ void ScanRunner::updateCuts(size_t node_index, int BrC, double BrN, const Loglik
     }
 }
 
-/*
- SETTING UP THE TREE
- */
+/* SETTING UP THE TREE */
 bool ScanRunner::setupTree() {
     double   adjustN;
     int     parent;
 
     _print.Printf("Setting up the tree ...\n", BasePrint::P_STDOUT);
-
     // Initialize variables
     _TotalC=0;_TotalN=0;
     for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
@@ -827,6 +993,10 @@ bool ScanRunner::setupTree() {
 
     // Calculates the expected counts for each node and the total.
     if (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::TOTALCASES) {
+        // If performing power calculations with user specified number of cases, override number of cases read from case file.
+        // This is ok since this option can not be peformed in conjunction with analysis - so the cases in tree are not used.
+        if (_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES)
+            _TotalC = _parameters.getPowerEvaluationTotalCases();
         adjustN = _TotalC/_TotalN;
         for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr)
             std::transform((*itr)->getIntN_C().begin(), (*itr)->getIntN_C().end(), (*itr)->refIntN_C().begin(), std::bind1st(std::multiplies<double>(), adjustN)); // (*itr)->refIntN() *= adjustN;

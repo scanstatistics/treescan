@@ -168,7 +168,7 @@ void AsciiPrintFormat::PrintVersionHeader(std::ostream& out) {
               (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE), 
               (strlen(VERSION_PHASE) ? " " : ""), 
               VERSION_PHASE);
-  iTextMargin = (giRightMargin - buffer.size())/2;
+  iTextMargin = static_cast<unsigned int>((giRightMargin - buffer.size())/2);
   iPrint=0;
   while (iPrint++ < iTextMargin)
      out << ' ';

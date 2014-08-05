@@ -216,6 +216,26 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getMinimumWindowLength());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setPerformPowerEvaluations", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getPerformPowerEvaluations());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setPowerEvaluationType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getPowerEvaluationType());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setPowerEvaluationTotalCases", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getPowerEvaluationTotalCases());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setPowerEvaluationReplications", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getPowerEvaluationReplications());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setPowerEvaluationAltHypothesisFilename", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getPowerEvaluationAltHypothesisFilename().c_str()));
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -361,6 +381,27 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   mid = _getMethodId_Checked(Env, clazz, "getMinimumWindowLength", "()I");
   Parameters.setMinimumWindowLength(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getPerformPowerEvaluations", "()Z");
+  Parameters.setPerformPowerEvaluations(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  Parameters.setPowerEvaluationType((Parameters::PowerEvaluationType)getEnumTypeOrdinalIndex(Env, jParameters, "getPowerEvaluationType", "Lorg/treescan/app/Parameters$PowerEvaluationType;"));
+
+  mid = _getMethodId_Checked(Env, clazz, "getPowerEvaluationTotalCases", "()I");
+  Parameters.setPowerEvaluationTotalCases(static_cast<int>(Env.CallIntMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getPowerEvaluationReplications", "()I");
+  Parameters.setPowerEvaluationReplications(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getPowerEvaluationAltHypothesisFilename", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  Parameters.setPowerEvaluationAltHypothesisFilename(sFilename);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   return Parameters;
 }

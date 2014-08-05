@@ -32,7 +32,7 @@ void BernoulliRandomizer::MakeDataB(int tTotalCounts, double tTotalMeasure, std:
 /** Distributes cases into simulation case array, where individuals are initially dichotomized into cases and
     controls then each randomly assigned to be a case or a control. Caller is responsible for ensuring that
     passed array pointers are allocated and dimensions match that of passed tract and locations variables. */
-int BernoulliRandomizer::randomize(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) {
+int BernoulliRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
     //reset seed of random number generator
     SetSeed(iSimulation);
     // reset simData
@@ -47,7 +47,7 @@ int BernoulliRandomizer::randomize(unsigned int iSimulation, const ScanRunner::N
     if (_conditional) {
         TotalSimC = _TotalC;
         for (size_t i=0; i < treeNodes.size(); ++i) {
-            nCumMeasure -= static_cast<int>(treeNodes.at(i)->getIntN());
+            nCumMeasure -= static_cast<int>(treeNodes.getIntN(i));
             while (nCumCounts > 0 && randCounts[nCumCounts-1] > nCumMeasure) {
                 treeSimNodes.at(i).refIntC()++; //treeNodes.at(i)->_SimIntC += 1;
                 nCumCounts--;
@@ -57,11 +57,11 @@ int BernoulliRandomizer::randomize(unsigned int iSimulation, const ScanRunner::N
         //now reverse everything if Controls < Cases
         if (_TotalC >= _TotalControls) {
             for  (size_t i=0; i < treeNodes.size(); ++i)
-                treeSimNodes.at(i).refIntC() = static_cast<int>(treeNodes.at(i)->getIntN()) - treeSimNodes.at(i).refIntC();
+                treeSimNodes.at(i).refIntC() = static_cast<int>(treeNodes.getIntN(i)) - treeSimNodes.at(i).refIntC();
         }
     } else {
         for (size_t i=0; i < treeNodes.size(); ++i) {
-            int cases = gBinomialGenerator.GetBinomialDistributedVariable(static_cast<int>(treeNodes.at(i)->getIntN()), static_cast<float>(_probability), _randomNumberGenerator);
+            int cases = gBinomialGenerator.GetBinomialDistributedVariable(static_cast<int>(treeNodes.getIntN(i)), static_cast<float>(treeNodes.getProbability(i)), _randomNumberGenerator);
             treeSimNodes.at(i).refIntC() = cases; //treeNodes.at(i)->_SimIntC = cases;
             TotalSimC += cases;
             treeSimNodes.at(i).refBrC() = 0; //treeNodes.at(i)->_SimBrC = 0;  // Initilazing the branch cases with zero

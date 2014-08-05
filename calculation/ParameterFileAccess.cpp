@@ -70,6 +70,17 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::RESULTS_HTML            : return "create HTML results";
             case Parameters::RESULTS_CSV             : return "create CSV results";
             case Parameters::RESULTS_LLR             : return "create LLR results";
+            case Parameters::REPORT_CRITICAL_VALUES  : return "report critical values (y/n)";
+            /* Power Evaluations */
+            case Parameters::POWER_EVALUATIONS       : return "perform power evaluations (y/n)";
+            case Parameters::POWER_EVALUATION_TYPE   : return "power evaluation type (0=Analysis And Power Evaluation Together, 1=Only Power Evaluation With Case File, 2=Only Power Evaluation With Defined Total Cases)";
+            case Parameters::CRITICAL_VALUES_TYPE    : return "critical values type (0=Monte Carlo, 1=User Specified Values)";
+            case Parameters::CRITICAL_VALUE_05       : return "power evaluation critical value .05 (> 0)";
+            case Parameters::CRITICAL_VALUE_01       : return "power evaluation critical value .01 (> 0)";
+            case Parameters::CRITICAL_VALUE_001      : return "power evaluation critical value .001 (> 0)";
+            case Parameters::POWER_EVALUATION_TOTALCASES : return "total cases in power evaluation";
+            case Parameters::POWER_EVALUATIONS_REPLICA : return "number of replications in power step";
+            case Parameters::POWER_EVALUATIONS_FILE : return "power evaluation alternative hypothesis filename";
             /* Power Simulations */
             case Parameters::READ_SIMULATIONS        : return "input simulation data (y/n)";
             case Parameters::INPUT_SIM_FILE          : return "input simulation filename";
@@ -123,7 +134,18 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::RESULTS_HTML             : return AsString(s, _parameters.isGeneratingHtmlResults());
             case Parameters::RESULTS_CSV              : return AsString(s, _parameters.isGeneratingTableResults());
             case Parameters::RESULTS_LLR              : return AsString(s, _parameters.isGeneratingLLRResults());
+            case Parameters::REPORT_CRITICAL_VALUES   : return AsString(s, _parameters.getReportCriticalValues());
             /* Power Evaluations */
+            case Parameters::POWER_EVALUATIONS        : return AsString(s, _parameters.getPerformPowerEvaluations());
+            case Parameters::POWER_EVALUATION_TYPE    : return AsString(s, _parameters.getPowerEvaluationType());
+            case Parameters::CRITICAL_VALUES_TYPE     : return AsString(s, _parameters.getCriticalValuesType());
+            case Parameters::CRITICAL_VALUE_05        : return AsString(s, _parameters.getCriticalValue05());
+            case Parameters::CRITICAL_VALUE_01        : return AsString(s, _parameters.getCriticalValue01());
+            case Parameters::CRITICAL_VALUE_001       : return AsString(s, _parameters.getCriticalValue001());
+            case Parameters::POWER_EVALUATION_TOTALCASES : return AsString(s, _parameters.getPowerEvaluationTotalCases());
+            case Parameters::POWER_EVALUATIONS_REPLICA : return AsString(s, _parameters.getPowerEvaluationReplications());
+            case Parameters::POWER_EVALUATIONS_FILE    : s = _parameters.getPowerEvaluationAltHypothesisFilename(); return s;
+            /* Power Simulations */
             case Parameters::READ_SIMULATIONS         : return AsString(s, _parameters.isReadingSimulationData());
             case Parameters::INPUT_SIM_FILE           : s = _parameters.getInputSimulationsFilename(); return s;
             case Parameters::WRITE_SIMULATIONS        : return AsString(s, _parameters.isWritingSimulationData());
@@ -277,6 +299,19 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::RESULTS_HTML             : _parameters.setGeneratingHtmlResults(ReadBoolean(value, e)); break;
             case Parameters::RESULTS_CSV              : _parameters.setGeneratingTableResults(ReadBoolean(value, e)); break;
             case Parameters::RESULTS_LLR              : _parameters.setGeneratingLLRResults(ReadBoolean(value, e)); break;
+            case Parameters::REPORT_CRITICAL_VALUES   : _parameters.setReportCriticalValues(ReadBoolean(value, e)); break;
+            /* Power Evaluations */
+            case Parameters::POWER_EVALUATIONS        : _parameters.setPerformPowerEvaluations(ReadBoolean(value, e)); break;
+            case Parameters::POWER_EVALUATION_TYPE    : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::PE_WITH_ANALYSIS, Parameters::PE_ONLY_SPECIFIED_CASES);
+                                                        _parameters.setPowerEvaluationType((Parameters::PowerEvaluationType)iValue); break;
+            case Parameters::CRITICAL_VALUES_TYPE     : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::CV_MONTECARLO, Parameters::CV_POWER_VALUES);
+                                                        _parameters.setCriticalValuesType((Parameters::CriticalValuesType)iValue); break;
+            case Parameters::CRITICAL_VALUE_05        : _parameters.setCriticalValue05(ReadDouble(value, e)); break;
+            case Parameters::CRITICAL_VALUE_01        : _parameters.setCriticalValue01(ReadDouble(value, e)); break;
+            case Parameters::CRITICAL_VALUE_001       : _parameters.setCriticalValue001(ReadDouble(value, e)); break;
+            case Parameters::POWER_EVALUATION_TOTALCASES : _parameters.setPowerEvaluationTotalCases(ReadInt(value, e)); break;
+            case Parameters::POWER_EVALUATIONS_REPLICA : _parameters.setPowerEvaluationReplications(ReadUnsignedInt(value, e)); break;
+            case Parameters::POWER_EVALUATIONS_FILE   : _parameters.setPowerEvaluationAltHypothesisFilename(value.c_str(), true); break;
             /* Power Simulations */
             case Parameters::READ_SIMULATIONS         : _parameters.setReadingSimulationData(ReadBoolean(value, e)); break;
             case Parameters::INPUT_SIM_FILE           : _parameters.setInputSimulationsFilename(value.c_str(), true); break;

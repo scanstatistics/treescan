@@ -52,6 +52,7 @@ private://data members
   std::auto_ptr<LoglikelihoodRatioWriter>   _ratio_writer;
   ScanRunner                              & grRunner;
   ScanRunner::Loglikelihood_t               grLoglikelihood;
+  bool                                      _isPowerStep;
 
 private://functions
   void                      RegisterResult_NoAutoAbort(job_id_type const & rJobId, param_type const & rParam, result_type const & rResult);
@@ -65,7 +66,7 @@ private://functions
   static void               DynamicBitsetPopFrontN(boost::dynamic_bitset<> & operand, unsigned long N);
 
 public:
-  MCSimJobSource(boost::posix_time::ptime CurrentTime, PrintQueue & rPrintDirection, const char * szReplicationFormatString, ScanRunner & rRunner);
+  MCSimJobSource(boost::posix_time::ptime CurrentTime, PrintQueue & rPrintDirection, const char * szReplicationFormatString, ScanRunner & rRunner, unsigned int num_replica, bool isPowerStep);
 
   bool                      is_exhausted() const;
   void                      acquire(job_id_type & dst_job_id, param_type & dst_param);

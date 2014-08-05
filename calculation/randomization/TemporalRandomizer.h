@@ -13,6 +13,7 @@ protected:
     const DataTimeRangeSet    & _timeRangeSets;
     DataTimeRange::index_t      _zero_translation_additive;
 
+    virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
     virtual int read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes);
     virtual void write(const std::string& filename, const SimNodeContainer_t& treeSimNodes);
 

@@ -4,6 +4,8 @@
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="maximumWindowButtonGroup">
     </Component>
+    <Component class="javax.swing.ButtonGroup" name="_powerEstimationButtonGroup">
+    </Component>
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="1"/>
@@ -39,7 +41,7 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <Component id="jTabbedPane1" pref="261" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" pref="276" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="_setDefaultButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -102,7 +104,7 @@
                           <Component id="_cutFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="_cutFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="174" max="32767" attributes="0"/>
+                      <EmptySpace pref="189" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -166,7 +168,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="165" max="32767" attributes="0"/>
+                      <EmptySpace pref="180" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -251,7 +253,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="159" max="32767" attributes="0"/>
+                      <EmptySpace pref="174" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -332,7 +334,7 @@
                       <Component id="_maxTemporalOptionsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_minTemporalOptionsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="50" max="32767" attributes="0"/>
+                      <EmptySpace pref="65" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -515,6 +517,205 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="data time units" noResource="true"/>
                   </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="_advancedPowerEvaluation">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Power Evaluation">
+                <Property name="tabTitle" type="java.lang.String" value="Power Evaluation"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_powerEvaluationsGroup" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_powerEvaluationsGroup" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Container class="javax.swing.JPanel" name="_powerEvaluationsGroup">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Statistical Power Evaluation">
+                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                        <EtchetBorder/>
+                      </Border>
+                    </TitledBorder>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_performPowerEvalautions" alignment="0" max="32767" attributes="0"/>
+                              <Component id="_partOfRegularAnalysis" alignment="0" max="32767" attributes="0"/>
+                              <Component id="_powerEvaluationWithCaseFile" alignment="1" max="32767" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_powerEvaluationWithSpecifiedCases" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_totalPowerCases" min="-2" pref="78" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_powerEvaluationWithSpecifiedCasesLabel" max="32767" attributes="0"/>
+                              </Group>
+                              <Component id="_alternativeHypothesisFilenameLabel" alignment="0" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Component id="_numberPowerReplicationsLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_numberPowerReplications" min="-2" pref="58" max="-2" attributes="0"/>
+                                  <EmptySpace min="0" pref="231" max="32767" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_alternativeHypothesisFilename" max="32767" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_alternativeHypothesisFilenameButton" min="-2" pref="25" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="_performPowerEvalautions" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_partOfRegularAnalysis" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_powerEvaluationWithCaseFile" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_powerEvaluationWithSpecifiedCases" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_totalPowerCases" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_powerEvaluationWithSpecifiedCasesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_numberPowerReplicationsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_numberPowerReplications" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="_alternativeHypothesisFilenameLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_alternativeHypothesisFilename" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_alternativeHypothesisFilenameButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="0" pref="24" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JCheckBox" name="_performPowerEvalautions">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Perform Power Evaluations"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_performPowerEvalautions.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enablePowerEvaluationsGroup();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_partOfRegularAnalysis">
+                  <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_powerEstimationButtonGroup"/>
+                    </Property>
+                    <Property name="selected" type="boolean" value="true"/>
+                    <Property name="text" type="java.lang.String" value="As Part of Regular Analysis"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_partOfRegularAnalysis.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enablePowerEvaluationsGroup();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_powerEvaluationWithCaseFile">
+                  <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_powerEstimationButtonGroup"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="Power Evaluation Only, Use Total Cases From Case File"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_powerEvaluationWithCaseFile.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enablePowerEvaluationsGroup();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_powerEvaluationWithSpecifiedCases">
+                  <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_powerEstimationButtonGroup"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="Power Evaluation Only, Use "/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_powerEvaluationWithSpecifiedCases.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enablePowerEvaluationsGroup();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_totalPowerCases">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="600"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_totalPowerCases.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_totalPowerCases.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _totalPowerCases.setText(&quot;600&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_totalPowerCases.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_totalPowerCases, e, 10);&#xa;    }&#xa;});&#xa;_totalPowerCases.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_powerEvaluationWithSpecifiedCasesLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Total Cases"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_numberPowerReplicationsLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Number of replications (100, 1000 or multiple of 100):" noResource="true"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_numberPowerReplications">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="1000" noResource="true"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_numberPowerReplications.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_numberPowerReplications.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _numberPowerReplications.setText(&quot;1000&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_numberPowerReplications.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_numberPowerReplications, e, 10);&#xa;    }&#xa;});&#xa;_numberPowerReplications.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_alternativeHypothesisFilenameLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Alternative Hypothesis File:" noResource="true"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_alternativeHypothesisFilename">
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_alternativeHypothesisFilename.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JButton" name="_alternativeHypothesisFilenameButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="..." noResource="true"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Open file wizard for alternative hypothesis file ..." noResource="true"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_alternativeHypothesisFilenameButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;csv&quot;,&quot;CSV Files (*.csv)&quot;), new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;ha&quot;,&quot;Alternative Hypothesis Files (*.ha)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Alternative Hypothesis File&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                _alternativeHypothesisFilename.setText(file.getAbsolutePath());  &#xa;            }&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
                 </Component>
               </SubComponents>
             </Container>

@@ -45,7 +45,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jTabbedPane1" pref="421" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" pref="429" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -139,7 +139,7 @@
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="122" max="32767" attributes="0"/>
+                      <EmptySpace pref="130" max="32767" attributes="0"/>
                       <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -366,7 +366,7 @@
                       <Component id="_scanStatisticPanel" min="-2" max="-2" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_temporalWindowGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="22" max="32767" attributes="0"/>
+                      <EmptySpace pref="30" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -853,7 +853,7 @@
                       <Component id="_reportResultsAsHTML" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportResultsAsCsvTable" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="235" max="32767" attributes="0"/>
+                      <EmptySpace pref="243" max="32767" attributes="0"/>
                       <Component id="_advancedOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>

@@ -24,7 +24,8 @@ import org.treescan.gui.utils.Utils;
 
 /**
  * Parameter settings window.
- * @author  Hostovic
+ *
+ * @author Hostovic
  */
 public class ParameterSettingsFrame extends javax.swing.JInternalFrame implements InternalFrameListener {
 
@@ -49,7 +50,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     }
 
     /**
-     * launches 'save as' dialog to permit user saving current settings to parameter file
+     * launches 'save as' dialog to permit user saving current settings to
+     * parameter file
      */
     public boolean SaveAs() {
         boolean bSaved = true;
@@ -60,9 +62,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         if (file != null) {
             org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
             String filename = file.getAbsolutePath();
-            if (new File(filename).getName().lastIndexOf('.') == -1){
+            if (new File(filename).getName().lastIndexOf('.') == -1) {
                 filename = filename + ".prm";
-            } 
+            }
             WriteSession(filename);
             setTitle(filename);
         } else {
@@ -102,7 +104,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private AdvancedParameterSettingsFrame getAdvancedParameterInternalFrame() {
         return _advancedParametersSetting;
     }
-    
+
     /**
      * enables correct advanced settings button on Analysis and Output tabs
      */
@@ -126,7 +128,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             _advancedOutputButton.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 11));
         }
     }
-    
+
     /**
      * If necessary, removes from from iconized state and brings to front.
      */
@@ -140,9 +142,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         }
         toFront();
     }
-    
-    /** Determines whether window can be closed by comparing parameter settings contained
-     * in window verse intial parameter settings. */
+
+    /**
+     * Determines whether window can be closed by comparing parameter settings
+     * contained in window verse intial parameter settings.
+     */
     public boolean QueryWindowCanClose() {
         boolean bReturn = true;
 
@@ -167,8 +171,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         return bReturn;
     }
 
-    /** Resets parameters that are not present in interface to default value.
-     * Hidden features are to be used only in command line version at this time. */
+    /**
+     * Resets parameters that are not present in interface to default value.
+     * Hidden features are to be used only in command line version at this time.
+     */
     private void defaultHiddenParameters() {
         //TODO
     }
@@ -213,23 +219,23 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             throw new SettingsException("Please specify a case file.", (Component) _countFileTextField);
         }
         if (!FileAccess.ValidateFileAccess(_countFileTextField.getText(), false)) {
-            throw new SettingsException("The case file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.",  (Component) _countFileTextField);
+            throw new SettingsException("The case file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", (Component) _countFileTextField);
         }
-        
+
         //validate the population file if not conditional on total cases on each branch
         if (!(_conditionalBranchCasesButton.isEnabled() && _conditionalBranchCasesButton.isSelected())) {
             if (_populationFileTextField.getText().length() == 0) {
                 throw new SettingsException("Please specify a population file.\nA population file is required when not conditioning cases on each branch.", (Component) _populationFileTextField);
             }
             if (!FileAccess.ValidateFileAccess(_populationFileTextField.getText(), false)) {
-                throw new SettingsException("The population file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.",  (Component) _populationFileTextField);
+                throw new SettingsException("The population file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", (Component) _populationFileTextField);
             }
         }
         if (_treetimeScanType.isSelected()) {
             if (Integer.parseInt(_dataTimeRangeBegin.getText().trim()) >= Integer.parseInt(_dataTimeRangeEnd.getText().trim())) {
                 throw new SettingsException("The data time range start must be before the data time range end.", (Component) _temporalEndWindowBegin);
-            }                   
-        }        
+            }
+        }
     }
 
     /* Returns the number of time units in the specified data time range. */
@@ -238,24 +244,26 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         int end = Integer.parseInt(_dataTimeRangeEnd.getText().trim());
         return start >= end ? 0 : end - start + 1;
     }
-    
+
     /* Returns the number of time units in the specified temporal window. */
     public int getNumUnitsInTemporalWindow() {
         int start = Integer.parseInt(_temporalStartWindowBegin.getText().trim());
         int end = Integer.parseInt(_temporalEndWindowEnd.getText().trim());
         return start > end ? 0 : end - start + 1;
     }
-   
+
     /* Returns the number of time units in the shortest period of specified temporal window. */
     public int getNumUnitsInShortestTemporalWindow() {
         int start_end = Integer.parseInt(_temporalStartWindowEnd.getText().trim());
         int end_start = Integer.parseInt(_temporalEndWindowBegin.getText().trim());
         // if the end of the start range overlaps the end range, the minimum is one unit.
-        if (start_end >= end_start) return 1;        
+        if (start_end >= end_start) {
+            return 1;
+        }
         int end_end = Integer.parseInt(_temporalEndWindowEnd.getText().trim());
         return start_end > end_end ? 0 : end_end - start_end + 1;
-    }    
-    
+    }
+
     /**
      * checks 'Analysis' tab
      */
@@ -272,12 +280,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             int temporalStartWindowEnd = Integer.parseInt(_temporalStartWindowEnd.getText().trim());
             if (temporalStartWindowBegin > temporalStartWindowEnd) {
                 throw new SettingsException("The temporal window start time range is invalid.\nThe start time must be less than or equal to end time.", (Component) _temporalStartWindowBegin);
-            }                              
+            }
             int temporalEndWindowBegin = Integer.parseInt(_temporalEndWindowBegin.getText().trim());
             int temporalEndWindowEnd = Integer.parseInt(_temporalEndWindowEnd.getText().trim());
             if (temporalEndWindowBegin > temporalEndWindowEnd) {
                 throw new SettingsException("The temporal window end time range is invalid.\nThe start time must be less than or equal to end time.", (Component) _temporalEndWindowBegin);
-            }                   
+            }
         }
     }
 
@@ -313,12 +321,15 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             getAdvancedParameterInternalFrame().setVisible(e.focusTab, e.focusComponent);
             enableAdvancedButtons();
             return false;
-        }        
+        }
         return true;
     }
-    /** setup interface from parameter settings */
+
+    /**
+     * setup interface from parameter settings
+     */
     private void setupInterface(final Parameters parameters) {
-        _advancedParametersSetting = new AdvancedParameterSettingsFrame(_rootPane, this, parameters);        
+        _advancedParametersSetting = new AdvancedParameterSettingsFrame(_rootPane, this, parameters);
         title = parameters.getSourceFileName();
         if (title == null || title.length() == 0) {
             title = "New Session";
@@ -331,7 +342,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _populationFileTextField.setCaretPosition(0);
         _dataTimeRangeBegin.setText(Integer.toString(parameters.getDataTimeRangeBegin()));
         _dataTimeRangeEnd.setText(Integer.toString(parameters.getDataTimeRangeClose()));
-        
+
         _treeOnlyScanType.setSelected(parameters.getScanType() == Parameters.ScanType.TREEONLY);
         _treetimeScanType.setSelected(parameters.getScanType() == Parameters.ScanType.TREETIME);
         _unconditionalButton.setSelected(parameters.getConditionalType() == Parameters.ConditionalType.UNCONDITIONAL);
@@ -346,13 +357,16 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _temporalStartWindowEnd.setText(Integer.toString(parameters.getTemporalStartRangeClose()));
         _temporalEndWindowBegin.setText(Integer.toString(parameters.getTemporalEndRangeBegin()));
         _temporalEndWindowEnd.setText(Integer.toString(parameters.getTemporalEndRangeClose()));
-        
+
         _outputFileTextField.setText(parameters.getOutputFileName());
         _outputFileTextField.setCaretPosition(0);
         _reportResultsAsHTML.setSelected(parameters.isGeneratingHtmlResults());
         _reportResultsAsCsvTable.setSelected(parameters.isGeneratingTableResults());
     }
-    /** sets CParameters class with settings in form */
+
+    /**
+     * sets CParameters class with settings in form
+     */
     private void saveParameterSettings(Parameters parameters) {
         setTitle(parameters.getSourceFileName());
         parameters.setTreeFileName(_treelFileTextField.getText());
@@ -360,25 +374,25 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         parameters.setPopulationFileName(_populationFileTextField.getText());
         parameters.setDataTimeRangeBegin(Integer.parseInt(_dataTimeRangeBegin.getText()));
         parameters.setDataTimeRangeClose(Integer.parseInt(_dataTimeRangeEnd.getText()));
-        
+
         if (_treeOnlyScanType.isSelected()) {
             parameters.setScanType(Parameters.ScanType.TREEONLY.ordinal());
-        } else if(_treetimeScanType.isSelected()) {
+        } else if (_treetimeScanType.isSelected()) {
             parameters.setScanType(Parameters.ScanType.TREETIME.ordinal());
         }
         if (_unconditionalButton.isSelected()) {
-          parameters.setConditionalType(Parameters.ConditionalType.UNCONDITIONAL.ordinal());
+            parameters.setConditionalType(Parameters.ConditionalType.UNCONDITIONAL.ordinal());
         } else if (_conditionalTotalCasesButton.isSelected()) {
             parameters.setConditionalType(Parameters.ConditionalType.TOTALCASES.ordinal());
-        } else if(_conditionalBranchCasesButton.isSelected()) {
+        } else if (_conditionalBranchCasesButton.isSelected()) {
             parameters.setConditionalType(Parameters.ConditionalType.CASESEACHBRANCH.ordinal());
         }
         if (_PoissonButton.isEnabled() && _PoissonButton.isSelected()) {
-          parameters.setModelType(Parameters.ModelType.POISSON.ordinal());
+            parameters.setModelType(Parameters.ModelType.POISSON.ordinal());
         } else if (_BernoulliButton.isEnabled() && _BernoulliButton.isSelected()) {
-          parameters.setModelType(Parameters.ModelType.BERNOULLI.ordinal());
+            parameters.setModelType(Parameters.ModelType.BERNOULLI.ordinal());
         } else if (_uniformButton.isEnabled() && _uniformButton.isSelected()) {
-          parameters.setModelType(Parameters.ModelType.TEMPORALSCAN.ordinal());        
+            parameters.setModelType(Parameters.ModelType.TEMPORALSCAN.ordinal());
         }
         parameters.setProbabilityRatioNumerator(Integer.parseInt(_eventProbabiltyNumerator.getText()));
         parameters.setProbabilityRatioDenominator(Integer.parseInt(_eventProbabiltyDenominator.getText()));
@@ -387,20 +401,56 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         parameters.setTemporalStartRangeClose(Integer.parseInt(_temporalStartWindowEnd.getText()));
         parameters.setTemporalEndRangeBegin(Integer.parseInt(_temporalEndWindowBegin.getText()));
         parameters.setTemporalEndRangeClose(Integer.parseInt(_temporalEndWindowEnd.getText()));
-        
-        parameters.setOutputFileName(_outputFileTextField.getText());        
+
+        parameters.setOutputFileName(_outputFileTextField.getText());
         parameters.setGeneratingHtmlResults(_reportResultsAsHTML.isSelected());
-        parameters.setGeneratingTableResults(_reportResultsAsCsvTable.isSelected());     
+        parameters.setGeneratingTableResults(_reportResultsAsCsvTable.isSelected());
         getAdvancedParameterInternalFrame().saveParameterSettings(parameters);
     }
+
     public final Parameters getParameterSettings() {
         saveParameterSettings(_parameters);
         return _parameters;
     }
+
+    public Parameters.ScanType getScanType() {
+        if (_treeOnlyScanType.isSelected())
+            return Parameters.ScanType.TREEONLY;
+        if (_treetimeScanType.isSelected())
+            return Parameters.ScanType.TREETIME;
+        return null;
+    }
+
+    public Parameters.ConditionalType getConditionalType() {
+        if (_unconditionalButton.isSelected()) {
+            return Parameters.ConditionalType.UNCONDITIONAL;
+        }
+        if (_conditionalTotalCasesButton.isSelected()) {
+            return Parameters.ConditionalType.TOTALCASES;
+        }
+        if (_conditionalBranchCasesButton.isSelected()) {
+            return Parameters.ConditionalType.CASESEACHBRANCH;
+        }
+        return null;
+    }
+    
+    public Parameters.ModelType getModelType() {
+        if (_PoissonButton.isSelected())
+            return Parameters.ModelType.POISSON;
+        if (_BernoulliButton.isSelected())
+            return Parameters.ModelType.BERNOULLI;
+        if (_uniformButton.isSelected())
+            return Parameters.ModelType.TEMPORALSCAN;        
+        return null;
+    }
+    
     public void showExecOptionsDialog(java.awt.Frame parent) {
         new ExecutionOptionsDialog(parent, _parameters).setVisible(true);
     }
-    /** Modally shows import dialog. */
+
+    /**
+     * Modally shows import dialog.
+     */
     public void LaunchImporter(String sFileName, FileImporter.InputFileType eFileType) {
         ImportWizardDialog wizard = new ImportWizardDialog(TreeScanApplication.getInstance(), sFileName, _parameters.getSourceFileName(), eFileType);
         wizard.setVisible(true);
@@ -426,11 +476,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
     private void enableSettingsForStatisticModelCombination() {
         boolean treeAndTime = _treetimeScanType.isSelected();
-        
+
         // conditional on branch is only available with tree-time
         _unconditionalButton.setEnabled(!treeAndTime);
         _conditionalTotalCasesButton.setEnabled(!treeAndTime);
-        _conditionalBranchCasesButton.setEnabled(treeAndTime); 
+        _conditionalBranchCasesButton.setEnabled(treeAndTime);
         if ((!_unconditionalButton.isEnabled() && _unconditionalButton.isSelected()) || (!_conditionalTotalCasesButton.isEnabled() && _conditionalTotalCasesButton.isSelected())) {
             _conditionalBranchCasesButton.setSelected(true);
         }
@@ -438,7 +488,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             _conditionalTotalCasesButton.setSelected(true);
         }
         // Poisson and Bernoulli are only available with tree only
-        _PoissonButton.setEnabled(!treeAndTime); 
+        _PoissonButton.setEnabled(!treeAndTime);
         _BernoulliButton.setEnabled(!treeAndTime);
         // uniform is only available with tree-time
         _uniformButton.setEnabled(treeAndTime);
@@ -459,12 +509,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _temporalEndWindowToLabel.setEnabled(_temporalWindowGroup.isEnabled());
         _temporalEndWindowEnd.setEnabled(_temporalWindowGroup.isEnabled());
         _advancedParametersSetting.enableTemporalOptionsGroup(treeAndTime);
+        _advancedParametersSetting.enablePowerEvaluationsGroup();
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -1295,7 +1346,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton _BernoulliButton;
     private javax.swing.JRadioButton _PoissonButton;
@@ -1357,8 +1407,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.ButtonGroup timtModelButtonGoup;
     private javax.swing.ButtonGroup treeModelButtonGroup;
     // End of variables declaration//GEN-END:variables
+
     @Override
-    public void internalFrameOpened(InternalFrameEvent e) {}
+    public void internalFrameOpened(InternalFrameEvent e) {
+    }
+
     @Override
     public void internalFrameClosing(InternalFrameEvent e) {
         if ((gbPromptOnExist ? (QueryWindowCanClose() ? true : false) : true) == true) {
@@ -1366,33 +1419,53 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             dispose();
         }
     }
+
     @Override
-    public void internalFrameClosed(InternalFrameEvent e) {}
-    public void internalFrameIconified(InternalFrameEvent e) {}
-    public void internalFrameDeiconified(InternalFrameEvent e) {}
-    public void internalFrameActivated(InternalFrameEvent e) {}
-    public void internalFrameDeactivated(InternalFrameEvent e) {}
+    public void internalFrameClosed(InternalFrameEvent e) {
+    }
+
+    public void internalFrameIconified(InternalFrameEvent e) {
+    }
+
+    public void internalFrameDeiconified(InternalFrameEvent e) {
+    }
+
+    public void internalFrameActivated(InternalFrameEvent e) {
+    }
+
+    public void internalFrameDeactivated(InternalFrameEvent e) {
+    }
     /* Exception class that notes the Component that caused the exceptional situation. */
+
     public class SettingsException extends RuntimeException {
+
         private static final long serialVersionUID = 1L;
         public final Component focusComponent;
+
         public SettingsException(Component focusComponent) {
             super();
             this.focusComponent = focusComponent;
         }
+
         public SettingsException(String arg0, Component focusComponent) {
             super(arg0);
             this.focusComponent = focusComponent;
         }
+
         public SettingsException(String arg0, Throwable arg1, Component focusComponent) {
             super(arg0, arg1);
             this.focusComponent = focusComponent;
         }
+
         public SettingsException(Throwable arg0, Component focusComponent) {
             super(arg0);
             this.focusComponent = focusComponent;
         }
-        /** recursively searches Container objects contained in 'rootComponent' for for 'searchComponent'. */
+
+        /**
+         * recursively searches Container objects contained in 'rootComponent'
+         * for for 'searchComponent'.
+         */
         boolean isContainedComponent(Component rootComponent, Component searchComponent) {
             if (rootComponent == searchComponent) {
                 return true;
@@ -1406,9 +1479,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         }
                     }
                 }
-            } catch (ClassNotFoundException e) {}
+            } catch (ClassNotFoundException e) {
+            }
             return false;
         }
+
         public void setControlFocus() {
             focusComponent.requestFocus();
         }

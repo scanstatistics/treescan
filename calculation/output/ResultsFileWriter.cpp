@@ -30,7 +30,7 @@ std::ofstream & ResultsFileWriter::openStream(const std::string& outputfile, std
             print.Printf("Unable to create output file: %s\n", BasePrint::P_READERROR, buffer.c_str());
             return outfile;
         }
-		if (overwrite) const_cast<Parameters&>(_scanRunner.getParameters()).setOutputFileName(buffer.c_str());
+        if (overwrite) const_cast<Parameters&>(_scanRunner.getParameters()).setOutputFileName(buffer.c_str());
         print.Printf("Creating the output file in documents directory: %s\n", BasePrint::P_STDOUT, buffer.c_str());
     } else
         print.Printf("Creating the output file: %s\n", BasePrint::P_STDOUT, outputfile.c_str());
@@ -39,7 +39,7 @@ std::ofstream & ResultsFileWriter::openStream(const std::string& outputfile, std
 
 bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     std::ofstream outfile;
-	openStream(_scanRunner.getParameters().getOutputFileName(), outfile, true);
+    openStream(_scanRunner.getParameters().getOutputFileName(), outfile, true);
     if (!outfile) return false;
 
     AsciiPrintFormat PrintFormat;
@@ -86,66 +86,117 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     //if (_parameters.isDuplicates()) outfile << "O/EWithoutDuplicates ";
     //outfile << "LLR pvalue" << std::endl;
 
-    if (_scanRunner.getCuts().size() == 0 || _scanRunner.getCuts().at(0)->getC() == 0 || 
-        (parameters.getNumReplicationsRequested() > 0 && _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested())) {
-        outfile << "No cuts were found." << std::endl;
-    } else {
-        outfile << "MOST LIKELY CUTS"<< std::endl << std::endl;
-        std::string format, replicas;
-        printString(replicas, "%u", parameters.getNumReplicationsRequested());
-        printString(format, "%%.%dlf", replicas.size());
+    if (!_scanRunner.getParameters().getPerformPowerEvaluations() || (_scanRunner.getParameters().getPerformPowerEvaluations() && _scanRunner.getParameters().getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
+        if (_scanRunner.getCuts().size() == 0 || _scanRunner.getCuts().at(0)->getC() == 0 || 
+            (parameters.getNumReplicationsRequested() > 0 && _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested())) {
+            outfile << "No cuts were found." << std::endl;
+        } else {
+            outfile << "MOST LIKELY CUTS"<< std::endl << std::endl;
+            std::string format, replicas;
+            printString(replicas, "%u", parameters.getNumReplicationsRequested());
+            printString(format, "%%.%dlf", replicas.size());
 
-        unsigned int k=0;
-        outfile.setf(std::ios::fixed);
-        outfile.precision(5);
-        while( k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && 
-               (parameters.getNumReplicationsRequested() == 0 || _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1)) {
-            PrintFormat.SetMarginsAsCutSection( k + 1);
-            outfile << k + 1 << ")";
-            PrintFormat.PrintSectionLabel(outfile, "Node Identifier", false);
-            PrintFormat.PrintAlignedMarginsDataString(outfile, _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier());
-            if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
-                PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
-                printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts().at(k)->getN()));
+            unsigned int k=0;
+            outfile.setf(std::ios::fixed);
+            outfile.precision(5);
+            while(k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && 
+                  (parameters.getNumReplicationsRequested() == 0 || _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1)) {
+                PrintFormat.SetMarginsAsCutSection( k + 1);
+                outfile << k + 1 << ")";
+                PrintFormat.PrintSectionLabel(outfile, "Node Identifier", false);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier());
+                if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
+                    PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
+                    printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts().at(k)->getN()));
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                    PrintFormat.PrintSectionLabel(outfile, "Time Window", true);
+                    printString(buffer, "%ld - %ld", _scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive(), _scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive());
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                    PrintFormat.PrintSectionLabel(outfile, "Cases in Window", true);
+                } else if (parameters.getModelType() == Parameters::BERNOULLI) {
+                    PrintFormat.PrintSectionLabel(outfile, "Observations", true);
+                    printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts().at(k)->getN()));
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                    PrintFormat.PrintSectionLabel(outfile, "Cases", true);
+                } else if (parameters.getModelType() == Parameters::POISSON) {
+                    PrintFormat.PrintSectionLabel(outfile, "Observed Cases", true);
+                }
+                printString(buffer, "%ld", _scanRunner.getCuts().at(k)->getC());
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-                PrintFormat.PrintSectionLabel(outfile, "Time Window", true);
-                printString(buffer, "%ld - %ld", _scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive(), _scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive());
+                if (parameters.isDuplicates()) {
+                    PrintFormat.PrintSectionLabel(outfile, "Cases (Duplicates Removed)", true);
+                    printString(buffer, "%ld", _scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates());
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                }
+                PrintFormat.PrintSectionLabel(outfile, parameters.getModelType() == Parameters::TEMPORALSCAN ? "Expected Cases" : "Expected", true);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
+                PrintFormat.PrintSectionLabel(outfile, "Observed/Expected", true);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getODE(_scanRunner), buffer));
+                if (parameters.isDuplicates()) {
+                    PrintFormat.PrintSectionLabel(outfile, "O/E (Duplicates Removed)", true);
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
+                }
+                PrintFormat.PrintSectionLabel(outfile, "Relative Risk", true);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer));
+                PrintFormat.PrintSectionLabel(outfile, "Excess Cases", true);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer));
+                PrintFormat.PrintSectionLabel(outfile, "Log Likelihood Ratio", true);
+                printString(buffer, "%.1lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood()));
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-                PrintFormat.PrintSectionLabel(outfile, "Cases in Window", true);
-            } else if (parameters.getModelType() == Parameters::BERNOULLI) {
-                PrintFormat.PrintSectionLabel(outfile, "Observations", true);
-                printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts().at(k)->getN()));
-                PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-                PrintFormat.PrintSectionLabel(outfile, "Cases", true);
-            } else if (parameters.getModelType() == Parameters::POISSON) {
-                PrintFormat.PrintSectionLabel(outfile, "Observed Cases", true);
+                PrintFormat.PrintSectionLabel(outfile, "P-value", true);
+                printString(buffer, format.c_str(), (double)_scanRunner.getCuts().at(k)->getRank() /(parameters.getNumReplicationsRequested() + 1));
+                PrintFormat.PrintAlignedMarginsDataString(outfile, buffer, 2);
+                k++;
             }
-            printString(buffer, "%ld", _scanRunner.getCuts().at(k)->getC());
-            PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-            if (parameters.isDuplicates()) {
-                PrintFormat.PrintSectionLabel(outfile, "Cases (Duplicates Removed)", true);
-                printString(buffer, "%ld", _scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates());
-                PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-            }
-            PrintFormat.PrintSectionLabel(outfile, parameters.getModelType() == Parameters::TEMPORALSCAN ? "Expected Cases" : "Expected", true);
-            PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
-            PrintFormat.PrintSectionLabel(outfile, "Observed/Expected", true);
-            PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getODE(_scanRunner), buffer));
-            if (parameters.isDuplicates()) {
-                PrintFormat.PrintSectionLabel(outfile, "O/E (Duplicates Removed)", true);
-                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
-            }
-            PrintFormat.PrintSectionLabel(outfile, "Relative Risk", true);
-            PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer));
-            PrintFormat.PrintSectionLabel(outfile, "Excess Cases", true);
-            PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer));
-            PrintFormat.PrintSectionLabel(outfile, "Log Likelihood Ratio", true);
-            printString(buffer, "%.1lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood()));
-            PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-            PrintFormat.PrintSectionLabel(outfile, "P-value", true);
-            printString(buffer, format.c_str(), (double)_scanRunner.getCuts().at(k)->getRank() /(parameters.getNumReplicationsRequested() + 1));
-            PrintFormat.PrintAlignedMarginsDataString(outfile, buffer, 2);
-            k++;
+        }
+    }
+
+    // Print critical values if requested.
+    if ((_scanRunner.getParameters().getReportCriticalValues() && _scanRunner.getParameters().getNumReplicationsRequested() >= 19) || 
+        (_scanRunner.getParameters().getPerformPowerEvaluations() && _scanRunner.getParameters().getCriticalValuesType() == Parameters::CV_MONTECARLO)) {
+        outfile << "A cut is statistically significant when its log likelihood ratio is greater than the critical value, which is, for significance level:" << std::endl;
+        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 99999) {
+            CriticalValues::alpha_t alpha00001(_scanRunner.getCriticalValues().getAlpha00001());
+            outfile << "... 0.00001: " <<  alpha00001.second << std::endl;
+        }
+        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 9999) {
+            CriticalValues::alpha_t alpha0001(_scanRunner.getCriticalValues().getAlpha0001());
+            outfile << "... 0.0001: " <<  alpha0001.second << std::endl;
+        }
+        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 999) {
+            CriticalValues::alpha_t alpha001(_scanRunner.getCriticalValues().getAlpha001());
+            outfile << "... 0.001: " <<  alpha001.second << std::endl;
+        }
+        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 99) {
+            CriticalValues::alpha_t alpha01(_scanRunner.getCriticalValues().getAlpha01());
+            outfile << "... 0.01: " <<  alpha01.second << std::endl;
+        }
+        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 19) {
+            CriticalValues::alpha_t alpha05(_scanRunner.getCriticalValues().getAlpha05());
+            outfile << "... 0.05: " <<  alpha05.second << std::endl;
+        }
+        outfile << std::endl;
+    }
+
+    // print power estimation values
+    if (_scanRunner.getParameters().getPerformPowerEvaluations()) {
+        assert(_scanRunner.getPowerEstimations().size() > 0);
+        outfile << std::endl << "Estimated Power" << std::endl;
+        writePadRight("Alpha", outfile, 25, ' ');
+        writePadRight("0.05", outfile, 20, ' ');
+        writePadRight("0.01", outfile, 20, ' ');
+        outfile << "0.001" << std::endl;
+        writePadRight("-----", outfile, 25, ' ');
+        writePadRight("----", outfile, 20, ' ');
+        writePadRight("----", outfile, 20, ' ');
+        outfile << "-----" << std::endl;
+        std::string buffer;
+        ScanRunner::PowerEstimationContainer_t::const_iterator itr=_scanRunner.getPowerEstimations().begin(), itr_end=_scanRunner.getPowerEstimations().end();
+        for (;itr != itr_end; ++itr) {
+            writePadRight(printString(buffer, "Alternative #%u", std::distance(_scanRunner.getPowerEstimations().begin(), itr) + 1), outfile, 25, ' ');
+            writePadRight(getRoundAsString(itr->get<0>(),buffer, 3), outfile, 20, ' ');
+            writePadRight(getRoundAsString(itr->get<1>(),buffer, 3), outfile, 20, ' ');
+            outfile << getRoundAsString(itr->get<2>(),buffer, 3) << std::endl;
         }
     }
 
@@ -199,7 +250,7 @@ std::string & ResultsFileWriter::getTotalRunningTime(time_t start, time_t end, s
 }
 
 bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
-	std::string buffer;
+    std::string buffer;
     Parameters& parameters(const_cast<Parameters&>(_scanRunner.getParameters()));
     std::ofstream outfile;
     openStream(getFilenameHTML(parameters, buffer), outfile);
@@ -264,64 +315,67 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "</tbody></table></div>" << std::endl;
     outfile << "<div class=\"hr\"></div>" << std::endl;
 
-    outfile << "<div id=\"cuts\">" << std::endl;
-    if (_scanRunner.getCuts().size() == 0 || _scanRunner.getCuts().at(0)->getC() == 0 || 
-        (parameters.getNumReplicationsRequested() > 0 && _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested())) {
-        outfile << "<h3>No cuts were found.</h3>" << std::endl;
-    } else {
-        outfile << "<h3>MOST LIKELY CUTS</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;
-        outfile << "<thead><tr><th>No.</th><th>Node Identifier</th>";
-        if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
-            outfile << "<th>Node Cases</th>";
-            outfile << "<th>Time Window</th>";
-            outfile << "<th>Cases in Window</th>";
-        } else if (parameters.getModelType() == Parameters::BERNOULLI) {
-            outfile << "<th>Observations</th>";
-            outfile << "<th>Cases</th>";
-        } else if (parameters.getModelType() == Parameters::POISSON) {
-            outfile << "<th>Observed Cases</th>";
-        }
-        if (parameters.isDuplicates()) {outfile << "<th>Cases (Duplicates Removed)</th>";}
-        outfile << "<th>" << (parameters.getModelType() == Parameters::TEMPORALSCAN ? "Expected Cases" : "Expected") << "</th><th>Observed/Expected</th>";
-        if (parameters.isDuplicates()) {outfile << "<th>O/E (Duplicates Removed)</th>";}
-        outfile << "<th>Relative Risk</th><th>Excess Cases</th><th>Log Likelihood Ratio</th><th>P-value</th></tr></thead><tbody>" << std::endl;
-        std::string format, replicas;
-        printString(replicas, "%u", parameters.getNumReplicationsRequested());
-        printString(format, "%%.%dlf", replicas.size());
+    if (!_scanRunner.getParameters().getPerformPowerEvaluations() || (_scanRunner.getParameters().getPerformPowerEvaluations() && _scanRunner.getParameters().getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
+        outfile << "<div id=\"cuts\">" << std::endl;
+        if (_scanRunner.getCuts().size() == 0 || _scanRunner.getCuts().at(0)->getC() == 0 || 
+            (parameters.getNumReplicationsRequested() > 0 && _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested())) {
+            outfile << "<h3>No cuts were found.</h3>" << std::endl;
+        } else {
+            outfile << "<h3>MOST LIKELY CUTS</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;
+            outfile << "<thead><tr><th>No.</th><th>Node Identifier</th>";
+            if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
+                outfile << "<th>Node Cases</th>";
+                outfile << "<th>Time Window</th>";
+                outfile << "<th>Cases in Window</th>";
+            } else if (parameters.getModelType() == Parameters::BERNOULLI) {
+                outfile << "<th>Observations</th>";
+                outfile << "<th>Cases</th>";
+            } else if (parameters.getModelType() == Parameters::POISSON) {
+                outfile << "<th>Observed Cases</th>";
+            }
+            if (parameters.isDuplicates()) {outfile << "<th>Cases (Duplicates Removed)</th>";}
+            outfile << "<th>" << (parameters.getModelType() == Parameters::TEMPORALSCAN ? "Expected Cases" : "Expected") << "</th><th>Observed/Expected</th>";
+            if (parameters.isDuplicates()) {outfile << "<th>O/E (Duplicates Removed)</th>";}
+            outfile << "<th>Relative Risk</th><th>Excess Cases</th><th>Log Likelihood Ratio</th><th>P-value</th></tr></thead><tbody>" << std::endl;
+            std::string format, replicas;
+            printString(replicas, "%u", parameters.getNumReplicationsRequested());
+            printString(format, "%%.%dlf", replicas.size());
 
-        unsigned int k=0;
-        outfile.setf(std::ios::fixed);
-        outfile.precision(5);
-        while( k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && 
-              (parameters.getNumReplicationsRequested() == 0 || _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1)) {
-            outfile << "<tr" << (k > 9 ? " class=\"additional-cuts\"" : "" ) << "><td>" << k + 1 << "</td>"
-                    << "<td>" << _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier() << "</td>";
-            if (parameters.getModelType() == Parameters::TEMPORALSCAN) {   
-                outfile << "<td>" << static_cast<int>(_scanRunner.getCuts().at(k)->getN()) << "</td>";
-                outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " - " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
+            unsigned int k=0;
+            outfile.setf(std::ios::fixed);
+            outfile.precision(5);
+            while(k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && 
+                  (parameters.getNumReplicationsRequested() == 0 || _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1)) {
+                outfile << "<tr" << (k > 9 ? " class=\"additional-cuts\"" : "" ) << "><td>" << k + 1 << "</td>"
+                        << "<td>" << _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier() << "</td>";
+                if (parameters.getModelType() == Parameters::TEMPORALSCAN) {   
+                    outfile << "<td>" << static_cast<int>(_scanRunner.getCuts().at(k)->getN()) << "</td>";
+                    outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " - " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
+                }
+                if (parameters.getModelType() == Parameters::BERNOULLI) {
+                    outfile << "<td>" << static_cast<int>(_scanRunner.getCuts().at(k)->getN()) << "</td>";
+                }
+                outfile << "<td>" << _scanRunner.getCuts().at(k)->getC() << "</td>";
+                if (parameters.isDuplicates())
+                    outfile << "<td>" << _scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates() << "</td>";
+                outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
+                outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getODE(_scanRunner), buffer) << "</td>";
+                if (parameters.isDuplicates())
+                    outfile << "<td>" << getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
+                outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer) << "</td>";
+                outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer) << "</td>";
+                outfile << "<td>" << printString(buffer, "%.1lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood())).c_str() << "</td>";
+                outfile << "<td>" << printString(buffer, format.c_str(), (double)_scanRunner.getCuts().at(k)->getRank() /(parameters.getNumReplicationsRequested() + 1)) << "</td><tr>" << std::endl;
+                k++;
             }
-            if (parameters.getModelType() == Parameters::BERNOULLI) {
-                outfile << "<td>" << static_cast<int>(_scanRunner.getCuts().at(k)->getN()) << "</td>";
+            outfile << "</tbody></table></div>" << std::endl;
+            if (k > 10) {
+                outfile << "<!-- <span id=\"id_more_cuts\">Toggle Additional Cuts</span> -->" << std::endl;
             }
-            outfile << "<td>" << _scanRunner.getCuts().at(k)->getC() << "</td>";
-            if (parameters.isDuplicates())
-                outfile << "<td>" << _scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates() << "</td>";
-            outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
-            outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getODE(_scanRunner), buffer) << "</td>";
-            if (parameters.isDuplicates())
-                outfile << "<td>" << getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
-            outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer) << "</td>";
-            outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer) << "</td>";
-            outfile << "<td>" << printString(buffer, "%.1lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood())).c_str() << "</td>";
-            outfile << "<td>" << printString(buffer, format.c_str(), (double)_scanRunner.getCuts().at(k)->getRank() /(parameters.getNumReplicationsRequested() + 1)) << "</td><tr>" << std::endl;
-            k++;
+            outfile << "</div>" << std::endl;
         }
-        outfile << "</tbody></table></div>" << std::endl;
-        if (k > 10) {
-            outfile << "<!-- <span id=\"id_more_cuts\">Toggle Additional Cuts</span> -->" << std::endl;
-        }
-        outfile << "</div>" << std::endl;
     }
+
     outfile << "<div class=\"hr\"></div>" << std::endl;
     if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
         std::string buffer;
@@ -330,6 +384,52 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             outfile << "<div class=\"warning\">Warning: The following days in the data time range do not have cases: " << buffer.c_str() << "</div><div class=\"hr\"></div>";
         }
     }
+
+    // Print critical values if requested.
+    if ((_scanRunner.getParameters().getReportCriticalValues() && _scanRunner.getParameters().getNumReplicationsRequested() >= 19) || 
+        (_scanRunner.getParameters().getPerformPowerEvaluations() && _scanRunner.getParameters().getCriticalValuesType() == Parameters::CV_MONTECARLO)) {
+        outfile << "<div class=\"program-info\">" << std::endl;
+        outfile << std::endl << "<div>A cut is statistically significant when its log likelihood ratio is greater than the critical value, which is, for significance level:</div>" << std::endl;
+        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 99999) {
+            CriticalValues::alpha_t alpha00001(_scanRunner.getCriticalValues().getAlpha00001());
+            outfile << "<div>... 0.00001: " <<  alpha00001.second << "</div>" << std::endl;
+        }
+        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 9999) {
+            CriticalValues::alpha_t alpha0001(_scanRunner.getCriticalValues().getAlpha0001());
+            outfile << "<div>... 0.0001: " <<  alpha0001.second << "</div>"<< std::endl;
+        }
+        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 999) {
+            CriticalValues::alpha_t alpha001(_scanRunner.getCriticalValues().getAlpha001());
+            outfile << "<div>... 0.001: " <<  alpha001.second << "</div>" << std::endl;
+        }
+        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 99) {
+            CriticalValues::alpha_t alpha01(_scanRunner.getCriticalValues().getAlpha01());
+            outfile << "<div>... 0.01: " <<  alpha01.second << "</div>" << std::endl;
+        }
+        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 19) {
+            CriticalValues::alpha_t alpha05(_scanRunner.getCriticalValues().getAlpha05());
+            outfile << "<div>... 0.05: " <<  alpha05.second << "</div>" << std::endl;
+        }
+        outfile << "</div>" << std::endl;
+    }
+
+    // print power estimation values
+    if (_scanRunner.getParameters().getPerformPowerEvaluations()) {
+        outfile << "<div class=\"program-info\">" << std::endl;
+        assert(_scanRunner.getPowerEstimations().size() > 0);
+        outfile << std::endl << "<h4>Estimated Power</h4><table style=\"text-align: left;width:50%;\"><tbody>" << std::endl;
+        outfile << "<tr><th>Alpha</th><th>0.05</th><th>0.01</th><th>0.001</th></tr>" << std::endl;
+        std::string buffer;
+        ScanRunner::PowerEstimationContainer_t::const_iterator itr=_scanRunner.getPowerEstimations().begin(), itr_end=_scanRunner.getPowerEstimations().end();
+        for (;itr != itr_end; ++itr) {
+            outfile << "<tr><th>" << printString(buffer, "Alternative #%u", std::distance(_scanRunner.getPowerEstimations().begin(), itr) + 1).c_str() << "</th>";
+            outfile << "<td>" << getRoundAsString(itr->get<0>(),buffer, 3).c_str() << "</td>";
+            outfile << "<td>" << getRoundAsString(itr->get<1>(),buffer, 3).c_str() << "</td>";
+            outfile << "<td>" << getRoundAsString(itr->get<2>(),buffer, 3).c_str() << "</td></tr>" << std::endl;
+        }
+        outfile << "</tbody></table></div>" << std::endl;
+    }
+
     ParametersPrint(parameters).PrintHTML(outfile);
     outfile << "<div class=\"hr\"></div>" << std::endl;
     outfile << "<div class=\"program-info\"><h4>COMPUTATIONAL INFORMATION</h4><table style=\"text-align: left;\"><tbody>" << std::endl;

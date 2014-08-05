@@ -1,5 +1,4 @@
 package org.treescan.app;
-import java.util.*;
 
 public class Parameters implements Cloneable {	
     public native boolean Read(String filename);  
@@ -9,6 +8,7 @@ public class Parameters implements Cloneable {
     public enum ScanType {TREEONLY, TREETIME};
     public enum ConditionalType {UNCONDITIONAL, TOTALCASES, CASESEACHBRANCH};
     public enum MaximumWindowType {PERCENTAGE_WINDOW, FIXED_LENGTH};
+    public enum PowerEvaluationType {PE_WITH_ANALYSIS, PE_ONLY_CASEFILE,PE_ONLY_SPECIFIED_CASES};    
     public class CreationVersion {
     	public int _major;
     	public int _minor;
@@ -52,6 +52,11 @@ public class Parameters implements Cloneable {
     private int _maximum_window_length=1;
     private MaximumWindowType _maximum_window_type=MaximumWindowType.PERCENTAGE_WINDOW;
     private int _minimum_window_length=2;
+    private boolean _perform_power_evaluations=false;
+    private PowerEvaluationType _power_evaluation_type=PowerEvaluationType.PE_WITH_ANALYSIS;
+    private int _power_evaluation_totalcases=600;
+    private int _power_replica=_replications+1;
+    private String _power_alt_hypothesis_filename="";
 
     public Parameters() {
     	super();    	
@@ -66,6 +71,7 @@ public class Parameters implements Cloneable {
     	  newObject._populationfilename = new String(_populationfilename);
     	  newObject._countfilename = new String(_countfilename);
     	  newObject._outputfilename = new String(_outputfilename);
+    	  newObject._power_alt_hypothesis_filename = new String(_power_alt_hypothesis_filename);
     	  return newObject; 
       } catch (CloneNotSupportedException e) {
         throw new InternalError("clone() failed!");
@@ -104,9 +110,25 @@ public class Parameters implements Cloneable {
           if (_maximum_window_length != rhs._maximum_window_length) return false;
           if (_maximum_window_type != rhs._maximum_window_type) return false;
           if (_minimum_window_length != rhs._minimum_window_length) return false;
+          if (_perform_power_evaluations != rhs._perform_power_evaluations) return false;
+          if (_power_evaluation_type != rhs._power_evaluation_type) return false;          
+          if (_power_evaluation_totalcases != rhs._power_evaluation_totalcases) return false;
+          if (_power_replica != rhs._power_replica) return false;
+          if (!_power_alt_hypothesis_filename.equals(rhs._power_alt_hypothesis_filename)) return false;
           
           return true;
     }
+    
+    public boolean getPerformPowerEvaluations() {return _perform_power_evaluations;}
+    public void setPerformPowerEvaluations(boolean b) {_perform_power_evaluations = b;}
+    public PowerEvaluationType getPowerEvaluationType() {return _power_evaluation_type;}
+    public void setPowerEvaluationType(int ord) {try {_power_evaluation_type = PowerEvaluationType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, PowerEvaluationType.values());}}
+    public int getPowerEvaluationTotalCases() {return _power_evaluation_totalcases;}
+    public void setPowerEvaluationTotalCases(int i) {_power_evaluation_totalcases = i;}
+    public int getPowerEvaluationReplications() {return _power_replica;}
+    public void setPowerEvaluationReplications(int i) {_power_replica = i;}
+    public String getPowerEvaluationAltHypothesisFilename() {return _power_alt_hypothesis_filename;}
+    public void setPowerEvaluationAltHypothesisFilename(String s) {_power_alt_hypothesis_filename = s;}
     
     public double getMaximumWindowPercentage() {return _maximum_window_percentage;}
     public void setMaximumWindowPercentage(double d) {_maximum_window_percentage = d;}

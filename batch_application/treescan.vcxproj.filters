@@ -222,6 +222,15 @@
     <ClCompile Include="..\calculation\randomization\TemporalRandomizer.cpp">
       <Filter>Source Files\calculation\randomization</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\loglikelihood\CriticalValues.cpp">
+      <Filter>Source Files\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\runner\RelativeRiskAdjustment.cpp">
+      <Filter>Source Files\calculation\runner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\randomization\AlternativeHypothesisRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\runner\ScanRunner.h">
@@ -340,6 +349,15 @@
     </ClInclude>
     <ClInclude Include="..\calculation\runner\WindowLength.h">
       <Filter>Header Files\calculation\runner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\loglikelihood\CriticalValues.h">
+      <Filter>Header Files\calculation\loglikelihood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\runner\RelativeRiskAdjustment.h">
+      <Filter>Header Files\calculation\runner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\AlternativeHypothesisRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

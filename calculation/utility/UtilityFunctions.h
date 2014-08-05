@@ -33,6 +33,7 @@ std::string                   & lowerString(std::string &source);
 std::string                   & printString(std::string& s, const char * format, ...);
 unsigned int                    getFormatPrecision(double value, unsigned int iSignificant=2);
 std::string                   & getValueAsString(double value, std::string& s, unsigned int iSignificant=2);
+std::string                   & getRoundAsString(double value, std::string& s, unsigned int precision);
 std::string                   & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath);
 bool                            getlinePortable(std::ifstream& readstream, std::string& line);
 template <typename T>           bool string_to_type(const char * s, T& t) {
@@ -53,5 +54,13 @@ template <typename T>           bool type_to_string(T& t, std::string& s) {
                                     return true;
                                 }
 std::string                   & getDerivedFilename(const std::string& source, const std::string& suffix, const std::string& extension, std::string& destination);
+
+template<class _OutTy> inline
+void writePadRight(const std::string& text, _OutTy& destintation, size_t width, const char& padValue) {
+    if (text.size() > width)
+        throw prg_error("String %s is longer than specified width (%u).","writePadRight()", text.c_str(), width);
+    destintation << text.c_str();
+    std::fill_n(std::ostream_iterator<char>(destintation), width - text.size(), ' ');
+}
 //******************************************************************************
 #endif

@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 30;
+const int Parameters::giNumParameters = 40;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -54,6 +54,16 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_maximum_window_length != rhs._maximum_window_length) return false;
   if (_maximum_window_type != rhs._maximum_window_type) return false;
   if (_minimum_window_length != rhs._minimum_window_length) return false;
+  if (_report_critical_values != rhs._report_critical_values) return false;
+  if (_perform_power_evaluations != rhs._perform_power_evaluations) return false;
+  if (_critical_values_type != rhs._critical_values_type) return false;
+  if (_critical_value_05 != rhs._critical_value_05) return false;
+  if (_critical_value_01 != rhs._critical_value_01) return false;
+  if (_critical_value_001 != rhs._critical_value_001) return false;
+  if (_power_evaluation_type != rhs._power_evaluation_type) return false;
+  if (_power_evaluation_totalcases != rhs._power_evaluation_totalcases) return false;
+  if (_power_replica != rhs._power_replica) return false;
+  if (_power_alt_hypothesis_filename != rhs._power_alt_hypothesis_filename) return false;
 
   return true;
 }
@@ -119,10 +129,21 @@ void Parameters::copy(const Parameters &rhs) {
     _printColumnHeaders = rhs._printColumnHeaders;
     _generate_llr_results = rhs._generate_llr_results;
 
+    _perform_power_evaluations = rhs._perform_power_evaluations;
+    _critical_values_type = rhs._critical_values_type;
+    _critical_value_05 = rhs._critical_value_05;
+    _critical_value_01 = rhs._critical_value_01;
+    _critical_value_001 = rhs._critical_value_001;
+    _power_evaluation_type = rhs._power_evaluation_type;
+    _power_evaluation_totalcases = rhs._power_evaluation_totalcases;
+    _power_replica = rhs._power_replica;
+    _power_alt_hypothesis_filename = rhs._power_alt_hypothesis_filename;
+
     _read_simulations = rhs._read_simulations;
     _input_sim_file = rhs._input_sim_file;
     _write_simulations = rhs._write_simulations;
     _output_sim_file = rhs._output_sim_file;
+    _report_critical_values = rhs._report_critical_values;
 
     _randomizationSeed = rhs._randomizationSeed;
     _numRequestedParallelProcesses = rhs._numRequestedParallelProcesses;
@@ -244,10 +265,21 @@ void Parameters::setAsDefaulted() {
     _resultsFormat = TEXT;
     _generate_llr_results = false;
 
+    _perform_power_evaluations = false;
+    _critical_values_type = CV_MONTECARLO;
+    _critical_value_05                       = 0.0;
+    _critical_value_01                       = 0.0;
+    _critical_value_001                      = 0.0;
+
     _read_simulations = false;
     _input_sim_file = "";
     _write_simulations = false;
     _output_sim_file = "";
+    _report_critical_values = false;
+    _power_evaluation_type = PE_WITH_ANALYSIS;
+    _power_evaluation_totalcases = 600;
+    _power_replica = _replications + 1;
+    _power_alt_hypothesis_filename = "";
 
     _creationVersion.iMajor = atoi(VERSION_MAJOR);
     _creationVersion.iMinor = atoi(VERSION_MINOR);
@@ -264,6 +296,15 @@ void Parameters::setAsDefaulted() {
 void Parameters::setOutputFileName(const char * sOutPutFileName, bool bCorrectForRelativePath) {
   _outputFileName = sOutPutFileName;
   if (bCorrectForRelativePath) assignMissingPath(_outputFileName, true);
+}
+
+/** Sets power evaluation alternative hypothesis data file name.
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file
+    does not exist. */
+void Parameters::setPowerEvaluationAltHypothesisFilename(const char * s, bool bCorrectForRelativePath) {
+  _power_alt_hypothesis_filename = s;
+  if (bCorrectForRelativePath) assignMissingPath(_power_alt_hypothesis_filename, false);
 }
 
 /** Sets filename of file used to load parameters. */
@@ -325,6 +366,17 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _generateHtmlResults = pt.get<bool>("parameters.output.generate-html-results", true);
     _generateTableResults = pt.get<bool>("parameters.output.generate-table-results", true);
     _generate_llr_results = pt.get<bool>("parameters.output.generate-llr-results", true);
+    _report_critical_values = pt.get<bool>("parameters.output.report-critical-values", false);
+    // Power Evaluations
+    _perform_power_evaluations = pt.get<bool>("parameters.power-evaluations.perform-power-evaluations", false);
+    _power_evaluation_type = static_cast<PowerEvaluationType>(pt.get<unsigned int>("parameters.power-evaluations.power-evaluation-type", PE_WITH_ANALYSIS));
+    _critical_values_type = static_cast<CriticalValuesType>(pt.get<unsigned int>("parameters.power-evaluations.critical-values-type", CV_MONTECARLO));
+    _critical_value_05 = pt.get<double>("parameters.power-evaluations.critical-value-05", 0);
+    _critical_value_01 = pt.get<double>("parameters.power-evaluations.critical-value-01", 0);
+    _critical_value_001 = pt.get<double>("parameters.power-evaluations.critical-value-001", 0);
+    _power_evaluation_totalcases = pt.get<int>("parameters.power-evaluations.totalcases", 0);
+    _power_replica = pt.get<int>("parameters.power-evaluations.replications", _replications + 1);
+    setPowerEvaluationAltHypothesisFilename(pt.get<std::string>("parameters.power-evaluations.alternative-hypothesis-file", "").c_str(), true);
     // Power Simulations
     _read_simulations = pt.get<bool>("parameters.power-simulations.input-simulations", true);
     setInputSimulationsFilename(pt.get<std::string>("parameters.power-simulations.input-simulations-file", "").c_str(), true);
@@ -371,6 +423,17 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.output.generate-html-results", _generateHtmlResults);
     pt.put("parameters.output.generate-table-results", _generateTableResults);
     pt.put("parameters.output.generate-llr-results", _generate_llr_results);
+    pt.put("parameters.output.report-critical-values", _report_critical_values);
+    // Power Evaluations
+    pt.put("parameters.power-evaluations.perform-power-evaluations", _perform_power_evaluations);
+    pt.put("parameters.power-evaluations.power-evaluation-type", static_cast<unsigned int>(_power_evaluation_type));
+    pt.put("parameters.power-evaluations.critical-values-type", static_cast<unsigned int>(_critical_values_type));
+    pt.put("parameters.power-evaluations.critical-value-05", _critical_value_05);
+    pt.put("parameters.power-evaluations.critical-value-01", _critical_value_01);
+    pt.put("parameters.power-evaluations.critical-value-001", _critical_value_001);
+    pt.put("parameters.power-evaluations.totalcases", _power_evaluation_totalcases);
+    pt.put("parameters.power-evaluations.replications", _power_replica);
+    pt.put("parameters.power-evaluations.alternative-hypothesis-file", _power_alt_hypothesis_filename);
     // Power Simulations
     pt.put("parameters.power-simulations.input-simulations", _read_simulations);
     pt.put("parameters.power-simulations.input-simulations-file", _input_sim_file);

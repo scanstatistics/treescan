@@ -5,13 +5,15 @@
 #include "TreeScan.h"
 #include "ptr_vector.h"
 #include "Loglikelihood.h"
-#include "boost/shared_ptr.hpp"
+#include <boost/shared_ptr.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include "SimulationVariables.h"
 #include "Parameters.h"
+#include "CriticalValues.h"
 #include <iostream>
 #include <fstream>
 #include <limits>
+#include <deque>
 
 class ScanRunner;
 class CutStructure {
@@ -154,13 +156,20 @@ public:
     }
 };
 
+class AbstractRandomizer;
+class RelativeRiskAdjustmentHandler;
+
 class ScanRunner {
 public:
-    typedef ptr_vector<NodeStructure>                   NodeStructureContainer_t;
-    typedef ptr_vector<CutStructure>                    CutStructureContainer_t;
-    typedef std::vector<int>                            AncestorContainer_t;
-    typedef std::pair<bool,size_t>                      Index_t;
-    typedef boost::shared_ptr<AbstractLoglikelihood>    Loglikelihood_t; 
+    typedef ptr_vector<NodeStructure>                           NodeStructureContainer_t;
+    typedef ptr_vector<CutStructure>                            CutStructureContainer_t;
+    typedef std::vector<int>                                    AncestorContainer_t;
+    typedef std::pair<bool,size_t>                              Index_t;
+    typedef boost::shared_ptr<AbstractLoglikelihood>            Loglikelihood_t;
+    typedef boost::shared_ptr<RelativeRiskAdjustmentHandler>    RiskAdjustments_t;
+    typedef std::vector<RiskAdjustments_t>                      RiskAdjustmentsContainer_t;
+    typedef boost::tuple<double, double, double>                PowerEstimationSet_t;
+    typedef std::deque<PowerEstimationSet_t>                    PowerEstimationContainer_t;
 
 private:
     BasePrint                 & _print;
@@ -174,17 +183,21 @@ private:
     Parameters                  _parameters;
     DataTimeRange::index_t      _zero_translation_additive;
     boost::dynamic_bitset<>     _caselessWindows;
+    std::auto_ptr<CriticalValues> _critical_values;
+    PowerEstimationContainer_t    _power_estimations;
 
     void                        addCN_C(int id, NodeStructure::CountContainer_t& c, NodeStructure::ExpectedContainer_t& n);
     size_t                      calculateCutsCount() const;
 
     Index_t                     getNodeIndex(const std::string& identifier) const;
+    bool                        readRelativeRisksAdjustments(const std::string& filename, RiskAdjustmentsContainer_t& rrAdjustments, bool consolidate);
     bool                        readCounts(const std::string& filename);
     bool                        readCuts(const std::string& filename);
     bool                        readPopulation(const std::string& filename);
     bool                        readTree(const std::string& filename);
     bool                        reportResults(time_t start, time_t end) const;
-    bool                        runsimulations();
+    bool                        runPowerEvaluations();
+    bool                        runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep);
     bool                        scanTree();
     bool                        scanTreeTemporal();
     bool                        setupTree();
@@ -193,16 +206,19 @@ private:
 public:
     ScanRunner(const Parameters& parameters, BasePrint& print);
 
+    const CriticalValues             & getCriticalValues() const {return *_critical_values;}
     std::string                      & getCaselessWindowsAsString(std::string& s) const;
     const CutStructureContainer_t    & getCuts() const {return _Cut;}
     const NodeStructureContainer_t   & getNodes() const {return _Nodes;}
     const Parameters                 & getParameters() const {return _parameters;}
+    const PowerEstimationContainer_t & getPowerEstimations() const {return _power_estimations;}
     BasePrint                        & getPrint() {return _print;}
     SimulationVariables              & getSimulationVariables() {return _simVars;}
     int                                getTotalC() const {return _TotalC;}
     double                             getTotalN() const {return _TotalN;}
     DataTimeRange::index_t             getZeroTranslationAdditive() const {return _zero_translation_additive;}
     bool                               run();
+    void                               updateCriticalValuesList(double llr) {if (_critical_values.get()) _critical_values->add(llr);}
 };
 //***************************************************************************
 #endif

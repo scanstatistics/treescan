@@ -21,6 +21,7 @@
 #include "org_treescan_app_AppConstants.h"
 #include "Toolkit.h"
 #include "ParameterFileAccess.h"
+#include "ParametersValidate.h"
 //#pragma argsused
 
 void __TreeScanInit() {
@@ -83,6 +84,11 @@ void _runAnalysis(const Parameters& parameters, BasePrint& Console) {
   std::string           sMessage;
 
   Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
+
+  /* validate parameters - print errors to console */
+  if (!ParametersValidate(parameters).Validate(Console))
+    throw resolvable_error("\nThe parameter file contains incorrect settings that prevent TreeScan from continuing. "
+                           "Please review above message(s) and modify parameter settings accordingly.");
 
   //create analysis runner object and execute analysis
   ScanRunner runner(parameters, Console);

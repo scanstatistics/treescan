@@ -12,6 +12,27 @@ TemporalRandomizer::TemporalRandomizer(int TotalC, double TotalN, const DataTime
     _zero_translation_additive = (min_max.getStart() <= 0) ? std::abs(min_max.getStart()) : min_max.getStart() * -1;
 }
 
+int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
+    SetSeed(iSimulation);
+    // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
+    const DataTimeRange& range = _timeRangeSets.getDataTimeRangeSets().front(); // TODO: for now, only take the first
+    DataTimeRange zeroRange(range.getStart() + _zero_translation_additive, range.getEnd() + _zero_translation_additive);
+    int TotalSimC = 0;
+    for (size_t i=0; i < treeNodes.size(); ++i) {
+        NodeStructure::count_t branchC = treeNodes.getBrC(i);
+        if (branchC) {
+            SimulationNode& simNode(treeSimNodes.at(i));
+            for (NodeStructure::count_t c=0; c < branchC; ++c) {
+                DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(zeroRange.getEnd()), _randomNumberGenerator));
+                ++(simNode.refIntC_C().at(idx));
+                ++TotalSimC;
+            }
+        }
+    }
+    assert(TotalSimC == _TotalC);
+    return _TotalC;
+}
+
 /** Creates randomized under the null hypothesis for Poisson model, assigning data to DataSet objects structures.
     Random number generator seed initialized based upon 'iSimulation' index. */
 int TemporalRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes) {
@@ -19,31 +40,16 @@ int TemporalRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner
     std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
 
     int TotalSimC = 0;
-    if (_parameters.isReadingSimulationData()) {
+    if (_read_data) {
         boost::mutex::scoped_lock lock(mutex);
-        TotalSimC = read(_parameters.getInputSimulationsFilename(), iSimulation, treeNodes, treeSimNodes);
+        TotalSimC = read(_read_filename, iSimulation, treeNodes, treeSimNodes);
     } else { // else standard randomization
-        SetSeed(iSimulation);
-        // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
-        const DataTimeRange& range = _timeRangeSets.getDataTimeRangeSets().front(); // TODO: for now, only take the first
-        DataTimeRange zeroRange(range.getStart() + _zero_translation_additive, range.getEnd() + _zero_translation_additive);
-        for(size_t i=0; i < treeNodes.size(); ++i) {
-            NodeStructure::count_t branchC = treeNodes.at(i)->getBrC();
-            if (branchC) {
-                SimulationNode& simNode(treeSimNodes.at(i));
-                for (NodeStructure::count_t c=0; c < branchC; ++c) {
-                    DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(zeroRange.getEnd()), _randomNumberGenerator));
-                    ++(simNode.refIntC_C().at(idx));
-                    ++TotalSimC;
-                }
-            }
-        }
-        TotalSimC = _TotalC;
+        TotalSimC = randomize(iSimulation, NodesProxy(treeNodes), treeSimNodes);
     }
     // write simulation data to file if requested
-    if (_parameters.isWritingSimulationData()) {
+    if (_write_data) {
         boost::mutex::scoped_lock lock(mutex);
-        write(_parameters.getOutputSimulationsFilename(), treeSimNodes);
+        write(_write_filename, treeSimNodes);
     }
     // now set simulation data structures as cumulative
     std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::setCumulative));
@@ -66,7 +72,7 @@ int TemporalRandomizer::read(const std::string& filename, unsigned int simulatio
     int count, total=0;
 
     //seek line offset for reading iSimulation'th simulation data
-    unsigned int skip = (simulation - 1) * treeSimNodes.size();
+    unsigned int skip = static_cast<unsigned int>((simulation - 1) * treeSimNodes.size());
     for (unsigned int i=0; i < skip; ++i)
         stream.ignore(std::numeric_limits<int>::max(), '\n');
 

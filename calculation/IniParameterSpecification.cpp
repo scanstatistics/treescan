@@ -11,6 +11,7 @@ const char * IniParameterSpecification::TemporalWindow          = "Temporal Wind
 const char * IniParameterSpecification::Inference               = "Inference";
 const char * IniParameterSpecification::Output                  = "Output";
 const char * IniParameterSpecification::AdditionalOutput        = "Additional Output";
+const char * IniParameterSpecification::PowerEvaluations        = "Power Evaluations";
 const char * IniParameterSpecification::PowerSimulations        = "Power Simulations";
 
 const char * IniParameterSpecification::RunOptions              = "Run Options";
@@ -77,8 +78,18 @@ void IniParameterSpecification::Build_1_1_x_ParameterList() {
     gvParameterInfo.push_back(std::make_pair(Output, (const char*)"results-filename"));
     gvParameterInfo.push_back(std::make_pair(Output, (const char*)"results-html"));
     gvParameterInfo.push_back(std::make_pair(Output, (const char*)"results-csv"));
-
     gvParameterInfo.push_back(std::make_pair(AdditionalOutput, (const char*)"results-llr"));
+    gvParameterInfo.push_back(std::make_pair(AdditionalOutput, (const char*)"report-critical-values"));
+
+    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"perform-power-evaluations"));
+    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"power-evaluation-type"));
+    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"critical-values-type"));
+    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"critical-value-05"));
+    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"critical-value-01"));
+    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"critical-value-001"));
+    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"power-evaluation-totalcases"));
+    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"power-evaluation-replications"));
+    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"alternative-hypothesis-filename"));
 
     gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"input-simulations"));
     gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"input-simulations-file"));

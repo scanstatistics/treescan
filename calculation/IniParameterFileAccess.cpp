@@ -120,6 +120,7 @@ void IniParameterFileAccess::Write(const char* sFilename) {
         WriteAdvancedAnalysisInferenceSettings(WriteFile);
         WriteAdvancedOutputSettings(WriteFile);
         WritePowerEvaluationsSettings(WriteFile);
+        WritePowerSimulationsSettings(WriteFile);
         WriteRunOptionSettings(WriteFile);
         WriteSystemSettings(WriteFile);
 
@@ -218,6 +219,7 @@ void IniParameterFileAccess::WriteAdvancedOutputSettings(IniFile& WriteFile) {
     std::string s;
     try {
         WriteIniParameter(WriteFile, Parameters::RESULTS_LLR, GetParameterString(Parameters::RESULTS_LLR, s).c_str(), GetParameterComment(Parameters::RESULTS_LLR));
+        WriteIniParameter(WriteFile, Parameters::REPORT_CRITICAL_VALUES, GetParameterString(Parameters::REPORT_CRITICAL_VALUES, s).c_str(), GetParameterComment(Parameters::REPORT_CRITICAL_VALUES));
     } catch (prg_exception& x) {
         x.addTrace("WriteAdvancedOutputSettings()","IniParameterFileAccess");
         throw;
@@ -228,12 +230,31 @@ void IniParameterFileAccess::WriteAdvancedOutputSettings(IniFile& WriteFile) {
 void IniParameterFileAccess::WritePowerEvaluationsSettings(IniFile& WriteFile) {
     std::string s;
     try {
+        WriteIniParameter(WriteFile, Parameters::POWER_EVALUATIONS, GetParameterString(Parameters::POWER_EVALUATIONS, s).c_str(), GetParameterComment(Parameters::POWER_EVALUATIONS));
+        WriteIniParameter(WriteFile, Parameters::POWER_EVALUATION_TYPE, GetParameterString(Parameters::POWER_EVALUATION_TYPE, s).c_str(), GetParameterComment(Parameters::POWER_EVALUATION_TYPE));
+        WriteIniParameter(WriteFile, Parameters::CRITICAL_VALUES_TYPE, GetParameterString(Parameters::CRITICAL_VALUES_TYPE, s).c_str(), GetParameterComment(Parameters::CRITICAL_VALUES_TYPE));
+        WriteIniParameter(WriteFile, Parameters::CRITICAL_VALUE_05, GetParameterString(Parameters::CRITICAL_VALUE_05, s).c_str(), GetParameterComment(Parameters::CRITICAL_VALUE_05));
+        WriteIniParameter(WriteFile, Parameters::CRITICAL_VALUE_01, GetParameterString(Parameters::CRITICAL_VALUE_01, s).c_str(), GetParameterComment(Parameters::CRITICAL_VALUE_01));
+        WriteIniParameter(WriteFile, Parameters::CRITICAL_VALUE_001, GetParameterString(Parameters::CRITICAL_VALUE_001, s).c_str(), GetParameterComment(Parameters::CRITICAL_VALUE_001));
+        WriteIniParameter(WriteFile, Parameters::POWER_EVALUATION_TOTALCASES, GetParameterString(Parameters::POWER_EVALUATION_TOTALCASES, s).c_str(), GetParameterComment(Parameters::POWER_EVALUATION_TOTALCASES));
+        WriteIniParameter(WriteFile, Parameters::POWER_EVALUATIONS_REPLICA, GetParameterString(Parameters::POWER_EVALUATIONS_REPLICA, s).c_str(), GetParameterComment(Parameters::POWER_EVALUATIONS_REPLICA));
+        WriteIniParameter(WriteFile, Parameters::POWER_EVALUATIONS_FILE, GetParameterString(Parameters::POWER_EVALUATIONS_FILE, s).c_str(), GetParameterComment(Parameters::POWER_EVALUATIONS_FILE));
+    } catch (prg_exception& x) {
+        x.addTrace("WritePowerEvaluationsSettings()","IniParameterFileAccess");
+        throw;
+    }
+}
+
+/** Writes parameter settings grouped under 'Power Simulations'. */
+void IniParameterFileAccess::WritePowerSimulationsSettings(IniFile& WriteFile) {
+    std::string s;
+    try {
         WriteIniParameter(WriteFile, Parameters::READ_SIMULATIONS, GetParameterString(Parameters::READ_SIMULATIONS, s).c_str(), GetParameterComment(Parameters::READ_SIMULATIONS));
         WriteIniParameter(WriteFile, Parameters::INPUT_SIM_FILE, GetParameterString(Parameters::INPUT_SIM_FILE, s).c_str(), GetParameterComment(Parameters::INPUT_SIM_FILE));
         WriteIniParameter(WriteFile, Parameters::WRITE_SIMULATIONS, GetParameterString(Parameters::WRITE_SIMULATIONS, s).c_str(), GetParameterComment(Parameters::WRITE_SIMULATIONS));
         WriteIniParameter(WriteFile, Parameters::OUTPUT_SIM_FILE, GetParameterString(Parameters::OUTPUT_SIM_FILE, s).c_str(), GetParameterComment(Parameters::OUTPUT_SIM_FILE));
     } catch (prg_exception& x) {
-        x.addTrace("WritePowerEvaluationsSettings()","IniParameterFileAccess");
+        x.addTrace("WritePowerSimulationsSettings()","IniParameterFileAccess");
         throw;
     }
 }

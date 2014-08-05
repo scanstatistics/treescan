@@ -178,6 +178,15 @@ std::string& getValueAsString(double value, std::string& s, unsigned int iSignif
     return s;
 }
 
+/** Returns double as string with specified decimal precision.
+*/
+std::string & getRoundAsString(double value, std::string& s, unsigned int precision) {
+    std::stringstream buffer;
+    buffer << std::setprecision(precision) << std::setiosflags(std::ios_base::fixed) << value;
+    s = buffer.str();
+    return s;
+}
+
 #ifdef _WINDOWS_
 #include "shlobj.h"
 

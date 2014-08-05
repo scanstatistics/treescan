@@ -10,7 +10,7 @@ PoissonRandomizer::PoissonRandomizer(bool conditional, int TotalC, double TotalN
 
 /** Creates randomized under the null hypothesis for Poisson model, assigning data to DataSet objects structures.
     Random number generator seed initialized based upon 'iSimulation' index. */
-int PoissonRandomizer::randomize(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) {
+int PoissonRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
     //reset seed of random number generator
     SetSeed(iSimulation);
 
@@ -23,22 +23,22 @@ int PoissonRandomizer::randomize(unsigned int iSimulation, const ScanRunner::Nod
         CasesLeft = _TotalC;
         ExpectedLeft = _TotalN;
         for (size_t i=0; i < treeNodes.size(); i++) {
-            cases = BinomialGenerator(CasesLeft, treeNodes.at(i)->getIntN() / ExpectedLeft);
+            cases = BinomialGenerator(CasesLeft, treeNodes.getIntN(i) / ExpectedLeft);
             //if(cases>0 && Node[i].IntN<0.1) cout << "node=" << i <<  ", CasesLeft=" << CasesLeft << ", c=" << cases << ", exp=" << Node[i].IntN << ", ExpLeft=" << ExpectedLeft << endl;
             treeSimNodes.at(i).refIntC() = cases; //treeNodes.at(i)->_SimIntC = cases;
             CasesLeft -= cases;
-            ExpectedLeft -= treeNodes.at(i)->getIntN();
+            ExpectedLeft -= treeNodes.getIntN(i);
             treeSimNodes.at(i).refBrC() = 0; //treeNodes.at(i)->_SimBrC = 0;  // Initilazing the branch cases with zero
         } // for i
     }  else { // if unconditional
         TotalSimC=0;
         ExpectedLeft = _TotalN;
         for(size_t i=0; i < treeNodes.size(); i++) {
-            cases = PoissonGenerator(treeNodes.at(i)->getIntN());
+            cases = PoissonGenerator(treeNodes.getIntN(i));
             //if(cases>0 && Node[i].IntN<0.1) cout << "node=" << i <<  ",  c=" << cases << ", exp=" << Node[i].IntN << endl;
             treeSimNodes.at(i).refIntC() = cases; //treeNodes.at(i)->_SimIntC=cases;
             TotalSimC += cases;
-            ExpectedLeft -= treeNodes.at(i)->getIntN();
+            ExpectedLeft -= treeNodes.getIntN(i);
             treeSimNodes.at(i).refBrC() = 0; //treeNodes.at(i)->_SimBrC = 0; // Initilazing the branch cases with zero
         }
     }

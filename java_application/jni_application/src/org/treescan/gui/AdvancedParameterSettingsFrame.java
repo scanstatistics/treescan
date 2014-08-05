@@ -132,8 +132,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _setDefaultButton.setEnabled(!getDefaultsSetForOutputOptions());
                 break;
         }
-    } 
-    
+    }
+
     /**
      * Checks to determine if only default values are set in the dialog Returns
      * true if only default values are set Returns false if user specified a
@@ -143,21 +143,42 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         boolean bReturn = true;
         bReturn &= (_cutFileTextField.getText().equals(""));
         return bReturn;
-    }    
-    
+    }
+
     public boolean getDefaultsSetForAnalysisOptions() {
         boolean bReturn = true;
         bReturn &= (Integer.parseInt(_montCarloReplicationsTextField.getText()) == 999);
         bReturn &= _percentageTemporalRadioButton.isSelected();
         bReturn &= (Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 50.0);
         bReturn &= (Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()) == 1);
-        bReturn &= (Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()) == 1);
+        bReturn &= (Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()) == 2);        
+        // Power Evaluations tab
+        bReturn &= (_performPowerEvalautions.isSelected() == false);
+        bReturn &= (_partOfRegularAnalysis.isSelected() == true);
+        bReturn &= _totalPowerCases.getText().equals("600");
+        bReturn &= _alternativeHypothesisFilename.getText().equals("");
+        bReturn &= _numberPowerReplications.getText().equals("1000");        
         return bReturn;
-    }    
-    
+    }
+
     public boolean getDefaultsSetForOutputOptions() {
         return _reportLLRResultsAsCsvTable.isSelected() == false;
-    }    
+    }
+
+    private Parameters.PowerEvaluationType getPowerEvaluationMethodType() {
+        Parameters.PowerEvaluationType eReturn = null;
+
+        if (_partOfRegularAnalysis.isSelected()) {
+            eReturn = Parameters.PowerEvaluationType.PE_WITH_ANALYSIS;
+        } else if (_powerEvaluationWithCaseFile.isSelected()) {
+            eReturn = Parameters.PowerEvaluationType.PE_ONLY_CASEFILE;
+        } else if (_powerEvaluationWithSpecifiedCases.isSelected()) {
+            eReturn = Parameters.PowerEvaluationType.PE_ONLY_SPECIFIED_CASES;
+        } else {
+            throw new IllegalArgumentException("No power evaluation option selected.");
+        }
+        return eReturn;
+    }
     
     private synchronized void startModal(FocusedTabSet focusedTabSet) {
         if (_glass != null) {
@@ -173,7 +194,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _focusedTabSet = focusedTabSet;
         }
         switch (_focusedTabSet) {
-            case OUTPUT: 
+            case OUTPUT:
                 setTitle("Advanced Output Options");
                 jTabbedPane1.addTab("Additional Output", null, _advancedoutputtab, null);
                 break;
@@ -181,6 +202,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 setTitle("Advanced Analysis Options");
                 jTabbedPane1.addTab("Temporal Window", null, _advancedtemporalwindowTab, null);
                 jTabbedPane1.addTab("Inference", null, _advancedanalysisTab, null);
+                jTabbedPane1.addTab("Power Evaluation", null, _advancedPowerEvaluation, null);                
                 break;
             case INPUT:
             default:
@@ -196,7 +218,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _rootPane.setGlassPane(_rootPaneInitialGlass);
         }
     }
-
+   
     /**
      * sets Parameters class with settings in form
      */
@@ -208,6 +230,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setMinimumWindowLength(Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()));
         parameters.setNumReplications(Integer.parseInt(_montCarloReplicationsTextField.getText()));
         parameters.setGeneratingLLRResults(_reportLLRResultsAsCsvTable.isSelected());
+        // Power Evaluations tab
+        parameters.setPerformPowerEvaluations(_powerEvaluationsGroup.isEnabled() && _performPowerEvalautions.isSelected());
+        parameters.setPowerEvaluationType(getPowerEvaluationMethodType().ordinal());
+        parameters.setPowerEvaluationTotalCases(Integer.parseInt((_totalPowerCases.getText().length() > 0 ? _totalPowerCases.getText() : "600")));
+        parameters.setPowerEvaluationReplications(Integer.parseInt(_numberPowerReplications.getText()));
+        parameters.setPowerEvaluationAltHypothesisFilename(_alternativeHypothesisFilename.getText());        
     }
 
     /**
@@ -234,7 +262,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private void setDefaultsForInputTab() {
         _cutFileTextField.setText("");
     }
-    
+
     /**
      * Sets default values for Analysis related tabs and their respective
      * controls pulled these default values from the CParameter class
@@ -245,18 +273,33 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _maxTemporalClusterSizeTextField.setText("50");
         _maxTemporalClusterSizeUnitsTextField.setText("1");
         _minTemporalClusterSizeUnitsTextField.setText("2");
+        // Power Evaluations tab
+        _performPowerEvalautions.setSelected(false);
+        _partOfRegularAnalysis.setSelected(true);
+        _totalPowerCases.setText("600");
+        _alternativeHypothesisFilename.setText("");
+        _numberPowerReplications.setText("1000");        
     }
-    
+
     private void setupInterface(final Parameters parameters) {
         _cutFileTextField.setText(parameters.getCutsFileName());
-        _cutFileTextField.setCaretPosition(0);      
-        _montCarloReplicationsTextField.setText(Integer.toString(parameters.getNumReplicationsRequested()));    
+        _cutFileTextField.setCaretPosition(0);
+        _montCarloReplicationsTextField.setText(Integer.toString(parameters.getNumReplicationsRequested()));
         _reportLLRResultsAsCsvTable.setSelected(parameters.isGeneratingLLRResults());
         _percentageTemporalRadioButton.setSelected(parameters.getMaximumWindowType() == Parameters.MaximumWindowType.PERCENTAGE_WINDOW);
         _timeTemporalRadioButton.setSelected(parameters.getMaximumWindowType() == Parameters.MaximumWindowType.FIXED_LENGTH);
         _maxTemporalClusterSizeTextField.setText(Double.toString(parameters.getMaximumWindowPercentage()));
         _maxTemporalClusterSizeUnitsTextField.setText(Integer.toString(parameters.getMaximumWindowLength()));
         _minTemporalClusterSizeUnitsTextField.setText(Integer.toString(parameters.getMinimumWindowLength()));
+        // Power Evaluations tab
+        _performPowerEvalautions.setSelected(parameters.getPerformPowerEvaluations());
+        _partOfRegularAnalysis.setSelected(parameters.getPowerEvaluationType() == Parameters.PowerEvaluationType.PE_ONLY_CASEFILE);
+        _powerEvaluationWithCaseFile.setSelected(parameters.getPowerEvaluationType() == Parameters.PowerEvaluationType.PE_ONLY_CASEFILE);
+        _powerEvaluationWithSpecifiedCases.setSelected(parameters.getPowerEvaluationType() == Parameters.PowerEvaluationType.PE_ONLY_SPECIFIED_CASES);
+        _totalPowerCases.setText(Integer.toString(parameters.getPowerEvaluationTotalCases()));
+        _numberPowerReplications.setText(Integer.toString(parameters.getPowerEvaluationReplications()));
+        _alternativeHypothesisFilename.setText(parameters.getPowerEvaluationAltHypothesisFilename());
+        enablePowerEvaluationsGroup();
     }
 
     /**
@@ -265,13 +308,54 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     private void setDefaultsForOutputTab() {
         _reportLLRResultsAsCsvTable.setSelected(false);
-    }    
-    
+    }
+
     /** validates all the settings in this dialog */
     public void CheckSettings() {
         CheckInputSettings();
         CheckInferenceSettings();
         CheckTemporalWindowSize();
+        CheckPowerEvaluationSettings();
+    }
+
+    /**
+     * Validates the power evaluations parameters in conjunction with other
+     * selected parameters.
+     */
+    private void CheckPowerEvaluationSettings() {
+        if (_performPowerEvalautions.isEnabled() && _performPowerEvalautions.isSelected()) {
+            if (_powerEvaluationWithSpecifiedCases.isSelected()) {
+                if (Integer.parseInt(_totalPowerCases.getText()) > 1) {
+                    throw new AdvFeaturesExpection("The number of power evaluation cases must be greater than zero.\n", FocusedTabSet.ANALYSIS, (Component) _totalPowerCases);
+                }
+                Parameters.ModelType modelType = _settings_window.getModelType();
+                Parameters.ConditionalType conditonalType = _settings_window.getConditionalType();
+                if (!(modelType == Parameters.ModelType.POISSON && conditonalType == Parameters.ConditionalType.TOTALCASES)) {
+                    throw new AdvFeaturesExpection("The power evaluation option to define total cases is only permitted with the conditional Poisson model.\n", FocusedTabSet.ANALYSIS, (Component) _totalPowerCases);
+                }
+            }
+            int replica = Integer.parseInt(_montCarloReplicationsTextField.getText());
+            int replicaPE = Integer.parseInt(_numberPowerReplications.getText());
+            if (replica < 999) {
+                throw new AdvFeaturesExpection("The minimum number of standard replications in the power evaluation is 999.\n", FocusedTabSet.ANALYSIS, (Component) _montCarloReplicationsTextField);
+            }
+            if (replicaPE < 100) {
+                throw new AdvFeaturesExpection("The minimum number of power replications in the power evaluation is 100.\n", FocusedTabSet.ANALYSIS, (Component) _numberPowerReplications);
+            }
+            if (replicaPE % 100 != 0) {
+                throw new AdvFeaturesExpection("The number of power replications in the power evaluation must be a multiple of 100.\n", FocusedTabSet.ANALYSIS, (Component) _numberPowerReplications);
+            }
+            if (replicaPE > replica + 1) {
+                throw new AdvFeaturesExpection("The number of standard replications must be at most one less than the number of power replications.\n", FocusedTabSet.ANALYSIS, (Component) _montCarloReplicationsTextField);
+            }
+            if (_alternativeHypothesisFilename.getText().length() == 0) {
+                throw new AdvFeaturesExpection("Please specify an alternative hypothesis  filename.", FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
+            }
+            if (!FileAccess.ValidateFileAccess(_alternativeHypothesisFilename.getText(), false)) {
+                throw new AdvFeaturesExpection("The alternative hypothesis file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
+                        FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
+            }
+        }
     }
     
     private void CheckInputSettings() {
@@ -279,8 +363,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (_cutFileTextField.getText().length() > 0 && !FileAccess.ValidateFileAccess(_cutFileTextField.getText(), false)) {
             throw new AdvFeaturesExpection("The cuts file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", FocusedTabSet.INPUT, (Component) _cutFileTextField);
         }
-    }   
-    
+    }
+
     private void CheckTemporalWindowSize() {
         String sErrorMessage;
         double unitsInDataTimeRange, maximumUnitsTemporalSize = 0;
@@ -330,21 +414,21 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             sErrorMessage = "The minimum temporal size is greater than the maximum temporal cluster size of " + maximumUnitsTemporalSize + " time units.";
             throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField);
         }
-        
+
         int shortestTemporalWindow = _settings_window.getNumUnitsInShortestTemporalWindow();
         // check whether any cuts will be evaluated given the specified maximum temporal window size and temporal window ranges
         if (maximumUnitsTemporalSize < shortestTemporalWindow) {
-            throw new AdvFeaturesExpection("No cuts will be evaluated since the maximum window size is " + maximumUnitsTemporalSize + " time units\nyet the minimum number of time units in temporal window is " + shortestTemporalWindow + ".", 
-                                           FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField);        
-        }        
+            throw new AdvFeaturesExpection("No cuts will be evaluated since the maximum window size is " + maximumUnitsTemporalSize + " time units\nyet the minimum number of time units in temporal window is " + shortestTemporalWindow + ".",
+                                           FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField);
+        }
         // check whether any cuts will be evaluated given the specified minimum temporal window size and temporal window ranges
         int unitsInTemporalWindow = _settings_window.getNumUnitsInTemporalWindow();
         if (minimumUnitsTemporalSize > unitsInTemporalWindow) {
-            throw new AdvFeaturesExpection("No cuts will be evaluated since the minimum window size is " + minimumUnitsTemporalSize + "\nyet the maximum number of time units in temporal window is " + unitsInTemporalWindow + ".", 
-                                           FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField);        
+            throw new AdvFeaturesExpection("No cuts will be evaluated since the minimum window size is " + minimumUnitsTemporalSize + "\nyet the maximum number of time units in temporal window is " + unitsInTemporalWindow + ".",
+                                           FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField);
         }
     }
-    
+
     private void CheckInferenceSettings() {
         int dNumReplications;
         if (_montCarloReplicationsTextField.getText().trim().length() == 0) {
@@ -354,7 +438,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (!((dNumReplications == 0 || dNumReplications == 9 || dNumReplications == 19 || (dNumReplications + 1) % 1000 == 0))) {
             throw new AdvFeaturesExpection("Invalid number of Monte Carlo replications.\nChoices are: 0, 9, 999, or value ending in 999.", FocusedTabSet.ANALYSIS, (Component) _montCarloReplicationsTextField);
         }
-    }   
+    }
 
     /**
      * enables or disables the temporal options group control
@@ -370,8 +454,34 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _minTemporalOptionsGroup.setEnabled(bEnable);
         _minTemporalClusterSizeUnitsTextField.setEnabled(bEnable);
         _minTemporalTimeUnitsLabel.setEnabled(bEnable);
-    }    
-    
+    }
+
+    /**
+     * Enabled the power evaluations group based upon current settings.
+     */
+    public void enablePowerEvaluationsGroup() {
+        Parameters.ScanType scanType = _settings_window.getScanType();
+        Parameters.ModelType eModelType = _settings_window.getModelType();
+
+        boolean bEnableGroup = scanType == Parameters.ScanType.TREEONLY && 
+                               (eModelType == Parameters.ModelType.POISSON || 
+                                (eModelType == Parameters.ModelType.BERNOULLI && _settings_window.getConditionalType() == Parameters.ConditionalType.UNCONDITIONAL));
+        _powerEvaluationsGroup.setEnabled(bEnableGroup);
+        _performPowerEvalautions.setEnabled(bEnableGroup);
+        _partOfRegularAnalysis.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _powerEvaluationWithCaseFile.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _powerEvaluationWithSpecifiedCases.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected() && eModelType == Parameters.ModelType.POISSON);        
+        if (_powerEvaluationsGroup.isEnabled() && _powerEvaluationWithSpecifiedCases.isSelected() && !_powerEvaluationWithSpecifiedCases.isEnabled())
+            _powerEvaluationWithCaseFile.setSelected(true);            
+        _totalPowerCases.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected() && _powerEvaluationWithSpecifiedCases.isSelected());
+        _powerEvaluationWithSpecifiedCasesLabel.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected() && _powerEvaluationWithSpecifiedCases.isSelected());
+        _alternativeHypothesisFilenameLabel.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _alternativeHypothesisFilename.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _alternativeHypothesisFilenameButton.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _numberPowerReplicationsLabel.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        _numberPowerReplications.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -381,6 +491,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private void initComponents() {
 
         maximumWindowButtonGroup = new javax.swing.ButtonGroup();
+        _powerEstimationButtonGroup = new javax.swing.ButtonGroup();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         _advancedinputTab = new javax.swing.JPanel();
         _cutFileLabel = new javax.swing.JLabel();
@@ -405,6 +516,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _minTemporalOptionsGroup = new javax.swing.JPanel();
         _minTemporalClusterSizeUnitsTextField = new javax.swing.JTextField();
         _minTemporalTimeUnitsLabel = new javax.swing.JLabel();
+        _advancedPowerEvaluation = new javax.swing.JPanel();
+        _powerEvaluationsGroup = new javax.swing.JPanel();
+        _performPowerEvalautions = new javax.swing.JCheckBox();
+        _partOfRegularAnalysis = new javax.swing.JRadioButton();
+        _powerEvaluationWithCaseFile = new javax.swing.JRadioButton();
+        _powerEvaluationWithSpecifiedCases = new javax.swing.JRadioButton();
+        _totalPowerCases = new javax.swing.JTextField();
+        _powerEvaluationWithSpecifiedCasesLabel = new javax.swing.JLabel();
+        _numberPowerReplicationsLabel = new javax.swing.JLabel();
+        _numberPowerReplications = new javax.swing.JTextField();
+        _alternativeHypothesisFilenameLabel = new javax.swing.JLabel();
+        _alternativeHypothesisFilename = new javax.swing.JTextField();
+        _alternativeHypothesisFilenameButton = new javax.swing.JButton();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
@@ -477,7 +601,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_cutFileBrowseButton)
                     .addComponent(_cutFileImportButton)
                     .addComponent(_cutFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(170, Short.MAX_VALUE))
+                .addContainerGap(185, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced Input", _advancedinputTab);
@@ -538,7 +662,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advancedanalysisTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(161, Short.MAX_VALUE))
+                .addContainerGap(176, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _advancedanalysisTab);
@@ -583,7 +707,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advancedoutputtabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(155, Short.MAX_VALUE))
+                .addContainerGap(170, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _advancedoutputtab);
@@ -766,10 +890,185 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(46, Short.MAX_VALUE))
+                .addContainerGap(61, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _advancedtemporalwindowTab);
+
+        _powerEvaluationsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Statistical Power Evaluation"));
+
+        _performPowerEvalautions.setText("Perform Power Evaluations");
+        _performPowerEvalautions.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enablePowerEvaluationsGroup();
+                enableSetDefaultsButton();
+            }
+        });
+
+        _powerEstimationButtonGroup.add(_partOfRegularAnalysis);
+        _partOfRegularAnalysis.setSelected(true);
+        _partOfRegularAnalysis.setText("As Part of Regular Analysis");
+        _partOfRegularAnalysis.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enablePowerEvaluationsGroup();
+                enableSetDefaultsButton();
+            }
+        });
+
+        _powerEstimationButtonGroup.add(_powerEvaluationWithCaseFile);
+        _powerEvaluationWithCaseFile.setText("Power Evaluation Only, Use Total Cases From Case File");
+        _powerEvaluationWithCaseFile.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enablePowerEvaluationsGroup();
+                enableSetDefaultsButton();
+            }
+        });
+
+        _powerEstimationButtonGroup.add(_powerEvaluationWithSpecifiedCases);
+        _powerEvaluationWithSpecifiedCases.setText("Power Evaluation Only, Use ");
+        _powerEvaluationWithSpecifiedCases.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enablePowerEvaluationsGroup();
+                enableSetDefaultsButton();
+            }
+        });
+
+        _totalPowerCases.setText("600");
+        _totalPowerCases.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_totalPowerCases.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _totalPowerCases.setText("600");
+                enableSetDefaultsButton();
+            }
+        });
+        _totalPowerCases.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_totalPowerCases, e, 10);
+            }
+        });
+        _totalPowerCases.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _powerEvaluationWithSpecifiedCasesLabel.setText("Total Cases");
+
+        _numberPowerReplicationsLabel.setText("Number of replications (100, 1000 or multiple of 100):"); // NOI18N
+
+        _numberPowerReplications.setText("1000"); // NOI18N
+        _numberPowerReplications.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_numberPowerReplications.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _numberPowerReplications.setText("1000");
+                enableSetDefaultsButton();
+            }
+        });
+        _numberPowerReplications.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_numberPowerReplications, e, 10);
+            }
+        });
+        _numberPowerReplications.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _alternativeHypothesisFilenameLabel.setText("Alternative Hypothesis File:"); // NOI18N
+
+        _alternativeHypothesisFilename.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
+        _alternativeHypothesisFilenameButton.setText("..."); // NOI18N
+        _alternativeHypothesisFilenameButton.setToolTipText("Open file wizard for alternative hypothesis file ..."); // NOI18N
+        _alternativeHypothesisFilenameButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("csv","CSV Files (*.csv)"), new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("ha","Alternative Hypothesis Files (*.ha)")};
+                FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Alternative Hypothesis File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+                File file = select.browse_load(true);
+                if (file != null) {
+                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                    _alternativeHypothesisFilename.setText(file.getAbsolutePath());
+                }
+            }
+        });
+
+        javax.swing.GroupLayout _powerEvaluationsGroupLayout = new javax.swing.GroupLayout(_powerEvaluationsGroup);
+        _powerEvaluationsGroup.setLayout(_powerEvaluationsGroupLayout);
+        _powerEvaluationsGroupLayout.setHorizontalGroup(
+            _powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_performPowerEvalautions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_partOfRegularAnalysis, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_powerEvaluationWithCaseFile, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                        .addComponent(_powerEvaluationWithSpecifiedCases)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_totalPowerCases, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_powerEvaluationWithSpecifiedCasesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_alternativeHypothesisFilenameLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                        .addComponent(_numberPowerReplicationsLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_numberPowerReplications, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 231, Short.MAX_VALUE))
+                    .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                        .addComponent(_alternativeHypothesisFilename)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_alternativeHypothesisFilenameButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        _powerEvaluationsGroupLayout.setVerticalGroup(
+            _powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                .addComponent(_performPowerEvalautions)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_partOfRegularAnalysis)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_powerEvaluationWithCaseFile)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_powerEvaluationWithSpecifiedCases)
+                    .addComponent(_totalPowerCases, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_powerEvaluationWithSpecifiedCasesLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_numberPowerReplicationsLabel)
+                    .addComponent(_numberPowerReplications, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_alternativeHypothesisFilenameLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_alternativeHypothesisFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_alternativeHypothesisFilenameButton))
+                .addGap(0, 20, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout _advancedPowerEvaluationLayout = new javax.swing.GroupLayout(_advancedPowerEvaluation);
+        _advancedPowerEvaluation.setLayout(_advancedPowerEvaluationLayout);
+        _advancedPowerEvaluationLayout.setHorizontalGroup(
+            _advancedPowerEvaluationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advancedPowerEvaluationLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _advancedPowerEvaluationLayout.setVerticalGroup(
+            _advancedPowerEvaluationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advancedPowerEvaluationLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        jTabbedPane1.addTab("Power Evaluation", _advancedPowerEvaluation);
 
         _closeButton.setText("Close"); // NOI18N
         _closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -800,7 +1099,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -813,10 +1112,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel _advancedPowerEvaluation;
     private javax.swing.JPanel _advancedanalysisTab;
     private javax.swing.JPanel _advancedinputTab;
     private javax.swing.JPanel _advancedoutputtab;
     private javax.swing.JPanel _advancedtemporalwindowTab;
+    private javax.swing.JTextField _alternativeHypothesisFilename;
+    private javax.swing.JButton _alternativeHypothesisFilenameButton;
+    private javax.swing.JLabel _alternativeHypothesisFilenameLabel;
     private javax.swing.JButton _closeButton;
     private javax.swing.JButton _cutFileBrowseButton;
     private javax.swing.JButton _cutFileImportButton;
@@ -831,11 +1134,21 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _minTemporalOptionsGroup;
     private javax.swing.JLabel _minTemporalTimeUnitsLabel;
     private javax.swing.JTextField _montCarloReplicationsTextField;
+    private javax.swing.JTextField _numberPowerReplications;
+    private javax.swing.JLabel _numberPowerReplicationsLabel;
+    private javax.swing.JRadioButton _partOfRegularAnalysis;
     private javax.swing.JLabel _percentageOfStudyPeriodLabel;
     private javax.swing.JRadioButton _percentageTemporalRadioButton;
+    private javax.swing.JCheckBox _performPowerEvalautions;
+    private javax.swing.ButtonGroup _powerEstimationButtonGroup;
+    private javax.swing.JRadioButton _powerEvaluationWithCaseFile;
+    private javax.swing.JRadioButton _powerEvaluationWithSpecifiedCases;
+    private javax.swing.JLabel _powerEvaluationWithSpecifiedCasesLabel;
+    private javax.swing.JPanel _powerEvaluationsGroup;
     private javax.swing.JCheckBox _reportLLRResultsAsCsvTable;
     private javax.swing.JButton _setDefaultButton;
     private javax.swing.JRadioButton _timeTemporalRadioButton;
+    private javax.swing.JTextField _totalPowerCases;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JTabbedPane jTabbedPane1;

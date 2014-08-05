@@ -8,22 +8,22 @@
 
 int AbstractDenominatorDataRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes) {
     int TotalSimC;
-    if (_parameters.isReadingSimulationData()) {
+    if (_read_data) {
         boost::mutex::scoped_lock lock(mutex);
-        TotalSimC = read(_parameters.getInputSimulationsFilename(), iSimulation, treeNodes, treeSimNodes);
+        TotalSimC = read(_read_filename, iSimulation, treeNodes, treeSimNodes);
     } else { // else standard randomization
-        TotalSimC = randomize(iSimulation, treeNodes, treeSimNodes);
+        TotalSimC = randomize(iSimulation, NodesProxy(treeNodes, _parameters.getProbability()), treeSimNodes);
     }
     // write simulation data to file if requested
-    if (_parameters.isWritingSimulationData()) {
+    if (_write_data) {
         boost::mutex::scoped_lock lock(mutex);
-        write(_parameters.getOutputSimulationsFilename(), treeSimNodes);
+        write(_write_filename, treeSimNodes);
     }
     //------------------------ UPDATING THE TREE -----------------------------------
     for (size_t i=0; i < treeNodes.size(); i++) {
         if (treeNodes.at(i)->getAnforlust()==false) 
             addSimC_C(i, treeSimNodes.at(i).refIntC_C()/*_Nodes.at(i)->_SimIntC*/, treeNodes, treeSimNodes);
-        else 
+        else
             addSimC_CAnforlust(i, treeSimNodes.at(i).refIntC_C()/*_Nodes.at(i)->_SimIntC*/, treeNodes, treeSimNodes);
     }
     return TotalSimC;

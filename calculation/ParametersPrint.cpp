@@ -10,32 +10,33 @@
 
 /** Prints parameters, in a particular format, to passed ascii file. */
 void ParametersPrint::Print(std::ostream& out) const {
-    try {
-        AsciiPrintFormat::PrintSectionSeparatorString(out, 0, 2);
-        out << "PARAMETER SETTINGS" << std::endl;
+    AsciiPrintFormat::PrintSectionSeparatorString(out, 0, 2);
+    out << "PARAMETER SETTINGS" << std::endl;
 
-        SettingContainer_t settings;
-        //print 'Input' tab settings
-        WriteSettingsContainer(getInputParameters(settings), "Input", out);
-        // print 'Analysis' tab settings
-        WriteSettingsContainer(getAnalysisParameters(settings), "Analysis", out);
-        //print 'Output' tab settings
-        WriteSettingsContainer(getOutputParameters(settings), "Output", out);
-        //print 'Advanced Input' tab settings
-        WriteSettingsContainer(getAdvancedInputParameters(settings), "Advanced Input", out);
-        //print 'Temporal Window' tab settings
-        WriteSettingsContainer(getTemporalWindowParameters(settings), "Temporal Window", out);
-        //print 'Inference' tab settings
-        WriteSettingsContainer(getInferenceParameters(settings), "Inference", out);
-        //print 'RunOptions' settings
-        WriteSettingsContainer(getRunOptionsParameters(settings), "Run Options", out);
-        //print 'System' parameters
-        WriteSettingsContainer(getSystemParameters(settings), "System", out);
-        AsciiPrintFormat::PrintSectionSeparatorString(out, 0, 1);
-    } catch (prg_exception& x) {
-        x.addTrace("Print()","ParametersPrint");
-        throw;
-    }
+    SettingContainer_t settings;
+    //print 'Input' tab settings
+    WriteSettingsContainer(getInputParameters(settings), "Input", out);
+    // print 'Analysis' tab settings
+    WriteSettingsContainer(getAnalysisParameters(settings), "Analysis", out);
+    //print 'Output' tab settings
+    WriteSettingsContainer(getOutputParameters(settings), "Output", out);
+    //print 'Advanced Input' tab settings
+    WriteSettingsContainer(getAdvancedInputParameters(settings), "Advanced Input", out);
+    //print 'Temporal Window' tab settings
+    WriteSettingsContainer(getTemporalWindowParameters(settings), "Temporal Window", out);
+    //print 'Inference' tab settings
+    WriteSettingsContainer(getInferenceParameters(settings), "Inference", out);
+    //print 'Power Evaluations' tab settings
+    WriteSettingsContainer(getPowerEvaluationsParameters(settings), "Power Evaluations", out);
+    //print 'Additional Output' tab settings
+    WriteSettingsContainer(getAdditionalOutputParameters(settings), "Additional Output", out);
+    //print 'Power Simulations' tab settings
+    WriteSettingsContainer(getPowerSimulationsParameters(settings), "Power Simulations", out);
+    //print 'RunOptions' settings
+    WriteSettingsContainer(getRunOptionsParameters(settings), "Run Options", out);
+    //print 'System' parameters
+    WriteSettingsContainer(getSystemParameters(settings), "System", out);
+    AsciiPrintFormat::PrintSectionSeparatorString(out, 0, 1);
 }
 
 /** Prints parameters, in a particular format, to passed ascii file. */
@@ -48,6 +49,18 @@ void ParametersPrint::PrintHTML(std::ostream& out) const {
     WriteSettingsContainerHTML(getAnalysisParameters(settings), "Analysis", out);
     //print 'Output' tab settings
     WriteSettingsContainerHTML(getOutputParameters(settings), "Output", out);
+    //print 'Advanced Input' tab settings
+    WriteSettingsContainerHTML(getAdvancedInputParameters(settings), "Advanced Input", out);
+    //print 'Inference' tab settings
+    WriteSettingsContainerHTML(getInferenceParameters(settings), "Inference", out);
+    //print 'Temporal Window' tab settings
+    WriteSettingsContainerHTML(getTemporalWindowParameters(settings), "Temporal Window", out);
+    //print 'Power Evaluations' tab settings
+    WriteSettingsContainerHTML(getPowerEvaluationsParameters(settings), "Power Evaluations", out);
+    //print 'Additional Output' tab settings
+    WriteSettingsContainerHTML(getAdditionalOutputParameters(settings), "Additional Output", out);
+    //print 'Power Simulations' tab settings
+    WriteSettingsContainerHTML(getPowerSimulationsParameters(settings), "Power Simulations", out);
     //print 'RunOptions' settings
     WriteSettingsContainerHTML(getRunOptionsParameters(settings), "Run Options", out);
     //print 'System' parameters
@@ -67,6 +80,20 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(Settin
         settings.push_back(std::make_pair("Data Time Range",_parameters.getDataTimeRangeSet().toString(buffer)));
     //buffer = (_parameters.isDuplicates() ? "Yes" : "No");
     //settings.push_back(std::make_pair("Duplicates",buffer));
+    return settings;
+}
+
+/** Prints 'Additional Output' tab parameters to file stream. */
+ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParameters(SettingContainer_t & settings) const {
+    std::string buffer;
+    settings.clear();
+    settings.push_back(std::make_pair("Report Simulated Log Likelihood Ratios",(_parameters.isGeneratingLLRResults() ? "Yes" : "No")));
+    if (_parameters.isGeneratingLLRResults()) {
+        settings.push_back(std::make_pair("Simulated Log Likelihood Ratios", LoglikelihoodRatioWriter::getFilename(_parameters, buffer)));
+    }
+    if (_parameters.isGeneratingTableResults() && _parameters.isPrintColumnHeaders()) {
+        settings.push_back(std::make_pair("Print Column Headers","Yes"));
+    }
     return settings;
 }
 
@@ -112,26 +139,6 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
     return settings;
 }
 
-/** Prints 'Temporal Window' tab parameters to file stream. */
-ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParameters(SettingContainer_t & settings) const {
-    std::string buffer;
-    settings.clear();    
-    switch (_parameters.getMaximumWindowType()) {
-        case Parameters::PERCENTAGE_WINDOW :
-            printString(buffer, "%g%% of Data Time Range", _parameters.getMaximumWindowPercentage());
-            settings.push_back(std::make_pair("Maximum Temporal Window", buffer)); 
-            break;
-        case Parameters::FIXED_LENGTH :
-            printString(buffer, "%u Time Units", _parameters.getMaximumWindowLength());
-            settings.push_back(std::make_pair("Maximum Temporal Window",buffer)); 
-            break;
-        default: throw prg_error("Unknown maximum window type (%d).", "getTemporalWindowParameters()", _parameters.getMaximumWindowType());
-    }
-    printString(buffer, "%u Time Units", _parameters.getMinimumWindowLength());
-    settings.push_back(std::make_pair("Minimum Temporal Window",buffer));
-    return settings;
-}
-
 /** Prints 'Inference' tab parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getInferenceParameters(SettingContainer_t & settings) const {
     std::string buffer;
@@ -163,12 +170,62 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getOutputParameters(Setti
     if (_parameters.isGeneratingTableResults()) {
         settings.push_back(std::make_pair("Results CSV Table", CutsRecordWriter::getFilename(_parameters, buffer)));
     }
-    settings.push_back(std::make_pair("Report Simulated Log Likelihood Ratios",(_parameters.isGeneratingLLRResults() ? "Yes" : "No")));
-    if (_parameters.isGeneratingLLRResults()) {
-        settings.push_back(std::make_pair("Simulated Log Likelihood Ratios", LoglikelihoodRatioWriter::getFilename(_parameters, buffer)));
+    return settings;
+}
+
+/** Prints 'Power Evaluations' parameters to file stream. */
+ParametersPrint::SettingContainer_t & ParametersPrint::getPowerEvaluationsParameters(SettingContainer_t & settings) const {
+    std::string buffer;
+    settings.clear();
+    if (_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI) {
+        settings.push_back(std::make_pair("Perform Power Evaluations", (_parameters.getPerformPowerEvaluations() ? "Yes" : "No")));
+        if (!_parameters.getPerformPowerEvaluations()) return settings;
+        buffer = "Power Evaluation Type";
+        switch (_parameters.getPowerEvaluationType()) {
+            case Parameters::PE_WITH_ANALYSIS: 
+                settings.push_back(std::make_pair(buffer,"Standard Analysis and Power Evaluation Together")); break;
+            case Parameters::PE_ONLY_CASEFILE: 
+                settings.push_back(std::make_pair(buffer,"Only Power Evaluation, Using Total Cases from Case File")); break;
+            case Parameters::PE_ONLY_SPECIFIED_CASES: 
+                settings.push_back(std::make_pair(buffer,"Only Power Evaluation, Using Defined Total Cases")); 
+                printString(buffer, "%i", _parameters.getPowerEvaluationTotalCases());
+                settings.push_back(std::make_pair("Power Evaluation Total Cases",buffer)); 
+                break;
+            default: throw prg_error("Unknown power evaluation type '%d'.\n", "PrintPowerEvaluationsParameters()", _parameters.getPowerEvaluationType());
+        }
+        buffer = "Critical Values";
+        switch (_parameters.getCriticalValuesType()) {
+            case Parameters::CV_MONTECARLO: 
+                settings.push_back(std::make_pair(buffer,"Monte Carlo")); break;
+            case Parameters::CV_POWER_VALUES: 
+                settings.push_back(std::make_pair(buffer,"User Defined"));
+                printString(buffer, "%lf", _parameters.getCriticalValue05());
+                settings.push_back(std::make_pair("Critical Value .05",buffer));
+                printString(buffer, "%lf", _parameters.getCriticalValue01());
+                settings.push_back(std::make_pair("Critical Value .01",buffer));
+                printString(buffer, "%lf", _parameters.getCriticalValue001());
+                settings.push_back(std::make_pair("Critical Value .001",buffer));
+                break;
+            default: throw prg_error("Unknown critical values type '%d'.\n", "PrintPowerEvaluationsParameters()", _parameters.getCriticalValuesType());
+        }
+        printString(buffer, "%u", _parameters.getPowerEvaluationReplications());
+        settings.push_back(std::make_pair("Number of Replications",buffer));
+        settings.push_back(std::make_pair("Alternative Hypothesis File",_parameters.getPowerEvaluationAltHypothesisFilename()));
     }
-    if (_parameters.isGeneratingTableResults() && _parameters.isPrintColumnHeaders()) {
-        settings.push_back(std::make_pair("Print Column Headers","Yes"));
+    return settings;
+}
+
+/** Prints 'Power Simulations' parameters to file stream. */
+ParametersPrint::SettingContainer_t & ParametersPrint::getPowerSimulationsParameters(SettingContainer_t & settings) const {
+    std::string buffer;
+    settings.clear();
+    if (_parameters.isReadingSimulationData()) {
+        settings.push_back(std::make_pair("Read Simulation Data", "Yes"));
+        settings.push_back(std::make_pair("Simulation Input Data File",_parameters.getInputSimulationsFilename()));
+    }
+    if (_parameters.isWritingSimulationData()) {
+        settings.push_back(std::make_pair("Write Simulation Data", "Yes"));
+        settings.push_back(std::make_pair("Simulation Output Data File",_parameters.getOutputSimulationsFilename()));
     }
     return settings;
 }
@@ -204,6 +261,26 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getSystemParameters(Setti
         printString(buffer, "%u.%u.%u", IniVersion.iMajor, IniVersion.iMinor, IniVersion.iRelease);
         settings.push_back(std::make_pair("Parameters Version",buffer));
     }
+    return settings;
+}
+
+/** Prints 'Temporal Window' tab parameters to file stream. */
+ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParameters(SettingContainer_t & settings) const {
+    std::string buffer;
+    settings.clear();    
+    switch (_parameters.getMaximumWindowType()) {
+        case Parameters::PERCENTAGE_WINDOW :
+            printString(buffer, "%g%% of Data Time Range", _parameters.getMaximumWindowPercentage());
+            settings.push_back(std::make_pair("Maximum Temporal Window", buffer)); 
+            break;
+        case Parameters::FIXED_LENGTH :
+            printString(buffer, "%u Time Units", _parameters.getMaximumWindowLength());
+            settings.push_back(std::make_pair("Maximum Temporal Window",buffer)); 
+            break;
+        default: throw prg_error("Unknown maximum window type (%d).", "getTemporalWindowParameters()", _parameters.getMaximumWindowType());
+    }
+    printString(buffer, "%u Time Units", _parameters.getMinimumWindowLength());
+    settings.push_back(std::make_pair("Minimum Temporal Window",buffer));
     return settings;
 }
 

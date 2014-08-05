@@ -12,29 +12,39 @@
 #include <boost/random/uniform_int.hpp>
 #include "FileName.h"
 
+const char * ParametersValidate::MSG_INVALID_PARAM = "Invalid Parameter Setting";
+
+/**/
+bool ParametersValidate::checkFileExists(const std::string& filename, const std::string& filetype, BasePrint& PrintDirection, bool writeCheck) const {
+    std::string buffer = filename;
+
+    trimString(buffer);
+    if (buffer.empty()) {
+        PrintDirection.Printf("%s:\nThe %s file could not be opened. No filename was specified.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filetype.c_str());
+        return false;
+    } else if (!ValidateFileAccess(buffer, writeCheck)) {
+        PrintDirection.Printf("%s:\nThe %s file '%s' could not be opened for %s. "
+                              "Please confirm that the path and/or file name are valid and that you "
+                              "have permissions to %s from this directory and file.\n",
+                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filetype.c_str(), buffer.c_str(), 
+                              (writeCheck ? "writing": "reading"), (writeCheck ? "write": "read"));
+        return false;
+    }
+    return true;
+}
+
 /** Validates that given current state of settings, parameters and their relationships
     with other parameters are correct. Errors are sent to print direction and*/
 bool ParametersValidate::Validate(BasePrint& printDirection) const {
-  bool bValid=true;
-  try {
-    if (! ValidateInputParameters(printDirection))
-      bValid = false;
-    if (! ValidateAnalysisParameters(printDirection))
-      bValid = false;
-    if (! ValidateOutputParameters(printDirection))
-      bValid = false;
-    if (! ValidateTemporalWindowParameters(printDirection))
-      bValid = false;
-    if (! ValidateRandomizationSeed(printDirection))
-      bValid = false;
-  }
-  catch (prg_exception& x) {
-    x.addTrace("Validate()","ParametersValidate");
-    throw;
-  }
-  return bValid;
+    bool bValid=true;
+    bValid &= ValidateInputParameters(printDirection);
+    bValid &= ValidateAnalysisParameters(printDirection);
+    bValid &=  ValidateOutputParameters(printDirection);
+    bValid &= ValidateTemporalWindowParameters(printDirection);
+    bValid &= ValidatePowerEvaluationParametersParameters(printDirection);
+    bValid &=  ValidateRandomizationSeed(printDirection);
+    return bValid;
 }
-
 
 /** Validates input/output file parameters. */
 bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) const {
@@ -211,6 +221,65 @@ bool ParametersValidate::ValidateOutputParameters(BasePrint & PrintDirection) co
     throw;
   }
   return bValid;
+}
+
+/** Validates power evaluation options. */
+bool ParametersValidate::ValidatePowerEvaluationParametersParameters(BasePrint & PrintDirection) const {
+    if (!_parameters.getPerformPowerEvaluations()) return true;
+
+    bool bValid=true;
+    if (!(_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI)) {
+        PrintDirection.Printf("%s:\nThe power evaluation is only available for the Poisson and Bernoulli models.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        bValid = false;
+    }
+    if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() != Parameters::UNCONDITIONAL) {
+        PrintDirection.Printf("%s:\nThe power evaluation is available for unconditional Bernoulli only.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        bValid = false;
+    }
+    if (_parameters.getNumReplicationsRequested() < 999) {
+        PrintDirection.Printf("%s:\nThe minimum number of standard replications in the power evaluation is %u.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, 999);
+        bValid = false;
+    }
+    if (_parameters.getPowerEvaluationReplications() < 100) {
+        PrintDirection.Printf("%s:\nThe minimum number of power replications in the power evaluation is %u.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, 100);
+        bValid = false;
+    }
+    if (_parameters.getPowerEvaluationReplications() % 100) {
+        PrintDirection.Printf("%s:\nThe number of power replications in the power evaluation must be a multiple of 100.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        bValid = false;
+    }
+    if (_parameters.getPowerEvaluationReplications() > _parameters.getNumReplicationsRequested() + 1) {
+        PrintDirection.Printf("%s:\nThe number of standard replications must be at most one less than the number of power replications (%u).\n", 
+                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, _parameters.getPowerEvaluationReplications());
+        bValid = false;
+    }
+    if (_parameters.getCriticalValuesType() == Parameters::CV_POWER_VALUES) {
+        if (_parameters.getCriticalValue05() < 0.0) {
+            bValid = false;
+            PrintDirection.Printf("%s:\nThe power evaluation critical value at .05 '%lf' is invalid. Please use a value greater than zero.\n",
+                                  BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, _parameters.getCriticalValue05());
+        }
+        if (_parameters.getCriticalValue01() < 0.0) {
+            bValid = false;
+            PrintDirection.Printf("%s:\nThe power evaluation critical value at .01 '%lf' is invalid. Please use a value greater than zero.\n",
+                                  BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, _parameters.getCriticalValue01());
+        }
+        if (_parameters.getCriticalValue001() < 0.0) {
+            bValid = false;
+            PrintDirection.Printf("%s:\nThe power evaluation critical value at .001 '%lf' is invalid. Please use a value greater than zero.\n",
+                                  BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, _parameters.getCriticalValue001());
+        }
+    }
+    if (_parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES && _parameters.getPowerEvaluationTotalCases() < 1) {
+        PrintDirection.Printf("%s:\nThe number of specified power evaluation cases must be greater than one.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        bValid = false;
+    }
+    if (_parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES &&
+        !(_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::TOTALCASES)) {
+        PrintDirection.Printf("%s:\nThe power evaluation option to define total cases is only permitted with the conditional Poisson model.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        bValid = false;
+    }
+    return bValid;
 }
 
 /** Validates temporal window settings. */

@@ -172,6 +172,7 @@
   <ItemGroup>
     <ClCompile Include="..\boost\boost_1_52_0\libs\system\src\error_code.cpp" />
     <ClCompile Include="..\boost\boost_1_52_0\libs\thread\src\win32\thread.cpp" />
+    <ClCompile Include="..\calculation\loglikelihood\CriticalValues.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\Loglikelihood.cpp" />
     <ClCompile Include="..\calculation\output\DataFileWriter.cpp" />
     <ClCompile Include="..\calculation\output\ResultsFileWriter.cpp" />
@@ -180,9 +181,11 @@
     <ClCompile Include="..\calculation\ParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\Parameters.cpp" />
     <ClCompile Include="..\calculation\ParametersPrint.cpp" />
+    <ClCompile Include="..\calculation\ParametersValidate.cpp" />
     <ClCompile Include="..\calculation\print\BasePrint.cpp" />
     <ClCompile Include="..\calculation\print\PrintQueue.cpp" />
     <ClCompile Include="..\calculation\print\PrintScreen.cpp" />
+    <ClCompile Include="..\calculation\randomization\AlternativeHypothesisRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\BernoulliRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\DenominatorDataRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\PoissonRandomizer.cpp" />
@@ -190,6 +193,7 @@
     <ClCompile Include="..\calculation\randomization\TemporalRandomizer.cpp" />
     <ClCompile Include="..\calculation\runner\DataSource.cpp" />
     <ClCompile Include="..\calculation\runner\DataTimeRanges.cpp" />
+    <ClCompile Include="..\calculation\runner\RelativeRiskAdjustment.cpp" />
     <ClCompile Include="..\calculation\runner\ScanRunner.cpp" />
     <ClCompile Include="..\calculation\Toolkit.cpp" />
     <ClCompile Include="..\calculation\utility\AsciiPrintFormat.cpp" />
@@ -212,6 +216,7 @@
     <ClCompile Include="ParametersUtility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\calculation\loglikelihood\CriticalValues.h" />
     <ClInclude Include="..\calculation\loglikelihood\Loglikelihood.h" />
     <ClInclude Include="..\calculation\output\DataFileWriter.h" />
     <ClInclude Include="..\calculation\output\ResultsFileWriter.h" />
@@ -220,15 +225,18 @@
     <ClInclude Include="..\calculation\ParameterFileAccess.h" />
     <ClInclude Include="..\calculation\Parameters.h" />
     <ClInclude Include="..\calculation\ParametersPrint.h" />
+    <ClInclude Include="..\calculation\ParametersValidate.h" />
     <ClInclude Include="..\calculation\print\BasePrint.h" />
     <ClInclude Include="..\calculation\print\PrintQueue.h" />
     <ClInclude Include="..\calculation\print\PrintScreen.h" />
+    <ClInclude Include="..\calculation\randomization\AlternativeHypothesisRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\BernoulliRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\DenominatorDataRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\PoissonRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\Randomization.h" />
     <ClInclude Include="..\calculation\randomization\TemporalRandomizer.h" />
     <ClInclude Include="..\calculation\runner\DataSource.h" />
+    <ClInclude Include="..\calculation\runner\RelativeRiskAdjustment.h" />
     <ClInclude Include="..\calculation\runner\ScanRunner.h" />
     <ClInclude Include="..\calculation\runner\SimulationVariables.h" />
     <ClInclude Include="..\calculation\runner\WindowLength.h" />

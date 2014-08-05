@@ -16,7 +16,7 @@ public:
     typedef MCSimJobSource::successful_result_type successful_result_type;
     
 private:
-    boost::mutex                             & _mutex;
+    boost::mutex                            & _mutex;
     SimNodeContainer_t                        _treeSimNodes;
     ScanRunner::Loglikelihood_t               _loglikelihood;
     boost::shared_ptr<AbstractRandomizer>     _randomizer;
