@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 40;
+const int Parameters::giNumParameters = 39;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -104,7 +104,6 @@ void Parameters::assignMissingPath(std::string & sInputFilename, bool bCheckWrit
 void Parameters::copy(const Parameters &rhs) {
     _treeFileName = rhs._treeFileName;
     _countFileName = rhs._countFileName;
-    _populationFileName = rhs._populationFileName;
     _dataTimeRangeSet = rhs._dataTimeRangeSet;
     _cutsFileName = rhs._cutsFileName;
     _duplicates = rhs._duplicates;
@@ -211,14 +210,6 @@ void Parameters::setCountFileName(const char * sCountFileName, bool bCorrectForR
   if (bCorrectForRelativePath) assignMissingPath(_countFileName);
 }
 
-/** Sets population data file name.
-    If bCorrectForRelativePath is true, an attempt is made to modify filename
-    to path relative to executable. This is only attempted if current file does not exist. */
-void Parameters::setPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath) {
-  _populationFileName = sPopulationFileName;
-  if (bCorrectForRelativePath) assignMissingPath(_populationFileName);
-}
-
 /** Sets cuts data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
@@ -240,7 +231,6 @@ void Parameters::setTreeFileName(const char * sTreeFileName, bool bCorrectForRel
 void Parameters::setAsDefaulted() {
     _treeFileName = "";
     _countFileName = "";
-    _populationFileName = "";
     _dataTimeRangeSet = DataTimeRangeSet();
     _cutsFileName = "";
     _duplicates = false;
@@ -338,7 +328,6 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     // Input
     setTreeFileName(pt.get<std::string>("parameters.input.tree-filename", "").c_str(), true);
     setCountFileName(pt.get<std::string>("parameters.input.case-filename", "").c_str(), true);
-    setPopulationFileName(pt.get<std::string>("parameters.input.population-filename", "").c_str(), true);
     _dataTimeRangeSet.assign(pt.get<std::string>("parameters.input.data-time-range", "0,0"));
     // Advanced Input
     setCutsFileName(pt.get<std::string>("parameters.input.advanced.cuts-filename", "").c_str(), true);
@@ -395,7 +384,6 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     // Input
     pt.put("parameters.input.tree-file", _treeFileName);
     pt.put("parameters.input.case-file", _countFileName);
-    pt.put("parameters.input.population-file", _populationFileName);
     pt.put("parameters.input.data-time-range", _dataTimeRangeSet.toString(buffer));
     // Advanced Input
     pt.put("parameters.input.advanced.cuts-file", _cutsFileName);

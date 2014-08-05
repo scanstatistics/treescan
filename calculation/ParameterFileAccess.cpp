@@ -43,7 +43,6 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             /* Input */
             case Parameters::TREE_FILE               : return "tree structure filename";
             case Parameters::COUNT_FILE              : return "case data filename";
-            case Parameters::POPULATION_FILE         : return "population data filename";
             case Parameters::DATA_TIME_RANGES        : return "data time ranges (integer - integer)";
             /* Advanced Input */
             case Parameters::CUT_FILE                : return "cuts filename";
@@ -107,7 +106,6 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             /* Input */
             case Parameters::TREE_FILE                : s = _parameters.getTreeFileName(); return s;
             case Parameters::COUNT_FILE               : s = _parameters.getCountFileName(); return s;
-            case Parameters::POPULATION_FILE          : s = _parameters.getPopulationFileName(); return s;
             case Parameters::DATA_TIME_RANGES         : return _parameters.getDataTimeRangeSet().toString(s);
             /* Advanced Input */
             case Parameters::CUT_FILE                 : s = _parameters.getCutsFileName(); return s;
@@ -267,7 +265,6 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             /* Input */
             case Parameters::TREE_FILE                : _parameters.setTreeFileName(value.c_str(), true); break;
             case Parameters::COUNT_FILE               : _parameters.setCountFileName(value.c_str(), true); break;
-            case Parameters::POPULATION_FILE          : _parameters.setPopulationFileName(value.c_str(), true); break;
             case Parameters::DATA_TIME_RANGES         : _parameters.setDataTimeRangeSet(DataTimeRangeSet(value)); break;
             /* Advanced Input */
             case Parameters::CUT_FILE                 : _parameters.setCutsFileName(value.c_str(), true); break;

@@ -1,1088 +1,1088 @@
-node 0    ,0
-node 1    ,0
-node 2    ,0
-node 3    ,0
-node 4    ,0
-node 5    ,0
-node 6    ,0
-node 7    ,0
-node 8    ,0
-node 9    ,0
-node 10   ,0
-node 11   ,0
-node 12   ,0
-node 13   ,0
-node 14   ,0
-node 15   ,0
-node 16   ,0
-node 17   ,0
-node 18   ,0
-node 19   ,0
-node 20   ,0
-node 21   ,0
-node 22   ,0
-node 23   ,0
-node 24   ,0
-node 25   ,0
-node 26   ,0
-node 27   ,0
-node 28   ,0
-node 29   ,0
-node 30   ,0
-node 31   ,0
-node 32   ,0
-node 33   ,0
-node 34   ,0
-node 35   ,0
-node 36   ,0
-node 37   ,0
-node 38   ,0
-node 39   ,0
-node 40   ,0
-node 41   ,0
-node 42   ,0
-node 43   ,0
-node 44   ,0
-node 45   ,0
-node 46   ,0
-node 47   ,0
-node 48   ,0
-node 49   ,0
-node 50   ,0
-node 51   ,0
-node 52   ,0
-node 53   ,0
-node 54   ,0
-node 55   ,0
-node 56   ,0
-node 57   ,0
-node 58   ,0
-node 59   ,0
-node 60   ,0
-node 61   ,0
-node 62   ,0
-node 63   ,0
-node 64   ,0
-node 65   ,0
-node 66   ,0
-node 67   ,0
-node 68   ,0
-node 69   ,0
-node 70   ,0
-node 71   ,0
-node 72   ,0
-node 73   ,0
-node 74   ,0
-node 75   ,0
-node 76   ,0
-node 77   ,0
-node 78   ,0
-node 79   ,0
-node 80   ,0
-node 81   ,0
-node 82   ,0
-node 83   ,0
-node 84   ,0
-node 85   ,0
-node 86   ,0
-node 87   ,0
-node 88   ,0
-node 89   ,0
-node 90   ,0
-node 91   ,0
-node 92   ,0
-node 93   ,0
-node 94   ,0
-node 95   ,0
-node 96   ,0
-node 97   ,0
-node 98   ,0
-node 99   ,0
-node 100  ,0
-node 101  ,0
-node 102  ,0
-node 103  ,0
-node 104  ,0
-node 105  ,0
-node 106  ,0
-node 107  ,0
-node 108  ,0
-node 109  ,0
-node 110  ,0
-node 111  ,0
-node 112  ,0
-node 113  ,0
-node 114  ,0
-node 115  ,0
-node 116  ,0
-node 117  ,0
-node 118  ,0
-node 119  ,0
-node 120  ,0
-node 121  ,0
-node 122  ,0
-node 123  ,0
-node 124  ,0
-node 125  ,0
-node 126  ,0
-node 127  ,0
-node 128  ,0
-node 129  ,0
-node 130  ,0
-node 131  ,0
-node 132  ,0
-node 133  ,0
-node 134  ,0
-node 135  ,0
-node 136  ,0
-node 137  ,0
-node 138  ,0
-node 139  ,0
-node 140  ,0
-node 141  ,0
-node 142  ,0
-node 143  ,0
-node 144  ,0
-node 145  ,0
-node 146  ,0
-node 147  ,0
-node 148  ,0
-node 149  ,0
-node 150  ,0
-node 151  ,0
-node 152  ,0
-node 153  ,0
-node 154  ,0
-node 155  ,0
-node 156  ,0
-node 157  ,0
-node 158  ,0
-node 159  ,0
-node 160  ,0
-node 161  ,0
-node 162  ,0
-node 163  ,0
-node 164  ,0
-node 165  ,0
-node 166  ,0
-node 167  ,0
-node 168  ,0
-node 169  ,0
-node 170  ,0
-node 171  ,0
-node 172  ,0
-node 173  ,0
-node 174  ,0
-node 175  ,0
-node 176  ,0
-node 177  ,0
-node 178  ,0
-node 179  ,0
-node 180  ,0
-node 181  ,0
-node 182  ,0
-node 183  ,0
-node 184  ,0
-node 185  ,0
-node 186  ,0
-node 187  ,0
-node 188  ,0
-node 189  ,0
-node 190  ,0
-node 191  ,0
-node 192  ,0
-node 193  ,0
-node 194  ,0
-node 195  ,0
-node 196  ,0
-node 197  ,0
-node 198  ,0
-node 199  ,0
-node 200  ,0
-node 201  ,0
-node 202  ,0
-node 203  ,0
-node 204  ,0
-node 205  ,0
-node 206  ,0
-node 207  ,0
-node 208  ,0
-node 209  ,0
-node 210  ,0
-node 211  ,0
-node 212  ,0
-node 213  ,0
-node 214  ,0
-node 215  ,0
-node 216  ,0
-node 217  ,0
-node 218  ,0
-node 219  ,0
-node 220  ,0
-node 221  ,0
-node 222  ,0
-node 223  ,0
-node 224  ,0
-node 225  ,0
-node 226  ,0
-node 227  ,0
-node 228  ,0
-node 229  ,0
-node 230  ,0
-node 231  ,0
-node 232  ,0
-node 233  ,0
-node 234  ,0
-node 235  ,0
-node 236  ,0
-node 237  ,0
-node 238  ,0
-node 239  ,0
-node 240  ,0
-node 241  ,0
-node 242  ,0
-node 243  ,0
-node 244  ,0
-node 245  ,0
-node 246  ,0
-node 247  ,0
-node 248  ,0
-node 249  ,0
-node 250  ,0
-node 251  ,0
-node 252  ,0
-node 253  ,4
-node 254  ,0
-node 255  ,0
-node 256  ,0
-node 257  ,0
-node 258  ,0
-node 259  ,0
-node 260  ,0
-node 261  ,0
-node 262  ,0
-node 263  ,0
-node 264  ,0
-node 265  ,0
-node 266  ,0
-node 267  ,0
-node 268  ,0
-node 269  ,0
-node 270  ,0
-node 271  ,0
-node 272  ,0
-node 273  ,0
-node 274  ,0
-node 275  ,0
-node 276  ,0
-node 277  ,0
-node 278  ,0
-node 279  ,0
-node 280  ,0
-node 281  ,0
-node 282  ,0
-node 283  ,0
-node 284  ,0
-node 285  ,0
-node 286  ,0
-node 287  ,0
-node 288  ,0
-node 289  ,0
-node 290  ,0
-node 291  ,0
-node 292  ,0
-node 293  ,39
-node 294  ,0
-node 295  ,0
-node 296  ,0
-node 297  ,0
-node 298  ,0
-node 299  ,0
-node 300  ,0
-node 301  ,0
-node 302  ,0
-node 303  ,0
-node 304  ,0
-node 305  ,0
-node 306  ,0
-node 307  ,0
-node 308  ,0
-node 309  ,0
-node 310  ,0
-node 311  ,0
-node 312  ,0
-node 313  ,0
-node 314  ,0
-node 315  ,0
-node 316  ,0
-node 317  ,0
-node 318  ,0
-node 319  ,0
-node 320  ,0
-node 321  ,0
-node 322  ,0
-node 323  ,0
-node 324  ,0
-node 325  ,0
-node 326  ,0
-node 327  ,0
-node 328  ,0
-node 329  ,0
-node 330  ,0
-node 331  ,0
-node 332  ,0
-node 333  ,0
-node 334  ,0
-node 335  ,0
-node 336  ,0
-node 337  ,0
-node 338  ,2
-node 339  ,0
-node 340  ,12
-node 341  ,0
-node 342  ,0
-node 343  ,4
-node 344  ,0
-node 345  ,0
-node 346  ,0
-node 347  ,0
-node 348  ,5
-node 349  ,0
-node 350  ,0
-node 351  ,4
-node 352  ,0
-node 353  ,0
-node 354  ,0
-node 355  ,0
-node 356  ,0
-node 357  ,3
-node 358  ,0
-node 359  ,0
-node 360  ,0
-node 361  ,0
-node 362  ,0
-node 363  ,0
-node 364  ,0
-node 365  ,0
-node 366  ,0
-node 367  ,0
-node 368  ,0
-node 369  ,0
-node 370  ,0
-node 371  ,0
-node 372  ,0
-node 373  ,0
-node 374  ,0
-node 375  ,0
-node 376  ,0
-node 377  ,0
-node 378  ,0
-node 379  ,0
-node 380  ,0
-node 381  ,0
-node 382  ,0
-node 383  ,0
-node 384  ,0
-node 385  ,0
-node 386  ,2
-node 387  ,0
-node 388  ,0
-node 389  ,0
-node 390  ,0
-node 391  ,0
-node 392  ,0
-node 393  ,1
-node 394  ,0
-node 395  ,0
-node 396  ,0
-node 397  ,0
-node 398  ,0
-node 399  ,1
-node 400  ,0
-node 401  ,1
-node 402  ,0
-node 403  ,0
-node 404  ,0
-node 405  ,0
-node 406  ,0
-node 407  ,0
-node 408  ,0
-node 409  ,0
-node 410  ,2
-node 411  ,0
-node 412  ,0
-node 413  ,0
-node 414  ,0
-node 415  ,1
-node 416  ,0
-node 417  ,0
-node 418  ,0
-node 419  ,0
-node 420  ,0
-node 421  ,0
-node 422  ,0
-node 423  ,0
-node 424  ,1
-node 425  ,13
-node 426  ,0
-node 427  ,1
-node 428  ,0
-node 429  ,0
-node 430  ,3
-node 431  ,0
-node 432  ,0
-node 433  ,0
-node 434  ,1
-node 435  ,0
-node 436  ,0
-node 437  ,0
-node 438  ,0
-node 439  ,0
-node 440  ,0
-node 441  ,0
-node 442  ,0
-node 443  ,0
-node 444  ,0
-node 445  ,0
-node 446  ,0
-node 447  ,0
-node 448  ,0
-node 449  ,0
-node 450  ,0
-node 451  ,0
-node 452  ,0
-node 453  ,0
-node 454  ,0
-node 455  ,0
-node 456  ,0
-node 457  ,0
-node 458  ,0
-node 459  ,4
-node 460  ,6
-node 461  ,0
-node 462  ,0
-node 463  ,0
-node 464  ,0
-node 465  ,1
-node 466  ,0
-node 467  ,1
-node 468  ,0
-node 469  ,0
-node 470  ,0
-node 471  ,0
-node 472  ,0
-node 473  ,0
-node 474  ,0
-node 475  ,0
-node 476  ,0
-node 477  ,0
-node 478  ,0
-node 479  ,0
-node 480  ,0
-node 481  ,0
-node 482  ,0
-node 483  ,0
-node 484  ,0
-node 485  ,0
-node 486  ,0
-node 487  ,0
-node 488  ,0
-node 489  ,0
-node 490  ,0
-node 491  ,0
-node 492  ,0
-node 493  ,0
-node 494  ,0
-node 495  ,0
-node 496  ,0
-node 497  ,0
-node 498  ,0
-node 499  ,0
-node 500  ,0
-node 501  ,0
-node 502  ,0
-node 503  ,0
-node 504  ,0
-node 505  ,0
-node 506  ,0
-node 507  ,0
-node 508  ,0
-node 509  ,0
-node 510  ,0
-node 511  ,0
-node 512  ,0
-node 513  ,0
-node 514  ,0
-node 515  ,0
-node 516  ,0
-node 517  ,0
-node 518  ,0
-node 519  ,0
-node 520  ,0
-node 521  ,0
-node 522  ,0
-node 523  ,0
-node 524  ,0
-node 525  ,0
-node 526  ,0
-node 527  ,0
-node 528  ,0
-node 529  ,0
-node 530  ,0
-node 531  ,0
-node 532  ,0
-node 533  ,0
-node 534  ,0
-node 535  ,0
-node 536  ,0
-node 537  ,0
-node 538  ,0
-node 539  ,0
-node 540  ,0
-node 541  ,0
-node 542  ,0
-node 543  ,0
-node 544  ,0
-node 545  ,0
-node 546  ,0
-node 547  ,5
-node 548  ,0
-node 549  ,0
-node 550  ,0
-node 551  ,0
-node 552  ,0
-node 553  ,0
-node 554  ,0
-node 555  ,1
-node 556  ,0
-node 557  ,0
-node 558  ,0
-node 559  ,0
-node 560  ,5
-node 561  ,0
-node 562  ,0
-node 563  ,2
-node 564  ,0
-node 565  ,0
-node 566  ,0
-node 567  ,0
-node 568  ,0
-node 569  ,0
-node 570  ,0
-node 571  ,0
-node 572  ,0
-node 573  ,0
-node 574  ,0
-node 575  ,0
-node 576  ,0
-node 577  ,0
-node 578  ,0
-node 579  ,0
-node 580  ,0
-node 581  ,0
-node 582  ,0
-node 583  ,0
-node 584  ,0
-node 585  ,0
-node 586  ,0
-node 587  ,1
-node 588  ,0
-node 589  ,0
-node 590  ,0
-node 591  ,0
-node 592  ,0
-node 593  ,0
-node 594  ,0
-node 595  ,0
-node 596  ,0
-node 597  ,0
-node 598  ,0
-node 599  ,0
-node 600  ,0
-node 601  ,0
-node 602  ,0
-node 603  ,0
-node 604  ,0
-node 605  ,0
-node 606  ,0
-node 607  ,0
-node 608  ,0
-node 609  ,0
-node 610  ,1
-node 611  ,0
-node 612  ,0
-node 613  ,0
-node 614  ,0
-node 615  ,0
-node 616  ,0
-node 617  ,0
-node 618  ,0
-node 619  ,0
-node 620  ,0
-node 621  ,6
-node 622  ,0
-node 623  ,0
-node 624  ,0
-node 625  ,0
-node 626  ,0
-node 627  ,0
-node 628  ,0
-node 629  ,0
-node 630  ,0
-node 631  ,0
-node 632  ,0
-node 633  ,1
-node 634  ,0
-node 635  ,0
-node 636  ,0
-node 637  ,0
-node 638  ,0
-node 639  ,7
-node 640  ,0
-node 641  ,0
-node 642  ,0
-node 643  ,2
-node 644  ,0
-node 645  ,0
-node 646  ,0
-node 647  ,0
-node 648  ,0
-node 649  ,0
-node 650  ,0
-node 651  ,17
-node 652  ,0
-node 653  ,2
-node 654  ,0
-node 655  ,9
-node 656  ,0
-node 657  ,0
-node 658  ,0
-node 659  ,1
-node 660  ,0
-node 661  ,1
-node 662  ,0
-node 663  ,0
-node 664  ,1
-node 665  ,0
-node 666  ,0
-node 667  ,0
-node 668  ,0
-node 669  ,0
-node 670  ,0
-node 671  ,0
-node 672  ,1
-node 673  ,0
-node 674  ,0
-node 675  ,1
-node 676  ,0
-node 677  ,0
-node 678  ,0
-node 679  ,0
-node 680  ,3
-node 681  ,1
-node 682  ,21
-node 683  ,0
-node 684  ,0
-node 685  ,0
-node 686  ,0
-node 687  ,0
-node 688  ,0
-node 689  ,0
-node 690  ,0
-node 691  ,0
-node 692  ,4
-node 693  ,0
-node 694  ,0
-node 695  ,0
-node 696  ,0
-node 697  ,0
-node 698  ,0
-node 699  ,0
-node 700  ,0
-node 701  ,0
-node 702  ,0
-node 703  ,0
-node 704  ,0
-node 705  ,0
-node 706  ,0
-node 707  ,0
-node 708  ,0
-node 709  ,0
-node 710  ,0
-node 711  ,0
-node 712  ,0
-node 713  ,0
-node 714  ,0
-node 715  ,0
-node 716  ,0
-node 717  ,0
-node 718  ,0
-node 719  ,0
-node 720  ,0
-node 721  ,0
-node 722  ,0
-node 723  ,0
-node 724  ,0
-node 725  ,0
-node 726  ,0
-node 727  ,0
-node 728  ,0
-node 729  ,0
-node 730  ,0
-node 731  ,0
-node 732  ,0
-node 733  ,0
-node 734  ,0
-node 735  ,0
-node 736  ,0
-node 737  ,0
-node 738  ,0
-node 739  ,0
-node 740  ,0
-node 741  ,0
-node 742  ,0
-node 743  ,0
-node 744  ,0
-node 745  ,0
-node 746  ,0
-node 747  ,0
-node 748  ,0
-node 749  ,0
-node 750  ,0
-node 751  ,0
-node 752  ,0
-node 753  ,0
-node 754  ,0
-node 755  ,0
-node 756  ,0
-node 757  ,0
-node 758  ,0
-node 759  ,0
-node 760  ,0
-node 761  ,0
-node 762  ,0
-node 763  ,0
-node 764  ,0
-node 765  ,0
-node 766  ,0
-node 767  ,0
-node 768  ,0
-node 769  ,0
-node 770  ,0
-node 771  ,0
-node 772  ,0
-node 773  ,0
-node 774  ,0
-node 775  ,0
-node 776  ,0
-node 777  ,0
-node 778  ,0
-node 779  ,0
-node 780  ,0
-node 781  ,0
-node 782  ,0
-node 783  ,0
-node 784  ,0
-node 785  ,0
-node 786  ,0
-node 787  ,0
-node 788  ,0
-node 789  ,0
-node 790  ,0
-node 791  ,0
-node 792  ,0
-node 793  ,0
-node 794  ,0
-node 795  ,0
-node 796  ,0
-node 797  ,0
-node 798  ,0
-node 799  ,0
-node 800  ,0
-node 801  ,0
-node 802  ,0
-node 803  ,0
-node 804  ,0
-node 805  ,0
-node 806  ,0
-node 807  ,0
-node 808  ,0
-node 809  ,0
-node 810  ,0
-node 811  ,0
-node 812  ,0
-node 813  ,0
-node 814  ,0
-node 815  ,2
-node 816  ,0
-node 817  ,0
-node 818  ,0
-node 819  ,0
-node 820  ,0
-node 821  ,0
-node 822  ,0
-node 823  ,0
-node 824  ,0
-node 825  ,4
-node 826  ,0
-node 827  ,0
-node 828  ,15
-node 829  ,0
-node 830  ,0
-node 831  ,0
-node 832  ,0
-node 833  ,1
-node 834  ,0
-node 835  ,0
-node 836  ,0
-node 837  ,0
-node 838  ,46
-node 839  ,0
-node 840  ,0
-node 841  ,0
-node 842  ,0
-node 843  ,0
-node 844  ,0
-node 845  ,0
-node 846  ,0
-node 847  ,0
-node 848  ,0
-node 849  ,0
-node 850  ,0
-node 851  ,0
-node 852  ,0
-node 853  ,0
-node 854  ,0
-node 855  ,0
-node 856  ,0
-node 857  ,0
-node 858  ,0
-node 859  ,0
-node 860  ,0
-node 861  ,0
-node 862  ,0
-node 863  ,0
-node 864  ,0
-node 865  ,0
-node 866  ,0
-node 867  ,0
-node 868  ,0
-node 869  ,0
-node 870  ,0
-node 871  ,0
-node 872  ,0
-node 873  ,0
-node 874  ,0
-node 875  ,0
-node 876  ,0
-node 877  ,0
-node 878  ,0
-node 879  ,0
-node 880  ,23
-node 881  ,0
-node 882  ,0
-node 883  ,0
-node 884  ,0
-node 885  ,0
-node 886  ,0
-node 887  ,0
-node 888  ,0
-node 889  ,0
-node 890  ,0
-node 891  ,0
-node 892  ,0
-node 893  ,0
-node 894  ,0
-node 895  ,0
-node 896  ,0
-node 897  ,0
-node 898  ,0
-node 899  ,0
-node 900  ,0
-node 901  ,0
-node 902  ,0
-node 903  ,0
-node 904  ,0
-node 905  ,0
-node 906  ,0
-node 907  ,0
-node 908  ,0
-node 909  ,0
-node 910  ,0
-node 911  ,0
-node 912  ,0
-node 913  ,0
-node 914  ,0
-node 915  ,0
-node 916  ,0
-node 917  ,0
-node 918  ,0
-node 919  ,0
-node 920  ,0
-node 921  ,0
-node 922  ,0
-node 923  ,0
-node 924  ,0
-node 925  ,0
-node 926  ,0
-node 927  ,0
-node 928  ,0
-node 929  ,0
-node 930  ,0
-node 931  ,0
-node 932  ,0
-node 933  ,0
-node 934  ,0
-node 935  ,0
-node 936  ,0
-node 937  ,0
-node 938  ,0
-node 939  ,0
-node 940  ,0
-node 941  ,0
-node 942  ,0
-node 943  ,0
-node 944  ,0
-node 945  ,0
-node 946  ,0
-node 947  ,0
-node 948  ,0
-node 949  ,0
-node 950  ,0
-node 951  ,0
-node 952  ,0
-node 953  ,0
-node 954  ,0
-node 955  ,0
-node 956  ,0
-node 957  ,0
-node 958  ,0
-node 959  ,0
-node 960  ,0
-node 961  ,0
-node 962  ,0
-node 963  ,0
-node 964  ,0
-node 965  ,0
-node 966  ,0
-node 967  ,0
-node 968  ,0
-node 969  ,0
-node 970  ,0
-node 971  ,0
-node 972  ,0
-node 973  ,0
-node 974  ,0
-node 975  ,0
-node 976  ,0
-node 977  ,0
-node 978  ,0
-node 979  ,0
-node 980  ,0
-node 981  ,0
-node 982  ,0
-node 983  ,0
-node 984  ,0
-node 985  ,0
-node 986  ,0
-node 987  ,0
-node 988  ,0
-node 989  ,0
-node 990  ,0
-node 991  ,0
-node 992  ,0
-node 993  ,0
-node 994  ,0
-node 995  ,0
-node 996  ,0
-node 997  ,0
-node 998  ,0
-node 999  ,0
-node 1000 ,0
-node 1001 ,0
-node 1002 ,0
-node 1003 ,0
-node 1004 ,0
-node 1005 ,0
-node 1006 ,0
-node 1007 ,0
-node 1008 ,0
-node 1009 ,0
-node 1010 ,0
-node 1011 ,0
-node 1012 ,0
-node 1013 ,0
-node 1014 ,0
-node 1015 ,0
-node 1016 ,0
-node 1017 ,0
-node 1018 ,0
-node 1019 ,0
-node 1020 ,0
-node 1021 ,0
-node 1022 ,0
-node 1023 ,0
-node 1024 ,0
-node 1025 ,0
-node 1026 ,0
-node 1027 ,0
-node 1028 ,0
-node 1029 ,0
-node 1030 ,0
-node 1031 ,0
-node 1032 ,0
-node 1033 ,0
-node 1034 ,0
-node 1035 ,0
-node 1036 ,0
-node 1037 ,0
-node 1038 ,0
-node 1039 ,0
-node 1040 ,0
-node 1041 ,0
-node 1042 ,0
-node 1043 ,0
-node 1044 ,0
-node 1045 ,0
-node 1046 ,0
-node 1047 ,5
-node 1048 ,0
-node 1049 ,0
-node 1050 ,0
-node 1051 ,0
-node 1052 ,0
-node 1053 ,0
-node 1054 ,0
-node 1055 ,0
-node 1056 ,4
-node 1057 ,0
-node 1058 ,0
-node 1059 ,0
-node 1060 ,0
-node 1061 ,0
-node 1062 ,0
-node 1063 ,0
-node 1064 ,0
-node 1065 ,0
-node 1066 ,8
-node 1067 ,0
-node 1068 ,21
-node 1069 ,0
-node 1070 ,2
-node 1071 ,0
-node 1072 ,8
-node 1073 ,0
-node 1074 ,0
-node 1075 ,0
-node 1076 ,0
-node 1077 ,0
-node 1078 ,0
-node 1079 ,0
-node 1080 ,0
-node 1081 ,0
-node 1082 ,0
-node 1083 ,0
-node 1084 ,0
-node 1085 ,0
-node 1086 ,0
-node 1087 ,0
+node 0       ,0         ,0
+node 1       ,0         ,0
+node 2       ,0         ,0
+node 3       ,0         ,0
+node 4       ,0         ,0
+node 5       ,0         ,0
+node 6       ,0         ,0
+node 7       ,0         ,0
+node 8       ,0         ,0
+node 9       ,0         ,0
+node 10      ,0         ,0
+node 11      ,0         ,0
+node 12      ,0         ,0
+node 13      ,0         ,0
+node 14      ,0         ,0
+node 15      ,0         ,0
+node 16      ,0         ,0
+node 17      ,0         ,0
+node 18      ,0         ,0
+node 19      ,0         ,0
+node 20      ,0         ,0
+node 21      ,0         ,0
+node 22      ,0         ,0
+node 23      ,0         ,0
+node 24      ,0         ,0
+node 25      ,0         ,0
+node 26      ,0         ,0
+node 27      ,0         ,0
+node 28      ,0         ,0
+node 29      ,0         ,0
+node 30      ,0         ,0
+node 31      ,0         ,0
+node 32      ,0         ,0
+node 33      ,0         ,0
+node 34      ,0         ,0
+node 35      ,0         ,0
+node 36      ,0         ,0
+node 37      ,0         ,0
+node 38      ,0         ,0
+node 39      ,0         ,0
+node 40      ,0         ,0
+node 41      ,0         ,0
+node 42      ,0         ,0
+node 43      ,0         ,0
+node 44      ,0         ,0
+node 45      ,0         ,0
+node 46      ,0         ,0
+node 47      ,0         ,0
+node 48      ,0         ,0
+node 49      ,0         ,0
+node 50      ,0         ,0
+node 51      ,0         ,0
+node 52      ,0         ,0
+node 53      ,0         ,0
+node 54      ,0         ,0
+node 55      ,0         ,0
+node 56      ,0         ,0
+node 57      ,0         ,0
+node 58      ,0         ,0
+node 59      ,0         ,0
+node 60      ,0         ,0
+node 61      ,0         ,0
+node 62      ,0         ,0
+node 63      ,0         ,0
+node 64      ,0         ,0
+node 65      ,0         ,0
+node 66      ,0         ,0
+node 67      ,0         ,0
+node 68      ,0         ,0
+node 69      ,0         ,0
+node 70      ,0         ,0
+node 71      ,0         ,0
+node 72      ,0         ,0
+node 73      ,0         ,0
+node 74      ,0         ,0
+node 75      ,0         ,0
+node 76      ,0         ,0
+node 77      ,0         ,0
+node 78      ,0         ,0
+node 79      ,0         ,0
+node 80      ,0         ,0
+node 81      ,0         ,0
+node 82      ,0         ,0
+node 83      ,0         ,0
+node 84      ,0         ,0
+node 85      ,0         ,0
+node 86      ,0         ,0
+node 87      ,0         ,0
+node 88      ,0         ,0
+node 89      ,0         ,0
+node 90      ,0         ,0
+node 91      ,0         ,0
+node 92      ,0         ,0
+node 93      ,0         ,0
+node 94      ,0         ,0
+node 95      ,0         ,0
+node 96      ,0         ,0
+node 97      ,0         ,0
+node 98      ,0         ,0
+node 99      ,0         ,0
+node 100     ,0         ,0
+node 101     ,0         ,0
+node 102     ,0         ,0
+node 103     ,0         ,0
+node 104     ,0         ,0
+node 105     ,0         ,0
+node 106     ,0         ,0
+node 107     ,0         ,0
+node 108     ,0         ,0
+node 109     ,0         ,0
+node 110     ,0         ,0
+node 111     ,0         ,0
+node 112     ,0         ,0
+node 113     ,0         ,0
+node 114     ,0         ,0
+node 115     ,0         ,0
+node 116     ,0         ,0
+node 117     ,0         ,0
+node 118     ,0         ,0
+node 119     ,0         ,0
+node 120     ,0         ,0
+node 121     ,0         ,0
+node 122     ,0         ,0
+node 123     ,0         ,0
+node 124     ,0         ,0
+node 125     ,0         ,0
+node 126     ,0         ,0
+node 127     ,0         ,0
+node 128     ,0         ,0
+node 129     ,0         ,0
+node 130     ,0         ,0
+node 131     ,0         ,0
+node 132     ,0         ,0
+node 133     ,0         ,0
+node 134     ,0         ,0
+node 135     ,0         ,0
+node 136     ,0         ,0
+node 137     ,0         ,0
+node 138     ,0         ,0
+node 139     ,0         ,0
+node 140     ,0         ,0
+node 141     ,0         ,0
+node 142     ,0         ,0
+node 143     ,0         ,0
+node 144     ,0         ,0
+node 145     ,0         ,0
+node 146     ,0         ,0
+node 147     ,0         ,0
+node 148     ,0         ,0
+node 149     ,0         ,0
+node 150     ,0         ,0
+node 151     ,0         ,0
+node 152     ,0         ,0
+node 153     ,0         ,0
+node 154     ,0         ,0
+node 155     ,0         ,0
+node 156     ,0         ,0
+node 157     ,0         ,0
+node 158     ,0         ,0
+node 159     ,0         ,0
+node 160     ,0         ,0
+node 161     ,0         ,0
+node 162     ,0         ,0
+node 163     ,0         ,0
+node 164     ,0         ,0
+node 165     ,0         ,0
+node 166     ,0         ,0
+node 167     ,0         ,0
+node 168     ,0         ,0
+node 169     ,0         ,0
+node 170     ,0         ,0
+node 171     ,0         ,0
+node 172     ,0         ,0
+node 173     ,0         ,0
+node 174     ,0         ,0
+node 175     ,0         ,0
+node 176     ,0         ,0
+node 177     ,0         ,0
+node 178     ,0         ,0
+node 179     ,0         ,0
+node 180     ,0         ,0
+node 181     ,0         ,0
+node 182     ,0         ,0
+node 183     ,0         ,0
+node 184     ,0         ,0
+node 185     ,0         ,0
+node 186     ,0         ,0
+node 187     ,0         ,0
+node 188     ,0         ,0
+node 189     ,0         ,0
+node 190     ,0         ,0
+node 191     ,0         ,0
+node 192     ,0         ,0
+node 193     ,0         ,0
+node 194     ,0         ,0
+node 195     ,0         ,0
+node 196     ,0         ,0
+node 197     ,0         ,0
+node 198     ,0         ,0
+node 199     ,0         ,0
+node 200     ,0         ,0
+node 201     ,0         ,0
+node 202     ,0         ,0
+node 203     ,0         ,0
+node 204     ,0         ,0
+node 205     ,0         ,0
+node 206     ,0         ,0
+node 207     ,0         ,0
+node 208     ,0         ,0
+node 209     ,0         ,0
+node 210     ,0         ,0
+node 211     ,0         ,0
+node 212     ,0         ,0
+node 213     ,0         ,0
+node 214     ,0         ,0
+node 215     ,0         ,0
+node 216     ,0         ,0
+node 217     ,0         ,0
+node 218     ,0         ,0
+node 219     ,0         ,0
+node 220     ,0         ,0
+node 221     ,0         ,0
+node 222     ,0         ,0
+node 223     ,0         ,0
+node 224     ,0         ,0
+node 225     ,0         ,0
+node 226     ,0         ,0
+node 227     ,0         ,0
+node 228     ,0         ,0
+node 229     ,0         ,0
+node 230     ,0         ,0
+node 231     ,0         ,0
+node 232     ,0         ,0
+node 233     ,0         ,0
+node 234     ,0         ,0
+node 235     ,0         ,0
+node 236     ,0         ,0
+node 237     ,0         ,0
+node 238     ,0         ,0
+node 239     ,0         ,0
+node 240     ,0         ,0
+node 241     ,0         ,0
+node 242     ,0         ,0
+node 243     ,0         ,0
+node 244     ,0         ,0
+node 245     ,0         ,0
+node 246     ,0         ,0
+node 247     ,0         ,0
+node 248     ,0         ,0
+node 249     ,0         ,0
+node 250     ,0         ,0
+node 251     ,0         ,0
+node 252     ,0         ,0
+node 253     ,4         ,0.1033685648
+node 254     ,0         ,0
+node 255     ,0         ,0
+node 256     ,0         ,0
+node 257     ,0         ,0
+node 258     ,0         ,0
+node 259     ,0         ,0
+node 260     ,0         ,0
+node 261     ,0         ,0
+node 262     ,0         ,0
+node 263     ,0         ,0
+node 264     ,0         ,0
+node 265     ,0         ,0
+node 266     ,0         ,0
+node 267     ,0         ,0
+node 268     ,0         ,0
+node 269     ,0         ,0
+node 270     ,0         ,0
+node 271     ,0         ,0
+node 272     ,0         ,0
+node 273     ,0         ,0
+node 274     ,0         ,0
+node 275     ,0         ,0
+node 276     ,0         ,0
+node 277     ,0         ,0
+node 278     ,0         ,0
+node 279     ,0         ,0
+node 280     ,0         ,0
+node 281     ,0         ,0
+node 282     ,0         ,0
+node 283     ,0         ,0
+node 284     ,0         ,0
+node 285     ,0         ,0
+node 286     ,0         ,0
+node 287     ,0         ,0
+node 288     ,0         ,0
+node 289     ,0         ,0
+node 290     ,0         ,0
+node 291     ,0         ,0
+node 292     ,0         ,0
+node 293     ,39        ,0.5551870571
+node 294     ,0         ,0
+node 295     ,0         ,0
+node 296     ,0         ,0
+node 297     ,0         ,0
+node 298     ,0         ,0
+node 299     ,0         ,0
+node 300     ,0         ,0
+node 301     ,0         ,0
+node 302     ,0         ,0
+node 303     ,0         ,0
+node 304     ,0         ,0
+node 305     ,0         ,0
+node 306     ,0         ,0
+node 307     ,0         ,0
+node 308     ,0         ,0
+node 309     ,0         ,0
+node 310     ,0         ,0
+node 311     ,0         ,0
+node 312     ,0         ,0
+node 313     ,0         ,0
+node 314     ,0         ,0
+node 315     ,0         ,0
+node 316     ,0         ,0
+node 317     ,0         ,0
+node 318     ,0         ,0
+node 319     ,0         ,0
+node 320     ,0         ,0
+node 321     ,0         ,0
+node 322     ,0         ,0
+node 323     ,0         ,0
+node 324     ,0         ,0
+node 325     ,0         ,0
+node 326     ,0         ,0
+node 327     ,0         ,0
+node 328     ,0         ,0
+node 329     ,0         ,0
+node 330     ,0         ,0
+node 331     ,0         ,0
+node 332     ,0         ,0
+node 333     ,0         ,0.0693293236
+node 334     ,0         ,0
+node 335     ,0         ,0.1736817392
+node 336     ,0         ,0
+node 337     ,0         ,0
+node 338     ,2         ,0.3785284294
+node 339     ,0         ,0
+node 340     ,12        ,0.8062379727
+node 341     ,0         ,0
+node 342     ,0         ,0
+node 343     ,4         ,5.4570533109
+node 344     ,0         ,0
+node 345     ,0         ,0
+node 346     ,0         ,0
+node 347     ,0         ,0
+node 348     ,5         ,0.4304818705
+node 349     ,0         ,0
+node 350     ,0         ,0
+node 351     ,4         ,4.2144982071
+node 352     ,0         ,0
+node 353     ,0         ,0
+node 354     ,0         ,0
+node 355     ,0         ,0
+node 356     ,0         ,0
+node 357     ,3         ,2.7350045462
+node 358     ,0         ,0
+node 359     ,0         ,0
+node 360     ,0         ,0
+node 361     ,0         ,0
+node 362     ,0         ,0
+node 363     ,0         ,0
+node 364     ,0         ,0
+node 365     ,0         ,0
+node 366     ,0         ,0
+node 367     ,0         ,0
+node 368     ,0         ,0
+node 369     ,0         ,0
+node 370     ,0         ,0
+node 371     ,0         ,0
+node 372     ,0         ,0
+node 373     ,0         ,0
+node 374     ,0         ,0
+node 375     ,0         ,0
+node 376     ,0         ,0
+node 377     ,0         ,0
+node 378     ,0         ,0
+node 379     ,0         ,0
+node 380     ,0         ,0
+node 381     ,0         ,0
+node 382     ,0         ,0
+node 383     ,0         ,0
+node 384     ,0         ,0
+node 385     ,0         ,0
+node 386     ,2         ,0.3942073726
+node 387     ,0         ,0.0324311244
+node 388     ,0         ,0
+node 389     ,0         ,0
+node 390     ,0         ,0
+node 391     ,0         ,0.5771787257
+node 392     ,0         ,0.2347157638
+node 393     ,1         ,0.9577422169
+node 394     ,0         ,0
+node 395     ,0         ,0
+node 396     ,0         ,0.2472357701
+node 397     ,0         ,0
+node 398     ,0         ,0
+node 399     ,1         ,0.2653822006
+node 400     ,0         ,0
+node 401     ,1         ,0.2562877835
+node 402     ,0         ,0.3992826902
+node 403     ,0         ,0.1181091849
+node 404     ,0         ,0.084097827
+node 405     ,0         ,0.0062017466
+node 406     ,0         ,0.2426355361
+node 407     ,0         ,0
+node 408     ,0         ,0.4279459285
+node 409     ,0         ,0
+node 410     ,2         ,0.1657485814
+node 411     ,0         ,0
+node 412     ,0         ,0.5082358701
+node 413     ,0         ,0
+node 414     ,0         ,0.0626176152
+node 415     ,1         ,0.1500299573
+node 416     ,0         ,0.0414394666
+node 417     ,0         ,0.0318493098
+node 418     ,0         ,0
+node 419     ,0         ,0.0884440284
+node 420     ,0         ,0.0203868019
+node 421     ,0         ,0.4266126761
+node 422     ,0         ,0.0213997238
+node 423     ,0         ,0.1537287184
+node 424     ,1         ,0.044466071
+node 425     ,13        ,5.4228016408
+node 426     ,0         ,0
+node 427     ,1         ,0.134183642
+node 428     ,0         ,0
+node 429     ,0         ,0.0067822266
+node 430     ,3         ,0.4123441207
+node 431     ,0         ,0.0431632647
+node 432     ,0         ,0
+node 433     ,0         ,0
+node 434     ,1         ,0.2825510837
+node 435     ,0         ,0.0224522606
+node 436     ,0         ,0.07549447
+node 437     ,0         ,0
+node 438     ,0         ,0.2070032382
+node 439     ,0         ,0
+node 440     ,0         ,0.1531781121
+node 441     ,0         ,0
+node 442     ,0         ,0.3329524668
+node 443     ,0         ,0
+node 444     ,0         ,0.093837411
+node 445     ,0         ,0
+node 446     ,0         ,0
+node 447     ,0         ,0.0861336066
+node 448     ,0         ,0.2936020081
+node 449     ,0         ,0.0719074727
+node 450     ,0         ,0
+node 451     ,0         ,0.0025987406
+node 452     ,0         ,0.0530331355
+node 453     ,0         ,0.0736905309
+node 454     ,0         ,0
+node 455     ,0         ,0.0003581571
+node 456     ,0         ,0.0295279322
+node 457     ,0         ,0.0307789495
+node 458     ,0         ,0
+node 459     ,4         ,0.2623576176
+node 460     ,6         ,8.5284427859
+node 461     ,0         ,0
+node 462     ,0         ,0
+node 463     ,0         ,0.0040386673
+node 464     ,0         ,0.3821793424
+node 465     ,1         ,0.2833961273
+node 466     ,0         ,0
+node 467     ,1         ,1.3101356455
+node 468     ,0         ,0
+node 469     ,0         ,0
+node 470     ,0         ,0
+node 471     ,0         ,1.0667919655
+node 472     ,0         ,0
+node 473     ,0         ,0
+node 474     ,0         ,0
+node 475     ,0         ,0
+node 476     ,0         ,0
+node 477     ,0         ,0
+node 478     ,0         ,0
+node 479     ,0         ,0
+node 480     ,0         ,0
+node 481     ,0         ,0
+node 482     ,0         ,0
+node 483     ,0         ,0
+node 484     ,0         ,0
+node 485     ,0         ,0
+node 486     ,0         ,0
+node 487     ,0         ,0
+node 488     ,0         ,0
+node 489     ,0         ,0
+node 490     ,0         ,0
+node 491     ,0         ,0
+node 492     ,0         ,0
+node 493     ,0         ,0
+node 494     ,0         ,0
+node 495     ,0         ,0
+node 496     ,0         ,0
+node 497     ,0         ,0
+node 498     ,0         ,0
+node 499     ,0         ,0
+node 500     ,0         ,0
+node 501     ,0         ,0
+node 502     ,0         ,0
+node 503     ,0         ,0
+node 504     ,0         ,0
+node 505     ,0         ,0
+node 506     ,0         ,0
+node 507     ,0         ,0
+node 508     ,0         ,0
+node 509     ,0         ,0
+node 510     ,0         ,0
+node 511     ,0         ,0
+node 512     ,0         ,0
+node 513     ,0         ,0
+node 514     ,0         ,0
+node 515     ,0         ,0
+node 516     ,0         ,0
+node 517     ,0         ,0
+node 518     ,0         ,0
+node 519     ,0         ,0
+node 520     ,0         ,0
+node 521     ,0         ,0
+node 522     ,0         ,0
+node 523     ,0         ,0
+node 524     ,0         ,0
+node 525     ,0         ,0
+node 526     ,0         ,0
+node 527     ,0         ,0
+node 528     ,0         ,0
+node 529     ,0         ,0
+node 530     ,0         ,0
+node 531     ,0         ,0
+node 532     ,0         ,0
+node 533     ,0         ,0
+node 534     ,0         ,0
+node 535     ,0         ,0
+node 536     ,0         ,0
+node 537     ,0         ,0
+node 538     ,0         ,0
+node 539     ,0         ,0
+node 540     ,0         ,0
+node 541     ,0         ,0
+node 542     ,0         ,0
+node 543     ,0         ,0
+node 544     ,0         ,0
+node 545     ,0         ,0
+node 546     ,0         ,0
+node 547     ,5         ,3.0201427446
+node 548     ,0         ,0
+node 549     ,0         ,0
+node 550     ,0         ,0
+node 551     ,0         ,0
+node 552     ,0         ,0
+node 553     ,0         ,0.0539319149
+node 554     ,0         ,0.0390263457
+node 555     ,1         ,0.4168687913
+node 556     ,0         ,0.0020992203
+node 557     ,0         ,0
+node 558     ,0         ,0.2596063958
+node 559     ,0         ,0.1829617419
+node 560     ,5         ,3.0346688495
+node 561     ,0         ,0.0495954338
+node 562     ,0         ,0
+node 563     ,2         ,2.6939448442
+node 564     ,0         ,0
+node 565     ,0         ,0
+node 566     ,0         ,0
+node 567     ,0         ,0
+node 568     ,0         ,0
+node 569     ,0         ,0
+node 570     ,0         ,0
+node 571     ,0         ,0
+node 572     ,0         ,0
+node 573     ,0         ,0
+node 574     ,0         ,0
+node 575     ,0         ,0
+node 576     ,0         ,0
+node 577     ,0         ,0
+node 578     ,0         ,0
+node 579     ,0         ,0
+node 580     ,0         ,0
+node 581     ,0         ,0
+node 582     ,0         ,0
+node 583     ,0         ,0
+node 584     ,0         ,0
+node 585     ,0         ,0
+node 586     ,0         ,0
+node 587     ,1         ,0.4348260124
+node 588     ,0         ,0
+node 589     ,0         ,0.0462959299
+node 590     ,0         ,0.0156108981
+node 591     ,0         ,0
+node 592     ,0         ,0.0186296947
+node 593     ,0         ,0
+node 594     ,0         ,0
+node 595     ,0         ,0
+node 596     ,0         ,0
+node 597     ,0         ,0
+node 598     ,0         ,0
+node 599     ,0         ,0
+node 600     ,0         ,0
+node 601     ,0         ,0
+node 602     ,0         ,0.0328518096
+node 603     ,0         ,0
+node 604     ,0         ,0.0906792624
+node 605     ,0         ,0
+node 606     ,0         ,0.5017170461
+node 607     ,0         ,0
+node 608     ,0         ,0.0398319186
+node 609     ,0         ,0
+node 610     ,1         ,0.1290324728
+node 611     ,0         ,0
+node 612     ,0         ,0.2424733494
+node 613     ,0         ,0
+node 614     ,0         ,0
+node 615     ,0         ,0
+node 616     ,0         ,0
+node 617     ,0         ,0.0190343907
+node 618     ,0         ,0.0645041945
+node 619     ,0         ,0.0121679089
+node 620     ,0         ,0.0566383618
+node 621     ,6         ,2.8747163177
+node 622     ,0         ,0
+node 623     ,0         ,0
+node 624     ,0         ,0.1333837025
+node 625     ,0         ,0
+node 626     ,0         ,0.0278016212
+node 627     ,0         ,0
+node 628     ,0         ,0.0394366033
+node 629     ,0         ,0
+node 630     ,0         ,0
+node 631     ,0         ,0.0243469892
+node 632     ,0         ,0
+node 633     ,1         ,0.9464894587
+node 634     ,0         ,0
+node 635     ,0         ,0
+node 636     ,0         ,0
+node 637     ,0         ,0.0087439364
+node 638     ,0         ,0
+node 639     ,7         ,3.4203718841
+node 640     ,0         ,0
+node 641     ,0         ,0.0982234454
+node 642     ,0         ,0
+node 643     ,2         ,0.7362034896
+node 644     ,0         ,0
+node 645     ,0         ,0
+node 646     ,0         ,0
+node 647     ,0         ,0
+node 648     ,0         ,0
+node 649     ,0         ,0.0000123783
+node 650     ,0         ,0
+node 651     ,17        ,2.4246974809
+node 652     ,0         ,0
+node 653     ,2         ,1.2260947297
+node 654     ,0         ,0
+node 655     ,9         ,8.1906961158
+node 656     ,0         ,0
+node 657     ,0         ,0
+node 658     ,0         ,0
+node 659     ,1         ,0.3463804943
+node 660     ,0         ,0
+node 661     ,1         ,0.0544744148
+node 662     ,0         ,0.066501512
+node 663     ,0         ,0
+node 664     ,1         ,0.1818531995
+node 665     ,0         ,0
+node 666     ,0         ,0.5557000051
+node 667     ,0         ,0
+node 668     ,0         ,0
+node 669     ,0         ,0
+node 670     ,0         ,0.9440732849
+node 671     ,0         ,0.235360041
+node 672     ,1         ,1.0445739302
+node 673     ,0         ,0
+node 674     ,0         ,0.1999373295
+node 675     ,1         ,0.7753110044
+node 676     ,0         ,0
+node 677     ,0         ,0
+node 678     ,0         ,0.1845040272
+node 679     ,0         ,0
+node 680     ,3         ,2.143912133
+node 681     ,1         ,0.2574460377
+node 682     ,21        ,7.5493430172
+node 683     ,0         ,0
+node 684     ,0         ,0
+node 685     ,0         ,0
+node 686     ,0         ,0
+node 687     ,0         ,0
+node 688     ,0         ,0
+node 689     ,0         ,0
+node 690     ,0         ,0
+node 691     ,0         ,0
+node 692     ,4         ,1.7576814271
+node 693     ,0         ,0
+node 694     ,0         ,0.1501188997
+node 695     ,0         ,0
+node 696     ,0         ,0
+node 697     ,0         ,0
+node 698     ,0         ,0
+node 699     ,0         ,0
+node 700     ,0         ,0
+node 701     ,0         ,0
+node 702     ,0         ,0
+node 703     ,0         ,0
+node 704     ,0         ,0
+node 705     ,0         ,0
+node 706     ,0         ,0
+node 707     ,0         ,0
+node 708     ,0         ,0
+node 709     ,0         ,0
+node 710     ,0         ,0
+node 711     ,0         ,0
+node 712     ,0         ,0
+node 713     ,0         ,0
+node 714     ,0         ,0
+node 715     ,0         ,0
+node 716     ,0         ,0
+node 717     ,0         ,0
+node 718     ,0         ,0
+node 719     ,0         ,0
+node 720     ,0         ,0
+node 721     ,0         ,0
+node 722     ,0         ,0
+node 723     ,0         ,0
+node 724     ,0         ,0.94358286
+node 725     ,0         ,0
+node 726     ,0         ,0
+node 727     ,0         ,0
+node 728     ,0         ,0
+node 729     ,0         ,0
+node 730     ,0         ,0
+node 731     ,0         ,0
+node 732     ,0         ,0
+node 733     ,0         ,0
+node 734     ,0         ,0
+node 735     ,0         ,0
+node 736     ,0         ,0
+node 737     ,0         ,0
+node 738     ,0         ,0
+node 739     ,0         ,0
+node 740     ,0         ,0
+node 741     ,0         ,0
+node 742     ,0         ,0
+node 743     ,0         ,0
+node 744     ,0         ,0
+node 745     ,0         ,0
+node 746     ,0         ,0
+node 747     ,0         ,0
+node 748     ,0         ,0
+node 749     ,0         ,0
+node 750     ,0         ,0
+node 751     ,0         ,0
+node 752     ,0         ,0
+node 753     ,0         ,0
+node 754     ,0         ,0
+node 755     ,0         ,0
+node 756     ,0         ,0
+node 757     ,0         ,0
+node 758     ,0         ,0
+node 759     ,0         ,0
+node 760     ,0         ,0
+node 761     ,0         ,0
+node 762     ,0         ,0
+node 763     ,0         ,0
+node 764     ,0         ,0
+node 765     ,0         ,0
+node 766     ,0         ,0
+node 767     ,0         ,0
+node 768     ,0         ,0
+node 769     ,0         ,0
+node 770     ,0         ,0
+node 771     ,0         ,0
+node 772     ,0         ,0
+node 773     ,0         ,0
+node 774     ,0         ,0
+node 775     ,0         ,0
+node 776     ,0         ,0
+node 777     ,0         ,0
+node 778     ,0         ,0
+node 779     ,0         ,0
+node 780     ,0         ,0
+node 781     ,0         ,0
+node 782     ,0         ,0
+node 783     ,0         ,0
+node 784     ,0         ,0
+node 785     ,0         ,0
+node 786     ,0         ,0
+node 787     ,0         ,0
+node 788     ,0         ,0
+node 789     ,0         ,0
+node 790     ,0         ,0
+node 791     ,0         ,0
+node 792     ,0         ,0
+node 793     ,0         ,0
+node 794     ,0         ,0
+node 795     ,0         ,0
+node 796     ,0         ,0
+node 797     ,0         ,0
+node 798     ,0         ,0
+node 799     ,0         ,0
+node 800     ,0         ,0
+node 801     ,0         ,0
+node 802     ,0         ,0
+node 803     ,0         ,0
+node 804     ,0         ,0
+node 805     ,0         ,0
+node 806     ,0         ,0
+node 807     ,0         ,0
+node 808     ,0         ,0
+node 809     ,0         ,0
+node 810     ,0         ,0
+node 811     ,0         ,0
+node 812     ,0         ,0
+node 813     ,0         ,0
+node 814     ,0         ,0
+node 815     ,2         ,0.5752662626
+node 816     ,0         ,0
+node 817     ,0         ,0
+node 818     ,0         ,0
+node 819     ,0         ,0
+node 820     ,0         ,0
+node 821     ,0         ,0
+node 822     ,0         ,0
+node 823     ,0         ,0
+node 824     ,0         ,0
+node 825     ,4         ,2.0007938371
+node 826     ,0         ,0
+node 827     ,0         ,0
+node 828     ,15        ,8.7674647507
+node 829     ,0         ,0
+node 830     ,0         ,0
+node 831     ,0         ,0
+node 832     ,0         ,0
+node 833     ,1         ,0.1788757975
+node 834     ,0         ,0
+node 835     ,0         ,0
+node 836     ,0         ,0
+node 837     ,0         ,0
+node 838     ,46        ,30.022135931
+node 839     ,0         ,0
+node 840     ,0         ,0
+node 841     ,0         ,0
+node 842     ,0         ,0.1817300856
+node 843     ,0         ,0
+node 844     ,0         ,0
+node 845     ,0         ,0
+node 846     ,0         ,0
+node 847     ,0         ,0
+node 848     ,0         ,0
+node 849     ,0         ,0
+node 850     ,0         ,0
+node 851     ,0         ,0
+node 852     ,0         ,0
+node 853     ,0         ,0
+node 854     ,0         ,0
+node 855     ,0         ,0
+node 856     ,0         ,0
+node 857     ,0         ,0
+node 858     ,0         ,0
+node 859     ,0         ,0
+node 860     ,0         ,0
+node 861     ,0         ,0
+node 862     ,0         ,0
+node 863     ,0         ,0
+node 864     ,0         ,0
+node 865     ,0         ,0
+node 866     ,0         ,0
+node 867     ,0         ,0
+node 868     ,0         ,0
+node 869     ,0         ,0
+node 870     ,0         ,0
+node 871     ,0         ,0
+node 872     ,0         ,0
+node 873     ,0         ,0
+node 874     ,0         ,0
+node 875     ,0         ,0
+node 876     ,0         ,0
+node 877     ,0         ,0.2265430904
+node 878     ,0         ,0
+node 879     ,0         ,0
+node 880     ,23        ,33.792724203
+node 881     ,0         ,0
+node 882     ,0         ,0
+node 883     ,0         ,0
+node 884     ,0         ,0
+node 885     ,0         ,0
+node 886     ,0         ,0
+node 887     ,0         ,0
+node 888     ,0         ,0
+node 889     ,0         ,0
+node 890     ,0         ,0
+node 891     ,0         ,0
+node 892     ,0         ,0
+node 893     ,0         ,0
+node 894     ,0         ,0
+node 895     ,0         ,0
+node 896     ,0         ,0
+node 897     ,0         ,0
+node 898     ,0         ,0
+node 899     ,0         ,0
+node 900     ,0         ,0
+node 901     ,0         ,0
+node 902     ,0         ,0
+node 903     ,0         ,0
+node 904     ,0         ,0
+node 905     ,0         ,0
+node 906     ,0         ,0
+node 907     ,0         ,0
+node 908     ,0         ,0
+node 909     ,0         ,0
+node 910     ,0         ,0
+node 911     ,0         ,0
+node 912     ,0         ,0
+node 913     ,0         ,0
+node 914     ,0         ,0
+node 915     ,0         ,0
+node 916     ,0         ,0
+node 917     ,0         ,0
+node 918     ,0         ,0
+node 919     ,0         ,0
+node 920     ,0         ,0
+node 921     ,0         ,0
+node 922     ,0         ,0
+node 923     ,0         ,0
+node 924     ,0         ,0
+node 925     ,0         ,0
+node 926     ,0         ,0
+node 927     ,0         ,0
+node 928     ,0         ,0
+node 929     ,0         ,0
+node 930     ,0         ,0
+node 931     ,0         ,0
+node 932     ,0         ,0
+node 933     ,0         ,0
+node 934     ,0         ,0
+node 935     ,0         ,0
+node 936     ,0         ,0
+node 937     ,0         ,0
+node 938     ,0         ,0
+node 939     ,0         ,0
+node 940     ,0         ,0
+node 941     ,0         ,0
+node 942     ,0         ,0
+node 943     ,0         ,0
+node 944     ,0         ,0
+node 945     ,0         ,0
+node 946     ,0         ,0
+node 947     ,0         ,0
+node 948     ,0         ,0
+node 949     ,0         ,0
+node 950     ,0         ,0
+node 951     ,0         ,0
+node 952     ,0         ,0
+node 953     ,0         ,0
+node 954     ,0         ,0
+node 955     ,0         ,0
+node 956     ,0         ,0
+node 957     ,0         ,0
+node 958     ,0         ,0
+node 959     ,0         ,0
+node 960     ,0         ,0
+node 961     ,0         ,0
+node 962     ,0         ,0
+node 963     ,0         ,0
+node 964     ,0         ,0
+node 965     ,0         ,0
+node 966     ,0         ,0
+node 967     ,0         ,0
+node 968     ,0         ,0
+node 969     ,0         ,0
+node 970     ,0         ,0
+node 971     ,0         ,0
+node 972     ,0         ,0
+node 973     ,0         ,0
+node 974     ,0         ,0
+node 975     ,0         ,0
+node 976     ,0         ,0
+node 977     ,0         ,0
+node 978     ,0         ,0
+node 979     ,0         ,0
+node 980     ,0         ,0
+node 981     ,0         ,0
+node 982     ,0         ,0
+node 983     ,0         ,0
+node 984     ,0         ,0
+node 985     ,0         ,0
+node 986     ,0         ,0
+node 987     ,0         ,0
+node 988     ,0         ,0
+node 989     ,0         ,0
+node 990     ,0         ,0
+node 991     ,0         ,0
+node 992     ,0         ,0
+node 993     ,0         ,0
+node 994     ,0         ,0
+node 995     ,0         ,0
+node 996     ,0         ,0
+node 997     ,0         ,0
+node 998     ,0         ,0
+node 999     ,0         ,0
+node 1000    ,0         ,0
+node 1001    ,0         ,0
+node 1002    ,0         ,0
+node 1003    ,0         ,0
+node 1004    ,0         ,0
+node 1005    ,0         ,0
+node 1006    ,0         ,0
+node 1007    ,0         ,0
+node 1008    ,0         ,0
+node 1009    ,0         ,0
+node 1010    ,0         ,0
+node 1011    ,0         ,0
+node 1012    ,0         ,0
+node 1013    ,0         ,0
+node 1014    ,0         ,0
+node 1015    ,0         ,0
+node 1016    ,0         ,0
+node 1017    ,0         ,0
+node 1018    ,0         ,0
+node 1019    ,0         ,0
+node 1020    ,0         ,0
+node 1021    ,0         ,0
+node 1022    ,0         ,0
+node 1023    ,0         ,0
+node 1024    ,0         ,0
+node 1025    ,0         ,0
+node 1026    ,0         ,0
+node 1027    ,0         ,0
+node 1028    ,0         ,0
+node 1029    ,0         ,0
+node 1030    ,0         ,0
+node 1031    ,0         ,0
+node 1032    ,0         ,0
+node 1033    ,0         ,0
+node 1034    ,0         ,0
+node 1035    ,0         ,0
+node 1036    ,0         ,0
+node 1037    ,0         ,0
+node 1038    ,0         ,0
+node 1039    ,0         ,0
+node 1040    ,0         ,0
+node 1041    ,0         ,0
+node 1042    ,0         ,0
+node 1043    ,0         ,0
+node 1044    ,0         ,0
+node 1045    ,0         ,0.0974693857
+node 1046    ,0         ,0
+node 1047    ,5         ,0.3501332416
+node 1048    ,0         ,0
+node 1049    ,0         ,0
+node 1050    ,0         ,0
+node 1051    ,0         ,0
+node 1052    ,0         ,0.2893777813
+node 1053    ,0         ,0
+node 1054    ,0         ,0
+node 1055    ,0         ,0
+node 1056    ,4         ,2.2930469655
+node 1057    ,0         ,0
+node 1058    ,0         ,0
+node 1059    ,0         ,0
+node 1060    ,0         ,0
+node 1061    ,0         ,0
+node 1062    ,0         ,0
+node 1063    ,0         ,0
+node 1064    ,0         ,0.0262090318
+node 1065    ,0         ,0
+node 1066    ,8         ,4.3843030791
+node 1067    ,0         ,0
+node 1068    ,21        ,17.26521217
+node 1069    ,0         ,0
+node 1070    ,2         ,2.5103235929
+node 1071    ,0         ,0
+node 1072    ,8         ,11.302205167
+node 1073    ,0         ,0
+node 1074    ,0         ,0
+node 1075    ,0         ,0
+node 1076    ,0         ,0
+node 1077    ,0         ,0
+node 1078    ,0         ,0
+node 1079    ,0         ,0
+node 1080    ,0         ,0
+node 1081    ,0         ,0
+node 1082    ,0         ,0
+node 1083    ,0         ,0
+node 1084    ,0         ,0
+node 1085    ,0         ,0
+node 1086    ,0         ,0
+node 1087    ,0         ,0

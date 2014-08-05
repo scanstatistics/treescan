@@ -15,7 +15,7 @@ import org.treescan.app.*;
  * Imports from data source to TreeScan formatted data file.
  */
 public class FileImporter {
-    public enum InputFileType      {Tree, Cuts, Case, Population};
+    public enum InputFileType      {Tree, Cuts, Case};
     public enum SourceDataFileType {Delimited, dBase, Excel};
     
     private final InputFileType _fileType;

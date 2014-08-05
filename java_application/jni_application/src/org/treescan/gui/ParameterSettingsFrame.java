@@ -222,15 +222,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             throw new SettingsException("The case file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", (Component) _countFileTextField);
         }
 
-        //validate the population file if not conditional on total cases on each branch
-        if (!(_conditionalBranchCasesButton.isEnabled() && _conditionalBranchCasesButton.isSelected())) {
-            if (_populationFileTextField.getText().length() == 0) {
-                throw new SettingsException("Please specify a population file.\nA population file is required when not conditioning cases on each branch.", (Component) _populationFileTextField);
-            }
-            if (!FileAccess.ValidateFileAccess(_populationFileTextField.getText(), false)) {
-                throw new SettingsException("The population file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", (Component) _populationFileTextField);
-            }
-        }
         if (_treetimeScanType.isSelected()) {
             if (Integer.parseInt(_dataTimeRangeBegin.getText().trim()) >= Integer.parseInt(_dataTimeRangeEnd.getText().trim())) {
                 throw new SettingsException("The data time range start must be before the data time range end.", (Component) _temporalEndWindowBegin);
@@ -338,8 +329,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _treelFileTextField.setCaretPosition(0);
         _countFileTextField.setText(parameters.getCountFileName());
         _countFileTextField.setCaretPosition(0);
-        _populationFileTextField.setText(parameters.getPopulationFileName());
-        _populationFileTextField.setCaretPosition(0);
         _dataTimeRangeBegin.setText(Integer.toString(parameters.getDataTimeRangeBegin()));
         _dataTimeRangeEnd.setText(Integer.toString(parameters.getDataTimeRangeClose()));
 
@@ -371,7 +360,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         setTitle(parameters.getSourceFileName());
         parameters.setTreeFileName(_treelFileTextField.getText());
         parameters.setCountFileName(_countFileTextField.getText());
-        parameters.setPopulationFileName(_populationFileTextField.getText());
         parameters.setDataTimeRangeBegin(Integer.parseInt(_dataTimeRangeBegin.getText()));
         parameters.setDataTimeRangeClose(Integer.parseInt(_dataTimeRangeEnd.getText()));
 
@@ -452,7 +440,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      * Modally shows import dialog.
      */
     public void LaunchImporter(String sFileName, FileImporter.InputFileType eFileType) {
-        ImportWizardDialog wizard = new ImportWizardDialog(TreeScanApplication.getInstance(), sFileName, _parameters.getSourceFileName(), eFileType);
+        ImportWizardDialog wizard = new ImportWizardDialog(TreeScanApplication.getInstance(), sFileName, _parameters.getSourceFileName(), eFileType, getModelType());
         wizard.setVisible(true);
         if (!wizard.getCancelled()) {
             switch (eFileType) {  // set parameters
@@ -464,9 +452,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     break;
                 case Case:
                     _countFileTextField.setText(wizard.getDestinationFilename());
-                    break;
-                case Population:
-                    _populationFileTextField.setText(wizard.getDestinationFilename());
                     break;
                 default:
                     throw new UnknownEnumException(eFileType);
@@ -525,25 +510,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         scanButtonGroup = new javax.swing.ButtonGroup();
         timtModelButtonGoup = new javax.swing.ButtonGroup();
         jTabbedPane1 = new javax.swing.JTabbedPane();
-        _inputTab = new javax.swing.JPanel();
-        _treelFileTextField = new javax.swing.JTextField();
-        _controlFileLabel = new javax.swing.JLabel();
-        _treeFileBrowseButton = new javax.swing.JButton();
-        _treeFileImportButton = new javax.swing.JButton();
-        _countFileLabel = new javax.swing.JLabel();
-        _countFileTextField = new javax.swing.JTextField();
-        _countFileBrowseButton = new javax.swing.JButton();
-        _countFileImportButton = new javax.swing.JButton();
-        jPanel2 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        _dataTimeRangeBegin = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
-        _dataTimeRangeEnd = new javax.swing.JTextField();
-        _advancedInputButton = new javax.swing.JButton();
-        _countFileLabel1 = new javax.swing.JLabel();
-        _populationFileTextField = new javax.swing.JTextField();
-        _populationFileBrowseButton = new javax.swing.JButton();
-        _populationFileImportButton = new javax.swing.JButton();
         _analysisTab = new javax.swing.JPanel();
         _probabilityModelPanel = new javax.swing.JPanel();
         _PoissonButton = new javax.swing.JRadioButton();
@@ -571,6 +537,21 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _probabilityModelPanel1 = new javax.swing.JPanel();
         _uniformButton = new javax.swing.JRadioButton();
         _advancedAnalysisButton = new javax.swing.JButton();
+        _inputTab = new javax.swing.JPanel();
+        _treelFileTextField = new javax.swing.JTextField();
+        _controlFileLabel = new javax.swing.JLabel();
+        _treeFileBrowseButton = new javax.swing.JButton();
+        _treeFileImportButton = new javax.swing.JButton();
+        _countFileLabel = new javax.swing.JLabel();
+        _countFileTextField = new javax.swing.JTextField();
+        _countFileBrowseButton = new javax.swing.JButton();
+        _countFileImportButton = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        _dataTimeRangeBegin = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        _dataTimeRangeEnd = new javax.swing.JTextField();
+        _advancedInputButton = new javax.swing.JButton();
         _outputTab = new javax.swing.JPanel();
         _reportResultsAsHTML = new javax.swing.JCheckBox();
         _outputFileTextField = new javax.swing.JTextField();
@@ -583,270 +564,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         setClosable(true);
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setIconifiable(true);
-
-        _controlFileLabel.setText("Tree File:"); // NOI18N
-
-        _treeFileBrowseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/folder_open_small.png"))); // NOI18N
-        _treeFileBrowseButton.setToolTipText("Browse for tree file ..."); // NOI18N
-        _treeFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("csv","CSV Files (*.csv)"), new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("tre","Tree Files (*.tre)")};
-                FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Tree File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                File file = select.browse_load(true);
-                if (file != null) {
-                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                    _treelFileTextField.setText(file.getAbsolutePath());
-                }
-            }
-        });
-
-        _treeFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
-        _treeFileImportButton.setToolTipText("Import tree file ..."); // NOI18N
-        _treeFileImportButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                try {
-                    InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("dbf","dBase Files (*.dbf)"),
-                        new InputFileFilter("csv","Delimited Files (*.csv)"),
-                        new InputFileFilter("xls","Excel Files (*.xls)"),
-                        new InputFileFilter("txt","Text Files (*.txt)"),
-                        new InputFileFilter("tre","Tree Files (*.tre)")};
-
-                    FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Tree File Import Source", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                    File file = select.browse_load(true);
-                    if (file != null) {
-                        org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                        LaunchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Tree);
-                    }
-                } catch (Throwable t) {
-                    new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);
-                }
-            }
-        });
-
-        _countFileLabel.setText("Case File:"); // NOI18N
-
-        _countFileBrowseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/folder_open_small.png"))); // NOI18N
-        _countFileBrowseButton.setToolTipText("Browse for case file ..."); // NOI18N
-        _countFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("csv","CSV Files (*.csv)"), new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("cas","Case Files (*.cas)")};
-                FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Case File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                File file = select.browse_load(true);
-                if (file != null) {
-                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                    _countFileTextField.setText(file.getAbsolutePath());
-                }
-            }
-        });
-
-        _countFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
-        _countFileImportButton.setToolTipText("Import case file ..."); // NOI18N
-        _countFileImportButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                try {
-                    InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("dbf","dBase Files (*.dbf)"),
-                        new InputFileFilter("csv","Delimited Files (*.csv)"),
-                        new InputFileFilter("xls","Excel Files (*.xls)"),
-                        new InputFileFilter("txt","Text Files (*.txt)"),
-                        new InputFileFilter("cas","Case Files (*.cas)")};
-
-                    FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Case File Import Source", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                    File file = select.browse_load(true);
-                    if (file != null) {
-                        org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                        LaunchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Case);
-                    }
-                } catch (Throwable t) {
-                    new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);
-                }
-            }
-        });
-
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Data Time Range"));
-
-        jLabel1.setText("Data Time Range Start");
-
-        _dataTimeRangeBegin.setText("0");
-        _dataTimeRangeBegin.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_dataTimeRangeBegin.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _dataTimeRangeBegin.setText("0");
-            }
-        });
-        _dataTimeRangeBegin.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validateNumericKeyTyped(_dataTimeRangeBegin, e, 10);
-            }
-        });
-        _dataTimeRangeBegin.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        jLabel2.setText("Data Time Range End");
-
-        _dataTimeRangeEnd.setText("100");
-        _dataTimeRangeEnd.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_dataTimeRangeEnd.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _dataTimeRangeEnd.setText("100");
-            }
-        });
-        _dataTimeRangeEnd.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validateNumericKeyTyped(_dataTimeRangeEnd, e, 10);
-            }
-        });
-        _dataTimeRangeEnd.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_dataTimeRangeBegin, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(_dataTimeRangeEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(39, 39, 39))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(_dataTimeRangeEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(_dataTimeRangeBegin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel2))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        _advancedInputButton.setText("Advanced >>"); // NOI18N
-        _advancedInputButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.INPUT);
-                getAdvancedParameterInternalFrame().requestFocus();
-            }
-        });
-
-        _countFileLabel1.setText("Population File:"); // NOI18N
-
-        _populationFileBrowseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/folder_open_small.png"))); // NOI18N
-        _populationFileBrowseButton.setToolTipText("Browse for population file ..."); // NOI18N
-        _populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("csv","CSV Files (*.csv)"), new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("pop","Population Files (*.pop)")};
-                FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Population File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                File file = select.browse_load(true);
-                if (file != null) {
-                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                    _populationFileTextField.setText(file.getAbsolutePath());
-                }
-            }
-        });
-
-        _populationFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
-        _populationFileImportButton.setToolTipText("Import population file ..."); // NOI18N
-        _populationFileImportButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                try {
-                    InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("dbf","dBase Files (*.dbf)"),
-                        new InputFileFilter("csv","Delimited Files (*.csv)"),
-                        new InputFileFilter("xls","Excel Files (*.xls)"),
-                        new InputFileFilter("txt","Text Files (*.txt)"),
-                        new InputFileFilter("pop","Population Files (*.pop)")};
-
-                    FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Population File Import Source", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                    File file = select.browse_load(true);
-                    if (file != null) {
-                        org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                        LaunchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Population);
-                    }
-                } catch (Throwable t) {
-                    new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);
-                }
-            }
-        });
-
-        javax.swing.GroupLayout _inputTabLayout = new javax.swing.GroupLayout(_inputTab);
-        _inputTab.setLayout(_inputTabLayout);
-        _inputTabLayout.setHorizontalGroup(
-            _inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_inputTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 492, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
-                        .addComponent(_treelFileTextField)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_treeFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_treeFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(_advancedInputButton))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
-                        .addComponent(_countFileTextField)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_countFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_countFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
-                        .addComponent(_populationFileTextField)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_populationFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_populationFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(_inputTabLayout.createSequentialGroup()
-                        .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(_controlFileLabel)
-                            .addComponent(_countFileLabel)
-                            .addComponent(_countFileLabel1))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        _inputTabLayout.setVerticalGroup(
-            _inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_inputTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_controlFileLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_treelFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_treeFileImportButton)
-                    .addComponent(_treeFileBrowseButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_countFileLabel)
-                .addGap(9, 9, 9)
-                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_countFileBrowseButton)
-                    .addComponent(_countFileImportButton)
-                    .addComponent(_countFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_countFileLabel1)
-                .addGap(9, 9, 9)
-                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_populationFileBrowseButton)
-                    .addComponent(_populationFileImportButton)
-                    .addComponent(_populationFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 110, Short.MAX_VALUE)
-                .addComponent(_advancedInputButton)
-                .addContainerGap())
-        );
-
-        jTabbedPane1.addTab("Input", _inputTab);
 
         _probabilityModelPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Probability Model - Tree"));
 
@@ -1242,12 +959,223 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_scanStatisticPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_temporalWindowGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
 
         jTabbedPane1.addTab("Analysis", _analysisTab);
+
+        _controlFileLabel.setText("Tree File:"); // NOI18N
+
+        _treeFileBrowseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/folder_open_small.png"))); // NOI18N
+        _treeFileBrowseButton.setToolTipText("Browse for tree file ..."); // NOI18N
+        _treeFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("csv","CSV Files (*.csv)"), new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("tre","Tree Files (*.tre)")};
+                FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Tree File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+                File file = select.browse_load(true);
+                if (file != null) {
+                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                    _treelFileTextField.setText(file.getAbsolutePath());
+                }
+            }
+        });
+
+        _treeFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
+        _treeFileImportButton.setToolTipText("Import tree file ..."); // NOI18N
+        _treeFileImportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                try {
+                    InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("dbf","dBase Files (*.dbf)"),
+                        new InputFileFilter("csv","Delimited Files (*.csv)"),
+                        new InputFileFilter("xls","Excel Files (*.xls)"),
+                        new InputFileFilter("txt","Text Files (*.txt)"),
+                        new InputFileFilter("tre","Tree Files (*.tre)")};
+
+                    FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Tree File Import Source", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+                    File file = select.browse_load(true);
+                    if (file != null) {
+                        org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                        LaunchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Tree);
+                    }
+                } catch (Throwable t) {
+                    new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);
+                }
+            }
+        });
+
+        _countFileLabel.setText("Case File:"); // NOI18N
+
+        _countFileBrowseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/folder_open_small.png"))); // NOI18N
+        _countFileBrowseButton.setToolTipText("Browse for case file ..."); // NOI18N
+        _countFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("csv","CSV Files (*.csv)"), new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("cas","Case Files (*.cas)")};
+                FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Case File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+                File file = select.browse_load(true);
+                if (file != null) {
+                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                    _countFileTextField.setText(file.getAbsolutePath());
+                }
+            }
+        });
+
+        _countFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
+        _countFileImportButton.setToolTipText("Import case file ..."); // NOI18N
+        _countFileImportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                try {
+                    InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("dbf","dBase Files (*.dbf)"),
+                        new InputFileFilter("csv","Delimited Files (*.csv)"),
+                        new InputFileFilter("xls","Excel Files (*.xls)"),
+                        new InputFileFilter("txt","Text Files (*.txt)"),
+                        new InputFileFilter("cas","Case Files (*.cas)")};
+
+                    FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Case File Import Source", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
+                    File file = select.browse_load(true);
+                    if (file != null) {
+                        org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                        LaunchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Case);
+                    }
+                } catch (Throwable t) {
+                    new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);
+                }
+            }
+        });
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Data Time Range"));
+
+        jLabel1.setText("Data Time Range Start");
+
+        _dataTimeRangeBegin.setText("0");
+        _dataTimeRangeBegin.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_dataTimeRangeBegin.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _dataTimeRangeBegin.setText("0");
+            }
+        });
+        _dataTimeRangeBegin.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validateNumericKeyTyped(_dataTimeRangeBegin, e, 10);
+            }
+        });
+        _dataTimeRangeBegin.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        jLabel2.setText("Data Time Range End");
+
+        _dataTimeRangeEnd.setText("100");
+        _dataTimeRangeEnd.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_dataTimeRangeEnd.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _dataTimeRangeEnd.setText("100");
+            }
+        });
+        _dataTimeRangeEnd.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validateNumericKeyTyped(_dataTimeRangeEnd, e, 10);
+            }
+        });
+        _dataTimeRangeEnd.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_dataTimeRangeBegin, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(_dataTimeRangeEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(39, 39, 39))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_dataTimeRangeEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_dataTimeRangeBegin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel2))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        _advancedInputButton.setText("Advanced >>"); // NOI18N
+        _advancedInputButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.INPUT);
+                getAdvancedParameterInternalFrame().requestFocus();
+            }
+        });
+
+        javax.swing.GroupLayout _inputTabLayout = new javax.swing.GroupLayout(_inputTab);
+        _inputTab.setLayout(_inputTabLayout);
+        _inputTabLayout.setHorizontalGroup(
+            _inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_inputTabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 492, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
+                        .addComponent(_treelFileTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_treeFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_treeFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
+                        .addComponent(_countFileTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_countFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_countFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(_inputTabLayout.createSequentialGroup()
+                        .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(_controlFileLabel)
+                            .addComponent(_countFileLabel))
+                        .addGap(0, 445, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(_advancedInputButton)))
+                .addContainerGap())
+        );
+        _inputTabLayout.setVerticalGroup(
+            _inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_inputTabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_controlFileLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_treelFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_treeFileImportButton)
+                    .addComponent(_treeFileBrowseButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_countFileLabel)
+                .addGap(9, 9, 9)
+                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_countFileBrowseButton)
+                    .addComponent(_countFileImportButton)
+                    .addComponent(_countFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 188, Short.MAX_VALUE)
+                .addComponent(_advancedInputButton)
+                .addContainerGap())
+        );
+
+        jTabbedPane1.addTab("Input", _inputTab);
 
         _reportResultsAsHTML.setText("Report Results as HTML");
 
@@ -1320,7 +1248,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_reportResultsAsHTML)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportResultsAsCsvTable)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 223, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 247, Short.MAX_VALUE)
                 .addComponent(_advancedOutputButton)
                 .addContainerGap())
         );
@@ -1359,7 +1287,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JButton _countFileBrowseButton;
     private javax.swing.JButton _countFileImportButton;
     private javax.swing.JLabel _countFileLabel;
-    private javax.swing.JLabel _countFileLabel1;
     private javax.swing.JTextField _countFileTextField;
     private javax.swing.JTextField _dataTimeRangeBegin;
     private javax.swing.JTextField _dataTimeRangeEnd;
@@ -1370,9 +1297,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JPanel _inputTab;
     private javax.swing.JTextField _outputFileTextField;
     private javax.swing.JPanel _outputTab;
-    private javax.swing.JButton _populationFileBrowseButton;
-    private javax.swing.JButton _populationFileImportButton;
-    private javax.swing.JTextField _populationFileTextField;
     private javax.swing.JPanel _probabilityModelPanel;
     private javax.swing.JPanel _probabilityModelPanel1;
     private javax.swing.JCheckBox _reportResultsAsCsvTable;

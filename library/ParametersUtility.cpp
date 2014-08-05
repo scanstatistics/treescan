@@ -94,10 +94,6 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getCountFileName().c_str()));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setPopulationFileName", "(Ljava/lang/String;)V");
-  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getPopulationFileName().c_str()));
-  jni_error::_detectError(Env);
-
   mid = _getMethodId_Checked(Env, clazz, "setCutsFileName", "(Ljava/lang/String;)V");
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getCutsFileName().c_str()));
   jni_error::_detectError(Env);
@@ -261,13 +257,6 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   jni_error::_detectError(Env);
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
   Parameters.setCountFileName(sFilename);
-  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
-
-  mid = _getMethodId_Checked(Env, clazz, "getPopulationFileName", "()Ljava/lang/String;");
-  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
-  jni_error::_detectError(Env);
-  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  Parameters.setPopulationFileName(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   mid = _getMethodId_Checked(Env, clazz, "getCutsFileName", "()Ljava/lang/String;");

@@ -53,7 +53,6 @@ void IniParameterSpecification::Build_1_1_x_ParameterList() {
     // Order in vector is essential - should identical to ParameterType enumeration.
     gvParameterInfo.push_back(std::make_pair(Input, (const char*)"tree-filename"));
     gvParameterInfo.push_back(std::make_pair(Input, (const char*)"case-filename"));
-    gvParameterInfo.push_back(std::make_pair(Input, (const char*)"population-filename"));
     gvParameterInfo.push_back(std::make_pair(Input, (const char*)"data-time-range"));
     gvParameterInfo.push_back(std::make_pair(AdvancedInput, (const char*)"cut-filename"));
     gvParameterInfo.push_back(std::make_pair(AdvancedInput, (const char*)"cut-type"));

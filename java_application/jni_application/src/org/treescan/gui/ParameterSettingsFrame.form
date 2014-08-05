@@ -45,7 +45,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jTabbedPane1" pref="429" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -56,268 +56,6 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
       <SubComponents>
-        <Container class="javax.swing.JPanel" name="_inputTab">
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="Input">
-                <Property name="tabTitle" type="java.lang.String" value="Input"/>
-              </JTabbedPaneConstraints>
-            </Constraint>
-          </Constraints>
-
-          <Layout>
-            <DimensionLayout dim="0">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jPanel2" pref="492" max="32767" attributes="0"/>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="_treelFileTextField" max="32767" attributes="3"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_treeFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_treeFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                              <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="_countFileTextField" max="32767" attributes="1"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_countFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_countFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="_populationFileTextField" max="32767" attributes="1"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_populationFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_populationFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="_controlFileLabel" min="-2" max="-2" attributes="0"/>
-                                  <Component id="_countFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="_countFileLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
-              </Group>
-            </DimensionLayout>
-            <DimensionLayout dim="1">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_controlFileLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="_treelFileTextField" min="-2" max="-2" attributes="0"/>
-                          <Component id="_treeFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="_treeFileBrowseButton" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="_countFileLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="_countFileBrowseButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="_countFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="_countFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_countFileLabel1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="_populationFileBrowseButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="_populationFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="_populationFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="130" max="32767" attributes="0"/>
-                      <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
-              </Group>
-            </DimensionLayout>
-          </Layout>
-          <SubComponents>
-            <Component class="javax.swing.JTextField" name="_treelFileTextField">
-            </Component>
-            <Component class="javax.swing.JLabel" name="_controlFileLabel">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Tree File:" noResource="true"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JButton" name="_treeFileBrowseButton">
-              <Properties>
-                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/folder_open_small.png"/>
-                </Property>
-                <Property name="toolTipText" type="java.lang.String" value="Browse for tree file ..." noResource="true"/>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_treeFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;csv&quot;,&quot;CSV Files (*.csv)&quot;), new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;tre&quot;,&quot;Tree Files (*.tre)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Tree File&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                _treelFileTextField.setText(file.getAbsolutePath());  &#xa;            }&#xa;    }&#xa;});"/>
-              </AuxValues>
-            </Component>
-            <Component class="javax.swing.JButton" name="_treeFileImportButton">
-              <Properties>
-                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/document_add_small.png"/>
-                </Property>
-                <Property name="toolTipText" type="java.lang.String" value="Import tree file ..." noResource="true"/>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_treeFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;),&#xa;                                                              new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;),&#xa;                                                              new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;),&#xa;                                                              new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;),&#xa;                                                              new InputFileFilter(&quot;tre&quot;,&quot;Tree Files (*.tre)&quot;)};&#xa;&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Tree File Import Source&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                LaunchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Tree);  &#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
-              </AuxValues>
-            </Component>
-            <Component class="javax.swing.JLabel" name="_countFileLabel">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Case File:" noResource="true"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JTextField" name="_countFileTextField">
-            </Component>
-            <Component class="javax.swing.JButton" name="_countFileBrowseButton">
-              <Properties>
-                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/folder_open_small.png"/>
-                </Property>
-                <Property name="toolTipText" type="java.lang.String" value="Browse for case file ..." noResource="true"/>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_countFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;csv&quot;,&quot;CSV Files (*.csv)&quot;), new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Case File&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                _countFileTextField.setText(file.getAbsolutePath());  &#xa;            }&#xa;    }&#xa;});&#xa;"/>
-              </AuxValues>
-            </Component>
-            <Component class="javax.swing.JButton" name="_countFileImportButton">
-              <Properties>
-                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/document_add_small.png"/>
-                </Property>
-                <Property name="toolTipText" type="java.lang.String" value="Import case file ..." noResource="true"/>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_countFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;),&#xa;                                                              new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;),&#xa;                                                              new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;),&#xa;                                                              new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;),&#xa;                                                              new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;)};&#xa;&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Case File Import Source&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                LaunchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Case);  &#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
-              </AuxValues>
-            </Component>
-            <Container class="javax.swing.JPanel" name="jPanel2">
-              <Properties>
-                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Data Time Range">
-                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-                        <EtchetBorder/>
-                      </Border>
-                    </TitledBorder>
-                  </Border>
-                </Property>
-              </Properties>
-
-              <Layout>
-                <DimensionLayout dim="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jLabel1" min="-2" pref="130" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_dataTimeRangeBegin" min="-2" pref="82" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="jLabel2" min="-2" pref="120" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
-                          <Component id="_dataTimeRangeEnd" min="-2" pref="91" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="39" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                </DimensionLayout>
-                <DimensionLayout dim="1">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                              <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                                  <Component id="_dataTimeRangeEnd" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="_dataTimeRangeBegin" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
-                </DimensionLayout>
-              </Layout>
-              <SubComponents>
-                <Component class="javax.swing.JLabel" name="jLabel1">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Data Time Range Start"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_dataTimeRangeBegin">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="0"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_dataTimeRangeBegin.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_dataTimeRangeBegin.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _dataTimeRangeBegin.setText(&quot;0&quot;);&#xa;    }&#xa;});&#xa;_dataTimeRangeBegin.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateNumericKeyTyped(_dataTimeRangeBegin, e, 10);&#xa;    }&#xa;});&#xa;_dataTimeRangeBegin.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JLabel" name="jLabel2">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Data Time Range End"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_dataTimeRangeEnd">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="100"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_dataTimeRangeEnd.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_dataTimeRangeEnd.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _dataTimeRangeEnd.setText(&quot;100&quot;);&#xa;    }&#xa;});&#xa;_dataTimeRangeEnd.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateNumericKeyTyped(_dataTimeRangeEnd, e, 10);&#xa;    }&#xa;});&#xa;_dataTimeRangeEnd.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});"/>
-                  </AuxValues>
-                </Component>
-              </SubComponents>
-            </Container>
-            <Component class="javax.swing.JButton" name="_advancedInputButton">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Advanced &gt;&gt;" noResource="true"/>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_advancedInputButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.INPUT);&#xa;        getAdvancedParameterInternalFrame().requestFocus();&#xa;    }&#xa;});"/>
-              </AuxValues>
-            </Component>
-            <Component class="javax.swing.JLabel" name="_countFileLabel1">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Population File:" noResource="true"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JTextField" name="_populationFileTextField">
-            </Component>
-            <Component class="javax.swing.JButton" name="_populationFileBrowseButton">
-              <Properties>
-                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/folder_open_small.png"/>
-                </Property>
-                <Property name="toolTipText" type="java.lang.String" value="Browse for population file ..." noResource="true"/>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;csv&quot;,&quot;CSV Files (*.csv)&quot;), new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;pop&quot;,&quot;Population Files (*.pop)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Population File&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                _populationFileTextField.setText(file.getAbsolutePath());  &#xa;            }&#xa;    }&#xa;});&#xa;"/>
-              </AuxValues>
-            </Component>
-            <Component class="javax.swing.JButton" name="_populationFileImportButton">
-              <Properties>
-                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/document_add_small.png"/>
-                </Property>
-                <Property name="toolTipText" type="java.lang.String" value="Import population file ..." noResource="true"/>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;),&#xa;                                                              new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;),&#xa;                                                              new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;),&#xa;                                                              new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;),&#xa;                                                              new InputFileFilter(&quot;pop&quot;,&quot;Population Files (*.pop)&quot;)};&#xa;&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Population File Import Source&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                LaunchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Population);  &#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
-              </AuxValues>
-            </Component>
-          </SubComponents>
-        </Container>
         <Container class="javax.swing.JPanel" name="_analysisTab">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
@@ -366,7 +104,7 @@
                       <Component id="_scanStatisticPanel" min="-2" max="-2" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_temporalWindowGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="30" max="32767" attributes="0"/>
+                      <EmptySpace pref="34" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -801,6 +539,223 @@
             </Component>
           </SubComponents>
         </Container>
+        <Container class="javax.swing.JPanel" name="_inputTab">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Input">
+                <Property name="tabTitle" type="java.lang.String" value="Input"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jPanel2" pref="492" max="32767" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="_treelFileTextField" max="32767" attributes="3"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="_treeFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="_treeFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="_countFileTextField" max="32767" attributes="1"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="_countFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="_countFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="_controlFileLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_countFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="0" pref="445" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_controlFileLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="_treelFileTextField" min="-2" max="-2" attributes="0"/>
+                          <Component id="_treeFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="_treeFileBrowseButton" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="_countFileLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="_countFileBrowseButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="_countFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="_countFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="188" max="32767" attributes="0"/>
+                      <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JTextField" name="_treelFileTextField">
+            </Component>
+            <Component class="javax.swing.JLabel" name="_controlFileLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Tree File:" noResource="true"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JButton" name="_treeFileBrowseButton">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/folder_open_small.png"/>
+                </Property>
+                <Property name="toolTipText" type="java.lang.String" value="Browse for tree file ..." noResource="true"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_treeFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;csv&quot;,&quot;CSV Files (*.csv)&quot;), new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;tre&quot;,&quot;Tree Files (*.tre)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Tree File&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                _treelFileTextField.setText(file.getAbsolutePath());  &#xa;            }&#xa;    }&#xa;});"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JButton" name="_treeFileImportButton">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/document_add_small.png"/>
+                </Property>
+                <Property name="toolTipText" type="java.lang.String" value="Import tree file ..." noResource="true"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_treeFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;),&#xa;                                                              new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;),&#xa;                                                              new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;),&#xa;                                                              new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;),&#xa;                                                              new InputFileFilter(&quot;tre&quot;,&quot;Tree Files (*.tre)&quot;)};&#xa;&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Tree File Import Source&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                LaunchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Tree);  &#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="_countFileLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Case File:" noResource="true"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="_countFileTextField">
+            </Component>
+            <Component class="javax.swing.JButton" name="_countFileBrowseButton">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/folder_open_small.png"/>
+                </Property>
+                <Property name="toolTipText" type="java.lang.String" value="Browse for case file ..." noResource="true"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_countFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;csv&quot;,&quot;CSV Files (*.csv)&quot;), new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;), new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;)};&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Case File&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                _countFileTextField.setText(file.getAbsolutePath());  &#xa;            }&#xa;    }&#xa;});&#xa;"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JButton" name="_countFileImportButton">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/document_add_small.png"/>
+                </Property>
+                <Property name="toolTipText" type="java.lang.String" value="Import case file ..." noResource="true"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_countFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;),&#xa;                                                              new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;),&#xa;                                                              new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;),&#xa;                                                              new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;),&#xa;                                                              new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;)};&#xa;&#xa;            FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), &quot;Select Case File Import Source&quot;, filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;            File file = select.browse_load(true);&#xa;            if (file != null) {&#xa;                org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;                LaunchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Case);  &#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+              </AuxValues>
+            </Component>
+            <Container class="javax.swing.JPanel" name="jPanel2">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Data Time Range">
+                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                        <EtchetBorder/>
+                      </Border>
+                    </TitledBorder>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jLabel1" min="-2" pref="130" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_dataTimeRangeBegin" min="-2" pref="82" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="jLabel2" min="-2" pref="120" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                          <Component id="_dataTimeRangeEnd" min="-2" pref="91" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="39" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" alignment="0" groupAlignment="3" attributes="0">
+                                  <Component id="_dataTimeRangeEnd" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_dataTimeRangeBegin" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JLabel" name="jLabel1">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Data Time Range Start"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_dataTimeRangeBegin">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="0"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_dataTimeRangeBegin.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_dataTimeRangeBegin.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _dataTimeRangeBegin.setText(&quot;0&quot;);&#xa;    }&#xa;});&#xa;_dataTimeRangeBegin.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateNumericKeyTyped(_dataTimeRangeBegin, e, 10);&#xa;    }&#xa;});&#xa;_dataTimeRangeBegin.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="jLabel2">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Data Time Range End"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_dataTimeRangeEnd">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="100"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_dataTimeRangeEnd.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_dataTimeRangeEnd.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _dataTimeRangeEnd.setText(&quot;100&quot;);&#xa;    }&#xa;});&#xa;_dataTimeRangeEnd.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateNumericKeyTyped(_dataTimeRangeEnd, e, 10);&#xa;    }&#xa;});&#xa;_dataTimeRangeEnd.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Component class="javax.swing.JButton" name="_advancedInputButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Advanced &gt;&gt;" noResource="true"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_advancedInputButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.INPUT);&#xa;        getAdvancedParameterInternalFrame().requestFocus();&#xa;    }&#xa;});"/>
+              </AuxValues>
+            </Component>
+          </SubComponents>
+        </Container>
         <Container class="javax.swing.JPanel" name="_outputTab">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
@@ -853,7 +808,7 @@
                       <Component id="_reportResultsAsHTML" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportResultsAsCsvTable" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="243" max="32767" attributes="0"/>
+                      <EmptySpace pref="247" max="32767" attributes="0"/>
                       <Component id="_advancedOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>

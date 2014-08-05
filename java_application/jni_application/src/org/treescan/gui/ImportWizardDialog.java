@@ -28,6 +28,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.undo.UndoManager;
+import org.treescan.app.Parameters;
 import org.treescan.importer.CSVImportDataSource;
 import org.treescan.importer.DBaseImportDataSource;
 import org.treescan.importer.FileImporter;
@@ -72,18 +73,21 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
     private PreviewTableModel _previewTableModel = null;
     private boolean _cancelled = true;
     private File _destinationFile = null;
-    private File _suggested_import_filename;    
+    private File _suggested_import_filename;
+    private final Parameters.ModelType _modelType;
 
     /** Creates new form ImportWizardDialog */
     public ImportWizardDialog(java.awt.Frame parent, 
                               final String sourceFile, 
                               final String suggested_filename,
-                              FileImporter.InputFileType fileType) {
+                              FileImporter.InputFileType fileType,
+                              Parameters.ModelType modelType) {
         super(parent, true);
         setSuggestedImportName(sourceFile, suggested_filename, fileType);
         initComponents();
         _sourceFile = sourceFile;
         _fileType = fileType;
+        _modelType = modelType;
         
         _sourceDataFileType = getSourceFileType();
         _progressBar.setVisible(false);
@@ -97,7 +101,6 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         switch (filetype) {
             case Tree : defaultName = "Tree"; extension =  ".tre"; break;
             case Case: defaultName = "Cases"; extension =  ".cas"; break;
-            case Population: defaultName = "Population"; extension =  ".pop";  break;
             case Cuts : defaultName = "Cuts"; extension =  ".cut"; break;
             default: throw new UnknownEnumException(filetype);
         }
@@ -401,8 +404,6 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                 return "Tree File";
             case Cuts:
                 return "Cuts File";
-            case Population:
-                return "Population File";
             default:
                 throw new UnknownEnumException(_fileType);
         }
@@ -554,9 +555,6 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             case Cuts:
                 setCutsFileVariables();
                 break;
-            case Population:
-                setPopulationFileVariables();
-                break;
             default:
                 throw new UnknownEnumException(_fileType);
         }
@@ -596,7 +594,12 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _importVariables.addElement(new ImportVariable("Node ID", 0, true, null));
         _importVariables.addElement(new ImportVariable("Cases", 1, true, null));
         //_importVariables.addElement(new ImportVariable("Duplicate Case", 2, false, null));
-        _importVariables.addElement(new ImportVariable("Time", 2, false, null));
+        switch (_modelType) {            
+            case POISSON: _importVariables.addElement(new ImportVariable("Population", 2, true, null)); break;
+            case BERNOULLI: _importVariables.addElement(new ImportVariable("Controls", 2, true, null)); break;
+            case TEMPORALSCAN: _importVariables.addElement(new ImportVariable("Days Since Event", 2, true, null)); break;
+            default: throw new UnknownEnumException(_modelType);
+        }        
     }
 
     /**
@@ -617,16 +620,6 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _importVariables.addElement(new ImportVariable("Cut Type", 1, true, null));
     }
 
-    /**
-     * Setup field descriptors for population file.
-     */
-    private void setPopulationFileVariables() {
-        _importVariables.clear();
-        _importVariables.addElement(new ImportVariable("Node ID", 0, true, null));
-        _importVariables.addElement(new ImportVariable("population", 1, true, null));
-        _importVariables.addElement(new ImportVariable("Time", 2, false, null));
-    }    
-    
     /**
      * Invoked when task's progress property changes.
      */

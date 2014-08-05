@@ -26,7 +26,6 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
     opt_descriptions.back()->get<0>().add_options()
         (getOption(Parameters::TREE_FILE, true), po::value<std::string>(), GetParameterComment(Parameters::TREE_FILE))
         (getOption(Parameters::COUNT_FILE, true), po::value<std::string>(), GetParameterComment(Parameters::COUNT_FILE))
-        (getOption(Parameters::POPULATION_FILE, true), po::value<std::string>(), GetParameterComment(Parameters::POPULATION_FILE))
         (getOption(Parameters::DATA_TIME_RANGES, true), po::value<std::string>(), GetParameterComment(Parameters::DATA_TIME_RANGES));
 
     /* Analysis tab options */

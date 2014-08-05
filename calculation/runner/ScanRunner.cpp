@@ -275,7 +275,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
     _print.Printf("Reading case file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
-    int expectedColumns = (_parameters.getModelType() == Parameters::TEMPORALSCAN ? 3 : 2) + (_parameters.isDuplicates() ? 1 : 0);    
+    int expectedColumns = 3 + (_parameters.isDuplicates() ? 1 : 0);
     _caselessWindows.resize(_parameters.getModelType() == Parameters::TEMPORALSCAN ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() : 1);
 
     int count=0, controls=0, duplicates=0, daysSinceIncidence=0;
@@ -319,8 +319,25 @@ bool ScanRunner::readCounts(const std::string& filename) {
         // read model specific columns from data source
         if (_parameters.getModelType() == Parameters::POISSON) {
             node->refIntC_C().front() += count;
+            // now read the population
+            double population=0;
+            if  (!string_to_type<double>(dataSource->getValueAt(expectedColumns - 1).c_str(), population) || population < 0) {
+                readSuccess = false;
+                _print.Printf("Error: Record %ld in case file references an invalid population for node '%s'.\n"
+                              "       The population must be a numeric value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                continue;
+            }
+            node->refIntN_C().front() += population;
         } else if (_parameters.getModelType() == Parameters::BERNOULLI) {
             node->refIntC_C().front() += count;
+            int controls=0;
+            if  (!string_to_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), controls) || controls < 0) {
+                readSuccess = false;
+                _print.Printf("Error: Record %ld in case file references an invalid number of controls for node '%s'.\n"
+                              "       The controls must be an integer value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                continue;
+            }
+            node->refIntN_C().front() += count + controls;
         } else if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
             if  (!string_to_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), daysSinceIncidence)) {
                 readSuccess = false;
@@ -381,56 +398,6 @@ std::string & ScanRunner::getCaselessWindowsAsString(std::string& s) const {
 
     s = buffer.str().c_str();
     return s;
-}
-
-/*
- Reads population data from passed file. The file format is: <node identifier>, <population>, <time>
- */
-bool ScanRunner::readPopulation(const std::string& filename) {
-    if (_parameters.getModelType() == Parameters::TEMPORALSCAN) return true; // population is not used with temporal scan
-
-    _print.Printf("Reading population file ...\n", BasePrint::P_STDOUT);
-    bool readSuccess=true;
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
-    int expectedColumns = 2;
-
-    while (dataSource->readRecord()) {
-        if (dataSource->getNumValues() != expectedColumns) {
-            readSuccess = false;
-            _print.Printf("Error: Record %ld in population file %s. Expecting <indentifier>, <population> but found %ld value%s.\n", 
-                          BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), (static_cast<int>(dataSource->getNumValues()) > (_parameters.isDuplicates() ? 4 : 3)) ? "has extra data" : "is missing data",
-                          dataSource->getNumValues(), (dataSource->getNumValues() == 1 ? "" : "s"));
-            continue;
-        }
-        ScanRunner::Index_t index = getNodeIndex(dataSource->getValueAt(0));
-        if (!index.first) {
-            readSuccess = false;
-            _print.Printf("Error: Record %ld in count file references unknown node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(0).c_str());
-            continue;
-        }
-        NodeStructure * node = _Nodes.at(index.second);
-        // read model specific columns from data source
-        if (_parameters.getModelType() == Parameters::POISSON) {
-            double population=0;
-            if  (!string_to_type<double>(dataSource->getValueAt(expectedColumns - 1).c_str(), population) || population < 0) {
-                readSuccess = false;
-                _print.Printf("Error: Record %ld in population file references an invalid population for node '%s'.\n"
-                              "       The population must be a numeric value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
-                continue;
-            }
-            node->refIntN_C().front() += population;
-        } else if (_parameters.getModelType() == Parameters::BERNOULLI) {
-            int population=0;
-            if  (!string_to_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), population) || population < 0) {
-                readSuccess = false;
-                _print.Printf("Error: Record %ld in population file references an invalid number of cases and controls for node '%s'.\n"
-                              "       The population must be a numeric value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
-                continue;
-            }
-            node->refIntN_C().front() += population;
-        } else throw prg_error("Unknown model type (%d).", "readPopulation()", _parameters.getModelType());
-    }
-    return readSuccess;
 }
 
 /*
@@ -582,12 +549,6 @@ bool ScanRunner::run() {
 
     if (!readCounts(_parameters.getCountFileName()))
         throw resolvable_error("\nProblem encountered when reading the data from the case file.");
-    if (_print.GetIsCanceled()) return false;
-
-    if (_parameters.getModelType() != Parameters::TEMPORALSCAN) {
-        if (!readPopulation(_parameters.getPopulationFileName()))
-            throw resolvable_error("\nProblem encountered when reading the data from the population file.");
-    }
     if (_print.GetIsCanceled()) return false;
 
     if (!setupTree()) 

@@ -110,7 +110,6 @@ void BasePrint::SetImpliedInputFileType(eInputFileType eType) {
   switch (eType) {
     case CASEFILE                : gsInputFileString = "case file"; break;
     case CONTROLFILE             : gsInputFileString = "control file"; break;
-    case POPFILE                 : gsInputFileString = "population file"; break;
     case COORDFILE               : gsInputFileString = "coordinates file"; break;
     case GRIDFILE                : gsInputFileString = "grid file"; break;
     case MAXCIRCLEPOPFILE        : gsInputFileString = "max circle size file"; break;

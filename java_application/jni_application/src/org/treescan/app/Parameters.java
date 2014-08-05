@@ -25,7 +25,6 @@ public class Parameters implements Cloneable {
     private String _treefilename="";
     private String _cutsfilename="";
     private String _countfilename="";
-    private String _populationfilename="";
     private String _outputfilename="";
     private ResultsFormat _resultsFormat=ResultsFormat.TEXT;
     private int _numprocesses=0;
@@ -68,7 +67,6 @@ public class Parameters implements Cloneable {
     	  newObject._sourcefilename = new String(_sourcefilename);
     	  newObject._treefilename = new String(_treefilename);
     	  newObject._cutsfilename = new String(_cutsfilename);
-    	  newObject._populationfilename = new String(_populationfilename);
     	  newObject._countfilename = new String(_countfilename);
     	  newObject._outputfilename = new String(_outputfilename);
     	  newObject._power_alt_hypothesis_filename = new String(_power_alt_hypothesis_filename);
@@ -83,7 +81,6 @@ public class Parameters implements Cloneable {
     	  if (!_treefilename.equals(rhs._treefilename)) return false;
     	  if (!_cutsfilename.equals(rhs._cutsfilename)) return false;
     	  if (!_countfilename.equals(rhs._countfilename)) return false;
-    	  if (!_populationfilename.equals(rhs._populationfilename)) return false;
     	  if (!_outputfilename.equals(rhs._outputfilename)) return false;
           if (_resultsFormat != rhs._resultsFormat) return false;
     	  if (!_sourcefilename.equals(rhs._sourcefilename)) return false;
@@ -170,8 +167,6 @@ public class Parameters implements Cloneable {
     public void setCutsFileName(final String s) {_cutsfilename = s;}
     public final String getCountFileName() {return _countfilename;}
     public void setCountFileName(final String s) {_countfilename = s;}
-    public final String getPopulationFileName() {return _populationfilename;}
-    public void setPopulationFileName(final String s) {_populationfilename = s;}
     public final String getOutputFileName() {return _outputfilename; }
     public void setOutputFileName(final String s) {_outputfilename = s;}
     public int getRandomizationSeed() {return _randomizationSeed;}

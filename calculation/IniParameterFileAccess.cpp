@@ -137,7 +137,6 @@ void IniParameterFileAccess::WriteInputSettings(IniFile& WriteFile) {
     try {
         WriteIniParameter(WriteFile, Parameters::TREE_FILE, GetParameterString(Parameters::TREE_FILE, s).c_str(), GetParameterComment(Parameters::TREE_FILE));
         WriteIniParameter(WriteFile, Parameters::COUNT_FILE, GetParameterString(Parameters::COUNT_FILE, s).c_str(), GetParameterComment(Parameters::COUNT_FILE));
-        WriteIniParameter(WriteFile, Parameters::POPULATION_FILE, GetParameterString(Parameters::POPULATION_FILE, s).c_str(), GetParameterComment(Parameters::POPULATION_FILE));
         WriteIniParameter(WriteFile, Parameters::DATA_TIME_RANGES, GetParameterString(Parameters::DATA_TIME_RANGES, s).c_str(), GetParameterComment(Parameters::DATA_TIME_RANGES));
     } catch (prg_exception& x) {
         x.addTrace("WriteInputSettings()","IniParameterFileAccess");

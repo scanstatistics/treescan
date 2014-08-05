@@ -193,7 +193,6 @@ private:
     bool                        readRelativeRisksAdjustments(const std::string& filename, RiskAdjustmentsContainer_t& rrAdjustments, bool consolidate);
     bool                        readCounts(const std::string& filename);
     bool                        readCuts(const std::string& filename);
-    bool                        readPopulation(const std::string& filename);
     bool                        readTree(const std::string& filename);
     bool                        reportResults(time_t start, time_t end) const;
     bool                        runPowerEvaluations();

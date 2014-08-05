@@ -73,19 +73,6 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                                    "have permissions to read from this directory and file.\n",
                                    BasePrint::P_PARAMERROR, _parameters.getCountFileName().c_str());
         }
-        if (_parameters.getConditionalType() != Parameters::CASESEACHBRANCH) {
-            if (_parameters.getPopulationFileName().empty()) {
-                bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nNo population file specified.\nA population file is required when not conditioning cases on each branch.\n", BasePrint::P_PARAMERROR);
-            } else if (!ValidateFileAccess(_parameters.getPopulationFileName())) {
-                bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\n"
-                                       "The population file '%s' could not be opened for reading. "
-                                       "Please confirm that the path and/or file name are valid and that you "
-                                       "have permissions to read from this directory and file.\n",
-                                        BasePrint::P_PARAMERROR, _parameters.getPopulationFileName().c_str());
-            }
-        }
         if (!_parameters.getCutsFileName().empty() && !ValidateFileAccess(_parameters.getCutsFileName())) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\n"

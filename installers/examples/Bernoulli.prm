@@ -3,8 +3,6 @@
 tree-filename=tree.tre
 ;case data filename
 case-filename=Bernoulli.cas
-;population data filename
-population-filename=Bernoulli.pop
 ;data time ranges (integer - integer)
 data-time-range=[0,0]
 

@@ -12,7 +12,6 @@ class Parameters {
     enum ParameterType {/* Input */
                         TREE_FILE=1,
                         COUNT_FILE,
-                        POPULATION_FILE,
                         DATA_TIME_RANGES,
                         /* Advanced Input */
                         CUT_FILE,
@@ -91,7 +90,6 @@ class Parameters {
     std::string                         _treeFileName;
     std::string                         _cutsFileName;
     std::string                         _countFileName;
-    std::string                         _populationFileName;
     DataTimeRangeSet                    _dataTimeRangeSet;
     DataTimeRange                       _temporalStartRange;
     DataTimeRange                       _temporalEndRange;
@@ -171,7 +169,6 @@ class Parameters {
     bool                                getPerformPowerEvaluations() const {return _perform_power_evaluations;}
     const std::string                 & getPowerEvaluationAltHypothesisFilename() const {return _power_alt_hypothesis_filename;}
     int                                 getPowerEvaluationTotalCases() const {return _power_evaluation_totalcases;}
-    const std::string                 & getPopulationFileName() const {return _populationFileName;}
     PowerEvaluationType                 getPowerEvaluationType() const {return _power_evaluation_type;}
     unsigned int                        getPowerEvaluationReplications() const {return _power_replica;}
     double                              getProbability() const {return static_cast<double>(_probablility_ratio.first)/static_cast<double>(_probablility_ratio.second);}
@@ -223,7 +220,6 @@ class Parameters {
     void                                setPowerEvaluationAltHypothesisFilename(const char * s, bool bCorrectForRelativePath=false);
     void                                setPowerEvaluationTotalCases(int i) {_power_evaluation_totalcases = i;}
     void                                setPowerEvaluationType(PowerEvaluationType e) {_power_evaluation_type = e;}
-    void                                setPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath=false);
     void                                setPrintColunHeaders(bool b) {_printColumnHeaders=b;}
     void                                setProbabilityRatio(ratio_t r) {_probablility_ratio = r;}
     void                                setRandomizationSeed(long lSeed) {_randomizationSeed = lSeed;}

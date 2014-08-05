@@ -3,8 +3,6 @@
 tree-filename=tree.tre
 ;case data filename
 case-filename=Poisson.cas
-;population data filename
-population-filename=Poisson.pop
 ;data time ranges (integer - integer)
 data-time-range=[0,0]
 
