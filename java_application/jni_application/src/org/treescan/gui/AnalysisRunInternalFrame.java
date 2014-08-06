@@ -147,6 +147,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                 try {
                     _progressTextArea.setText("");
                     _progressTextArea.read(new FileReader(sFileName), null);
+                    setTitle(sFileName);
                 } catch (IOException e) {
                     setTitle("Job Completed");
                     _progressTextArea.append("\nTreeScan completed successfully but was unable to read results from file.\n" +
