@@ -3,8 +3,6 @@
 tree-filename=tree.tre
 ;case data filename
 case-filename=TreeTemporal.cas
-;population data filename
-population-filename=
 ;data time ranges (integer - integer)
 data-time-range=[-16,10]
 
@@ -38,6 +36,16 @@ cut-type=0
 ;duplicates in case data records
 duplicates=n
 
+[Temporal Window]
+;maximum temporal size as percentage of data time range (0 < x <= 50.0)
+maximum-window-percentage=50
+;maximum temporal size as fixed time length (integer)
+maximum-window-fixed=1
+;maximum temporal size selection (PERCENTAGE_WINDOW=0, FIXED_LENGTH=1)
+maximum-window-type=0
+;minimum temporal size as fixed time length (integer)
+minimum-window-fixed=2
+
 [Inference]
 ;number of simulation replications (0,9,999, n999)
 monte-carlo-replications=999
@@ -49,6 +57,28 @@ random-randomization-seed=n
 [Additional Output]
 ;create LLR results
 results-llr=n
+;report critical values (y/n)
+report-critical-values=n
+
+[Power Evaluations]
+;perform power evaluations (y/n)
+perform-power-evaluations=n
+;power evaluation type (0=Analysis And Power Evaluation Together, 1=Only Power Evaluation With Case File, 2=Only Power Evaluation With Defined Total Cases)
+power-evaluation-type=0
+;critical values type (0=Monte Carlo, 1=User Specified Values)
+critical-values-type=0
+;power evaluation critical value .05 (> 0)
+critical-value-05=0
+;power evaluation critical value .01 (> 0)
+critical-value-01=0
+;power evaluation critical value .001 (> 0)
+critical-value-001=0
+;total cases in power evaluation
+power-evaluation-totalcases=600
+;number of replications in power step
+power-evaluation-replications=1000
+;power evaluation alternative hypothesis filename
+alternative-hypothesis-filename=
 
 [Power Simulations]
 ;input simulation data (y/n)

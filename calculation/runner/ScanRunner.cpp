@@ -242,14 +242,16 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
         size_t nodeIdx = (nodeId == "all" ? 0 : nodeIndex.second);
         size_t nodeIdxStop = (nodeId == "all" ? _Nodes.size() : nodeIndex.second + 1);
         for (; nodeIdx < nodeIdxStop; ++nodeIdx) {
-            if (testMultipleNodeRecords && nodeSet.test(nodeIdx)) {
-                _print.Printf("Error: Multiple records specified for node '%s'. Each node is limited to one entry.\n", BasePrint::P_READERROR, getNodes().at(nodeIdx)->getIdentifier().c_str());
-                bValid = false;
-            } else {
-                nodeSet.set(nodeIdx);
-                adjustments->add(nodeIdx, alternative_hypothesis);
-            }
-
+            if (testMultipleNodeRecords) {
+                if (nodeSet.test(nodeIdx)) {
+                    _print.Printf("Error: Multiple records specified for node '%s'. Each node is limited to one entry.\n", BasePrint::P_READERROR, getNodes().at(nodeIdx)->getIdentifier().c_str());
+                    bValid = false;
+                    continue;
+                } else {
+                    nodeSet.set(nodeIdx);
+                }
+            } 
+            adjustments->add(nodeIdx, alternative_hypothesis);
         }
     }
 
