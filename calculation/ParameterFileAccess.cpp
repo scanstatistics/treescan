@@ -47,7 +47,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             /* Advanced Input */
             case Parameters::CUT_FILE                : return "cuts filename";
             case Parameters::CUT_TYPE                : return "default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)";
-            case Parameters::DUPLICATES              : return "duplicates in case data records";
+            case Parameters::DUPLICATES              : return "duplicates in case data records (y/n -- experimental)";
             /* Analysis */
             case Parameters::SCAN_TYPE               : return "scan type (TREEONLY=0, TREETIME)";
             case Parameters::CONDITIONAL_TYPE        : return "conditional type (UNCONDITIONAL=0, TOTALCASES, CASESEACHBRANCH)";
@@ -61,14 +61,14 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::MAXIMUM_WINDOW_TYPE     : return "maximum temporal size selection (PERCENTAGE_WINDOW=0, FIXED_LENGTH=1)";
             case Parameters::MINIMUM_WINDOW_FIXED    : return "minimum temporal size as fixed time length (integer)";
             /* Advanced Analysis - Inference */
-            case Parameters::REPLICATIONS            : return "number of simulation replications (0,9,999, n999)";
+            case Parameters::REPLICATIONS            : return "number of simulation replications (0, 9, 999, n999)";
             case Parameters::RANDOMIZATION_SEED      : return "randomization seed (integer)";
             case Parameters::RANDOMLY_GENERATE_SEED  : return "generate randomization seed (y/n)";
             /* Output */
             case Parameters::RESULTS_FILE            : return "results filename";
-            case Parameters::RESULTS_HTML            : return "create HTML results";
-            case Parameters::RESULTS_CSV             : return "create CSV results";
-            case Parameters::RESULTS_LLR             : return "create LLR results";
+            case Parameters::RESULTS_HTML            : return "create HTML results (y/n)";
+            case Parameters::RESULTS_CSV             : return "create CSV results (y/n)";
+            case Parameters::RESULTS_LLR             : return "create LLR results (y/n)";
             case Parameters::REPORT_CRITICAL_VALUES  : return "report critical values (y/n)";
             /* Power Evaluations */
             case Parameters::POWER_EVALUATIONS       : return "perform power evaluations (y/n)";
@@ -77,8 +77,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::CRITICAL_VALUE_05       : return "power evaluation critical value .05 (> 0)";
             case Parameters::CRITICAL_VALUE_01       : return "power evaluation critical value .01 (> 0)";
             case Parameters::CRITICAL_VALUE_001      : return "power evaluation critical value .001 (> 0)";
-            case Parameters::POWER_EVALUATION_TOTALCASES : return "total cases in power evaluation";
-            case Parameters::POWER_EVALUATIONS_REPLICA : return "number of replications in power step";
+            case Parameters::POWER_EVALUATION_TOTALCASES : return "total cases in power evaluation (integer)";
+            case Parameters::POWER_EVALUATIONS_REPLICA : return "number of replications in power step (integer)";
             case Parameters::POWER_EVALUATIONS_FILE : return "power evaluation alternative hypothesis filename";
             /* Power Simulations */
             case Parameters::READ_SIMULATIONS        : return "input simulation data (y/n)";
