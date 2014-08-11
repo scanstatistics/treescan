@@ -89,6 +89,10 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParame
     if (_parameters.isGeneratingLLRResults()) {
         settings.push_back(std::make_pair("Simulated Log Likelihood Ratios", LoglikelihoodRatioWriter::getFilename(_parameters, buffer)));
     }
+    settings.push_back(std::make_pair("Report Critical Valeus",(_parameters.getReportCriticalValues() ? "Yes" : "No")));
+    if (_parameters.isGeneratingLLRResults()) {
+        settings.push_back(std::make_pair("Simulated Log Likelihood Ratios", LoglikelihoodRatioWriter::getFilename(_parameters, buffer)));
+    }
     if (_parameters.isGeneratingTableResults() && _parameters.isPrintColumnHeaders()) {
         settings.push_back(std::make_pair("Print Column Headers","Yes"));
     }

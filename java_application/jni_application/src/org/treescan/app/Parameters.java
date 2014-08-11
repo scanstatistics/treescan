@@ -47,6 +47,7 @@ public class Parameters implements Cloneable {
     private int _temporal_end_range_begin=0;
     private int _temporal_end_range_close=0;
     private boolean _generate_llr_results=false;
+    private boolean _report_critical_values;
     private double _maximum_window_percentage=50.0;
     private int _maximum_window_length=1;
     private MaximumWindowType _maximum_window_type=MaximumWindowType.PERCENTAGE_WINDOW;
@@ -112,10 +113,13 @@ public class Parameters implements Cloneable {
           if (_power_evaluation_totalcases != rhs._power_evaluation_totalcases) return false;
           if (_power_replica != rhs._power_replica) return false;
           if (!_power_alt_hypothesis_filename.equals(rhs._power_alt_hypothesis_filename)) return false;
+          if (_report_critical_values != rhs._report_critical_values) return false;
           
           return true;
     }
     
+    public boolean getReportCriticalValues() {return _report_critical_values;}
+    public void setReportCriticalValues(boolean b) {_report_critical_values = b;}
     public boolean getPerformPowerEvaluations() {return _perform_power_evaluations;}
     public void setPerformPowerEvaluations(boolean b) {_perform_power_evaluations = b;}
     public PowerEvaluationType getPowerEvaluationType() {return _power_evaluation_type;}
@@ -138,7 +142,7 @@ public class Parameters implements Cloneable {
     public void setMinimumWindowLength(int u) {_minimum_window_length = u;}     
     
     public int getDataTimeRangeBegin() {return _data_time_range_start;}
-    public void setDataTimeRangeBegin(int i) {_data_time_range_start = i;}
+    public void setDataTimeRangeBegin(int i) { _data_time_range_start = i;}
     public int getDataTimeRangeClose() {return _data_time_range_end;}
     public void setDataTimeRangeClose(int i) {_data_time_range_end = i;}
     
@@ -189,11 +193,11 @@ public class Parameters implements Cloneable {
     public void setProbabilityRatioNumerator(int i) {_probability_ratio_numerator = i;}
     public int getProbabilityRatioDenominator() {return _probability_ratio_denominator;}
     public void setProbabilityRatioDenominator(int i) {_probability_ratio_denominator = i;}
-    public void ThrowEnumException(int ord, Enum[] e) {throw new RuntimeException("Ordinal index " + ord + " out of range [" + e[0].ordinal() + "," +  e[e.length - 1].ordinal() + "].");}
+    public void ThrowEnumException(int ord, Enum[] e) { throw new RuntimeException("Ordinal index " + ord + " out of range [" + e[0].ordinal() + "," +  e[e.length - 1].ordinal() + "]."); }
     public ScanType getScanType() {return _scanType;}
     public void setScanType(int ord) {try {_scanType = ScanType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, ScanType.values());}}
     public ConditionalType getConditionalType() {return _conditionalType;}
-    public void setConditionalType(int ord) {try {_conditionalType = ConditionalType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, ConditionalType.values());}}
+    public void setConditionalType(int ord) {try { _conditionalType = ConditionalType.values()[ord]; } catch (ArrayIndexOutOfBoundsException e) { ThrowEnumException(ord, ConditionalType.values()); } }
     public final boolean isGeneratingLLRResults() {return _generate_llr_results;}
     public void setGeneratingLLRResults(boolean b) {_generate_llr_results=b;}    
 }

@@ -5,10 +5,10 @@
 
 AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanRunner::NodeStructureContainer_t& treeNodes,
                                                                      boost::shared_ptr<AbstractRandomizer> randomizer,
-                                                                     boost::shared_ptr<RelativeRiskAdjustmentHandler> riskAdjustments,
+                                                                     const RelativeRiskAdjustmentHandler& adjustments,
                                                                      const Parameters& parameters, 
                                                                      long lInitialSeed)
-                                  : AbstractRandomizer(parameters, lInitialSeed), _randomizer(randomizer), _riskAdjustments(riskAdjustments) {
+                                  : AbstractRandomizer(parameters, lInitialSeed), _randomizer(randomizer), _alternative_adjustments(adjustments) {
 
     assert(!(_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES)); // Not implemented for this model yet.
     assert(_parameters.getModelType() != Parameters::TEMPORALSCAN); // Not implemented for this model yet.
@@ -23,10 +23,10 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
             std::copy(treeNodes.at(t)->getIntN_C().begin(), treeNodes.at(t)->getIntN_C().end(), _nodes_IntN_C.at(t).begin());
         }
         // apply adjustments
-        _riskAdjustments->apply(_nodes_IntN_C);
+        _alternative_adjustments.apply(_nodes_IntN_C);
         _nodes_proxy.reset(new AlternativeExpectedNodesProxy(_nodes_IntN_C));
     } else if  (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
-        _nodes_proxy.reset(new AlternativeProbabilityNodesProxy(treeNodes, *_riskAdjustments, _parameters.getProbability()));
+        _nodes_proxy.reset(new AlternativeProbabilityNodesProxy(treeNodes, _alternative_adjustments, _parameters.getProbability()));
     }
 }
 

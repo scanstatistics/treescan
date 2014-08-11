@@ -28,7 +28,7 @@ class ParameterProgramOptions: public AbtractParameterFileAccess {
         ParameterProgramOptions(Parameters& Parameters, BasePrint& Print): AbtractParameterFileAccess(Parameters, Print) {}
 
         ParamOptContainer_t& getOptions(ParamOptContainer_t& opt_descriptions);
-        void setParameterOverrides(const po::variables_map& vm);
+        bool setParameterOverrides(const po::variables_map& vm);
 
         void listOptions(FILE * fp=stdout);
 

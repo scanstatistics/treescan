@@ -48,6 +48,7 @@ class AbstractNodesProxy {
         AbstractNodesProxy() {}
         virtual ~AbstractNodesProxy() {}
 
+        virtual AbstractNodesProxy * clone() = 0;
         virtual size_t   size() const = 0;
         virtual double   getIntN(size_t i) const = 0;
         virtual int      getBrC(size_t i) const = 0;
@@ -63,6 +64,7 @@ class NodesProxy : public AbstractNodesProxy {
         NodesProxy(const ScanRunner::NodeStructureContainer_t& treeNodes, double event_probability=0) : _treeNodes(treeNodes), _event_probability(event_probability) {}
         virtual ~NodesProxy() {}
 
+        virtual NodesProxy * clone() {return new NodesProxy(*this);}
         virtual size_t  size() const {return _treeNodes.size();}
         virtual double  getIntN(size_t i) const {return _treeNodes.at(i)->getIntN();}
         virtual int     getBrC(size_t i) const {return _treeNodes.at(i)->getBrC();}
@@ -77,6 +79,7 @@ class AlternativeExpectedNodesProxy : public AbstractNodesProxy {
         AlternativeExpectedNodesProxy(const RelativeRiskAdjustmentHandler::NodesExpectedContainer_t& treeNodes) : _treeNodes(treeNodes) {}
         virtual ~AlternativeExpectedNodesProxy() {}
 
+        virtual AlternativeExpectedNodesProxy * clone() {return new AlternativeExpectedNodesProxy(*this);}
         virtual size_t  size() const {return _treeNodes.size();}
         virtual double  getIntN(size_t i) const {return _treeNodes.at(i).front();}
         virtual int     getBrC(size_t i) const {throw prg_error("AlternativeExpectedNodesProxy::getBrC(size_t) not implemented.","getBrC(size_t)");}
@@ -96,6 +99,7 @@ class AlternativeProbabilityNodesProxy : public NodesProxy {
         }
         virtual ~AlternativeProbabilityNodesProxy() {}
 
+        virtual AlternativeProbabilityNodesProxy * clone() {return new AlternativeProbabilityNodesProxy(*this);}
         virtual size_t  size() const {return _treeNodes.size();}
         virtual double  getIntN(size_t i) const {return _treeNodes.at(i)->getIntN();}
         virtual int     getBrC(size_t i) const {return _treeNodes.at(i)->getBrC();}
@@ -109,7 +113,7 @@ class AbstractRandomizer {
     friend class AlternativeHypothesisRandomizater;
 
     protected:
-        RandomNumberGenerator _randomNumberGenerator;  /** generates random numbers */
+        RandomNumberGenerator _random_number_generator;  /** generates random numbers */
         const Parameters& _parameters;
         bool _read_data;
         std::string _read_filename;
@@ -118,7 +122,7 @@ class AbstractRandomizer {
 
         void addSimC_C(size_t id, NodeStructure::CountContainer_t& c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes);
         void addSimC_CAnforlust(size_t id, NodeStructure::CountContainer_t& c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes);
-        void SetSeed(unsigned int iSimulationIndex);
+        void setSeed(unsigned int iSimulationIndex);
 
         virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) = 0;
         virtual int read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) = 0;
@@ -126,9 +130,10 @@ class AbstractRandomizer {
 
     public:
         AbstractRandomizer(const Parameters& parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed) 
-            : _parameters(parameters), _randomNumberGenerator(lInitialSeed), _read_data(false), _write_data(false) {}
+            : _parameters(parameters), _random_number_generator(lInitialSeed), _read_data(false), _write_data(false) {}
         virtual ~AbstractRandomizer() {}
 
+        virtual AbstractRandomizer * clone() const = 0;
         static AbstractRandomizer * getNewRandomizer(const Parameters& parameters, int TotalC, int TotalControls, double TotalN);
         virtual int RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes) = 0;
         void setReading(const std::string& s) {_read_filename = s; _read_data = true;}

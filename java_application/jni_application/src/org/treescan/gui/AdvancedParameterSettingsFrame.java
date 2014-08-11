@@ -162,7 +162,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     public boolean getDefaultsSetForOutputOptions() {
-        return _reportLLRResultsAsCsvTable.isSelected() == false;
+        return _reportLLRResultsAsCsvTable.isSelected() == false && _reportCriticalValuesCheckBox.isSelected() == false; 
     }
 
     private Parameters.PowerEvaluationType getPowerEvaluationMethodType() {
@@ -196,18 +196,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         switch (_focusedTabSet) {
             case OUTPUT:
                 setTitle("Advanced Output Options");
-                jTabbedPane1.addTab("Additional Output", null, _advancedoutputtab, null);
+                jTabbedPane1.addTab("Additional Output", null, _advanced_output_tab, null);
                 break;
             case ANALYSIS:
                 setTitle("Advanced Analysis Options");
-                jTabbedPane1.addTab("Temporal Window", null, _advancedtemporalwindowTab, null);
-                jTabbedPane1.addTab("Inference", null, _advancedanalysisTab, null);
-                jTabbedPane1.addTab("Power Evaluation", null, _advancedPowerEvaluation, null);                
+                jTabbedPane1.addTab("Temporal Window", null, _advanced_temporal_window_tab, null);
+                jTabbedPane1.addTab("Inference", null, _advanced_inferenece_tab, null);
+                jTabbedPane1.addTab("Power Evaluation", null, _advanced_power_evaluation_tab, null);                
                 break;
             case INPUT:
             default:
                 setTitle("Advanced Input Options");
-                jTabbedPane1.addTab("Advanced Input", null, _advancedinputTab, null);
+                jTabbedPane1.addTab("Advanced Input", null, _advanced_input_tab, null);
         }
     }
 
@@ -223,19 +223,28 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * sets Parameters class with settings in form
      */
     public void saveParameterSettings(Parameters parameters) {
+        // Input tab
         parameters.setCutsFileName(_cutFileTextField.getText());
+
+        // Inference tab
+        parameters.setNumReplications(Integer.parseInt(_montCarloReplicationsTextField.getText()));
+
+        // Temporal Window tab
         parameters.setMaximumWindowPercentage(Double.parseDouble(_maxTemporalClusterSizeTextField.getText()));
         parameters.setMaximumWindowLength(Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()));
         parameters.setMaximumWindowType(_percentageTemporalRadioButton.isSelected() ? Parameters.MaximumWindowType.PERCENTAGE_WINDOW : Parameters.MaximumWindowType.FIXED_LENGTH);
         parameters.setMinimumWindowLength(Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()));
-        parameters.setNumReplications(Integer.parseInt(_montCarloReplicationsTextField.getText()));
-        parameters.setGeneratingLLRResults(_reportLLRResultsAsCsvTable.isSelected());
+        
         // Power Evaluations tab
         parameters.setPerformPowerEvaluations(_powerEvaluationsGroup.isEnabled() && _performPowerEvalautions.isSelected());
         parameters.setPowerEvaluationType(getPowerEvaluationMethodType().ordinal());
         parameters.setPowerEvaluationTotalCases(Integer.parseInt((_totalPowerCases.getText().length() > 0 ? _totalPowerCases.getText() : "600")));
         parameters.setPowerEvaluationReplications(Integer.parseInt(_numberPowerReplications.getText()));
-        parameters.setPowerEvaluationAltHypothesisFilename(_alternativeHypothesisFilename.getText());        
+        parameters.setPowerEvaluationAltHypothesisFilename(_alternativeHypothesisFilename.getText());
+        
+        // Additional Output tab
+        parameters.setGeneratingLLRResults(_reportLLRResultsAsCsvTable.isSelected());
+        parameters.setReportCriticalValues(_reportCriticalValuesCheckBox.isSelected());
     }
 
     /**
@@ -282,15 +291,20 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     private void setupInterface(final Parameters parameters) {
+        // Advanced Input tab
         _cutFileTextField.setText(parameters.getCutsFileName());
         _cutFileTextField.setCaretPosition(0);
+        
+        // Inference tab
         _montCarloReplicationsTextField.setText(Integer.toString(parameters.getNumReplicationsRequested()));
-        _reportLLRResultsAsCsvTable.setSelected(parameters.isGeneratingLLRResults());
+        
+        // Temporal Window tab
         _percentageTemporalRadioButton.setSelected(parameters.getMaximumWindowType() == Parameters.MaximumWindowType.PERCENTAGE_WINDOW);
         _timeTemporalRadioButton.setSelected(parameters.getMaximumWindowType() == Parameters.MaximumWindowType.FIXED_LENGTH);
         _maxTemporalClusterSizeTextField.setText(Double.toString(parameters.getMaximumWindowPercentage()));
         _maxTemporalClusterSizeUnitsTextField.setText(Integer.toString(parameters.getMaximumWindowLength()));
         _minTemporalClusterSizeUnitsTextField.setText(Integer.toString(parameters.getMinimumWindowLength()));
+        
         // Power Evaluations tab
         _performPowerEvalautions.setSelected(parameters.getPerformPowerEvaluations());
         _partOfRegularAnalysis.setSelected(parameters.getPowerEvaluationType() == Parameters.PowerEvaluationType.PE_ONLY_CASEFILE);
@@ -299,6 +313,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _totalPowerCases.setText(Integer.toString(parameters.getPowerEvaluationTotalCases()));
         _numberPowerReplications.setText(Integer.toString(parameters.getPowerEvaluationReplications()));
         _alternativeHypothesisFilename.setText(parameters.getPowerEvaluationAltHypothesisFilename());
+        
+        // Additional Output tab
+        _reportCriticalValuesCheckBox.setSelected(parameters.getReportCriticalValues());
+        _reportLLRResultsAsCsvTable.setSelected(parameters.isGeneratingLLRResults());
+        
         enablePowerEvaluationsGroup();
     }
 
@@ -308,6 +327,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     private void setDefaultsForOutputTab() {
         _reportLLRResultsAsCsvTable.setSelected(false);
+        _reportCriticalValuesCheckBox.setSelected(false);
     }
 
     /** validates all the settings in this dialog */
@@ -493,19 +513,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         maximumWindowButtonGroup = new javax.swing.ButtonGroup();
         _powerEstimationButtonGroup = new javax.swing.ButtonGroup();
         jTabbedPane1 = new javax.swing.JTabbedPane();
-        _advancedinputTab = new javax.swing.JPanel();
+        _advanced_input_tab = new javax.swing.JPanel();
         _cutFileLabel = new javax.swing.JLabel();
         _cutFileTextField = new javax.swing.JTextField();
         _cutFileBrowseButton = new javax.swing.JButton();
         _cutFileImportButton = new javax.swing.JButton();
-        _advancedanalysisTab = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
-        _labelMonteCarloReplications = new javax.swing.JLabel();
-        _montCarloReplicationsTextField = new javax.swing.JTextField();
-        _advancedoutputtab = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        _reportLLRResultsAsCsvTable = new javax.swing.JCheckBox();
-        _advancedtemporalwindowTab = new javax.swing.JPanel();
+        _advanced_temporal_window_tab = new javax.swing.JPanel();
         _maxTemporalOptionsGroup = new javax.swing.JPanel();
         _percentageTemporalRadioButton = new javax.swing.JRadioButton();
         _maxTemporalClusterSizeTextField = new javax.swing.JTextField();
@@ -516,7 +529,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _minTemporalOptionsGroup = new javax.swing.JPanel();
         _minTemporalClusterSizeUnitsTextField = new javax.swing.JTextField();
         _minTemporalTimeUnitsLabel = new javax.swing.JLabel();
-        _advancedPowerEvaluation = new javax.swing.JPanel();
+        _advanced_inferenece_tab = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        _labelMonteCarloReplications = new javax.swing.JLabel();
+        _montCarloReplicationsTextField = new javax.swing.JTextField();
+        _advanced_power_evaluation_tab = new javax.swing.JPanel();
         _powerEvaluationsGroup = new javax.swing.JPanel();
         _performPowerEvalautions = new javax.swing.JCheckBox();
         _partOfRegularAnalysis = new javax.swing.JRadioButton();
@@ -529,6 +546,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _alternativeHypothesisFilenameLabel = new javax.swing.JLabel();
         _alternativeHypothesisFilename = new javax.swing.JTextField();
         _alternativeHypothesisFilenameButton = new javax.swing.JButton();
+        _advanced_output_tab = new javax.swing.JPanel();
+        _log_likelihood_ratios_group = new javax.swing.JPanel();
+        _reportLLRResultsAsCsvTable = new javax.swing.JCheckBox();
+        _report_critical_values_group = new javax.swing.JPanel();
+        _reportCriticalValuesCheckBox = new javax.swing.JCheckBox();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
@@ -573,144 +595,38 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        javax.swing.GroupLayout _advancedinputTabLayout = new javax.swing.GroupLayout(_advancedinputTab);
-        _advancedinputTab.setLayout(_advancedinputTabLayout);
-        _advancedinputTabLayout.setHorizontalGroup(
-            _advancedinputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_advancedinputTabLayout.createSequentialGroup()
+        javax.swing.GroupLayout _advanced_input_tabLayout = new javax.swing.GroupLayout(_advanced_input_tab);
+        _advanced_input_tab.setLayout(_advanced_input_tabLayout);
+        _advanced_input_tabLayout.setHorizontalGroup(
+            _advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advanced_input_tabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_advancedinputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_advancedinputTabLayout.createSequentialGroup()
+                .addGroup(_advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_advanced_input_tabLayout.createSequentialGroup()
                         .addComponent(_cutFileTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_cutFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_cutFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
-                    .addGroup(_advancedinputTabLayout.createSequentialGroup()
+                    .addGroup(_advanced_input_tabLayout.createSequentialGroup()
                         .addComponent(_cutFileLabel)
                         .addGap(0, 552, Short.MAX_VALUE))))
         );
-        _advancedinputTabLayout.setVerticalGroup(
-            _advancedinputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_advancedinputTabLayout.createSequentialGroup()
+        _advanced_input_tabLayout.setVerticalGroup(
+            _advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advanced_input_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_cutFileLabel)
                 .addGap(9, 9, 9)
-                .addGroup(_advancedinputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_cutFileBrowseButton)
                     .addComponent(_cutFileImportButton)
                     .addComponent(_cutFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(185, Short.MAX_VALUE))
+                .addContainerGap(193, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Advanced Input", _advancedinputTab);
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Replications"));
-
-        _labelMonteCarloReplications.setText("Number of replications (0, 9, 999, or value ending in 999):"); // NOI18N
-
-        _montCarloReplicationsTextField.setText("999"); // NOI18N
-        _montCarloReplicationsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_montCarloReplicationsTextField.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _montCarloReplicationsTextField.setText("999");
-            }
-        });
-        _montCarloReplicationsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_montCarloReplicationsTextField, e, 10);
-            }
-        });
-        _montCarloReplicationsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_labelMonteCarloReplications)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(219, Short.MAX_VALUE))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_labelMonteCarloReplications)
-                    .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        javax.swing.GroupLayout _advancedanalysisTabLayout = new javax.swing.GroupLayout(_advancedanalysisTab);
-        _advancedanalysisTab.setLayout(_advancedanalysisTabLayout);
-        _advancedanalysisTabLayout.setHorizontalGroup(
-            _advancedanalysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_advancedanalysisTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        _advancedanalysisTabLayout.setVerticalGroup(
-            _advancedanalysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_advancedanalysisTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(176, Short.MAX_VALUE))
-        );
-
-        jTabbedPane1.addTab("Inference", _advancedanalysisTab);
-
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Log Likelihood Ratios"));
-
-        _reportLLRResultsAsCsvTable.setText("Report Simulated Log Likelihood Ratios");
-        _reportLLRResultsAsCsvTable.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_reportLLRResultsAsCsvTable, javax.swing.GroupLayout.DEFAULT_SIZE, 558, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_reportLLRResultsAsCsvTable)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        javax.swing.GroupLayout _advancedoutputtabLayout = new javax.swing.GroupLayout(_advancedoutputtab);
-        _advancedoutputtab.setLayout(_advancedoutputtabLayout);
-        _advancedoutputtabLayout.setHorizontalGroup(
-            _advancedoutputtabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_advancedoutputtabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        _advancedoutputtabLayout.setVerticalGroup(
-            _advancedoutputtabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_advancedoutputtabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(170, Short.MAX_VALUE))
-        );
-
-        jTabbedPane1.addTab("Additional Output", _advancedoutputtab);
+        jTabbedPane1.addTab("Advanced Input", _advanced_input_tab);
 
         _maxTemporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Temporal Window"));
 
@@ -872,28 +788,89 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap())
         );
 
-        javax.swing.GroupLayout _advancedtemporalwindowTabLayout = new javax.swing.GroupLayout(_advancedtemporalwindowTab);
-        _advancedtemporalwindowTab.setLayout(_advancedtemporalwindowTabLayout);
-        _advancedtemporalwindowTabLayout.setHorizontalGroup(
-            _advancedtemporalwindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_advancedtemporalwindowTabLayout.createSequentialGroup()
+        javax.swing.GroupLayout _advanced_temporal_window_tabLayout = new javax.swing.GroupLayout(_advanced_temporal_window_tab);
+        _advanced_temporal_window_tab.setLayout(_advanced_temporal_window_tabLayout);
+        _advanced_temporal_window_tabLayout.setHorizontalGroup(
+            _advanced_temporal_window_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advanced_temporal_window_tabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_advancedtemporalwindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_advanced_temporal_window_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
-        _advancedtemporalwindowTabLayout.setVerticalGroup(
-            _advancedtemporalwindowTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_advancedtemporalwindowTabLayout.createSequentialGroup()
+        _advanced_temporal_window_tabLayout.setVerticalGroup(
+            _advanced_temporal_window_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advanced_temporal_window_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(61, Short.MAX_VALUE))
+                .addContainerGap(69, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Temporal Window", _advancedtemporalwindowTab);
+        jTabbedPane1.addTab("Temporal Window", _advanced_temporal_window_tab);
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Replications"));
+
+        _labelMonteCarloReplications.setText("Number of replications (0, 9, 999, or value ending in 999):"); // NOI18N
+
+        _montCarloReplicationsTextField.setText("999"); // NOI18N
+        _montCarloReplicationsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_montCarloReplicationsTextField.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _montCarloReplicationsTextField.setText("999");
+            }
+        });
+        _montCarloReplicationsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_montCarloReplicationsTextField, e, 10);
+            }
+        });
+        _montCarloReplicationsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_labelMonteCarloReplications)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(219, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_labelMonteCarloReplications)
+                    .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout _advanced_inferenece_tabLayout = new javax.swing.GroupLayout(_advanced_inferenece_tab);
+        _advanced_inferenece_tab.setLayout(_advanced_inferenece_tabLayout);
+        _advanced_inferenece_tabLayout.setHorizontalGroup(
+            _advanced_inferenece_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advanced_inferenece_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _advanced_inferenece_tabLayout.setVerticalGroup(
+            _advanced_inferenece_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advanced_inferenece_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(184, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Inference", _advanced_inferenece_tab);
 
         _powerEvaluationsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Statistical Power Evaluation"));
 
@@ -1048,27 +1025,104 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_alternativeHypothesisFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_alternativeHypothesisFilenameButton))
-                .addGap(0, 20, Short.MAX_VALUE))
+                .addGap(0, 28, Short.MAX_VALUE))
         );
 
-        javax.swing.GroupLayout _advancedPowerEvaluationLayout = new javax.swing.GroupLayout(_advancedPowerEvaluation);
-        _advancedPowerEvaluation.setLayout(_advancedPowerEvaluationLayout);
-        _advancedPowerEvaluationLayout.setHorizontalGroup(
-            _advancedPowerEvaluationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_advancedPowerEvaluationLayout.createSequentialGroup()
+        javax.swing.GroupLayout _advanced_power_evaluation_tabLayout = new javax.swing.GroupLayout(_advanced_power_evaluation_tab);
+        _advanced_power_evaluation_tab.setLayout(_advanced_power_evaluation_tabLayout);
+        _advanced_power_evaluation_tabLayout.setHorizontalGroup(
+            _advanced_power_evaluation_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advanced_power_evaluation_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        _advancedPowerEvaluationLayout.setVerticalGroup(
-            _advancedPowerEvaluationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_advancedPowerEvaluationLayout.createSequentialGroup()
+        _advanced_power_evaluation_tabLayout.setVerticalGroup(
+            _advanced_power_evaluation_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advanced_power_evaluation_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Power Evaluation", _advancedPowerEvaluation);
+        jTabbedPane1.addTab("Power Evaluation", _advanced_power_evaluation_tab);
+
+        _log_likelihood_ratios_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Log Likelihood Ratios"));
+
+        _reportLLRResultsAsCsvTable.setText("Report Simulated Log Likelihood Ratios");
+        _reportLLRResultsAsCsvTable.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
+        javax.swing.GroupLayout _log_likelihood_ratios_groupLayout = new javax.swing.GroupLayout(_log_likelihood_ratios_group);
+        _log_likelihood_ratios_group.setLayout(_log_likelihood_ratios_groupLayout);
+        _log_likelihood_ratios_groupLayout.setHorizontalGroup(
+            _log_likelihood_ratios_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_log_likelihood_ratios_groupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_reportLLRResultsAsCsvTable, javax.swing.GroupLayout.DEFAULT_SIZE, 558, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _log_likelihood_ratios_groupLayout.setVerticalGroup(
+            _log_likelihood_ratios_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_log_likelihood_ratios_groupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_reportLLRResultsAsCsvTable)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        _report_critical_values_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Critical Values"));
+
+        _reportCriticalValuesCheckBox.setText("Report critical values for an observed cut to be significant"); // NOI18N
+        _reportCriticalValuesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _reportCriticalValuesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _reportCriticalValuesCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
+        javax.swing.GroupLayout _report_critical_values_groupLayout = new javax.swing.GroupLayout(_report_critical_values_group);
+        _report_critical_values_group.setLayout(_report_critical_values_groupLayout);
+        _report_critical_values_groupLayout.setHorizontalGroup(
+            _report_critical_values_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_report_critical_values_groupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_reportCriticalValuesCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _report_critical_values_groupLayout.setVerticalGroup(
+            _report_critical_values_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_report_critical_values_groupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_reportCriticalValuesCheckBox)
+                .addContainerGap(14, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout _advanced_output_tabLayout = new javax.swing.GroupLayout(_advanced_output_tab);
+        _advanced_output_tab.setLayout(_advanced_output_tabLayout);
+        _advanced_output_tabLayout.setHorizontalGroup(
+            _advanced_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advanced_output_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_advanced_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_report_critical_values_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        _advanced_output_tabLayout.setVerticalGroup(
+            _advanced_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advanced_output_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_report_critical_values_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(106, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
 
         _closeButton.setText("Close"); // NOI18N
         _closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1112,11 +1166,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel _advancedPowerEvaluation;
-    private javax.swing.JPanel _advancedanalysisTab;
-    private javax.swing.JPanel _advancedinputTab;
-    private javax.swing.JPanel _advancedoutputtab;
-    private javax.swing.JPanel _advancedtemporalwindowTab;
+    private javax.swing.JPanel _advanced_inferenece_tab;
+    private javax.swing.JPanel _advanced_input_tab;
+    private javax.swing.JPanel _advanced_output_tab;
+    private javax.swing.JPanel _advanced_power_evaluation_tab;
+    private javax.swing.JPanel _advanced_temporal_window_tab;
     private javax.swing.JTextField _alternativeHypothesisFilename;
     private javax.swing.JButton _alternativeHypothesisFilenameButton;
     private javax.swing.JLabel _alternativeHypothesisFilenameLabel;
@@ -1126,6 +1180,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _cutFileLabel;
     public javax.swing.JTextField _cutFileTextField;
     private javax.swing.JLabel _labelMonteCarloReplications;
+    private javax.swing.JPanel _log_likelihood_ratios_group;
     private javax.swing.JTextField _maxTemporalClusterSizeTextField;
     private javax.swing.JTextField _maxTemporalClusterSizeUnitsTextField;
     private javax.swing.JPanel _maxTemporalOptionsGroup;
@@ -1145,12 +1200,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _powerEvaluationWithSpecifiedCases;
     private javax.swing.JLabel _powerEvaluationWithSpecifiedCasesLabel;
     private javax.swing.JPanel _powerEvaluationsGroup;
+    private javax.swing.JCheckBox _reportCriticalValuesCheckBox;
     private javax.swing.JCheckBox _reportLLRResultsAsCsvTable;
+    private javax.swing.JPanel _report_critical_values_group;
     private javax.swing.JButton _setDefaultButton;
     private javax.swing.JRadioButton _timeTemporalRadioButton;
     private javax.swing.JTextField _totalPowerCases;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.ButtonGroup maximumWindowButtonGroup;
     // End of variables declaration//GEN-END:variables

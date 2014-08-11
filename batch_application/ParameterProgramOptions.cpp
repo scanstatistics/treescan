@@ -21,13 +21,6 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
     const int LINE_WIDTH = 150;
     std::string buffer, buffer2, buffer3;
 
-    /* Input tab options */
-    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::Input), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
-    opt_descriptions.back()->get<0>().add_options()
-        (getOption(Parameters::TREE_FILE, true), po::value<std::string>(), GetParameterComment(Parameters::TREE_FILE))
-        (getOption(Parameters::COUNT_FILE, true), po::value<std::string>(), GetParameterComment(Parameters::COUNT_FILE))
-        (getOption(Parameters::DATA_TIME_RANGES, true), po::value<std::string>(), GetParameterComment(Parameters::DATA_TIME_RANGES));
-
     /* Analysis tab options */
     opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::Analysis), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
     opt_descriptions.back()->get<0>().add_options()
@@ -38,20 +31,19 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(Parameters::START_DATA_TIME_RANGE, true), po::value<std::string>(), GetParameterComment(Parameters::START_DATA_TIME_RANGE))
         (getOption(Parameters::END_DATA_TIME_RANGE, true), po::value<std::string>(), GetParameterComment(Parameters::END_DATA_TIME_RANGE));
 
+    /* Input tab options */
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::Input), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
+        (getOption(Parameters::TREE_FILE, true), po::value<std::string>(), GetParameterComment(Parameters::TREE_FILE))
+        (getOption(Parameters::COUNT_FILE, true), po::value<std::string>(), GetParameterComment(Parameters::COUNT_FILE))
+        (getOption(Parameters::DATA_TIME_RANGES, true), po::value<std::string>(), GetParameterComment(Parameters::DATA_TIME_RANGES));
+
     /* Output tab options */
     opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::Output), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
     opt_descriptions.back()->get<0>().add_options()
         (getOption(Parameters::RESULTS_FILE, true), po::value<std::string>(), GetParameterComment(Parameters::RESULTS_FILE))
         (getOption(Parameters::RESULTS_HTML, true), po::value<std::string>(), GetParameterComment(Parameters::RESULTS_HTML))
-        (getOption(Parameters::RESULTS_CSV, true), po::value<std::string>(), GetParameterComment(Parameters::RESULTS_CSV))
-        (getOption(Parameters::RESULTS_LLR, true), po::value<std::string>(), GetParameterComment(Parameters::RESULTS_LLR));
-
-    /* Advanced Input tab options */
-    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::AdvancedInput), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
-    opt_descriptions.back()->get<0>().add_options()
-        (getOption(Parameters::CUT_FILE, true), po::value<std::string>(), GetParameterComment(Parameters::CUT_FILE))
-        (getOption(Parameters::CUT_TYPE, true), po::value<std::string>(), GetParameterComment(Parameters::CUT_TYPE))
-        (getOption(Parameters::DUPLICATES, true), po::value<std::string>(), GetParameterComment(Parameters::DUPLICATES));
+        (getOption(Parameters::RESULTS_CSV, true), po::value<std::string>(), GetParameterComment(Parameters::RESULTS_CSV));
 
     /* Temporal Window tab options */
     opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::TemporalWindow), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
@@ -67,6 +59,32 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(Parameters::REPLICATIONS, true), po::value<std::string>(), GetParameterComment(Parameters::REPLICATIONS))
         (getOption(Parameters::RANDOMIZATION_SEED, true), po::value<std::string>(), GetParameterComment(Parameters::RANDOMIZATION_SEED))
         (getOption(Parameters::RANDOMLY_GENERATE_SEED, true), po::value<std::string>(), GetParameterComment(Parameters::RANDOMLY_GENERATE_SEED));
+
+    /* Power Evaluations options */
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::PowerEvaluations), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
+        (getOption(Parameters::POWER_EVALUATIONS, true), po::value<std::string>(), GetParameterComment(Parameters::POWER_EVALUATIONS))
+        (getOption(Parameters::POWER_EVALUATION_TYPE, true), po::value<std::string>(), GetParameterComment(Parameters::POWER_EVALUATION_TYPE))
+        (getOption(Parameters::CRITICAL_VALUES_TYPE, true), po::value<std::string>(), GetParameterComment(Parameters::CRITICAL_VALUES_TYPE))
+        (getOption(Parameters::CRITICAL_VALUE_05, true), po::value<std::string>(), GetParameterComment(Parameters::CRITICAL_VALUE_05))
+        (getOption(Parameters::CRITICAL_VALUE_01, true), po::value<std::string>(), GetParameterComment(Parameters::CRITICAL_VALUE_01))
+        (getOption(Parameters::CRITICAL_VALUE_001, true), po::value<std::string>(), GetParameterComment(Parameters::CRITICAL_VALUE_001))
+        (getOption(Parameters::POWER_EVALUATION_TOTALCASES, true), po::value<std::string>(), GetParameterComment(Parameters::POWER_EVALUATION_TOTALCASES))
+        (getOption(Parameters::POWER_EVALUATIONS_REPLICA, true), po::value<std::string>(), GetParameterComment(Parameters::POWER_EVALUATIONS_REPLICA))
+        (getOption(Parameters::POWER_EVALUATIONS_FILE, true), po::value<std::string>(), GetParameterComment(Parameters::POWER_EVALUATIONS_FILE));
+
+    /* Advanced Input tab options */
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::AdvancedInput), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
+        (getOption(Parameters::CUT_FILE, true), po::value<std::string>(), GetParameterComment(Parameters::CUT_FILE))
+        (getOption(Parameters::CUT_TYPE, true), po::value<std::string>(), GetParameterComment(Parameters::CUT_TYPE))
+        (getOption(Parameters::DUPLICATES, true), po::value<std::string>(), GetParameterComment(Parameters::DUPLICATES));
+
+    /* Additional Output tab options */
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::AdditionalOutput), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
+        (getOption(Parameters::RESULTS_LLR, true), po::value<std::string>(), GetParameterComment(Parameters::RESULTS_LLR))
+        (getOption(Parameters::REPORT_CRITICAL_VALUES, true), po::value<std::string>(), GetParameterComment(Parameters::REPORT_CRITICAL_VALUES));
 
     /* Power Simulations options */
     opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::PowerSimulations), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
@@ -85,12 +103,13 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
 }
 
 /** Overrides settigs  */
-void ParameterProgramOptions::setParameterOverrides(const po::variables_map& vm) {
+bool ParameterProgramOptions::setParameterOverrides(const po::variables_map& vm) {
     std::string buffer;
     for (Parameters::ParameterType eType=Parameters::TREE_FILE; eType <= _parameters.giNumParameters; eType = Parameters::ParameterType(eType + 1)) {
         if (vm.count(getOption(eType)))
             SetParameter(eType, vm[getOption(eType)].as<std::string>(), gPrintDirection);
     }
+    return !_read_error;
 }
 
 void ParameterProgramOptions::listOptions(FILE * fp) {

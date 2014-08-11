@@ -24,18 +24,18 @@ JNIEXPORT jboolean JNICALL Java_org_treescan_app_Parameters_Read(JNIEnv * pEnv, 
        parameters.setVersion(vVersion);
      }
      if (iscopy == JNI_TRUE)
-     	pEnv->ReleaseStringUTFChars(filename, sParameterFilename);
+        pEnv->ReleaseStringUTFChars(filename, sParameterFilename);
      ParametersUtility::copyCParametersToJParameters(*pEnv, parameters, jParameters);
   }
-  catch (jni_error &) {    
+  catch (jni_error &) {
     return 1; // let the Java exception to be handled in the caller of JNI function
   }
   catch (std::exception& x) {
-	  jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
+    jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
     return 1;
   }
   catch (...) {
-	  jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
+    jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
     return 1;
   }
   return true;
@@ -50,15 +50,15 @@ JNIEXPORT void JNICALL Java_org_treescan_app_Parameters_Write(JNIEnv * pEnv, job
     PrintNull NoPrint;
     ParameterAccessCoordinator(parameters).write(parameters.getSourceFileName().c_str(), NoPrint);
   }
-  catch (jni_error&) {    
+  catch (jni_error&) {
     return; // let the Java exception to be handled in the caller of JNI function
   }
   catch (std::exception& x) {
-	  jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
+    jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
     return;
   }
   catch (...) {
-	  jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
+    jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
     return;
   }
 }
@@ -159,6 +159,7 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   mid = _getMethodId_Checked(Env, clazz, "setProbabilityRatioNumerator", "(I)V");
   Env.CallVoidMethod(jParameters, mid, (jint)ratio.first);
   jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "setProbabilityRatioDenominator", "(I)V");
   Env.CallVoidMethod(jParameters, mid, (jint)ratio.second);
   jni_error::_detectError(Env);
@@ -171,16 +172,20 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getConditionalType());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setDataTimeRangeBegin", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getStart());
-  jni_error::_detectError(Env);
-  mid = _getMethodId_Checked(Env, clazz, "setDataTimeRangeClose", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getEnd());
-  jni_error::_detectError(Env);
+  if (Parameters.getDataTimeRangeSet().getDataTimeRangeSets().size()) {
+    mid = _getMethodId_Checked(Env, clazz, "setDataTimeRangeBegin", "(I)V");
+    Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getStart());
+    jni_error::_detectError(Env);
+
+    mid = _getMethodId_Checked(Env, clazz, "setDataTimeRangeClose", "(I)V");
+    Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getEnd());
+    jni_error::_detectError(Env);
+  }
 
   mid = _getMethodId_Checked(Env, clazz, "setTemporalStartRangeBegin", "(I)V");
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTemporalStartRange().getStart());
   jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "setTemporalStartRangeClose", "(I)V");
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTemporalStartRange().getEnd());
   jni_error::_detectError(Env);
@@ -188,6 +193,7 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   mid = _getMethodId_Checked(Env, clazz, "setTemporalEndRangeBegin", "(I)V");
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTemporalEndRange().getStart());
   jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "setTemporalEndRangeClose", "(I)V");
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTemporalEndRange().getEnd());
   jni_error::_detectError(Env);
@@ -230,6 +236,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
 
   mid = _getMethodId_Checked(Env, clazz, "setPowerEvaluationAltHypothesisFilename", "(Ljava/lang/String;)V");
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getPowerEvaluationAltHypothesisFilename().c_str()));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setReportCriticalValues", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getReportCriticalValues());
   jni_error::_detectError(Env);
 
   return jParameters;
@@ -391,6 +401,10 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
   Parameters.setPowerEvaluationAltHypothesisFilename(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+  mid = _getMethodId_Checked(Env, clazz, "getReportCriticalValues", "()Z");
+  Parameters.setReportCriticalValues(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
 
   return Parameters;
 }

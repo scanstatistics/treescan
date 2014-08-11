@@ -20,8 +20,8 @@ AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const Parameters& para
         } break;
         case Parameters::BERNOULLI: {
             switch (parameters.getConditionalType()) {
-                case Parameters::UNCONDITIONAL : return new BernoulliRandomizer(parameters.getProbability(), false, TotalC, TotalControls, TotalN, parameters); break;
-                case Parameters::TOTALCASES : return new BernoulliRandomizer(parameters.getProbability(), true, TotalC, TotalControls, TotalN, parameters); break;
+                case Parameters::UNCONDITIONAL : return new BernoulliRandomizer(false, TotalC, TotalControls, TotalN, parameters); break;
+                case Parameters::TOTALCASES : return new BernoulliRandomizer(true, TotalC, TotalControls, TotalN, parameters); break;
                 case Parameters::CASESEACHBRANCH :
                 default: throw prg_error("Unknown conditional type (%d).", "getNewRandomizer()", parameters.getConditionalType());
             }
@@ -60,16 +60,16 @@ void AbstractRandomizer::addSimC_CAnforlust(size_t id, NodeStructure::CountConta
 }
 
 /** Reset seed of randomizer for particular simulation index. */
-void AbstractRandomizer::SetSeed(unsigned int iSimulationIndex) {
+void AbstractRandomizer::setSeed(unsigned int iSimulationIndex) {
     try {
         //calculate seed as unsigned long
-        unsigned long ulSeed = _randomNumberGenerator.GetInitialSeed() + iSimulationIndex;
+        unsigned long ulSeed = _random_number_generator.GetInitialSeed() + iSimulationIndex;
         //compare to max seed(declared as positive signed long)
-        if (ulSeed >= static_cast<unsigned long>(_randomNumberGenerator.GetMaxSeed()))
-            throw prg_error("Calculated seed for simulation %u, exceeds defined limit of %i.", "SetSeed()", iSimulationIndex, _randomNumberGenerator.GetMaxSeed());
-        _randomNumberGenerator.SetSeed(static_cast<long>(ulSeed));
+        if (ulSeed >= static_cast<unsigned long>(_random_number_generator.GetMaxSeed()))
+            throw prg_error("Calculated seed for simulation %u, exceeds defined limit of %i.", "setSeed()", iSimulationIndex, _random_number_generator.GetMaxSeed());
+        _random_number_generator.SetSeed(static_cast<long>(ulSeed));
     } catch (prg_exception& x) {
-        x.addTrace("SetSeed()","AbstractRandomizer");
+        x.addTrace("setSeed()","AbstractRandomizer");
         throw;
     }
 }

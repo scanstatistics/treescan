@@ -21,6 +21,7 @@ public:
     TemporalRandomizer(int TotalC, double TotalN, const DataTimeRangeSet& timeRangeSets, const Parameters& parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~TemporalRandomizer() {}
 
+    virtual TemporalRandomizer * clone() const {return new TemporalRandomizer(*this);}
     virtual int RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes);
 };
 //******************************************************************************

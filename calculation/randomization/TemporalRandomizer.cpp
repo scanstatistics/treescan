@@ -13,7 +13,7 @@ TemporalRandomizer::TemporalRandomizer(int TotalC, double TotalN, const DataTime
 }
 
 int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
-    SetSeed(iSimulation);
+    setSeed(iSimulation);
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     const DataTimeRange& range = _timeRangeSets.getDataTimeRangeSets().front(); // TODO: for now, only take the first
     DataTimeRange zeroRange(range.getStart() + _zero_translation_additive, range.getEnd() + _zero_translation_additive);
@@ -23,7 +23,7 @@ int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesP
         if (branchC) {
             SimulationNode& simNode(treeSimNodes.at(i));
             for (NodeStructure::count_t c=0; c < branchC; ++c) {
-                DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(zeroRange.getEnd()), _randomNumberGenerator));
+                DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(zeroRange.getEnd()), _random_number_generator));
                 ++(simNode.refIntC_C().at(idx));
                 ++TotalSimC;
             }

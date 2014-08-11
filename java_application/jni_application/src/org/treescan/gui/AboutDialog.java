@@ -93,7 +93,7 @@ public class AboutDialog extends javax.swing.JDialog {
         versionLabel.setText("TreeScan vX.x.x");
 
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText("Tree Scan Statistics.");
+        jLabel2.setText("Software for the Tree-based Scan Statistics.");
 
         jLabel3.setText("Web Site:");
 
@@ -179,8 +179,6 @@ public class AboutDialog extends javax.swing.JDialog {
                 .addContainerGap(23, Short.MAX_VALUE))
         );
 
-        versionLabel.getAccessibleContext().setAccessibleName("TreeScan vX.x.x");
-
         jTabbedPane1.addTab("TreeScan", jPanel1);
 
         _textAreaSystemInformation.setColumns(20);
@@ -201,7 +199,7 @@ public class AboutDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel6.setFont(new java.awt.Font("Tahoma", 1, 11));
+        jLabel6.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jLabel6.setText("Java System Properties");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -236,11 +234,11 @@ public class AboutDialog extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1)
         );
 
         jTabbedPane1.getAccessibleContext().setAccessibleName("About SaTScan");

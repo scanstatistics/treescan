@@ -9,7 +9,7 @@
 class AlternativeHypothesisRandomizater : public AbstractRandomizer {
     protected:
         boost::shared_ptr<AbstractRandomizer> _randomizer;
-        boost::shared_ptr<RelativeRiskAdjustmentHandler> _riskAdjustments;
+        const RelativeRiskAdjustmentHandler&  _alternative_adjustments;
         RelativeRiskAdjustmentHandler::NodesExpectedContainer_t _nodes_IntN_C;
         boost::shared_ptr<AbstractNodesProxy> _nodes_proxy;
 
@@ -20,10 +20,17 @@ class AlternativeHypothesisRandomizater : public AbstractRandomizer {
     public:
         AlternativeHypothesisRandomizater(const ScanRunner::NodeStructureContainer_t& treeNodes,
                                           boost::shared_ptr<AbstractRandomizer> randomizer,
-                                          boost::shared_ptr<RelativeRiskAdjustmentHandler> riskAdjustments,
+                                          const RelativeRiskAdjustmentHandler& adjustments,
                                           const Parameters& parameters, 
                                           long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+        AlternativeHypothesisRandomizater(const AlternativeHypothesisRandomizater& other) : AbstractRandomizer(other), _alternative_adjustments(other._alternative_adjustments) {
+            _randomizer.reset(other._randomizer->clone());
+            _nodes_IntN_C = other._nodes_IntN_C;
+            _nodes_proxy.reset(other._nodes_proxy->clone());
+        }
         virtual ~AlternativeHypothesisRandomizater() {}
+
+        virtual AlternativeHypothesisRandomizater * clone() const {return new AlternativeHypothesisRandomizater(*this);}
 
         virtual int RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes);
 };

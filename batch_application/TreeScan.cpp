@@ -124,7 +124,10 @@ int main(int argc, char* argv[]) {
         }
 
         /* apply parameter overrides*/
-        parameterOptions.setParameterOverrides(vm);
+        if (!parameterOptions.setParameterOverrides(vm)) {
+            throw resolvable_error("\nThe parameter settings that prevent TreeScan from continuing.\n"
+                                   "Please review above message(s) and modify parameter settings accordingly.");
+        }
         /* write parameters to file, if requested */
         if (vm.count("write-parameters")) {
             ParameterAccessCoordinator(parameters).write(vm["write-parameters"].as<std::string>().c_str(), console);

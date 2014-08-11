@@ -6,22 +6,22 @@
 
 /* constructor */
 PoissonRandomizer::PoissonRandomizer(bool conditional, int TotalC, double TotalN, const Parameters& parameters, long lInitialSeed)
-                  : AbstractDenominatorDataRandomizer(parameters, lInitialSeed), _conditional(conditional), _TotalC(TotalC), _TotalN(TotalN) {}
+                  : AbstractDenominatorDataRandomizer(parameters, lInitialSeed), _conditional(conditional), _total_C(TotalC), _total_N(TotalN) {}
 
 /** Creates randomized under the null hypothesis for Poisson model, assigning data to DataSet objects structures.
     Random number generator seed initialized based upon 'iSimulation' index. */
 int PoissonRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
     //reset seed of random number generator
-    SetSeed(iSimulation);
+    setSeed(iSimulation);
 
     //-------------------- GENERATING THE RANDOM DATA ------------------------------
     int cases, CasesLeft, TotalSimC;
     double  ExpectedLeft;
 
     if (_conditional) {
-        TotalSimC = _TotalC;
-        CasesLeft = _TotalC;
-        ExpectedLeft = _TotalN;
+        TotalSimC = _total_C;
+        CasesLeft = _total_C;
+        ExpectedLeft = _total_N;
         for (size_t i=0; i < treeNodes.size(); i++) {
             cases = BinomialGenerator(CasesLeft, treeNodes.getIntN(i) / ExpectedLeft);
             //if(cases>0 && Node[i].IntN<0.1) cout << "node=" << i <<  ", CasesLeft=" << CasesLeft << ", c=" << cases << ", exp=" << Node[i].IntN << ", ExpLeft=" << ExpectedLeft << endl;
@@ -32,7 +32,7 @@ int PoissonRandomizer::randomize(unsigned int iSimulation, const AbstractNodesPr
         } // for i
     }  else { // if unconditional
         TotalSimC=0;
-        ExpectedLeft = _TotalN;
+        ExpectedLeft = _total_N;
         for(size_t i=0; i < treeNodes.size(); i++) {
             cases = PoissonGenerator(treeNodes.getIntN(i));
             //if(cases>0 && Node[i].IntN<0.1) cout << "node=" << i <<  ",  c=" << cases << ", exp=" << Node[i].IntN << endl;
@@ -70,7 +70,7 @@ double PoissonRandomizer::RandomUniform(bool classic) {
     //cout << "return_value " << return_value << endl;
     //return return_value;
 
-    return classic ? double(rand()+0.5)/(RAND_MAX+1) : _randomNumberGenerator.GetRandomDouble();
+    return classic ? double(rand()+0.5)/(RAND_MAX+1) : _random_number_generator.GetRandomDouble();
 }
 
 /*
@@ -78,7 +78,7 @@ double PoissonRandomizer::RandomUniform(bool classic) {
  Note: SaTScan has a faster way of doing this.
 */
 int PoissonRandomizer::BinomialGenerator(int n, double p, bool classic) {
-    if (!classic) return gBinomialGenerator.GetBinomialDistributedVariable(n, static_cast<float>(p), _randomNumberGenerator);
+    if (!classic) return _binomial_generator.GetBinomialDistributedVariable(n, static_cast<float>(p), _random_number_generator);
 
     int     j;
     int     binomial;

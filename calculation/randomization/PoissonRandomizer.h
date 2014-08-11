@@ -9,8 +9,8 @@
 class PoissonRandomizer : public AbstractDenominatorDataRandomizer {
 protected:
     bool            _conditional;
-    int             _TotalC;
-    double          _TotalN;
+    int             _total_C;
+    double          _total_N;
 
     int             BinomialGenerator(int n, double p, bool classic=false);
     int             PoissonGenerator(double lambda);
@@ -21,6 +21,8 @@ protected:
 public:
     PoissonRandomizer(bool conditional, int TotalC, double TotalN, const Parameters& parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~PoissonRandomizer() {}
+
+    virtual PoissonRandomizer * clone() const {return new PoissonRandomizer(*this);}
 };
 //******************************************************************************
 #endif

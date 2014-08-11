@@ -7,7 +7,7 @@
 /** Abstraction for denominator data randomizer. */
 class AbstractDenominatorDataRandomizer : public AbstractRandomizer {
   protected:
-    BinomialGenerator   gBinomialGenerator;
+    BinomialGenerator   _binomial_generator;
 
     //virtual int randomize(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) = 0;
 

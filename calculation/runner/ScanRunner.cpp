@@ -175,7 +175,6 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
     bool bValid=true, bEmpty=true;
     ScanRunner::Index_t nodeIndex;
     const long nodeIdIdx=0, uAdjustmentIndex=1;
-    bool readSuccess=true;
     boost::dynamic_bitset<> nodeSet;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
     bool testMultipleNodeRecords(_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL);
@@ -219,14 +218,17 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
         }
         if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
             if (!string_to_type<double>(dataSource->getValueAt(uAdjustmentIndex).c_str(), alternative_hypothesis) || alternative_hypothesis < 0.0 || alternative_hypothesis > 1.0) {
-                readSuccess = false;
-                _print.Printf("Error: Record %ld in alternative hypothesis file references an invalid event probability for node '%s'.\n"
+                bValid = false;
+                _print.Printf("Error: Record %ld in alternative hypothesis file references an invalid case probability for node '%s'.\n"
                               "       The event probability must be a numeric value between zero and one (inclusive).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
                 continue;
+            } else if (alternative_hypothesis < _parameters.getProbability()) {
+                _print.Printf("Warning: Record %ld in alternative hypothesis file references a case probability of %g, which is less than standard case probability of %g.\n",
+                              BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), alternative_hypothesis, _parameters.getProbability());
             }
         } else {
             if (!string_to_type<double>(dataSource->getValueAt(uAdjustmentIndex).c_str(), alternative_hypothesis) || alternative_hypothesis < 0) {
-                readSuccess = false;
+                bValid = false;
                 _print.Printf("Error: Record %ld in alternative hypothesis file references an invalid relative risk for node '%s'.\n"
                               "       The relative risk must be a numeric value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
                 continue;
@@ -244,7 +246,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
         for (; nodeIdx < nodeIdxStop; ++nodeIdx) {
             if (testMultipleNodeRecords) {
                 if (nodeSet.test(nodeIdx)) {
-                    _print.Printf("Error: Multiple records specified for node '%s'. Each node is limited to one entry.\n", BasePrint::P_READERROR, getNodes().at(nodeIdx)->getIdentifier().c_str());
+                    _print.Printf("Error: Multiple records specified for node '%s' in alternative hypothesis file. Each node is limited to one entry.\n", BasePrint::P_READERROR, getNodes().at(nodeIdx)->getIdentifier().c_str());
                     bValid = false;
                     continue;
                 } else {
@@ -553,7 +555,7 @@ bool ScanRunner::run() {
         throw resolvable_error("\nProblem encountered when reading the data from the case file.");
     if (_print.GetIsCanceled()) return false;
 
-    if (!setupTree()) 
+     if (!setupTree()) 
         throw resolvable_error("\nProblem encountered when setting up tree.");
     if (_print.GetIsCanceled()) return false;
 
@@ -631,7 +633,7 @@ bool ScanRunner::runPowerEvaluations() {
     for (size_t t=0; t < riskAdjustments.size(); ++t) {
         _print.Printf("\nDoing the alternative replications for power set %d\n", BasePrint::P_STDOUT, t+1);
         boost::shared_ptr<AbstractRandomizer> core_randomizer(AbstractRandomizer::getNewRandomizer(_parameters, _TotalC, _TotalControls, _TotalN));
-        boost::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, riskAdjustments[t], _parameters));
+        boost::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, *riskAdjustments[t], _parameters));
         if (_parameters.isWritingSimulationData()) {
             if (t == 0 && _parameters.getCriticalValuesType() == Parameters::CV_POWER_VALUES)
                 // if we didn't perform monte carlo simulations, truncate simulations write file on first power simulation
@@ -659,12 +661,18 @@ bool ScanRunner::runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer
         typedef contractor<MCSimJobSource> contractor_type;
         contractor_type theContractor(jobSource);
 
+        std::deque<boost::shared_ptr<AbstractRandomizer> > _randomizers;
+        _randomizers.push_back(randomizer);
+        for (unsigned u=1; u < ulParallelProcessCount; ++u) {
+            _randomizers.push_back(boost::shared_ptr<AbstractRandomizer>(randomizer->clone()));
+        }
+
         //run threads:
         boost::thread_group tg;
         boost::mutex        thread_mutex;
         for (unsigned u=0; u < ulParallelProcessCount; ++u) {
             try {
-                MCSimSuccessiveFunctor mcsf(thread_mutex, randomizer, *this);
+                MCSimSuccessiveFunctor mcsf(thread_mutex, _randomizers.at(u), *this);
                 tg.create_thread(subcontractor<contractor_type,MCSimSuccessiveFunctor>(theContractor,mcsf));
             } catch (std::bad_alloc &) {
                 if (u == 0) throw; // if this is the first thread, re-throw exception

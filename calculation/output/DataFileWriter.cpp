@@ -338,7 +338,7 @@ LoglikelihoodRatioWriter::LoglikelihoodRatioWriter(const ScanRunner& scanRunner,
   std::string buffer;
   try {
     CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
-    _csvWriter.reset(new CSVDataFileWriter(getFilename(_scanner.getParameters(), buffer), _dataFieldDefinitions, _scanner.getParameters().isPrintColumnHeaders(), append));
+    _csvWriter.reset(new CSVDataFileWriter(getFilename(_scanner.getParameters(), buffer), _dataFieldDefinitions, _scanner.getParameters().isPrintColumnHeaders() && !append, append));
   } catch (prg_exception& x) {
     x.addTrace("constructor()","LoglikelihoodRatioWriter");
     throw;
