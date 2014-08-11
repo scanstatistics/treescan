@@ -51,6 +51,7 @@ class AbstractNodesProxy {
         virtual AbstractNodesProxy * clone() = 0;
         virtual size_t   size() const = 0;
         virtual double   getIntN(size_t i) const = 0;
+        virtual int      getIntC(size_t i) const = 0;
         virtual int      getBrC(size_t i) const = 0;
         virtual double   getProbability(size_t i) const = 0;
 };
@@ -67,6 +68,7 @@ class NodesProxy : public AbstractNodesProxy {
         virtual NodesProxy * clone() {return new NodesProxy(*this);}
         virtual size_t  size() const {return _treeNodes.size();}
         virtual double  getIntN(size_t i) const {return _treeNodes.at(i)->getIntN();}
+        virtual int     getIntC(size_t i) const {return _treeNodes.at(i)->getIntC();}
         virtual int     getBrC(size_t i) const {return _treeNodes.at(i)->getBrC();}
         virtual double  getProbability(size_t i) const {return _event_probability;}
 };
@@ -82,6 +84,7 @@ class AlternativeExpectedNodesProxy : public AbstractNodesProxy {
         virtual AlternativeExpectedNodesProxy * clone() {return new AlternativeExpectedNodesProxy(*this);}
         virtual size_t  size() const {return _treeNodes.size();}
         virtual double  getIntN(size_t i) const {return _treeNodes.at(i).front();}
+        virtual int     getIntC(size_t i) const {throw prg_error("AlternativeExpectedNodesProxy::getIntC(size_t) not implemented.","getIntC(size_t)");}
         virtual int     getBrC(size_t i) const {throw prg_error("AlternativeExpectedNodesProxy::getBrC(size_t) not implemented.","getBrC(size_t)");}
         virtual double  getProbability(size_t i) const {throw prg_error("AlternativeExpectedNodesProxy::getProbability(size_t) not implemented.","getProbability(size_t)");}
 };
@@ -102,6 +105,7 @@ class AlternativeProbabilityNodesProxy : public NodesProxy {
         virtual AlternativeProbabilityNodesProxy * clone() {return new AlternativeProbabilityNodesProxy(*this);}
         virtual size_t  size() const {return _treeNodes.size();}
         virtual double  getIntN(size_t i) const {return _treeNodes.at(i)->getIntN();}
+        virtual int     getIntC(size_t i) const {return _treeNodes.at(i)->getIntC();}
         virtual int     getBrC(size_t i) const {return _treeNodes.at(i)->getBrC();}
         virtual double  getProbability(size_t i) const {return _treeNodeProbability.at(i);}
 };

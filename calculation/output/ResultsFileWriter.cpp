@@ -180,7 +180,9 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
 
     // print power estimation values
     if (_scanRunner.getParameters().getPerformPowerEvaluations()) {
-        assert(_scanRunner.getPowerEstimations().size() > 0);
+        // sanity check
+        if (_scanRunner.getPowerEstimations().size() == 0)
+            throw prg_error("Number of power estimations is zero.", "ResultsFileWriter::writeASCII(...)");
         outfile << std::endl << "Estimated Power" << std::endl;
         writePadRight("Alpha", outfile, 25, ' ');
         writePadRight("0.05", outfile, 20, ' ');
@@ -416,7 +418,8 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     // print power estimation values
     if (_scanRunner.getParameters().getPerformPowerEvaluations()) {
         outfile << "<div class=\"program-info\">" << std::endl;
-        assert(_scanRunner.getPowerEstimations().size() > 0);
+        if (_scanRunner.getPowerEstimations().size() == 0)
+            throw prg_error("Number of power estimations is zero.", "ResultsFileWriter::writeHTML(...)");
         outfile << std::endl << "<h4>Estimated Power</h4><table style=\"text-align: left;width:50%;\"><tbody>" << std::endl;
         outfile << "<tr><th>Alpha</th><th>0.05</th><th>0.01</th><th>0.001</th></tr>" << std::endl;
         std::string buffer;

@@ -8,9 +8,9 @@
 /** Abstraction for Poisson data randomizers */
 class TemporalRandomizer : public AbstractRandomizer {
 protected:
-    int                         _TotalC;
-    double                      _TotalN;
-    const DataTimeRangeSet    & _timeRangeSets;
+    int                         _total_C;
+    double                      _total_N;
+    const DataTimeRangeSet    & _time_range_sets;
     DataTimeRange::index_t      _zero_translation_additive;
 
     virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);

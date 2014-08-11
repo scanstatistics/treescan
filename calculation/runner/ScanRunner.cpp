@@ -159,7 +159,9 @@ ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) cons
     NodeStructureContainer_t::const_iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
     if (itr != _Nodes.end() && (*itr)->getIdentifier() == node.get()->getIdentifier()) {
         size_t tt = std::distance(_Nodes.begin(), itr);
-        assert(tt == (*itr)->getID());
+        // sanity check
+        if (tt != (*itr)->getID())
+            throw prg_error("Calculated index (%u) does not match node ID (%u).", "RelativeRiskAdjustmentHandler::getAsProbabilities()", tt, (*itr)->getID());
         return std::make_pair(true, std::distance(_Nodes.begin(), itr));
     } else
         return std::make_pair(false, 0);

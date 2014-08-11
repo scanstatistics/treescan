@@ -6,7 +6,7 @@
 
 /* constructor */
 TemporalRandomizer::TemporalRandomizer(int TotalC, double TotalN, const DataTimeRangeSet& timeRangeSets, const Parameters& parameters, long lInitialSeed)
-                  : AbstractRandomizer(parameters, lInitialSeed), _TotalC(TotalC), _TotalN(TotalN), _timeRangeSets(timeRangeSets) {
+                  : AbstractRandomizer(parameters, lInitialSeed), _total_C(TotalC), _total_N(TotalN), _time_range_sets(timeRangeSets) {
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     DataTimeRange min_max = timeRangeSets.getMinMax();
     _zero_translation_additive = (min_max.getStart() <= 0) ? std::abs(min_max.getStart()) : min_max.getStart() * -1;
@@ -15,22 +15,25 @@ TemporalRandomizer::TemporalRandomizer(int TotalC, double TotalN, const DataTime
 int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
     setSeed(iSimulation);
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
-    const DataTimeRange& range = _timeRangeSets.getDataTimeRangeSets().front(); // TODO: for now, only take the first
+    const DataTimeRange& range = _time_range_sets.getDataTimeRangeSets().front(); // TODO: for now, only take the first
     DataTimeRange zeroRange(range.getStart() + _zero_translation_additive, range.getEnd() + _zero_translation_additive);
     int TotalSimC = 0;
+
     for (size_t i=0; i < treeNodes.size(); ++i) {
-        NodeStructure::count_t branchC = treeNodes.getBrC(i);
-        if (branchC) {
+        NodeStructure::count_t nodeC = treeNodes.getIntC(i);
+        if (nodeC) {
             SimulationNode& simNode(treeSimNodes.at(i));
-            for (NodeStructure::count_t c=0; c < branchC; ++c) {
+            for (NodeStructure::count_t c=0; c < nodeC; ++c) {
                 DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(zeroRange.getEnd()), _random_number_generator));
                 ++(simNode.refIntC_C().at(idx));
                 ++TotalSimC;
             }
         }
     }
-    assert(TotalSimC == _TotalC);
-    return _TotalC;
+    // sanity check
+    if (TotalSimC != _total_C)
+        throw prg_error("Number of simulated cases does not equal total cases: %d != %d.", "TemporalRandomizer::randomize(...)", TotalSimC, _total_C);
+    return _total_C;
 }
 
 /** Creates randomized under the null hypothesis for Poisson model, assigning data to DataSet objects structures.

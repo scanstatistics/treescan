@@ -90,6 +90,7 @@ public:
 
     const std::string           & getIdentifier() const {return _identifier;}
     int                           getID() const {return _ID;}
+    int                           getIntC() const {return _IntC_C.front();}
     const CountContainer_t      & getIntC_C() const {return _IntC_C;}
     int                           getBrC() const {return _BrC_C.front();}
     const CountContainer_t      & getBrC_C() const {return _BrC_C;}

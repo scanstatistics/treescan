@@ -129,7 +129,8 @@ RelativeRiskAdjustmentHandler::NodesAdjustmentsContainer_t& RelativeRiskAdjustme
         // ensure that the container of nodes is large enough for this node's value
         if ((itr->first + 1) > nodeProbabilities.size()) nodeProbabilities.resize((itr->first + 1), initial);
         // sanity checks -- alternative hypothesis values much be a single value
-        assert(itr->second.size() == 1);
+        if (itr->second.size() != 1)
+            throw prg_error("Number of adjustments expected to be one, got %u.", "RelativeRiskAdjustmentHandler::getAsProbabilities()", itr->second.size());
         // assign event probability to node
         nodeProbabilities.at(itr->first) = itr->second.front().getRelativeRisk();
     }

@@ -9,13 +9,14 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
                                                                      const Parameters& parameters, 
                                                                      long lInitialSeed)
                                   : AbstractRandomizer(parameters, lInitialSeed), _randomizer(randomizer), _alternative_adjustments(adjustments) {
-
-    assert(!(_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES)); // Not implemented for this model yet.
-    assert(_parameters.getModelType() != Parameters::TEMPORALSCAN); // Not implemented for this model yet.
+    // Not implemented for this model yet.
+    if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES)
+        throw prg_error("AlternativeHypothesisRandomizater is not implemented for the conditional Bernoulli model.", "AlternativeHypothesisRandomizater()");
+    if (_parameters.getModelType() == Parameters::TEMPORALSCAN)
+        throw prg_error("AlternativeHypothesisRandomizater is not implemented for the Tree Temporal model.", "AlternativeHypothesisRandomizater()");
 
     _randomizer->_read_data = false;
     _randomizer->_write_data = false;
-
     if (_parameters.getModelType() == Parameters::POISSON) {
         for (size_t t=0; t < treeNodes.size(); ++t) {
             _nodes_IntN_C.push_back(NodeStructure::ExpectedContainer_t());
