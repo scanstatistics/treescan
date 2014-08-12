@@ -32,9 +32,9 @@ public class Parameters implements Cloneable {
     private int _randomizationSeed=12345678;
     //private boolean _duplicates=false;
     private boolean _randomlyGenerateSeed=false;
-    private boolean _generateHtmlResults;
-    private boolean _generateTableResults;
-    private boolean _printColumnHeaders;
+    private boolean _generateHtmlResults=false;
+    private boolean _generateTableResults=false;
+    private boolean _printColumnHeaders=true;
     private ModelType _modelType=ModelType.POISSON;
     private ScanType _scanType=ScanType.TREEONLY;
     private ConditionalType _conditionalType=ConditionalType.UNCONDITIONAL;
@@ -47,7 +47,7 @@ public class Parameters implements Cloneable {
     private int _temporal_end_range_begin=0;
     private int _temporal_end_range_close=0;
     private boolean _generate_llr_results=false;
-    private boolean _report_critical_values;
+    private boolean _report_critical_values=false;
     private double _maximum_window_percentage=50.0;
     private int _maximum_window_length=1;
     private MaximumWindowType _maximum_window_type=MaximumWindowType.PERCENTAGE_WINDOW;

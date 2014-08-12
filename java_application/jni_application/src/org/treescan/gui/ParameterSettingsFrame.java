@@ -423,11 +423,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     }
     
     public Parameters.ModelType getModelType() {
-        if (_PoissonButton.isSelected())
+        if (_PoissonButton.isSelected() && _PoissonButton.isEnabled())
             return Parameters.ModelType.POISSON;
-        if (_BernoulliButton.isSelected())
+        if (_BernoulliButton.isSelected() && _BernoulliButton.isEnabled())
             return Parameters.ModelType.BERNOULLI;
-        if (_uniformButton.isSelected())
+        if (_uniformButton.isSelected() && _uniformButton.isEnabled())
             return Parameters.ModelType.TEMPORALSCAN;        
         return null;
     }
