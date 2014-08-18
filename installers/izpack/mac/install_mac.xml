@@ -23,7 +23,6 @@
         <url>http://www.treescan.org/</url>
         <javaversion>1.6</javaversion>
         <writeinstallationinformation>no</writeinstallationinformation>
-        <run-privileged/>
     </info>
 
     <!--
