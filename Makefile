@@ -23,6 +23,7 @@ LOGLIKELIHOOD  := $(TREESCAN)/calculation/loglikelihood
 BOOSTDIR    := $(TREESCAN)/../boost/boost_1_46_0
 INCLUDEDIRS := -I$(CALCULATION) -I$(UTILITY) -I$(OUTPUT) -I$(PRINT) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(RUNNER) -I$(BOOSTDIR) -I$(JNI)
 DEFINES     := -DBOOST_ALL_NO_LIB
+INFOPLIST_FILE :=
 
 CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE)
 LFLAGS      := $(COMPILATION) -Wl,-Bstatic -lm -Wl,-Bdynamic -lrt -lpthread
@@ -34,8 +35,8 @@ L_DLFLAGS   := -shared $(COMPILATION) -Wl,-soname,$(LINUX_LIBRARY).x.x -o $(LINU
 S_DLFLAGS   := -shared $(COMPILATION) -z text -o $(SOLARIS_LIBRARY).x.x.0
 
 # Mac OS X flags
-M_LFLAGS      := $(COMPILATION) -Wl,-dynamic -lstdc++ -lm
-M_DLFLAGS     := -shared $(COMPILATION) -install_name $(MAC_LIBRARY)
+M_LFLAGS      := $(COMPILATION) -sectcreate __TEXT __info_plist $(INFOPLIST_FILE) -Wl,-dynamic -lstdc++ -lm
+M_DLFLAGS     := -shared -sectcreate __TEXT __info_plist $(INFOPLIST_FILE) $(COMPILATION) -install_name $(MAC_LIBRARY)
 
 SRC         := $(RUNNER)/ScanRunner.cpp \
                $(RUNNER)/DataSource.cpp \

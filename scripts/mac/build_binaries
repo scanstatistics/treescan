@@ -1,11 +1,20 @@
 #!/bin/sh
 
+# Check for minimum number of arguments.
+REQUIRED_ARGS=1 # Script requires 3 argument
+if [ $# -lt "$REQUIRED_ARGS" ]
+then
+  echo "Usage: `basename $0` <treescan_src directory> <boost directory> <binaries ouitput directory>])"
+  echo "   example: `basename $0` /Users/<username>/prj/treescan.development/treescan /Users/<username>/prj/boost/boost_1_52_0 /Users/<username>/prj/treescan.development/binaries/mac"
+  exit 1
+fi
+
 (
 cpp_compiler="/usr/bin/g++"
 osx_min_version="-mmacosx-version-min=10.6"
-binaries="/Users/hostovic/prj/treescan.development/binaries/mac"
-treescan_src="/Users/hostovic/prj/treescan.development/treescan"
-boost_src="/Users/hostovic/prj/boost/boost_1_52_0"
+binaries="$3"
+treescan_src="$1"
+boost_src="$2"
 processors="-j2"
 
 rm -f $binaries/*
@@ -35,5 +44,10 @@ echo building TreeScan shared object for 64-bit system - x86_64
 # Create universal binary - only interested in Intel architectures
 echo creating universal shared object binary for 32-bit and 64-bit systems
 lipo -create $binaries/libtreescan_i386_32bit.jnilib $binaries/libtreescan_x86_64_64bit.jnilib -output $binaries/libtreescan.jnilib
+
+# codesign binaries
+security unlock-keychain $HOME/Library/Keychains/login.keychain
+codesign --force -v --deep -s "Developer ID Application: Information Management Services, Inc. (VF82MCMA83)" $binaries/treescan
+codesign --force -v --deep -s "Developer ID Application: Information Management Services, Inc. (VF82MCMA83)" $binaries/libtreescan.jnilib
 
 ) 1> build.stdout 2> build.stderr

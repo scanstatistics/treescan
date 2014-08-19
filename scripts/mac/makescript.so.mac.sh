@@ -24,8 +24,8 @@ fi
 
 echo building TreeScan binary ...
 cd $2
-make clean TREESCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 CC="$6 $7 $8" M_CFLAGS=-fPIC
-make libtreescan.jnilib TREESCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 CC="$6 $7 $8 -dynamiclib" $9 M_CFLAGS=-fPIC JNI=$jni
+make clean TREESCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/sharedlibrary-info.plist" CC="$6 $7 $8" M_CFLAGS=-fPIC
+make libtreescan.jnilib TREESCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/sharedlibrary-info.plist" CC="$6 $7 $8 -dynamiclib" $9 M_CFLAGS=-fPIC JNI=$jni
 strip libtreescan.jnilib
 mv libtreescan.jnilib $1
 
