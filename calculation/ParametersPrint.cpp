@@ -14,20 +14,20 @@ void ParametersPrint::Print(std::ostream& out) const {
     out << "PARAMETER SETTINGS" << std::endl;
 
     SettingContainer_t settings;
-    //print 'Input' tab settings
-    WriteSettingsContainer(getInputParameters(settings), "Input", out);
     // print 'Analysis' tab settings
     WriteSettingsContainer(getAnalysisParameters(settings), "Analysis", out);
+    //print 'Input' tab settings
+    WriteSettingsContainer(getInputParameters(settings), "Input", out);
     //print 'Output' tab settings
     WriteSettingsContainer(getOutputParameters(settings), "Output", out);
-    //print 'Advanced Input' tab settings
-    WriteSettingsContainer(getAdvancedInputParameters(settings), "Advanced Input", out);
     //print 'Temporal Window' tab settings
     WriteSettingsContainer(getTemporalWindowParameters(settings), "Temporal Window", out);
     //print 'Inference' tab settings
     WriteSettingsContainer(getInferenceParameters(settings), "Inference", out);
     //print 'Power Evaluations' tab settings
     WriteSettingsContainer(getPowerEvaluationsParameters(settings), "Power Evaluations", out);
+    //print 'Advanced Input' tab settings
+    WriteSettingsContainer(getAdvancedInputParameters(settings), "Advanced Input", out);
     //print 'Additional Output' tab settings
     WriteSettingsContainer(getAdditionalOutputParameters(settings), "Additional Output", out);
     //print 'Power Simulations' tab settings
@@ -43,20 +43,20 @@ void ParametersPrint::Print(std::ostream& out) const {
 void ParametersPrint::PrintHTML(std::ostream& out) const {
     SettingContainer_t settings;
     out << "<div id=\"parameter-settings\"><h4>Parameter Settings</h4>" << std::endl;
-    //print 'Input' tab settings
-    WriteSettingsContainerHTML(getInputParameters(settings), "Input", out);
     // print 'Analysis' tab settings
     WriteSettingsContainerHTML(getAnalysisParameters(settings), "Analysis", out);
+    //print 'Input' tab settings
+    WriteSettingsContainerHTML(getInputParameters(settings), "Input", out);
     //print 'Output' tab settings
     WriteSettingsContainerHTML(getOutputParameters(settings), "Output", out);
-    //print 'Advanced Input' tab settings
-    WriteSettingsContainerHTML(getAdvancedInputParameters(settings), "Advanced Input", out);
-    //print 'Inference' tab settings
-    WriteSettingsContainerHTML(getInferenceParameters(settings), "Inference", out);
     //print 'Temporal Window' tab settings
     WriteSettingsContainerHTML(getTemporalWindowParameters(settings), "Temporal Window", out);
+    //print 'Inference' tab settings
+    WriteSettingsContainerHTML(getInferenceParameters(settings), "Inference", out);
     //print 'Power Evaluations' tab settings
     WriteSettingsContainerHTML(getPowerEvaluationsParameters(settings), "Power Evaluations", out);
+    //print 'Advanced Input' tab settings
+    WriteSettingsContainerHTML(getAdvancedInputParameters(settings), "Advanced Input", out);
     //print 'Additional Output' tab settings
     WriteSettingsContainerHTML(getAdditionalOutputParameters(settings), "Additional Output", out);
     //print 'Power Simulations' tab settings
@@ -177,7 +177,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getOutputParameters(Setti
 
 /** Prints 'Power Evaluations' parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getPowerEvaluationsParameters(SettingContainer_t & settings) const {
-    std::string buffer;
+    std::string buffer, buffer2;
     settings.clear();
     if (_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI) {
         settings.push_back(std::make_pair("Perform Power Evaluations", (_parameters.getPerformPowerEvaluations() ? "Yes" : "No")));
@@ -186,8 +186,9 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getPowerEvaluationsParame
         switch (_parameters.getPowerEvaluationType()) {
             case Parameters::PE_WITH_ANALYSIS: 
                 settings.push_back(std::make_pair(buffer,"Standard Analysis and Power Evaluation Together")); break;
-            case Parameters::PE_ONLY_CASEFILE: 
-                settings.push_back(std::make_pair(buffer,"Only Power Evaluation, Using Total Cases from Case File")); break;
+            case Parameters::PE_ONLY_CASEFILE:
+                printString(buffer2, "Only Power Evaluation%s", (_parameters.getConditionalType() == Parameters::UNCONDITIONAL ? "" : ", Using Total Cases from Case File"));
+                settings.push_back(std::make_pair(buffer,buffer2)); break;
             case Parameters::PE_ONLY_SPECIFIED_CASES: 
                 settings.push_back(std::make_pair(buffer,"Only Power Evaluation, Using Defined Total Cases")); 
                 printString(buffer, "%i", _parameters.getPowerEvaluationTotalCases());

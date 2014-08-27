@@ -345,7 +345,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private void CheckPowerEvaluationSettings() {
         if (_performPowerEvalautions.isEnabled() && _performPowerEvalautions.isSelected()) {
             if (_powerEvaluationWithSpecifiedCases.isSelected()) {
-                if (Integer.parseInt(_totalPowerCases.getText()) > 1) {
+                if (Integer.parseInt(_totalPowerCases.getText()) < 1) {
                     throw new AdvFeaturesExpection("The number of power evaluation cases must be greater than zero.\n", FocusedTabSet.ANALYSIS, (Component) _totalPowerCases);
                 }
                 Parameters.ModelType modelType = _settings_window.getModelType();
@@ -490,7 +490,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _performPowerEvalautions.setEnabled(bEnableGroup);
         _partOfRegularAnalysis.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
         _powerEvaluationWithCaseFile.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
-        _powerEvaluationWithSpecifiedCases.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected() && eModelType == Parameters.ModelType.POISSON);        
+        switch (_settings_window.getConditionalType()) {
+            case TOTALCASES: _powerEvaluationWithCaseFile.setText("Power Evaluation Only, Use Total Cases From Case File"); break;
+            case UNCONDITIONAL: _powerEvaluationWithCaseFile.setText("Power Evaluation Only"); break;
+            default:
+        }                
+        _powerEvaluationWithSpecifiedCases.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected() && 
+                                                      eModelType == Parameters.ModelType.POISSON &&
+                                                      _settings_window.getConditionalType() == Parameters.ConditionalType.TOTALCASES);        
         if (_powerEvaluationsGroup.isEnabled() && _powerEvaluationWithSpecifiedCases.isSelected() && !_powerEvaluationWithSpecifiedCases.isEnabled())
             _powerEvaluationWithCaseFile.setSelected(true);            
         _totalPowerCases.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected() && _powerEvaluationWithSpecifiedCases.isSelected());

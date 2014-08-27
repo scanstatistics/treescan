@@ -1,11 +1,3 @@
-[Input]
-;tree structure filename
-tree-filename=tree.tre
-;case data filename
-case-filename=Poisson.cas
-;data time ranges (integer - integer)
-data-time-range=[0,0]
-
 [Analysis]
 ;scan type (TREEONLY=0, TREETIME)
 scan-type=0
@@ -20,6 +12,14 @@ window-start-range=[0,0]
 ;end data time range (integer - integer)
 window-end-range=[0,0]
 
+[Input]
+;tree structure filename
+tree-filename=tree.tre
+;case data filename
+case-filename=Poisson.cas
+;data time ranges (integer - integer)
+data-time-range=[0,0]
+
 [Output]
 ;results filename
 results-filename=Poisson.txt
@@ -27,14 +27,6 @@ results-filename=Poisson.txt
 results-html=n
 ;create CSV results
 results-csv=n
-
-[Advanced Input]
-;cuts filename
-cut-filename=
-;default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)
-cut-type=0
-;duplicates in case data records
-duplicates=n
 
 [Temporal Window]
 ;maximum temporal size as percentage of data time range (0 < x <= 50.0)
@@ -53,12 +45,6 @@ monte-carlo-replications=999
 randomization-seed=12345678
 ;generate randomization seed (y/n)
 random-randomization-seed=n
-
-[Additional Output]
-;create LLR results
-results-llr=n
-;report critical values (y/n)
-report-critical-values=n
 
 [Power Evaluations]
 ;perform power evaluations (y/n)
@@ -79,6 +65,20 @@ power-evaluation-totalcases=600
 power-evaluation-replications=1000
 ;power evaluation alternative hypothesis filename
 alternative-hypothesis-filename=
+
+[Advanced Input]
+;cuts filename
+cut-filename=
+;default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)
+cut-type=0
+;duplicates in case data records
+duplicates=n
+
+[Additional Output]
+;create LLR results
+results-llr=n
+;report critical values (y/n)
+report-critical-values=n
 
 [Power Simulations]
 ;input simulation data (y/n)

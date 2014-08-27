@@ -112,14 +112,14 @@ void IniParameterFileAccess::Write(const char* sFilename) {
         gpSpecifications = new IniParameterSpecification();
 
         //write settings as provided in main graphical interface
-        WriteInputSettings(WriteFile);
         WriteAnalysisSettings(WriteFile);
+        WriteInputSettings(WriteFile);
         WriteOutputSettings(WriteFile);
-        WriteAdvancedInputSettings(WriteFile);
         WriteAdvancedAnalysisTemporalWindowSettings(WriteFile);
         WriteAdvancedAnalysisInferenceSettings(WriteFile);
-        WriteAdvancedOutputSettings(WriteFile);
         WritePowerEvaluationsSettings(WriteFile);
+        WriteAdvancedInputSettings(WriteFile);
+        WriteAdvancedOutputSettings(WriteFile);
         WritePowerSimulationsSettings(WriteFile);
         WriteRunOptionSettings(WriteFile);
         WriteSystemSettings(WriteFile);
