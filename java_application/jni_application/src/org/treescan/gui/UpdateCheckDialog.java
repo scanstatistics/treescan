@@ -354,7 +354,6 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                                    "&java.runtime.version=" + System.getProperty("java.runtime.version") + 
                                    "&java.specification.version=" + System.getProperty("java.specification.version") + 
                                    "&java.vm.vendor=" + System.getProperty("java.vm.vendor") + 
-                                   "&java.class.version=" + System.getProperty("java.class.version") +                                           
                                    "&os.arch=" + System.getProperty("os.arch") + 
                                    "&os.arch.data.model=" + System.getProperty("os.arch.data.model");
                 getParams = getParams.replace(" ", "%20");
