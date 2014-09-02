@@ -95,16 +95,6 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
             }
             const DataTimeRange& startRange = _parameters.getTemporalStartRange();
             const DataTimeRange& endRange = _parameters.getTemporalEndRange();
-            if (startRange.getStart() < 0) {
-                bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nThe start time window range '%s' must be defined with a starting index of zero or more.\n",
-                                      BasePrint::P_PARAMERROR, startRange.toString(buffer).c_str());
-            }
-            if (endRange.getStart() < 0) {
-                bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nThe end time window range '%s' must be defined with a starting index of zero or more.\n",
-                                      BasePrint::P_PARAMERROR, endRange.toString(buffer).c_str());
-            }
             if (startRange.getStart() > startRange.getEnd()) {
                 bValid = false;
                 PrintDirection.Printf("Invalid Parameter Setting:\nThe start time window range start time must be less than or equal to end time.\n", BasePrint::P_PARAMERROR);
@@ -113,7 +103,7 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                 bValid = false;
                 PrintDirection.Printf("Invalid Parameter Setting:\nThe end time window range start time must be less than or equal to end time.\n", BasePrint::P_PARAMERROR);
             }
-            bool positiveRange=false, startWindowInRange=false, endWindowInRange=false;
+            bool startWindowInRange=false, endWindowInRange=false;
             // validate the data time range indexes do not overlap
             // validate the the start and end temporal windows are within a data time range
             for (DataTimeRangeSet::rangeset_t::const_iterator itrOuter=rangeSets.begin(); itrOuter != rangeSets.end();++itrOuter) {
@@ -124,7 +114,6 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                 }
                 startWindowInRange |= itrOuter->encloses(startRange);
                 endWindowInRange |= itrOuter->encloses(endRange);
-                positiveRange |= itrOuter->getEnd() >= 0;
                 for (DataTimeRangeSet::rangeset_t::const_iterator itrInner=itrOuter+1; itrInner != rangeSets.end(); ++itrInner) {
                     if (itrOuter->overlaps(*itrInner)) {
                         bValid = false;
@@ -132,12 +121,6 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                                                BasePrint::P_PARAMERROR, itrOuter->toString(buffer).c_str(), itrInner->toString(buffer2).c_str());
                     }
                 }
-            }
-            if (!positiveRange) {
-                bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nA data time range with positve indices (zero or greater) was not defined.\n"
-                                      "At least one range must cross into positive indices.\n",
-                                      BasePrint::P_PARAMERROR, startRange.toString(buffer).c_str());
             }
             if (!startWindowInRange) {
                 bValid = false;

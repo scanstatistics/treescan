@@ -110,7 +110,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts().at(k)->getN()));
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     PrintFormat.PrintSectionLabel(outfile, "Time Window", true);
-                    printString(buffer, "%ld - %ld", _scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive(), _scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive());
+                    printString(buffer, "%ld to %ld", _scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive(), _scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive());
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     PrintFormat.PrintSectionLabel(outfile, "Cases in Window", true);
                 } else if (parameters.getModelType() == Parameters::BERNOULLI) {
@@ -352,7 +352,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                         << "<td>" << _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier() << "</td>";
                 if (parameters.getModelType() == Parameters::TEMPORALSCAN) {   
                     outfile << "<td>" << static_cast<int>(_scanRunner.getCuts().at(k)->getN()) << "</td>";
-                    outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " - " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
+                    outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
                 }
                 if (parameters.getModelType() == Parameters::BERNOULLI) {
                     outfile << "<td>" << static_cast<int>(_scanRunner.getCuts().at(k)->getN()) << "</td>";

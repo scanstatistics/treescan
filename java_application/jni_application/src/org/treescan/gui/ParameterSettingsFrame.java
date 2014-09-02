@@ -277,6 +277,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             if (temporalEndWindowBegin > temporalEndWindowEnd) {
                 throw new SettingsException("The temporal window end time range is invalid.\nThe start time must be less than or equal to end time.", (Component) _temporalEndWindowBegin);
             }
+            if (temporalStartWindowEnd > temporalEndWindowEnd) {
+                throw new SettingsException("The temporal window start time range is invalid.\nThe start windows end time must be less than or equal to end windows end time.", (Component) _temporalStartWindowEnd);
+            }            
+            if (temporalEndWindowBegin < temporalStartWindowBegin) {
+                throw new SettingsException("The temporal window end time range is invalid.\nThe end windows end time must be greater than or equal to start windows start time.", (Component) _temporalEndWindowBegin);
+            }            
         }
     }
 
@@ -495,6 +501,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _temporalEndWindowEnd.setEnabled(_temporalWindowGroup.isEnabled());
         _advancedParametersSetting.enableTemporalOptionsGroup(treeAndTime);
         _advancedParametersSetting.enablePowerEvaluationsGroup();
+        // data time range group
+        _data_time_range_group.setEnabled(treeAndTime);
+        _data_time_range_start_label.setEnabled(_data_time_range_group.isEnabled());
+        _dataTimeRangeBegin.setEnabled(_data_time_range_group.isEnabled());
+        _data_time_range_end_label.setEnabled(_data_time_range_group.isEnabled());
+        _dataTimeRangeEnd.setEnabled(_data_time_range_group.isEnabled());
     }
 
     /**
@@ -546,10 +558,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _countFileTextField = new javax.swing.JTextField();
         _countFileBrowseButton = new javax.swing.JButton();
         _countFileImportButton = new javax.swing.JButton();
-        jPanel2 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        _data_time_range_group = new javax.swing.JPanel();
+        _data_time_range_start_label = new javax.swing.JLabel();
         _dataTimeRangeBegin = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
+        _data_time_range_end_label = new javax.swing.JLabel();
         _dataTimeRangeEnd = new javax.swing.JTextField();
         _advancedInputButton = new javax.swing.JButton();
         _outputTab = new javax.swing.JPanel();
@@ -732,12 +744,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _temporalStartWindowBegin.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
                 while (_temporalStartWindowBegin.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _temporalStartWindowBegin.setText("999");
+                if (undo.canUndo()) undo.undo(); else _temporalStartWindowBegin.setText("0");
             }
         });
         _temporalStartWindowBegin.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_temporalStartWindowBegin, e, 10);
+                Utils.validateNumericKeyTyped(_temporalStartWindowBegin, e, 10);
             }
         });
         _temporalStartWindowBegin.getDocument().addUndoableEditListener(new UndoableEditListener() {
@@ -752,12 +764,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _temporalStartWindowEnd.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
                 while (_temporalStartWindowEnd.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _temporalStartWindowEnd.setText("999");
+                if (undo.canUndo()) undo.undo(); else _temporalStartWindowEnd.setText("100");
             }
         });
         _temporalStartWindowEnd.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_temporalStartWindowEnd, e, 10);
+                Utils.validateNumericKeyTyped(_temporalStartWindowEnd, e, 10);
             }
         });
         _temporalStartWindowEnd.getDocument().addUndoableEditListener(new UndoableEditListener() {
@@ -772,12 +784,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _temporalEndWindowBegin.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
                 while (_temporalEndWindowBegin.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _temporalEndWindowBegin.setText("999");
+                if (undo.canUndo()) undo.undo(); else _temporalEndWindowBegin.setText("0");
             }
         });
         _temporalEndWindowBegin.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_temporalEndWindowBegin, e, 10);
+                Utils.validateNumericKeyTyped(_temporalEndWindowBegin, e, 10);
             }
         });
         _temporalEndWindowBegin.getDocument().addUndoableEditListener(new UndoableEditListener() {
@@ -792,12 +804,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _temporalEndWindowEnd.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
                 while (_temporalEndWindowEnd.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _temporalEndWindowEnd.setText("999");
+                if (undo.canUndo()) undo.undo(); else _temporalEndWindowEnd.setText("100");
             }
         });
         _temporalEndWindowEnd.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_temporalEndWindowEnd, e, 10);
+                Utils.validateNumericKeyTyped(_temporalEndWindowEnd, e, 10);
             }
         });
         _temporalEndWindowEnd.getDocument().addUndoableEditListener(new UndoableEditListener() {
@@ -961,7 +973,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_scanStatisticPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_temporalWindowGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 42, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 46, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -1046,9 +1058,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Data Time Range"));
+        _data_time_range_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Data Time Range"));
 
-        jLabel1.setText("Range Start");
+        _data_time_range_start_label.setText("Range Start");
 
         _dataTimeRangeBegin.setText("0");
         _dataTimeRangeBegin.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -1068,7 +1080,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        jLabel2.setText("Range End");
+        _data_time_range_end_label.setText("Range End");
 
         _dataTimeRangeEnd.setText("100");
         _dataTimeRangeEnd.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -1088,29 +1100,29 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+        javax.swing.GroupLayout _data_time_range_groupLayout = new javax.swing.GroupLayout(_data_time_range_group);
+        _data_time_range_group.setLayout(_data_time_range_groupLayout);
+        _data_time_range_groupLayout.setHorizontalGroup(
+            _data_time_range_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _data_time_range_groupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
+                .addComponent(_data_time_range_start_label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_dataTimeRangeBegin, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel2)
+                .addComponent(_data_time_range_end_label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_dataTimeRangeEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+        _data_time_range_groupLayout.setVerticalGroup(
+            _data_time_range_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_data_time_range_groupLayout.createSequentialGroup()
+                .addGroup(_data_time_range_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_dataTimeRangeBegin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_dataTimeRangeEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2))
+                    .addComponent(_data_time_range_start_label)
+                    .addComponent(_data_time_range_end_label))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1129,7 +1141,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(_inputTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_data_time_range_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
                         .addComponent(_treelFileTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1170,8 +1182,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_countFileImportButton)
                     .addComponent(_countFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 196, Short.MAX_VALUE)
+                .addComponent(_data_time_range_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 200, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -1249,7 +1261,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_reportResultsAsHTML)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportResultsAsCsvTable)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 255, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 259, Short.MAX_VALUE)
                 .addComponent(_advancedOutputButton)
                 .addContainerGap())
         );
@@ -1269,7 +1281,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1291,6 +1303,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JTextField _countFileTextField;
     private javax.swing.JTextField _dataTimeRangeBegin;
     private javax.swing.JTextField _dataTimeRangeEnd;
+    private javax.swing.JLabel _data_time_range_end_label;
+    private javax.swing.JPanel _data_time_range_group;
+    private javax.swing.JLabel _data_time_range_start_label;
     private javax.swing.JLabel _eventProbabilityLabel;
     private javax.swing.JLabel _eventProbabilityLabel2;
     private javax.swing.JTextField _eventProbabiltyDenominator;
@@ -1324,9 +1339,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JRadioButton _unconditionalButton;
     private javax.swing.JRadioButton _uniformButton;
     private javax.swing.ButtonGroup conditionalButtonGroup;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.ButtonGroup scanButtonGroup;
     private javax.swing.ButtonGroup timtModelButtonGoup;
