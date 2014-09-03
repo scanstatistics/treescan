@@ -108,7 +108,7 @@ void BasePrint::PrintReadError(const char * sMessage) {
 void BasePrint::SetImpliedInputFileType(eInputFileType eType) {
   geInputFileType = eType;
   switch (eType) {
-    case CASEFILE                : gsInputFileString = "case file"; break;
+    case CASEFILE                : gsInputFileString = "count file"; break;
     case CONTROLFILE             : gsInputFileString = "control file"; break;
     case COORDFILE               : gsInputFileString = "coordinates file"; break;
     case GRIDFILE                : gsInputFileString = "grid file"; break;

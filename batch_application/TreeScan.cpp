@@ -43,10 +43,10 @@ void usage_message(std::string program, po::options_description& desc, const Par
     message << "   example: " << exe.getFileName().c_str() << exe.getExtension().c_str() << " <parameter filename>" << std::endl << std::endl;
     message << " All parameter settings specified with command-line arguments -- see 'display-parameters'." << std::endl;
     message << "   example: " << exe.getFileName().c_str() << exe.getExtension().c_str() << " --" << prgOptions.getOption(Parameters::TREE_FILE) 
-        << " <tree filename> --" << prgOptions.getOption(Parameters::COUNT_FILE) <<" <case filename> ..."<< std::endl << std::endl;
+        << " <tree filename> --" << prgOptions.getOption(Parameters::COUNT_FILE) <<" <count filename> ..."<< std::endl << std::endl;
     message << " Default parameter settings defined in a parameter file then override with command-line arguments." << std::endl;
     message << "   example: " << exe.getFileName().c_str() << exe.getExtension().c_str() << " <parameter filename> --"
-            << prgOptions.getOption(Parameters::TREE_FILE) << " <tree filename> --" << prgOptions.getOption(Parameters::COUNT_FILE) << " <case filename> --"
+            << prgOptions.getOption(Parameters::TREE_FILE) << " <tree filename> --" << prgOptions.getOption(Parameters::COUNT_FILE) << " <count filename> --"
             << prgOptions.getOption(Parameters::RESULTS_FILE) << " <results filename>" << std::endl;
 
     if (displayParams) {

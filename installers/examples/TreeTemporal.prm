@@ -15,8 +15,8 @@ window-end-range=[0,10]
 [Input]
 ;tree structure filename
 tree-filename=tree.tre
-;case data filename
-case-filename=TreeTemporal.cas
+;count data filename
+count-filename=TreeTemporal.cas
 ;data time ranges (integer - integer)
 data-time-range=[-16,10]
 

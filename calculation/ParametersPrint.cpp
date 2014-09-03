@@ -73,7 +73,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(Settin
     std::string buffer;
     settings.clear();
     settings.push_back(std::make_pair("Tree File",_parameters.getTreeFileName()));
-    settings.push_back(std::make_pair("Case File",_parameters.getCountFileName()));
+    settings.push_back(std::make_pair("Count File",_parameters.getCountFileName()));
     if (_parameters.getModelType() == Parameters::TEMPORALSCAN)
         settings.push_back(std::make_pair("Data Time Range",_parameters.getDataTimeRangeSet().toString(buffer)));
     //buffer = (_parameters.isDuplicates() ? "Yes" : "No");

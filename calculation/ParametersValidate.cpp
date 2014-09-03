@@ -64,11 +64,11 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
         }
         if (_parameters.getCountFileName().empty()) {
             bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nNo case file specified.\n", BasePrint::P_PARAMERROR);
+            PrintDirection.Printf("Invalid Parameter Setting:\nNo count file specified.\n", BasePrint::P_PARAMERROR);
         } else if (!ValidateFileAccess(_parameters.getCountFileName())) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\n"
-                                   "The case file '%s' could not be opened for reading. "
+                                   "The count file '%s' could not be opened for reading. "
                                    "Please confirm that the path and/or file name are valid and that you "
                                    "have permissions to read from this directory and file.\n",
                                    BasePrint::P_PARAMERROR, _parameters.getCountFileName().c_str());

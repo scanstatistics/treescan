@@ -23,8 +23,8 @@ results-csv=n
 [Input]
 ;tree structure filename
 tree-filename=tree.tre
-;case data filename
-case-filename=Bernoulli.cas
+;count data filename
+count-filename=Bernoulli.cas
 ;data time ranges (integer - integer)
 data-time-range=[0,0]
 

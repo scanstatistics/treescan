@@ -42,7 +42,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
         switch (e) {
             /* Input */
             case Parameters::TREE_FILE               : return "tree structure filename";
-            case Parameters::COUNT_FILE              : return "case data filename";
+            case Parameters::COUNT_FILE              : return "count data filename";
             case Parameters::DATA_TIME_RANGES        : return "data time ranges (integer - integer)";
             /* Advanced Input */
             case Parameters::CUT_FILE                : return "cuts filename";

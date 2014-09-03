@@ -327,7 +327,7 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
 
     // Input
     setTreeFileName(pt.get<std::string>("parameters.input.tree-filename", "").c_str(), true);
-    setCountFileName(pt.get<std::string>("parameters.input.case-filename", "").c_str(), true);
+    setCountFileName(pt.get<std::string>("parameters.input.count-filename", "").c_str(), true);
     _dataTimeRangeSet.assign(pt.get<std::string>("parameters.input.data-time-range", "0,0"));
     // Advanced Input
     setCutsFileName(pt.get<std::string>("parameters.input.advanced.cuts-filename", "").c_str(), true);
@@ -383,7 +383,7 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
 
     // Input
     pt.put("parameters.input.tree-file", _treeFileName);
-    pt.put("parameters.input.case-file", _countFileName);
+    pt.put("parameters.input.count-file", _countFileName);
     pt.put("parameters.input.data-time-range", _dataTimeRangeSet.toString(buffer));
     // Advanced Input
     pt.put("parameters.input.advanced.cuts-file", _cutsFileName);

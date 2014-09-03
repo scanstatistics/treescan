@@ -15,8 +15,8 @@ window-end-range=[0,0]
 [Input]
 ;tree structure filename
 tree-filename=tree.tre
-;case data filename
-case-filename=Poisson.cas
+;count data filename
+count-filename=Poisson.cas
 ;data time ranges (integer - integer)
 data-time-range=[0,0]
 

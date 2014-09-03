@@ -100,7 +100,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         String extension = "";
         switch (filetype) {
             case Tree : defaultName = "Tree"; extension =  ".tre"; break;
-            case Case: defaultName = "Cases"; extension =  ".cas"; break;
+            case Case: defaultName = "Count"; extension =  ".cas"; break;
             case Cuts : defaultName = "Cuts"; extension =  ".cut"; break;
             default: throw new UnknownEnumException(filetype);
         }
@@ -399,7 +399,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
     private String getInputFileTypeString() {
         switch (_fileType) {
             case Case:
-                return "Case File";
+                return "Count File";
             case Tree:
                 return "Tree File";
             case Cuts:
