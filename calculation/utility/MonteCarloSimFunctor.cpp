@@ -65,12 +65,13 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTree(
     for (size_t i=0; i < nodes.size(); ++i) {
         if (_treeSimNodes.at(i).getBrC() > 1) { //if (_Nodes.at(i)->_SimBrC > 1)
             const NodeStructure& thisNode(*(nodes.at(i)));
+            // always do simple cut
+            simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(_treeSimNodes.at(i).getBrC()/*_Nodes.at(i)->_SimBrC*/, nodes.at(i)->getBrN()));
             Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
             switch (cutType) {
-                case Parameters::SIMPLE:
-                    simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(_treeSimNodes.at(i).getBrC()/*_Nodes.at(i)->_SimBrC*/, nodes.at(i)->getBrN())); 
-                    break;
+                case Parameters::SIMPLE: break; // already done
                 case Parameters::ORDINAL:
+                    // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
                     for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                         const NodeStructure& firstChildNode(*(nodes.at(thisNode.getChildren().at(i))));
                         //buffer = firstChildNode.getIdentifier().c_str();
@@ -88,6 +89,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTree(
                         }
                     } break;
                 case Parameters::PAIRS:
+                    // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
                     for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                         const NodeStructure& startChildNode(*(nodes.at(thisNode.getChildren().at(i))));
                         for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
@@ -101,6 +103,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTree(
                         }
                     } break;
                 case Parameters::TRIPLETS:
+                    // Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
                     for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                         const NodeStructure& startChildNode(*(nodes.at(thisNode.getChildren().at(i))));
                         for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
@@ -153,20 +156,24 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
         if (_treeSimNodes.at(i).getBrC() > 1) { //if (_Nodes.at(i)->_SimBrC > 1)
             const NodeStructure& thisNode(*(nodes.at(i)));
             const SimulationNode& thisSimNode(_treeSimNodes.at(i));
+
+            // always do simple cut
+            iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+            for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
+                iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                    NodeStructure::count_t branchWindow = thisSimNode.getBrC_C()[iWindowStart] - thisSimNode.getBrC_C()[iWindowEnd + 1];
+                    NodeStructure::expected_t branchSum = static_cast<NodeStructure::expected_t>(thisSimNode.getBrC());
+                    simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(branchWindow, branchSum, iWindowEnd - iWindowStart + 1)); 
+                }
+            }
+
             Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
             switch (cutType) {
-                case Parameters::SIMPLE:
-                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
-                    for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
-                        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
-                            NodeStructure::count_t branchWindow = thisSimNode.getBrC_C()[iWindowStart] - thisSimNode.getBrC_C()[iWindowEnd + 1];
-                            NodeStructure::expected_t branchSum = static_cast<NodeStructure::expected_t>(thisSimNode.getBrC());
-                            simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(branchWindow, branchSum, iWindowEnd - iWindowStart + 1)); 
-                        }
-                    } break;
+                case Parameters::SIMPLE: break; // already done
                 case Parameters::ORDINAL:
+                    // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
                     iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
                         iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
@@ -194,6 +201,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                     }
                     break;
                 case Parameters::PAIRS:
+                    // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
                     iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
                         iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
@@ -216,6 +224,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                     }
                     break;
                 case Parameters::TRIPLETS:
+                    // Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
                     iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
                         iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());

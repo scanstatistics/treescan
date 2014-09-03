@@ -17,6 +17,9 @@
 
 class ScanRunner;
 class CutStructure {
+public:
+    typedef std::vector<int> CutChildContainer_t;
+
 private:
     int                     _ID;            // NodeID
     int                     _C;             // Number of cases.
@@ -25,11 +28,14 @@ private:
     unsigned int            _rank;
     DataTimeRange::index_t _start_idx;      // temporal start window index
     DataTimeRange::index_t _end_idx;        // temporal end window index
+    CutChildContainer_t    _cut_children;   // optional collection of children indexes
 
 public:
     CutStructure() : _ID(0), _C(0), _N(0), _LogLikelihood(-std::numeric_limits<double>::max()), _rank(1), _start_idx(0), _end_idx(1) {}
 
+    void                    addCutChild(int cutID, bool clear=false) {if (clear) _cut_children.clear(); _cut_children.push_back(cutID);}
     int                     getC() const {return _C;}
+    const CutChildContainer_t & getCutChildren() {return _cut_children;}
     int                     getID() const {return _ID;}
     double                  getLogLikelihood() const {return _LogLikelihood;}
     double                  getN() const {return _N;}
@@ -42,6 +48,7 @@ public:
     DataTimeRange::index_t  getEndIdx() const {return _end_idx;}
     unsigned int            incrementRank() {return ++_rank;}
     void                    setC(int i) {_C = i;}
+    void                    setCutChildren(const CutChildContainer_t & c) {_cut_children = c;}
     void                    setID(int i) {_ID = i;}
     void                    setLogLikelihood(double d) {_LogLikelihood = d;}
     void                    setN(double d) {_N = d;}
@@ -201,7 +208,7 @@ private:
     bool                        scanTree();
     bool                        scanTreeTemporal();
     bool                        setupTree();
-    void                        updateCuts(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx=0, DataTimeRange::index_t endIdx=1);
+    CutStructure *              updateCuts(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx=0, DataTimeRange::index_t endIdx=1);
 
 public:
     ScanRunner(const Parameters& parameters, BasePrint& print);

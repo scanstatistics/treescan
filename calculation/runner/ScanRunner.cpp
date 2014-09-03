@@ -735,52 +735,77 @@ bool ScanRunner::scanTree() {
     for (size_t n=0; n < _Nodes.size(); ++n) {
         if (_Nodes.at(n)->getBrC() > 1) {
             const NodeStructure& thisNode(*(_Nodes.at(n)));
+
+            // Always do simple cut for each node
+            //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
+            updateCuts(n, thisNode.getBrC(), thisNode.getBrN(), calcLogLikelihood);
+            //++hits; printf("hits %d\n", hits);
+
             Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
             switch (cutType) {
-                case Parameters::SIMPLE:
-                    //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
-                    updateCuts(n, thisNode.getBrC(), thisNode.getBrN(), calcLogLikelihood);
-                    //++hits; printf("hits %d\n", hits);
-                    break;
-                case Parameters::ORDINAL:
+                case Parameters::SIMPLE: break; // already done, regardless of specified node cut
+                case Parameters::ORDINAL: {
+                    CutStructure::CutChildContainer_t currentChildren;
+                    // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
                     for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                         const NodeStructure& firstChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                        currentChildren.clear();
+                        currentChildren.push_back(firstChildNode.getID());
                         //buffer = firstChildNode.getIdentifier().c_str();
                         int sumBranchC=firstChildNode.getBrC();
                         double sumBranchN=firstChildNode.getBrN();
                         for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
                             const NodeStructure& childNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                            currentChildren.push_back(childNode.getID());
                             //buffer += ",";
                             //buffer += childNode.getIdentifier();
                             sumBranchC += childNode.getBrC();
                             sumBranchN += childNode.getBrN();
                             //printf("Evaluating cut [%s]\n", buffer.c_str());
-                            updateCuts(n, sumBranchC, sumBranchN, calcLogLikelihood);
+                            CutStructure * cut = updateCuts(n, sumBranchC, sumBranchN, calcLogLikelihood);
+                            if (cut) {
+                                cut->setCutChildren(currentChildren);
+                            }
                             //++hits; printf("hits %d\n", hits);
                         }
-                    } break;
+                    } 
+                } break;
                 case Parameters::PAIRS:
+                    // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
                     for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                         const NodeStructure& startChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
                         for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
                             const NodeStructure& stopChildNode(*(_Nodes.at(thisNode.getChildren().at(j))));
                             //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
-                            updateCuts(n, startChildNode.getBrC() + stopChildNode.getBrC(), startChildNode.getBrN() + stopChildNode.getBrN(), calcLogLikelihood);
-                            //++hits; printf("hits %d\n", hits);
+                            CutStructure * cut = updateCuts(n, startChildNode.getBrC() + stopChildNode.getBrC(), startChildNode.getBrN() + stopChildNode.getBrN(), calcLogLikelihood);
+                            if (cut) {
+                                cut->addCutChild(startChildNode.getID(), true);
+                                cut->addCutChild(stopChildNode.getID());
+                            }                            //++hits; printf("hits %d\n", hits);
                         }
                     } break;
                 case Parameters::TRIPLETS:
+                    // Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
                     for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                         const NodeStructure& startChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
                         for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
                             const NodeStructure& stopChildNode(*(_Nodes.at(thisNode.getChildren().at(j))));
                             //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
-                            updateCuts(n, startChildNode.getBrC() + stopChildNode.getBrC(), startChildNode.getBrN() + stopChildNode.getBrN(), calcLogLikelihood);
+                            CutStructure * cut = updateCuts(n, startChildNode.getBrC() + stopChildNode.getBrC(), startChildNode.getBrN() + stopChildNode.getBrN(), calcLogLikelihood);
+                            if (cut) {
+                                cut->addCutChild(startChildNode.getID(), true);
+                                cut->addCutChild(stopChildNode.getID());
+                            }
                             //++hits;printf("hits %d\n", hits);
                             for (size_t k=i+1; k < j; ++k) {
                                 const NodeStructure& middleChildNode(*(_Nodes.at(thisNode.getChildren().at(k))));
                                 //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
-                                updateCuts(n, startChildNode.getBrC() + middleChildNode.getBrC() + stopChildNode.getBrC(), startChildNode.getBrN() + middleChildNode.getBrN() + stopChildNode.getBrN(), calcLogLikelihood);
+                                CutStructure * cut = updateCuts(n, startChildNode.getBrC() + middleChildNode.getBrC() + stopChildNode.getBrC(), startChildNode.getBrN() + middleChildNode.getBrN() + stopChildNode.getBrN(), calcLogLikelihood);
+                                if (cut) {
+                                    cut->addCutChild(startChildNode.getID(), true);
+                                    cut->addCutChild(middleChildNode.getID());
+                                    cut->addCutChild(stopChildNode.getID());
+                                }
                                 //++hits; printf("hits %d\n", hits);
                             }
                         }
@@ -817,22 +842,26 @@ bool ScanRunner::scanTreeTemporal() {
     for (size_t n=0; n < _Nodes.size(); ++n) {
         if (_Nodes.at(n)->getBrC() > 1) {
             const NodeStructure& thisNode(*(_Nodes.at(n)));
+
+            // always do simple cut
+            //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
+            iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+            for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
+                iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                    //_print.Printf("%d to %d\n", BasePrint::P_STDOUT,iWindowStart, iWindowEnd);
+                    updateCuts(n, thisNode.getBrC_C()[iWindowStart] - thisNode.getBrC_C()[iWindowEnd + 1], static_cast<NodeStructure::expected_t>(thisNode.getBrC()), calcLogLikelihood, iWindowStart, iWindowEnd);
+                }
+            }
+            //++hits; printf("hits %d\n", hits);
+
             Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
             switch (cutType) {
-                case Parameters::SIMPLE:
-                    //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
-                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
-                    for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
-                        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
-                            //_print.Printf("%d to %d\n", BasePrint::P_STDOUT,iWindowStart, iWindowEnd);
-                            updateCuts(n, thisNode.getBrC_C()[iWindowStart] - thisNode.getBrC_C()[iWindowEnd + 1], static_cast<NodeStructure::expected_t>(thisNode.getBrC()), calcLogLikelihood, iWindowStart, iWindowEnd);
-                        }
-                    }
-                    //++hits; printf("hits %d\n", hits);
-                    break;
-                case Parameters::ORDINAL:
+                case Parameters::SIMPLE: // already done, regardless of specified node cut
+                case Parameters::ORDINAL: {
+                    // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
+                    CutStructure::CutChildContainer_t currentChildren;
                     iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
                         iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
@@ -840,23 +869,31 @@ bool ScanRunner::scanTreeTemporal() {
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                                 const NodeStructure& firstChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                                currentChildren.clear();
+                                currentChildren.push_back(firstChildNode.getID());
                                 //buffer = firstChildNode.getIdentifier().c_str();
                                 NodeStructure::count_t branchWindow = firstChildNode.getBrC_C()[iWindowStart] - firstChildNode.getBrC_C()[iWindowEnd + 1];
                                 NodeStructure::expected_t branchSum = static_cast<NodeStructure::expected_t>(firstChildNode.getBrC());
                                 for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
                                     const NodeStructure& childNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                                    currentChildren.push_back(childNode.getID());
                                     //buffer += ",";
                                     //buffer += childNode.getIdentifier();
                                     branchWindow += childNode.getBrC_C()[iWindowStart] - childNode.getBrC_C()[iWindowEnd + 1];
                                     branchSum += static_cast<NodeStructure::expected_t>(childNode.getBrC());
                                     //printf("Evaluating cut [%s]\n", buffer.c_str());
-                                    updateCuts(n, branchWindow, branchSum, calcLogLikelihood, iWindowStart, iWindowEnd);
+                                    CutStructure * cut = updateCuts(n, branchWindow, branchSum, calcLogLikelihood, iWindowStart, iWindowEnd);
+                                    if (cut) {
+                                        cut->setCutChildren(currentChildren);
+                                    }
                                     //++hits; printf("hits %d\n", hits);
                                 }
                             }
                         } 
-                    } break;
+                    } 
+                } break;
                 case Parameters::PAIRS:
+                    // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
                     iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
                         iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
@@ -871,13 +908,18 @@ bool ScanRunner::scanTreeTemporal() {
                                     //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                     NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
                                     NodeStructure::expected_t stopBranchSum = static_cast<NodeStructure::expected_t>(stopChildNode.getBrC());
-                                    updateCuts(n, startBranchWindow + stopBranchWindow, startBranchSum + stopBranchSum, calcLogLikelihood, iWindowStart, iWindowEnd);
+                                    CutStructure * cut = updateCuts(n, startBranchWindow + stopBranchWindow, startBranchSum + stopBranchSum, calcLogLikelihood, iWindowStart, iWindowEnd);
+                                    if (cut) {
+                                        cut->addCutChild(startChildNode.getID(), true);
+                                        cut->addCutChild(stopChildNode.getID());
+                                    }
                                     //++hits; printf("hits %d\n", hits);
                                 }
                             }
                         }
                     } break;
                 case Parameters::TRIPLETS:
+                    // Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
                     iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
                         iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
@@ -892,14 +934,23 @@ bool ScanRunner::scanTreeTemporal() {
                                     //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                     NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
                                     NodeStructure::expected_t stopBranchSum = static_cast<NodeStructure::expected_t>(stopChildNode.getBrC());
-                                    updateCuts(n, startBranchWindow + stopBranchWindow, startBranchSum + stopBranchSum, calcLogLikelihood, iWindowStart, iWindowEnd);
+                                    CutStructure * cut = updateCuts(n, startBranchWindow + stopBranchWindow, startBranchSum + stopBranchSum, calcLogLikelihood, iWindowStart, iWindowEnd);
+                                    if (cut) {
+                                        cut->addCutChild(startChildNode.getID(), true);
+                                        cut->addCutChild(stopChildNode.getID());
+                                    }
                                     //++hits;printf("hits %d\n", hits);
                                     for (size_t k=i+1; k < j; ++k) {
                                         const NodeStructure& middleChildNode(*(_Nodes.at(thisNode.getChildren().at(k))));
                                         NodeStructure::count_t middleBranchWindow = middleChildNode.getBrC_C()[iWindowStart] - middleChildNode.getBrC_C()[iWindowEnd + 1];
                                         NodeStructure::expected_t middleBranchSum = static_cast<NodeStructure::expected_t>(middleChildNode.getBrC());
                                         //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
-                                        updateCuts(n, startBranchWindow + middleBranchWindow + stopBranchWindow, startBranchSum + middleBranchSum + stopBranchSum, calcLogLikelihood, iWindowStart, iWindowEnd);
+                                        CutStructure * cut = updateCuts(n, startBranchWindow + middleBranchWindow + stopBranchWindow, startBranchSum + middleBranchSum + stopBranchSum, calcLogLikelihood, iWindowStart, iWindowEnd);
+                                        if (cut) {
+                                            cut->addCutChild(startChildNode.getID(), true);
+                                            cut->addCutChild(middleChildNode.getID());
+                                            cut->addCutChild(stopChildNode.getID());
+                                        }
                                         //++hits; printf("hits %d\n", hits);
                                     }
                                 }
@@ -918,9 +969,9 @@ bool ScanRunner::scanTreeTemporal() {
     return _Cut.size() != 0;
 }
 
-void ScanRunner::updateCuts(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx) {
+CutStructure * ScanRunner::updateCuts(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx) {
     double loglikelihood = _parameters.getModelType() == Parameters::TEMPORALSCAN ? logCalculator->LogLikelihood(BrC, BrN, endIdx - startIdx + 1) : logCalculator->LogLikelihood(BrC, BrN); 
-    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) return;
+    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) 0;
 
     std::auto_ptr<CutStructure> cut(new CutStructure());
     cut->setLogLikelihood(loglikelihood);
@@ -935,10 +986,12 @@ void ScanRunner::updateCuts(size_t node_index, int BrC, double BrN, const Loglik
             size_t idx = std::distance(_Cut.begin(), itr);
             delete _Cut.at(idx); _Cut.at(idx)=0;
             _Cut.at(idx) = cut.release();
+            return _Cut[idx];
         }
     } else {
-        _Cut.insert(itr, cut.release());
+        return *(_Cut.insert(itr, cut.release()));
     }
+    return 0;
 }
 
 /* SETTING UP THE TREE */

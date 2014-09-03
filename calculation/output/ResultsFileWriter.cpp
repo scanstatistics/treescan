@@ -104,7 +104,18 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 PrintFormat.SetMarginsAsCutSection( k + 1);
                 outfile << k + 1 << ")";
                 PrintFormat.PrintSectionLabel(outfile, "Node Identifier", false);
-                PrintFormat.PrintAlignedMarginsDataString(outfile, _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier());
+                buffer = _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier();
+                if (_scanRunner.getCuts().at(k)->getCutChildren().size()) {
+                    buffer += " children: ";
+                    const CutStructure::CutChildContainer_t& childNodeIds = _scanRunner.getCuts().at(k)->getCutChildren();
+                    for (size_t t=0; t < childNodeIds.size(); ++t) {
+                        buffer +=  _scanRunner.getNodes().at(childNodeIds[t])->getIdentifier();
+                        if (t < childNodeIds.size() - 1)
+                            buffer += ", ";
+                    }
+                }
+                PrintFormat.PrintAlignedMarginsDataString(outfile, buffer.c_str());
+
                 if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
                     PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
                     printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts().at(k)->getN()));
@@ -263,12 +274,12 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <!-- this has to be after the doctype so that IE6 doesn't use quirks mode -->" << std::endl;
     outfile << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">" << std::endl;
     outfile << "<head><style type=\"text/css\">" << std::endl;
-    outfile << "body {color: #353535;font: 0.75em Arial,Garuda,sans-serif;padding: 20px;}" << std::endl;
-    outfile << "#banner {background: none repeat scroll 0 0 #7A991A;height: 40px;color: white;font-size: 2em;text-align: center;vertical-align: middle;padding: 10px 0 10px 0;}" << std::endl;
-    outfile << ".program-info {background-color: #E5EECC;padding: 5px 0 5px 5px;font-size: 1.1em;}" << std::endl;
+    outfile << "body {color: #353535;font: 0.75em Arial,Garuda,sans-serif;padding: 0 20px 0 20px; }" << std::endl;
+    outfile << "#banner {font-family:\"Arial Bold\";height: 70px;color: white;font-size: 3em;text-align: center;vertical-align: middle;background: -webkit-linear-gradient(#F7F7F7, #D9D9D9); /* For Safari 5.1 to 6.0 */background: -o-linear-gradient(#F7F7F7, #D9D9D9); /* For Opera 11.1 to 12.0 */background: -moz-linear-gradient(#F7F7F7, #D9D9D9); /* For Firefox 3.6 to 15 */background: linear-gradient(#F7F7F7, #D9D9D9); /* Standard syntax */}" << std::endl;
+    outfile << ".program-info {padding: 5px 0 5px 5px;font-size: 1.1em;background: -webkit-linear-gradient(#D9D9D9, #F7F7F7); /* For Safari 5.1 to 6.0 */background: -o-linear-gradient(#D9D9D9, #F7F7F7); /* For Opera 11.1 to 12.0 */background: -moz-linear-gradient(#D9D9D9, #F7F7F7); /* For Firefox 3.6 to 15 */background: linear-gradient(#D9D9D9, #F7F7F7); /* Standard syntax */}" << std::endl;
     outfile << ".program-info h4 {margin: 2px 0 10px 0;}" << std::endl;
     outfile << "#cuts table {border: 1px solid #BDBDBD;border-collapse: collapse;width: 100%;}" << std::endl;
-    outfile << "#cuts table th {background-color: #DADAD5;text-align: center;text-align: left;/*min-width:200px;*/}" << std::endl;
+    outfile << "#cuts table th {background-color: #DADAD5;text-align: center;text-align: left;white-space:nowrap;/*min-width:200px;*/}" << std::endl;
     outfile << "#cuts table th, #cuts table td {border: 1px solid #C3C3C3;padding: 4px 6px;}" << std::endl;
     outfile << ".hr {background-color: #E5EECC;border: 1px solid #000000;height: 1px;/*margin: 10px 0;*//*width: 760px;*/}" << std::endl;
     outfile << "#cuts {padding: 10px;}" << std::endl;
@@ -297,9 +308,9 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "    $('#id_more_cuts').click(function(){$('.additional-cuts').toggle();});" << std::endl;
     outfile << "    $('#id_cuts').tablesorter(); " << std::endl;
     outfile << "});</script>" << std::endl;
-    printString(buffer, "TreeScan v%s.%s%s%s%s%s", VERSION_MAJOR, VERSION_MINOR, (!strcmp(VERSION_RELEASE, "0") ? "" : "."), (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE), (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE);
-    outfile << "</head>" << std::endl << "<body><div id=\"banner\"><div id=\"title\">" << buffer << "</div></div>" << std::endl;
-    outfile << "<div class=\"program-info\">" << std::endl;
+    printString(buffer, "<span style=\"color:#005683;\">Tree</span><span style=\"color:#EE383A;\">Scan</span> <span style=\"color:#2A6691;font-size: 18px;\">v%s.%s%s%s%s%s</span>", VERSION_MAJOR, VERSION_MINOR, (!strcmp(VERSION_RELEASE, "0") ? "" : "."), (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE), (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE);
+    outfile << "</head>" << std::endl << "<body><div id=\"banner\"><div id=\"title\">" << buffer << "<div style=\"color:#2A6691;font-size: 14px;\">Software for the Tree-Based Scan Statistic</div></div></div>" << std::endl;
+    outfile << "<div class=\"hr\"></div><div class=\"program-info\">" << std::endl;
 
     outfile << getAnalysisSuccinctStatement(buffer);
 
@@ -348,8 +359,16 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             outfile.precision(5);
             while(k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && 
                   (parameters.getNumReplicationsRequested() == 0 || _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1)) {
-                outfile << "<tr" << (k > 9 ? " class=\"additional-cuts\"" : "" ) << "><td>" << k + 1 << "</td>"
-                        << "<td>" << _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier() << "</td>";
+                outfile << "<tr" << (k > 9 ? " class=\"additional-cuts\"" : "" ) << "><td>" << k + 1 << "</td>";
+                outfile  << "<td>" << _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier();
+                if (_scanRunner.getCuts().at(k)->getCutChildren().size()) {
+                    outfile  << " children: ";
+                    const CutStructure::CutChildContainer_t& childNodeIds = _scanRunner.getCuts().at(k)->getCutChildren();
+                    for (size_t t=0; t < childNodeIds.size(); ++t) {
+                        outfile << _scanRunner.getNodes().at(childNodeIds[t])->getIdentifier().c_str() << ((t < childNodeIds.size() - 1) ? ", " : "");
+                    }
+                }
+                outfile << "</td>";
                 if (parameters.getModelType() == Parameters::TEMPORALSCAN) {   
                     outfile << "<td>" << static_cast<int>(_scanRunner.getCuts().at(k)->getN()) << "</td>";
                     outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
