@@ -46,7 +46,7 @@ echo creating universal shared object binary for 32-bit and 64-bit systems
 lipo -create $binaries/libtreescan_i386_32bit.jnilib $binaries/libtreescan_x86_64_64bit.jnilib -output $binaries/libtreescan.jnilib
 
 # codesign binaries
-security unlock-keychain $HOME/Library/Keychains/login.keychain
+#security unlock-keychain $HOME/Library/Keychains/login.keychain
 codesign --force -v --deep -s "Developer ID Application: Information Management Services, Inc. (VF82MCMA83)" $binaries/treescan
 codesign --force -v --deep -s "Developer ID Application: Information Management Services, Inc. (VF82MCMA83)" $binaries/libtreescan.jnilib
 
