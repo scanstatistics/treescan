@@ -11,7 +11,6 @@ echo "   example: `basename $0` ./Install.app"
 exit 1
 fi
 
-#security unlock-keychain $HOME/Library/Keychains/login.keychain && codesign --force -v --deep -s "Developer ID Application: Information Management Services, Inc. (VF82MCMA83)" $1
-codesign --force -v --deep -s "Developer ID Application: Information Management Services, Inc. (VF82MCMA83)" $1
+security unlock-keychain $HOME/Library/Keychains/login.keychain && codesign --force -v --deep -s "Developer ID Application: Information Management Services, Inc. (VF82MCMA83)" $1
 
 spctl --assess --verbose=4 --raw $1
