@@ -4,8 +4,8 @@ REQUIRED_ARGS=3
 if [ $# -lt "$REQUIRED_ARGS" ]
 then
 echo "Usage: `basename $0` <app nfs location> <app bundlename> <project directory>"
-echo "   example: `basename $0` /Users/treescan/prj/treescan.development/treescan.home/build/treecsan/installers/izpack/mac/treescan2app/ TreeScan.app /Users/treescan/prj/treescan.development/"
-echo "   example: `basename $0` /Users/treescan/prj/treescan.development/treescan.home/build/treecsan/installers/izpack/mac/ Install.app /Users/treescan/prj/treescan.development/"
+echo "   example: `basename $0` /Users/treescan/prj/treescan.development/treescan.home/build/treescan/installers/izpack/mac/treescan2app/ TreeScan.app /Users/treescan/prj/treescan.development/"
+echo "   example: `basename $0` /Users/treescan/prj/treescan.development/treescan.home/build/treescan/installers/izpack/mac/ Install.app /Users/treescan/prj/treescan.development/"
 exit 1
 fi
 
