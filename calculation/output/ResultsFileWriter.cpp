@@ -54,18 +54,21 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     PrintFormat.SetMarginsAsSummarySection();
     PrintFormat.PrintSectionSeparatorString(outfile);
     outfile << std::endl << "SUMMARY OF DATA" << std::endl << std::endl;
-    PrintFormat.PrintSectionLabel(outfile, "Total Cases:", false);
-    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getTotalC()));
+    if (!parameters.getPerformPowerEvaluations() || 
+        !(parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_ONLY_CASEFILE && parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
+        PrintFormat.PrintSectionLabel(outfile, "Total Cases", false);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getTotalC()));
+    }
     if (parameters.getModelType() == Parameters::POISSON) {
-        PrintFormat.PrintSectionLabel(outfile, "Total Expected:", false);
+        PrintFormat.PrintSectionLabel(outfile, "Total Expected", false);
         PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getTotalN(), buffer, 1));
     }
     if (parameters.getModelType() == Parameters::BERNOULLI) {
-        PrintFormat.PrintSectionLabel(outfile, "Total Observations:", false);
+        PrintFormat.PrintSectionLabel(outfile, "Total Observations", false);
         PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", static_cast<int>(_scanRunner.getTotalN())));
     }
     if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
-        PrintFormat.PrintSectionLabel(outfile, "Data Time Range:", false);
+        PrintFormat.PrintSectionLabel(outfile, "Data Time Range", false);
         PrintFormat.PrintAlignedMarginsDataString(outfile, parameters.getDataTimeRangeSet().toString(buffer));
     }
     PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
@@ -79,7 +82,6 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
             PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
         }
     }
-
     // write detected cuts
     //if (_parameters.isDuplicates()) outfile << "#CasesWithoutDuplicates ";
     //outfile << "#Exp O/E ";
@@ -315,7 +317,11 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << getAnalysisSuccinctStatement(buffer);
 
     outfile << "<table style=\"text-align: left;\"><tbody>" << std::endl;
-    outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
+
+    if (!parameters.getPerformPowerEvaluations() || 
+        !(parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_ONLY_CASEFILE && parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
+        outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
+    }
     if (parameters.getModelType() == Parameters::POISSON) {
         outfile << "<tr><th>Total Expected:</th><td>" << getValueAsString(_scanRunner.getTotalN(), buffer, 1).c_str() << "</td></tr>" << std::endl;
     }

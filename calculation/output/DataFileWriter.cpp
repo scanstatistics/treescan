@@ -151,7 +151,7 @@ CSVDataFileWriter::CSVDataFileWriter(const std::string& filename, const ptr_vect
   try {
     _outfile.open(filename.c_str(), append ? std::ofstream::app : std::ofstream::trunc);
     if (!_outfile.is_open())
-      throw resolvable_error("Unable to open/create file %s", "Setup()", filename.c_str());
+      throw resolvable_error("Unable to open/create file %s.", filename.c_str());
 
     //write column headers when requested
     if (printHeaders) {
