@@ -36,12 +36,11 @@ import org.treescan.gui.utils.WaitCursor;
 import org.treescan.gui.utils.WindowsMenu;
 import ca.guydavis.swing.desktop.CascadingWindowPositioner;
 import java.awt.Desktop;
-import java.awt.FileDialog;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.event.KeyEvent;
-import java.io.FilenameFilter;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.treescan.utils.Elevator;
 
 /*
  * TreeScanApplication.java
@@ -1056,17 +1055,33 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
                 // Get java path from System
                 StringBuilder java_path = new StringBuilder();
                 java_path.append(System.getProperty("java.home")).append(System.getProperty("file.separator")).append("bin").append(System.getProperty("file.separator")).append("java");
-                String[] commandline = new String[]{java_path.toString(),
-                    "-jar",
-                    UpdateCheckDialog._updaterFilename.getName(),
-                    UpdateCheckDialog._updateArchiveName.getName(),
-                    _application,
-                    getRelaunchArgs()
-                };
-                Runtime.getRuntime().exec(commandline, null, UpdateCheckDialog.getDownloadTempDirectory());
+                
+                if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
+                    //JOptionPane.showMessageDialog(null, "Calling Elevator " + System.getProperty("os.name"), "Note", JOptionPane.WARNING_MESSAGE);
+                    StringBuilder args = new StringBuilder();
+                    args.append("-jar ").append(UpdateCheckDialog._updaterFilename.getName()).append(" ");
+                    args.append(UpdateCheckDialog._updateArchiveName.getName()).append(" \"").append(_application).append("\" ").append(getRelaunchArgs());
+                    Elevator.executeAsAdministrator(java_path.toString(), args.toString(), UpdateCheckDialog.getDownloadTempDirectory().toString());                    
+                } else {                
+                    //JOptionPane.showMessageDialog(null, "Calling getRuntime " + System.getProperty("os.name"), "Note", JOptionPane.WARNING_MESSAGE);
+                    String[] commandline = new String[]{java_path.toString(),
+                        "-jar",
+                        UpdateCheckDialog._updaterFilename.getName(),
+                        UpdateCheckDialog._updateArchiveName.getName(),
+                        _application,
+                        getRelaunchArgs()
+                    };
+                    Runtime.getRuntime().exec(commandline, null, UpdateCheckDialog.getDownloadTempDirectory());
+                }
             } catch (IOException ex) {
                 Logger.getLogger(TreeScanApplication.class.getName()).log(Level.SEVERE, null, ex);
-            }
+                UpdateCheckDialog._runUpdateOnTerminate = false;
+                return;
+            } catch (RuntimeException ex) {
+                Logger.getLogger(TreeScanApplication.class.getName()).log(Level.SEVERE, null, ex);
+                UpdateCheckDialog._runUpdateOnTerminate = false;
+                return;
+            }            
         }
         //saving window dimensions
         Preferences _prefs = Preferences.userNodeForPackage(TreeScanApplication.class);

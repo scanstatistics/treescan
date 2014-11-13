@@ -68,8 +68,13 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
      */
     @Override
     public void setVisible(boolean show) {
-        if (show && !_updateExists) {
-            connectToServerForUpdateCheck();
+        if (show) {
+            if (!_updateExists) {
+                connectToServerForUpdateCheck();
+            } else {
+                CardLayout cl = (CardLayout) (_cardsPanel.getLayout());
+                cl.show(_cardsPanel, CARD_UPDATE);                    
+            }
         }
         super.setVisible(show);
     }
@@ -110,9 +115,14 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
     /** downloads files */
     private void downloadFiles() {
         try {
-            CardLayout cl = (CardLayout) (_cardsPanel.getLayout());
-            cl.show(_cardsPanel, CARD_DOWNLOAD);
-            new DownloadTask().execute();
+            if (this._updateArchiveName == null) {
+                CardLayout cl = (CardLayout) (_cardsPanel.getLayout());
+                cl.show(_cardsPanel, CARD_DOWNLOAD);
+                new DownloadTask().execute();
+            } else {
+ 	 	_runUpdateOnTerminate = true;
+ 	 	setVisible(false);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
