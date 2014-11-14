@@ -73,6 +73,9 @@
     <Filter Include="Header Files\batch_application">
       <UniqueIdentifier>{77fb2ac1-ea23-4f6b-8a14-44c474fade13}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\boost\filesystem">
+      <UniqueIdentifier>{bd098d23-e930-46ec-9c38-c9ff96d21536}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\calculation\runner\ScanRunner.cpp">
@@ -108,37 +111,37 @@
     <ClCompile Include="..\calculation\utility\Ini.cpp">
       <Filter>Source Files\calculation\utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_52_0\libs\program_options\src\cmdline.cpp">
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\cmdline.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_52_0\libs\program_options\src\config_file.cpp">
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\config_file.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_52_0\libs\program_options\src\convert.cpp">
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\convert.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_52_0\libs\program_options\src\options_description.cpp">
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\options_description.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_52_0\libs\program_options\src\parsers.cpp">
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\parsers.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_52_0\libs\program_options\src\positional_options.cpp">
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\positional_options.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_52_0\libs\program_options\src\split.cpp">
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\split.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_52_0\libs\program_options\src\utf8_codecvt_facet.cpp">
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\utf8_codecvt_facet.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_52_0\libs\program_options\src\value_semantic.cpp">
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\value_semantic.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_52_0\libs\program_options\src\variables_map.cpp">
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\variables_map.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_52_0\libs\program_options\src\winmain.cpp">
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\winmain.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\loglikelihood\Loglikelihood.cpp">
@@ -150,7 +153,7 @@
     <ClCompile Include="..\calculation\utility\contractor.cpp">
       <Filter>Source Files\calculation\utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_52_0\libs\thread\src\win32\thread.cpp">
+    <ClCompile Include="..\boost\boost_1_56_0\libs\thread\src\win32\thread.cpp">
       <Filter>Source Files\boost\threads</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\utility\MonteCarloSimFunctor.cpp">
@@ -216,7 +219,7 @@
     <ClCompile Include="..\calculation\runner\DataTimeRanges.cpp">
       <Filter>Source Files\calculation\runner</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_52_0\libs\system\src\error_code.cpp">
+    <ClCompile Include="..\boost\boost_1_56_0\libs\system\src\error_code.cpp">
       <Filter>Source Files\boost\system</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\randomization\TemporalRandomizer.cpp">
@@ -230,6 +233,30 @@
     </ClCompile>
     <ClCompile Include="..\calculation\randomization\AlternativeHypothesisRandomizer.cpp">
       <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\codecvt_error_category.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\operations.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\path.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\path_traits.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\portability.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\unique_path.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\utf8_codecvt_facet.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\windows_file_codecvt.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

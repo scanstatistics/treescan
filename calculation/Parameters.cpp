@@ -434,8 +434,8 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
         case JSON: write_json(filename, pt); break;
         case XML:  
         default: {
-            xml_writer_settings<char> w(' ', 4);
-            write_xml(filename, pt, std::locale(), w);
+            //const xml_writer_settings<char> w(' ', 4);
+            write_xml(filename, pt, std::locale());
         }
     }
 }

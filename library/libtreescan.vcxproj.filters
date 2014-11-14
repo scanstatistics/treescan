@@ -66,6 +66,9 @@
     <Filter Include="Source Files\boost\system">
       <UniqueIdentifier>{c4b54914-3077-4a0c-bc65-8b6d1b9a9859}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\boost\filesystem">
+      <UniqueIdentifier>{e3b4a794-8115-48b4-b528-c331cd00e837}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\calculation\runner\ScanRunner.cpp">
@@ -107,7 +110,7 @@
     <ClCompile Include="..\calculation\utility\contractor.cpp">
       <Filter>Source Files\calculation\utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_52_0\libs\thread\src\win32\thread.cpp">
+    <ClCompile Include="..\boost\boost_1_56_0\libs\thread\src\win32\thread.cpp">
       <Filter>Source Files\boost\threads</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\utility\MonteCarloSimFunctor.cpp">
@@ -179,7 +182,7 @@
     <ClCompile Include="..\calculation\randomization\PoissonRandomizer.cpp">
       <Filter>Source Files\calculation\randomization</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_52_0\libs\system\src\error_code.cpp">
+    <ClCompile Include="..\boost\boost_1_56_0\libs\system\src\error_code.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\runner\DataTimeRanges.cpp">
@@ -199,6 +202,30 @@
     </ClCompile>
     <ClCompile Include="..\calculation\ParametersValidate.cpp">
       <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\codecvt_error_category.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\operations.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\path.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\path_traits.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\portability.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\unique_path.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\utf8_codecvt_facet.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\windows_file_codecvt.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

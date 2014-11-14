@@ -86,7 +86,15 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(BOOSTDIR)/libs/program_options/src/utf8_codecvt_facet.cpp \
                $(BOOSTDIR)/libs/program_options/src/value_semantic.cpp \
                $(BOOSTDIR)/libs/program_options/src/variables_map.cpp \
-               $(BOOSTDIR)/libs/system/src/error_code.cpp
+               $(BOOSTDIR)/libs/system/src/error_code.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/codecvt_error_category.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/operations.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/path.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/path_traits.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/portability.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/unique_path.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/path_traits.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/utf8_codecvt_facet.cpp
 
 APP_SRC     := $(TREESCAN)/batch_application/TreeScan.cpp \
                $(TREESCAN)/batch_application/ParameterProgramOptions.cpp

@@ -5,179 +5,90 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{559D1B14-EB9A-473D-9885-4837A937FA0E}</ProjectGuid>
-    <RootNamespace>treescan</RootNamespace>
+    <ProjectGuid>{10A551F9-DA0E-4CFF-844C-41C753C4F71A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
+    <RootNamespace>test</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <CharacterSet>NotSet</CharacterSet>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <CharacterSet>NotSet</CharacterSet>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>Windows7.1SDK</PlatformToolset>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>NotSet</CharacterSet>
-    <PlatformToolset>Windows7.1SDK</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>Windows7.1SDK</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Configuration)\</IntDir>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectName)64</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName)32</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectName)32</TargetName>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)32</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)32</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;BOOST_ALL_NO_LIB;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MinimalRebuild>false</MinimalRebuild>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_56_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <TargetMachine>MachineX86</TargetMachine>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_56_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <Optimization>MaxSpeed</Optimization>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;BOOST_ALL_NO_LIB;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <WarningLevel>Level2</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_56_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-    </ClCompile>
-    <Link>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
-      <SubSystem>Console</SubSystem>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <TargetMachine>MachineX86</TargetMachine>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
-    </Link>
-    <PostBuildEvent>
-      <Command>P:\imsadmin\code.sign.cert.ms.auth.verisign\signtool.exe sign /v /ac P:\imsadmin\code.sign.cert.ms.auth.verisign\MSCV-VSClass3.cer /f P:\imsadmin\code.sign.cert.ms.auth.verisign\ims-cross-sign.pfx /p J3llifi$h /n "Information Management Services, Inc." /t http://timestamp.verisign.com/scripts/timstamp.dll $(OutDir)treescan32.exe</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Digitally Sign Executable</Message>
-    </PostBuildEvent>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <Optimization>Full</Optimization>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;BOOST_ALL_NO_LIB;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;BOOST_ALL_NO_LIB;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_56_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <OptimizeReferences>true</OptimizeReferences>
     </Link>
-    <PostBuildEvent>
-      <Command>P:\imsadmin\code.sign.cert.ms.auth.verisign\signtool.exe sign /v /ac P:\imsadmin\code.sign.cert.ms.auth.verisign\MSCV-VSClass3.cer /f P:\imsadmin\code.sign.cert.ms.auth.verisign\ims-cross-sign.pfx /p J3llifi$h /n "Information Management Services, Inc." /t http://timestamp.verisign.com/scripts/timstamp.dll $(OutDir)treescan64.exe</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Digitally Sign Executable</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\codecvt_error_category.cpp" />
     <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\operations.cpp" />
@@ -187,7 +98,6 @@
     <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\unique_path.cpp" />
     <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\utf8_codecvt_facet.cpp" />
     <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\windows_file_codecvt.cpp" />
-    <ClCompile Include="..\boost\boost_1_56_0\libs\system\src\error_code.cpp" />
     <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\cmdline.cpp" />
     <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\config_file.cpp" />
     <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\convert.cpp" />
@@ -199,13 +109,14 @@
     <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\value_semantic.cpp" />
     <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\variables_map.cpp" />
     <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\winmain.cpp" />
+    <ClCompile Include="..\boost\boost_1_56_0\libs\system\src\error_code.cpp" />
     <ClCompile Include="..\boost\boost_1_56_0\libs\thread\src\win32\thread.cpp" />
+    <ClCompile Include="..\calculation\IniParameterFileAccess.cpp" />
+    <ClCompile Include="..\calculation\IniParameterSpecification.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\CriticalValues.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\Loglikelihood.cpp" />
     <ClCompile Include="..\calculation\output\DataFileWriter.cpp" />
     <ClCompile Include="..\calculation\output\ResultsFileWriter.cpp" />
-    <ClCompile Include="..\calculation\IniParameterFileAccess.cpp" />
-    <ClCompile Include="..\calculation\IniParameterSpecification.cpp" />
     <ClCompile Include="..\calculation\ParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\Parameters.cpp" />
     <ClCompile Include="..\calculation\ParametersPrint.cpp" />
@@ -229,24 +140,25 @@
     <ClCompile Include="..\calculation\utility\contractor.cpp" />
     <ClCompile Include="..\calculation\utility\FieldDef.cpp" />
     <ClCompile Include="..\calculation\utility\FileName.cpp" />
+    <ClCompile Include="..\calculation\utility\Ini.cpp" />
+    <ClCompile Include="..\calculation\utility\MCSimJobSource.cpp" />
+    <ClCompile Include="..\calculation\utility\MonteCarloSimFunctor.cpp" />
     <ClCompile Include="..\calculation\utility\PrjException.cpp" />
     <ClCompile Include="..\calculation\utility\RandomDistribution.cpp" />
     <ClCompile Include="..\calculation\utility\RandomNumberGenerator.cpp" />
-    <ClCompile Include="..\calculation\utility\MCSimJobSource.cpp" />
-    <ClCompile Include="..\calculation\utility\MonteCarloSimFunctor.cpp" />
     <ClCompile Include="..\calculation\utility\TimeStamp.cpp" />
     <ClCompile Include="..\calculation\utility\UtilityFunctions.cpp" />
-    <ClCompile Include="..\calculation\utility\Ini.cpp" />
-    <ClCompile Include="TreeScan.cpp" />
-    <ClCompile Include="ParameterProgramOptions.cpp" />
+    <ClCompile Include="test.cpp" />
+    <ClCompile Include="test_helper.cpp" />
+    <ClCompile Include="unittest_ParametersValidate.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\calculation\IniParameterFileAccess.h" />
+    <ClInclude Include="..\calculation\IniParameterSpecification.h" />
     <ClInclude Include="..\calculation\loglikelihood\CriticalValues.h" />
     <ClInclude Include="..\calculation\loglikelihood\Loglikelihood.h" />
     <ClInclude Include="..\calculation\output\DataFileWriter.h" />
     <ClInclude Include="..\calculation\output\ResultsFileWriter.h" />
-    <ClInclude Include="..\calculation\IniParameterSpecification.h" />
-    <ClInclude Include="..\calculation\IniParameterFileAccess.h" />
     <ClInclude Include="..\calculation\ParameterFileAccess.h" />
     <ClInclude Include="..\calculation\Parameters.h" />
     <ClInclude Include="..\calculation\ParametersPrint.h" />
@@ -273,16 +185,18 @@
     <ClInclude Include="..\calculation\utility\contractor.h" />
     <ClInclude Include="..\calculation\utility\FieldDef.h" />
     <ClInclude Include="..\calculation\utility\FileName.h" />
+    <ClInclude Include="..\calculation\utility\Ini.h" />
+    <ClInclude Include="..\calculation\utility\MCSimJobSource.h" />
+    <ClInclude Include="..\calculation\utility\MonteCarloSimFunctor.h" />
     <ClInclude Include="..\calculation\utility\PrjException.h" />
     <ClInclude Include="..\calculation\utility\ptr_vector.h" />
     <ClInclude Include="..\calculation\utility\RandomDistribution.h" />
     <ClInclude Include="..\calculation\utility\RandomNumberGenerator.h" />
-    <ClInclude Include="..\calculation\utility\MCSimJobSource.h" />
-    <ClInclude Include="..\calculation\utility\MonteCarloSimFunctor.h" />
     <ClInclude Include="..\calculation\utility\TimeStamp.h" />
     <ClInclude Include="..\calculation\utility\UtilityFunctions.h" />
-    <ClInclude Include="..\calculation\utility\Ini.h" />
-    <ClInclude Include="ParameterProgramOptions.h" />
+    <ClInclude Include="fixture_examples.h" />
+    <ClInclude Include="fixture_prm_source.h" />
+    <ClInclude Include="test_helper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

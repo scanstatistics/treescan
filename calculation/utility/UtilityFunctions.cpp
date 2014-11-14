@@ -8,6 +8,7 @@
 #include <fstream>
 #include <boost/math/special_functions/factorials.hpp>
 using namespace boost::math;
+#include <boost/filesystem.hpp>
 
 /* returns number of combinations, given 'total' to choose from, choosing 'choose'; where order does not matter and repetition not allowed. */
 double getNumCombinations(size_t total, size_t choose) {
@@ -221,6 +222,11 @@ std::string & GetUserDocumentsDirectory(std::string& s, const std::string& defau
   return s;
 }    
 #endif
+
+std::string & GetUserTemporaryDirectory(std::string& s) {
+    s = boost::filesystem::temp_directory_path().string();
+    return s;
+}
 
 /** Attempt to readline for stream giving consideration to DOS, UNIX (or Mac Os X) and Mac 9 (or earlier) line ends. 
     Returns whether data was read or end of file encountered. */

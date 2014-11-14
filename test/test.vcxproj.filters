@@ -1,0 +1,414 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\fixtures">
+      <UniqueIdentifier>{3def9ce2-aa7e-4ef6-9143-46368310f253}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\source">
+      <UniqueIdentifier>{94861406-6c1b-4091-aa3e-9b54eeb482d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\source">
+      <UniqueIdentifier>{8e39eae0-eefd-48df-bb3c-aa623123da95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\integration_tests">
+      <UniqueIdentifier>{d9fd48d8-f5e7-4758-9f0c-d871b0e47751}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\regression_tests">
+      <UniqueIdentifier>{44db0435-fd7b-4076-a015-dec0b25afa5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\unit_tests">
+      <UniqueIdentifier>{49688abd-3b1f-4b3a-8415-1d58b179f571}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\source\calculation">
+      <UniqueIdentifier>{5167e5f8-524d-462b-9b07-72968cdef7d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\source\calculation\runner">
+      <UniqueIdentifier>{29c425a3-103d-4ae3-8dc8-7ab9956ce775}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\source\calculation\print">
+      <UniqueIdentifier>{9e5fc1e1-5a58-4a49-88d2-c92885eb9431}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\source\calculation\utility">
+      <UniqueIdentifier>{f6a6e66d-7c75-48eb-a8e8-ccf07948c8dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\source\calculation\loglikelihood">
+      <UniqueIdentifier>{f87c58d4-6e04-4b21-a6b8-a35ae1983235}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\source\calculation\randomization">
+      <UniqueIdentifier>{97f6c93c-88f6-4e18-8dfe-8ebe9abf7cdb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\source\calculation\output">
+      <UniqueIdentifier>{5c1b65fb-9175-46fb-b45b-af5e0598cee3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\source\boost">
+      <UniqueIdentifier>{7ac88b64-8dd0-4381-bfba-f8af439f0ecc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\source\boost\program_options">
+      <UniqueIdentifier>{e68f5f0b-a7c8-4346-b945-e7f314b2b2ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\source\boost\threads">
+      <UniqueIdentifier>{648b42c8-8cfb-47fa-b598-61ccc7a14bba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\source\boost\system">
+      <UniqueIdentifier>{a4fb61f0-3df3-48f0-ad43-98d23a48cac8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\source\calculation">
+      <UniqueIdentifier>{3379c0f1-edb9-474b-9dd2-4eb53c7f5fed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\source\calculation\runner">
+      <UniqueIdentifier>{001dce1e-c7c5-44c3-8d9f-b892e4f170cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\source\calculation\print">
+      <UniqueIdentifier>{768b9d9c-d85d-4f44-aa7a-845b513d426b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\source\calculation\utility">
+      <UniqueIdentifier>{fa794dfc-c7f3-4f18-a0e8-4b9abe317cc8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\source\calculation\loglikelihood">
+      <UniqueIdentifier>{c9724699-44c7-4c49-afea-4067c1636842}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\source\calculation\randomization">
+      <UniqueIdentifier>{f0a177a5-5958-4e68-8865-e30936dba0c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\source\calculation\output">
+      <UniqueIdentifier>{4bb443bf-021a-409d-a533-3f51546fd29a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\source\boost\filesystem">
+      <UniqueIdentifier>{cf9480a7-4092-4199-a2d6-230fe6cb3cac}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\IniParameterFileAccess.cpp">
+      <Filter>Source Files\source\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\IniParameterSpecification.cpp">
+      <Filter>Source Files\source\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\ParameterFileAccess.cpp">
+      <Filter>Source Files\source\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\Parameters.cpp">
+      <Filter>Source Files\source\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\ParametersPrint.cpp">
+      <Filter>Source Files\source\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\ParametersValidate.cpp">
+      <Filter>Source Files\source\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\Toolkit.cpp">
+      <Filter>Source Files\source\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\runner\DataSource.cpp">
+      <Filter>Source Files\source\calculation\runner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\runner\DataTimeRanges.cpp">
+      <Filter>Source Files\source\calculation\runner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\runner\RelativeRiskAdjustment.cpp">
+      <Filter>Source Files\source\calculation\runner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\runner\ScanRunner.cpp">
+      <Filter>Source Files\source\calculation\runner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\print\BasePrint.cpp">
+      <Filter>Source Files\source\calculation\print</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\print\PrintQueue.cpp">
+      <Filter>Source Files\source\calculation\print</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\print\PrintScreen.cpp">
+      <Filter>Source Files\source\calculation\print</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\AsciiPrintFormat.cpp">
+      <Filter>Source Files\source\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\AsynchronouslyAccessible.cpp">
+      <Filter>Source Files\source\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\contractor.cpp">
+      <Filter>Source Files\source\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\FieldDef.cpp">
+      <Filter>Source Files\source\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\FileName.cpp">
+      <Filter>Source Files\source\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\PrjException.cpp">
+      <Filter>Source Files\source\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\RandomDistribution.cpp">
+      <Filter>Source Files\source\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\RandomNumberGenerator.cpp">
+      <Filter>Source Files\source\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\MCSimJobSource.cpp">
+      <Filter>Source Files\source\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\MonteCarloSimFunctor.cpp">
+      <Filter>Source Files\source\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\TimeStamp.cpp">
+      <Filter>Source Files\source\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\UtilityFunctions.cpp">
+      <Filter>Source Files\source\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\utility\Ini.cpp">
+      <Filter>Source Files\source\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\loglikelihood\CriticalValues.cpp">
+      <Filter>Source Files\source\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\loglikelihood\Loglikelihood.cpp">
+      <Filter>Source Files\source\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\randomization\AlternativeHypothesisRandomizer.cpp">
+      <Filter>Source Files\source\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\randomization\BernoulliRandomizer.cpp">
+      <Filter>Source Files\source\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\randomization\DenominatorDataRandomizer.cpp">
+      <Filter>Source Files\source\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\randomization\PoissonRandomizer.cpp">
+      <Filter>Source Files\source\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\randomization\Randomization.cpp">
+      <Filter>Source Files\source\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\randomization\TemporalRandomizer.cpp">
+      <Filter>Source Files\source\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\output\DataFileWriter.cpp">
+      <Filter>Source Files\source\calculation\output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\output\ResultsFileWriter.cpp">
+      <Filter>Source Files\source\calculation\output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\cmdline.cpp">
+      <Filter>Source Files\source\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\config_file.cpp">
+      <Filter>Source Files\source\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\convert.cpp">
+      <Filter>Source Files\source\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\options_description.cpp">
+      <Filter>Source Files\source\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\parsers.cpp">
+      <Filter>Source Files\source\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\positional_options.cpp">
+      <Filter>Source Files\source\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\split.cpp">
+      <Filter>Source Files\source\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\utf8_codecvt_facet.cpp">
+      <Filter>Source Files\source\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\value_semantic.cpp">
+      <Filter>Source Files\source\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\variables_map.cpp">
+      <Filter>Source Files\source\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\program_options\src\winmain.cpp">
+      <Filter>Source Files\source\boost\program_options</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\thread\src\win32\thread.cpp">
+      <Filter>Source Files\source\boost\threads</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\system\src\error_code.cpp">
+      <Filter>Source Files\source\boost\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\codecvt_error_category.cpp">
+      <Filter>Source Files\source\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\operations.cpp">
+      <Filter>Source Files\source\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\path.cpp">
+      <Filter>Source Files\source\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\path_traits.cpp">
+      <Filter>Source Files\source\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\portability.cpp">
+      <Filter>Source Files\source\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\unique_path.cpp">
+      <Filter>Source Files\source\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\utf8_codecvt_facet.cpp">
+      <Filter>Source Files\source\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\windows_file_codecvt.cpp">
+      <Filter>Source Files\source\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="unittest_ParametersValidate.cpp">
+      <Filter>Source Files\unit_tests</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="test_helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\IniParameterSpecification.h">
+      <Filter>Header Files\source\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\IniParameterFileAccess.h">
+      <Filter>Header Files\source\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\ParameterFileAccess.h">
+      <Filter>Header Files\source\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\Parameters.h">
+      <Filter>Header Files\source\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\ParametersPrint.h">
+      <Filter>Header Files\source\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\ParametersValidate.h">
+      <Filter>Header Files\source\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\Toolkit.h">
+      <Filter>Header Files\source\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\TreeScan.h">
+      <Filter>Header Files\source\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\runner\DataSource.h">
+      <Filter>Header Files\source\calculation\runner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\runner\DataTimeRanges.h">
+      <Filter>Header Files\source\calculation\runner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\runner\RelativeRiskAdjustment.h">
+      <Filter>Header Files\source\calculation\runner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\runner\ScanRunner.h">
+      <Filter>Header Files\source\calculation\runner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\runner\SimulationVariables.h">
+      <Filter>Header Files\source\calculation\runner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\runner\WindowLength.h">
+      <Filter>Header Files\source\calculation\runner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\print\BasePrint.h">
+      <Filter>Header Files\source\calculation\print</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\print\PrintQueue.h">
+      <Filter>Header Files\source\calculation\print</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\print\PrintScreen.h">
+      <Filter>Header Files\source\calculation\print</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\AsciiPrintFormat.h">
+      <Filter>Header Files\source\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\AsynchronouslyAccessible.h">
+      <Filter>Header Files\source\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\contractor.h">
+      <Filter>Header Files\source\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\FieldDef.h">
+      <Filter>Header Files\source\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\FileName.h">
+      <Filter>Header Files\source\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\PrjException.h">
+      <Filter>Header Files\source\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\ptr_vector.h">
+      <Filter>Header Files\source\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\RandomDistribution.h">
+      <Filter>Header Files\source\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\RandomNumberGenerator.h">
+      <Filter>Header Files\source\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\MCSimJobSource.h">
+      <Filter>Header Files\source\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\MonteCarloSimFunctor.h">
+      <Filter>Header Files\source\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\TimeStamp.h">
+      <Filter>Header Files\source\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\UtilityFunctions.h">
+      <Filter>Header Files\source\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\Ini.h">
+      <Filter>Header Files\source\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\loglikelihood\CriticalValues.h">
+      <Filter>Header Files\source\calculation\loglikelihood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\loglikelihood\Loglikelihood.h">
+      <Filter>Header Files\source\calculation\loglikelihood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\AlternativeHypothesisRandomizer.h">
+      <Filter>Header Files\source\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\BernoulliRandomizer.h">
+      <Filter>Header Files\source\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\DenominatorDataRandomizer.h">
+      <Filter>Header Files\source\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\PoissonRandomizer.h">
+      <Filter>Header Files\source\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\Randomization.h">
+      <Filter>Header Files\source\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\TemporalRandomizer.h">
+      <Filter>Header Files\source\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\output\DataFileWriter.h">
+      <Filter>Header Files\source\calculation\output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\output\ResultsFileWriter.h">
+      <Filter>Header Files\source\calculation\output</Filter>
+    </ClInclude>
+    <ClInclude Include="fixture_prm_source.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fixture_examples.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
