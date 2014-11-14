@@ -93,7 +93,6 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(BOOSTDIR)/libs/filesystem/src/path_traits.cpp \
                $(BOOSTDIR)/libs/filesystem/src/portability.cpp \
                $(BOOSTDIR)/libs/filesystem/src/unique_path.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/path_traits.cpp \
                $(BOOSTDIR)/libs/filesystem/src/utf8_codecvt_facet.cpp
 
 APP_SRC     := $(TREESCAN)/batch_application/TreeScan.cpp \
