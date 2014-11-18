@@ -269,21 +269,23 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getSystemParameters(Setti
 
 /** Prints 'Temporal Window' tab parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParameters(SettingContainer_t & settings) const {
-    std::string buffer;
-    settings.clear();    
-    switch (_parameters.getMaximumWindowType()) {
-        case Parameters::PERCENTAGE_WINDOW :
-            printString(buffer, "%g%% of Data Time Range", _parameters.getMaximumWindowPercentage());
-            settings.push_back(std::make_pair("Maximum Temporal Window", buffer)); 
-            break;
-        case Parameters::FIXED_LENGTH :
-            printString(buffer, "%u Time Units", _parameters.getMaximumWindowLength());
-            settings.push_back(std::make_pair("Maximum Temporal Window",buffer)); 
-            break;
-        default: throw prg_error("Unknown maximum window type (%d).", "getTemporalWindowParameters()", _parameters.getMaximumWindowType());
+    settings.clear();
+    if (_parameters.getScanType() == Parameters::TREETIME) {
+        std::string buffer;
+        switch (_parameters.getMaximumWindowType()) {
+            case Parameters::PERCENTAGE_WINDOW :
+                printString(buffer, "%g%% of Data Time Range", _parameters.getMaximumWindowPercentage());
+                settings.push_back(std::make_pair("Maximum Temporal Window", buffer)); 
+                break;
+            case Parameters::FIXED_LENGTH :
+                printString(buffer, "%u Time Units", _parameters.getMaximumWindowLength());
+                settings.push_back(std::make_pair("Maximum Temporal Window",buffer)); 
+                break;
+            default: throw prg_error("Unknown maximum window type (%d).", "getTemporalWindowParameters()", _parameters.getMaximumWindowType());
+        }
+        printString(buffer, "%u Time Units", _parameters.getMinimumWindowLength());
+        settings.push_back(std::make_pair("Minimum Temporal Window",buffer));
     }
-    printString(buffer, "%u Time Units", _parameters.getMinimumWindowLength());
-    settings.push_back(std::make_pair("Minimum Temporal Window",buffer));
     return settings;
 }
 

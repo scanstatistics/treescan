@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
 
         /* program options processing */
         if (vm.count("help")) {usage_message(argv[0], application, parameterOptions, opt_descriptions, false, console); return 0;}
-        if (vm.count("version")) {console.Printf("SaTScan %s.%s.%s %s.\n", BasePrint::P_STDOUT, VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE, VERSION_PHASE); return 0;}
+        if (vm.count("version")) {console.Printf("TreeScan %s.%s.%s %s.\n", BasePrint::P_STDOUT, VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE, VERSION_PHASE); return 0;}
         if (vm.count("display-parameters")) {usage_message(argv[0], application, parameterOptions, opt_descriptions, true, console); return 0;}
         /* read parameter file */
         if (vm.count("parameter-file")) {

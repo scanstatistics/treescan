@@ -75,7 +75,7 @@ double PoissonRandomizer::RandomUniform(bool classic) {
 
 /*
  ------ Returns a binomial(n,p) distributed random variable -------------------
- Note: SaTScan has a faster way of doing this.
+ Note: TreeScan has a faster way of doing this.
 */
 int PoissonRandomizer::BinomialGenerator(int n, double p, bool classic) {
     if (!classic) return _binomial_generator.GetBinomialDistributedVariable(n, static_cast<float>(p), _random_number_generator);

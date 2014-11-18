@@ -14,7 +14,7 @@ class AppToolkit {
     static const char         * gsDebugFileName;
     // default defines
     static const char         * gsDefaultRunHistoryFileName;
-    static const char         * gsDefaultSaTScanWebSite;
+    static const char         * gsDefaultTreeScanWebSite;
     static const char         * gsDefaultSubstantiveSupportEmail;
     static const char         * gsDefaultTechnicalSupportEmail;
 

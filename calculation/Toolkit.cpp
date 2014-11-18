@@ -11,7 +11,7 @@
 const char * AppToolkit::gsDebugFileName = "_debug_";
 
 /** Default website. */
-const char * AppToolkit::gsDefaultSaTScanWebSite = "http://www.treescan.org/";
+const char * AppToolkit::gsDefaultTreeScanWebSite = "http://www.treescan.org/";
 /** Default Substantive Support Email. */
 const char * AppToolkit::gsDefaultSubstantiveSupportEmail = "kulldorff@treescan.org";
 /** Default Technical Support Email. */
@@ -78,8 +78,8 @@ const char * AppToolkit::GetTechnicalSupportEmail() const {
 
 /** Returns website URL. */
 const char * AppToolkit::GetWebSite() const {
-  //return gSession.GetProperty(gsSaTScanWebSiteProperty)->GetValue();
-  return gsDefaultSaTScanWebSite;
+  //return gSession.GetProperty(gsTreeScanWebSiteProperty)->GetValue();
+  return gsDefaultTreeScanWebSite;
 }
 
 /** Returns whether binary is 64-bit. */

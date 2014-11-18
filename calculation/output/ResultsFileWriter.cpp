@@ -301,9 +301,9 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "</style>" << std::endl;
 
     // TODO: host these from treescan website or link to local copy?
-    outfile << "<script src=\"http://www.satscan.org/javascript/jquery/jquery-1.10.2/jquery-1.10.2.min.js\" type=\"text/javascript\"></script>" << std::endl;
+    outfile << "<script src=\"http://www.treescan.org/javascript/jquery/jquery-1.10.2/jquery-1.10.2.min.js\" type=\"text/javascript\"></script>" << std::endl;
     // TODO: css and image resources for table sorter
-    outfile << "<script src=\"http://www.satscan.org/javascript/jquery/jquery-tablesorter-2.0/jquery.tablesorter.min.js\" type=\"text/javascript\"></script>" << std::endl;
+    outfile << "<script src=\"http://www.treescan.org/javascript/jquery/jquery-tablesorter-2.0/jquery.tablesorter.min.js\" type=\"text/javascript\"></script>" << std::endl;
 
     outfile << "<script type=\"text/javascript\" charset=\"utf-8\">$(document).ready(function() {" << std::endl;
     outfile << "    //$('.additional-cuts').hide();" << std::endl;
