@@ -331,22 +331,23 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
 ///////////// LoglikelihoodRatioWriter ///////////////////////////////////
 
 const char * LoglikelihoodRatioWriter::LLR_FILE_SUFFIX       = "_llr";
+const char * LoglikelihoodRatioWriter::LLR_HA_FILE_SUFFIX    = "_llr_ha";
 const char * LoglikelihoodRatioWriter::LOG_LIKL_RATIO_FIELD  = "LLR";
 
-LoglikelihoodRatioWriter::LoglikelihoodRatioWriter(const ScanRunner& scanRunner, bool append) : _scanner(scanRunner) {
+LoglikelihoodRatioWriter::LoglikelihoodRatioWriter(const ScanRunner& scanRunner, bool ispower, bool append) : _scanner(scanRunner) {
   unsigned short uwOffset=0;
   std::string buffer;
   try {
     CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
-    _csvWriter.reset(new CSVDataFileWriter(getFilename(_scanner.getParameters(), buffer), _dataFieldDefinitions, _scanner.getParameters().isPrintColumnHeaders() && !append, append));
+    _csvWriter.reset(new CSVDataFileWriter(getFilename(_scanner.getParameters(), buffer, ispower), _dataFieldDefinitions, _scanner.getParameters().isPrintColumnHeaders() && !append, append));
   } catch (prg_exception& x) {
     x.addTrace("constructor()","LoglikelihoodRatioWriter");
     throw;
   }
 }
 
-std::string& LoglikelihoodRatioWriter::getFilename(const Parameters& parameters, std::string& buffer) {
-  return getDerivedFilename(parameters.getOutputFileName(), LoglikelihoodRatioWriter::LLR_FILE_SUFFIX, CSVDataFileWriter::CSV_FILE_EXT, buffer);
+std::string& LoglikelihoodRatioWriter::getFilename(const Parameters& parameters, std::string& buffer, bool ispower) {
+  return getDerivedFilename(parameters.getOutputFileName(), ispower ? LoglikelihoodRatioWriter::LLR_HA_FILE_SUFFIX : LoglikelihoodRatioWriter::LLR_FILE_SUFFIX, CSVDataFileWriter::CSV_FILE_EXT, buffer);
 }
 
 void LoglikelihoodRatioWriter::write(double llr) const {

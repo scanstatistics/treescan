@@ -112,16 +112,17 @@ class CutsRecordWriter : public DataRecordWriter {
 class LoglikelihoodRatioWriter : public DataRecordWriter {
     protected:
         static const char * LLR_FILE_SUFFIX;
+        static const char * LLR_HA_FILE_SUFFIX;
         static const char * LOG_LIKL_RATIO_FIELD;
 
         const ScanRunner &  _scanner;
         std::auto_ptr<CSVDataFileWriter> _csvWriter;
 
     public:
-        LoglikelihoodRatioWriter(const ScanRunner& scanRunner, bool append);
+        LoglikelihoodRatioWriter(const ScanRunner& scanRunner, bool ispower, bool append);
         virtual ~LoglikelihoodRatioWriter() {}
 
-        static std::string & getFilename(const Parameters& parameters, std::string& buffer);
+        static std::string & getFilename(const Parameters& parameters, std::string& buffer, bool ispower);
 
         void write(double llr) const;
 };

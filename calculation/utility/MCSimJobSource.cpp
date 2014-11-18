@@ -6,7 +6,7 @@
 #include "UtilityFunctions.h"
 
 //constructor
-MCSimJobSource::MCSimJobSource(boost::posix_time::ptime CurrentTime, PrintQueue & rPrintDirection, const char * szReplicationFormatString, ScanRunner & rRunner, unsigned int num_replica, bool isPowerStep)
+MCSimJobSource::MCSimJobSource(boost::posix_time::ptime CurrentTime, PrintQueue & rPrintDirection, const char * szReplicationFormatString, ScanRunner & rRunner, unsigned int num_replica, bool isPowerStep, unsigned int iteration)
  : guiNextJobParam(1)
  , guiUnregisteredJobLowerBound(1)
  , gfnRegisterResult(&MCSimJobSource::RegisterResult_AutoAbort)//initialize to the most feature-laden
@@ -28,7 +28,7 @@ MCSimJobSource::MCSimJobSource(boost::posix_time::ptime CurrentTime, PrintQueue 
 
   grLoglikelihood.reset((AbstractLoglikelihood::getNewLoglikelihood(grRunner.getParameters(), grRunner.getTotalC(), grRunner.getTotalN())));
   if (grRunner.getParameters().isGeneratingLLRResults())
-    _ratio_writer.reset(new LoglikelihoodRatioWriter(grRunner, _isPowerStep));
+    _ratio_writer.reset(new LoglikelihoodRatioWriter(grRunner, _isPowerStep, iteration > 0));
 }
 
 

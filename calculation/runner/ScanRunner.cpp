@@ -642,7 +642,7 @@ bool ScanRunner::runPowerEvaluations() {
                 remove(_parameters.getOutputSimulationsFilename().c_str());
             randomizer->setWriting(_parameters.getOutputSimulationsFilename());
         }
-        if (!runsimulations(randomizer, _parameters.getPowerEvaluationReplications(), true)) return false;
+        if (!runsimulations(randomizer, _parameters.getPowerEvaluationReplications(), true, static_cast<unsigned int>(t))) return false;
         _power_estimations.push_back(PowerEstimationSet_t(static_cast<double>(_simVars.get_llr_counters().at(0).second)/static_cast<double>(_parameters.getPowerEvaluationReplications()),
                                                           static_cast<double>(_simVars.get_llr_counters().at(1).second)/static_cast<double>(_parameters.getPowerEvaluationReplications()),
                                                           static_cast<double>(_simVars.get_llr_counters().at(2).second)/static_cast<double>(_parameters.getPowerEvaluationReplications())));
@@ -653,13 +653,13 @@ bool ScanRunner::runPowerEvaluations() {
 }
 
 /* DOING THE MONTE CARLO SIMULATIONS */
-bool ScanRunner::runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep) {
+bool ScanRunner::runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep, unsigned int iteration) {
     const char * sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %lf\n";
     unsigned long ulParallelProcessCount = std::min(_parameters.getNumParallelProcessesToExecute(), num_relica);
 
     try {
         PrintQueue lclPrintDirection(_print, false);
-        MCSimJobSource jobSource(::GetCurrentTime_HighResolution(), lclPrintDirection, sReplicationFormatString, *this, num_relica, isPowerStep);
+        MCSimJobSource jobSource(::GetCurrentTime_HighResolution(), lclPrintDirection, sReplicationFormatString, *this, num_relica, isPowerStep, iteration);
         typedef contractor<MCSimJobSource> contractor_type;
         contractor_type theContractor(jobSource);
 

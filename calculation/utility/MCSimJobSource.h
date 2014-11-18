@@ -66,7 +66,7 @@ private://functions
   static void               DynamicBitsetPopFrontN(boost::dynamic_bitset<> & operand, unsigned long N);
 
 public:
-  MCSimJobSource(boost::posix_time::ptime CurrentTime, PrintQueue & rPrintDirection, const char * szReplicationFormatString, ScanRunner & rRunner, unsigned int num_replica, bool isPowerStep);
+  MCSimJobSource(boost::posix_time::ptime CurrentTime, PrintQueue & rPrintDirection, const char * szReplicationFormatString, ScanRunner & rRunner, unsigned int num_replica, bool isPowerStep, unsigned int iteration=0);
 
   bool                      is_exhausted() const;
   void                      acquire(job_id_type & dst_job_id, param_type & dst_param);

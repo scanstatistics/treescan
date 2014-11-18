@@ -87,7 +87,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParame
     settings.clear();
     settings.push_back(std::make_pair("Report Simulated Log Likelihood Ratios",(_parameters.isGeneratingLLRResults() ? "Yes" : "No")));
     if (_parameters.isGeneratingLLRResults()) {
-        settings.push_back(std::make_pair("Simulated Log Likelihood Ratios", LoglikelihoodRatioWriter::getFilename(_parameters, buffer)));
+        settings.push_back(std::make_pair("Simulated Log Likelihood Ratios", LoglikelihoodRatioWriter::getFilename(_parameters, buffer, false)));
     }
     settings.push_back(std::make_pair("Report Critical Values",(_parameters.getReportCriticalValues() ? "Yes" : "No")));
     if (_parameters.isGeneratingTableResults() && _parameters.isPrintColumnHeaders()) {
@@ -211,6 +211,9 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getPowerEvaluationsParame
         printString(buffer, "%u", _parameters.getPowerEvaluationReplications());
         settings.push_back(std::make_pair("Number of Replications",buffer));
         settings.push_back(std::make_pair("Alternative Hypothesis File",_parameters.getPowerEvaluationAltHypothesisFilename()));
+        if (_parameters.isGeneratingLLRResults()) {
+            settings.push_back(std::make_pair("Simulated Log Likelihood Ratios (HA)", LoglikelihoodRatioWriter::getFilename(_parameters, buffer, true)));
+        }
     }
     return settings;
 }
