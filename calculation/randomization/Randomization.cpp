@@ -30,13 +30,16 @@ AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const ScanRunner& scan
         case Parameters::UNIFORM : {
             switch (parameters.getConditionalType()) {
                 case Parameters::CASESEACHBRANCH : return new TemporalRandomizer(scanner);
-                case Parameters::CASESBRANCHANDDAY : return new ConditionalTemporalRandomizer(scanner);
+                case Parameters::CASESBRANCHANDDAY :
                 case Parameters::UNCONDITIONAL :
                 case Parameters::TOTALCASES :
                 default: throw prg_error("Unknown conditional type (%d).", "getNewRandomizer()", parameters.getConditionalType());
             }
         } break;
-        default: throw prg_error("Unknown model type (%d).", "getNewRandomizer()", parameters.getModelType());
+        default:
+            if (parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY)
+                return new ConditionalTemporalRandomizer(scanner);
+            throw prg_error("Unknown model type (%d).", "getNewRandomizer()", parameters.getModelType());
     }
 }
 

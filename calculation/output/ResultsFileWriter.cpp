@@ -118,7 +118,16 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 }
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer.c_str());
 
-                if (parameters.getModelType() == Parameters::UNIFORM) {
+                if (parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY) {
+                    PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
+                    printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts().at(k)->getID()]->getBrC()));
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                    PrintFormat.PrintSectionLabel(outfile, "Time Window", true);
+                    printString(buffer, "%ld to %ld", _scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive(), _scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive());
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                    PrintFormat.PrintSectionLabel(outfile, "Cases in Window", true);
+                }
+                else if (parameters.getModelType() == Parameters::UNIFORM) {
                     PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
                     if (parameters.isPerformingDayOfWeekAdjustment()) {
                         printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts().at(k)->getID()]->getBrC()));
@@ -356,7 +365,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         } else {
             outfile << "<h3>MOST LIKELY CUTS</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;
             outfile << "<thead><tr><th>No.</th><th>Node Identifier</th>";
-            if (parameters.getModelType() == Parameters::UNIFORM) {
+            if (parameters.getModelType() == Parameters::UNIFORM || parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY) {
                 outfile << "<th>Node Cases</th>";
                 outfile << "<th>Time Window</th>";
                 outfile << "<th>Cases in Window</th>";
@@ -400,11 +409,21 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                     }
                 }
                 outfile << "</td>";
-                if (parameters.getModelType() == Parameters::UNIFORM) {
-                    outfile << "<td>" << static_cast<int>(_scanRunner.getCuts().at(k)->getN()) << "</td>";
-                    outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive() - 1) << "</td>";
+                if (parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY) {
+                    printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts().at(k)->getID()]->getBrC()));
+                    outfile << "<td>" << buffer.c_str() << "</td>";
+                    outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
                 }
-                if (parameters.getModelType() == Parameters::BERNOULLI) {
+                else if (parameters.getModelType() == Parameters::UNIFORM) {
+                    if (parameters.isPerformingDayOfWeekAdjustment()) {
+                        printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts().at(k)->getID()]->getBrC()));
+                    } else {
+                        printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts().at(k)->getN()));
+                    }
+                    outfile << "<td>" << buffer.c_str() << "</td>";
+                    outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
+                }
+                else if (parameters.getModelType() == Parameters::BERNOULLI) {
                     outfile << "<td>" << static_cast<int>(_scanRunner.getCuts().at(k)->getN()) << "</td>";
                 }
                 outfile << "<td>" << _scanRunner.getCuts().at(k)->getC() << "</td>";
