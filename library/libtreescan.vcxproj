@@ -198,6 +198,7 @@
     <ClCompile Include="..\calculation\randomization\AlternativeHypothesisRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\BernoulliRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\DenominatorDataRandomizer.cpp" />
+    <ClCompile Include="..\calculation\randomization\PermutationDataRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\PoissonRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\Randomization.cpp" />
     <ClCompile Include="..\calculation\randomization\TemporalRandomizer.cpp" />
@@ -242,6 +243,7 @@
     <ClInclude Include="..\calculation\randomization\AlternativeHypothesisRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\BernoulliRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\DenominatorDataRandomizer.h" />
+    <ClInclude Include="..\calculation\randomization\PermutationDataRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\PoissonRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\Randomization.h" />
     <ClInclude Include="..\calculation\randomization\TemporalRandomizer.h" />

@@ -25,7 +25,7 @@ class ParameterProgramOptions: public AbtractParameterFileAccess {
         const char * GetParameterLabel(Parameters::ParameterType e) const {return getOption(e);}
 
     public:
-        ParameterProgramOptions(Parameters& Parameters, BasePrint& Print): AbtractParameterFileAccess(Parameters, Print) {}
+        ParameterProgramOptions(Parameters& Parameters, Parameters::CreationVersion version, BasePrint& Print);
 
         ParamOptContainer_t& getOptions(ParamOptContainer_t& opt_descriptions);
         bool setParameterOverrides(const po::variables_map& vm);

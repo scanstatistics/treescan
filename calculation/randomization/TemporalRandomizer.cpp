@@ -5,10 +5,11 @@
 #include "TemporalRandomizer.h"
 
 /* constructor */
-TemporalRandomizer::TemporalRandomizer(int TotalC, double TotalN, const DataTimeRangeSet& timeRangeSets, const Parameters& parameters, long lInitialSeed)
-                  : AbstractRandomizer(parameters, lInitialSeed), _total_C(TotalC), _total_N(TotalN), _time_range_sets(timeRangeSets) {
+TemporalRandomizer::TemporalRandomizer(const ScanRunner& scanner, long lInitialSeed)
+    : AbstractRandomizer(scanner.getParameters(), lInitialSeed),
+     _total_C(scanner.getTotalC()), _total_N(scanner.getTotalN()), _time_range_sets(scanner.getParameters().getDataTimeRangeSet()), _day_of_week_indexes(scanner.getDayOfWeekIndexes()) {
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
-    DataTimeRange min_max = timeRangeSets.getMinMax();
+    DataTimeRange min_max = _time_range_sets.getMinMax();
     _zero_translation_additive = (min_max.getStart() <= 0) ? std::abs(min_max.getStart()) : min_max.getStart() * -1;
 }
 
@@ -19,14 +20,32 @@ int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesP
     DataTimeRange zeroRange(range.getStart() + _zero_translation_additive, range.getEnd() + _zero_translation_additive);
     int TotalSimC = 0;
 
-    for (size_t i=0; i < treeNodes.size(); ++i) {
-        NodeStructure::count_t nodeC = treeNodes.getIntC(i);
-        if (nodeC) {
-            SimulationNode& simNode(treeSimNodes.at(i));
-            for (NodeStructure::count_t c=0; c < nodeC; ++c) {
-                DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(zeroRange.getEnd()), _random_number_generator));
-                ++(simNode.refIntC_C().at(idx));
-                ++TotalSimC;
+    if (_parameters.isPerformingDayOfWeekAdjustment()) {
+        for (size_t i=0; i < treeNodes.size(); ++i) {
+            const NodeStructure::CountContainer_t & counts = treeNodes.getIntC_C(i);
+            for (size_t idx=0; idx < counts.size(); ++idx) {
+                NodeStructure::count_t cases = counts[idx] - (idx + 1 == counts.size() ? 0 : counts[idx + 1]);
+                for (NodeStructure::count_t c=0; c < cases; ++c) {
+                    // For the associated day of week, by this idx, get the uniformly distributed time index along all of the same week day.
+                    unsigned int upper = _day_of_week_indexes[idx % 7].size();
+                    DataTimeRange::index_t idxDay = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(1), static_cast<long>(_day_of_week_indexes[idx % 7].size()), _random_number_generator));
+                    size_t time = _day_of_week_indexes[idx % 7][idxDay - 1];
+                    ++(treeSimNodes.at(i).refIntC_C().at(_day_of_week_indexes[idx % 7][idxDay - 1]));
+                    ++TotalSimC;
+                }
+
+            }
+        }
+    } else {
+        for (size_t i=0; i < treeNodes.size(); ++i) {
+            NodeStructure::count_t nodeC = treeNodes.getIntC(i);
+            if (nodeC) {
+                SimulationNode& simNode(treeSimNodes.at(i));
+                for (NodeStructure::count_t c=0; c < nodeC; ++c) {
+                    DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(zeroRange.getEnd()), _random_number_generator));
+                    ++(simNode.refIntC_C().at(idx));
+                    ++TotalSimC;
+                }
             }
         }
     }
@@ -121,4 +140,56 @@ void TemporalRandomizer::write(const std::string& filename, const SimNodeContain
         stream << std::endl;
     }
     stream.close();
+}
+
+//********** ConditionalTemporalRandomizer **********
+
+ConditionalTemporalRandomizer::ConditionalTemporalRandomizer(const ScanRunner& scanner, long lInitialSeed)
+            : TemporalRandomizer(scanner, lInitialSeed), AbstractPermutedDataRandomizer(scanner.getParameters(), lInitialSeed) {
+
+    StationaryContainerCollection_t::iterator stationaryItr;
+    PermutedContainerCollection_t::iterator permutedItr;
+    // determine which collection of attributes to add these patients.
+    if (!_dayOfWeekAdjustment) {
+        stationaryItr = gvStationaryAttributeCollections.begin();
+        permutedItr = gvOriginalPermutedAttributeCollections.begin();
+    }
+    // assign stationary and permuted data from scanner nodes
+    const ScanRunner::NodeStructureContainer_t & nodes = scanner.getNodes();
+    ScanRunner::NodeStructureContainer_t::const_iterator itr=nodes.begin(), itr_end=nodes.end();
+    for (;itr != itr_end; ++itr) {
+        const NodeStructure::CountContainer_t& counts = (*itr)->getIntC_C();
+        for (size_t timeIdx=0; timeIdx < counts.size(); ++timeIdx) {
+            if (_dayOfWeekAdjustment) {
+                stationaryItr = gvStationaryAttributeCollections.begin() + static_cast<size_t>(timeIdx % 7);
+                permutedItr = gvOriginalPermutedAttributeCollections.begin() + static_cast<size_t>(timeIdx % 7);
+            }
+            NodeStructure::count_t num_cases = counts[timeIdx] -  (timeIdx + 1 >= counts.size() ? 0 : counts[timeIdx + 1]);
+            for (NodeStructure::count_t c=0; c < num_cases; ++c) {
+                //add stationary values
+                stationaryItr->push_back(ConditionalTemporalStationary_t((*itr)->getID()));
+                //add permutated value
+                permutedItr->push_back(ConditionalTemporalPermuted_t(timeIdx));
+            }
+        }
+    }
+}
+
+/** Assigns randomized case data to tree simulation node data structures. */
+void ConditionalTemporalRandomizer::AssignRandomizedData(const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
+    int TotalSimC = 0;
+    StationaryContainerCollection_t::iterator itrSC=gvStationaryAttributeCollections.begin();
+    PermutedContainerCollection_t::iterator itrPC=gvPermutedAttributeCollections.begin();
+    // iterate through each separate collection of stationary/permuted collections
+    for (; itrSC != gvStationaryAttributeCollections.end(); ++itrSC, ++itrPC) {
+        StationaryContainer_t::iterator itrS=itrSC->begin();
+        PermutedContainer_t::iterator itrP=itrPC->begin();
+        // for each stationary/permutation pair, updating the number of cases for node/time
+        for (; itrS != itrSC->end(); ++itrS, ++itrP) {
+            ++(treeSimNodes.at(itrS->GetStationaryVariable()).refIntC_C().at((*itrP).GetPermutedVariable()));
+            ++TotalSimC;
+        }
+    }
+    if (TotalSimC != _total_C) // sanity check
+        throw prg_error("Number of simulated cases does not equal total cases: %d != %d.", "ConditionalTemporalRandomizer::AssignRandomizedData(...)", TotalSimC, _total_C);
 }

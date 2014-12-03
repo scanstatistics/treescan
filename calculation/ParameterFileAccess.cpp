@@ -51,7 +51,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             /* Analysis */
             case Parameters::SCAN_TYPE               : return "scan type (TREEONLY=0, TREETIME)";
             case Parameters::CONDITIONAL_TYPE        : return "conditional type (UNCONDITIONAL=0, TOTALCASES, CASESEACHBRANCH)";
-            case Parameters::MODEL_TYPE              : return "probability model type (POISSON=0, BERNOULLI=1, TEMPORALSCAN=3)";
+            case Parameters::MODEL_TYPE              : return "probability model type (POISSON=0, BERNOULLI=1, UNIFORM=2, Not-Applicable=3)";
             case Parameters::EVENT_PROBABILITY       : return "case probability (integer / integer)";
             case Parameters::START_DATA_TIME_RANGE   : return "start data time range (integer - integer)";
             case Parameters::END_DATA_TIME_RANGE     : return "end data time range (integer - integer)";
@@ -60,6 +60,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::MAXIMUM_WINDOW_FIXED    : return "maximum temporal size as fixed time length (integer)";
             case Parameters::MAXIMUM_WINDOW_TYPE     : return "maximum temporal size selection (PERCENTAGE_WINDOW=0, FIXED_LENGTH=1)";
             case Parameters::MINIMUM_WINDOW_FIXED    : return "minimum temporal size as fixed time length (integer)";
+            /* Advanced Analysis - Adjustments */
+            case Parameters::DAYOFWEEK_ADJUSTMENT    : return "perform day of week adjustments (y/n)";
             /* Advanced Analysis - Inference */
             case Parameters::REPLICATIONS            : return "number of simulation replications (0, 9, 999, n999)";
             case Parameters::RANDOMIZATION_SEED      : return "randomization seed (integer)";
@@ -123,6 +125,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::MAXIMUM_WINDOW_FIXED     : return AsString(s, _parameters.getMaximumWindowLength());
             case Parameters::MAXIMUM_WINDOW_TYPE      : return AsString(s, _parameters.getMaximumWindowType());
             case Parameters::MINIMUM_WINDOW_FIXED     : return AsString(s, _parameters.getMinimumWindowLength());
+            /* Advanced Analysis - Adjustments */
+            case Parameters::DAYOFWEEK_ADJUSTMENT    : return AsString(s, _parameters.getPerformDayOfWeekAdjustment());
             /* Advanced Analysis - Inference */
             case Parameters::REPLICATIONS             : return AsString(s, _parameters.getNumReplicationsRequested());
             case Parameters::RANDOMIZATION_SEED       : return AsString(s, static_cast<unsigned int>(_parameters.getRandomizationSeed()));
@@ -274,9 +278,9 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             /* Analysis */
             case Parameters::SCAN_TYPE                : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::TREEONLY, Parameters::TREETIME);
                                                        _parameters.setScanType((Parameters::ScanType)iValue); break;
-            case Parameters::CONDITIONAL_TYPE         : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::UNCONDITIONAL, Parameters::CASESEACHBRANCH);
+            case Parameters::CONDITIONAL_TYPE         : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::UNCONDITIONAL, Parameters::CASESBRANCHANDDAY);
                                                        _parameters.setConditionalType((Parameters::ConditionalType)iValue); break;
-            case Parameters::MODEL_TYPE               : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::POISSON, Parameters::TEMPORALSCAN);
+            case Parameters::MODEL_TYPE               : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::POISSON, Parameters::MODEL_NOT_APPLICABLE);
                                                        _parameters.setModelType((Parameters::ModelType)iValue); break;
             case Parameters::EVENT_PROBABILITY        : _parameters.setProbabilityRatio(ReadRatio(value)); break;
             case Parameters::START_DATA_TIME_RANGE    : _parameters.setTemporalStartRange(DataTimeRange(value)); break;
@@ -287,6 +291,8 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::MAXIMUM_WINDOW_TYPE      : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::PERCENTAGE_WINDOW, Parameters::FIXED_LENGTH);
                                                         _parameters.setMaximumWindowType((Parameters::MaximumWindowType)iValue); break;
             case Parameters::MINIMUM_WINDOW_FIXED     : _parameters.setMinimumWindowLength(ReadUnsignedInt(value, e)); break;
+            /* Advanced Analysis - Adjustments */
+            case Parameters::DAYOFWEEK_ADJUSTMENT    : _parameters.setPerformDayOfWeekAdjustment(ReadBoolean(value, e)); break;
             /* Advanced Analysis Inference */
             case Parameters::REPLICATIONS             : _parameters.setNumReplications(ReadUnsignedInt(value, e)); break;
             case Parameters::RANDOMIZATION_SEED       : _parameters.setRandomizationSeed(static_cast<long>(ReadInt(value, e))); break;
@@ -353,4 +359,3 @@ parameter_error::parameter_error(const char * format, ...) : resolvable_error() 
         _what = &temp[0];
     } catch (...) {}
 }
-

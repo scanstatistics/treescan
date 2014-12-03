@@ -234,6 +234,7 @@ const char * DataRecordWriter::OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD = "Obse
 const char * DataRecordWriter::RELATIVE_RISK_FIELD                       = "Relative Risk";
 const char * DataRecordWriter::EXCESS_CASES_FIELD                        = "Excess Cases";
 const char * DataRecordWriter::LOG_LIKL_RATIO_FIELD                      = "Log Likelihood Ratio";
+const char * DataRecordWriter::TEST_STATISTIC_FIELD                      = "Test Statistic";
 const char * DataRecordWriter::P_VALUE_FLD                               = "P-value";
 const size_t DataRecordWriter::DEFAULT_LOC_FIELD_SIZE                    = 30;
 const size_t DataRecordWriter::MAX_LOC_FIELD_SIZE                        = 254;
@@ -250,30 +251,48 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
     CreateField(_dataFieldDefinitions, CUT_NUM_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     CreateField(_dataFieldDefinitions, NODE_ID_FIELD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()), 0, uwOffset, 0);
     switch (_scanner.getParameters().getModelType()) {
-        case Parameters::TEMPORALSCAN :
-            CreateField(_dataFieldDefinitions, NODE_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-            CreateField(_dataFieldDefinitions, START_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-            CreateField(_dataFieldDefinitions, END_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-            CreateField(_dataFieldDefinitions, WNDW_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-            break;
         case Parameters::BERNOULLI :
             CreateField(_dataFieldDefinitions, OBSERVATIONS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
             CreateField(_dataFieldDefinitions, CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+            CreateField(_dataFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             break;
         case Parameters::POISSON :
             CreateField(_dataFieldDefinitions, OBSERVED_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+            CreateField(_dataFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             break;
-        default : throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", _scanner.getParameters().getModelType());
+        case Parameters::UNIFORM :
+        case Parameters::MODEL_NOT_APPLICABLE :
+        default :
+            if (scanRunner.getParameters().getScanType() == Parameters::TREETIME) {
+                CreateField(_dataFieldDefinitions, NODE_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+                CreateField(_dataFieldDefinitions, START_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+                CreateField(_dataFieldDefinitions, END_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+                CreateField(_dataFieldDefinitions, WNDW_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+                CreateField(_dataFieldDefinitions, EXPECTED_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            } else
+                throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", _scanner.getParameters().getModelType());
     }
     if (_scanner.getParameters().isDuplicates())
         CreateField(_dataFieldDefinitions, OBSERVED_NO_DUPLICATES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-    CreateField(_dataFieldDefinitions, _scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN ? EXPECTED_CASES_FIELD : EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     CreateField(_dataFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     if (_scanner.getParameters().isDuplicates())
         CreateField(_dataFieldDefinitions, OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-    CreateField(_dataFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-    CreateField(_dataFieldDefinitions, EXCESS_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-    CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
+
+    if (!(scanRunner.getParameters().getScanType() == Parameters::TREETIME && scanRunner.getParameters().getConditionalType() == Parameters::CASESBRANCHANDDAY)) {
+        CreateField(_dataFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+        CreateField(_dataFieldDefinitions, EXCESS_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+    }
+
+    if (scanRunner.getParameters().getScanType() == Parameters::TREETIME &&
+        (scanRunner.getParameters().getConditionalType() == Parameters::CASESBRANCHANDDAY ||
+        (scanRunner.getParameters().getConditionalType() == Parameters::CASESEACHBRANCH && scanRunner.getParameters().isPerformingDayOfWeekAdjustment()))) {
+        // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
+        CreateField(_dataFieldDefinitions, TEST_STATISTIC_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
+        //CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
+    } else {
+        CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
+    }
+
     printString(buffer, "%u", _scanner.getParameters().getNumReplicationsRequested());
     CreateField(_dataFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, static_cast<unsigned short>(buffer.size()));
     _csvWriter.reset(new CSVDataFileWriter(getFilename(_scanner.getParameters(), buffer), _dataFieldDefinitions, _scanner.getParameters().isPrintColumnHeaders()));
@@ -284,48 +303,65 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
 }
 
 std::string& CutsRecordWriter::getFilename(const Parameters& parameters, std::string& buffer) {
-  return getDerivedFilename(parameters.getOutputFileName(), CutsRecordWriter::CUT_FILE_SUFFIX, CSVDataFileWriter::CSV_FILE_EXT, buffer);
+    return getDerivedFilename(parameters.getOutputFileName(), CutsRecordWriter::CUT_FILE_SUFFIX, CSVDataFileWriter::CSV_FILE_EXT, buffer);
 }
 
 void CutsRecordWriter::write(unsigned int cutIndex) const {
-  std::string   buffer;
-  RecordBuffer  Record(_dataFieldDefinitions);
-  ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_scanner.getParameters(), _scanner.getTotalC(), _scanner.getTotalN()));
+    std::string buffer;
+    RecordBuffer Record(_dataFieldDefinitions);
+    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_scanner.getParameters(), _scanner.getTotalC(), _scanner.getTotalN()));
 
-  try {
-    Record.GetFieldValue(CUT_NUM_FIELD).AsDouble() = cutIndex + 1;
-    Record.GetFieldValue(NODE_ID_FIELD).AsString() = _scanner.getNodes().at(_scanner.getCuts().at(cutIndex)->getID())->getIdentifier();
-    switch (_scanner.getParameters().getModelType()) {
-        case Parameters::TEMPORALSCAN :
-            Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getCuts().at(cutIndex)->getN());
-            Record.GetFieldValue(START_WINDOW_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getStartIdx()  - _scanner.getZeroTranslationAdditive();
-            Record.GetFieldValue(END_WINDOW_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getEndIdx() - _scanner.getZeroTranslationAdditive();
-            Record.GetFieldValue(WNDW_CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getCuts().at(cutIndex)->getC());
-            break;
-        case Parameters::BERNOULLI :
-            Record.GetFieldValue(OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(_scanner.getCuts().at(cutIndex)->getN());
-            Record.GetFieldValue(CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getCuts().at(cutIndex)->getC());
-            break;
-        case Parameters::POISSON :
-            Record.GetFieldValue(OBSERVED_CASES_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getC();
-            break;
-        default : throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", _scanner.getParameters().getModelType());
+    try {
+        Record.GetFieldValue(CUT_NUM_FIELD).AsDouble() = cutIndex + 1;
+        Record.GetFieldValue(NODE_ID_FIELD).AsString() = _scanner.getNodes().at(_scanner.getCuts().at(cutIndex)->getID())->getIdentifier();
+        switch (_scanner.getParameters().getModelType()) {
+            case Parameters::BERNOULLI :
+                Record.GetFieldValue(OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(_scanner.getCuts().at(cutIndex)->getN());
+                Record.GetFieldValue(CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getCuts().at(cutIndex)->getC());
+                Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getExpected(_scanner);
+                break;
+            case Parameters::POISSON :
+                Record.GetFieldValue(OBSERVED_CASES_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getC();
+                Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getExpected(_scanner);
+                break;
+            case Parameters::UNIFORM :
+            case Parameters::MODEL_NOT_APPLICABLE :
+            default :
+                if (_scanner.getParameters().getScanType() == Parameters::TREETIME) {
+                    Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getCuts().at(cutIndex)->getN());
+                    Record.GetFieldValue(START_WINDOW_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getStartIdx()  - _scanner.getZeroTranslationAdditive();
+                    Record.GetFieldValue(END_WINDOW_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getEndIdx() - _scanner.getZeroTranslationAdditive();
+                    Record.GetFieldValue(WNDW_CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getCuts().at(cutIndex)->getC());
+                    Record.GetFieldValue(EXPECTED_CASES_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getExpected(_scanner);
+                } else
+                    throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", _scanner.getParameters().getModelType());
+        }
+        if (_scanner.getParameters().isDuplicates())
+            Record.GetFieldValue(OBSERVED_NO_DUPLICATES_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getC() - _scanner.getNodes().at(_scanner.getCuts().at(cutIndex)->getID())->getDuplicates();
+        Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getODE(_scanner);
+        if (_scanner.getParameters().isDuplicates())
+            Record.GetFieldValue(OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD).AsDouble() = (_scanner.getCuts().at(cutIndex)->getC() - _scanner.getNodes().at(_scanner.getCuts().at(cutIndex)->getID())->getDuplicates())/_scanner.getCuts().at(cutIndex)->getExpected(_scanner);
+
+        if (!(_scanner.getParameters().getScanType() == Parameters::TREETIME && _scanner.getParameters().getConditionalType() == Parameters::CASESBRANCHANDDAY)) {
+            Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getRelativeRisk(_scanner);
+            Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getExcessCases(_scanner);
+        }
+
+        if (_scanner.getParameters().getScanType() == Parameters::TREETIME &&
+            (_scanner.getParameters().getConditionalType() == Parameters::CASESBRANCHANDDAY ||
+            (_scanner.getParameters().getConditionalType() == Parameters::CASESEACHBRANCH && _scanner.getParameters().isPerformingDayOfWeekAdjustment()))) {
+            // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
+            Record.GetFieldValue(TEST_STATISTIC_FIELD).AsDouble() = calcLogLikelihood->LogLikelihoodRatio(_scanner.getCuts().at(cutIndex)->getLogLikelihood());
+        } else {
+            Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = calcLogLikelihood->LogLikelihoodRatio(_scanner.getCuts().at(cutIndex)->getLogLikelihood());
+        }
+
+        Record.GetFieldValue(P_VALUE_FLD).AsDouble() =  static_cast<double>(_scanner.getCuts().at(cutIndex)->getRank()) /(_scanner.getParameters().getNumReplicationsRequested() + 1);
+        _csvWriter->writeRecord(Record);
+    } catch (prg_exception& x) {
+        x.addTrace("write()","CutsRecordWriter");
+        throw;
     }
-    if (_scanner.getParameters().isDuplicates())
-        Record.GetFieldValue(OBSERVED_NO_DUPLICATES_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getC() - _scanner.getNodes().at(_scanner.getCuts().at(cutIndex)->getID())->getDuplicates();
-    Record.GetFieldValue(_scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN ? EXPECTED_CASES_FIELD : EXPECTED_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getExpected(_scanner);
-    Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getODE(_scanner);
-    if (_scanner.getParameters().isDuplicates())
-      Record.GetFieldValue(OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD).AsDouble() = (_scanner.getCuts().at(cutIndex)->getC() - _scanner.getNodes().at(_scanner.getCuts().at(cutIndex)->getID())->getDuplicates())/_scanner.getCuts().at(cutIndex)->getExpected(_scanner);
-    Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getRelativeRisk(_scanner);
-    Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getExcessCases(_scanner);
-    Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = calcLogLikelihood->LogLikelihoodRatio(_scanner.getCuts().at(cutIndex)->getLogLikelihood());
-    Record.GetFieldValue(P_VALUE_FLD).AsDouble() =  static_cast<double>(_scanner.getCuts().at(cutIndex)->getRank()) /(_scanner.getParameters().getNumReplicationsRequested() + 1);
-    _csvWriter->writeRecord(Record);
-  } catch (prg_exception& x) {
-    x.addTrace("write()","CutsRecordWriter");
-    throw;
-  }
 }
 
 ///////////// LoglikelihoodRatioWriter ///////////////////////////////////

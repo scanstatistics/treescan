@@ -17,6 +17,7 @@ class ParametersPrint {
     const Parameters & _parameters;
 
     SettingContainer_t & getAdditionalOutputParameters(SettingContainer_t & settings) const;
+    SettingContainer_t & getAdjustmentsParameters(SettingContainer_t & settings) const;
     SettingContainer_t & getAdvancedInputParameters(SettingContainer_t & settings) const;
     SettingContainer_t & getAnalysisParameters(SettingContainer_t & settings) const;
     SettingContainer_t & getInferenceParameters(SettingContainer_t & settings) const;

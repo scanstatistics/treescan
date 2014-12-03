@@ -75,19 +75,22 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
     private File _destinationFile = null;
     private File _suggested_import_filename;
     private final Parameters.ModelType _modelType;
+    private final Parameters.ScanType _scan_type;
 
     /** Creates new form ImportWizardDialog */
     public ImportWizardDialog(java.awt.Frame parent, 
                               final String sourceFile, 
                               final String suggested_filename,
                               FileImporter.InputFileType fileType,
-                              Parameters.ModelType modelType) {
+                              Parameters.ModelType modelType,
+                              Parameters.ScanType scan_type) {
         super(parent, true);
         setSuggestedImportName(sourceFile, suggested_filename, fileType);
         initComponents();
         _sourceFile = sourceFile;
         _fileType = fileType;
         _modelType = modelType;
+        _scan_type = scan_type;
         
         _sourceDataFileType = getSourceFileType();
         _progressBar.setVisible(false);
@@ -597,8 +600,11 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         switch (_modelType) {            
             case POISSON: _importVariables.addElement(new ImportVariable("Population", 2, true, null)); break;
             case BERNOULLI: _importVariables.addElement(new ImportVariable("Controls", 2, true, null)); break;
-            case TEMPORALSCAN: _importVariables.addElement(new ImportVariable("Days Since Event", 2, true, null)); break;
-            default: throw new UnknownEnumException(_modelType);
+            case UNIFORM: 
+            default: 
+                if (_scan_type == Parameters.ScanType.TREETIME)
+                    _importVariables.addElement(new ImportVariable("Days Since Event", 2, true, null));
+                else throw new UnknownEnumException(_modelType);
         }        
     }
 

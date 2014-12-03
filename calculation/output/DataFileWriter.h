@@ -54,6 +54,7 @@ class DataRecordWriter {
     static const char         * EXCESS_CASES_FIELD;
     static const char         * OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD;
     static const char         * LOG_LIKL_RATIO_FIELD;
+    static const char         * TEST_STATISTIC_FIELD;
     static const char         * P_VALUE_FLD;
 
   protected:

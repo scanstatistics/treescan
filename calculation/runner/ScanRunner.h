@@ -78,10 +78,13 @@ private:
     Parameters::CutType     _cut_type;
     CumulativeStatus        _cumulative_status;
 
-    void initialize_containers(Parameters::ModelType model_type, size_t container_size) {
+    void initialize_containers(const Parameters& parameters, size_t container_size) {
         _IntC_C.resize(container_size);
         _BrC_C.resize(container_size);
-        if (model_type == Parameters::POISSON || model_type == Parameters::BERNOULLI) {
+        if (parameters.getModelType() == Parameters::POISSON ||
+            parameters.getModelType() == Parameters::BERNOULLI ||
+            (parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY) ||
+            (parameters.getConditionalType() == Parameters::CASESEACHBRANCH && parameters.isPerformingDayOfWeekAdjustment())) {
             _IntN_C.resize(container_size);
             _BrN_C.resize(container_size);
         }
@@ -90,9 +93,9 @@ private:
 public:
     NodeStructure(const std::string& identifier) 
         :_identifier(identifier), _ID(0), _Anforlust(false), _Duplicates(0), _cumulative_status(NON_CUMULATIVE) {}
-    NodeStructure(const std::string& identifier, Parameters::CutType cut_type, Parameters::ModelType model_type, size_t container_size) 
-        : _identifier(identifier), _ID(0), _Anforlust(false), _Duplicates(0), _cut_type(cut_type), _cumulative_status(NON_CUMULATIVE) {
-            initialize_containers(model_type, container_size);
+    NodeStructure(const std::string& identifier, const Parameters& parameters, size_t container_size) 
+        : _identifier(identifier), _ID(0), _Anforlust(false), _Duplicates(0), _cut_type(parameters.getCutType()), _cumulative_status(NON_CUMULATIVE) {
+            initialize_containers(parameters, container_size);
     }
 
     const std::string           & getIdentifier() const {return _identifier;}
@@ -178,6 +181,8 @@ public:
     typedef std::vector<RiskAdjustments_t>                      RiskAdjustmentsContainer_t;
     typedef boost::tuple<double, double, double>                PowerEstimationSet_t;
     typedef std::deque<PowerEstimationSet_t>                    PowerEstimationContainer_t;
+    typedef std::vector<unsigned int>                           TimeIntervalContainer_t;
+    typedef std::vector<TimeIntervalContainer_t>                DayOfWeekIndexes_t;
 
 private:
     BasePrint                 & _print;
@@ -192,7 +197,8 @@ private:
     DataTimeRange::index_t      _zero_translation_additive;
     boost::dynamic_bitset<>     _caselessWindows;
     std::auto_ptr<CriticalValues> _critical_values;
-    PowerEstimationContainer_t    _power_estimations;
+    PowerEstimationContainer_t  _power_estimations;
+    DayOfWeekIndexes_t          _day_of_week_indexes;
 
     void                        addCN_C(int id, NodeStructure::CountContainer_t& c, NodeStructure::ExpectedContainer_t& n);
     size_t                      calculateCutsCount() const;
@@ -207,6 +213,7 @@ private:
     bool                        runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep, unsigned int iteration=0);
     bool                        scanTree();
     bool                        scanTreeTemporal();
+    bool                        scanTreeTemporalConditional();
     bool                        setupTree();
     CutStructure *              updateCuts(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx=0, DataTimeRange::index_t endIdx=1);
 
@@ -216,12 +223,14 @@ public:
     const CriticalValues             & getCriticalValues() const {return *_critical_values;}
     std::string                      & getCaselessWindowsAsString(std::string& s) const;
     const CutStructureContainer_t    & getCuts() const {return _Cut;}
+    const DayOfWeekIndexes_t         & getDayOfWeekIndexes() const {return _day_of_week_indexes;}
     const NodeStructureContainer_t   & getNodes() const {return _Nodes;}
     const Parameters                 & getParameters() const {return _parameters;}
     const PowerEstimationContainer_t & getPowerEstimations() const {return _power_estimations;}
     BasePrint                        & getPrint() {return _print;}
     SimulationVariables              & getSimulationVariables() {return _simVars;}
     int                                getTotalC() const {return _TotalC;}
+    int                                getTotalControls() const {return _TotalControls;}
     double                             getTotalN() const {return _TotalN;}
     DataTimeRange::index_t             getZeroTranslationAdditive() const {return _zero_translation_additive;}
     bool                               run();

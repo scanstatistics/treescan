@@ -52,6 +52,7 @@ class AbstractNodesProxy {
         virtual size_t   size() const = 0;
         virtual double   getIntN(size_t i) const = 0;
         virtual int      getIntC(size_t i) const = 0;
+        virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const = 0;
         virtual int      getBrC(size_t i) const = 0;
         virtual double   getProbability(size_t i) const = 0;
 };
@@ -69,6 +70,7 @@ class NodesProxy : public AbstractNodesProxy {
         virtual size_t  size() const {return _treeNodes.size();}
         virtual double  getIntN(size_t i) const {return _treeNodes.at(i)->getIntN();}
         virtual int     getIntC(size_t i) const {return _treeNodes.at(i)->getIntC();}
+        virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const {return _treeNodes.at(i)->getIntC_C();}
         virtual int     getBrC(size_t i) const {return _treeNodes.at(i)->getBrC();}
         virtual double  getProbability(size_t i) const {return _event_probability;}
 };
@@ -85,6 +87,7 @@ class AlternativeExpectedNodesProxy : public AbstractNodesProxy {
         virtual size_t  size() const {return _treeNodes.size();}
         virtual double  getIntN(size_t i) const {return _treeNodes.at(i).front();}
         virtual int     getIntC(size_t i) const {throw prg_error("AlternativeExpectedNodesProxy::getIntC(size_t) not implemented.","getIntC(size_t)");}
+        virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const {throw prg_error("AlternativeExpectedNodesProxy::getIntC_C(size_t) not implemented.","getIntC_C(size_t)");}
         virtual int     getBrC(size_t i) const {throw prg_error("AlternativeExpectedNodesProxy::getBrC(size_t) not implemented.","getBrC(size_t)");}
         virtual double  getProbability(size_t i) const {throw prg_error("AlternativeExpectedNodesProxy::getProbability(size_t) not implemented.","getProbability(size_t)");}
 };
@@ -106,6 +109,7 @@ class AlternativeProbabilityNodesProxy : public NodesProxy {
         virtual size_t  size() const {return _treeNodes.size();}
         virtual double  getIntN(size_t i) const {return _treeNodes.at(i)->getIntN();}
         virtual int     getIntC(size_t i) const {return _treeNodes.at(i)->getIntC();}
+        virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const {throw prg_error("AlternativeProbabilityNodesProxy::getIntC_C(size_t) not implemented.","getIntC_C(size_t)");}
         virtual int     getBrC(size_t i) const {return _treeNodes.at(i)->getBrC();}
         virtual double  getProbability(size_t i) const {return _treeNodeProbability.at(i);}
 };
@@ -138,7 +142,7 @@ class AbstractRandomizer {
         virtual ~AbstractRandomizer() {}
 
         virtual AbstractRandomizer * clone() const = 0;
-        static AbstractRandomizer * getNewRandomizer(const Parameters& parameters, int TotalC, int TotalControls, double TotalN);
+        static AbstractRandomizer * getNewRandomizer(const ScanRunner& scanner);
         virtual int RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes) = 0;
         void setReading(const std::string& s) {_read_filename = s; _read_data = true;}
         void setWriting(const std::string& s) {_write_filename = s; _write_data = true;}

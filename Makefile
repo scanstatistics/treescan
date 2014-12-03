@@ -53,6 +53,7 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(RANDOMIZER)/PoissonRandomizer.cpp \
                $(RANDOMIZER)/TemporalRandomizer.cpp \
                $(RANDOMIZER)/AlternativeHypothesisRandomizer.cpp \
+               $(RANDOMIZER)/PermutationDataRandomizer.cpp \
                $(LOGLIKELIHOOD)/Loglikelihood.cpp \
                $(LOGLIKELIHOOD)/CriticalValues.cpp \
                $(UTILITY)/RandomDistribution.cpp \

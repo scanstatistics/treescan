@@ -24,6 +24,7 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                WriteOutputSettings(IniFile& WriteFile);
     void                                WriteAdvancedInputSettings(IniFile& WriteFile);
     void                                WriteAdvancedAnalysisTemporalWindowSettings(IniFile& WriteFile);
+    void                                WriteAdvancedAnalysisAdjustmentsSettings(IniFile& WriteFile);
     void                                WriteAdvancedAnalysisInferenceSettings(IniFile& WriteFile);
     void                                WriteAdvancedOutputSettings(IniFile& WriteFile);
     void                                WriteRunOptionSettings(IniFile& WriteFile);
@@ -37,6 +38,8 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
 
      virtual bool                       Read(const char* szFilename);
      virtual void                       Write(const char * szFilename);
+
+     void                               writeSections(IniFile& ini, const IniParameterSpecification& specification);
 };
 //***************************************************************************
 #endif

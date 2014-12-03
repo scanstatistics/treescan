@@ -242,6 +242,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getReportCriticalValues());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setPerformDayOfWeekAdjustment", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getPerformDayOfWeekAdjustment());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -404,6 +408,10 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
 
   mid = _getMethodId_Checked(Env, clazz, "getReportCriticalValues", "()Z");
   Parameters.setReportCriticalValues(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getPerformDayOfWeekAdjustment", "()Z");
+  Parameters.setPerformDayOfWeekAdjustment(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   return Parameters;

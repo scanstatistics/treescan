@@ -22,6 +22,8 @@ void ParametersPrint::Print(std::ostream& out) const {
     WriteSettingsContainer(getOutputParameters(settings), "Output", out);
     //print 'Temporal Window' tab settings
     WriteSettingsContainer(getTemporalWindowParameters(settings), "Temporal Window", out);
+    // print 'Adjustments' tab settings
+    WriteSettingsContainer(getAdjustmentsParameters(settings), "Adjustments", out);
     //print 'Inference' tab settings
     WriteSettingsContainer(getInferenceParameters(settings), "Inference", out);
     //print 'Power Evaluations' tab settings
@@ -74,7 +76,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(Settin
     settings.clear();
     settings.push_back(std::make_pair("Tree File",_parameters.getTreeFileName()));
     settings.push_back(std::make_pair("Count File",_parameters.getCountFileName()));
-    if (_parameters.getModelType() == Parameters::TEMPORALSCAN)
+    if (_parameters.getModelType() == Parameters::UNIFORM)
         settings.push_back(std::make_pair("Data Time Range",_parameters.getDataTimeRangeSet().toString(buffer)));
     //buffer = (_parameters.isDuplicates() ? "Yes" : "No");
     //settings.push_back(std::make_pair("Duplicates",buffer));
@@ -92,6 +94,16 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParame
     settings.push_back(std::make_pair("Report Critical Values",(_parameters.getReportCriticalValues() ? "Yes" : "No")));
     if (_parameters.isGeneratingTableResults() && _parameters.isPrintColumnHeaders()) {
         settings.push_back(std::make_pair("Print Column Headers","Yes"));
+    }
+    return settings;
+}
+
+/** Prints 'Adjustments' tab parameters to file stream. */
+ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(SettingContainer_t & settings) const {
+    settings.clear();
+    if (_parameters.getScanType() == Parameters::TREETIME) {
+        std::string buffer;
+        settings.push_back(std::make_pair("Perform Day of Week Adjustment",(_parameters.getPerformDayOfWeekAdjustment() ? "Yes" : "No")));
     }
     return settings;
 }
@@ -119,19 +131,24 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
         case Parameters::UNCONDITIONAL : settings.push_back(std::make_pair(buffer,"No (unconditional)")); break;
         case Parameters::TOTALCASES : settings.push_back(std::make_pair(buffer,"Total Cases")); break;
         case Parameters::CASESEACHBRANCH : settings.push_back(std::make_pair(buffer,"Cases on each Branch")); break;
+        case Parameters::CASESBRANCHANDDAY : settings.push_back(std::make_pair(buffer,"Cases on each Branch and Day")); break;
         default: throw prg_error("Unknown conditional type (%d).", "getAnalysisParameters()", _parameters.getConditionalType());
     }
     switch (_parameters.getModelType()) {
         case Parameters::POISSON : settings.push_back(std::make_pair("Probability Model - Tree","Poisson")); break;
         case Parameters::BERNOULLI : settings.push_back(std::make_pair("Probability Model - Tree","Bernoulli")); break;
-        case Parameters::TEMPORALSCAN : settings.push_back(std::make_pair("Probability Model - Time","Temporal Scan")); break;
+        case Parameters::UNIFORM :
+            if (_parameters.getConditionalType() == Parameters::CASESEACHBRANCH)
+                settings.push_back(std::make_pair("Probability Model - Time","Uniform"));
+            break;
+        case Parameters::MODEL_NOT_APPLICABLE: break;
         default: throw prg_error("Unknown model type (%d).", "getAnalysisParameters()", _parameters.getModelType());
     }
     if (_parameters.getModelType() == Parameters::BERNOULLI) {
         printString(buffer, "%u/%u", _parameters.getProbabilityRatio().first, _parameters.getProbabilityRatio().second);
         settings.push_back(std::make_pair("Case Probability",buffer));
     }
-    if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
+    if (_parameters.getScanType() == Parameters::TREETIME) {
         settings.push_back(std::make_pair("Temporal Time Window Start", _parameters.getTemporalStartRange().toString(buffer)));
         settings.push_back(std::make_pair("Temporal Time Window End", _parameters.getTemporalEndRange().toString(buffer)));
     }

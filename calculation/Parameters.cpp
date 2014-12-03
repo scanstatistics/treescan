@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 39;
+const int Parameters::giNumParameters = 40;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -64,6 +64,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_power_evaluation_totalcases != rhs._power_evaluation_totalcases) return false;
   if (_power_replica != rhs._power_replica) return false;
   if (_power_alt_hypothesis_filename != rhs._power_alt_hypothesis_filename) return false;
+  if (_dayofweek_adjustment != rhs._dayofweek_adjustment) return false;
 
   return true;
 }
@@ -150,6 +151,8 @@ void Parameters::copy(const Parameters &rhs) {
 
     _parametersSourceFileName = rhs._parametersSourceFileName;
     _creationVersion = rhs._creationVersion;
+
+    _dayofweek_adjustment = rhs._dayofweek_adjustment;
 }
 
 /* Returns the maximum temporal window in data time units. */
@@ -277,6 +280,7 @@ void Parameters::setAsDefaulted() {
     _randomizationSeed = RandomNumberGenerator::glDefaultSeed;
     _randomlyGenerateSeed = false;
     _numRequestedParallelProcesses = 0;
+    _dayofweek_adjustment = false;
 }
 
 /** Sets output data file name.
@@ -330,9 +334,9 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     setCountFileName(pt.get<std::string>("parameters.input.count-filename", "").c_str(), true);
     _dataTimeRangeSet.assign(pt.get<std::string>("parameters.input.data-time-range", "0,0"));
     // Advanced Input
-    setCutsFileName(pt.get<std::string>("parameters.input.advanced.cuts-filename", "").c_str(), true);
-    _cut_type = static_cast<CutType>(pt.get<unsigned int>("parameters.input-advanced.cuts-type", SIMPLE));
-    _duplicates = pt.get<bool>("parameters.input.advanced.duplicates", false);
+    setCutsFileName(pt.get<std::string>("parameters.input.advanced.input.cuts-filename", "").c_str(), true);
+    _cut_type = static_cast<CutType>(pt.get<unsigned int>("parameters.input.advanced.input.cuts-type", SIMPLE));
+    _duplicates = pt.get<bool>("parameters.input.advanced.input.duplicates", false);
     // Analysis
     _scan_type = static_cast<ScanType>(pt.get<unsigned int>("parameters.analysis.scan", TREEONLY));
     _conditional_type = static_cast<ConditionalType>(pt.get<unsigned int>("parameters.analysis.conditional", UNCONDITIONAL));
@@ -342,14 +346,16 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _temporalStartRange.assign(pt.get<std::string>("parameters.analysis.temporal-window.start-range", "0,0"));
     _temporalEndRange.assign(pt.get<std::string>("parameters.analysis.temporal-window.end-range", "0,0"));
     // Advanced Analysis - Temporal Window
-    _maximum_window_percentage = pt.get<double>("parameters.analysis.advanced.maximum-window-percentage", 50);
-    _maximum_window_length = pt.get<unsigned int>("parameters.analysis.advanced.maximum-window-length", 1);
-    _maximum_window_type = static_cast<MaximumWindowType>(pt.get<unsigned int>("parameters.analysis.advanced.maximum-window-type", PERCENTAGE_WINDOW));
-    _minimum_window_length = pt.get<unsigned int>("parameters.analysis.advanced.minimum-window-length", 2);
+    _maximum_window_percentage = pt.get<double>("parameters.analysis.advanced.temporal-window.maximum-window-percentage", 50);
+    _maximum_window_length = pt.get<unsigned int>("parameters.analysis.advanced.temporal-window.maximum-window-length", 1);
+    _maximum_window_type = static_cast<MaximumWindowType>(pt.get<unsigned int>("parameters.analysis.advanced.temporal-window.maximum-window-type", PERCENTAGE_WINDOW));
+    _minimum_window_length = pt.get<unsigned int>("parameters.analysis.advanced.temporal-window.minimum-window-length", 2);
+    // Advanced Analysis - Adjustments Window
+    _dayofweek_adjustment = pt.get<bool>("parameters.analysis.advanced.adjustments.perform-day-of-week-adjustments", false);
     // Advanced Analysis - Inference
-    _replications = pt.get<unsigned int>("parameters.analysis.advanced.replications", 999);
-    _randomizationSeed = pt.get<unsigned int>("parameters.analysis-advanced.seed", static_cast<unsigned int>(RandomNumberGenerator::glDefaultSeed));
-    _randomlyGenerateSeed = pt.get<bool>("parameters.analysis-advanced.generate-seed", false);
+    _replications = pt.get<unsigned int>("parameters.analysis.advanced.inference.replications", 999);
+    _randomizationSeed = pt.get<unsigned int>("parameters.analysis.advanced.inference.seed", static_cast<unsigned int>(RandomNumberGenerator::glDefaultSeed));
+    _randomlyGenerateSeed = pt.get<bool>("parameters.analysis.advanced.inference.generate-seed", false);
     // Output
     setOutputFileName(pt.get<std::string>("parameters.output.results-file", "").c_str(), true);
     _generateHtmlResults = pt.get<bool>("parameters.output.generate-html-results", true);
@@ -357,15 +363,15 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _generate_llr_results = pt.get<bool>("parameters.output.generate-llr-results", true);
     _report_critical_values = pt.get<bool>("parameters.output.report-critical-values", false);
     // Power Evaluations
-    _perform_power_evaluations = pt.get<bool>("parameters.power-evaluations.perform-power-evaluations", false);
-    _power_evaluation_type = static_cast<PowerEvaluationType>(pt.get<unsigned int>("parameters.power-evaluations.power-evaluation-type", PE_WITH_ANALYSIS));
-    _critical_values_type = static_cast<CriticalValuesType>(pt.get<unsigned int>("parameters.power-evaluations.critical-values-type", CV_MONTECARLO));
-    _critical_value_05 = pt.get<double>("parameters.power-evaluations.critical-value-05", 0);
-    _critical_value_01 = pt.get<double>("parameters.power-evaluations.critical-value-01", 0);
-    _critical_value_001 = pt.get<double>("parameters.power-evaluations.critical-value-001", 0);
-    _power_evaluation_totalcases = pt.get<int>("parameters.power-evaluations.totalcases", 0);
-    _power_replica = pt.get<int>("parameters.power-evaluations.replications", _replications + 1);
-    setPowerEvaluationAltHypothesisFilename(pt.get<std::string>("parameters.power-evaluations.alternative-hypothesis-file", "").c_str(), true);
+    _perform_power_evaluations = pt.get<bool>("parameters.analysis.advanced.power-evaluations.perform-power-evaluations", false);
+    _power_evaluation_type = static_cast<PowerEvaluationType>(pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.power-evaluation-type", PE_WITH_ANALYSIS));
+    _critical_values_type = static_cast<CriticalValuesType>(pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.critical-values-type", CV_MONTECARLO));
+    _critical_value_05 = pt.get<double>("parameters.analysis.advanced.power-evaluations.critical-value-05", 0);
+    _critical_value_01 = pt.get<double>("parameters.analysis.advanced.power-evaluations.critical-value-01", 0);
+    _critical_value_001 = pt.get<double>("parameters.analysis.advanced.power-evaluations.critical-value-001", 0);
+    _power_evaluation_totalcases = pt.get<int>("parameters.analysis.advanced.power-evaluations.totalcases", 0);
+    _power_replica = pt.get<int>("parameters.analysis.advanced.power-evaluations.replications", _replications + 1);
+    setPowerEvaluationAltHypothesisFilename(pt.get<std::string>("parameters.analysis.advanced.power-evaluations.alternative-hypothesis-file", "").c_str(), true);
     // Power Simulations
     _read_simulations = pt.get<bool>("parameters.power-simulations.input-simulations", true);
     setInputSimulationsFilename(pt.get<std::string>("parameters.power-simulations.input-simulations-file", "").c_str(), true);
@@ -386,9 +392,9 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.input.count-file", _countFileName);
     pt.put("parameters.input.data-time-range", _dataTimeRangeSet.toString(buffer));
     // Advanced Input
-    pt.put("parameters.input.advanced.cuts-file", _cutsFileName);
-    pt.put("parameters.input-advanced.cuts-type", static_cast<unsigned int>(_cut_type));
-    pt.put("parameters.input.advanced.duplicates", _duplicates);
+    pt.put("parameters.input.advanced.input.cuts-file", _cutsFileName);
+    pt.put("parameters.input-advanced.input.cuts-type", static_cast<unsigned int>(_cut_type));
+    pt.put("parameters.input.advanced.input.duplicates", _duplicates);
     // Analysis
     pt.put("parameters.analysis.scan", static_cast<unsigned int>(_scan_type));
     pt.put("parameters.analysis.conditional", static_cast<unsigned int>(_conditional_type));
@@ -398,14 +404,16 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.analysis.temporal-window.start-range", _temporalStartRange.toString(buffer));
     pt.put("parameters.analysis.temporal-window.end-range", _temporalEndRange.toString(buffer));
     // Advanced Analysis - Temporal Window
-    pt.put("parameters.analysis.advanced.maximum-window-percentage", _maximum_window_percentage);
-    pt.put("parameters.analysis.advanced.maximum-window-length", _maximum_window_length);
-    pt.put("parameters.analysis.advanced.maximum-window-type", static_cast<unsigned int>(_maximum_window_type));
-    pt.put("parameters.analysis.advanced.minimum-window-length", _minimum_window_length);
+    pt.put("parameters.analysis.advanced.temporal-window.maximum-window-percentage", _maximum_window_percentage);
+    pt.put("parameters.analysis.advanced.temporal-window.maximum-window-length", _maximum_window_length);
+    pt.put("parameters.analysis.advanced.temporal-window.maximum-window-type", static_cast<unsigned int>(_maximum_window_type));
+    pt.put("parameters.analysis.advanced.temporal-window.minimum-window-length", _minimum_window_length);
+    // Advanced Analysis - Adjustments
+    pt.put("parameters.analysis.advanced.adjustments.perform-day-of-week-adjustments", _dayofweek_adjustment);
     // Advanced Analysis - Inference
-    pt.put("parameters.analysis.advanced.replications", _replications);
-    pt.put("parameters.analysis.advanced.seed", _randomizationSeed);
-    pt.put("parameters.analysis.advanced.generate-seed", _randomlyGenerateSeed);
+    pt.put("parameters.analysis.advanced.inference.replications", _replications);
+    pt.put("parameters.analysis.advanced.inference.seed", _randomizationSeed);
+    pt.put("parameters.analysis.advanced.inference.generate-seed", _randomlyGenerateSeed);
     // Output
     pt.put("parameters.output.results-file", _outputFileName);
     pt.put("parameters.output.generate-html-results", _generateHtmlResults);
@@ -413,15 +421,15 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.output.generate-llr-results", _generate_llr_results);
     pt.put("parameters.output.report-critical-values", _report_critical_values);
     // Power Evaluations
-    pt.put("parameters.power-evaluations.perform-power-evaluations", _perform_power_evaluations);
-    pt.put("parameters.power-evaluations.power-evaluation-type", static_cast<unsigned int>(_power_evaluation_type));
-    pt.put("parameters.power-evaluations.critical-values-type", static_cast<unsigned int>(_critical_values_type));
-    pt.put("parameters.power-evaluations.critical-value-05", _critical_value_05);
-    pt.put("parameters.power-evaluations.critical-value-01", _critical_value_01);
-    pt.put("parameters.power-evaluations.critical-value-001", _critical_value_001);
-    pt.put("parameters.power-evaluations.totalcases", _power_evaluation_totalcases);
-    pt.put("parameters.power-evaluations.replications", _power_replica);
-    pt.put("parameters.power-evaluations.alternative-hypothesis-file", _power_alt_hypothesis_filename);
+    pt.put("parameters.analysis.advanced.power-evaluations.perform-power-evaluations", _perform_power_evaluations);
+    pt.put("parameters.analysis.advanced.power-evaluations.power-evaluation-type", static_cast<unsigned int>(_power_evaluation_type));
+    pt.put("parameters.analysis.advanced.power-evaluations.critical-values-type", static_cast<unsigned int>(_critical_values_type));
+    pt.put("parameters.analysis.advanced.power-evaluations.critical-value-05", _critical_value_05);
+    pt.put("parameters.analysis.advanced.power-evaluations.critical-value-01", _critical_value_01);
+    pt.put("parameters.analysis.advanced.power-evaluations.critical-value-001", _critical_value_001);
+    pt.put("parameters.analysis.advanced.power-evaluations.totalcases", _power_evaluation_totalcases);
+    pt.put("parameters.analysis.advanced.power-evaluations.replications", _power_replica);
+    pt.put("parameters.analysis.advanced.power-evaluations.alternative-hypothesis-file", _power_alt_hypothesis_filename);
     // Power Simulations
     pt.put("parameters.power-simulations.input-simulations", _read_simulations);
     pt.put("parameters.power-simulations.input-simulations-file", _input_sim_file);

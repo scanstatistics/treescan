@@ -67,13 +67,13 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         PrintFormat.PrintSectionLabel(outfile, "Total Observations", false);
         PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", static_cast<int>(_scanRunner.getTotalN())));
     }
-    if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
+    if (parameters.getModelType() == Parameters::UNIFORM) {
         PrintFormat.PrintSectionLabel(outfile, "Data Time Range", false);
         PrintFormat.PrintAlignedMarginsDataString(outfile, parameters.getDataTimeRangeSet().toString(buffer));
     }
     PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
 
-    if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
+    if (parameters.getModelType() == Parameters::UNIFORM) {
         std::string buffer;
         _scanRunner.getCaselessWindowsAsString(buffer);
         if (buffer.size()) {
@@ -118,9 +118,13 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 }
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer.c_str());
 
-                if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
+                if (parameters.getModelType() == Parameters::UNIFORM) {
                     PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
-                    printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts().at(k)->getN()));
+                    if (parameters.isPerformingDayOfWeekAdjustment()) {
+                        printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts().at(k)->getID()]->getBrC()));
+                    } else {
+                        printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts().at(k)->getN()));
+                    }
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     PrintFormat.PrintSectionLabel(outfile, "Time Window", true);
                     printString(buffer, "%ld to %ld", _scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive(), _scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive());
@@ -141,7 +145,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     printString(buffer, "%ld", _scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates());
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                 }
-                PrintFormat.PrintSectionLabel(outfile, parameters.getModelType() == Parameters::TEMPORALSCAN ? "Expected Cases" : "Expected", true);
+                PrintFormat.PrintSectionLabel(outfile, parameters.getModelType() == Parameters::UNIFORM ? "Expected Cases" : "Expected", true);
                 PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
                 PrintFormat.PrintSectionLabel(outfile, "Observed/Expected", true);
                 PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getODE(_scanRunner), buffer));
@@ -149,11 +153,21 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     PrintFormat.PrintSectionLabel(outfile, "O/E (Duplicates Removed)", true);
                     PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
                 }
-                PrintFormat.PrintSectionLabel(outfile, "Relative Risk", true);
-                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer));
-                PrintFormat.PrintSectionLabel(outfile, "Excess Cases", true);
-                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer));
-                PrintFormat.PrintSectionLabel(outfile, "Log Likelihood Ratio", true);
+                if (!(_scanRunner.getParameters().getScanType() == Parameters::TREETIME && _scanRunner.getParameters().getConditionalType() == Parameters::CASESBRANCHANDDAY)) {
+                    PrintFormat.PrintSectionLabel(outfile, "Relative Risk", true);
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer));
+                    PrintFormat.PrintSectionLabel(outfile, "Excess Cases", true);
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer));
+                }
+
+                if (_scanRunner.getParameters().getScanType() == Parameters::TREETIME &&
+                    (_scanRunner.getParameters().getConditionalType() == Parameters::CASESBRANCHANDDAY ||
+                    (_scanRunner.getParameters().getConditionalType() == Parameters::CASESEACHBRANCH && _scanRunner.getParameters().isPerformingDayOfWeekAdjustment()))) {
+                    // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
+                    PrintFormat.PrintSectionLabel(outfile, "Test Statistic", true);
+                } else {
+                    PrintFormat.PrintSectionLabel(outfile, "Log Likelihood Ratio", true);
+                }
                 printString(buffer, "%.1lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood()));
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                 PrintFormat.PrintSectionLabel(outfile, "P-value", true);
@@ -240,7 +254,7 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buff
             switch (_scanRunner.getParameters().getModelType()) {
                 case Parameters::POISSON : buffer += " Poisson Model"; break;
                 case Parameters::BERNOULLI : buffer += " Bernoulli Model"; break;
-                case Parameters::TEMPORALSCAN : break;
+                case Parameters::UNIFORM : break;
                 default: throw prg_error("Unknown nodel type (%d).", "writeASCII()", _scanRunner.getParameters().getModelType());
             }
         } break;
@@ -328,7 +342,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     if (parameters.getModelType() == Parameters::BERNOULLI) {
         outfile << "<tr><th>Total Observations:</th><td>" << static_cast<int>(_scanRunner.getTotalN()) << "</td></tr>" << std::endl;
     }
-    if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
+    if (parameters.getModelType() == Parameters::UNIFORM) {
         outfile << "<tr><th>Data Time Range:</th><td>" << parameters.getDataTimeRangeSet().toString(buffer).c_str() << "</td></tr>" << std::endl;
     }
     outfile << "</tbody></table></div>" << std::endl;
@@ -342,7 +356,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         } else {
             outfile << "<h3>MOST LIKELY CUTS</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;
             outfile << "<thead><tr><th>No.</th><th>Node Identifier</th>";
-            if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
+            if (parameters.getModelType() == Parameters::UNIFORM) {
                 outfile << "<th>Node Cases</th>";
                 outfile << "<th>Time Window</th>";
                 outfile << "<th>Cases in Window</th>";
@@ -353,9 +367,20 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                 outfile << "<th>Observed Cases</th>";
             }
             if (parameters.isDuplicates()) {outfile << "<th>Cases (Duplicates Removed)</th>";}
-            outfile << "<th>" << (parameters.getModelType() == Parameters::TEMPORALSCAN ? "Expected Cases" : "Expected") << "</th><th>Observed/Expected</th>";
+            outfile << "<th>" << (parameters.getModelType() == Parameters::UNIFORM ? "Expected Cases" : "Expected") << "</th><th>Observed/Expected</th>";
             if (parameters.isDuplicates()) {outfile << "<th>O/E (Duplicates Removed)</th>";}
-            outfile << "<th>Relative Risk</th><th>Excess Cases</th><th>Log Likelihood Ratio</th><th>P-value</th></tr></thead><tbody>" << std::endl;
+            if (!(parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY)) {
+                outfile << "<th>Relative Risk</th><th>Excess Cases</th>" << std::endl;
+            }
+            if (parameters.getScanType() == Parameters::TREETIME &&
+                (parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY ||
+                (parameters.getConditionalType() == Parameters::CASESEACHBRANCH && parameters.isPerformingDayOfWeekAdjustment()))) {
+                // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
+                outfile << "<th>Test Statistic</th>" << std::endl;
+            } else {
+                outfile << "<th>Log Likelihood Ratio</th>" << std::endl;
+            }
+            outfile << "<th>P-value</th></tr></thead><tbody>" << std::endl;
             std::string format, replicas;
             printString(replicas, "%u", parameters.getNumReplicationsRequested());
             printString(format, "%%.%dlf", replicas.size());
@@ -375,9 +400,9 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                     }
                 }
                 outfile << "</td>";
-                if (parameters.getModelType() == Parameters::TEMPORALSCAN) {   
+                if (parameters.getModelType() == Parameters::UNIFORM) {
                     outfile << "<td>" << static_cast<int>(_scanRunner.getCuts().at(k)->getN()) << "</td>";
-                    outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
+                    outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive() - 1) << "</td>";
                 }
                 if (parameters.getModelType() == Parameters::BERNOULLI) {
                     outfile << "<td>" << static_cast<int>(_scanRunner.getCuts().at(k)->getN()) << "</td>";
@@ -389,8 +414,10 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                 outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getODE(_scanRunner), buffer) << "</td>";
                 if (parameters.isDuplicates())
                     outfile << "<td>" << getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
-                outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer) << "</td>";
-                outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer) << "</td>";
+                if (!(parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY)) {
+                    outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer) << "</td>";
+                    outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer) << "</td>";
+                }
                 outfile << "<td>" << printString(buffer, "%.1lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood())).c_str() << "</td>";
                 outfile << "<td>" << printString(buffer, format.c_str(), (double)_scanRunner.getCuts().at(k)->getRank() /(parameters.getNumReplicationsRequested() + 1)) << "</td><tr>" << std::endl;
                 k++;
@@ -404,7 +431,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     }
 
     outfile << "<div class=\"hr\"></div>" << std::endl;
-    if (parameters.getModelType() == Parameters::TEMPORALSCAN) {
+    if (parameters.getModelType() == Parameters::UNIFORM) {
         std::string buffer;
         _scanRunner.getCaselessWindowsAsString(buffer);
         if (buffer.size()) {

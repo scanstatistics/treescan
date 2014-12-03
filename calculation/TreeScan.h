@@ -7,7 +7,7 @@
                                   be incremented for each released version in order
                                   for update feature to function correctly */
 #define VERSION_MAJOR   "1"
-#define VERSION_MINOR   "1"
+#define VERSION_MINOR   "2"
 #define VERSION_RELEASE "0"
 #define VERSION_PHASE "" /** testing phase name - leave blank for release */
 #define VERSION_DATE    "Not Released"

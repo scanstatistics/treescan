@@ -8,6 +8,7 @@ const char * IniParameterSpecification::Input                   = "Input";
 const char * IniParameterSpecification::AdvancedInput           = "Advanced Input";
 const char * IniParameterSpecification::Analysis                = "Analysis";
 const char * IniParameterSpecification::TemporalWindow          = "Temporal Window";
+const char * IniParameterSpecification::Adjustments             = "Adjustments";
 const char * IniParameterSpecification::Inference               = "Inference";
 const char * IniParameterSpecification::Output                  = "Output";
 const char * IniParameterSpecification::AdditionalOutput        = "Additional Output";
@@ -19,97 +20,157 @@ const char * IniParameterSpecification::System                  = "System";
 
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
-  Build_1_1_x_ParameterList();
-
-  // Error check
-  if (gvParameterInfo.size() != static_cast<size_t>(Parameters::giNumParameters))
-      throw prg_error("Parameter list size (%u) not equal to number of parameters (%d).","GetParameterComment()", gvParameterInfo.size(), Parameters::giNumParameters);
+    // default to current version
+    Parameters::CreationVersion  version = {std::atoi(VERSION_MAJOR), std::atoi(VERSION_MINOR), std::atoi(VERSION_RELEASE)};
+    setup(version);
 }
 
 /** constructor -- builds specification for read process */
 IniParameterSpecification::IniParameterSpecification(const IniFile& SourceFile, Parameters& Parameters) {
-  long                          lSectionIndex, lKeyIndex;
-  Parameters::CreationVersion   Version = {atoi(VERSION_MAJOR), atoi(VERSION_MINOR), atoi(VERSION_RELEASE)};
-
-  if ((lSectionIndex = SourceFile.GetSectionIndex(System)) > -1) {
-    const IniSection * pSection = SourceFile.GetSection(lSectionIndex);
-    if ((lKeyIndex = pSection->FindKey("Version")) > -1) {
-      sscanf(pSection->GetLine(lKeyIndex)->GetValue(), "%u.%u.%u", &Version.iMajor, &Version.iMinor, &Version.iRelease);
-    }
-  }
-  Parameters.setVersion(Version);
-  Build_1_1_x_ParameterList();
-
-  // Error check
-  if (gvParameterInfo.size() != static_cast<size_t>(Parameters::giNumParameters))
-      throw prg_error("Parameter list size (%u) not equal to number of parameters (%d).","GetParameterComment()", gvParameterInfo.size(), Parameters::giNumParameters);
+    Parameters::CreationVersion version = getIniVersion(SourceFile);
+    Parameters.setVersion(version);
+    setup(version);
 }
 
-/** destructor */
-IniParameterSpecification::~IniParameterSpecification() {}
+/** constructor - builds specification to version specified in argument */
+IniParameterSpecification::IniParameterSpecification(Parameters::CreationVersion version, Parameters& Parameters) {
+    Parameters.setVersion(version);
+    setup(version);
+}
+
+/** constructor - builds specification to version specified in argument
+     - argument version must agree with version of ini file. */
+IniParameterSpecification::IniParameterSpecification(const IniFile& SourceFile, Parameters::CreationVersion version, Parameters& Parameters) {
+    // first get the Version setting from the source Ini file
+    Parameters::CreationVersion ini_version = getIniVersion(SourceFile);
+    // confirm that ini file and specified version are the same
+    if (version != ini_version) {
+        throw resolvable_error("Parameter file version (%u.%u.%u) does not match override version (%u.%u.%u).",
+                               ini_version.iMajor, ini_version.iMinor, ini_version.iRelease,
+                               version.iMajor, version.iMinor, version.iRelease);
+    }
+    setup(version);
+}
+
+/** define ini sections and section parameters base on passed version */
+void IniParameterSpecification::setup(Parameters::CreationVersion version) {
+    // define sections in which parameters belong
+    _input_section = SectionInfo(Input, 100);
+    _analysis_section = SectionInfo(Analysis, 200);
+    _output_section = SectionInfo(Output, 300);
+    _advanced_input_section = SectionInfo(AdvancedInput, 400);
+    _temporal_window_section = SectionInfo(TemporalWindow, 500);
+    _adjustments_section = SectionInfo(Adjustments, 600);
+    _inference_section = SectionInfo(Inference, 700);
+    _power_evaluations_section = SectionInfo(PowerEvaluations, 800);
+    _additional_output_section = SectionInfo(AdditionalOutput, 900);
+    _power_simulations_section = SectionInfo(PowerSimulations, 1000);
+    _run_options_section = SectionInfo(RunOptions, 1100);
+    _system_section = SectionInfo(System, 1200);
+
+    if (version.iMajor == 1 && version.iMinor == 1)
+        Build_1_1_x_ParameterList();
+    else
+        Build_1_2_x_ParameterList();
+}
+
+/* Returns ini version setting or default. */
+Parameters::CreationVersion IniParameterSpecification::getIniVersion(const IniFile& SourceFile) {
+    long lSectionIndex, lKeyIndex;
+    Parameters::CreationVersion  version = {std::atoi(VERSION_MAJOR), std::atoi(VERSION_MINOR), std::atoi(VERSION_RELEASE)};
+    bool bHasVersionKey=false;
+
+    // search ini for version setting
+    if ((lSectionIndex = SourceFile.GetSectionIndex(System)) > -1) {
+        const IniSection * pSection = SourceFile.GetSection(lSectionIndex);
+        if ((lKeyIndex = pSection->FindKey("Version")) > -1) {
+            sscanf(pSection->GetLine(lKeyIndex)->GetValue(), "%u.%u.%u", &version.iMajor, &version.iMinor, &version.iRelease);
+            bHasVersionKey = true;
+        }
+    }
+    return version;
+}
 
 /** Version 1.1 parameter specifications. */
 void IniParameterSpecification::Build_1_1_x_ParameterList() {
-    // Order in vector is essential - should identical to ParameterType enumeration.
-    gvParameterInfo.push_back(std::make_pair(Input, (const char*)"tree-filename"));
-    gvParameterInfo.push_back(std::make_pair(Input, (const char*)"count-filename"));
-    gvParameterInfo.push_back(std::make_pair(Input, (const char*)"data-time-range"));
-    gvParameterInfo.push_back(std::make_pair(AdvancedInput, (const char*)"cut-filename"));
-    gvParameterInfo.push_back(std::make_pair(AdvancedInput, (const char*)"cut-type"));
-    gvParameterInfo.push_back(std::make_pair(AdvancedInput, (const char*)"duplicates"));
+    _parameter_info[Parameters::SCAN_TYPE] = ParamInfo(Parameters::SCAN_TYPE, "scan-type", 1, _analysis_section);
+    _parameter_info[Parameters::CONDITIONAL_TYPE] = ParamInfo(Parameters::CONDITIONAL_TYPE, "conditional-type", 2, _analysis_section);
+    _parameter_info[Parameters::MODEL_TYPE] = ParamInfo(Parameters::MODEL_TYPE, "probability-model", 3, _analysis_section);
+    _parameter_info[Parameters::EVENT_PROBABILITY] = ParamInfo(Parameters::EVENT_PROBABILITY, "event-probability", 4, _analysis_section);
+    _parameter_info[Parameters::START_DATA_TIME_RANGE] = ParamInfo(Parameters::START_DATA_TIME_RANGE, "window-start-range", 5, _analysis_section);
+    _parameter_info[Parameters::END_DATA_TIME_RANGE] = ParamInfo(Parameters::END_DATA_TIME_RANGE, "window-end-range", 6, _analysis_section);
 
-    gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"scan-type"));
-    gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"conditional-type"));
-    gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"probability-model"));
-    gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"event-probability"));
-    gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"window-start-range"));
-    gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"window-end-range"));
+    _parameter_info[Parameters::TREE_FILE] = ParamInfo(Parameters::TREE_FILE, "tree-filename", 1, _input_section);
+    _parameter_info[Parameters::COUNT_FILE] = ParamInfo(Parameters::COUNT_FILE, "count-filename", 2, _input_section);
+    _parameter_info[Parameters::DATA_TIME_RANGES] = ParamInfo(Parameters::DATA_TIME_RANGES, "data-time-range", 3, _input_section);
 
-    gvParameterInfo.push_back(std::make_pair(TemporalWindow, (const char*)"maximum-window-percentage"));
-    gvParameterInfo.push_back(std::make_pair(TemporalWindow, (const char*)"maximum-window-fixed"));
-    gvParameterInfo.push_back(std::make_pair(TemporalWindow, (const char*)"maximum-window-type"));
-    gvParameterInfo.push_back(std::make_pair(TemporalWindow, (const char*)"minimum-window-fixed"));
+    _parameter_info[Parameters::RESULTS_FILE] = ParamInfo(Parameters::RESULTS_FILE, "results-filename", 1, _output_section);
+    _parameter_info[Parameters::RESULTS_HTML] = ParamInfo(Parameters::RESULTS_HTML, "results-html", 2, _output_section);
+    _parameter_info[Parameters::RESULTS_CSV] = ParamInfo(Parameters::RESULTS_CSV, "results-csv", 3, _output_section);
 
-    gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"monte-carlo-replications"));
-    gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"randomization-seed"));
-    gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"random-randomization-seed"));
+    _parameter_info[Parameters::CUT_FILE] = ParamInfo(Parameters::CUT_FILE, "cut-filename", 1, _advanced_input_section);
+    _parameter_info[Parameters::CUT_TYPE] = ParamInfo(Parameters::CUT_TYPE, "cut-type", 2, _advanced_input_section);
+    _parameter_info[Parameters::DUPLICATES] = ParamInfo(Parameters::DUPLICATES, "duplicates", 3, _advanced_input_section);
 
-    gvParameterInfo.push_back(std::make_pair(Output, (const char*)"results-filename"));
-    gvParameterInfo.push_back(std::make_pair(Output, (const char*)"results-html"));
-    gvParameterInfo.push_back(std::make_pair(Output, (const char*)"results-csv"));
-    gvParameterInfo.push_back(std::make_pair(AdditionalOutput, (const char*)"results-llr"));
-    gvParameterInfo.push_back(std::make_pair(AdditionalOutput, (const char*)"report-critical-values"));
+    _parameter_info[Parameters::MAXIMUM_WINDOW_PERCENTAGE] = ParamInfo(Parameters::MAXIMUM_WINDOW_PERCENTAGE, "maximum-window-percentage", 1, _temporal_window_section);
+    _parameter_info[Parameters::MAXIMUM_WINDOW_FIXED] = ParamInfo(Parameters::MAXIMUM_WINDOW_FIXED, "maximum-window-fixed", 2, _temporal_window_section);
+    _parameter_info[Parameters::MAXIMUM_WINDOW_TYPE] = ParamInfo(Parameters::MAXIMUM_WINDOW_TYPE, "maximum-window-type", 3, _temporal_window_section);
+    _parameter_info[Parameters::MINIMUM_WINDOW_FIXED] = ParamInfo(Parameters::MINIMUM_WINDOW_FIXED, "minimum-window-fixed", 4, _temporal_window_section);
 
-    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"perform-power-evaluations"));
-    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"power-evaluation-type"));
-    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"critical-values-type"));
-    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"critical-value-05"));
-    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"critical-value-01"));
-    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"critical-value-001"));
-    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"power-evaluation-totalcases"));
-    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"power-evaluation-replications"));
-    gvParameterInfo.push_back(std::make_pair(PowerEvaluations, (const char*)"alternative-hypothesis-filename"));
+    _parameter_info[Parameters::REPLICATIONS] = ParamInfo(Parameters::REPLICATIONS, "monte-carlo-replications", 1, _inference_section);
+    _parameter_info[Parameters::RANDOMIZATION_SEED] = ParamInfo(Parameters::RANDOMIZATION_SEED, "randomization-seed", 2, _inference_section);
+    _parameter_info[Parameters::RANDOMLY_GENERATE_SEED] = ParamInfo(Parameters::RANDOMLY_GENERATE_SEED, "random-randomization-seed", 3, _inference_section);
 
-    gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"input-simulations"));
-    gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"input-simulations-file"));
-    gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"output-simulations"));
-    gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"output-simulations-file"));
+    _parameter_info[Parameters::POWER_EVALUATIONS] = ParamInfo(Parameters::POWER_EVALUATIONS, "perform-power-evaluations", 1, _power_evaluations_section);
+    _parameter_info[Parameters::POWER_EVALUATION_TYPE] = ParamInfo(Parameters::POWER_EVALUATION_TYPE, "power-evaluation-type", 2, _power_evaluations_section);
+    _parameter_info[Parameters::CRITICAL_VALUES_TYPE] = ParamInfo(Parameters::CRITICAL_VALUES_TYPE, "critical-values-type", 3, _power_evaluations_section);
+    _parameter_info[Parameters::CRITICAL_VALUE_05] = ParamInfo(Parameters::CRITICAL_VALUE_05, "critical-value-05", 4, _power_evaluations_section);
+    _parameter_info[Parameters::CRITICAL_VALUE_01] = ParamInfo(Parameters::CRITICAL_VALUE_01, "critical-value-01", 5, _power_evaluations_section);
+    _parameter_info[Parameters::CRITICAL_VALUE_001] = ParamInfo(Parameters::CRITICAL_VALUE_001, "critical-value-001", 6, _power_evaluations_section);
+    _parameter_info[Parameters::POWER_EVALUATION_TOTALCASES] = ParamInfo(Parameters::POWER_EVALUATION_TOTALCASES, "power-evaluation-totalcases", 7, _power_evaluations_section);
+    _parameter_info[Parameters::POWER_EVALUATIONS_REPLICA] = ParamInfo(Parameters::POWER_EVALUATIONS_REPLICA, "power-evaluation-replications", 8, _power_evaluations_section);
+    _parameter_info[Parameters::POWER_EVALUATIONS_FILE] = ParamInfo(Parameters::POWER_EVALUATIONS_FILE, "alternative-hypothesis-filename", 9, _power_evaluations_section);
 
-    gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"parallel-processes"));
+    _parameter_info[Parameters::RESULTS_LLR] = ParamInfo(Parameters::RESULTS_LLR, "results-llr", 1, _additional_output_section);
+    _parameter_info[Parameters::REPORT_CRITICAL_VALUES] = ParamInfo(Parameters::REPORT_CRITICAL_VALUES, "report-critical-values", 2, _additional_output_section);
 
-    gvParameterInfo.push_back(std::make_pair(System, (const char*)"parameters-version"));
+    _parameter_info[Parameters::READ_SIMULATIONS] = ParamInfo(Parameters::READ_SIMULATIONS, "input-simulations", 1, _power_simulations_section);
+    _parameter_info[Parameters::INPUT_SIM_FILE] = ParamInfo(Parameters::INPUT_SIM_FILE, "input-simulations-file", 2, _power_simulations_section);
+    _parameter_info[Parameters::WRITE_SIMULATIONS] = ParamInfo(Parameters::WRITE_SIMULATIONS, "output-simulations", 3, _power_simulations_section);
+    _parameter_info[Parameters::OUTPUT_SIM_FILE] = ParamInfo(Parameters::OUTPUT_SIM_FILE, "output-simulations-file", 4, _power_simulations_section);
+
+    _parameter_info[Parameters::PARALLEL_PROCESSES] = ParamInfo(Parameters::PARALLEL_PROCESSES, "parallel-processes", 1, _run_options_section);
+
+    _parameter_info[Parameters::CREATION_VERSION] = ParamInfo(Parameters::CREATION_VERSION, "parameters-version", 1, _system_section);
+
+    assert(_parameter_info.size() == 39);
+}
+
+/** Version 1.2 parameter specifications. */
+void IniParameterSpecification::Build_1_2_x_ParameterList() {
+    Build_1_1_x_ParameterList();
+    _parameter_info[Parameters::DAYOFWEEK_ADJUSTMENT] = ParamInfo(Parameters::DAYOFWEEK_ADJUSTMENT, "perform-day-of-week-adjustments", 1, _adjustments_section);
+
+    assert(_parameter_info.size() == 40);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
     Returns true if parameter found else false. */
 bool IniParameterSpecification::GetParameterIniInfo(Parameters::ParameterType eParameterType,  const char ** sSectionName, const char ** sKey) const {
-  size_t        tParamIndex = static_cast<size_t>(eParameterType); //remember that ParameterType enumeration starts at one
-  bool          bReturn = false;
+    ParameterInfoMap_t::const_iterator itr = _parameter_info.find(eParameterType);
+    if (itr != _parameter_info.end()) {
+        *sSectionName = itr->second._section->_label;
+        *sKey = itr->second._label;
+        return true;
+    }
+    return false;
+}
 
-  if (tParamIndex > 0  && tParamIndex <= gvParameterInfo.size()) {
-    *sSectionName = gvParameterInfo[tParamIndex - 1].first;
-    *sKey = gvParameterInfo[tParamIndex - 1].second;
-    bReturn = true;
-  }
-  return bReturn;
+IniParameterSpecification::ParameterInfoCollection_t & IniParameterSpecification::getParameterInfoCollection(ParameterInfoCollection_t& collection) const {
+    collection.clear();
+    for (ParameterInfoMap_t::const_iterator itr=_parameter_info.begin(); itr != _parameter_info.end(); ++itr) {
+        collection.push_back(ParamInfo(itr->second));
+    }
+    std::sort(collection.begin(), collection.end());
+    return collection;
 }

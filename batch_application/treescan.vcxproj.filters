@@ -258,6 +258,9 @@
     <ClCompile Include="..\boost\boost_1_56_0\libs\filesystem\src\windows_file_codecvt.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\randomization\PermutationDataRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\runner\ScanRunner.h">
@@ -384,6 +387,9 @@
       <Filter>Header Files\calculation\runner</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\randomization\AlternativeHypothesisRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\PermutationDataRandomizer.h">
       <Filter>Header Files\calculation\randomization</Filter>
     </ClInclude>
   </ItemGroup>

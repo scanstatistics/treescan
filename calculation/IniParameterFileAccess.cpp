@@ -104,26 +104,36 @@ void IniParameterFileAccess::WriteIniParameterAsKey(IniFile& WriteFile, const ch
     }
 }
 
+void IniParameterFileAccess::writeSections(IniFile& ini, const IniParameterSpecification& specification) {
+    const IniParameterSpecification * hold = gpSpecifications;
+    try {
+        gpSpecifications = &specification;
+        WriteAnalysisSettings(ini);
+        WriteInputSettings(ini);
+        WriteOutputSettings(ini);
+        WriteAdvancedInputSettings(ini);
+        WriteAdvancedAnalysisTemporalWindowSettings(ini);
+        WriteAdvancedAnalysisAdjustmentsSettings(ini);
+        WriteAdvancedAnalysisInferenceSettings(ini);
+        WritePowerEvaluationsSettings(ini);
+        WriteAdvancedOutputSettings(ini);
+        WritePowerSimulationsSettings(ini);
+        WriteRunOptionSettings(ini);
+        WriteSystemSettings(ini);
+        gpSpecifications = hold;
+    } catch (...) {
+        gpSpecifications = hold;
+        throw;
+    }
+}
+
 /** Writes parameters of associated CParameters object to ini file, of most recent format specification. */
 void IniParameterFileAccess::Write(const char* sFilename) {
     try {
         IniFile WriteFile;
         _parameters.setSourceFileName(sFilename);
         gpSpecifications = new IniParameterSpecification();
-
-        //write settings as provided in main graphical interface
-        WriteAnalysisSettings(WriteFile);
-        WriteInputSettings(WriteFile);
-        WriteOutputSettings(WriteFile);
-        WriteAdvancedAnalysisTemporalWindowSettings(WriteFile);
-        WriteAdvancedAnalysisInferenceSettings(WriteFile);
-        WritePowerEvaluationsSettings(WriteFile);
-        WriteAdvancedInputSettings(WriteFile);
-        WriteAdvancedOutputSettings(WriteFile);
-        WritePowerSimulationsSettings(WriteFile);
-        WriteRunOptionSettings(WriteFile);
-        WriteSystemSettings(WriteFile);
-
+        writeSections(WriteFile, *gpSpecifications);
         WriteFile.Write(_parameters.getSourceFileName());
     } catch (prg_exception& x) {
         x.addTrace("Write()", "IniParameterFileAccess");
@@ -196,6 +206,17 @@ void IniParameterFileAccess::WriteAdvancedAnalysisTemporalWindowSettings(IniFile
         WriteIniParameter(WriteFile, Parameters::MINIMUM_WINDOW_FIXED, GetParameterString(Parameters::MINIMUM_WINDOW_FIXED, s).c_str(), GetParameterComment(Parameters::MINIMUM_WINDOW_FIXED));
     } catch (prg_exception& x) {
         x.addTrace("WriteAdvancedAnalysisTemporalWindowSettings()","IniParameterFileAccess");
+        throw;
+    }
+}
+
+/** Writes parameter settings grouped under 'Advanced Analysis - Adjustments'. */
+void IniParameterFileAccess::WriteAdvancedAnalysisAdjustmentsSettings(IniFile& WriteFile) {
+    std::string s;
+    try {
+        WriteIniParameter(WriteFile, Parameters::DAYOFWEEK_ADJUSTMENT, GetParameterString(Parameters::DAYOFWEEK_ADJUSTMENT, s).c_str(), GetParameterComment(Parameters::DAYOFWEEK_ADJUSTMENT));
+    } catch (prg_exception& x) {
+        x.addTrace("WriteAdvancedAnalysisAdjustmentsSettings()","IniParameterFileAccess");
         throw;
     }
 }

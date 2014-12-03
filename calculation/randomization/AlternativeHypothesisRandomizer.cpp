@@ -12,8 +12,8 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
     // Not implemented for this model yet.
     if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES)
         throw prg_error("AlternativeHypothesisRandomizater is not implemented for the conditional Bernoulli model.", "AlternativeHypothesisRandomizater()");
-    if (_parameters.getModelType() == Parameters::TEMPORALSCAN)
-        throw prg_error("AlternativeHypothesisRandomizater is not implemented for the Tree Temporal model.", "AlternativeHypothesisRandomizater()");
+    if (_parameters.getScanType() == Parameters::TREETIME)
+        throw prg_error("AlternativeHypothesisRandomizater is not implemented for the tree and time scan type.", "AlternativeHypothesisRandomizater()");
 
     _randomizer->_read_data = false;
     _randomizer->_write_data = false;

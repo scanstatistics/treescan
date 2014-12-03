@@ -23,70 +23,121 @@
 
 /* Calculates the excess number of cases. See user guide for formula explanation. */
 double CutStructure::getExcessCases(const ScanRunner& scanner) {
+    const Parameters& params = scanner.getParameters();
     double C = static_cast<double>(_C);
     double totalC = static_cast<double>(scanner.getTotalC());
-
-    switch (scanner.getParameters().getModelType()) {
-        case Parameters::POISSON :
-            if (scanner.getParameters().getConditionalType() == Parameters::UNCONDITIONAL)
-                return C - _N;
-            if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", scanner.getParameters().getModelType(), scanner.getTotalN(), _N);
-            return C - _N * (totalC - C)/(scanner.getTotalN() - _N);
-        case Parameters::BERNOULLI:
-            if (scanner.getParameters().getConditionalType() == Parameters::UNCONDITIONAL)
-                return C - _N * scanner.getParameters().getProbability();
-            if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", scanner.getParameters().getModelType(), scanner.getTotalN(), _N);
-            return C - _N * (totalC - C)/(scanner.getTotalN() - _N);
-        case Parameters::TEMPORALSCAN : {
-            double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-            double T = static_cast<double>(scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-            if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getExcessCases()", scanner.getParameters().getModelType(), T, W);
-            return C - W * (_N - C)/(T - W);
-        }
-        default : throw prg_error("Unknown model type (%d).", "getExcessCases()", scanner.getParameters().getModelType());
+    switch (params.getScanType()) {
+        case Parameters::TREEONLY: {
+            switch (params.getModelType()) {
+                case Parameters::POISSON :
+                    if (params.getConditionalType() == Parameters::UNCONDITIONAL)
+                        return C - _N;
+                    if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", params.getModelType(), scanner.getTotalN(), _N);
+                        return C - _N * (totalC - C)/(scanner.getTotalN() - _N);
+                case Parameters::BERNOULLI:
+                    if (scanner.getParameters().getConditionalType() == Parameters::UNCONDITIONAL)
+                        return C - _N * scanner.getParameters().getProbability();
+                    if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", params.getModelType(), scanner.getTotalN(), _N);
+                        return C - _N * (totalC - C)/(scanner.getTotalN() - _N);
+                default : throw prg_error("Unknown model type (%d).", "getExcessCases()", params.getModelType());
+            }
+        } break;
+        case Parameters::TREETIME: {
+            if (params.getConditionalType() == Parameters::CASESBRANCHANDDAY)
+                throw prg_error("getExcessCases() not implemented for tree-time conditioned on node-time.", "getExcessCases()");
+            switch (params.getModelType()) {
+                case Parameters::UNIFORM : 
+                    if (params.isPerformingDayOfWeekAdjustment()) {
+                        //Obs - Exp * [ (NodeCases-Obs) / (NodeCases-Exp) ]
+                        double exp = getExpected(scanner);
+                        double NodeCases = static_cast<double>(scanner.getNodes()[getID()]->getBrC());
+                        return C - exp * ((NodeCases - C) / (NodeCases - exp));
+                    } else {
+                        double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+                        double T = static_cast<double>(params.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                        if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getExcessCases()", params.getModelType(), T, W);
+                        return C - W * (_N - C)/(T - W);
+                    }
+                default : throw prg_error("Unknown model type (%d).", "getExcessCases()", params.getModelType());
+            }
+        } break;
+        default : throw prg_error("Unknown model type (%d).", "getExcessCases()", params.getScanType());
     }
 }
 
 /** Returns cut's expected count. See user guide for formula explanation. */
 double CutStructure::getExpected(const ScanRunner& scanner) {
+    const Parameters& params = scanner.getParameters();
     double C = static_cast<double>(_C);
     double totalC = static_cast<double>(scanner.getTotalC());
-    switch (scanner.getParameters().getModelType()) {
-        case Parameters::POISSON :
-            if (scanner.getParameters().getConditionalType() == Parameters::UNCONDITIONAL)
-                return _N;
-            return _N * totalC/scanner.getTotalN();
-        case Parameters::BERNOULLI:
-            if (scanner.getParameters().getConditionalType() == Parameters::UNCONDITIONAL)
-                return _N * scanner.getParameters().getProbability();
-            return _N * (scanner.getTotalC() / scanner.getTotalN());
-        case Parameters::TEMPORALSCAN : {
-            double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-            double T = static_cast<double>(scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-            return _N * W / T;
-        }
-        default : throw prg_error("Unknown model type (%d).", "getExpected()", scanner.getParameters().getModelType());
+    switch (params.getScanType()) {
+        case Parameters::TREEONLY:
+            switch (params.getModelType()) {
+                case Parameters::POISSON :
+                    if (params.getConditionalType() == Parameters::UNCONDITIONAL)
+                        return _N;
+                    return _N * totalC/scanner.getTotalN();
+                case Parameters::BERNOULLI:
+                    if (params.getConditionalType() == Parameters::UNCONDITIONAL)
+                        return _N * scanner.getParameters().getProbability();
+                    return _N * (scanner.getTotalC() / scanner.getTotalN());
+                default : throw prg_error("Unknown model type (%d).", "getExpected()", params.getModelType());
+            }
+        case Parameters::TREETIME: 
+            switch (params.getModelType()) {
+                case Parameters::UNIFORM :
+                    if (params.isPerformingDayOfWeekAdjustment()) {
+                        return _N;
+                    } else {
+                        double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+                        double T = static_cast<double>(params.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                        return _N * W / T;
+                    }
+                default :
+                    if (params.getConditionalType() == Parameters::CASESBRANCHANDDAY) {
+                        return _N;
+                    } else throw prg_error("Unknown model type (%d).", "getExpected()", params.getModelType());
+            }
+        default : throw prg_error("Unknown model type (%d).", "getExpected()", params.getScanType());
     }
 }
 
 /** Returns cut's observed divided by expected. */
 double CutStructure::getODE(const ScanRunner& scanner) {
-    if (scanner.getParameters().getModelType() == Parameters::TEMPORALSCAN) {
-        /* C/(N*W/D) where
-                C = number of cases in the node as well as in the the temporal cluster found (below, 06.04 cases that are 7-11 days after vaccination) 
-                N = number of cases in the node, through the whole time period (below, all 0604 cases) 
-                W = number of days in the temporal cluster (below, 11-6=5) 
-                D = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used)
-        */
-        double C = static_cast<double>(_C);
-        double N = _N;
-        double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-        double T = static_cast<double>(scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-        double denominator = N * W / T;
-        return denominator ? C/denominator : 0.0;
-    } else {
-        double expected = getExpected(scanner);
-        return expected ? static_cast<double>(getC())/expected : 0.0;
+    const Parameters& params = scanner.getParameters();
+    switch (params.getScanType()) {
+        case Parameters::TREEONLY: {
+            double expected = getExpected(scanner);
+            return expected ? static_cast<double>(getC())/expected : 0.0;
+        }
+        case Parameters::TREETIME:
+            switch (params.getModelType()) {
+                case Parameters::UNIFORM : {
+                    if (params.isPerformingDayOfWeekAdjustment()) {
+                        double expected = getExpected(scanner);
+                        return expected ? static_cast<double>(getC())/expected : 0.0;
+                    } else {
+                        /* C/(N*W/D) where
+                            C = number of cases in the node as well as in the the temporal cluster found (below, 06.04 cases that are 7-11 days after vaccination) 
+                            N = number of cases in the node, through the whole time period (below, all 0604 cases) 
+                            W = number of days in the temporal cluster (below, 11-6=5) 
+                            D = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used)
+                        */
+                        double C = static_cast<double>(_C);
+                        double N = _N;
+                        double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+                        double T = static_cast<double>(params.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                        double denominator = N * W / T;
+                        return denominator ? C/denominator : 0.0;
+                    }
+                }
+                default : 
+                    if (params.getConditionalType() == Parameters::CASESBRANCHANDDAY) {
+                        double expected = getExpected(scanner);
+                        return expected ? static_cast<double>(getC())/expected : 0.0;
+                    } else throw prg_error("Unknown model type (%d).", "getODE()", params.getModelType());
+            }
+        default : throw prg_error("Unknown scan type (%d).", "getExpected()", params.getScanType());
     }
 }
 
@@ -95,44 +146,74 @@ double CutStructure::getRelativeRisk(const ScanRunner& scanner) {
     double relative_risk=0;
     double C = static_cast<double>(_C);
     double totalC = static_cast<double>(scanner.getTotalC());
-    switch (scanner.getParameters().getModelType()) {
-        case Parameters::POISSON : {
-            if (scanner.getParameters().getConditionalType() == Parameters::UNCONDITIONAL)
-                relative_risk = C / _N;
-            else {
-                double NN = scanner.getTotalN() - _N;
-                if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", scanner.getParameters().getModelType(), scanner.getTotalN(), _N);
-                double CC = totalC - C;
-                relative_risk = CC ? (C / _N) / (CC /  NN): 0;
-            }
-        } break;
-        case Parameters::BERNOULLI: {
-            if (scanner.getParameters().getConditionalType() == Parameters::UNCONDITIONAL)
-                relative_risk = C / (_N * scanner.getParameters().getProbability());
-            else {
-                double NN = scanner.getTotalN() - _N;
-                if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", scanner.getParameters().getModelType(), scanner.getTotalN(), _N);
-                double CC = totalC - C;
-                relative_risk = CC ? (C / _N) / (CC /  NN): 0;
-            }
-        } break;
-        case Parameters::TEMPORALSCAN : {
-            double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-            double T = static_cast<double>(scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-            if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getRelativeRisk()", scanner.getParameters().getModelType(), T, W);
-            double CC = _N - static_cast<double>(_C);
-            relative_risk = CC ? (static_cast<double>(_C) / W ) / ( CC / (T - W) ) : 0.0;
-        } break;
-        default : throw prg_error("Unknown model type (%d).", "getRelativeRisk()", scanner.getParameters().getModelType());
+    const Parameters& params = scanner.getParameters();
+
+    switch (params.getScanType()) {
+        case Parameters::TREEONLY:
+            switch (params.getModelType()) {
+                case Parameters::POISSON : {
+                    if (params.getConditionalType() == Parameters::UNCONDITIONAL)
+                        relative_risk = C / _N;
+                    else {
+                        double NN = scanner.getTotalN() - _N;
+                        if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", params.getModelType(), scanner.getTotalN(), _N);
+                        double CC = totalC - C;
+                        relative_risk = CC ? (C / _N) / (CC /  NN): 0;
+                    }
+                } break;
+                case Parameters::BERNOULLI: {
+                    if (scanner.getParameters().getConditionalType() == Parameters::UNCONDITIONAL)
+                        relative_risk = C / (_N * params.getProbability());
+                    else {
+                        double NN = scanner.getTotalN() - _N;
+                        if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", params.getModelType(), scanner.getTotalN(), _N);
+                        double CC = totalC - C;
+                        relative_risk = CC ? (C / _N) / (CC /  NN): 0;
+                    }
+                } break;
+                default : throw prg_error("Unknown model type (%d).", "getRelativeRisk()", params.getModelType());
+            } break;
+        case Parameters::TREETIME:
+            if (params.getConditionalType() == Parameters::CASESBRANCHANDDAY)
+                throw prg_error("getRelativeRisk() not implemented for tree-time conditioned on node-time.", "getRelativeRisk()");
+            switch (params.getModelType()) {
+                case Parameters::UNIFORM :
+                    if (params.isPerformingDayOfWeekAdjustment()) {
+                        // (Obs/Exp) / [ (NodeCases-Obs) / (NodeCases-Exp) ]
+                        double exp = getExpected(scanner);
+                        double NodeCases = static_cast<double>(scanner.getNodes()[getID()]->getBrC());
+                        if (C == NodeCases)
+                            relative_risk = std::numeric_limits<double>::infinity();
+                        else
+                            relative_risk = (C / exp) / ( (NodeCases - C) / (NodeCases - exp) );
+                    } else {
+                        double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+                        double T = static_cast<double>(params.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                        if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getRelativeRisk()", params.getModelType(), T, W);
+                        double CC = _N - static_cast<double>(_C);
+                        relative_risk = CC ? (static_cast<double>(_C) / W ) / ( CC / (T - W) ) : 0.0;
+                    }
+                    break;
+                default : throw prg_error("Unknown model type (%d).", "getRelativeRisk()", params.getModelType());
+            } break;
+        default : throw prg_error("Unknown scan type (%d).", "getRelativeRisk()", params.getScanType());
     }
     return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
 }
 
 ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0) {
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
-    DataTimeRange min_max = _parameters.getModelType() == Parameters::TEMPORALSCAN ? _parameters.getDataTimeRangeSet().getMinMax() : DataTimeRange(0,0);
+    DataTimeRange min_max = _parameters.getScanType() == Parameters::TREETIME ? _parameters.getDataTimeRangeSet().getMinMax() : DataTimeRange(0,0);
     // translate to ensure zero based additive
     _zero_translation_additive = (min_max.getStart() <= 0) ? std::abs(min_max.getStart()) : min_max.getStart() * -1;
+
+    if (parameters.isPerformingDayOfWeekAdjustment()) {
+        _day_of_week_indexes.resize(7);
+        size_t daysInDataTimeRange = _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1;
+        for (size_t idx=0; idx < daysInDataTimeRange; ++idx) {
+            _day_of_week_indexes[idx % 7].push_back(idx);
+        }
+    }
 }
 
 /*
@@ -282,7 +363,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
     bool readSuccess=true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
     int expectedColumns = 3 + (_parameters.isDuplicates() ? 1 : 0);
-    _caselessWindows.resize(_parameters.getModelType() == Parameters::TEMPORALSCAN ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() : 1);
+    _caselessWindows.resize(_parameters.getScanType() == Parameters::TREETIME ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() : 1);
 
     int count=0, controls=0, duplicates=0, daysSinceIncidence=0;
     while (dataSource->readRecord()) {
@@ -292,7 +373,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
                           BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), 
                           (static_cast<int>(dataSource->getNumValues()) > expectedColumns) ? "has extra data" : "is missing data",
                           (_parameters.isDuplicates() ? " <duplicates>," : ""), 
-                          (_parameters.getModelType() == Parameters::TEMPORALSCAN ? "<time>" : ""),
+                          (_parameters.getScanType() == Parameters::TREETIME ? "<time>" : ""),
                           dataSource->getNumValues(), (dataSource->getNumValues() == 1 ? "" : "s"));
             continue;
         }
@@ -344,7 +425,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
                 continue;
             }
             node->refIntN_C().front() += count + controls;
-        } else if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
+        } else if (_parameters.getScanType() == Parameters::TREETIME) {
             if  (!string_to_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), daysSinceIncidence)) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in count file references an invalid 'day since incidence' value for node '%s'.\n"
@@ -362,11 +443,11 @@ bool ScanRunner::readCounts(const std::string& filename) {
             }
             node->refIntC_C().at(daysSinceIncidence + _zero_translation_additive) += count;
             _caselessWindows.set(daysSinceIncidence + _zero_translation_additive);
-        } else throw prg_error("Unknown model type (%d).", "readCounts()", _parameters.getModelType());
+        } else throw prg_error("Unknown condition encountered: scan (%d), model (%d).", "readCounts()", _parameters.getScanType(), _parameters.getModelType());
     }
 
     _caselessWindows.flip(); // flip so that windows without cases are on instead of off
-    if (_parameters.getModelType() == Parameters::TEMPORALSCAN && _caselessWindows.count() > 0) {
+    if (_parameters.getScanType() == Parameters::TREETIME && _caselessWindows.count() > 0) {
         std::string buffer;
         _print.Printf("Warning: The following days in the data time range do not have cases: %s\n", BasePrint::P_WARNING, getCaselessWindowsAsString(buffer).c_str());
     }
@@ -415,7 +496,7 @@ bool ScanRunner::readTree(const std::string& filename) {
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
 
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
-    size_t daysInDataTimeRange = _parameters.getModelType() == Parameters::TEMPORALSCAN ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
+    size_t daysInDataTimeRange = _parameters.getScanType() == Parameters::TREETIME ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
 
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
     while (dataSource->readRecord()) {
@@ -425,7 +506,7 @@ bool ScanRunner::readTree(const std::string& filename) {
             continue;
         }
         std::string identifier = dataSource->getValueAt(0);
-        std::auto_ptr<NodeStructure> node(new NodeStructure(trimString(identifier), _parameters.getCutType(), _parameters.getModelType(), daysInDataTimeRange));
+        std::auto_ptr<NodeStructure> node(new NodeStructure(trimString(identifier), _parameters, daysInDataTimeRange));
         NodeStructureContainer_t::iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
         if (itr == _Nodes.end() || (*itr)->getIdentifier() != node.get()->getIdentifier())
             _Nodes.insert(itr, node.release());
@@ -567,11 +648,21 @@ bool ScanRunner::run() {
     }
 
     if (!_parameters.getPerformPowerEvaluations() || (_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
-        if ((_parameters.getModelType() == Parameters::TEMPORALSCAN ? scanTreeTemporal() : scanTree())) {
+        bool scan_success=false;
+        if (_parameters.getScanType() == Parameters::TREETIME && 
+            (_parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY ||
+             (_parameters.getConditionalType() == Parameters::CASESEACHBRANCH && _parameters.isPerformingDayOfWeekAdjustment()))
+           )
+            scan_success = scanTreeTemporalConditional();
+        else if (_parameters.getModelType() == Parameters::UNIFORM)
+            scan_success = scanTreeTemporal();
+        else
+            scan_success = scanTree();
+        if (scan_success) {
             if (_print.GetIsCanceled()) return false;
             if (!(_parameters.getNumReplicationsRequested() == 0 || _Cut.size() == 0)) {
                 _print.Printf("Doing the %d Monte Carlo simulations ...\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
-                boost::shared_ptr<AbstractRandomizer> randomizer(AbstractRandomizer::getNewRandomizer(_parameters, _TotalC, _TotalControls, _TotalN));
+                boost::shared_ptr<AbstractRandomizer> randomizer(AbstractRandomizer::getNewRandomizer(*this));
                 if (_parameters.isReadingSimulationData())
                     randomizer->setReading(_parameters.getInputSimulationsFilename());
                 if (_parameters.isWritingSimulationData()) {
@@ -602,7 +693,7 @@ bool ScanRunner::runPowerEvaluations() {
             // if simulations not already done is analysis stage, perform them now
             if (!_simVars.get_sim_count()) {
                 _print.Printf("Doing the %d Monte Carlo simulations ...\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
-                boost::shared_ptr<AbstractRandomizer> randomizer(AbstractRandomizer::getNewRandomizer(_parameters, _TotalC, _TotalControls, _TotalN));
+                boost::shared_ptr<AbstractRandomizer> randomizer(AbstractRandomizer::getNewRandomizer(*this));
                 if (_parameters.isReadingSimulationData())
                     randomizer->setReading(_parameters.getInputSimulationsFilename());
                 if (_parameters.isWritingSimulationData()) {
@@ -634,7 +725,7 @@ bool ScanRunner::runPowerEvaluations() {
     SimulationVariables simVarsCopy(_simVars);
     for (size_t t=0; t < riskAdjustments.size(); ++t) {
         _print.Printf("\nDoing the alternative replications for power set %d\n", BasePrint::P_STDOUT, t+1);
-        boost::shared_ptr<AbstractRandomizer> core_randomizer(AbstractRandomizer::getNewRandomizer(_parameters, _TotalC, _TotalControls, _TotalN));
+        boost::shared_ptr<AbstractRandomizer> core_randomizer(AbstractRandomizer::getNewRandomizer(*this));
         boost::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, *riskAdjustments[t], _parameters));
         if (_parameters.isWritingSimulationData()) {
             if (t == 0 && _parameters.getCriticalValuesType() == Parameters::CV_POWER_VALUES)
@@ -971,8 +1062,164 @@ bool ScanRunner::scanTreeTemporal() {
     return _Cut.size() != 0;
 }
 
+/* SCANNING THE TREE for temporal model -- conditioned on the total cases across nodes and time. */
+bool ScanRunner::scanTreeTemporalConditional() {
+    _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
+    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN));
+
+    // Define the start and end windows with the zero index offset already incorporated.
+    DataTimeRange startWindow(_parameters.getTemporalStartRange().getStart() + _zero_translation_additive,
+                              _parameters.getTemporalStartRange().getEnd() + _zero_translation_additive),
+                  endWindow(_parameters.getTemporalEndRange().getStart() + _zero_translation_additive,
+                            _parameters.getTemporalEndRange().getEnd() + _zero_translation_additive);
+    // Define the minimum and maximum window lengths.
+    WindowLength window(static_cast<int>(_parameters.getMinimumWindowLength()) - 1,
+                        static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1);
+    int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
+
+    //std::string buffer;
+    //int hits=0;
+    for (size_t n=0; n < _Nodes.size(); ++n) {
+        if (_Nodes.at(n)->getBrC() > 1) {
+            const NodeStructure& thisNode(*(_Nodes.at(n)));
+
+            // always do simple cut
+            //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
+            iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+            for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
+                iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                    //_print.Printf("%d to %d\n", BasePrint::P_STDOUT,iWindowStart, iWindowEnd);
+                    updateCuts(n, thisNode.getBrC_C()[iWindowStart] - thisNode.getBrC_C()[iWindowEnd + 1],
+                                  thisNode.getBrN_C()[iWindowStart] - thisNode.getBrN_C()[iWindowEnd + 1],
+                                  calcLogLikelihood, iWindowStart, iWindowEnd);
+                }
+            }
+            //++hits; printf("hits %d\n", hits);
+
+            //if (thisNode.getChildren().size() == 0) continue;
+            Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
+            switch (cutType) {
+                case Parameters::SIMPLE: break;// already done, regardless of specified node cut
+                case Parameters::ORDINAL: {
+                    // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
+                    CutStructure::CutChildContainer_t currentChildren;
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
+                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                            for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                                const NodeStructure& firstChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                                currentChildren.clear();
+                                currentChildren.push_back(firstChildNode.getID());
+                                //buffer = firstChildNode.getIdentifier().c_str();
+                                NodeStructure::count_t branchWindow = firstChildNode.getBrC_C()[iWindowStart] - firstChildNode.getBrC_C()[iWindowEnd + 1];
+                                NodeStructure::expected_t branchExpected = firstChildNode.getBrN_C()[iWindowStart] - firstChildNode.getBrN_C()[iWindowEnd + 1];
+                                for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                                    const NodeStructure& childNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                                    currentChildren.push_back(childNode.getID());
+                                    //buffer += ",";
+                                    //buffer += childNode.getIdentifier();
+                                    branchWindow += childNode.getBrC_C()[iWindowStart] - childNode.getBrC_C()[iWindowEnd + 1];
+                                    branchExpected += childNode.getBrN_C()[iWindowStart] - childNode.getBrN_C()[iWindowEnd + 1];
+                                    //printf("Evaluating cut [%s]\n", buffer.c_str());
+                                    CutStructure * cut = updateCuts(n, branchWindow, branchExpected, calcLogLikelihood, iWindowStart, iWindowEnd);
+                                    if (cut) {
+                                        cut->setCutChildren(currentChildren);
+                                    }
+                                    //++hits; printf("hits %d\n", hits);
+                                }
+                            }
+                        } 
+                    } 
+                } break;
+                case Parameters::PAIRS:
+                    // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
+                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                            for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                                const NodeStructure& startChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                                NodeStructure::count_t startBranchWindow = startChildNode.getBrC_C()[iWindowStart] - startChildNode.getBrC_C()[iWindowEnd + 1];
+                                NodeStructure::expected_t startBranchExpected = startChildNode.getBrN_C()[iWindowStart] - startChildNode.getBrN_C()[iWindowEnd + 1];
+                                for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                                    const NodeStructure& stopChildNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                                    //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
+                                    NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
+                                    NodeStructure::expected_t stopBranchExpected = stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1];
+                                    CutStructure * cut = updateCuts(n, startBranchWindow + stopBranchWindow, startBranchExpected + stopBranchExpected, calcLogLikelihood, iWindowStart, iWindowEnd);
+                                    if (cut) {
+                                        cut->addCutChild(startChildNode.getID(), true);
+                                        cut->addCutChild(stopChildNode.getID());
+                                    }
+                                    //++hits; printf("hits %d\n", hits);
+                                }
+                            }
+                        }
+                    } break;
+                case Parameters::TRIPLETS:
+                    // Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
+                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                            for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                                const NodeStructure& startChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                                NodeStructure::count_t startBranchWindow = startChildNode.getBrC_C()[iWindowStart] - startChildNode.getBrC_C()[iWindowEnd + 1];
+                                NodeStructure::expected_t startBranchExpected = startChildNode.getBrN_C()[iWindowStart] - startChildNode.getBrN_C()[iWindowEnd + 1];
+                                for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                                    const NodeStructure& stopChildNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                                    //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
+                                    NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
+                                    NodeStructure::expected_t stopBranchExpected = stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1];
+                                    CutStructure * cut = updateCuts(n, startBranchWindow + stopBranchWindow, startBranchExpected + stopBranchExpected, calcLogLikelihood, iWindowStart, iWindowEnd);
+                                    if (cut) {
+                                        cut->addCutChild(startChildNode.getID(), true);
+                                        cut->addCutChild(stopChildNode.getID());
+                                    }
+                                    //++hits;printf("hits %d\n", hits);
+                                    for (size_t k=i+1; k < j; ++k) {
+                                        const NodeStructure& middleChildNode(*(_Nodes.at(thisNode.getChildren().at(k))));
+                                        NodeStructure::count_t middleBranchWindow = middleChildNode.getBrC_C()[iWindowStart] - middleChildNode.getBrC_C()[iWindowEnd + 1];
+                                        NodeStructure::expected_t middleBranchExpected = middleChildNode.getBrN_C()[iWindowStart] - middleChildNode.getBrN_C()[iWindowEnd + 1];
+                                        //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
+                                        CutStructure * cut = updateCuts(n, startBranchWindow + middleBranchWindow + stopBranchWindow, startBranchExpected + middleBranchExpected + stopBranchExpected, calcLogLikelihood, iWindowStart, iWindowEnd);
+                                        if (cut) {
+                                            cut->addCutChild(startChildNode.getID(), true);
+                                            cut->addCutChild(middleChildNode.getID());
+                                            cut->addCutChild(stopChildNode.getID());
+                                        }
+                                        //++hits; printf("hits %d\n", hits);
+                                    }
+                                }
+                            }
+                        }
+                    } break;
+                case Parameters::COMBINATORIAL:
+                default: throw prg_error("Unknown cut type (%d).", "scanTreeTemporal()", cutType);
+            }
+        }
+    }
+    if (_Cut.size()) {
+        std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
+        _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.at(0)->getLogLikelihood()));
+    }
+    return _Cut.size() != 0;
+}
+
 CutStructure * ScanRunner::updateCuts(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx) {
-    double loglikelihood = _parameters.getModelType() == Parameters::TEMPORALSCAN ? logCalculator->LogLikelihood(BrC, BrN, endIdx - startIdx + 1) : logCalculator->LogLikelihood(BrC, BrN); 
+    double loglikelihood=0;
+    if ((_parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY || (_parameters.getConditionalType() == Parameters::CASESEACHBRANCH && _parameters.isPerformingDayOfWeekAdjustment())))
+        loglikelihood = logCalculator->LogLikelihood(BrC, BrN);
+    else if (_parameters.getModelType() == Parameters::UNIFORM)
+        loglikelihood = logCalculator->LogLikelihood(BrC, BrN, endIdx - startIdx + 1);
+    else
+        loglikelihood = logCalculator->LogLikelihood(BrC, BrN); 
     if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) 0;
 
     std::auto_ptr<CutStructure> cut(new CutStructure());
@@ -1002,6 +1249,7 @@ bool ScanRunner::setupTree() {
     int     parent;
 
     _print.Printf("Setting up the tree ...\n", BasePrint::P_STDOUT);
+
     // Initialize variables
     _TotalC=0;_TotalN=0;
     for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
@@ -1009,9 +1257,80 @@ bool ScanRunner::setupTree() {
         std::fill((*itr)->refBrN_C().begin(), (*itr)->refBrN_C().end(), 0);
     }
 
-    // Calculates the total number of cases and the total population at risk
+    // Calculates the total number of cases
     for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
         _TotalC = std::accumulate((*itr)->refIntC_C().begin(), (*itr)->refIntC_C().end(), _TotalC);
+    }
+
+    // calculate the number of expected cases
+    if (_parameters.getScanType() == Parameters::TREETIME) {
+        NodeStructure::CountContainer_t totalcases_by_dayofweek;
+        if (_parameters.getScanType() == Parameters::TREETIME && _parameters.isPerformingDayOfWeekAdjustment()) {
+            // calculate the total number of cases for each day of the week
+            totalcases_by_dayofweek.resize(7, 0);
+            for (size_t n=0; n < _Nodes.size(); ++n) {
+                NodeStructure& node = *(_Nodes[n]);
+                const NodeStructure::CountContainer_t& cases = node.getIntC_C();
+                for (size_t idx=0; idx < cases.size(); ++idx) {
+                    totalcases_by_dayofweek[idx % 7] += cases[idx];
+                }
+            }
+        }
+        NodeStructure::CountContainer_t totalcases_by_node(_Nodes.size(), 0);
+        for (size_t n=0; n < _Nodes.size(); ++n) {
+            totalcases_by_node[n] = std::accumulate(_Nodes[n]->getIntC_C().begin(), _Nodes[n]->getIntC_C().end(), 0);
+        }
+        // calculate expected number of cases for tree-time scan
+        if (_parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY) {
+            // calculate total cases by time interval -- we'll need this to calculate the expected cases for conditional tree-temporal scan
+            size_t daysInDataTimeRange = _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1;
+            TimeIntervalContainer_t totalcases_by_timeinterval(daysInDataTimeRange, 0);
+            for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
+                for (size_t t=0; t < (*itr)->refIntC_C().size(); ++t) {
+                    totalcases_by_timeinterval[t] += (*itr)->refIntC_C()[t];
+                }
+            }
+            // expected number of cases is calculated slightly different when performing day of week adjustment
+            if (_parameters.isPerformingDayOfWeekAdjustment()) {
+                for (size_t n=0; n < _Nodes.size(); ++n) {
+                    NodeStructure& node = *(_Nodes[n]);
+                    const NodeStructure::CountContainer_t& cases = node.getIntC_C();
+                    // first calculate the total number of cases for this node, for each day of the week
+                    NodeStructure::CountContainer_t node_cases_by_dayofweek(7, 0);
+                    for (size_t idx=0; idx < cases.size(); ++idx) {
+                        node_cases_by_dayofweek[idx % 7] += cases[idx];
+                    }
+                    // now we can calculate the expected number of cases for this node
+                    NodeStructure::ExpectedContainer_t& nodeExpected = node.refIntN_C();
+                    for (size_t t=0; t < totalcases_by_timeinterval.size(); ++t) {
+                        double cases_day_of_week = static_cast<double>(totalcases_by_dayofweek[t % 7]);
+                        if (cases_day_of_week) nodeExpected[t] += static_cast<double>(totalcases_by_timeinterval[t]) * static_cast<double>(node_cases_by_dayofweek[t % 7]) / cases_day_of_week;
+                    }
+                }
+            } else {
+                // now we can calculate the expected number of cases
+                for (size_t n=0; n < _Nodes.size(); ++n) {
+                    NodeStructure::ExpectedContainer_t& nodeExpected = _Nodes[n]->refIntN_C();
+                    for (size_t t=0; t < totalcases_by_timeinterval.size(); ++t) {
+                        nodeExpected[t] += static_cast<double>(totalcases_by_timeinterval[t]) * static_cast<double>(totalcases_by_node[n]) / static_cast<double>(_TotalC);
+                    }
+                }
+            }
+        } else if (_parameters.getConditionalType() == Parameters::CASESEACHBRANCH && _parameters.isPerformingDayOfWeekAdjustment()) {
+            double daysInDataTimeRange = static_cast<double>(_parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1);
+            for (size_t n=0; n < _Nodes.size(); ++n) {
+                if (totalcases_by_node[n]) {
+                    NodeStructure::ExpectedContainer_t& nodeExpected = _Nodes[n]->refIntN_C();
+                    for (size_t t=0; t < nodeExpected.size(); ++t) {
+                        nodeExpected[t] += static_cast<double>(totalcases_by_node[n]) * (static_cast<double>(totalcases_by_dayofweek[t % 7])/static_cast<double>(_TotalC) / static_cast<double>(_day_of_week_indexes[t % 7].size()));
+                    }
+                }
+            }
+        }
+    }
+
+    // Calculates the total population at risk or total measure
+    for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
         _TotalN = std::accumulate((*itr)->refIntN_C().begin(), (*itr)->refIntN_C().end(), _TotalN);
     }
     // controls are read with population for Bernoulli -- so calculate total controls now
@@ -1054,7 +1373,10 @@ bool ScanRunner::setupTree() {
         } // for j
     } // for i < nNodes
 
-    if (_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI) {
+    if (_parameters.getModelType() == Parameters::POISSON ||
+        _parameters.getModelType() == Parameters::BERNOULLI ||
+        (_parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY) ||
+        (_parameters.getConditionalType() == Parameters::CASESEACHBRANCH && _parameters.isPerformingDayOfWeekAdjustment())) {
         // Checks that no node has negative expected cases or that a node with zero expected has observed cases.
         for (size_t i=0; i < _Nodes.size(); ++i) {
             // cout << "Node=" << i << ", BrC=" << Node[i].BrC << ", BrN=" << Node[i].BrN << endl;

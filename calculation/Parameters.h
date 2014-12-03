@@ -29,6 +29,8 @@ class Parameters {
                         MAXIMUM_WINDOW_FIXED,
                         MAXIMUM_WINDOW_TYPE,
                         MINIMUM_WINDOW_FIXED,
+                        /* Advanced Analysis - Adjustments */
+                        DAYOFWEEK_ADJUSTMENT,
                         /* Advanced Analysis - Inference */
                         REPLICATIONS,
                         RANDOMIZATION_SEED,
@@ -72,16 +74,39 @@ class Parameters {
         CV_MONTECARLO=0,                /* standard monte carlo */
         CV_POWER_VALUES                 /* user specified values */
     };
-    struct CreationVersion {unsigned int iMajor; unsigned int iMinor; unsigned int iRelease;};
     enum ResultsFormat {TEXT=0};
     enum ParametersFormat {XML=0, JSON};
-    enum ModelType {POISSON=0, BERNOULLI, TEMPORALSCAN};
+    enum ModelType {POISSON=0, BERNOULLI, UNIFORM, MODEL_NOT_APPLICABLE};
     enum CutType {SIMPLE=0, PAIRS, TRIPLETS, ORDINAL, COMBINATORIAL};
     enum ScanType {TREEONLY=0, TREETIME};
-    enum ConditionalType {UNCONDITIONAL=0, TOTALCASES, CASESEACHBRANCH};
+    enum ConditionalType {UNCONDITIONAL=0, TOTALCASES, CASESEACHBRANCH, CASESBRANCHANDDAY};
     enum MaximumWindowType {PERCENTAGE_WINDOW=0, FIXED_LENGTH};
     typedef std::map<std::string,Parameters::CutType> cut_map_t;
     typedef std::pair<cut_map_t, cut_map_t> cut_maps_t;
+
+    struct CreationVersion {
+        unsigned int iMajor;
+        unsigned int iMinor;
+        unsigned int iRelease;
+
+        bool operator<(const CreationVersion& other) const {
+            if (iMajor == other.iMajor) {
+                if (iMinor == other.iMinor) {
+                    return iRelease < other.iRelease;
+                } else {
+                    return iMinor < other.iMinor;
+                }
+            } else {
+                return iMajor < other.iMajor;
+            }
+        }
+        bool operator==(const CreationVersion& other) const {
+            return iMajor == other.iMajor && iMinor == other.iMinor && iRelease == other.iRelease;
+        }
+        bool operator!=(const CreationVersion& other) const {
+            return !(*this == other);
+        }
+    };
 
   private:
     unsigned int                        _numRequestedParallelProcesses;
@@ -126,6 +151,7 @@ class Parameters {
     int                                 _power_evaluation_totalcases;
     unsigned int                        _power_replica; /** number of replicas in power step  of power evaluation */
     std::string                         _power_alt_hypothesis_filename;
+    bool                                _dayofweek_adjustment;
 
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
@@ -166,6 +192,7 @@ class Parameters {
     unsigned int                        getNumRequestedParallelProcesses() const {return _numRequestedParallelProcesses;}
     const std::string                 & getOutputFileName() const {return _outputFileName; }
     const std::string                 & getOutputSimulationsFilename() const {return _output_sim_file;}
+    bool                                getPerformDayOfWeekAdjustment() const {return _dayofweek_adjustment;}
     bool                                getPerformPowerEvaluations() const {return _perform_power_evaluations;}
     const std::string                 & getPowerEvaluationAltHypothesisFilename() const {return _power_alt_hypothesis_filename;}
     int                                 getPowerEvaluationTotalCases() const {return _power_evaluation_totalcases;}
@@ -186,6 +213,7 @@ class Parameters {
     bool                                isGeneratingHtmlResults() const {return _generateHtmlResults;}
     bool                                isGeneratingLLRResults() const {return _generate_llr_results;}
     bool                                isGeneratingTableResults() const {return _generateTableResults;}
+    bool                                isPerformingDayOfWeekAdjustment() const {return _scan_type == Parameters::TREETIME && _dayofweek_adjustment;}
     bool                                isPrintColumnHeaders() const {return _printColumnHeaders;}
     bool                                isRandomlyGeneratingSeed() const {return _randomlyGenerateSeed;}
     bool                                isReadingSimulationData() const {return _read_simulations;}
@@ -215,6 +243,7 @@ class Parameters {
     void                                setNumReplications(unsigned int replications) {_replications = replications;}
     void                                setOutputFileName(const char * sOutPutFileName, bool bCorrectForRelativePath=false);
     void                                setOutputSimulationsFilename(const char * s, bool bCorrectForRelativePath=false);
+    void                                setPerformDayOfWeekAdjustment(bool b) {_dayofweek_adjustment = b;}
     void                                setPerformPowerEvaluations(bool b) {_perform_power_evaluations = b;}
     void                                setPowerEvaluationReplications(unsigned int i) {_power_replica = i;}
     void                                setPowerEvaluationAltHypothesisFilename(const char * s, bool bCorrectForRelativePath=false);

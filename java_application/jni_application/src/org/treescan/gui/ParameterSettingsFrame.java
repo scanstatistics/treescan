@@ -286,9 +286,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         }
     }
 
-    /**
-     * checks 'Output' tab
-     */
+    /** checks 'Output' tab */
     private void CheckOutputSettings() {
         if (_outputFileTextField.getText().length() == 0) {
             throw new SettingsException("Please specify a results file.", (Component) _outputFileTextField);
@@ -343,9 +341,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _unconditionalButton.setSelected(parameters.getConditionalType() == Parameters.ConditionalType.UNCONDITIONAL);
         _conditionalTotalCasesButton.setSelected(parameters.getConditionalType() == Parameters.ConditionalType.TOTALCASES);
         _conditionalBranchCasesButton.setSelected(parameters.getConditionalType() == Parameters.ConditionalType.CASESEACHBRANCH);
+        _conditionalNodeTimeButton.setSelected(parameters.getConditionalType() == Parameters.ConditionalType.CASESBRANCHANDDAY);
         _PoissonButton.setSelected(parameters.getModelType() == Parameters.ModelType.POISSON);
         _BernoulliButton.setSelected(parameters.getModelType() == Parameters.ModelType.BERNOULLI);
-        _uniformButton.setSelected(parameters.getModelType() == Parameters.ModelType.TEMPORALSCAN);
+        _uniformButton.setSelected(parameters.getModelType() == Parameters.ModelType.UNIFORM);
         _eventProbabiltyNumerator.setText(Integer.toString(parameters.getProbabilityRatioNumerator()));
         _eventProbabiltyDenominator.setText(Integer.toString(parameters.getProbabilityRatioDenominator()));
         _temporalStartWindowBegin.setText(Integer.toString(parameters.getTemporalStartRangeBegin()));
@@ -380,13 +379,15 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             parameters.setConditionalType(Parameters.ConditionalType.TOTALCASES.ordinal());
         } else if (_conditionalBranchCasesButton.isSelected()) {
             parameters.setConditionalType(Parameters.ConditionalType.CASESEACHBRANCH.ordinal());
+        } else if (_conditionalNodeTimeButton.isSelected()) {
+            parameters.setConditionalType(Parameters.ConditionalType.CASESBRANCHANDDAY.ordinal());
         }
         if (_PoissonButton.isEnabled() && _PoissonButton.isSelected()) {
             parameters.setModelType(Parameters.ModelType.POISSON.ordinal());
         } else if (_BernoulliButton.isEnabled() && _BernoulliButton.isSelected()) {
             parameters.setModelType(Parameters.ModelType.BERNOULLI.ordinal());
         } else if (_uniformButton.isEnabled() && _uniformButton.isSelected()) {
-            parameters.setModelType(Parameters.ModelType.TEMPORALSCAN.ordinal());
+            parameters.setModelType(Parameters.ModelType.UNIFORM.ordinal());
         }
         parameters.setProbabilityRatioNumerator(Integer.parseInt(_eventProbabiltyNumerator.getText()));
         parameters.setProbabilityRatioDenominator(Integer.parseInt(_eventProbabiltyDenominator.getText()));
@@ -418,12 +419,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     public Parameters.ConditionalType getConditionalType() {
         if (_unconditionalButton.isSelected()) {
             return Parameters.ConditionalType.UNCONDITIONAL;
-        }
-        if (_conditionalTotalCasesButton.isSelected()) {
+        } else if (_conditionalTotalCasesButton.isSelected()) {
             return Parameters.ConditionalType.TOTALCASES;
-        }
-        if (_conditionalBranchCasesButton.isSelected()) {
+        } else if (_conditionalBranchCasesButton.isSelected()) {
             return Parameters.ConditionalType.CASESEACHBRANCH;
+        } else if (_conditionalNodeTimeButton.isSelected()) {
+            return Parameters.ConditionalType.CASESBRANCHANDDAY;            
         }
         return null;
     }
@@ -434,7 +435,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         if (_BernoulliButton.isSelected() && _BernoulliButton.isEnabled())
             return Parameters.ModelType.BERNOULLI;
         if (_uniformButton.isSelected() && _uniformButton.isEnabled())
-            return Parameters.ModelType.TEMPORALSCAN;        
+            return Parameters.ModelType.UNIFORM;        
         return null;
     }
     
@@ -442,11 +443,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         new ExecutionOptionsDialog(parent, _parameters).setVisible(true);
     }
 
-    /**
-     * Modally shows import dialog.
-     */
+    /** Modally shows import dialog. */
     public void LaunchImporter(String sFileName, FileImporter.InputFileType eFileType) {
-        ImportWizardDialog wizard = new ImportWizardDialog(TreeScanApplication.getInstance(), sFileName, _parameters.getSourceFileName(), eFileType, getModelType());
+        ImportWizardDialog wizard = new ImportWizardDialog(TreeScanApplication.getInstance(), sFileName, _parameters.getSourceFileName(), eFileType, getModelType(), getScanType());
         wizard.setVisible(true);
         if (!wizard.getCancelled()) {
             switch (eFileType) {  // set parameters
@@ -472,17 +471,19 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _unconditionalButton.setEnabled(!treeAndTime);
         _conditionalTotalCasesButton.setEnabled(!treeAndTime);
         _conditionalBranchCasesButton.setEnabled(treeAndTime);
+        _conditionalNodeTimeButton.setEnabled(treeAndTime);
         if ((!_unconditionalButton.isEnabled() && _unconditionalButton.isSelected()) || (!_conditionalTotalCasesButton.isEnabled() && _conditionalTotalCasesButton.isSelected())) {
             _conditionalBranchCasesButton.setSelected(true);
         }
-        if (!_conditionalBranchCasesButton.isEnabled() && _conditionalBranchCasesButton.isSelected()) {
-            _conditionalTotalCasesButton.setSelected(true);
+        if ((!_conditionalBranchCasesButton.isEnabled() && _conditionalBranchCasesButton.isSelected()) ||
+            (!_conditionalNodeTimeButton.isEnabled() && _conditionalNodeTimeButton.isSelected())) {
+            _unconditionalButton.setSelected(true);
         }
         // Poisson and Bernoulli are only available with tree only
         _PoissonButton.setEnabled(!treeAndTime);
         _BernoulliButton.setEnabled(!treeAndTime);
-        // uniform is only available with tree-time
-        _uniformButton.setEnabled(treeAndTime);
+        // uniform is only available with tree-time and conditional on branch
+        _uniformButton.setEnabled(treeAndTime && _conditionalBranchCasesButton.isSelected());
         // event probability inputs only available for unconditional Bernoulli
         boolean enabled = _BernoulliButton.isEnabled() && _BernoulliButton.isSelected() && _unconditionalButton.isSelected();
         _eventProbabilityLabel.setEnabled(enabled);
@@ -500,7 +501,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _temporalEndWindowToLabel.setEnabled(_temporalWindowGroup.isEnabled());
         _temporalEndWindowEnd.setEnabled(_temporalWindowGroup.isEnabled());
         _advancedParametersSetting.enableTemporalOptionsGroup(treeAndTime);
-        _advancedParametersSetting.enablePowerEvaluationsGroup();
+        _advancedParametersSetting.enableAdjustmentsOptions();
+        _advancedParametersSetting.enablePowerEvaluationsGroup();        
         // data time range group
         _data_time_range_group.setEnabled(treeAndTime);
         _data_time_range_start_label.setEnabled(_data_time_range_group.isEnabled());
@@ -534,6 +536,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _conditionalTotalCasesButton = new javax.swing.JRadioButton();
         _unconditionalButton = new javax.swing.JRadioButton();
         _conditionalBranchCasesButton = new javax.swing.JRadioButton();
+        _conditionalNodeTimeButton = new javax.swing.JRadioButton();
         _temporalWindowGroup = new javax.swing.JPanel();
         _temporalStartWindowLabel = new javax.swing.JLabel();
         _temporalStartWindowBegin = new javax.swing.JTextField();
@@ -713,18 +716,30 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
+        conditionalButtonGroup.add(_conditionalNodeTimeButton);
+        _conditionalNodeTimeButton.setText("Node and Time");
+        _conditionalNodeTimeButton.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    enableSettingsForStatisticModelCombination();
+                }
+            }
+        });
+
         javax.swing.GroupLayout _scanStatisticPanelLayout = new javax.swing.GroupLayout(_scanStatisticPanel);
         _scanStatisticPanel.setLayout(_scanStatisticPanelLayout);
         _scanStatisticPanelLayout.setHorizontalGroup(
             _scanStatisticPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_scanStatisticPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_unconditionalButton, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+                .addComponent(_unconditionalButton, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_conditionalTotalCasesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
+                .addComponent(_conditionalTotalCasesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_conditionalBranchCasesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE)
-                .addGap(20, 20, 20))
+                .addComponent(_conditionalBranchCasesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_conditionalNodeTimeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)
+                .addContainerGap())
         );
         _scanStatisticPanelLayout.setVerticalGroup(
             _scanStatisticPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -732,7 +747,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addGroup(_scanStatisticPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_unconditionalButton)
                     .addComponent(_conditionalTotalCasesButton)
-                    .addComponent(_conditionalBranchCasesButton))
+                    .addComponent(_conditionalBranchCasesButton)
+                    .addComponent(_conditionalNodeTimeButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -930,7 +946,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             _probabilityModelPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_probabilityModelPanel1Layout.createSequentialGroup()
                 .addComponent(_uniformButton)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addGap(0, 59, Short.MAX_VALUE))
         );
 
         _advancedAnalysisButton.setText("Advanced >>"); // NOI18N
@@ -966,14 +982,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap()
                 .addComponent(_scanStatisticPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_probabilityModelPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_scanStatisticPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_probabilityModelPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_temporalWindowGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 54, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -1183,7 +1199,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_countFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_data_time_range_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 208, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 177, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -1261,7 +1277,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_reportResultsAsHTML)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportResultsAsCsvTable)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 267, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 236, Short.MAX_VALUE)
                 .addComponent(_advancedOutputButton)
                 .addContainerGap())
         );
@@ -1281,7 +1297,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addContainerGap())
         );
 
@@ -1295,6 +1311,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JButton _advancedOutputButton;
     private javax.swing.JPanel _analysisTab;
     private javax.swing.JRadioButton _conditionalBranchCasesButton;
+    private javax.swing.JRadioButton _conditionalNodeTimeButton;
     private javax.swing.JRadioButton _conditionalTotalCasesButton;
     private javax.swing.JLabel _controlFileLabel;
     private javax.swing.JButton _countFileBrowseButton;

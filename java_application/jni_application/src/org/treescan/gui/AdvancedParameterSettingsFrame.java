@@ -99,9 +99,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /**
-     *
-     */
+    /** */
     public void setVisible(boolean value, FocusedTabSet focusedTabSet) {
         if (value == false) {
             _closeButton.requestFocus();
@@ -157,7 +155,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (_partOfRegularAnalysis.isSelected() == true);
         bReturn &= _totalPowerCases.getText().equals("600");
         bReturn &= _alternativeHypothesisFilename.getText().equals("");
-        bReturn &= _numberPowerReplications.getText().equals("1000");        
+        bReturn &= _numberPowerReplications.getText().equals("1000");  
+        bReturn &= _perform_dayofweek_adjustments.isSelected() == false;
         return bReturn;
     }
 
@@ -201,6 +200,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             case ANALYSIS:
                 setTitle("Advanced Analysis Options");
                 jTabbedPane1.addTab("Temporal Window", null, _advanced_temporal_window_tab, null);
+                jTabbedPane1.addTab("Adjustments", null, _advanced_adjustments_tab, null);                
                 jTabbedPane1.addTab("Inference", null, _advanced_inferenece_tab, null);
                 jTabbedPane1.addTab("Power Evaluation", null, _advanced_power_evaluation_tab, null);                
                 break;
@@ -234,6 +234,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setMaximumWindowLength(Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()));
         parameters.setMaximumWindowType(_percentageTemporalRadioButton.isSelected() ? Parameters.MaximumWindowType.PERCENTAGE_WINDOW : Parameters.MaximumWindowType.FIXED_LENGTH);
         parameters.setMinimumWindowLength(Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()));
+        
+        // Adjustments tab
+        parameters.setPerformDayOfWeekAdjustment(_perform_dayofweek_adjustments.isEnabled() && _perform_dayofweek_adjustments.isSelected());
         
         // Power Evaluations tab
         parameters.setPerformPowerEvaluations(_powerEvaluationsGroup.isEnabled() && _performPowerEvalautions.isSelected());
@@ -282,12 +285,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _maxTemporalClusterSizeTextField.setText("50");
         _maxTemporalClusterSizeUnitsTextField.setText("1");
         _minTemporalClusterSizeUnitsTextField.setText("2");
+        // Adjustments tab
+        _perform_dayofweek_adjustments.setSelected(false);
         // Power Evaluations tab
         _performPowerEvalautions.setSelected(false);
         _partOfRegularAnalysis.setSelected(true);
         _totalPowerCases.setText("600");
         _alternativeHypothesisFilename.setText("");
-        _numberPowerReplications.setText("1000");        
+        _numberPowerReplications.setText("1000");       
     }
 
     private void setupInterface(final Parameters parameters) {
@@ -304,6 +309,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _maxTemporalClusterSizeTextField.setText(Double.toString(parameters.getMaximumWindowPercentage()));
         _maxTemporalClusterSizeUnitsTextField.setText(Integer.toString(parameters.getMaximumWindowLength()));
         _minTemporalClusterSizeUnitsTextField.setText(Integer.toString(parameters.getMinimumWindowLength()));
+        
+        // Adjustments tab
+        _perform_dayofweek_adjustments.setSelected(parameters.getPerformDayOfWeekAdjustment());
         
         // Power Evaluations tab
         _performPowerEvalautions.setSelected(parameters.getPerformPowerEvaluations());
@@ -475,7 +483,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _minTemporalClusterSizeUnitsTextField.setEnabled(bEnable);
         _minTemporalTimeUnitsLabel.setEnabled(bEnable);
     }
-
+    
+    /** enables options of the Adjustments tab */
+    public void enableAdjustmentsOptions() {
+        _perform_dayofweek_adjustments.setSelected(_settings_window.getScanType() == Parameters.ScanType.TREETIME);
+    }
+    
     /**
      * Enabled the power evaluations group based upon current settings.
      */
@@ -558,6 +571,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportLLRResultsAsCsvTable = new javax.swing.JCheckBox();
         _report_critical_values_group = new javax.swing.JPanel();
         _reportCriticalValuesCheckBox = new javax.swing.JCheckBox();
+        _advanced_adjustments_tab = new javax.swing.JPanel();
+        _perform_dayofweek_adjustments = new javax.swing.JCheckBox();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
@@ -630,7 +645,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_cutFileBrowseButton)
                     .addComponent(_cutFileImportButton)
                     .addComponent(_cutFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(209, Short.MAX_VALUE))
+                .addContainerGap(217, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced Input", _advanced_input_tab);
@@ -813,7 +828,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(85, Short.MAX_VALUE))
+                .addContainerGap(93, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _advanced_temporal_window_tab);
@@ -874,7 +889,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advanced_inferenece_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(200, Short.MAX_VALUE))
+                .addContainerGap(208, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _advanced_inferenece_tab);
@@ -1032,7 +1047,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_alternativeHypothesisFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_alternativeHypothesisFilenameButton))
-                .addGap(0, 44, Short.MAX_VALUE))
+                .addGap(0, 52, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout _advanced_power_evaluation_tabLayout = new javax.swing.GroupLayout(_advanced_power_evaluation_tab);
@@ -1126,10 +1141,36 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_report_critical_values_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(122, Short.MAX_VALUE))
+                .addContainerGap(130, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
+
+        _perform_dayofweek_adjustments.setText("Perform Day of Week Adjustments");
+        _perform_dayofweek_adjustments.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
+        javax.swing.GroupLayout _advanced_adjustments_tabLayout = new javax.swing.GroupLayout(_advanced_adjustments_tab);
+        _advanced_adjustments_tab.setLayout(_advanced_adjustments_tabLayout);
+        _advanced_adjustments_tabLayout.setHorizontalGroup(
+            _advanced_adjustments_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advanced_adjustments_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_perform_dayofweek_adjustments, javax.swing.GroupLayout.DEFAULT_SIZE, 590, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _advanced_adjustments_tabLayout.setVerticalGroup(
+            _advanced_adjustments_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advanced_adjustments_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_perform_dayofweek_adjustments)
+                .addContainerGap(246, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Adjustments", _advanced_adjustments_tab);
 
         _closeButton.setText("Close"); // NOI18N
         _closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1173,6 +1214,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel _advanced_adjustments_tab;
     private javax.swing.JPanel _advanced_inferenece_tab;
     private javax.swing.JPanel _advanced_input_tab;
     private javax.swing.JPanel _advanced_output_tab;
@@ -1202,6 +1244,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _percentageOfStudyPeriodLabel;
     private javax.swing.JRadioButton _percentageTemporalRadioButton;
     private javax.swing.JCheckBox _performPowerEvalautions;
+    private javax.swing.JCheckBox _perform_dayofweek_adjustments;
     private javax.swing.ButtonGroup _powerEstimationButtonGroup;
     private javax.swing.JRadioButton _powerEvaluationWithCaseFile;
     private javax.swing.JRadioButton _powerEvaluationWithSpecifiedCases;

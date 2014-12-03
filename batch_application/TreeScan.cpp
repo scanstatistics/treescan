@@ -65,7 +65,6 @@ int main(int argc, char* argv[]) {
     std::string sMessage;
     po::variables_map vm;
     PrintScreen console(false);
-    ParameterProgramOptions parameterOptions(parameters, console);
     bool verifyParameters=false, printParameters=false;
 
     try {
@@ -82,6 +81,25 @@ int main(int argc, char* argv[]) {
             ("write-parameters,w", po::value<std::string>(), "write parameters to file")
             ("help,h", "Help");
 
+        // try to determine if user has specified parameter options version
+        Parameters::CreationVersion opts_version = {std::atoi(VERSION_MAJOR), std::atoi(VERSION_MINOR), std::atoi(VERSION_RELEASE)};
+        try {
+            // positional options
+            po::positional_options_description pd;
+            pd.add("parameter-file", -1);
+            const po::parsed_options& options = po::command_line_parser(argc, argv).options(application).allow_unregistered().style(po::command_line_style::default_style|po::command_line_style::case_insensitive).positional(pd).run();
+            for (size_t opt=0; opt < options.options.size(); ++opt) {
+                if (options.options.at(opt).string_key == "override-version" || options.options.at(opt).string_key == "n") {
+                    if (sscanf(options.options.at(opt).value.front().c_str(), "%u.%u.%u", &opts_version.iMajor, &opts_version.iMinor, &opts_version.iRelease) < 3)
+                        throw resolvable_error("Invalid 'options-version' specified '%s', format of #.#.# expected.", options.options.at(opt).string_key.c_str());
+                }
+            }
+        } catch (std::exception& x) {
+            console.Printf("Program options error: %s\n", BasePrint::P_ERROR, x.what());
+            __TreeScanExit();
+            return 1;
+        }
+
         /* hidden options */
         po::options_description hidden("Hidden options", 200);
         hidden.add_options()("randomization-seed", po::value<std::string>(), "randomization seed (0 < Seed < 2147483647)")
@@ -92,7 +110,8 @@ int main(int argc, char* argv[]) {
         pd.add("parameter-file", 1);
         /* parse program options */
         po::options_description cmdline_options;
-
+        // define parameter options based upon determined version
+        ParameterProgramOptions parameterOptions(parameters, opts_version, console);
         ParameterProgramOptions::ParamOptContainer_t opt_descriptions;
         parameterOptions.getOptions(opt_descriptions);
         for (size_t t=0; t < opt_descriptions.size(); ++t)
@@ -125,8 +144,9 @@ int main(int argc, char* argv[]) {
 
         /* apply parameter overrides*/
         if (!parameterOptions.setParameterOverrides(vm)) {
-            throw resolvable_error("\nThe parameter settings that prevent TreeScan from continuing.\n"
-                                   "Please review above message(s) and modify parameter settings accordingly.");
+            if (!ParameterAccessCoordinator(parameters).read(vm["parameter-file"].as<std::string>().c_str(), console))
+                throw resolvable_error("\nThe parameter settings that prevent TreeScan from continuing.\n"
+                                       "Please review above message(s) and modify parameter settings accordingly.");
         }
         /* write parameters to file, if requested */
         if (vm.count("write-parameters")) {

@@ -37,12 +37,26 @@ bool ParametersValidate::checkFileExists(const std::string& filename, const std:
     with other parameters are correct. Errors are sent to print direction and*/
 bool ParametersValidate::Validate(BasePrint& printDirection) const {
     bool bValid=true;
-    bValid &= ValidateInputParameters(printDirection);
     bValid &= ValidateAnalysisParameters(printDirection);
-    bValid &=  ValidateOutputParameters(printDirection);
+    bValid &= ValidateInputParameters(printDirection);
+    bValid &= ValidateOutputParameters(printDirection);
     bValid &= ValidateTemporalWindowParameters(printDirection);
+    bValid &= ValidateAdjustmentsParameters(printDirection);
     bValid &= ValidatePowerEvaluationParametersParameters(printDirection);
-    bValid &=  ValidateRandomizationSeed(printDirection);
+    bValid &= ValidateRandomizationSeed(printDirection);
+    return bValid;
+}
+
+/** Validates 'Adjustments' parameters. */
+bool ParametersValidate::ValidateAdjustmentsParameters(BasePrint & PrintDirection) const {
+    bool bValid=true;
+
+    if (_parameters.getPerformDayOfWeekAdjustment()) {
+        if (_parameters.getScanType() == Parameters::TREEONLY) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe day of week adjustment is not implemented for the 'Tree Only' scan type.\n", BasePrint::P_PARAMERROR);
+        }
+    }
     return bValid;
 }
 
@@ -81,7 +95,7 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                                    "have permissions to read from this directory and file.\n",
                                    BasePrint::P_PARAMERROR, _parameters.getCutsFileName().c_str());
         }
-        if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
+        if (_parameters.getModelType() == Parameters::UNIFORM) {
             const DataTimeRangeSet::rangeset_t& rangeSets = _parameters.getDataTimeRangeSet().getDataTimeRangeSets();
             if (rangeSets.size() == 0) {
                 bValid = false;
@@ -154,43 +168,69 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
 
 /** Validates input/output file parameters. */
 bool ParametersValidate::ValidateAnalysisParameters(BasePrint& PrintDirection) const {
-  bool bValid=true;
-  try {
-      if (_parameters.getModelType() == Parameters::BERNOULLI && 
-          (_parameters.getProbabilityRatio().first == 0 || _parameters.getProbabilityRatio().second == 0 || 
-          _parameters.getProbabilityRatio().first >= _parameters.getProbabilityRatio().second)) {
-          bValid = false;
-          PrintDirection.Printf("Invalid Parameter Setting:\nCase probabilty must be between zero and one.\n", BasePrint::P_PARAMERROR);
-      }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ValidateAnalysisParameters()","ParametersValidate");
-    throw;
-  }
-  return bValid;
+    bool bValid=true;
+    try {
+        switch (_parameters.getScanType()) {
+            case Parameters::TREEONLY:
+                if (!(_parameters.getConditionalType() == Parameters::UNCONDITIONAL || _parameters.getConditionalType() == Parameters::TOTALCASES)) {
+                    bValid = false;
+                    PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree Only' can either be unconditioned or conditioned on the total cases.\n", BasePrint::P_PARAMERROR);
+                }
+                if (!(_parameters.getModelType() == Parameters::BERNOULLI || _parameters.getModelType() == Parameters::POISSON)) {
+                    bValid = false;
+                    PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree Only' is not implemented for selected model.\n", BasePrint::P_PARAMERROR);
+                }
+                break;
+            case Parameters::TREETIME:
+                if (!(_parameters.getConditionalType() == Parameters::CASESEACHBRANCH || _parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY)) {
+                    bValid = false;
+                    PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree and Time' can either be conditioned on the cases on each branch or on each branch and day.\n", BasePrint::P_PARAMERROR);
+                }
+                // if conditioning on both node and time, their isn't a model type the user can select
+                if (bValid && _parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY) {
+                    const_cast<Parameters&>(_parameters).setModelType(Parameters::MODEL_NOT_APPLICABLE);
+                }
+                if (!(_parameters.getModelType() == Parameters::UNIFORM || _parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE)) {
+                    bValid = false;
+                    PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree and Time' is not implemented for the selected model type.\n", BasePrint::P_PARAMERROR);
+                }
+                break;
+            default: throw prg_error("Unknown scan type (%d).", "ValidateAnalysisParameters()", _parameters.getScanType());
+        }
+        if (_parameters.getModelType() == Parameters::BERNOULLI &&
+            (_parameters.getProbabilityRatio().first == 0 || _parameters.getProbabilityRatio().second == 0 ||
+            _parameters.getProbabilityRatio().first >= _parameters.getProbabilityRatio().second)) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nCase probabilty must be between zero and one.\n", BasePrint::P_PARAMERROR);
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ValidateAnalysisParameters()","ParametersValidate");
+        throw;
+    }
+    return bValid;
 }
 
 /** Validates output options. */
 bool ParametersValidate::ValidateOutputParameters(BasePrint & PrintDirection) const {
-  bool bValid=true;
-  try {
-      //validate output file
-      if (_parameters.getOutputFileName().empty()) {
-        bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\nNo results file specified.\n", BasePrint::P_PARAMERROR);
-      } else if (!ValidateFileAccess(_parameters.getOutputFileName(), true)) {
-        bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\n"
-                              "Results file '%s' could not be opened for writing. "
-                              "Please confirm that the path and/or file name are valid and that you "
-                              "have permissions to write to this directory and file.\n",
-                              BasePrint::P_PARAMERROR, _parameters.getOutputFileName().c_str());
-      }
-  } catch (prg_exception& x) {
-    x.addTrace("ValidateOutputOptionParameters()","ParametersValidate");
-    throw;
-  }
-  return bValid;
+    bool bValid=true;
+    try {
+        //validate output file
+        if (_parameters.getOutputFileName().empty()) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nNo results file specified.\n", BasePrint::P_PARAMERROR);
+        } else if (!ValidateFileAccess(_parameters.getOutputFileName(), true)) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                  "Results file '%s' could not be opened for writing. "
+                                  "Please confirm that the path and/or file name are valid and that you "
+                                  "have permissions to write to this directory and file.\n",
+                                  BasePrint::P_PARAMERROR, _parameters.getOutputFileName().c_str());
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ValidateOutputOptionParameters()","ParametersValidate");
+        throw;
+    }
+    return bValid;
 }
 
 /** Validates power evaluation options. */
@@ -255,7 +295,7 @@ bool ParametersValidate::ValidatePowerEvaluationParametersParameters(BasePrint &
 /** Validates temporal window settings. */
 bool ParametersValidate::ValidateTemporalWindowParameters(BasePrint & PrintDirection) const {
     bool bValid=true;
-    if (_parameters.getModelType() == Parameters::TEMPORALSCAN) {
+    if (_parameters.getModelType() == Parameters::UNIFORM) {
         switch (_parameters.getMaximumWindowType()) {
             case Parameters::PERCENTAGE_WINDOW: {
                 if (_parameters.getMaximumWindowPercentage() < 0 || _parameters.getMaximumWindowPercentage() > 50.0) {

@@ -276,6 +276,9 @@
     <ClCompile Include="unittest_ParametersValidate.cpp">
       <Filter>Source Files\unit_tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\randomization\PermutationDataRandomizer.cpp">
+      <Filter>Source Files\source\calculation\randomization</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test_helper.h">
@@ -409,6 +412,9 @@
     </ClInclude>
     <ClInclude Include="fixture_examples.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\PermutationDataRandomizer.h">
+      <Filter>Header Files\source\calculation\randomization</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

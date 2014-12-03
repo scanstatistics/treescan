@@ -18,6 +18,7 @@ class ParametersValidate {
     bool checkFileExists(const std::string& filename, const std::string& filetype, BasePrint& PrintDirection, bool writeCheck=false) const;
 
     bool ValidateAnalysisParameters(BasePrint & PrintDirection) const;
+    bool ValidateAdjustmentsParameters(BasePrint & PrintDirection) const;
     bool ValidateInputParameters(BasePrint & PrintDirection) const;
     bool ValidateOutputParameters(BasePrint & PrintDirection) const;
     bool ValidatePowerEvaluationParametersParameters(BasePrint & PrintDirection) const;

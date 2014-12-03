@@ -4,9 +4,9 @@ public class Parameters implements Cloneable {
     public native boolean Read(String filename);  
     public native void Write(String filename);
     public enum ResultsFormat {TEXT};
-    public enum ModelType {POISSON, BERNOULLI, TEMPORALSCAN};
+    public enum ModelType {POISSON, BERNOULLI, UNIFORM, MODEL_NOT_APPLICABLE};
     public enum ScanType {TREEONLY, TREETIME};
-    public enum ConditionalType {UNCONDITIONAL, TOTALCASES, CASESEACHBRANCH};
+    public enum ConditionalType {UNCONDITIONAL, TOTALCASES, CASESEACHBRANCH, CASESBRANCHANDDAY};
     public enum MaximumWindowType {PERCENTAGE_WINDOW, FIXED_LENGTH};
     public enum PowerEvaluationType {PE_WITH_ANALYSIS, PE_ONLY_CASEFILE,PE_ONLY_SPECIFIED_CASES};    
     public class CreationVersion {
@@ -57,6 +57,7 @@ public class Parameters implements Cloneable {
     private int _power_evaluation_totalcases=600;
     private int _power_replica=_replications+1;
     private String _power_alt_hypothesis_filename="";
+    private boolean _dayofweek_adjustment=false;
 
     public Parameters() {
     	super();    	
@@ -114,10 +115,12 @@ public class Parameters implements Cloneable {
           if (_power_replica != rhs._power_replica) return false;
           if (!_power_alt_hypothesis_filename.equals(rhs._power_alt_hypothesis_filename)) return false;
           if (_report_critical_values != rhs._report_critical_values) return false;
+          if (_dayofweek_adjustment != rhs._dayofweek_adjustment) return false;
           
           return true;
     }
-    
+    public boolean getPerformDayOfWeekAdjustment() {return _dayofweek_adjustment;}
+    public void setPerformDayOfWeekAdjustment(boolean b) {_dayofweek_adjustment = b;}
     public boolean getReportCriticalValues() {return _report_critical_values;}
     public void setReportCriticalValues(boolean b) {_report_critical_values = b;}
     public boolean getPerformPowerEvaluations() {return _perform_power_evaluations;}
@@ -188,7 +191,13 @@ public class Parameters implements Cloneable {
     public ResultsFormat getResultsFormat() {return _resultsFormat;}
     public void setResultsFormat(int ord) {try {_resultsFormat = ResultsFormat.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, ResultsFormat.values());}}
     public ModelType getModelType() {return _modelType;}
-    public void setModelType(int ord) {try {_modelType = ModelType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, ModelType.values());}}
+    public void setModelType(int ord) {
+        try {
+            _modelType = ModelType.values()[ord];
+            // reset model not applicable to uniform in the gui
+            if (_modelType == ModelType.MODEL_NOT_APPLICABLE)  _modelType = ModelType.UNIFORM;
+        } catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, ModelType.values());}
+    }
     public int getProbabilityRatioNumerator() {return _probability_ratio_numerator;}
     public void setProbabilityRatioNumerator(int i) {_probability_ratio_numerator = i;}
     public int getProbabilityRatioDenominator() {return _probability_ratio_denominator;}
