@@ -369,7 +369,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
     while (dataSource->readRecord()) {
         if (dataSource->getNumValues() != expectedColumns) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in count file %s. Expecting <indentifier>, <count>,%s %s but found %ld value%s.\n", 
+            _print.Printf("Error: Record %ld in count file %s. Expecting <identifier>, <count>,%s %s but found %ld value%s.\n", 
                           BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), 
                           (static_cast<int>(dataSource->getNumValues()) > expectedColumns) ? "has extra data" : "is missing data",
                           (_parameters.isDuplicates() ? " <duplicates>," : ""), 
@@ -573,7 +573,7 @@ bool ScanRunner::readCuts(const std::string& filename) {
     while (dataSource->readRecord()) {
         if (dataSource->getNumValues() != 2) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in cuts file %s. Expecting <indentifier>, <cut type [simple,pairs,triplets,ordinal]> but found %ld value%s.\n", 
+            _print.Printf("Error: Record %ld in cuts file %s. Expecting <identifier>, <cut type [simple,pairs,triplets,ordinal]> but found %ld value%s.\n", 
                           BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), (static_cast<int>(dataSource->getNumValues()) > 2) ? "has extra data" : "is missing data",
                           dataSource->getNumValues(), (dataSource->getNumValues() == 1 ? "" : "s"));
             continue;
@@ -617,6 +617,10 @@ bool ScanRunner::reportResults(time_t start, time_t end) const {
             cutsWriter.write(k);
             k++;
         }
+    }
+    // write power evaluation results to separate file
+    if (_parameters.getPerformPowerEvaluations()) {
+        PowerEstimationRecordWriter(*this).write();
     }
     return status;
 }
@@ -726,7 +730,7 @@ bool ScanRunner::runPowerEvaluations() {
     for (size_t t=0; t < riskAdjustments.size(); ++t) {
         _print.Printf("\nDoing the alternative replications for power set %d\n", BasePrint::P_STDOUT, t+1);
         boost::shared_ptr<AbstractRandomizer> core_randomizer(AbstractRandomizer::getNewRandomizer(*this));
-        boost::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, *riskAdjustments[t], _parameters));
+        boost::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, *riskAdjustments[t], _parameters, _TotalC));
         if (_parameters.isWritingSimulationData()) {
             if (t == 0 && _parameters.getCriticalValuesType() == Parameters::CV_POWER_VALUES)
                 // if we didn't perform monte carlo simulations, truncate simulations write file on first power simulation

@@ -289,7 +289,7 @@ void MCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, para
     double result = grLoglikelihood->LogLikelihoodRatio(rResult.dSuccessfulResult.first);
     if (!_isPowerStep) {
         for (unsigned int k=0; k < grRunner.getCuts().size(); k++)
-            if (rResult.dSuccessfulResult.first > grRunner.getCuts().at(k)->getLogLikelihood()) grRunner.getCuts().at(k)->incrementRank();
+            if (rResult.dSuccessfulResult.first >= grRunner.getCuts().at(k)->getLogLikelihood()) grRunner.getCuts().at(k)->incrementRank();
     }
 
     if (_ratio_writer.get()) _ratio_writer->write(result);

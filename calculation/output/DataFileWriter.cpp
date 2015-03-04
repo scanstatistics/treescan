@@ -239,6 +239,11 @@ const char * DataRecordWriter::P_VALUE_FLD                               = "P-va
 const size_t DataRecordWriter::DEFAULT_LOC_FIELD_SIZE                    = 30;
 const size_t DataRecordWriter::MAX_LOC_FIELD_SIZE                        = 254;
 
+const char * DataRecordWriter::HYPOTHESIS_ALTERNATIVE_NUM_FIELD          = "Alternative Hypothesis";
+const char * DataRecordWriter::HA_ALPHA05_FIELD                          = "Alpha 0.05";
+const char * DataRecordWriter::HA_ALPHA01_FIELD                          = "Alpha 0.01";
+const char * DataRecordWriter::HA_ALPHA001_FIELD                         = "Alpha 0.001";
+
 ///////////// CutsRecordWriter ///////////////////////////////////
 
 const char * CutsRecordWriter::CUT_FILE_SUFFIX                            = "";
@@ -365,6 +370,52 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
         _csvWriter->writeRecord(Record);
     } catch (prg_exception& x) {
         x.addTrace("write()","CutsRecordWriter");
+        throw;
+    }
+}
+
+///////////// PowerEstimationRecordWriter ///////////////////////////////////
+
+const char * PowerEstimationRecordWriter::POWER_FILE_SUFFIX                            = "_power";
+
+/* constructor: defines data filefields and allocates csv data file writer. */
+PowerEstimationRecordWriter::PowerEstimationRecordWriter(const ScanRunner& scanRunner) : _scanner(scanRunner) {
+    unsigned short uwOffset=0;
+    std::string    buffer;
+
+    try {
+        CreateField(_dataFieldDefinitions, HYPOTHESIS_ALTERNATIVE_NUM_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+        CreateField(_dataFieldDefinitions, HA_ALPHA05_FIELD, FieldValue::ALPHA_FLD, 19, 0, uwOffset, 0);
+        CreateField(_dataFieldDefinitions, HA_ALPHA01_FIELD, FieldValue::ALPHA_FLD, 19, 0, uwOffset, 0);
+        CreateField(_dataFieldDefinitions, HA_ALPHA001_FIELD, FieldValue::ALPHA_FLD, 19, 0, uwOffset, 0);
+        _csvWriter.reset(new CSVDataFileWriter(getFilename(_scanner.getParameters(), buffer), _dataFieldDefinitions, _scanner.getParameters().isPrintColumnHeaders()));
+    } catch (prg_exception& x) {
+        x.addTrace("constructor()","PowerEstimationRecordWriter");
+        throw;
+    }
+}
+
+/* Returns the filename which alternative hypothesis are written. The filename is a derivative of the main results filename. */
+std::string& PowerEstimationRecordWriter::getFilename(const Parameters& parameters, std::string& buffer) {
+    return getDerivedFilename(parameters.getOutputFileName(), PowerEstimationRecordWriter::POWER_FILE_SUFFIX, CSVDataFileWriter::CSV_FILE_EXT, buffer);
+}
+
+/* Writes power estimation values for all alternative hypothesis iterations to csv file. */
+void PowerEstimationRecordWriter::write() const {
+    RecordBuffer  Record(_dataFieldDefinitions);
+
+    try {
+        std::string buffer;
+        ScanRunner::PowerEstimationContainer_t::const_iterator itr=_scanner.getPowerEstimations().begin(), itr_end=_scanner.getPowerEstimations().end();
+        for (;itr != itr_end; ++itr) {
+                Record.GetFieldValue(HYPOTHESIS_ALTERNATIVE_NUM_FIELD).AsDouble() = static_cast<double>(std::distance(_scanner.getPowerEstimations().begin(), itr) + 1);
+                Record.GetFieldValue(HA_ALPHA05_FIELD).AsString() = getRoundAsString(itr->get<0>(),buffer, 3);
+                Record.GetFieldValue(HA_ALPHA01_FIELD).AsString() = getRoundAsString(itr->get<1>(),buffer, 3);
+                Record.GetFieldValue(HA_ALPHA001_FIELD).AsString() = getRoundAsString(itr->get<2>(),buffer, 3);
+                _csvWriter->writeRecord(Record);
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("write()","PowerEstimationRecordWriter");
         throw;
     }
 }

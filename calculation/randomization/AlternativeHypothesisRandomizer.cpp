@@ -1,12 +1,14 @@
 //******************************************************************************
 #include "TreeScan.h"
 //******************************************************************************
+#include <numeric>
 #include "AlternativeHypothesisRandomizer.h"
 
 AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanRunner::NodeStructureContainer_t& treeNodes,
                                                                      boost::shared_ptr<AbstractRandomizer> randomizer,
                                                                      const RelativeRiskAdjustmentHandler& adjustments,
                                                                      const Parameters& parameters, 
+                                                                     int totalC,
                                                                      long lInitialSeed)
                                   : AbstractRandomizer(parameters, lInitialSeed), _randomizer(randomizer), _alternative_adjustments(adjustments) {
     // Not implemented for this model yet.
@@ -25,6 +27,15 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
         }
         // apply adjustments
         _alternative_adjustments.apply(_nodes_IntN_C);
+        // now re-calibrate expected counts given adjustments
+        double newTotalN=0.0;
+        for(RelativeRiskAdjustmentHandler::NodesExpectedContainer_t::const_iterator itr=_nodes_IntN_C.begin(); itr != _nodes_IntN_C.end(); ++itr) {
+            newTotalN = std::accumulate(itr->begin(), itr->end(), newTotalN);
+        }
+        double adjustN = static_cast<double>(totalC)/newTotalN;
+        for(RelativeRiskAdjustmentHandler::NodesExpectedContainer_t::iterator itr=_nodes_IntN_C.begin(); itr != _nodes_IntN_C.end(); ++itr) {
+            std::transform(itr->begin(), itr->end(), itr->begin(), std::bind1st(std::multiplies<double>(), adjustN));
+        }
         _nodes_proxy.reset(new AlternativeExpectedNodesProxy(_nodes_IntN_C));
     } else if  (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
         _nodes_proxy.reset(new AlternativeProbabilityNodesProxy(treeNodes, _alternative_adjustments, _parameters.getProbability()));

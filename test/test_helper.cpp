@@ -5,7 +5,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
 
-//#include "AnalysisRun.h"
+#include "ScanRunner.h"
 #include "Toolkit.h"
 #include "UtilityFunctions.h"
 
@@ -56,25 +56,24 @@ std::ifstream & getFileStream(std::ifstream& stream, const std::string& filename
     return stream;
 }
 
-void run_analysis(const std::string& analysis_name, std::string& results_user_directory, CParameters& parameters, BasePrint& print) {
+void run_analysis(const std::string& analysis_name, std::string& results_user_directory, Parameters& parameters, BasePrint& print) {
     // set results file to the user document directory
     std::stringstream filename;
-    /*filename << GetUserTemporaryDirectory(results_user_directory).c_str() << "\\" << analysis_name.c_str() << ".txt";
-    parameters.SetOutputFileName(filename.str().c_str());
+    filename << GetUserTemporaryDirectory(results_user_directory).c_str() << "\\" << analysis_name.c_str() << ".txt";
+    parameters.setOutputFileName(filename.str().c_str());
 
     time_t startTime;
     time(&startTime);
     AppToolkit::ToolKitCreate(boost::unit_test::framework::master_test_suite().argv[0]);
-    AnalysisRunner(parameters, startTime, print).Execute();
+    ScanRunner(parameters, print).run();
     AppToolkit::ToolKitDestroy();
-    */
 }
 
 CSV_Row_t& getCSVRow(std::ifstream& stream, CSV_Row_t& row) {
     row.clear();
     std::string line;
     std::getline(stream, line);
-    boost::escaped_list_separator<char> separator("\\", "\t\v\f\r\n ", "\"");
+    boost::escaped_list_separator<char> separator("\\", ",", "\"");
     boost::tokenizer<boost::escaped_list_separator<char> > headers(line, separator);
     for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=headers.begin(); itr != headers.end(); ++itr) {
         row.push_back(*itr);

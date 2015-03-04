@@ -22,6 +22,7 @@ class AlternativeHypothesisRandomizater : public AbstractRandomizer {
                                           boost::shared_ptr<AbstractRandomizer> randomizer,
                                           const RelativeRiskAdjustmentHandler& adjustments,
                                           const Parameters& parameters, 
+                                          int totalC,
                                           long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
         AlternativeHypothesisRandomizater(const AlternativeHypothesisRandomizater& other) : AbstractRandomizer(other), _alternative_adjustments(other._alternative_adjustments) {
             _randomizer.reset(other._randomizer->clone());

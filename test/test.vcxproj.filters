@@ -279,6 +279,9 @@
     <ClCompile Include="..\calculation\randomization\PermutationDataRandomizer.cpp">
       <Filter>Source Files\source\calculation\randomization</Filter>
     </ClCompile>
+    <ClCompile Include="squish81.cpp">
+      <Filter>Source Files\integration_tests</Filter>
+    </ClCompile>    
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test_helper.h">

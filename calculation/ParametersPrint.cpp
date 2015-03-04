@@ -201,7 +201,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getPowerEvaluationsParame
             case Parameters::PE_WITH_ANALYSIS: 
                 settings.push_back(std::make_pair(buffer,"Standard Analysis and Power Evaluation Together")); break;
             case Parameters::PE_ONLY_CASEFILE:
-                printString(buffer2, "Only Power Evaluation%s", (_parameters.getConditionalType() == Parameters::UNCONDITIONAL ? "" : ", Using Total Cases from Case File"));
+                printString(buffer2, "Only Power Evaluation%s", (_parameters.getConditionalType() == Parameters::UNCONDITIONAL ? "" : ", Using Total Cases from Count File"));
                 settings.push_back(std::make_pair(buffer,buffer2)); break;
             case Parameters::PE_ONLY_SPECIFIED_CASES: 
                 settings.push_back(std::make_pair(buffer,"Only Power Evaluation, Using Defined Total Cases")); 
@@ -228,6 +228,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getPowerEvaluationsParame
         printString(buffer, "%u", _parameters.getPowerEvaluationReplications());
         settings.push_back(std::make_pair("Number of Replications",buffer));
         settings.push_back(std::make_pair("Alternative Hypothesis File",_parameters.getPowerEvaluationAltHypothesisFilename()));
+        settings.push_back(std::make_pair("Alternative Hypothesis Results", PowerEstimationRecordWriter::getFilename(_parameters, buffer)));
         if (_parameters.isGeneratingLLRResults()) {
             settings.push_back(std::make_pair("Simulated Log Likelihood Ratios (HA)", LoglikelihoodRatioWriter::getFilename(_parameters, buffer, true)));
         }

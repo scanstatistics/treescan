@@ -74,7 +74,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::REPORT_CRITICAL_VALUES  : return "report critical values (y/n)";
             /* Power Evaluations */
             case Parameters::POWER_EVALUATIONS       : return "perform power evaluations (y/n)";
-            case Parameters::POWER_EVALUATION_TYPE   : return "power evaluation type (0=Analysis And Power Evaluation Together, 1=Only Power Evaluation With Case File, 2=Only Power Evaluation With Defined Total Cases)";
+            case Parameters::POWER_EVALUATION_TYPE   : return "power evaluation type (0=Analysis And Power Evaluation Together, 1=Only Power Evaluation With Count File, 2=Only Power Evaluation With Defined Total Cases)";
             case Parameters::CRITICAL_VALUES_TYPE    : return "critical values type (0=Monte Carlo, 1=User Specified Values)";
             case Parameters::CRITICAL_VALUE_05       : return "power evaluation critical value .05 (> 0)";
             case Parameters::CRITICAL_VALUE_01       : return "power evaluation critical value .01 (> 0)";

@@ -56,6 +56,10 @@ class DataRecordWriter {
     static const char         * LOG_LIKL_RATIO_FIELD;
     static const char         * TEST_STATISTIC_FIELD;
     static const char         * P_VALUE_FLD;
+    static const char         * HYPOTHESIS_ALTERNATIVE_NUM_FIELD;
+    static const char         * HA_ALPHA05_FIELD;
+    static const char         * HA_ALPHA01_FIELD;
+    static const char         * HA_ALPHA001_FIELD;
 
   protected:
     ptr_vector<FieldDef>        _dataFieldDefinitions;       /** field definitions              */
@@ -107,6 +111,24 @@ class CutsRecordWriter : public DataRecordWriter {
        static std::string & getFilename(const Parameters& parameters, std::string& buffer);
 
        void                  write(unsigned int cutIndex) const;
+};
+
+/* Data file writer for the power estimation. */
+class PowerEstimationRecordWriter : public DataRecordWriter {
+  public:
+    static const char         * POWER_FILE_SUFFIX;
+
+  private:
+       const ScanRunner                  &  _scanner;
+       std::auto_ptr<CSVDataFileWriter>     _csvWriter;
+
+   public:
+       PowerEstimationRecordWriter(const ScanRunner& scanRunner);
+       virtual ~PowerEstimationRecordWriter() {}
+
+       static std::string & getFilename(const Parameters& parameters, std::string& buffer);
+
+       void                  write() const;
 };
 
 /** Loglikelihood ratio data file writer. */
