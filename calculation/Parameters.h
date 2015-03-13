@@ -79,7 +79,7 @@ class Parameters {
     enum ModelType {POISSON=0, BERNOULLI, UNIFORM, MODEL_NOT_APPLICABLE};
     enum CutType {SIMPLE=0, PAIRS, TRIPLETS, ORDINAL, COMBINATORIAL};
     enum ScanType {TREEONLY=0, TREETIME};
-    enum ConditionalType {UNCONDITIONAL=0, TOTALCASES, CASESEACHBRANCH, CASESBRANCHANDDAY};
+    enum ConditionalType {UNCONDITIONAL=0, TOTALCASES, CASESEACHBRANCH, NODEANDTIME};
     enum MaximumWindowType {PERCENTAGE_WINDOW=0, FIXED_LENGTH};
     typedef std::map<std::string,Parameters::CutType> cut_map_t;
     typedef std::pair<cut_map_t, cut_map_t> cut_maps_t;

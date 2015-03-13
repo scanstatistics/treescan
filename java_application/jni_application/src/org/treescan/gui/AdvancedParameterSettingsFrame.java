@@ -19,15 +19,6 @@ import org.treescan.gui.utils.InputFileFilter;
 import org.treescan.gui.utils.Utils;
 import org.treescan.importer.FileImporter;
 
-/*
- * ParameterSettingsFrame.java
- *
- * Created on December 5, 2007, 11:07 AM
- */
-/**
- *
- * @author Hostovic
- */
 public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public enum FocusedTabSet { INPUT, ANALYSIS, OUTPUT };
     private JPanel _glass = null;
@@ -486,7 +477,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     
     /** enables options of the Adjustments tab */
     public void enableAdjustmentsOptions() {
-        _perform_dayofweek_adjustments.setSelected(_settings_window.getScanType() == Parameters.ScanType.TREETIME);
+        _perform_dayofweek_adjustments.setEnabled(_settings_window.getScanType() == Parameters.ScanType.TREETIME);
     }
     
     /**

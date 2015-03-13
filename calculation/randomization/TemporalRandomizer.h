@@ -46,7 +46,7 @@ class ConditionalTemporalRandomizer : public TemporalRandomizer, public Abstract
     public:
         ConditionalTemporalRandomizer(const ScanRunner& scanner, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
         virtual ~ConditionalTemporalRandomizer() {}
-        virtual ConditionalTemporalRandomizer * Clone() const {return new ConditionalTemporalRandomizer(*this);}
+        virtual ConditionalTemporalRandomizer * clone() const {return new ConditionalTemporalRandomizer(*this);}
 };
 //******************************************************************************
 #endif

@@ -83,7 +83,7 @@ private:
         _BrC_C.resize(container_size);
         if (parameters.getModelType() == Parameters::POISSON ||
             parameters.getModelType() == Parameters::BERNOULLI ||
-            (parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY) ||
+            (parameters.getConditionalType() == Parameters::NODEANDTIME) ||
             (parameters.getConditionalType() == Parameters::CASESEACHBRANCH && parameters.isPerformingDayOfWeekAdjustment())) {
             _IntN_C.resize(container_size);
             _BrN_C.resize(container_size);

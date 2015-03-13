@@ -283,13 +283,13 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
     if (_scanner.getParameters().isDuplicates())
         CreateField(_dataFieldDefinitions, OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
 
-    if (!(scanRunner.getParameters().getScanType() == Parameters::TREETIME && scanRunner.getParameters().getConditionalType() == Parameters::CASESBRANCHANDDAY)) {
+    if (!(scanRunner.getParameters().getScanType() == Parameters::TREETIME && scanRunner.getParameters().getConditionalType() == Parameters::NODEANDTIME)) {
         CreateField(_dataFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
         CreateField(_dataFieldDefinitions, EXCESS_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     }
 
     if (scanRunner.getParameters().getScanType() == Parameters::TREETIME &&
-        (scanRunner.getParameters().getConditionalType() == Parameters::CASESBRANCHANDDAY ||
+        (scanRunner.getParameters().getConditionalType() == Parameters::NODEANDTIME ||
         (scanRunner.getParameters().getConditionalType() == Parameters::CASESEACHBRANCH && scanRunner.getParameters().isPerformingDayOfWeekAdjustment()))) {
         // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
         CreateField(_dataFieldDefinitions, TEST_STATISTIC_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
@@ -334,7 +334,7 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
             case Parameters::MODEL_NOT_APPLICABLE :
             default :
                 if (params.getScanType() == Parameters::TREETIME) {
-                    if (params.isPerformingDayOfWeekAdjustment() || params.getConditionalType() == Parameters::CASESBRANCHANDDAY) {
+                    if (params.isPerformingDayOfWeekAdjustment() || params.getConditionalType() == Parameters::NODEANDTIME) {
                         Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getNodes()[_scanner.getCuts().at(cutIndex)->getID()]->getBrC());
                     } else {
                         Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getCuts().at(cutIndex)->getN());
@@ -352,13 +352,13 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
         if (params.isDuplicates())
             Record.GetFieldValue(OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD).AsDouble() = (_scanner.getCuts().at(cutIndex)->getC() - _scanner.getNodes().at(_scanner.getCuts().at(cutIndex)->getID())->getDuplicates())/_scanner.getCuts().at(cutIndex)->getExpected(_scanner);
 
-        if (!(params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::CASESBRANCHANDDAY)) {
+        if (!(params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME)) {
             Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getRelativeRisk(_scanner);
             Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getExcessCases(_scanner);
         }
 
         if (params.getScanType() == Parameters::TREETIME &&
-            (params.getConditionalType() == Parameters::CASESBRANCHANDDAY ||
+            (params.getConditionalType() == Parameters::NODEANDTIME ||
             (params.getConditionalType() == Parameters::CASESEACHBRANCH && params.isPerformingDayOfWeekAdjustment()))) {
             // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
             Record.GetFieldValue(TEST_STATISTIC_FIELD).AsDouble() = calcLogLikelihood->LogLikelihoodRatio(_scanner.getCuts().at(cutIndex)->getLogLikelihood());

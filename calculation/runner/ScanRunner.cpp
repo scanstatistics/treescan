@@ -43,7 +43,7 @@ double CutStructure::getExcessCases(const ScanRunner& scanner) {
             }
         } break;
         case Parameters::TREETIME: {
-            if (params.getConditionalType() == Parameters::CASESBRANCHANDDAY)
+            if (params.getConditionalType() == Parameters::NODEANDTIME)
                 throw prg_error("getExcessCases() not implemented for tree-time conditioned on node-time.", "getExcessCases()");
             switch (params.getModelType()) {
                 case Parameters::UNIFORM : 
@@ -94,7 +94,7 @@ double CutStructure::getExpected(const ScanRunner& scanner) {
                         return _N * W / T;
                     }
                 default :
-                    if (params.getConditionalType() == Parameters::CASESBRANCHANDDAY) {
+                    if (params.getConditionalType() == Parameters::NODEANDTIME) {
                         return _N;
                     } else throw prg_error("Unknown model type (%d).", "getExpected()", params.getModelType());
             }
@@ -132,7 +132,7 @@ double CutStructure::getODE(const ScanRunner& scanner) {
                     }
                 }
                 default : 
-                    if (params.getConditionalType() == Parameters::CASESBRANCHANDDAY) {
+                    if (params.getConditionalType() == Parameters::NODEANDTIME) {
                         double expected = getExpected(scanner);
                         return expected ? static_cast<double>(getC())/expected : 0.0;
                     } else throw prg_error("Unknown model type (%d).", "getODE()", params.getModelType());
@@ -174,7 +174,7 @@ double CutStructure::getRelativeRisk(const ScanRunner& scanner) {
                 default : throw prg_error("Unknown model type (%d).", "getRelativeRisk()", params.getModelType());
             } break;
         case Parameters::TREETIME:
-            if (params.getConditionalType() == Parameters::CASESBRANCHANDDAY)
+            if (params.getConditionalType() == Parameters::NODEANDTIME)
                 throw prg_error("getRelativeRisk() not implemented for tree-time conditioned on node-time.", "getRelativeRisk()");
             switch (params.getModelType()) {
                 case Parameters::UNIFORM :
@@ -654,7 +654,7 @@ bool ScanRunner::run() {
     if (!_parameters.getPerformPowerEvaluations() || (_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         bool scan_success=false;
         if (_parameters.getScanType() == Parameters::TREETIME && 
-            (_parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY ||
+            (_parameters.getConditionalType() == Parameters::NODEANDTIME ||
              (_parameters.getConditionalType() == Parameters::CASESEACHBRANCH && _parameters.isPerformingDayOfWeekAdjustment()))
            )
             scan_success = scanTreeTemporalConditional();
@@ -1218,7 +1218,7 @@ bool ScanRunner::scanTreeTemporalConditional() {
 
 CutStructure * ScanRunner::updateCuts(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx) {
     double loglikelihood=0;
-    if ((_parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY || (_parameters.getConditionalType() == Parameters::CASESEACHBRANCH && _parameters.isPerformingDayOfWeekAdjustment())))
+    if ((_parameters.getConditionalType() == Parameters::NODEANDTIME || (_parameters.getConditionalType() == Parameters::CASESEACHBRANCH && _parameters.isPerformingDayOfWeekAdjustment())))
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN);
     else if (_parameters.getModelType() == Parameters::UNIFORM)
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN, endIdx - startIdx + 1);
@@ -1285,7 +1285,7 @@ bool ScanRunner::setupTree() {
             totalcases_by_node[n] = std::accumulate(_Nodes[n]->getIntC_C().begin(), _Nodes[n]->getIntC_C().end(), 0);
         }
         // calculate expected number of cases for tree-time scan
-        if (_parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY) {
+        if (_parameters.getConditionalType() == Parameters::NODEANDTIME) {
             // calculate total cases by time interval -- we'll need this to calculate the expected cases for conditional tree-temporal scan
             size_t daysInDataTimeRange = _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1;
             TimeIntervalContainer_t totalcases_by_timeinterval(daysInDataTimeRange, 0);
@@ -1379,7 +1379,7 @@ bool ScanRunner::setupTree() {
 
     if (_parameters.getModelType() == Parameters::POISSON ||
         _parameters.getModelType() == Parameters::BERNOULLI ||
-        (_parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY) ||
+        (_parameters.getConditionalType() == Parameters::NODEANDTIME) ||
         (_parameters.getConditionalType() == Parameters::CASESEACHBRANCH && _parameters.isPerformingDayOfWeekAdjustment())) {
         // Checks that no node has negative expected cases or that a node with zero expected has observed cases.
         for (size_t i=0; i < _Nodes.size(); ++i) {

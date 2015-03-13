@@ -37,7 +37,7 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
                 counts that I sent in the prior email. The second one will be a hypergeometric for the conditional tree-temporal scan.
                 I need to work out the exact formulas for that, as well as for the ones adjusted for day-of-week.
             */
-            if (parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY)
+            if (parameters.getConditionalType() == Parameters::NODEANDTIME)
                 return new PoissonLoglikelihood(TotalC, TotalN);
             switch (parameters.getModelType()) {
                 case Parameters::UNIFORM :

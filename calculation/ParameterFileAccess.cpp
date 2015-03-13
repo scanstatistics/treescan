@@ -50,7 +50,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::DUPLICATES              : return "duplicates in case data records (y/n -- experimental)";
             /* Analysis */
             case Parameters::SCAN_TYPE               : return "scan type (TREEONLY=0, TREETIME)";
-            case Parameters::CONDITIONAL_TYPE        : return "conditional type (UNCONDITIONAL=0, TOTALCASES, CASESEACHBRANCH)";
+            case Parameters::CONDITIONAL_TYPE        : return "conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)";
             case Parameters::MODEL_TYPE              : return "probability model type (POISSON=0, BERNOULLI=1, UNIFORM=2, Not-Applicable=3)";
             case Parameters::EVENT_PROBABILITY       : return "case probability (integer / integer)";
             case Parameters::START_DATA_TIME_RANGE   : return "start data time range (integer - integer)";
@@ -278,7 +278,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             /* Analysis */
             case Parameters::SCAN_TYPE                : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::TREEONLY, Parameters::TREETIME);
                                                        _parameters.setScanType((Parameters::ScanType)iValue); break;
-            case Parameters::CONDITIONAL_TYPE         : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::UNCONDITIONAL, Parameters::CASESBRANCHANDDAY);
+            case Parameters::CONDITIONAL_TYPE         : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::UNCONDITIONAL, Parameters::NODEANDTIME);
                                                        _parameters.setConditionalType((Parameters::ConditionalType)iValue); break;
             case Parameters::MODEL_TYPE               : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::POISSON, Parameters::MODEL_NOT_APPLICABLE);
                                                        _parameters.setModelType((Parameters::ModelType)iValue); break;

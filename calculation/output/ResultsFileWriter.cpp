@@ -118,7 +118,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 }
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer.c_str());
 
-                if (parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY) {
+                if (parameters.getConditionalType() == Parameters::NODEANDTIME) {
                     PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
                     printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts().at(k)->getID()]->getBrC()));
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
@@ -126,8 +126,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     printString(buffer, "%ld to %ld", _scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive(), _scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive());
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     PrintFormat.PrintSectionLabel(outfile, "Cases in Window", true);
-                }
-                else if (parameters.getModelType() == Parameters::UNIFORM) {
+                } else if (parameters.getModelType() == Parameters::UNIFORM) {
                     PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
                     if (parameters.isPerformingDayOfWeekAdjustment()) {
                         printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts().at(k)->getID()]->getBrC()));
@@ -162,7 +161,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     PrintFormat.PrintSectionLabel(outfile, "O/E (Duplicates Removed)", true);
                     PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
                 }
-                if (!(_scanRunner.getParameters().getScanType() == Parameters::TREETIME && _scanRunner.getParameters().getConditionalType() == Parameters::CASESBRANCHANDDAY)) {
+                if (!(_scanRunner.getParameters().getScanType() == Parameters::TREETIME && _scanRunner.getParameters().getConditionalType() == Parameters::NODEANDTIME)) {
                     PrintFormat.PrintSectionLabel(outfile, "Relative Risk", true);
                     PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer));
                     PrintFormat.PrintSectionLabel(outfile, "Excess Cases", true);
@@ -170,7 +169,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 }
 
                 if (_scanRunner.getParameters().getScanType() == Parameters::TREETIME &&
-                    (_scanRunner.getParameters().getConditionalType() == Parameters::CASESBRANCHANDDAY ||
+                    (_scanRunner.getParameters().getConditionalType() == Parameters::NODEANDTIME ||
                     (_scanRunner.getParameters().getConditionalType() == Parameters::CASESEACHBRANCH && _scanRunner.getParameters().isPerformingDayOfWeekAdjustment()))) {
                     // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
                     PrintFormat.PrintSectionLabel(outfile, "Test Statistic", true);
@@ -365,7 +364,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         } else {
             outfile << "<h3>MOST LIKELY CUTS</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;
             outfile << "<thead><tr><th>No.</th><th>Node Identifier</th>";
-            if (parameters.getModelType() == Parameters::UNIFORM || parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY) {
+            if (parameters.getModelType() == Parameters::UNIFORM || parameters.getConditionalType() == Parameters::NODEANDTIME) {
                 outfile << "<th>Node Cases</th>";
                 outfile << "<th>Time Window</th>";
                 outfile << "<th>Cases in Window</th>";
@@ -378,11 +377,11 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             if (parameters.isDuplicates()) {outfile << "<th>Cases (Duplicates Removed)</th>";}
             outfile << "<th>" << (parameters.getModelType() == Parameters::UNIFORM ? "Expected Cases" : "Expected") << "</th><th>Observed/Expected</th>";
             if (parameters.isDuplicates()) {outfile << "<th>O/E (Duplicates Removed)</th>";}
-            if (!(parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY)) {
+            if (!(parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME)) {
                 outfile << "<th>Relative Risk</th><th>Excess Cases</th>" << std::endl;
             }
             if (parameters.getScanType() == Parameters::TREETIME &&
-                (parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY ||
+                (parameters.getConditionalType() == Parameters::NODEANDTIME ||
                 (parameters.getConditionalType() == Parameters::CASESEACHBRANCH && parameters.isPerformingDayOfWeekAdjustment()))) {
                 // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
                 outfile << "<th>Test Statistic</th>" << std::endl;
@@ -409,7 +408,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                     }
                 }
                 outfile << "</td>";
-                if (parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY) {
+                if (parameters.getConditionalType() == Parameters::NODEANDTIME) {
                     printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts().at(k)->getID()]->getBrC()));
                     outfile << "<td>" << buffer.c_str() << "</td>";
                     outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
@@ -433,7 +432,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                 outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getODE(_scanRunner), buffer) << "</td>";
                 if (parameters.isDuplicates())
                     outfile << "<td>" << getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
-                if (!(parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY)) {
+                if (!(parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME)) {
                     outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer) << "</td>";
                     outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer) << "</td>";
                 }

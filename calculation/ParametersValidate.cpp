@@ -182,12 +182,12 @@ bool ParametersValidate::ValidateAnalysisParameters(BasePrint& PrintDirection) c
                 }
                 break;
             case Parameters::TREETIME:
-                if (!(_parameters.getConditionalType() == Parameters::CASESEACHBRANCH || _parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY)) {
+                if (!(_parameters.getConditionalType() == Parameters::CASESEACHBRANCH || _parameters.getConditionalType() == Parameters::NODEANDTIME)) {
                     bValid = false;
-                    PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree and Time' can either be conditioned on the cases on each branch or on each branch and day.\n", BasePrint::P_PARAMERROR);
+                    PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree and Time' can either be conditioned on each node or on each node plus time.\n", BasePrint::P_PARAMERROR);
                 }
                 // if conditioning on both node and time, their isn't a model type the user can select
-                if (bValid && _parameters.getConditionalType() == Parameters::CASESBRANCHANDDAY) {
+                if (bValid && _parameters.getConditionalType() == Parameters::NODEANDTIME) {
                     const_cast<Parameters&>(_parameters).setModelType(Parameters::MODEL_NOT_APPLICABLE);
                 }
                 if (!(_parameters.getModelType() == Parameters::UNIFORM || _parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE)) {
