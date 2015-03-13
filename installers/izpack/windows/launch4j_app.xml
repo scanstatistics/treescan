@@ -23,12 +23,12 @@
     <jdkPreference>preferJre</jdkPreference>
   </jre>
   <versionInfo>
-    <fileVersion>1.1.0.0</fileVersion>
-    <txtFileVersion>Version 1.1.0</txtFileVersion>
+    <fileVersion>1.2.0.0</fileVersion>
+    <txtFileVersion>Version 1.2.0</txtFileVersion>
     <fileDescription>TreeScan - Software for the Tree Scan Statistic</fileDescription>
     <copyright>Copyright</copyright>
-    <productVersion>1.1.0.0</productVersion>
-    <txtProductVersion>Version 1.1.0</txtProductVersion>
+    <productVersion>1.2.0.0</productVersion>
+    <txtProductVersion>Version 1.2.0</txtProductVersion>
     <productName>TreeScan</productName>
     <companyName>TreeScan.org</companyName>
     <internalName>TreeScan</internalName>
