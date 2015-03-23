@@ -74,9 +74,10 @@ void ParametersPrint::PrintHTML(std::ostream& out) const {
 ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(SettingContainer_t & settings) const {
     std::string buffer;
     settings.clear();
-    settings.push_back(std::make_pair("Tree File",_parameters.getTreeFileName()));
+    if (_parameters.getScanType() != Parameters::TREETIME)
+        settings.push_back(std::make_pair("Tree File",_parameters.getTreeFileName()));
     settings.push_back(std::make_pair("Count File",_parameters.getCountFileName()));
-    if (_parameters.getModelType() == Parameters::UNIFORM)
+    if (Parameters::isTemporalScanType(_parameters.getScanType()))
         settings.push_back(std::make_pair("Data Time Range",_parameters.getDataTimeRangeSet().toString(buffer)));
     //buffer = (_parameters.isDuplicates() ? "Yes" : "No");
     //settings.push_back(std::make_pair("Duplicates",buffer));
@@ -101,7 +102,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParame
 /** Prints 'Adjustments' tab parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(SettingContainer_t & settings) const {
     settings.clear();
-    if (_parameters.getScanType() == Parameters::TREETIME) {
+    if (Parameters::isTemporalScanType(_parameters.getScanType())) {
         std::string buffer;
         settings.push_back(std::make_pair("Perform Day of Week Adjustment",(_parameters.getPerformDayOfWeekAdjustment() ? "Yes" : "No")));
     }
@@ -111,7 +112,8 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(
 /** Prints 'Advanced Input' tab parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getAdvancedInputParameters(SettingContainer_t & settings) const {
     settings.clear();
-    settings.push_back(std::make_pair("Cut File",_parameters.getCutsFileName()));
+    if (_parameters.getScanType() != Parameters::TIMEONLY)
+        settings.push_back(std::make_pair("Cut File",_parameters.getCutsFileName()));
     return settings;
 }
 
@@ -124,6 +126,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
     switch (_parameters.getScanType()) {
         case Parameters::TREEONLY : settings.push_back(std::make_pair(buffer,"Tree Only")); break;
         case Parameters::TREETIME : settings.push_back(std::make_pair(buffer,"Tree and Time")); break;
+        case Parameters::TIMEONLY : settings.push_back(std::make_pair(buffer,"Time Only")); break;
         default: throw prg_error("Unknown scan type (%d).", "getAnalysisParameters()", _parameters.getScanType());
     }
     buffer = "Conditional";
@@ -148,7 +151,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
         printString(buffer, "%u/%u", _parameters.getProbabilityRatio().first, _parameters.getProbabilityRatio().second);
         settings.push_back(std::make_pair("Case Probability",buffer));
     }
-    if (_parameters.getScanType() == Parameters::TREETIME) {
+    if (Parameters::isTemporalScanType(_parameters.getScanType())) {
         settings.push_back(std::make_pair("Temporal Time Window Start", _parameters.getTemporalStartRange().toString(buffer)));
         settings.push_back(std::make_pair("Temporal Time Window End", _parameters.getTemporalEndRange().toString(buffer)));
     }
@@ -253,7 +256,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getPowerSimulationsParame
 
 /** Prints 'Run Options' parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getRunOptionsParameters(SettingContainer_t & settings) const {
-    std::string        buffer;
+    std::string buffer;
     settings.clear();
     if (_parameters.getNumRequestedParallelProcesses() == 0)
         settings.push_back(std::make_pair("Processer Usage","All Available Proccessors"));
@@ -272,9 +275,9 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getRunOptionsParameters(S
 
 /** Prints 'System' parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getSystemParameters(SettingContainer_t & settings) const {
-    const Parameters::CreationVersion  & IniVersion = _parameters.getCreationVersion();
-    Parameters::CreationVersion          Current = {atoi(VERSION_MAJOR), atoi(VERSION_MINOR), atoi(VERSION_RELEASE)};  
-    std::string                           buffer;
+    const Parameters::CreationVersion & IniVersion = _parameters.getCreationVersion();
+    Parameters::CreationVersion Current = {atoi(VERSION_MAJOR), atoi(VERSION_MINOR), atoi(VERSION_RELEASE)};  
+    std::string buffer;
     settings.clear();
     if (IniVersion.iMajor != Current.iMajor ||
         IniVersion.iMinor != Current.iMinor ||

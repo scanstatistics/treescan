@@ -28,17 +28,18 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
                 default: throw prg_error("Unknown model type (%d).", "getNewLoglikelihood()", parameters.getModelType());
             }
         } break;
-        case Parameters::TREETIME: {
-            /* TODO:
-                For the likelihood formula, I would like to try two different ones. Eventually we will only have one, unknown which,
-                but I would like to have both available for my own use as a hidden feature in the parameter file.
+        /* TODO:
+           For the likelihood formula, I would like to try two different ones. Eventually we will only have one, unknown which,
+           but I would like to have both available for my own use as a hidden feature in the parameter file.
 
-                The first one will be the Poisson likelihood function, that we use for the Poisson model, but using the expected
-                counts that I sent in the prior email. The second one will be a hypergeometric for the conditional tree-temporal scan.
-                I need to work out the exact formulas for that, as well as for the ones adjusted for day-of-week.
-            */
+           The first one will be the Poisson likelihood function, that we use for the Poisson model, but using the expected
+           counts that I sent in the prior email. The second one will be a hypergeometric for the conditional tree-temporal scan.
+           I need to work out the exact formulas for that, as well as for the ones adjusted for day-of-week.
+        */
+        case Parameters::TREETIME:
             if (parameters.getConditionalType() == Parameters::NODEANDTIME)
                 return new PoissonLoglikelihood(TotalC, TotalN);
+        case Parameters::TIMEONLY: {
             switch (parameters.getModelType()) {
                 case Parameters::UNIFORM :
                     if (parameters.isPerformingDayOfWeekAdjustment()) {
@@ -46,6 +47,7 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
                         return new PoissonLoglikelihood(TotalC, TotalN);
                     }
                     switch (parameters.getConditionalType()) {
+                        case Parameters::TOTALCASES :
                         case Parameters::CASESEACHBRANCH :
                             if (!parameters.isPerformingDayOfWeekAdjustment())
                                 return new TemporalLoglikelihood(TotalC, TotalN, parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());

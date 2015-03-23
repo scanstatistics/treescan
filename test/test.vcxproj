@@ -150,6 +150,7 @@
     <ClCompile Include="..\calculation\utility\TimeStamp.cpp" />
     <ClCompile Include="..\calculation\utility\UtilityFunctions.cpp" />
     <ClCompile Include="squish81.cpp" />
+    <ClCompile Include="squish85.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="test_helper.cpp" />
     <ClCompile Include="unittest_ParametersValidate.cpp" />

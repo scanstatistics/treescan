@@ -212,8 +212,8 @@ private:
     bool                        runPowerEvaluations();
     bool                        runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep, unsigned int iteration=0);
     bool                        scanTree();
-    bool                        scanTreeTemporal();
-    bool                        scanTreeTemporalConditional();
+    bool                        scanTreeTemporalConditionNode();
+    bool                        scanTreeTemporalConditionNodeTime();
     bool                        setupTree();
     CutStructure *              updateCuts(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx=0, DataTimeRange::index_t endIdx=1);
 

@@ -267,6 +267,7 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buff
             }
         } break;
         case Parameters::TREETIME : buffer = "Tree Temporal Scan"; break;
+        case Parameters::TIMEONLY : buffer = "Purely Temporal Scan"; break;
         default: throw prg_error("Unknown scan type (%d).", "writeASCII()", _scanRunner.getParameters().getScanType());
     }
     return buffer;

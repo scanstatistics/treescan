@@ -14,8 +14,8 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
     // Not implemented for this model yet.
     if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES)
         throw prg_error("AlternativeHypothesisRandomizater is not implemented for the conditional Bernoulli model.", "AlternativeHypothesisRandomizater()");
-    if (_parameters.getScanType() == Parameters::TREETIME)
-        throw prg_error("AlternativeHypothesisRandomizater is not implemented for the tree and time scan type.", "AlternativeHypothesisRandomizater()");
+    if (Parameters::isTemporalScanType(_parameters.getScanType()))
+        throw prg_error("AlternativeHypothesisRandomizater is not implemented for the temporal scan types.", "AlternativeHypothesisRandomizater()");
 
     _randomizer->_read_data = false;
     _randomizer->_write_data = false;
@@ -27,6 +27,7 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
         }
         // apply adjustments
         _alternative_adjustments.apply(_nodes_IntN_C);
+        if (_parameters.getConditionalType() == Parameters::TOTALCASES) {
         // now re-calibrate expected counts given adjustments
         double newTotalN=0.0;
         for(RelativeRiskAdjustmentHandler::NodesExpectedContainer_t::const_iterator itr=_nodes_IntN_C.begin(); itr != _nodes_IntN_C.end(); ++itr) {
@@ -35,6 +36,7 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
         double adjustN = static_cast<double>(totalC)/newTotalN;
         for(RelativeRiskAdjustmentHandler::NodesExpectedContainer_t::iterator itr=_nodes_IntN_C.begin(); itr != _nodes_IntN_C.end(); ++itr) {
             std::transform(itr->begin(), itr->end(), itr->begin(), std::bind1st(std::multiplies<double>(), adjustN));
+            }
         }
         _nodes_proxy.reset(new AlternativeExpectedNodesProxy(_nodes_IntN_C));
     } else if  (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {

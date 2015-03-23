@@ -46,7 +46,7 @@ double CutStructure::getExcessCases(const ScanRunner& scanner) {
             if (params.getConditionalType() == Parameters::NODEANDTIME)
                 throw prg_error("getExcessCases() not implemented for tree-time conditioned on node-time.", "getExcessCases()");
             switch (params.getModelType()) {
-                case Parameters::UNIFORM : 
+                case Parameters::UNIFORM :
                     if (params.isPerformingDayOfWeekAdjustment()) {
                         //Obs - Exp * [ (NodeCases-Obs) / (NodeCases-Exp) ]
                         double exp = getExpected(scanner);
@@ -83,7 +83,7 @@ double CutStructure::getExpected(const ScanRunner& scanner) {
                     return _N * (scanner.getTotalC() / scanner.getTotalN());
                 default : throw prg_error("Unknown model type (%d).", "getExpected()", params.getModelType());
             }
-        case Parameters::TREETIME: 
+        case Parameters::TREETIME:
             switch (params.getModelType()) {
                 case Parameters::UNIFORM :
                     if (params.isPerformingDayOfWeekAdjustment()) {
@@ -118,9 +118,9 @@ double CutStructure::getODE(const ScanRunner& scanner) {
                         return expected ? static_cast<double>(getC())/expected : 0.0;
                     } else {
                         /* C/(N*W/D) where
-                            C = number of cases in the node as well as in the the temporal cluster found (below, 06.04 cases that are 7-11 days after vaccination) 
-                            N = number of cases in the node, through the whole time period (below, all 0604 cases) 
-                            W = number of days in the temporal cluster (below, 11-6=5) 
+                            C = number of cases in the node as well as in the the temporal cluster found (below, 06.04 cases that are 7-11 days after vaccination)
+                            N = number of cases in the node, through the whole time period (below, all 0604 cases)
+                            W = number of days in the temporal cluster (below, 11-6=5)
                             D = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used)
                         */
                         double C = static_cast<double>(_C);
@@ -131,7 +131,7 @@ double CutStructure::getODE(const ScanRunner& scanner) {
                         return denominator ? C/denominator : 0.0;
                     }
                 }
-                default : 
+                default :
                     if (params.getConditionalType() == Parameters::NODEANDTIME) {
                         double expected = getExpected(scanner);
                         return expected ? static_cast<double>(getC())/expected : 0.0;
@@ -203,7 +203,7 @@ double CutStructure::getRelativeRisk(const ScanRunner& scanner) {
 
 ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0) {
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
-    DataTimeRange min_max = _parameters.getScanType() == Parameters::TREETIME ? _parameters.getDataTimeRangeSet().getMinMax() : DataTimeRange(0,0);
+    DataTimeRange min_max = Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getMinMax() : DataTimeRange(0,0);
     // translate to ensure zero based additive
     _zero_translation_additive = (min_max.getStart() <= 0) ? std::abs(min_max.getStart()) : min_max.getStart() * -1;
 
@@ -294,7 +294,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
         //read alternative hypothesis value
         double alternative_hypothesis;
         if (dataSource->getValueAt(uAdjustmentIndex).size() < 1) {
-            _print.Printf("Error: Record %ld of alternative hypothesis file missing %s.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), 
+            _print.Printf("Error: Record %ld of alternative hypothesis file missing %s.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(),
                           _parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL ? "event probability" : "relative risk");
             bValid = false;
             continue;
@@ -335,7 +335,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
                 } else {
                     nodeSet.set(nodeIdx);
                 }
-            } 
+            }
             adjustments->add(nodeIdx, alternative_hypothesis);
         }
     }
@@ -362,36 +362,43 @@ bool ScanRunner::readCounts(const std::string& filename) {
     _print.Printf("Reading count file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
-    int expectedColumns = 3 + (_parameters.isDuplicates() ? 1 : 0);
-    _caselessWindows.resize(_parameters.getScanType() == Parameters::TREETIME ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() : 1);
+    int expectedColumns = (_parameters.getScanType() == Parameters::TIMEONLY ? 2 : 3) + (_parameters.isDuplicates() ? 1 : 0);
+    _caselessWindows.resize(Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() : 1);
+    long identifierIdx = _parameters.getScanType() == Parameters::TIMEONLY ? -1 : 0;
+    long countIdx = _parameters.getScanType() == Parameters::TIMEONLY ? 0 : 1;
+    long duplicatesIdx = _parameters.isDuplicates() ? countIdx + 1 : -1;
 
     int count=0, controls=0, duplicates=0, daysSinceIncidence=0;
     while (dataSource->readRecord()) {
         if (dataSource->getNumValues() != expectedColumns) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in count file %s. Expecting <identifier>, <count>,%s %s but found %ld value%s.\n", 
-                          BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), 
+            _print.Printf("Error: Record %ld in count file %s. Expecting %s<count>%s%s but found %ld value%s.\n",
+                          BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(),
                           (static_cast<int>(dataSource->getNumValues()) > expectedColumns) ? "has extra data" : "is missing data",
-                          (_parameters.isDuplicates() ? " <duplicates>," : ""), 
-                          (_parameters.getScanType() == Parameters::TREETIME ? "<time>" : ""),
+                          (_parameters.getScanType() == Parameters::TIMEONLY ? "" : "<identifier>, "),
+                          (_parameters.isDuplicates() ? ", <duplicates>" : ""),
+                          (Parameters::isTemporalScanType(_parameters.getScanType()) ? ", <time>" : ""),
                           dataSource->getNumValues(), (dataSource->getNumValues() == 1 ? "" : "s"));
             continue;
         }
-        ScanRunner::Index_t index = getNodeIndex(dataSource->getValueAt(0));
-        if (!index.first) {
-            readSuccess = false;
-            _print.Printf("Error: Record %ld in count file references unknown node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(0).c_str());
-            continue;
+        ScanRunner::Index_t index(true, 0);
+        if (_parameters.getScanType() != Parameters::TIMEONLY) {
+            index = getNodeIndex(dataSource->getValueAt(identifierIdx));
+            if (!index.first) {
+                readSuccess = false;
+                _print.Printf("Error: Record %ld in count file references unknown node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(identifierIdx).c_str());
+                continue;
+            }
         }
         NodeStructure * node = _Nodes.at(index.second);
-        if  (!string_to_type<int>(dataSource->getValueAt(1).c_str(), count) || count < 0) {
+        if  (!string_to_type<int>(dataSource->getValueAt(countIdx).c_str(), count) || count < 0) {
             readSuccess = false;
             _print.Printf("Error: Record %ld in count file references an invalid number of cases for node '%s'.\n"
                           "       The number of cases must be an integer value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
             continue;
         }
         if (_parameters.isDuplicates()) {
-            if  (!string_to_type<int>(dataSource->getValueAt(2).c_str(), duplicates) || duplicates < 0) {
+            if  (!string_to_type<int>(dataSource->getValueAt(duplicatesIdx).c_str(), duplicates) || duplicates < 0) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in count file references an invalid number of duplicates for node '%s'.\n"
                               "       The number of duplicates must be an integer value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
@@ -425,7 +432,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
                 continue;
             }
             node->refIntN_C().front() += count + controls;
-        } else if (_parameters.getScanType() == Parameters::TREETIME) {
+        } else if (Parameters::isTemporalScanType(_parameters.getScanType())) {
             if  (!string_to_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), daysSinceIncidence)) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in count file references an invalid 'day since incidence' value for node '%s'.\n"
@@ -447,7 +454,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
     }
 
     _caselessWindows.flip(); // flip so that windows without cases are on instead of off
-    if (_parameters.getScanType() == Parameters::TREETIME && _caselessWindows.count() > 0) {
+    if (Parameters::isTemporalScanType(_parameters.getScanType()) && _caselessWindows.count() > 0) {
         std::string buffer;
         _print.Printf("Warning: The following days in the data time range do not have cases: %s\n", BasePrint::P_WARNING, getCaselessWindowsAsString(buffer).c_str());
     }
@@ -491,12 +498,19 @@ std::string & ScanRunner::getCaselessWindowsAsString(std::string& s) const {
  Reads tree structure from passed file. The file format is: <node identifier>, <parent node identifier 1>, <parent node identifier 2>, ... <parent node identifier N>
  */
 bool ScanRunner::readTree(const std::string& filename) {
+    // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
+    size_t daysInDataTimeRange = Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
+
+    // tree only does not read the tree structure file, aggregate all data into one node
+    if (_parameters.getScanType() == Parameters::TIMEONLY) {
+        std::auto_ptr<NodeStructure> node(new NodeStructure("All", _parameters, daysInDataTimeRange));
+        _Nodes.insert(_Nodes.begin(), node.release());
+        return true;
+    }
+
     _print.Printf("Reading tree file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
-
-    // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
-    size_t daysInDataTimeRange = _parameters.getScanType() == Parameters::TREETIME ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
 
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
     while (dataSource->readRecord()) {
@@ -565,6 +579,8 @@ bool ScanRunner::readTree(const std::string& filename) {
  Reads tree node cuts from passed file. The file format is: <node identifier>, <parent node identifier 1>, <parent node identifier 2>, ... <parent node identifier N>
  */
 bool ScanRunner::readCuts(const std::string& filename) {
+    if (_parameters.getScanType() == Parameters::TREEONLY) return true; // tree only does not read the tree structure file
+
     _print.Printf("Reading cuts file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
@@ -573,7 +589,7 @@ bool ScanRunner::readCuts(const std::string& filename) {
     while (dataSource->readRecord()) {
         if (dataSource->getNumValues() != 2) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in cuts file %s. Expecting <identifier>, <cut type [simple,pairs,triplets,ordinal]> but found %ld value%s.\n", 
+            _print.Printf("Error: Record %ld in cuts file %s. Expecting <identifier>, <cut type [simple,pairs,triplets,ordinal]> but found %ld value%s.\n",
                           BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), (static_cast<int>(dataSource->getNumValues()) > 2) ? "has extra data" : "is missing data",
                           dataSource->getNumValues(), (dataSource->getNumValues() == 1 ? "" : "s"));
             continue;
@@ -630,7 +646,7 @@ bool ScanRunner::run() {
     time_t gStartTime, gEndTime;
     time(&gStartTime); //get start time
 
-    if (!readTree(_parameters.getTreeFileName())) 
+    if (!readTree(_parameters.getTreeFileName()))
         throw resolvable_error("\nProblem encountered when reading the data from the tree file.");
     if (_print.GetIsCanceled()) return false;
 
@@ -642,7 +658,7 @@ bool ScanRunner::run() {
         throw resolvable_error("\nProblem encountered when reading the data from the case file.");
     if (_print.GetIsCanceled()) return false;
 
-     if (!setupTree()) 
+     if (!setupTree())
         throw resolvable_error("\nProblem encountered when setting up tree.");
     if (_print.GetIsCanceled()) return false;
 
@@ -653,13 +669,12 @@ bool ScanRunner::run() {
 
     if (!_parameters.getPerformPowerEvaluations() || (_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         bool scan_success=false;
-        if (_parameters.getScanType() == Parameters::TREETIME && 
-            (_parameters.getConditionalType() == Parameters::NODEANDTIME ||
-             (_parameters.getConditionalType() == Parameters::CASESEACHBRANCH && _parameters.isPerformingDayOfWeekAdjustment()))
-           )
-            scan_success = scanTreeTemporalConditional();
+        if ((_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) ||
+            (parameters.getScanType() == Parameters::TIMEONLY && parameters.isPerformingDayOfWeekAdjustment()) ||
+            (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::CASESEACHBRANCH && parameters.isPerformingDayOfWeekAdjustment())))
+            scan_success = scanTreeTemporalConditionNodeTime();
         else if (_parameters.getModelType() == Parameters::UNIFORM)
-            scan_success = scanTreeTemporal();
+            scan_success = scanTreeTemporalConditionNode();
         else
             scan_success = scanTree();
         if (scan_success) {
@@ -864,7 +879,7 @@ bool ScanRunner::scanTree() {
                             }
                             //++hits; printf("hits %d\n", hits);
                         }
-                    } 
+                    }
                 } break;
                 case Parameters::PAIRS:
                     // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
@@ -919,7 +934,7 @@ bool ScanRunner::scanTree() {
 }
 
 /* SCANNING THE TREE for temporal model */
-bool ScanRunner::scanTreeTemporal() {
+bool ScanRunner::scanTreeTemporalConditionNode() {
     _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
     ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN));
 
@@ -986,8 +1001,8 @@ bool ScanRunner::scanTreeTemporal() {
                                     //++hits; printf("hits %d\n", hits);
                                 }
                             }
-                        } 
-                    } 
+                        }
+                    }
                 } break;
                 case Parameters::PAIRS:
                     // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
@@ -1055,7 +1070,7 @@ bool ScanRunner::scanTreeTemporal() {
                         }
                     } break;
                 case Parameters::COMBINATORIAL:
-                default: throw prg_error("Unknown cut type (%d).", "scanTreeTemporal()", cutType);
+                default: throw prg_error("Unknown cut type (%d).", "scanTreeTemporalConditionNode()", cutType);
             }
         }
     }
@@ -1067,7 +1082,7 @@ bool ScanRunner::scanTreeTemporal() {
 }
 
 /* SCANNING THE TREE for temporal model -- conditioned on the total cases across nodes and time. */
-bool ScanRunner::scanTreeTemporalConditional() {
+bool ScanRunner::scanTreeTemporalConditionNodeTime() {
     _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
     ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN));
 
@@ -1136,8 +1151,8 @@ bool ScanRunner::scanTreeTemporalConditional() {
                                     //++hits; printf("hits %d\n", hits);
                                 }
                             }
-                        } 
-                    } 
+                        }
+                    }
                 } break;
                 case Parameters::PAIRS:
                     // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
@@ -1205,7 +1220,7 @@ bool ScanRunner::scanTreeTemporalConditional() {
                         }
                     } break;
                 case Parameters::COMBINATORIAL:
-                default: throw prg_error("Unknown cut type (%d).", "scanTreeTemporal()", cutType);
+                default: throw prg_error("Unknown cut type (%d).", "scanTreeTemporalConditionNodeTime()", cutType);
             }
         }
     }
@@ -1218,12 +1233,15 @@ bool ScanRunner::scanTreeTemporalConditional() {
 
 CutStructure * ScanRunner::updateCuts(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx) {
     double loglikelihood=0;
-    if ((_parameters.getConditionalType() == Parameters::NODEANDTIME || (_parameters.getConditionalType() == Parameters::CASESEACHBRANCH && _parameters.isPerformingDayOfWeekAdjustment())))
+
+    if ((_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) ||
+        (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.isPerformingDayOfWeekAdjustment()) ||
+        (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::CASESEACHBRANCH && _parameters.isPerformingDayOfWeekAdjustment()))
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN);
     else if (_parameters.getModelType() == Parameters::UNIFORM)
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN, endIdx - startIdx + 1);
     else
-        loglikelihood = logCalculator->LogLikelihood(BrC, BrN); 
+        loglikelihood = logCalculator->LogLikelihood(BrC, BrN);
     if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) 0;
 
     std::auto_ptr<CutStructure> cut(new CutStructure());
@@ -1249,8 +1267,8 @@ CutStructure * ScanRunner::updateCuts(size_t node_index, int BrC, double BrN, co
 
 /* SETTING UP THE TREE */
 bool ScanRunner::setupTree() {
-    double   adjustN;
-    int     parent;
+    double adjustN;
+    int parent;
 
     _print.Printf("Setting up the tree ...\n", BasePrint::P_STDOUT);
 
@@ -1266,10 +1284,15 @@ bool ScanRunner::setupTree() {
         _TotalC = std::accumulate((*itr)->refIntC_C().begin(), (*itr)->refIntC_C().end(), _TotalC);
     }
 
+    if (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::TOTALCASES && _TotalC < 2/* minimum number of cases */) {
+        _print.Printf("Error: The conditional Poison model requires at least 2 cases. %d counts defined in count file.\n", BasePrint::P_ERROR, _TotalC);
+        return false;
+    }
+
     // calculate the number of expected cases
-    if (_parameters.getScanType() == Parameters::TREETIME) {
+    if (Parameters::isTemporalScanType(_parameters.getScanType())) {
         NodeStructure::CountContainer_t totalcases_by_dayofweek;
-        if (_parameters.getScanType() == Parameters::TREETIME && _parameters.isPerformingDayOfWeekAdjustment()) {
+        if (_parameters.isPerformingDayOfWeekAdjustment()) {
             // calculate the total number of cases for each day of the week
             totalcases_by_dayofweek.resize(7, 0);
             for (size_t n=0; n < _Nodes.size(); ++n) {
@@ -1285,51 +1308,58 @@ bool ScanRunner::setupTree() {
             totalcases_by_node[n] = std::accumulate(_Nodes[n]->getIntC_C().begin(), _Nodes[n]->getIntC_C().end(), 0);
         }
         // calculate expected number of cases for tree-time scan
-        if (_parameters.getConditionalType() == Parameters::NODEANDTIME) {
-            // calculate total cases by time interval -- we'll need this to calculate the expected cases for conditional tree-temporal scan
-            size_t daysInDataTimeRange = _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1;
-            TimeIntervalContainer_t totalcases_by_timeinterval(daysInDataTimeRange, 0);
-            for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
-                for (size_t t=0; t < (*itr)->refIntC_C().size(); ++t) {
-                    totalcases_by_timeinterval[t] += (*itr)->refIntC_C()[t];
-                }
-            }
-            // expected number of cases is calculated slightly different when performing day of week adjustment
-            if (_parameters.isPerformingDayOfWeekAdjustment()) {
-                for (size_t n=0; n < _Nodes.size(); ++n) {
-                    NodeStructure& node = *(_Nodes[n]);
-                    const NodeStructure::CountContainer_t& cases = node.getIntC_C();
-                    // first calculate the total number of cases for this node, for each day of the week
-                    NodeStructure::CountContainer_t node_cases_by_dayofweek(7, 0);
-                    for (size_t idx=0; idx < cases.size(); ++idx) {
-                        node_cases_by_dayofweek[idx % 7] += cases[idx];
-                    }
-                    // now we can calculate the expected number of cases for this node
-                    NodeStructure::ExpectedContainer_t& nodeExpected = node.refIntN_C();
-                    for (size_t t=0; t < totalcases_by_timeinterval.size(); ++t) {
-                        double cases_day_of_week = static_cast<double>(totalcases_by_dayofweek[t % 7]);
-                        if (cases_day_of_week) nodeExpected[t] += static_cast<double>(totalcases_by_timeinterval[t]) * static_cast<double>(node_cases_by_dayofweek[t % 7]) / cases_day_of_week;
+        switch (_parameters.getConditionalType()) {
+            case Parameters::NODEANDTIME : {
+                // calculate total cases by time interval -- we'll need this to calculate the expected cases for conditional tree-temporal scan
+                size_t daysInDataTimeRange = _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1;
+                TimeIntervalContainer_t totalcases_by_timeinterval(daysInDataTimeRange, 0);
+                for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
+                    for (size_t t=0; t < (*itr)->refIntC_C().size(); ++t) {
+                        totalcases_by_timeinterval[t] += (*itr)->refIntC_C()[t];
                     }
                 }
-            } else {
-                // now we can calculate the expected number of cases
-                for (size_t n=0; n < _Nodes.size(); ++n) {
-                    NodeStructure::ExpectedContainer_t& nodeExpected = _Nodes[n]->refIntN_C();
-                    for (size_t t=0; t < totalcases_by_timeinterval.size(); ++t) {
-                        nodeExpected[t] += static_cast<double>(totalcases_by_timeinterval[t]) * static_cast<double>(totalcases_by_node[n]) / static_cast<double>(_TotalC);
+                // expected number of cases is calculated slightly different when performing day of week adjustment
+                if (_parameters.isPerformingDayOfWeekAdjustment()) {
+                    for (size_t n=0; n < _Nodes.size(); ++n) {
+                        NodeStructure& node = *(_Nodes[n]);
+                        const NodeStructure::CountContainer_t& cases = node.getIntC_C();
+                        // first calculate the total number of cases for this node, for each day of the week
+                        NodeStructure::CountContainer_t node_cases_by_dayofweek(7, 0);
+                        for (size_t idx=0; idx < cases.size(); ++idx) {
+                            node_cases_by_dayofweek[idx % 7] += cases[idx];
+                        }
+                        // now we can calculate the expected number of cases for this node
+                        NodeStructure::ExpectedContainer_t& nodeExpected = node.refIntN_C();
+                        for (size_t t=0; t < totalcases_by_timeinterval.size(); ++t) {
+                            double cases_day_of_week = static_cast<double>(totalcases_by_dayofweek[t % 7]);
+                            if (cases_day_of_week) nodeExpected[t] += static_cast<double>(totalcases_by_timeinterval[t]) * static_cast<double>(node_cases_by_dayofweek[t % 7]) / cases_day_of_week;
+                        }
+                    }
+                } else {
+                    // now we can calculate the expected number of cases
+                    for (size_t n=0; n < _Nodes.size(); ++n) {
+                        NodeStructure::ExpectedContainer_t& nodeExpected = _Nodes[n]->refIntN_C();
+                        for (size_t t=0; t < totalcases_by_timeinterval.size(); ++t) {
+                            nodeExpected[t] += static_cast<double>(totalcases_by_timeinterval[t]) * static_cast<double>(totalcases_by_node[n]) / static_cast<double>(_TotalC);
+                        }
                     }
                 }
-            }
-        } else if (_parameters.getConditionalType() == Parameters::CASESEACHBRANCH && _parameters.isPerformingDayOfWeekAdjustment()) {
-            double daysInDataTimeRange = static_cast<double>(_parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1);
-            for (size_t n=0; n < _Nodes.size(); ++n) {
-                if (totalcases_by_node[n]) {
-                    NodeStructure::ExpectedContainer_t& nodeExpected = _Nodes[n]->refIntN_C();
-                    for (size_t t=0; t < nodeExpected.size(); ++t) {
-                        nodeExpected[t] += static_cast<double>(totalcases_by_node[n]) * (static_cast<double>(totalcases_by_dayofweek[t % 7])/static_cast<double>(_TotalC) / static_cast<double>(_day_of_week_indexes[t % 7].size()));
+            } break;
+			case Parameters::TOTALCASES :
+            case Parameters::CASESEACHBRANCH :
+                if (_parameters.isPerformingDayOfWeekAdjustment()) {
+                    double daysInDataTimeRange = static_cast<double>(_parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1);
+                    for (size_t n=0; n < _Nodes.size(); ++n) {
+                        if (totalcases_by_node[n]) {
+                            NodeStructure::ExpectedContainer_t& nodeExpected = _Nodes[n]->refIntN_C();
+                            for (size_t t=0; t < nodeExpected.size(); ++t) {
+                                nodeExpected[t] += static_cast<double>(totalcases_by_node[n]) * (static_cast<double>(totalcases_by_dayofweek[t % 7])/static_cast<double>(_TotalC) / static_cast<double>(_day_of_week_indexes[t % 7].size()));
+                            }
+                        }
                     }
-                }
-            }
+                } break;
+            case Parameters::UNCONDITIONAL :
+            default : throw prg_error("Unknown conditional type (%d) for temporal scan type.", "setupTree()", _parameters.getConditionalType());
         }
     }
 
@@ -1379,8 +1409,9 @@ bool ScanRunner::setupTree() {
 
     if (_parameters.getModelType() == Parameters::POISSON ||
         _parameters.getModelType() == Parameters::BERNOULLI ||
-        (_parameters.getConditionalType() == Parameters::NODEANDTIME) ||
-        (_parameters.getConditionalType() == Parameters::CASESEACHBRANCH && _parameters.isPerformingDayOfWeekAdjustment())) {
+        (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) ||
+        (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.isPerformingDayOfWeekAdjustment()) ||
+        (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::CASESEACHBRANCH && _parameters.isPerformingDayOfWeekAdjustment())) {
         // Checks that no node has negative expected cases or that a node with zero expected has observed cases.
         for (size_t i=0; i < _Nodes.size(); ++i) {
             // cout << "Node=" << i << ", BrC=" << Node[i].BrC << ", BrN=" << Node[i].BrN << endl;

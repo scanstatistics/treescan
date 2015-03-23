@@ -49,7 +49,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::CUT_TYPE                : return "default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)";
             case Parameters::DUPLICATES              : return "duplicates in case data records (y/n -- experimental)";
             /* Analysis */
-            case Parameters::SCAN_TYPE               : return "scan type (TREEONLY=0, TREETIME)";
+            case Parameters::SCAN_TYPE               : return "scan type (TREEONLY=0, TREETIME=1, TIMEONLY=2)";
             case Parameters::CONDITIONAL_TYPE        : return "conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)";
             case Parameters::MODEL_TYPE              : return "probability model type (POISSON=0, BERNOULLI=1, UNIFORM=2, Not-Applicable=3)";
             case Parameters::EVENT_PROBABILITY       : return "case probability (integer / integer)";
@@ -276,7 +276,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
                                                         _parameters.setCutType((Parameters::CutType)iValue); break;
             case Parameters::DUPLICATES               : _parameters.setDuplicates(ReadBoolean(value, e)); break;
             /* Analysis */
-            case Parameters::SCAN_TYPE                : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::TREEONLY, Parameters::TREETIME);
+            case Parameters::SCAN_TYPE                : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::TREEONLY, Parameters::TIMEONLY);
                                                        _parameters.setScanType((Parameters::ScanType)iValue); break;
             case Parameters::CONDITIONAL_TYPE         : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::UNCONDITIONAL, Parameters::NODEANDTIME);
                                                        _parameters.setConditionalType((Parameters::ConditionalType)iValue); break;

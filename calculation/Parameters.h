@@ -78,7 +78,7 @@ class Parameters {
     enum ParametersFormat {XML=0, JSON};
     enum ModelType {POISSON=0, BERNOULLI, UNIFORM, MODEL_NOT_APPLICABLE};
     enum CutType {SIMPLE=0, PAIRS, TRIPLETS, ORDINAL, COMBINATORIAL};
-    enum ScanType {TREEONLY=0, TREETIME};
+    enum ScanType {TREEONLY=0, TREETIME, TIMEONLY};
     enum ConditionalType {UNCONDITIONAL=0, TOTALCASES, CASESEACHBRANCH, NODEANDTIME};
     enum MaximumWindowType {PERCENTAGE_WINDOW=0, FIXED_LENGTH};
     typedef std::map<std::string,Parameters::CutType> cut_map_t;
@@ -217,6 +217,8 @@ class Parameters {
     bool                                isPrintColumnHeaders() const {return _printColumnHeaders;}
     bool                                isRandomlyGeneratingSeed() const {return _randomlyGenerateSeed;}
     bool                                isReadingSimulationData() const {return _read_simulations;}
+    static bool                         isSpatialScanType(ScanType e) {return e == Parameters::TREEONLY || e == Parameters::TREETIME;}
+    static bool                         isTemporalScanType(ScanType e) {return e == Parameters::TIMEONLY || e == Parameters::TREETIME;}
     bool                                isWritingSimulationData() const {return _write_simulations;}
 
     void                                setAsDefaulted();

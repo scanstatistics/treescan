@@ -23,8 +23,8 @@ private:
     const ScanRunner                        & _scanRunner;
 
     successful_result_type scanTree(param_type const & param);
-    successful_result_type scanTreeTemporal(param_type const & param);
-    successful_result_type scanTreeTemporalConditional(param_type const & param);
+    successful_result_type scanTreeTemporalConditionNode(param_type const & param);
+    successful_result_type scanTreeTemporalConditionNodeTime(param_type const & param);
 
 public:
     MCSimSuccessiveFunctor(boost::mutex& mutex, boost::shared_ptr<AbstractRandomizer> randomizer, const ScanRunner& scanRunner);

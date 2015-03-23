@@ -65,16 +65,18 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
     bool bValid=true;
     std::string buffer, buffer2;
     try {
-        if (_parameters.getTreeFileName().empty()) {
-            bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nNo tree file specified.\n", BasePrint::P_PARAMERROR);
-        } else if (!ValidateFileAccess(_parameters.getTreeFileName())) {
-            bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\n"
-                                   "The tree file '%s' could not be opened for reading. "
-                                   "Please confirm that the path and/or file name are valid and that you "
-                                   "have permissions to read from this directory and file.\n",
-                                   BasePrint::P_PARAMERROR, _parameters.getTreeFileName().c_str());
+        if (_parameters.getScanType() != Parameters::TIMEONLY) {
+            if (_parameters.getTreeFileName().empty()) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nNo tree file specified.\n", BasePrint::P_PARAMERROR);
+            } else if (!ValidateFileAccess(_parameters.getTreeFileName())) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                       "The tree file '%s' could not be opened for reading. "
+                                       "Please confirm that the path and/or file name are valid and that you "
+                                       "have permissions to read from this directory and file.\n",
+                                       BasePrint::P_PARAMERROR, _parameters.getTreeFileName().c_str());
+            }
         }
         if (_parameters.getCountFileName().empty()) {
             bValid = false;
@@ -87,13 +89,15 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                                    "have permissions to read from this directory and file.\n",
                                    BasePrint::P_PARAMERROR, _parameters.getCountFileName().c_str());
         }
-        if (!_parameters.getCutsFileName().empty() && !ValidateFileAccess(_parameters.getCutsFileName())) {
-            bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\n"
-                                   "The cut file '%s' could not be opened for reading. "
-                                   "Please confirm that the path and/or file name are valid and that you "
-                                   "have permissions to read from this directory and file.\n",
-                                   BasePrint::P_PARAMERROR, _parameters.getCutsFileName().c_str());
+        if (_parameters.getScanType() != Parameters::TIMEONLY) {
+            if (!_parameters.getCutsFileName().empty() && !ValidateFileAccess(_parameters.getCutsFileName())) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                       "The cut file '%s' could not be opened for reading. "
+                                       "Please confirm that the path and/or file name are valid and that you "
+                                       "have permissions to read from this directory and file.\n",
+                                       BasePrint::P_PARAMERROR, _parameters.getCutsFileName().c_str());
+            }
         }
         if (_parameters.getModelType() == Parameters::UNIFORM) {
             const DataTimeRangeSet::rangeset_t& rangeSets = _parameters.getDataTimeRangeSet().getDataTimeRangeSets();
@@ -193,6 +197,16 @@ bool ParametersValidate::ValidateAnalysisParameters(BasePrint& PrintDirection) c
                 if (!(_parameters.getModelType() == Parameters::UNIFORM || _parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE)) {
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree and Time' is not implemented for the selected model type.\n", BasePrint::P_PARAMERROR);
+                }
+                break;
+            case Parameters::TIMEONLY:
+                if (_parameters.getConditionalType() != Parameters::TOTALCASES) {
+                    bValid = false;
+                    PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Time Only' can be conditioned on the total cases only.\n", BasePrint::P_PARAMERROR);
+                }
+                if (_parameters.getModelType() != Parameters::UNIFORM) {
+                    bValid = false;
+                    PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Time Only' is not implemented for the selected model type.\n", BasePrint::P_PARAMERROR);
                 }
                 break;
             default: throw prg_error("Unknown scan type (%d).", "ValidateAnalysisParameters()", _parameters.getScanType());
