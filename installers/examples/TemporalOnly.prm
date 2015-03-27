@@ -1,32 +1,32 @@
 [Analysis]
-;scan type (TREEONLY=0, TREETIME)
-scan-type=0
+;scan type (TREEONLY=0, TREETIME=1, TIMEONLY=2)
+scan-type=2
 ;probability model type (POISSON=0, BERNOULLI=1, TEMPORALSCAN=3)
-probability-model=1
+probability-model=2
 ;conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)
-conditional-type=0
+conditional-type=1
 ;case probability (integer / integer)
 event-probability=1/2
 ;start data time range (integer - integer)
-window-start-range=[0,0]
+window-start-range=[0,10]
 ;end data time range (integer - integer)
-window-end-range=[0,0]
-
-[Output]
-;results filename
-results-filename=Bernoulli.txt
-;create HTML results
-results-html=n
-;create CSV results
-results-csv=n
+window-end-range=[0,10]
 
 [Input]
 ;tree structure filename
-tree-filename=tree.tre
+tree-filename=
 ;count data filename
-count-filename=Bernoulli.cas
+count-filename=TemporalOnly.cas
 ;data time ranges (integer - integer)
-data-time-range=[0,0]
+data-time-range=[-16,10]
+
+[Output]
+;results filename
+results-filename=TemporalOnly.txt
+;create HTML results
+results-html=n
+;create CSV results
+results-csv=y
 
 [Temporal Window]
 ;maximum temporal size as percentage of data time range (0 < x <= 50.0)

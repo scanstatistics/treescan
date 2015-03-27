@@ -10,36 +10,51 @@
 /** returns new randomizer given parameter settings. */
 AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const ScanRunner& scanner) {
     const Parameters& parameters = scanner.getParameters();
-    switch (parameters.getModelType()) {
-        case Parameters::POISSON: {
+    switch (parameters.getScanType()) {
+
+        case Parameters::TREEONLY : {
             switch (parameters.getConditionalType()) {
-                case Parameters::UNCONDITIONAL : return new PoissonRandomizer(false, scanner.getTotalC(), scanner.getTotalN(), parameters);
-                case Parameters::TOTALCASES : return new PoissonRandomizer(true, scanner.getTotalC(), scanner.getTotalN(), parameters);
-                case Parameters::CASESEACHBRANCH :
-                default: throw prg_error("Unknown conditional type (%d).", "getNewRandomizer()", parameters.getConditionalType());
-            }
-        } break;
-        case Parameters::BERNOULLI: {
-            switch (parameters.getConditionalType()) {
-                case Parameters::UNCONDITIONAL : return new BernoulliRandomizer(false, scanner.getTotalC(), scanner.getTotalControls(), scanner.getTotalN(), parameters);
-                case Parameters::TOTALCASES : return new BernoulliRandomizer(true, scanner.getTotalC(), scanner.getTotalControls(), scanner.getTotalN(), parameters);
-                case Parameters::CASESEACHBRANCH :
-                default: throw prg_error("Unknown conditional type (%d).", "getNewRandomizer()", parameters.getConditionalType());
-            }
-        } break;
-        case Parameters::UNIFORM : {
-            switch (parameters.getConditionalType()) {
-                case Parameters::CASESEACHBRANCH : return new TemporalRandomizer(scanner);
-                case Parameters::NODEANDTIME :
                 case Parameters::UNCONDITIONAL :
+                    if (parameters.getModelType() == Parameters::POISSON)
+                        return new PoissonRandomizer(false, scanner.getTotalC(), scanner.getTotalN(), parameters);
+                    if (parameters.getModelType() == Parameters::BERNOULLI)
+                        return new BernoulliRandomizer(false, scanner.getTotalC(), scanner.getTotalControls(), scanner.getTotalN(), parameters);
+                    throw prg_error("Cannot determine randomizer: tree-only, unconditonal, model (%d).", "getNewRandomizer()", parameters.getModelType());
                 case Parameters::TOTALCASES :
-                default: throw prg_error("Unknown conditional type (%d).", "getNewRandomizer()", parameters.getConditionalType());
+                    if (parameters.getModelType() == Parameters::POISSON)
+                        return new PoissonRandomizer(true, scanner.getTotalC(), scanner.getTotalN(), parameters);
+                    if (parameters.getModelType() == Parameters::BERNOULLI)
+                        return new BernoulliRandomizer(true, scanner.getTotalC(), scanner.getTotalControls(), scanner.getTotalN(), parameters);
+                    throw prg_error("Cannot determine randomizer: tree-only, total-cases, model (%d).", "getNewRandomizer()", parameters.getModelType());
+                default: throw prg_error("Cannot determine randomizer: tree-only, condition type (%d).", "getNewRandomizer()", parameters.getConditionalType());
             }
-        } break;
-        default:
-            if (parameters.getConditionalType() == Parameters::NODEANDTIME)
-                return new ConditionalTemporalRandomizer(scanner);
-            throw prg_error("Unknown model type (%d).", "getNewRandomizer()", parameters.getModelType());
+        }
+
+        case Parameters::TREETIME : {
+            switch (parameters.getConditionalType()) {
+                case Parameters::NODE :
+                    if (parameters.getModelType() == Parameters::UNIFORM)
+                        return new TemporalRandomizer(scanner);
+                    throw prg_error("Cannot determine randomizer: tree-time, node, model (%d).", "getNewRandomizer()", parameters.getModelType());
+                case Parameters::NODEANDTIME :
+                    if (parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE)
+                        return new ConditionalTemporalRandomizer(scanner);
+                    throw prg_error("Cannot determine randomizer: tree-time, node-time, model (%d).", "getNewRandomizer()", parameters.getModelType());
+                default: throw prg_error("Cannot determine randomizer: tree-time, condition type (%d).", "getNewRandomizer()", parameters.getConditionalType());
+            }
+        }
+
+        case Parameters::TIMEONLY : { /* time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
+            switch (parameters.getConditionalType()) {
+                case Parameters::TOTALCASES :
+                    if (parameters.getModelType() == Parameters::UNIFORM)
+                        return new TemporalRandomizer(scanner);
+                    throw prg_error("Cannot determine randomizer: time-only, total-cases, model (%d).", "getNewRandomizer()", parameters.getModelType());
+                default: throw prg_error("Cannot determine randomizer: time-only, condition type (%d).", "getNewRandomizer()", parameters.getConditionalType());
+            }
+        }
+
+        default: throw prg_error("Unknown scan type (%d).", "getNewRandomizer()", parameters.getScanType());
     }
 }
 

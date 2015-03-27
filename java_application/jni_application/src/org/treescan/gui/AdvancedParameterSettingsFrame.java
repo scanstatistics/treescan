@@ -344,8 +344,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private void CheckPowerEvaluationSettings() {
         if (_performPowerEvalautions.isEnabled() && _performPowerEvalautions.isSelected()) {
             if (_powerEvaluationWithSpecifiedCases.isSelected()) {
-                if (Integer.parseInt(_totalPowerCases.getText()) < 1) {
-                    throw new AdvFeaturesExpection("The number of power evaluation cases must be greater than zero.\n", FocusedTabSet.ANALYSIS, (Component) _totalPowerCases);
+                if (Integer.parseInt(_totalPowerCases.getText()) < 2) {
+                    throw new AdvFeaturesExpection("The number of power evaluation cases must be two or more.\n", FocusedTabSet.ANALYSIS, (Component) _totalPowerCases);
                 }
                 Parameters.ModelType modelType = _settings_window.getModelType();
                 Parameters.ConditionalType conditonalType = _settings_window.getConditionalType();
@@ -379,7 +379,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     
     private void CheckInputSettings() {
         //validate the cuts file
-        if (_cutFileTextField.getText().length() > 0 && !FileAccess.ValidateFileAccess(_cutFileTextField.getText(), false)) {
+        if (_settings_window.getScanType() !=  Parameters.ScanType.TIMEONLY && _cutFileTextField.getText().length() > 0 && !FileAccess.ValidateFileAccess(_cutFileTextField.getText(), false)) {
             throw new AdvFeaturesExpection("The cuts file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", FocusedTabSet.INPUT, (Component) _cutFileTextField);
         }
     }

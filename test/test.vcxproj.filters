@@ -284,7 +284,10 @@
     </ClCompile>
     <ClCompile Include="squish85.cpp">
       <Filter>Source Files\regression_tests</Filter>
-    </ClCompile>    
+    </ClCompile>
+    <ClCompile Include="test_example_sets.cpp">
+      <Filter>Source Files\integration_tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test_helper.h">

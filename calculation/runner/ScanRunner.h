@@ -84,7 +84,8 @@ private:
         if (parameters.getModelType() == Parameters::POISSON ||
             parameters.getModelType() == Parameters::BERNOULLI ||
             (parameters.getConditionalType() == Parameters::NODEANDTIME) ||
-            (parameters.getConditionalType() == Parameters::CASESEACHBRANCH && parameters.isPerformingDayOfWeekAdjustment())) {
+            (parameters.getScanType() == Parameters::TIMEONLY && parameters.isPerformingDayOfWeekAdjustment()) ||
+            (parameters.getConditionalType() == Parameters::NODE && parameters.isPerformingDayOfWeekAdjustment())) {
             _IntN_C.resize(container_size);
             _BrN_C.resize(container_size);
         }

@@ -67,13 +67,13 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         PrintFormat.PrintSectionLabel(outfile, "Total Observations", false);
         PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", static_cast<int>(_scanRunner.getTotalN())));
     }
-    if (parameters.getModelType() == Parameters::UNIFORM) {
+    if (Parameters::isTemporalScanType(parameters.getScanType())) {
         PrintFormat.PrintSectionLabel(outfile, "Data Time Range", false);
         PrintFormat.PrintAlignedMarginsDataString(outfile, parameters.getDataTimeRangeSet().toString(buffer));
     }
     PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
 
-    if (parameters.getModelType() == Parameters::UNIFORM) {
+    if (Parameters::isTemporalScanType(parameters.getScanType())) {
         std::string buffer;
         _scanRunner.getCaselessWindowsAsString(buffer);
         if (buffer.size()) {
@@ -161,16 +161,16 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     PrintFormat.PrintSectionLabel(outfile, "O/E (Duplicates Removed)", true);
                     PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
                 }
-                if (!(_scanRunner.getParameters().getScanType() == Parameters::TREETIME && _scanRunner.getParameters().getConditionalType() == Parameters::NODEANDTIME)) {
+                if (!(parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME)) {
                     PrintFormat.PrintSectionLabel(outfile, "Relative Risk", true);
                     PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer));
                     PrintFormat.PrintSectionLabel(outfile, "Excess Cases", true);
                     PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer));
                 }
 
-                if (_scanRunner.getParameters().getScanType() == Parameters::TREETIME &&
-                    (_scanRunner.getParameters().getConditionalType() == Parameters::NODEANDTIME ||
-                    (_scanRunner.getParameters().getConditionalType() == Parameters::CASESEACHBRANCH && _scanRunner.getParameters().isPerformingDayOfWeekAdjustment()))) {
+                if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||
+                    (parameters.getScanType() == Parameters::TIMEONLY && parameters.getConditionalType() == Parameters::TOTALCASES && parameters.isPerformingDayOfWeekAdjustment()) ||
+                    (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODE && parameters.isPerformingDayOfWeekAdjustment())) {
                     // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
                     PrintFormat.PrintSectionLabel(outfile, "Test Statistic", true);
                 } else {
@@ -187,26 +187,26 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     }
 
     // Print critical values if requested.
-    if ((_scanRunner.getParameters().getReportCriticalValues() && _scanRunner.getParameters().getNumReplicationsRequested() >= 19) || 
-        (_scanRunner.getParameters().getPerformPowerEvaluations() && _scanRunner.getParameters().getCriticalValuesType() == Parameters::CV_MONTECARLO)) {
+    if ((parameters.getReportCriticalValues() && parameters.getNumReplicationsRequested() >= 19) || 
+        (parameters.getPerformPowerEvaluations() && parameters.getCriticalValuesType() == Parameters::CV_MONTECARLO)) {
         outfile << "A cut is statistically significant when its log likelihood ratio is greater than the critical value, which is, for significance level:" << std::endl;
-        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 99999) {
+        if (parameters.getNumReplicationsRequested() >= 99999) {
             CriticalValues::alpha_t alpha00001(_scanRunner.getCriticalValues().getAlpha00001());
             outfile << "... 0.00001: " <<  alpha00001.second << std::endl;
         }
-        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 9999) {
+        if (parameters.getNumReplicationsRequested() >= 9999) {
             CriticalValues::alpha_t alpha0001(_scanRunner.getCriticalValues().getAlpha0001());
             outfile << "... 0.0001: " <<  alpha0001.second << std::endl;
         }
-        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 999) {
+        if (parameters.getNumReplicationsRequested() >= 999) {
             CriticalValues::alpha_t alpha001(_scanRunner.getCriticalValues().getAlpha001());
             outfile << "... 0.001: " <<  alpha001.second << std::endl;
         }
-        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 99) {
+        if (parameters.getNumReplicationsRequested() >= 99) {
             CriticalValues::alpha_t alpha01(_scanRunner.getCriticalValues().getAlpha01());
             outfile << "... 0.01: " <<  alpha01.second << std::endl;
         }
-        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 19) {
+        if (parameters.getNumReplicationsRequested() >= 19) {
             CriticalValues::alpha_t alpha05(_scanRunner.getCriticalValues().getAlpha05());
             outfile << "... 0.05: " <<  alpha05.second << std::endl;
         }
@@ -214,7 +214,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     }
 
     // print power estimation values
-    if (_scanRunner.getParameters().getPerformPowerEvaluations()) {
+    if (parameters.getPerformPowerEvaluations()) {
         // sanity check
         if (_scanRunner.getPowerEstimations().size() == 0)
             throw prg_error("Number of power estimations is zero.", "ResultsFileWriter::writeASCII(...)");
@@ -256,7 +256,7 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buff
             switch (_scanRunner.getParameters().getConditionalType()) {
                 case Parameters::UNCONDITIONAL : buffer += " with Unconditional"; break;
                 case Parameters::TOTALCASES : buffer += " with Conditional"; break;
-                case Parameters::CASESEACHBRANCH : break;
+                case Parameters::NODE : break;
                 default: throw prg_error("Unknown conditional type (%d).", "writeASCII()", _scanRunner.getParameters().getConditionalType());
             }
             switch (_scanRunner.getParameters().getModelType()) {
@@ -351,13 +351,13 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     if (parameters.getModelType() == Parameters::BERNOULLI) {
         outfile << "<tr><th>Total Observations:</th><td>" << static_cast<int>(_scanRunner.getTotalN()) << "</td></tr>" << std::endl;
     }
-    if (parameters.getModelType() == Parameters::UNIFORM) {
+    if (Parameters::isTemporalScanType(parameters.getScanType())) {
         outfile << "<tr><th>Data Time Range:</th><td>" << parameters.getDataTimeRangeSet().toString(buffer).c_str() << "</td></tr>" << std::endl;
     }
     outfile << "</tbody></table></div>" << std::endl;
     outfile << "<div class=\"hr\"></div>" << std::endl;
 
-    if (!_scanRunner.getParameters().getPerformPowerEvaluations() || (_scanRunner.getParameters().getPerformPowerEvaluations() && _scanRunner.getParameters().getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
+    if (!parameters.getPerformPowerEvaluations() || (parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         outfile << "<div id=\"cuts\">" << std::endl;
         if (_scanRunner.getCuts().size() == 0 || _scanRunner.getCuts().at(0)->getC() == 0 || 
             (parameters.getNumReplicationsRequested() > 0 && _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested())) {
@@ -365,7 +365,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         } else {
             outfile << "<h3>MOST LIKELY CUTS</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;
             outfile << "<thead><tr><th>No.</th><th>Node Identifier</th>";
-            if (parameters.getModelType() == Parameters::UNIFORM || parameters.getConditionalType() == Parameters::NODEANDTIME) {
+            if (Parameters::isTemporalScanType(parameters.getScanType())) {
                 outfile << "<th>Node Cases</th>";
                 outfile << "<th>Time Window</th>";
                 outfile << "<th>Cases in Window</th>";
@@ -381,9 +381,9 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             if (!(parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME)) {
                 outfile << "<th>Relative Risk</th><th>Excess Cases</th>" << std::endl;
             }
-            if (parameters.getScanType() == Parameters::TREETIME &&
-                (parameters.getConditionalType() == Parameters::NODEANDTIME ||
-                (parameters.getConditionalType() == Parameters::CASESEACHBRANCH && parameters.isPerformingDayOfWeekAdjustment()))) {
+            if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||
+                (parameters.getScanType() == Parameters::TIMEONLY && parameters.getConditionalType() == Parameters::TOTALCASES && parameters.isPerformingDayOfWeekAdjustment()) ||
+                (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODE && parameters.isPerformingDayOfWeekAdjustment())) {
                 // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
                 outfile << "<th>Test Statistic</th>" << std::endl;
             } else {
@@ -409,12 +409,13 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                     }
                 }
                 outfile << "</td>";
-                if (parameters.getConditionalType() == Parameters::NODEANDTIME) {
+                if (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) {
+                    // write node cases and time window
                     printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts().at(k)->getID()]->getBrC()));
                     outfile << "<td>" << buffer.c_str() << "</td>";
                     outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
-                }
-                else if (parameters.getModelType() == Parameters::UNIFORM) {
+                } else if (parameters.getModelType() == Parameters::UNIFORM) {
+                    // write node cases and time window
                     if (parameters.isPerformingDayOfWeekAdjustment()) {
                         printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts().at(k)->getID()]->getBrC()));
                     } else {
@@ -422,22 +423,26 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                     }
                     outfile << "<td>" << buffer.c_str() << "</td>";
                     outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
-                }
-                else if (parameters.getModelType() == Parameters::BERNOULLI) {
+                } else if (parameters.getModelType() == Parameters::BERNOULLI) {
+                    // write number of observations
                     outfile << "<td>" << static_cast<int>(_scanRunner.getCuts().at(k)->getN()) << "</td>";
                 }
+                // write cases in window or cases or observed cases, depending on settings
                 outfile << "<td>" << _scanRunner.getCuts().at(k)->getC() << "</td>";
                 if (parameters.isDuplicates())
+                    // write cases, duplicates removed
                     outfile << "<td>" << _scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates() << "</td>";
                 outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
                 outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getODE(_scanRunner), buffer) << "</td>";
                 if (parameters.isDuplicates())
+                    // remove obe, duplicates removed
                     outfile << "<td>" << getValueAsString((_scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates())/_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
                 if (!(parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME)) {
                     outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer) << "</td>";
                     outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer) << "</td>";
                 }
                 outfile << "<td>" << printString(buffer, "%.1lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood())).c_str() << "</td>";
+                // write p-value
                 outfile << "<td>" << printString(buffer, format.c_str(), (double)_scanRunner.getCuts().at(k)->getRank() /(parameters.getNumReplicationsRequested() + 1)) << "</td><tr>" << std::endl;
                 k++;
             }
@@ -450,7 +455,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     }
 
     outfile << "<div class=\"hr\"></div>" << std::endl;
-    if (parameters.getModelType() == Parameters::UNIFORM) {
+    if (Parameters::isTemporalScanType(parameters.getScanType())) {
         std::string buffer;
         _scanRunner.getCaselessWindowsAsString(buffer);
         if (buffer.size()) {
@@ -459,27 +464,26 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     }
 
     // Print critical values if requested.
-    if ((_scanRunner.getParameters().getReportCriticalValues() && _scanRunner.getParameters().getNumReplicationsRequested() >= 19) || 
-        (_scanRunner.getParameters().getPerformPowerEvaluations() && _scanRunner.getParameters().getCriticalValuesType() == Parameters::CV_MONTECARLO)) {
+    if ((parameters.getReportCriticalValues() && parameters.getNumReplicationsRequested() >= 19) || (parameters.getPerformPowerEvaluations() && parameters.getCriticalValuesType() == Parameters::CV_MONTECARLO)) {
         outfile << "<div class=\"program-info\">" << std::endl;
         outfile << std::endl << "<div>A cut is statistically significant when its log likelihood ratio is greater than the critical value, which is, for significance level:</div>" << std::endl;
-        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 99999) {
+        if (parameters.getNumReplicationsRequested() >= 99999) {
             CriticalValues::alpha_t alpha00001(_scanRunner.getCriticalValues().getAlpha00001());
             outfile << "<div>... 0.00001: " <<  alpha00001.second << "</div>" << std::endl;
         }
-        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 9999) {
+        if (parameters.getNumReplicationsRequested() >= 9999) {
             CriticalValues::alpha_t alpha0001(_scanRunner.getCriticalValues().getAlpha0001());
             outfile << "<div>... 0.0001: " <<  alpha0001.second << "</div>"<< std::endl;
         }
-        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 999) {
+        if (parameters.getNumReplicationsRequested() >= 999) {
             CriticalValues::alpha_t alpha001(_scanRunner.getCriticalValues().getAlpha001());
             outfile << "<div>... 0.001: " <<  alpha001.second << "</div>" << std::endl;
         }
-        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 99) {
+        if (parameters.getNumReplicationsRequested() >= 99) {
             CriticalValues::alpha_t alpha01(_scanRunner.getCriticalValues().getAlpha01());
             outfile << "<div>... 0.01: " <<  alpha01.second << "</div>" << std::endl;
         }
-        if (_scanRunner.getParameters().getNumReplicationsRequested() >= 19) {
+        if (parameters.getNumReplicationsRequested() >= 19) {
             CriticalValues::alpha_t alpha05(_scanRunner.getCriticalValues().getAlpha05());
             outfile << "<div>... 0.05: " <<  alpha05.second << "</div>" << std::endl;
         }
@@ -487,7 +491,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     }
 
     // print power estimation values
-    if (_scanRunner.getParameters().getPerformPowerEvaluations()) {
+    if (parameters.getPerformPowerEvaluations()) {
         outfile << "<div class=\"program-info\">" << std::endl;
         if (_scanRunner.getPowerEstimations().size() == 0)
             throw prg_error("Number of power estimations is zero.", "ResultsFileWriter::writeHTML(...)");

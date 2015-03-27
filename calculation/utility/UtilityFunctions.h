@@ -37,10 +37,10 @@ std::string                   & getRoundAsString(double value, std::string& s, u
 std::string                   & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath);
 std::string                   & GetUserTemporaryDirectory(std::string& s);
 bool                            getlinePortable(std::ifstream& readstream, std::string& line);
-template <typename T>           bool string_to_type(const char * s, T& t) {
+template <typename T>           bool string_to_numeric_type(const char * s, T& t, bool test_finite=true) {
                                     try {
                                         t = boost::lexical_cast<T>(s);
-                                        return boost::math::isfinite<T>(t);
+                                        return test_finite ? boost::math::isfinite<T>(t) : true;
                                     } catch (boost::bad_lexical_cast&) {
                                         return false;
                                     } 

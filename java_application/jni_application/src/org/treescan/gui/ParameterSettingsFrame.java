@@ -207,10 +207,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      */
     private void CheckInputSettings() {
         //validate the tree file
-        if (_treelFileTextField.getText().length() == 0) {
+        if (!_timeonlyScanType.isSelected() && _treelFileTextField.getText().length() == 0) {
             throw new SettingsException("Please specify a tree file.", (Component) _treelFileTextField);
         }
-        if (!FileAccess.ValidateFileAccess(_treelFileTextField.getText(), false)) {
+        if (!_timeonlyScanType.isSelected() && !FileAccess.ValidateFileAccess(_treelFileTextField.getText(), false)) {
             throw new SettingsException("The tree file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", (Component) _treelFileTextField);
         }
 
@@ -222,7 +222,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             throw new SettingsException("The count file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", (Component) _countFileTextField);
         }
 
-        if (_treetimeScanType.isSelected()) {
+        if (_treetimeScanType.isSelected() || _timeonlyScanType.isSelected()) {
             if (Integer.parseInt(_dataTimeRangeBegin.getText().trim()) >= Integer.parseInt(_dataTimeRangeEnd.getText().trim())) {
                 throw new SettingsException("The data time range start must be before the data time range end.", (Component) _temporalEndWindowBegin);
             }
@@ -266,7 +266,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 throw new SettingsException("Please specify an event probabilty that is between zero and one.", (Component) _eventProbabiltyNumerator);
             }
         }
-        if (_treetimeScanType.isSelected()) {
+        if (_treetimeScanType.isSelected() || _timeonlyScanType.isSelected()) {
             int temporalStartWindowBegin = Integer.parseInt(_temporalStartWindowBegin.getText().trim());
             int temporalStartWindowEnd = Integer.parseInt(_temporalStartWindowEnd.getText().trim());
             if (temporalStartWindowBegin > temporalStartWindowEnd) {
@@ -338,10 +338,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _treeOnlyScanType.setSelected(parameters.getScanType() == Parameters.ScanType.TREEONLY);
         _treetimeScanType.setSelected(parameters.getScanType() == Parameters.ScanType.TREETIME);
+        _timeonlyScanType.setSelected(parameters.getScanType() == Parameters.ScanType.TIMEONLY);
         _unconditionalButton.setSelected(parameters.getConditionalType() == Parameters.ConditionalType.UNCONDITIONAL);
         _conditionalTotalCasesButton.setSelected(parameters.getConditionalType() == Parameters.ConditionalType.TOTALCASES);
-        _conditionalBranchCasesButton.setSelected(parameters.getConditionalType() == Parameters.ConditionalType.CASESEACHBRANCH);
-        _conditionalNodeTimeButton.setSelected(parameters.getConditionalType() == Parameters.ConditionalType.CASESBRANCHANDDAY);
+        _conditionalBranchCasesButton.setSelected(parameters.getConditionalType() == Parameters.ConditionalType.NODE);
+        _conditionalNodeTimeButton.setSelected(parameters.getConditionalType() == Parameters.ConditionalType.NODEANDTIME);
         _PoissonButton.setSelected(parameters.getModelType() == Parameters.ModelType.POISSON);
         _BernoulliButton.setSelected(parameters.getModelType() == Parameters.ModelType.BERNOULLI);
         _uniformButton.setSelected(parameters.getModelType() == Parameters.ModelType.UNIFORM);
@@ -372,15 +373,17 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             parameters.setScanType(Parameters.ScanType.TREEONLY.ordinal());
         } else if (_treetimeScanType.isSelected()) {
             parameters.setScanType(Parameters.ScanType.TREETIME.ordinal());
+        } else if (_timeonlyScanType.isSelected()) {
+            parameters.setScanType(Parameters.ScanType.TIMEONLY.ordinal());            
         }
         if (_unconditionalButton.isSelected()) {
             parameters.setConditionalType(Parameters.ConditionalType.UNCONDITIONAL.ordinal());
         } else if (_conditionalTotalCasesButton.isSelected()) {
             parameters.setConditionalType(Parameters.ConditionalType.TOTALCASES.ordinal());
         } else if (_conditionalBranchCasesButton.isSelected()) {
-            parameters.setConditionalType(Parameters.ConditionalType.CASESEACHBRANCH.ordinal());
+            parameters.setConditionalType(Parameters.ConditionalType.NODE.ordinal());
         } else if (_conditionalNodeTimeButton.isSelected()) {
-            parameters.setConditionalType(Parameters.ConditionalType.CASESBRANCHANDDAY.ordinal());
+            parameters.setConditionalType(Parameters.ConditionalType.NODEANDTIME.ordinal());
         }
         if (_PoissonButton.isEnabled() && _PoissonButton.isSelected()) {
             parameters.setModelType(Parameters.ModelType.POISSON.ordinal());
@@ -413,6 +416,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             return Parameters.ScanType.TREEONLY;
         if (_treetimeScanType.isSelected())
             return Parameters.ScanType.TREETIME;
+        if (_timeonlyScanType.isSelected())
+            return Parameters.ScanType.TIMEONLY;
         return null;
     }
 
@@ -422,9 +427,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         } else if (_conditionalTotalCasesButton.isSelected()) {
             return Parameters.ConditionalType.TOTALCASES;
         } else if (_conditionalBranchCasesButton.isSelected()) {
-            return Parameters.ConditionalType.CASESEACHBRANCH;
+            return Parameters.ConditionalType.NODE;
         } else if (_conditionalNodeTimeButton.isSelected()) {
-            return Parameters.ConditionalType.CASESBRANCHANDDAY;            
+            return Parameters.ConditionalType.NODEANDTIME;            
         }
         return null;
     }
@@ -465,11 +470,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     }
 
     private void enableSettingsForStatisticModelCombination() {
+        boolean treeOnly = _treeOnlyScanType.isSelected();
         boolean treeAndTime = _treetimeScanType.isSelected();
+        boolean timeOnly = _timeonlyScanType.isSelected();
 
         // conditional on branch is only available with tree-time
-        _unconditionalButton.setEnabled(!treeAndTime);
-        _conditionalTotalCasesButton.setEnabled(!treeAndTime);
+        _unconditionalButton.setEnabled(treeOnly);
+        _conditionalTotalCasesButton.setEnabled(treeOnly || timeOnly);
         _conditionalBranchCasesButton.setEnabled(treeAndTime);
         _conditionalNodeTimeButton.setEnabled(treeAndTime);
         if ((!_unconditionalButton.isEnabled() && _unconditionalButton.isSelected()) || (!_conditionalTotalCasesButton.isEnabled() && _conditionalTotalCasesButton.isSelected())) {
@@ -477,13 +484,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         }
         if ((!_conditionalBranchCasesButton.isEnabled() && _conditionalBranchCasesButton.isSelected()) ||
             (!_conditionalNodeTimeButton.isEnabled() && _conditionalNodeTimeButton.isSelected())) {
-            _unconditionalButton.setSelected(true);
+            if (treeOnly) _unconditionalButton.setSelected(true);
+            if (timeOnly) _conditionalTotalCasesButton.setSelected(true);
         }
         // Poisson and Bernoulli are only available with tree only
-        _PoissonButton.setEnabled(!treeAndTime);
-        _BernoulliButton.setEnabled(!treeAndTime);
-        // uniform is only available with tree-time and conditional on branch
-        _uniformButton.setEnabled(treeAndTime && _conditionalBranchCasesButton.isSelected());
+        _PoissonButton.setEnabled(treeOnly);
+        _BernoulliButton.setEnabled(treeOnly);
+        // uniform is only available with tree-time and conditional on branch or time-only
+        _uniformButton.setEnabled((treeAndTime && _conditionalBranchCasesButton.isSelected()) || timeOnly);
         // event probability inputs only available for unconditional Bernoulli
         boolean enabled = _BernoulliButton.isEnabled() && _BernoulliButton.isSelected() && _unconditionalButton.isSelected();
         _eventProbabilityLabel.setEnabled(enabled);
@@ -491,7 +499,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _eventProbabiltyNumerator.setEnabled(enabled);
         _eventProbabiltyDenominator.setEnabled(enabled);
         // temporal window inputs only available for tree-time or time-only
-        _temporalWindowGroup.setEnabled(treeAndTime);
+        _temporalWindowGroup.setEnabled(treeAndTime || timeOnly);
         _temporalStartWindowLabel.setEnabled(_temporalWindowGroup.isEnabled());
         _temporalStartWindowBegin.setEnabled(_temporalWindowGroup.isEnabled());
         _temporalStartWindowToLabel.setEnabled(_temporalWindowGroup.isEnabled());
@@ -500,11 +508,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _temporalEndWindowBegin.setEnabled(_temporalWindowGroup.isEnabled());
         _temporalEndWindowToLabel.setEnabled(_temporalWindowGroup.isEnabled());
         _temporalEndWindowEnd.setEnabled(_temporalWindowGroup.isEnabled());
-        _advancedParametersSetting.enableTemporalOptionsGroup(treeAndTime);
+        _advancedParametersSetting.enableTemporalOptionsGroup(treeAndTime || timeOnly);
         _advancedParametersSetting.enableAdjustmentsOptions();
         _advancedParametersSetting.enablePowerEvaluationsGroup();        
         // data time range group
-        _data_time_range_group.setEnabled(treeAndTime);
+        _data_time_range_group.setEnabled(treeAndTime || timeOnly);
         _data_time_range_start_label.setEnabled(_data_time_range_group.isEnabled());
         _dataTimeRangeBegin.setEnabled(_data_time_range_group.isEnabled());
         _data_time_range_end_label.setEnabled(_data_time_range_group.isEnabled());
@@ -549,6 +557,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _scanStatisticPanel1 = new javax.swing.JPanel();
         _treetimeScanType = new javax.swing.JRadioButton();
         _treeOnlyScanType = new javax.swing.JRadioButton();
+        _timeonlyScanType = new javax.swing.JRadioButton();
         _probabilityModelPanel1 = new javax.swing.JPanel();
         _uniformButton = new javax.swing.JRadioButton();
         _advancedAnalysisButton = new javax.swing.JButton();
@@ -732,13 +741,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             _scanStatisticPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_scanStatisticPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_unconditionalButton, javax.swing.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
+                .addComponent(_unconditionalButton, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_conditionalTotalCasesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                .addComponent(_conditionalTotalCasesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_conditionalBranchCasesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)
+                .addComponent(_conditionalBranchCasesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_conditionalNodeTimeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE)
+                .addComponent(_conditionalNodeTimeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
                 .addContainerGap())
         );
         _scanStatisticPanelLayout.setVerticalGroup(
@@ -899,6 +908,16 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
+        scanButtonGroup.add(_timeonlyScanType);
+        _timeonlyScanType.setText("Time Only");
+        _timeonlyScanType.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    enableSettingsForStatisticModelCombination();
+                }
+            }
+        });
+
         javax.swing.GroupLayout _scanStatisticPanel1Layout = new javax.swing.GroupLayout(_scanStatisticPanel1);
         _scanStatisticPanel1.setLayout(_scanStatisticPanel1Layout);
         _scanStatisticPanel1Layout.setHorizontalGroup(
@@ -906,16 +925,19 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(_scanStatisticPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_treeOnlyScanType, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_treetimeScanType, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(20, 20, 20))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_timeonlyScanType, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         _scanStatisticPanel1Layout.setVerticalGroup(
             _scanStatisticPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _scanStatisticPanel1Layout.createSequentialGroup()
                 .addGroup(_scanStatisticPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_treeOnlyScanType)
-                    .addComponent(_treetimeScanType))
+                    .addComponent(_treetimeScanType)
+                    .addComponent(_timeonlyScanType))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -989,7 +1011,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_temporalWindowGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -1199,7 +1221,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_countFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_data_time_range_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 181, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 185, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -1277,7 +1299,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_reportResultsAsHTML)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportResultsAsCsvTable)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 240, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 244, Short.MAX_VALUE)
                 .addComponent(_advancedOutputButton)
                 .addContainerGap())
         );
@@ -1348,6 +1370,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JLabel _temporalStartWindowLabel;
     private javax.swing.JLabel _temporalStartWindowToLabel;
     private javax.swing.JPanel _temporalWindowGroup;
+    private javax.swing.JRadioButton _timeonlyScanType;
     private javax.swing.JButton _treeFileBrowseButton;
     private javax.swing.JButton _treeFileImportButton;
     private javax.swing.JRadioButton _treeOnlyScanType;

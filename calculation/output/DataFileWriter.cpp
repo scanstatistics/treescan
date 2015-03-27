@@ -251,11 +251,12 @@ const char * CutsRecordWriter::CUT_FILE_SUFFIX                            = "";
 CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scanRunner) {
   unsigned short uwOffset=0;
   std::string    buffer;
+  const Parameters& params = _scanner.getParameters();
 
   try {
     CreateField(_dataFieldDefinitions, CUT_NUM_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     CreateField(_dataFieldDefinitions, NODE_ID_FIELD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()), 0, uwOffset, 0);
-    switch (_scanner.getParameters().getModelType()) {
+    switch (params.getModelType()) {
         case Parameters::BERNOULLI :
             CreateField(_dataFieldDefinitions, OBSERVATIONS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
             CreateField(_dataFieldDefinitions, CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
@@ -268,29 +269,29 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
         case Parameters::UNIFORM :
         case Parameters::MODEL_NOT_APPLICABLE :
         default :
-            if (scanRunner.getParameters().getScanType() == Parameters::TREETIME) {
+            if (Parameters::isTemporalScanType(params.getScanType())) {
                 CreateField(_dataFieldDefinitions, NODE_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
                 CreateField(_dataFieldDefinitions, START_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
                 CreateField(_dataFieldDefinitions, END_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
                 CreateField(_dataFieldDefinitions, WNDW_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
                 CreateField(_dataFieldDefinitions, EXPECTED_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             } else
-                throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", _scanner.getParameters().getModelType());
+                throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", params.getModelType());
     }
-    if (_scanner.getParameters().isDuplicates())
+    if (params.isDuplicates())
         CreateField(_dataFieldDefinitions, OBSERVED_NO_DUPLICATES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     CreateField(_dataFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-    if (_scanner.getParameters().isDuplicates())
+    if (params.isDuplicates())
         CreateField(_dataFieldDefinitions, OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
 
-    if (!(scanRunner.getParameters().getScanType() == Parameters::TREETIME && scanRunner.getParameters().getConditionalType() == Parameters::NODEANDTIME)) {
+    if (!(params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME)) {
         CreateField(_dataFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
         CreateField(_dataFieldDefinitions, EXCESS_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     }
 
-    if (scanRunner.getParameters().getScanType() == Parameters::TREETIME &&
-        (scanRunner.getParameters().getConditionalType() == Parameters::NODEANDTIME ||
-        (scanRunner.getParameters().getConditionalType() == Parameters::CASESEACHBRANCH && scanRunner.getParameters().isPerformingDayOfWeekAdjustment()))) {
+    if ((params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME) ||
+        (params.getScanType() == Parameters::TIMEONLY && params.getConditionalType() == Parameters::TOTALCASES && params.isPerformingDayOfWeekAdjustment()) ||
+        (params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODE && params.isPerformingDayOfWeekAdjustment())) {
         // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
         CreateField(_dataFieldDefinitions, TEST_STATISTIC_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
         //CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
@@ -298,9 +299,9 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
         CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
     }
 
-    printString(buffer, "%u", _scanner.getParameters().getNumReplicationsRequested());
+    printString(buffer, "%u", params.getNumReplicationsRequested());
     CreateField(_dataFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, static_cast<unsigned short>(buffer.size()));
-    _csvWriter.reset(new CSVDataFileWriter(getFilename(_scanner.getParameters(), buffer), _dataFieldDefinitions, _scanner.getParameters().isPrintColumnHeaders()));
+    _csvWriter.reset(new CSVDataFileWriter(getFilename(params, buffer), _dataFieldDefinitions, params.isPrintColumnHeaders()));
   } catch (prg_exception& x) {
     x.addTrace("constructor()","CutsRecordWriter");
     throw;
@@ -333,7 +334,7 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
             case Parameters::UNIFORM :
             case Parameters::MODEL_NOT_APPLICABLE :
             default :
-                if (params.getScanType() == Parameters::TREETIME) {
+                if (Parameters::isTemporalScanType(params.getScanType())) {
                     if (params.isPerformingDayOfWeekAdjustment() || params.getConditionalType() == Parameters::NODEANDTIME) {
                         Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getNodes()[_scanner.getCuts().at(cutIndex)->getID()]->getBrC());
                     } else {
@@ -357,9 +358,9 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
             Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getExcessCases(_scanner);
         }
 
-        if (params.getScanType() == Parameters::TREETIME &&
-            (params.getConditionalType() == Parameters::NODEANDTIME ||
-            (params.getConditionalType() == Parameters::CASESEACHBRANCH && params.isPerformingDayOfWeekAdjustment()))) {
+        if ((params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME) ||
+            (params.getScanType() == Parameters::TIMEONLY && params.getConditionalType() == Parameters::TOTALCASES && params.isPerformingDayOfWeekAdjustment()) ||
+            (params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODE && params.isPerformingDayOfWeekAdjustment())) {
             // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
             Record.GetFieldValue(TEST_STATISTIC_FIELD).AsDouble() = calcLogLikelihood->LogLikelihoodRatio(_scanner.getCuts().at(cutIndex)->getLogLikelihood());
         } else {

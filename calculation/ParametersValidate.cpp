@@ -186,7 +186,7 @@ bool ParametersValidate::ValidateAnalysisParameters(BasePrint& PrintDirection) c
                 }
                 break;
             case Parameters::TREETIME:
-                if (!(_parameters.getConditionalType() == Parameters::CASESEACHBRANCH || _parameters.getConditionalType() == Parameters::NODEANDTIME)) {
+                if (!(_parameters.getConditionalType() == Parameters::NODE || _parameters.getConditionalType() == Parameters::NODEANDTIME)) {
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree and Time' can either be conditioned on each node or on each node plus time.\n", BasePrint::P_PARAMERROR);
                 }
@@ -294,8 +294,8 @@ bool ParametersValidate::ValidatePowerEvaluationParametersParameters(BasePrint &
                                   BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, _parameters.getCriticalValue001());
         }
     }
-    if (_parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES && _parameters.getPowerEvaluationTotalCases() < 1) {
-        PrintDirection.Printf("%s:\nThe number of specified power evaluation cases must be greater than one.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+    if (_parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES && _parameters.getPowerEvaluationTotalCases() < 2) {
+        PrintDirection.Printf("%s:\nThe number of specified power evaluation cases must be two or more.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         bValid = false;
     }
     if (_parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES &&

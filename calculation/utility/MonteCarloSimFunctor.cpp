@@ -24,7 +24,7 @@ MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuc
         const Parameters& parameters = _scanRunner.getParameters();
         if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||
             (parameters.getScanType() == Parameters::TIMEONLY && parameters.isPerformingDayOfWeekAdjustment()) ||
-            (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::CASESEACHBRANCH && parameters.isPerformingDayOfWeekAdjustment()))
+            (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODE && parameters.isPerformingDayOfWeekAdjustment()))
             temp_result.dSuccessfulResult = scanTreeTemporalConditionNodeTime(param);
         else if (parameters.getModelType() == Parameters::UNIFORM)
             temp_result.dSuccessfulResult = scanTreeTemporalConditionNode(param);

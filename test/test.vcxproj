@@ -152,6 +152,7 @@
     <ClCompile Include="squish81.cpp" />
     <ClCompile Include="squish85.cpp" />
     <ClCompile Include="test.cpp" />
+    <ClCompile Include="test_example_sets.cpp" />
     <ClCompile Include="test_helper.cpp" />
     <ClCompile Include="unittest_ParametersValidate.cpp" />
   </ItemGroup>

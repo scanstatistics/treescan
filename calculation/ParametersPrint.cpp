@@ -133,7 +133,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
     switch (_parameters.getConditionalType()) {
         case Parameters::UNCONDITIONAL : settings.push_back(std::make_pair(buffer,"No (unconditional)")); break;
         case Parameters::TOTALCASES : settings.push_back(std::make_pair(buffer,"Total Cases")); break;
-        case Parameters::CASESEACHBRANCH : settings.push_back(std::make_pair(buffer,"Node")); break;
+        case Parameters::NODE : settings.push_back(std::make_pair(buffer,"Node")); break;
         case Parameters::NODEANDTIME : settings.push_back(std::make_pair(buffer,"Node and Time")); break;
         default: throw prg_error("Unknown conditional type (%d).", "getAnalysisParameters()", _parameters.getConditionalType());
     }
@@ -141,7 +141,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
         case Parameters::POISSON : settings.push_back(std::make_pair("Probability Model - Tree","Poisson")); break;
         case Parameters::BERNOULLI : settings.push_back(std::make_pair("Probability Model - Tree","Bernoulli")); break;
         case Parameters::UNIFORM :
-            if (_parameters.getConditionalType() == Parameters::CASESEACHBRANCH)
+            if (_parameters.getConditionalType() == Parameters::NODE)
                 settings.push_back(std::make_pair("Probability Model - Time","Uniform"));
             break;
         case Parameters::MODEL_NOT_APPLICABLE: break;

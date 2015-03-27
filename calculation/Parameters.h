@@ -79,7 +79,7 @@ class Parameters {
     enum ModelType {POISSON=0, BERNOULLI, UNIFORM, MODEL_NOT_APPLICABLE};
     enum CutType {SIMPLE=0, PAIRS, TRIPLETS, ORDINAL, COMBINATORIAL};
     enum ScanType {TREEONLY=0, TREETIME, TIMEONLY};
-    enum ConditionalType {UNCONDITIONAL=0, TOTALCASES, CASESEACHBRANCH, NODEANDTIME};
+    enum ConditionalType {UNCONDITIONAL=0, TOTALCASES, NODE, NODEANDTIME};
     enum MaximumWindowType {PERCENTAGE_WINDOW=0, FIXED_LENGTH};
     typedef std::map<std::string,Parameters::CutType> cut_map_t;
     typedef std::pair<cut_map_t, cut_map_t> cut_maps_t;
@@ -213,7 +213,7 @@ class Parameters {
     bool                                isGeneratingHtmlResults() const {return _generateHtmlResults;}
     bool                                isGeneratingLLRResults() const {return _generate_llr_results;}
     bool                                isGeneratingTableResults() const {return _generateTableResults;}
-    bool                                isPerformingDayOfWeekAdjustment() const {return _scan_type == Parameters::TREETIME && _dayofweek_adjustment;}
+    bool                                isPerformingDayOfWeekAdjustment() const {return isTemporalScanType(_scan_type) && _dayofweek_adjustment;}
     bool                                isPrintColumnHeaders() const {return _printColumnHeaders;}
     bool                                isRandomlyGeneratingSeed() const {return _randomlyGenerateSeed;}
     bool                                isReadingSimulationData() const {return _read_simulations;}
@@ -251,7 +251,7 @@ class Parameters {
     void                                setPowerEvaluationAltHypothesisFilename(const char * s, bool bCorrectForRelativePath=false);
     void                                setPowerEvaluationTotalCases(int i) {_power_evaluation_totalcases = i;}
     void                                setPowerEvaluationType(PowerEvaluationType e) {_power_evaluation_type = e;}
-    void                                setPrintColunHeaders(bool b) {_printColumnHeaders=b;}
+    void                                setPrintColumnHeaders(bool b) {_printColumnHeaders=b;}
     void                                setProbabilityRatio(ratio_t r) {_probablility_ratio = r;}
     void                                setRandomizationSeed(long lSeed) {_randomizationSeed = lSeed;}
     void                                setRandomlyGeneratingSeed(bool b) {_randomlyGenerateSeed = b;}

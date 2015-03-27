@@ -47,13 +47,13 @@ BOOST_AUTO_TEST_CASE( test_unconditional_poison_power_estimation ) {
     while (data.size()) {
         ++dataRows;
         unsigned int ha_num;
-        BOOST_CHECK( string_to_type<unsigned int>(data.at(std::distance(headers.begin(), itrCol1)).c_str(), ha_num) );
+        BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrCol1)).c_str(), ha_num) );
         BOOST_CHECK_EQUAL( ha_num, dataRows );
 
         double alpha05, alpha01, alpha001;
-        BOOST_CHECK( string_to_type<double>(data.at(std::distance(headers.begin(), itrCol2)).c_str(), alpha05) );
-        BOOST_CHECK( string_to_type<double>(data.at(std::distance(headers.begin(), itrCol3)).c_str(), alpha01) );
-        BOOST_CHECK( string_to_type<double>(data.at(std::distance(headers.begin(), itrCol4)).c_str(), alpha001) );
+        BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrCol2)).c_str(), alpha05) );
+        BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrCol3)).c_str(), alpha01) );
+        BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrCol4)).c_str(), alpha001) );
         switch (dataRows) {
             case 1 : BOOST_REQUIRE_CLOSE( alpha05, 0.797, 0.001 );
                      BOOST_REQUIRE_CLOSE( alpha01, 0.483, 0.001 );

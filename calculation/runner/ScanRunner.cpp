@@ -23,121 +23,202 @@
 
 /* Calculates the excess number of cases. See user guide for formula explanation. */
 double CutStructure::getExcessCases(const ScanRunner& scanner) {
-    const Parameters& params = scanner.getParameters();
+    const Parameters& parameters = scanner.getParameters();
     double C = static_cast<double>(_C);
     double totalC = static_cast<double>(scanner.getTotalC());
-    switch (params.getScanType()) {
+    switch (parameters.getScanType()) {
+
         case Parameters::TREEONLY: {
-            switch (params.getModelType()) {
-                case Parameters::POISSON :
-                    if (params.getConditionalType() == Parameters::UNCONDITIONAL)
+            switch (parameters.getConditionalType()) {
+                case Parameters::UNCONDITIONAL :
+                    if (parameters.getModelType() == Parameters::POISSON)
                         return C - _N;
-                    if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", params.getModelType(), scanner.getTotalN(), _N);
-                        return C - _N * (totalC - C)/(scanner.getTotalN() - _N);
-                case Parameters::BERNOULLI:
-                    if (scanner.getParameters().getConditionalType() == Parameters::UNCONDITIONAL)
+                    if (parameters.getModelType() == Parameters::BERNOULLI)
                         return C - _N * scanner.getParameters().getProbability();
-                    if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", params.getModelType(), scanner.getTotalN(), _N);
+                    throw prg_error("Cannot calculate excess cases: tree-only, unconditonal, model (%d).", "getExcessCases()", parameters.getModelType());
+                case Parameters::TOTALCASES :
+                    if (parameters.getModelType() == Parameters::POISSON) {
+                        if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", parameters.getModelType(), scanner.getTotalN(), _N);
                         return C - _N * (totalC - C)/(scanner.getTotalN() - _N);
-                default : throw prg_error("Unknown model type (%d).", "getExcessCases()", params.getModelType());
+                    }
+                    if (parameters.getModelType() == Parameters::BERNOULLI) {
+                        if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", parameters.getModelType(), scanner.getTotalN(), _N);
+                        return C - _N * (totalC - C)/(scanner.getTotalN() - _N);
+                    }
+                    throw prg_error("Cannot calculate excess cases: tree-only, total-cases, model (%d).", "getExcessCases()", parameters.getModelType());
+                default: throw prg_error("Cannot calculate excess cases: tree-only, condition type (%d).", "getExcessCases()", parameters.getConditionalType());
             }
-        } break;
+        }
+
+        case Parameters::TIMEONLY: /* time-only, condtioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
         case Parameters::TREETIME: {
-            if (params.getConditionalType() == Parameters::NODEANDTIME)
-                throw prg_error("getExcessCases() not implemented for tree-time conditioned on node-time.", "getExcessCases()");
-            switch (params.getModelType()) {
-                case Parameters::UNIFORM :
-                    if (params.isPerformingDayOfWeekAdjustment()) {
-                        //Obs - Exp * [ (NodeCases-Obs) / (NodeCases-Exp) ]
-                        double exp = getExpected(scanner);
-                        double NodeCases = static_cast<double>(scanner.getNodes()[getID()]->getBrC());
-                        return C - exp * ((NodeCases - C) / (NodeCases - exp));
-                    } else {
+            switch (parameters.getConditionalType()) {
+                case Parameters::TOTALCASES : /* this option is really only for time-only */
+                case Parameters::NODE :       /* this option is really only for tree-time */
+                    if (parameters.getModelType() == Parameters::UNIFORM) {
+                        if (parameters.isPerformingDayOfWeekAdjustment()) {
+                            //Obs - Exp * [ (NodeCases-Obs) / (NodeCases-Exp) ]
+                            double exp = getExpected(scanner);
+                            double NodeCases = static_cast<double>(scanner.getNodes()[getID()]->getBrC());
+                            return C - exp * ((NodeCases - C) / (NodeCases - exp));
+                        }
                         double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-                        double T = static_cast<double>(params.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-                        if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getExcessCases()", params.getModelType(), T, W);
+                        double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                        if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getExcessCases()", parameters.getModelType(), T, W);
                         return C - W * (_N - C)/(T - W);
                     }
-                default : throw prg_error("Unknown model type (%d).", "getExcessCases()", params.getModelType());
+                    throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getExcessCases()", parameters.getModelType());
+                default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getExcessCases()", parameters.getConditionalType());
             }
-        } break;
-        default : throw prg_error("Unknown model type (%d).", "getExcessCases()", params.getScanType());
+        }
+
+        default: throw prg_error("Unknown scan type (%d).", "getExcessCases()", parameters.getScanType());
     }
 }
 
 /** Returns cut's expected count. See user guide for formula explanation. */
 double CutStructure::getExpected(const ScanRunner& scanner) {
-    const Parameters& params = scanner.getParameters();
+    const Parameters& parameters = scanner.getParameters();
     double C = static_cast<double>(_C);
     double totalC = static_cast<double>(scanner.getTotalC());
-    switch (params.getScanType()) {
-        case Parameters::TREEONLY:
-            switch (params.getModelType()) {
-                case Parameters::POISSON :
-                    if (params.getConditionalType() == Parameters::UNCONDITIONAL)
+    switch (parameters.getScanType()) {
+
+        case Parameters::TREEONLY: {
+            switch (parameters.getConditionalType()) {
+                case Parameters::UNCONDITIONAL :
+                    if (parameters.getModelType() == Parameters::POISSON)
                         return _N;
-                    return _N * totalC/scanner.getTotalN();
-                case Parameters::BERNOULLI:
-                    if (params.getConditionalType() == Parameters::UNCONDITIONAL)
+                    if (parameters.getModelType() == Parameters::BERNOULLI)
                         return _N * scanner.getParameters().getProbability();
-                    return _N * (scanner.getTotalC() / scanner.getTotalN());
-                default : throw prg_error("Unknown model type (%d).", "getExpected()", params.getModelType());
+                    throw prg_error("Cannot determine expected cases: tree-only, unconditonal, model (%d).", "getExpected()", parameters.getModelType());
+                case Parameters::TOTALCASES :
+                    if (parameters.getModelType() == Parameters::POISSON)
+                        return _N * totalC/scanner.getTotalN();
+                    if (parameters.getModelType() == Parameters::BERNOULLI)
+                        return _N * (scanner.getTotalC() / scanner.getTotalN());
+                    throw prg_error("Cannot determine expected cases: tree-only, total-cases, model (%d).", "getExpected()", parameters.getModelType());
+                default: throw prg_error("Cannot determine expected cases: tree-only, condition type (%d).", "getExpected()", parameters.getConditionalType());
             }
-        case Parameters::TREETIME:
-            switch (params.getModelType()) {
-                case Parameters::UNIFORM :
-                    if (params.isPerformingDayOfWeekAdjustment()) {
-                        return _N;
-                    } else {
-                        double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-                        double T = static_cast<double>(params.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-                        return _N * W / T;
+        }
+
+        case Parameters::TREETIME: {
+            switch (parameters.getConditionalType()) {
+                case Parameters::NODE:
+                    if (parameters.getModelType() == Parameters::UNIFORM) {
+                        if (parameters.isPerformingDayOfWeekAdjustment()) {
+                            return _N;
+                        } else {
+                            double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+                            double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                            return _N * W / T;
+                        }
                     }
-                default :
-                    if (params.getConditionalType() == Parameters::NODEANDTIME) {
+                    throw prg_error("Cannot determine expected cases: tree-time, total-cases, model (%d).", "getExpected()", parameters.getModelType());
+                case Parameters::NODEANDTIME :
+                    if (parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE) 
                         return _N;
-                    } else throw prg_error("Unknown model type (%d).", "getExpected()", params.getModelType());
+                    throw prg_error("Cannot determine expected cases: tree-time, node-time, model (%d).", "getExpected()", parameters.getModelType());
+                default: throw prg_error("Cannot determine expected cases: tree-time, condition type (%d).", "getExpected()", parameters.getConditionalType());
             }
-        default : throw prg_error("Unknown model type (%d).", "getExpected()", params.getScanType());
+        }
+
+        case Parameters::TIMEONLY: { /* time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
+            switch (parameters.getConditionalType()) {
+                case Parameters::TOTALCASES:
+                    if (parameters.getModelType() == Parameters::UNIFORM) {
+                        if (parameters.isPerformingDayOfWeekAdjustment()) {
+                            return _N;
+                        } else {
+                            double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+                            double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                            return _N * W / T;
+                        }
+                    }
+                    throw prg_error("Cannot determine expected cases: tree-time, total-cases, model (%d).", "getExpected()", parameters.getModelType());
+                default: throw prg_error("Cannot determine expected cases: tree-time, condition type (%d).", "getExpected()", parameters.getConditionalType());
+            }
+        }
+        default: throw prg_error("Unknown scan type (%d).", "getExpected()", parameters.getScanType());
     }
 }
 
 /** Returns cut's observed divided by expected. */
 double CutStructure::getODE(const ScanRunner& scanner) {
-    const Parameters& params = scanner.getParameters();
-    switch (params.getScanType()) {
-        case Parameters::TREEONLY: {
-            double expected = getExpected(scanner);
-            return expected ? static_cast<double>(getC())/expected : 0.0;
-        }
-        case Parameters::TREETIME:
-            switch (params.getModelType()) {
-                case Parameters::UNIFORM : {
-                    if (params.isPerformingDayOfWeekAdjustment()) {
+    const Parameters& parameters = scanner.getParameters();
+    switch (parameters.getScanType()) {
+
+        case Parameters::TREEONLY : {
+            switch (parameters.getConditionalType()) {
+                case Parameters::UNCONDITIONAL :
+                case Parameters::TOTALCASES :
+                    if (parameters.getModelType() == Parameters::POISSON || parameters.getModelType() == Parameters::BERNOULLI) {
                         double expected = getExpected(scanner);
                         return expected ? static_cast<double>(getC())/expected : 0.0;
-                    } else {
-                        /* C/(N*W/D) where
-                            C = number of cases in the node as well as in the the temporal cluster found (below, 06.04 cases that are 7-11 days after vaccination)
-                            N = number of cases in the node, through the whole time period (below, all 0604 cases)
-                            W = number of days in the temporal cluster (below, 11-6=5)
-                            D = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used)
-                        */
-                        double C = static_cast<double>(_C);
-                        double N = _N;
-                        double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-                        double T = static_cast<double>(params.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-                        double denominator = N * W / T;
-                        return denominator ? C/denominator : 0.0;
                     }
-                }
-                default :
-                    if (params.getConditionalType() == Parameters::NODEANDTIME) {
+                    throw prg_error("Cannot determine ode: tree-only, unconditonal, model (%d).", "getODE()", parameters.getModelType());
+                default: throw prg_error("Cannot determine ode: tree-only, condition type (%d).", "getODE()", parameters.getConditionalType());
+            }
+        }
+
+        case Parameters::TREETIME: {
+            switch (parameters.getConditionalType()) {
+                case Parameters::NODE:
+                    if (parameters.getModelType() == Parameters::UNIFORM) {
+                        if (parameters.isPerformingDayOfWeekAdjustment()) {
+                            double expected = getExpected(scanner);
+                            return expected ? static_cast<double>(getC())/expected : 0.0;
+                        } else {
+                            /* C/(N*W/D) where
+                                C = number of cases in the node as well as in the the temporal cluster found (below, 06.04 cases that are 7-11 days after vaccination)
+                                N = number of cases in the node, through the whole time period (below, all 0604 cases)
+                                W = number of days in the temporal cluster (below, 11-6=5)
+                                D = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used) */
+                            double C = static_cast<double>(_C);
+                            double N = _N;
+                            double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+                            double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                            double denominator = N * W / T;
+                            return denominator ? C/denominator : 0.0;
+                        }
+                    }
+                    throw prg_error("Cannot determine ode: tree-time, total-cases, model (%d).", "getODE()", parameters.getModelType());
+                case Parameters::NODEANDTIME :
+                    if (parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE) {
                         double expected = getExpected(scanner);
                         return expected ? static_cast<double>(getC())/expected : 0.0;
-                    } else throw prg_error("Unknown model type (%d).", "getODE()", params.getModelType());
+                    }
+                    throw prg_error("Cannot determine ode: tree-time, node-time, model (%d).", "getODE()", parameters.getModelType());
+                default: throw prg_error("Cannot determine ode: tree-time, condition type (%d).", "getODE()", parameters.getConditionalType());
             }
-        default : throw prg_error("Unknown scan type (%d).", "getExpected()", params.getScanType());
+        }
+
+        case Parameters::TIMEONLY: { /* time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
+            switch (parameters.getConditionalType()) {
+                case Parameters::TOTALCASES:
+                    if (parameters.getModelType() == Parameters::UNIFORM) {
+                        if (parameters.isPerformingDayOfWeekAdjustment()) {
+                            double expected = getExpected(scanner);
+                            return expected ? static_cast<double>(getC())/expected : 0.0;
+                        } else {
+                            /* C/(N*W/D) where
+                                C = number of cases in the node as well as in the the temporal cluster found (below, 06.04 cases that are 7-11 days after vaccination)
+                                N = number of cases in the node, through the whole time period (below, all 0604 cases)
+                                W = number of days in the temporal cluster (below, 11-6=5)
+                                D = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used) */
+                            double C = static_cast<double>(_C);
+                            double N = _N;
+                            double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+                            double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                            double denominator = N * W / T;
+                            return denominator ? C/denominator : 0.0;
+                        }
+                    }
+                    throw prg_error("Cannot determine ode: time-only, total-cases, model (%d).", "getODE()", parameters.getModelType());
+                default: throw prg_error("Cannot determine ode: time-only, condition type (%d).", "getODE()", parameters.getConditionalType());
+            }
+        }
+
+        default : throw prg_error("Unknown scan type (%d).", "getODE()", parameters.getScanType());
     }
 }
 
@@ -146,59 +227,72 @@ double CutStructure::getRelativeRisk(const ScanRunner& scanner) {
     double relative_risk=0;
     double C = static_cast<double>(_C);
     double totalC = static_cast<double>(scanner.getTotalC());
-    const Parameters& params = scanner.getParameters();
+    const Parameters& parameters = scanner.getParameters();
 
-    switch (params.getScanType()) {
-        case Parameters::TREEONLY:
-            switch (params.getModelType()) {
-                case Parameters::POISSON : {
-                    if (params.getConditionalType() == Parameters::UNCONDITIONAL)
+    switch (parameters.getScanType()) {
+
+        case Parameters::TREEONLY: {
+            switch (parameters.getConditionalType()) {
+                case Parameters::UNCONDITIONAL :
+                    if (parameters.getModelType() == Parameters::POISSON) {
                         relative_risk = C / _N;
-                    else {
+                        return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
+                    }
+                    if (parameters.getModelType() == Parameters::BERNOULLI) {
+                        relative_risk = C / (_N * parameters.getProbability());
+                        return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
+                    }
+                    throw prg_error("Cannot calculate relative risk: tree-only, unconditonal, model (%d).", "getRelativeRisk()", parameters.getModelType());
+                case Parameters::TOTALCASES :
+                    if (parameters.getModelType() == Parameters::POISSON) {
                         double NN = scanner.getTotalN() - _N;
-                        if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", params.getModelType(), scanner.getTotalN(), _N);
+                        if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", parameters.getModelType(), scanner.getTotalN(), _N);
                         double CC = totalC - C;
                         relative_risk = CC ? (C / _N) / (CC /  NN): 0;
+                        return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
                     }
-                } break;
-                case Parameters::BERNOULLI: {
-                    if (scanner.getParameters().getConditionalType() == Parameters::UNCONDITIONAL)
-                        relative_risk = C / (_N * params.getProbability());
-                    else {
+                    if (parameters.getModelType() == Parameters::BERNOULLI) {
                         double NN = scanner.getTotalN() - _N;
-                        if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", params.getModelType(), scanner.getTotalN(), _N);
+                        if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", parameters.getModelType(), scanner.getTotalN(), _N);
                         double CC = totalC - C;
                         relative_risk = CC ? (C / _N) / (CC /  NN): 0;
+                        return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
                     }
-                } break;
-                default : throw prg_error("Unknown model type (%d).", "getRelativeRisk()", params.getModelType());
-            } break;
-        case Parameters::TREETIME:
-            if (params.getConditionalType() == Parameters::NODEANDTIME)
-                throw prg_error("getRelativeRisk() not implemented for tree-time conditioned on node-time.", "getRelativeRisk()");
-            switch (params.getModelType()) {
-                case Parameters::UNIFORM :
-                    if (params.isPerformingDayOfWeekAdjustment()) {
-                        // (Obs/Exp) / [ (NodeCases-Obs) / (NodeCases-Exp) ]
-                        double exp = getExpected(scanner);
-                        double NodeCases = static_cast<double>(scanner.getNodes()[getID()]->getBrC());
-                        if (C == NodeCases)
-                            relative_risk = std::numeric_limits<double>::infinity();
-                        else
-                            relative_risk = (C / exp) / ( (NodeCases - C) / (NodeCases - exp) );
-                    } else {
+                    throw prg_error("Cannot calculate relative risk: tree-only, total-cases, model (%d).", "getRelativeRisk()", parameters.getModelType());
+                default: throw prg_error("Cannot calculate relative risk: tree-only, condition type (%d).", "getRelativeRisk()", parameters.getConditionalType());
+            }
+        }
+
+        case Parameters::TIMEONLY: /* time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
+        case Parameters::TREETIME: {
+            switch (parameters.getConditionalType()) {
+                case Parameters::TOTALCASES : /* this option is really only for time-only */
+                case Parameters::NODE :       /* this option is really only for tree-time */
+                    if (parameters.getModelType() == Parameters::UNIFORM) {
+                        if (parameters.isPerformingDayOfWeekAdjustment()) {
+                            // (Obs/Exp) / [ (NodeCases-Obs) / (NodeCases-Exp) ]
+                            double exp = getExpected(scanner);
+                            double NodeCases = static_cast<double>(scanner.getNodes()[getID()]->getBrC());
+                            if (C == NodeCases)
+                                relative_risk = std::numeric_limits<double>::infinity();
+                            else
+                                relative_risk = (C / exp) / ( (NodeCases - C) / (NodeCases - exp) );
+                            return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
+                        }
                         double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-                        double T = static_cast<double>(params.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-                        if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getRelativeRisk()", params.getModelType(), T, W);
+                        double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                        if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getRelativeRisk()", parameters.getModelType(), T, W);
                         double CC = _N - static_cast<double>(_C);
                         relative_risk = CC ? (static_cast<double>(_C) / W ) / ( CC / (T - W) ) : 0.0;
+                        return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
                     }
-                    break;
-                default : throw prg_error("Unknown model type (%d).", "getRelativeRisk()", params.getModelType());
-            } break;
-        default : throw prg_error("Unknown scan type (%d).", "getRelativeRisk()", params.getScanType());
+                    throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getRelativeRisk()", parameters.getModelType());
+                default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getRelativeRisk()", parameters.getConditionalType());
+            }
+        }
+
+        default: throw prg_error("Unknown scan type (%d).", "getRelativeRisk()", parameters.getScanType());
     }
-    return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
 }
 
 ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0) {
@@ -300,7 +394,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
             continue;
         }
         if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
-            if (!string_to_type<double>(dataSource->getValueAt(uAdjustmentIndex).c_str(), alternative_hypothesis) || alternative_hypothesis < 0.0 || alternative_hypothesis > 1.0) {
+            if (!string_to_numeric_type<double>(dataSource->getValueAt(uAdjustmentIndex).c_str(), alternative_hypothesis) || alternative_hypothesis < 0.0 || alternative_hypothesis > 1.0) {
                 bValid = false;
                 _print.Printf("Error: Record %ld in alternative hypothesis file references an invalid case probability for node '%s'.\n"
                               "       The event probability must be a numeric value between zero and one (inclusive).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
@@ -310,7 +404,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
                               BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), alternative_hypothesis, _parameters.getProbability());
             }
         } else {
-            if (!string_to_type<double>(dataSource->getValueAt(uAdjustmentIndex).c_str(), alternative_hypothesis) || alternative_hypothesis < 0) {
+            if (!string_to_numeric_type<double>(dataSource->getValueAt(uAdjustmentIndex).c_str(), alternative_hypothesis) || alternative_hypothesis < 0) {
                 bValid = false;
                 _print.Printf("Error: Record %ld in alternative hypothesis file references an invalid relative risk for node '%s'.\n"
                               "       The relative risk must be a numeric value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
@@ -391,14 +485,14 @@ bool ScanRunner::readCounts(const std::string& filename) {
             }
         }
         NodeStructure * node = _Nodes.at(index.second);
-        if  (!string_to_type<int>(dataSource->getValueAt(countIdx).c_str(), count) || count < 0) {
+        if  (!string_to_numeric_type<int>(dataSource->getValueAt(countIdx).c_str(), count) || count < 0) {
             readSuccess = false;
             _print.Printf("Error: Record %ld in count file references an invalid number of cases for node '%s'.\n"
                           "       The number of cases must be an integer value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
             continue;
         }
         if (_parameters.isDuplicates()) {
-            if  (!string_to_type<int>(dataSource->getValueAt(duplicatesIdx).c_str(), duplicates) || duplicates < 0) {
+            if  (!string_to_numeric_type<int>(dataSource->getValueAt(duplicatesIdx).c_str(), duplicates) || duplicates < 0) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in count file references an invalid number of duplicates for node '%s'.\n"
                               "       The number of duplicates must be an integer value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
@@ -415,7 +509,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
             node->refIntC_C().front() += count;
             // now read the population
             double population=0;
-            if  (!string_to_type<double>(dataSource->getValueAt(expectedColumns - 1).c_str(), population) || population < 0) {
+            if  (!string_to_numeric_type<double>(dataSource->getValueAt(expectedColumns - 1).c_str(), population) || population < 0) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in count file references an invalid population for node '%s'.\n"
                               "       The population must be a numeric value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
@@ -425,7 +519,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
         } else if (_parameters.getModelType() == Parameters::BERNOULLI) {
             node->refIntC_C().front() += count;
             int controls=0;
-            if  (!string_to_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), controls) || controls < 0) {
+            if  (!string_to_numeric_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), controls) || controls < 0) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in count file references an invalid number of controls for node '%s'.\n"
                               "       The controls must be an integer value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
@@ -433,7 +527,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
             }
             node->refIntN_C().front() += count + controls;
         } else if (Parameters::isTemporalScanType(_parameters.getScanType())) {
-            if  (!string_to_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), daysSinceIncidence)) {
+            if  (!string_to_numeric_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), daysSinceIncidence)) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in count file references an invalid 'day since incidence' value for node '%s'.\n"
                               "       The 'day since incidence' variable must be an integer.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
@@ -669,9 +763,10 @@ bool ScanRunner::run() {
 
     if (!_parameters.getPerformPowerEvaluations() || (_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         bool scan_success=false;
+        bool t = (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.isPerformingDayOfWeekAdjustment());
         if ((_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) ||
-            (parameters.getScanType() == Parameters::TIMEONLY && parameters.isPerformingDayOfWeekAdjustment()) ||
-            (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::CASESEACHBRANCH && parameters.isPerformingDayOfWeekAdjustment())))
+            (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.isPerformingDayOfWeekAdjustment()) ||
+            (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE && _parameters.isPerformingDayOfWeekAdjustment()))
             scan_success = scanTreeTemporalConditionNodeTime();
         else if (_parameters.getModelType() == Parameters::UNIFORM)
             scan_success = scanTreeTemporalConditionNode();
@@ -1236,7 +1331,7 @@ CutStructure * ScanRunner::updateCuts(size_t node_index, int BrC, double BrN, co
 
     if ((_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) ||
         (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.isPerformingDayOfWeekAdjustment()) ||
-        (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::CASESEACHBRANCH && _parameters.isPerformingDayOfWeekAdjustment()))
+        (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE && _parameters.isPerformingDayOfWeekAdjustment()))
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN);
     else if (_parameters.getModelType() == Parameters::UNIFORM)
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN, endIdx - startIdx + 1);
@@ -1283,10 +1378,13 @@ bool ScanRunner::setupTree() {
     for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
         _TotalC = std::accumulate((*itr)->refIntC_C().begin(), (*itr)->refIntC_C().end(), _TotalC);
     }
-
-    if (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::TOTALCASES && _TotalC < 2/* minimum number of cases */) {
-        _print.Printf("Error: The conditional Poison model requires at least 2 cases. %d counts defined in count file.\n", BasePrint::P_ERROR, _TotalC);
-        return false;
+    // Check for minimum number od cases.
+    if (!_parameters.getPerformPowerEvaluations() || !(_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES)) {
+        // The conditional Poisson should not be performed with less than cases.
+        if (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::TOTALCASES && _TotalC < 2/* minimum number of cases */) {
+            _print.Printf("Error: The conditional Poison model requires at least 2 cases to perform analysis. %d counts defined in count file.\n", BasePrint::P_ERROR, _TotalC);
+            return false;
+        }
     }
 
     // calculate the number of expected cases
@@ -1345,8 +1443,8 @@ bool ScanRunner::setupTree() {
                     }
                 }
             } break;
-			case Parameters::TOTALCASES :
-            case Parameters::CASESEACHBRANCH :
+            case Parameters::TOTALCASES :
+            case Parameters::NODE :
                 if (_parameters.isPerformingDayOfWeekAdjustment()) {
                     double daysInDataTimeRange = static_cast<double>(_parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1);
                     for (size_t n=0; n < _Nodes.size(); ++n) {
@@ -1411,7 +1509,7 @@ bool ScanRunner::setupTree() {
         _parameters.getModelType() == Parameters::BERNOULLI ||
         (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) ||
         (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.isPerformingDayOfWeekAdjustment()) ||
-        (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::CASESEACHBRANCH && _parameters.isPerformingDayOfWeekAdjustment())) {
+        (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE && _parameters.isPerformingDayOfWeekAdjustment())) {
         // Checks that no node has negative expected cases or that a node with zero expected has observed cases.
         for (size_t i=0; i < _Nodes.size(); ++i) {
             // cout << "Node=" << i << ", BrC=" << Node[i].BrC << ", BrN=" << Node[i].BrN << endl;

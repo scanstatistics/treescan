@@ -16,4 +16,8 @@ struct tree_temporal_fixture : prm_examples_fixture {
     tree_temporal_fixture() : prm_examples_fixture("TreeTemporal.prm") { }
     virtual ~tree_temporal_fixture() { }
 };
+struct time_only_fixture : prm_examples_fixture {
+    time_only_fixture() : prm_examples_fixture("TemporalOnly.prm") { }
+    virtual ~time_only_fixture() { }
+};
 #endif

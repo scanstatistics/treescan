@@ -5,8 +5,8 @@ public class Parameters implements Cloneable {
     public native void Write(String filename);
     public enum ResultsFormat {TEXT};
     public enum ModelType {POISSON, BERNOULLI, UNIFORM, MODEL_NOT_APPLICABLE};
-    public enum ScanType {TREEONLY, TREETIME};
-    public enum ConditionalType {UNCONDITIONAL, TOTALCASES, CASESEACHBRANCH, CASESBRANCHANDDAY};
+    public enum ScanType {TREEONLY, TREETIME, TIMEONLY};
+    public enum ConditionalType {UNCONDITIONAL, TOTALCASES, NODE, NODEANDTIME};
     public enum MaximumWindowType {PERCENTAGE_WINDOW, FIXED_LENGTH};
     public enum PowerEvaluationType {PE_WITH_ANALYSIS, PE_ONLY_CASEFILE,PE_ONLY_SPECIFIED_CASES};    
     public class CreationVersion {

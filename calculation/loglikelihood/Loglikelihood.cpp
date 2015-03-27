@@ -14,7 +14,7 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
                     switch (parameters.getConditionalType()) {
                         case Parameters::UNCONDITIONAL : return new UnconditionalPoissonLoglikelihood();
                         case Parameters::TOTALCASES : return new PoissonLoglikelihood(TotalC, TotalN);
-                        case Parameters::CASESEACHBRANCH :
+                        case Parameters::NODE :
                         default: throw prg_error("Unknown conditional type (%d).", "getNewLoglikelihood()", parameters.getConditionalType());
                     }
                 } break;
@@ -48,7 +48,7 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
                     }
                     switch (parameters.getConditionalType()) {
                         case Parameters::TOTALCASES :
-                        case Parameters::CASESEACHBRANCH :
+                        case Parameters::NODE :
                             if (!parameters.isPerformingDayOfWeekAdjustment())
                                 return new TemporalLoglikelihood(TotalC, TotalN, parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
                             return new PoissonLoglikelihood(TotalC, TotalN);

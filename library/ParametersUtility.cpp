@@ -324,7 +324,7 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "isPrintColumnHeaders", "()Z");
-  Parameters.setPrintColunHeaders(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  Parameters.setPrintColumnHeaders(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   Parameters.setModelType((Parameters::ModelType)getEnumTypeOrdinalIndex(Env, jParameters, "getModelType", "Lorg/treescan/app/Parameters$ModelType;"));

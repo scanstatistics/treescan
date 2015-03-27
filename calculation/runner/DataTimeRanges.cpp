@@ -18,7 +18,7 @@ DataTimeRange DataTimeRange::parse(const std::string& from) {
     std::deque<index_t> values;
     for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itrR=rangeCSV.begin(); itrR != rangeCSV.end(); ++itrR) {
          values.push_back(0);
-         if  (!string_to_type<index_t>((*itrR).c_str(), values.back())) {
+         if  (!string_to_numeric_type<index_t>((*itrR).c_str(), values.back())) {
              throw prg_exception("Value '%s' cannot be read as range index.","parse()",(*itrR).c_str());
          }
     }
