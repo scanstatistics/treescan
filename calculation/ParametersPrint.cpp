@@ -104,6 +104,11 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(
     settings.clear();
     if (Parameters::isTemporalScanType(_parameters.getScanType())) {
         std::string buffer;
+        switch (_parameters.getConditionalType()) {
+            case Parameters::NODE: buffer = "Perform Day-of-Week Adjustment"; break;
+            case Parameters::NODEANDTIME: buffer = "Perform Node by Day-of-Week Adjustment"; break;
+            default: throw prg_error("Unknown conditional type (%d).", "getAdjustmentsParameters()", _parameters.getConditionalType());
+        }
         settings.push_back(std::make_pair("Perform Day of Week Adjustment",(_parameters.getPerformDayOfWeekAdjustment() ? "Yes" : "No")));
     }
     return settings;

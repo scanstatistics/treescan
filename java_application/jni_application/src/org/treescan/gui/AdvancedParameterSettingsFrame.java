@@ -18,6 +18,7 @@ import org.treescan.gui.utils.FileSelectionDialog;
 import org.treescan.gui.utils.InputFileFilter;
 import org.treescan.gui.utils.Utils;
 import org.treescan.importer.FileImporter;
+import org.treescan.app.UnknownEnumException;
 
 public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public enum FocusedTabSet { INPUT, ANALYSIS, OUTPUT };
@@ -478,6 +479,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /** enables options of the Adjustments tab */
     public void enableAdjustmentsOptions() {
         _perform_dayofweek_adjustments.setEnabled(_settings_window.getScanType() == Parameters.ScanType.TREETIME);
+        if (_perform_dayofweek_adjustments.isEnabled()) {
+            // switch label based upon condition type
+            switch (_settings_window.getConditionalType()) {
+                case NODE: _perform_dayofweek_adjustments.setText("Perform Day-of-Week Adjustment"); break;
+                case NODEANDTIME: _perform_dayofweek_adjustments.setText("Perform Node by Day-of-Week Adjustment"); break;
+                default: throw new UnknownEnumException(_settings_window.getConditionalType());
+            }
+        }
     }
     
     /**
