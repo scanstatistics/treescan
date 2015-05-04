@@ -487,19 +487,19 @@ bool ScanRunner::readCounts(const std::string& filename) {
         NodeStructure * node = _Nodes.at(index.second);
         if  (!string_to_numeric_type<int>(dataSource->getValueAt(countIdx).c_str(), count) || count < 0) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in count file references an invalid number of cases for node '%s'.\n"
-                          "       The number of cases must be an integer value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+            _print.Printf("Error: Record %ld in count file references an invalid number of cases.\n"
+                          "       The number of cases must be an integer value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
             continue;
         }
         if (_parameters.isDuplicates()) {
             if  (!string_to_numeric_type<int>(dataSource->getValueAt(duplicatesIdx).c_str(), duplicates) || duplicates < 0) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references an invalid number of duplicates for node '%s'.\n"
-                              "       The number of duplicates must be an integer value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                _print.Printf("Error: Record %ld in count file references an invalid number of duplicates.\n"
+                              "       The number of duplicates must be an integer value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
                 continue;
             } else if (duplicates > count) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references more duplicates than case for node '%s'.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                _print.Printf("Error: Record %ld in count file references more duplicates than case.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
                 continue;
             }
             node->refDuplicates() += duplicates;
@@ -511,8 +511,8 @@ bool ScanRunner::readCounts(const std::string& filename) {
             double population=0;
             if  (!string_to_numeric_type<double>(dataSource->getValueAt(expectedColumns - 1).c_str(), population) || population < 0) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references an invalid population for node '%s'.\n"
-                              "       The population must be a numeric value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                _print.Printf("Error: Record %ld in count file references an invalid population.\n"
+                              "       The population must be a numeric value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
                 continue;
             }
             node->refIntN_C().front() += population;
@@ -521,25 +521,25 @@ bool ScanRunner::readCounts(const std::string& filename) {
             int controls=0;
             if  (!string_to_numeric_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), controls) || controls < 0) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references an invalid number of controls for node '%s'.\n"
-                              "       The controls must be an integer value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                _print.Printf("Error: Record %ld in count file references an invalid number of controls.\n"
+                              "       The controls must be an integer value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
                 continue;
             }
             node->refIntN_C().front() += count + controls;
         } else if (Parameters::isTemporalScanType(_parameters.getScanType())) {
             if  (!string_to_numeric_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), daysSinceIncidence)) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references an invalid 'day since incidence' value for node '%s'.\n"
-                              "       The 'day since incidence' variable must be an integer.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                _print.Printf("Error: Record %ld in count file references an invalid 'day since incidence' value.\n"
+                              "       The 'day since incidence' variable must be an integer.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
                 continue;
             }
             // check that the 'daysSinceIncidence' is within a defined data time range
             DataTimeRangeSet::rangeset_index_t rangeIdx = _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
             if (rangeIdx.first == false) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references an invalid 'day since incidence' value for node '%s'.\n"
+                _print.Printf("Error: Record %ld in count file references an invalid 'day since incidence' value.\n"
                               "The specified value is not within any of the data time ranges you have defined.",
-                              BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str());
+                              BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
                 continue;
             }
             node->refIntC_C().at(daysSinceIncidence + _zero_translation_additive) += count;
@@ -1346,16 +1346,25 @@ CutStructure * ScanRunner::updateCuts(size_t node_index, int BrC, double BrN, co
     cut->setN(BrN);
     cut->setStartIdx(startIdx);
     cut->setEndIdx(endIdx);
-    CutStructureContainer_t::iterator itr = std::lower_bound(_Cut.begin(), _Cut.end(), cut.get(), CompareCutsById());
-    if (itr != _Cut.end() && (*itr)->getID() == cut->getID()) {
-        if (cut->getLogLikelihood() > (*itr)->getLogLikelihood()) {
-            size_t idx = std::distance(_Cut.begin(), itr);
-            delete _Cut.at(idx); _Cut.at(idx)=0;
-            _Cut.at(idx) = cut.release();
-            return _Cut[idx];
-        }
+
+    CutStructureContainer_t::iterator itr;
+    if (_parameters.getScanType() == Parameters::TIMEONLY) {
+        // for time-only scans, we want to keep secondary clusters -- possibly one for each end date
+        itr = std::lower_bound(_Cut.begin(), _Cut.end(), cut.get(), CompareCutsByEndIdx());
+        if (!(itr != _Cut.end() && (*itr)->getEndIdx() == cut->getEndIdx()))
+            return *(_Cut.insert(itr, cut.release()));
     } else {
-        return *(_Cut.insert(itr, cut.release()));
+        // we're keeping the best cut for each node
+        itr = std::lower_bound(_Cut.begin(), _Cut.end(), cut.get(), CompareCutsById());
+        if (!(itr != _Cut.end() && (*itr)->getID() == cut->getID()))
+            return *(_Cut.insert(itr, cut.release()));
+    }
+    // at this point, we're replacing a cut with better log likeloihood cut
+    if (cut->getLogLikelihood() > (*itr)->getLogLikelihood()) {
+        size_t idx = std::distance(_Cut.begin(), itr);
+        delete _Cut.at(idx); _Cut.at(idx)=0;
+        _Cut.at(idx) = cut.release();
+        return _Cut[idx];
     }
     return 0;
 }

@@ -113,14 +113,6 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
             }
             const DataTimeRange& startRange = _parameters.getTemporalStartRange();
             const DataTimeRange& endRange = _parameters.getTemporalEndRange();
-            if (startRange.getStart() > startRange.getEnd()) {
-                bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nThe start time window range start time must be less than or equal to end time.\n", BasePrint::P_PARAMERROR);
-            }
-            if (endRange.getStart() > endRange.getEnd()) {
-                bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nThe end time window range start time must be less than or equal to end time.\n", BasePrint::P_PARAMERROR);
-            }
             bool startWindowInRange=false, endWindowInRange=false;
             // validate the data time range indexes do not overlap
             // validate the the start and end temporal windows are within a data time range
@@ -142,25 +134,24 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
             }
             if (!startWindowInRange) {
                 bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nThe start time window range '%s' is not within a defined data time range with a starting index of zero or more.\n",
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe start time window range '%s' is not within the data time range.\n",
                                       BasePrint::P_PARAMERROR, startRange.toString(buffer).c_str());
             }
             if (!endWindowInRange) {
                 bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nThe end time window range '%s' is not within a defined data time range with a starting index of zero or more.\n",
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe end time window range '%s' is not within the defined data time range.\n",
                                       BasePrint::P_PARAMERROR, endRange.toString(buffer).c_str());
             }
-            if (startRange.getEnd() > endRange.getEnd()) {
+            if (endRange.getEnd() < startRange.getStart()) {
                 bValid = false;
                 PrintDirection.Printf("Invalid Parameter Setting:\n"
-                                      "The upper index of the start time window range '%s' cannot be greater than upper index of the end time window range '%s'.\n",
-                                      BasePrint::P_PARAMERROR, startRange.toString(buffer).c_str(), endRange.toString(buffer2).c_str());
+                                      "The temporal window end time range '%s' completely precedes the start time range '%s'.\n",
+                                      BasePrint::P_PARAMERROR, endRange.toString(buffer2).c_str(), startRange.toString(buffer).c_str());
             }
-            if (endRange.getStart() < startRange.getStart()) {
-                bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\n"
-                                      "The lower index of the end time window range '%s' cannot be greater than lower index of the start time window range '%s'.\n",
-                                      BasePrint::P_PARAMERROR, endRange.toString(buffer).c_str(), startRange.toString(buffer2).c_str());
+            if (bValid && endRange.getStart() < startRange.getStart()) {
+                PrintDirection.Printf("Warning:\n"
+                                      "The temporal window end time range '%s' partially precedes the start time range '%s'; not all intervals will be evaluated.\n",
+                                      BasePrint::P_PARAMERROR, endRange.toString(buffer2).c_str(), startRange.toString(buffer).c_str());
             }
         }
     } catch (prg_exception& x) {

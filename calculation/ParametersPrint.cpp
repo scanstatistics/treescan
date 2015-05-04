@@ -102,7 +102,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParame
 /** Prints 'Adjustments' tab parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(SettingContainer_t & settings) const {
     settings.clear();
-    if (Parameters::isTemporalScanType(_parameters.getScanType())) {
+    if (_parameters.isPerformingDayOfWeekAdjustment() && Parameters::isTemporalScanType(_parameters.getScanType())) {
         std::string buffer;
         switch (_parameters.getConditionalType()) {
             case Parameters::NODE: buffer = "Perform Day-of-Week Adjustment"; break;

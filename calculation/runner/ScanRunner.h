@@ -161,6 +161,13 @@ public:
     }
 };
 
+class CompareCutsByEndIdx {
+public:
+    bool operator() (const CutStructure * lhs, const CutStructure * rhs) {
+        return lhs->getEndIdx() < rhs->getEndIdx();
+    }
+};
+
 class CompareCutsByLoglikelihood {
 public:
     bool operator() (const CutStructure * lhs, const CutStructure * rhs) {

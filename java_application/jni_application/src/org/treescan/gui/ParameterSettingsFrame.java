@@ -277,10 +277,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             if (temporalEndWindowBegin > temporalEndWindowEnd) {
                 throw new SettingsException("The temporal window end time range is invalid.\nThe start time must be less than or equal to end time.", (Component) _temporalEndWindowBegin);
             }
-            if (temporalStartWindowEnd > temporalEndWindowEnd) {
-                throw new SettingsException("The temporal window start time range is invalid.\nThe start windows end time must be less than or equal to end windows end time.", (Component) _temporalStartWindowEnd);
-            }            
-            if (temporalEndWindowBegin < temporalStartWindowBegin) {
+            if (temporalEndWindowEnd < temporalStartWindowBegin) {
                 throw new SettingsException("The temporal window end time range is invalid.\nThe end windows end time must be greater than or equal to start windows start time.", (Component) _temporalEndWindowBegin);
             }            
         }
@@ -302,6 +299,27 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             CheckInputSettings();
             CheckAnalysisSettings();
             CheckOutputSettings();
+            
+            // inter-checks between data time range and temporal windows range
+            int datarange_start = Integer.parseInt(_dataTimeRangeBegin.getText().trim());
+            int datarange_end = Integer.parseInt(_dataTimeRangeEnd.getText().trim());
+
+            int temporalstart_start = Integer.parseInt(_temporalStartWindowBegin.getText().trim());
+            int temporalstart_end = Integer.parseInt(_temporalStartWindowEnd.getText().trim());           
+            // Does the temporal start range reside within data range?
+            if (!(datarange_start <= temporalstart_start && temporalstart_end <= datarange_end)) {
+                throw new SettingsException("The temporal window start range is not within the data time range.", (Component) _temporalStartWindowBegin);            
+            }
+            int temporalend_start = Integer.parseInt(_temporalEndWindowBegin.getText().trim());
+            int temporalend_end = Integer.parseInt(_temporalEndWindowEnd.getText().trim());
+            // Does the temporal end range reside within data range?
+            if (!(datarange_start <= temporalend_start && temporalend_end <= datarange_end)) {
+                throw new SettingsException("The temporal window end range is not within the data time range.", (Component) _temporalEndWindowBegin);            
+            }
+            // Does the temporal window end range happen before start range.
+            if (temporalend_end < temporalstart_start) {
+                throw new SettingsException("The temporal window end range completely preceeds the start range.", (Component) _temporalEndWindowBegin);            
+            }                        
         } catch (SettingsException e) {
             focusWindow();
             JOptionPane.showInternalMessageDialog(this, e.getMessage());

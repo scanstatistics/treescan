@@ -105,18 +105,21 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                   (parameters.getNumReplicationsRequested() == 0 || _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1)) {
                 PrintFormat.SetMarginsAsCutSection( k + 1);
                 outfile << k + 1 << ")";
-                PrintFormat.PrintSectionLabel(outfile, "Node Identifier", false);
-                buffer = _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier();
-                if (_scanRunner.getCuts().at(k)->getCutChildren().size()) {
-                    buffer += " children: ";
-                    const CutStructure::CutChildContainer_t& childNodeIds = _scanRunner.getCuts().at(k)->getCutChildren();
-                    for (size_t t=0; t < childNodeIds.size(); ++t) {
-                        buffer +=  _scanRunner.getNodes().at(childNodeIds[t])->getIdentifier();
-                        if (t < childNodeIds.size() - 1)
-                            buffer += ", ";
+                // skip reporting node identifier for time-only scans
+                if (parameters.getScanType() != Parameters::TIMEONLY) {
+                    PrintFormat.PrintSectionLabel(outfile, "Node Identifier", false);
+                    buffer = _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier();
+                    if (_scanRunner.getCuts().at(k)->getCutChildren().size()) {
+                        buffer += " children: ";
+                        const CutStructure::CutChildContainer_t& childNodeIds = _scanRunner.getCuts().at(k)->getCutChildren();
+                        for (size_t t=0; t < childNodeIds.size(); ++t) {
+                            buffer +=  _scanRunner.getNodes().at(childNodeIds[t])->getIdentifier();
+                            if (t < childNodeIds.size() - 1)
+                                buffer += ", ";
+                        }
                     }
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer.c_str());
                 }
-                PrintFormat.PrintAlignedMarginsDataString(outfile, buffer.c_str());
 
                 if (parameters.getConditionalType() == Parameters::NODEANDTIME) {
                     PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
@@ -127,14 +130,17 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     PrintFormat.PrintSectionLabel(outfile, "Cases in Window", true);
                 } else if (parameters.getModelType() == Parameters::UNIFORM) {
-                    PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
-                    if (parameters.isPerformingDayOfWeekAdjustment()) {
-                        printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts().at(k)->getID()]->getBrC()));
-                    } else {
-                        printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts().at(k)->getN()));
+                    // skip reporting node cases for time-only scans
+                    if (parameters.getScanType() != Parameters::TIMEONLY) {
+                        PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
+                        if (parameters.isPerformingDayOfWeekAdjustment()) {
+                            printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts().at(k)->getID()]->getBrC()));
+                        } else {
+                            printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts().at(k)->getN()));
+                        }
+                        PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     }
-                    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-                    PrintFormat.PrintSectionLabel(outfile, "Time Window", true);
+                    PrintFormat.PrintSectionLabel(outfile, "Time Window", parameters.getScanType() != Parameters::TIMEONLY);
                     printString(buffer, "%ld to %ld", _scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive(), _scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive());
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     PrintFormat.PrintSectionLabel(outfile, "Cases in Window", true);
@@ -364,9 +370,16 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             outfile << "<h3>No cuts were found.</h3>" << std::endl;
         } else {
             outfile << "<h3>MOST LIKELY CUTS</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;
-            outfile << "<thead><tr><th>No.</th><th>Node Identifier</th>";
+            outfile << "<thead><tr><th>No.</th>";
+            // skip reporting node identifier for time-only scans
+            if (parameters.getScanType() != Parameters::TIMEONLY) {
+                outfile << "<th>Node Identifier</th>";
+            }
             if (Parameters::isTemporalScanType(parameters.getScanType())) {
-                outfile << "<th>Node Cases</th>";
+               // skip reporting node cases for time-only scans
+                if (parameters.getScanType() != Parameters::TIMEONLY) {
+                    outfile << "<th>Node Cases</th>";
+                }
                 outfile << "<th>Time Window</th>";
                 outfile << "<th>Cases in Window</th>";
             } else if (parameters.getModelType() == Parameters::BERNOULLI) {
@@ -400,28 +413,35 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             while(k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && 
                   (parameters.getNumReplicationsRequested() == 0 || _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1)) {
                 outfile << "<tr" << (k > 9 ? " class=\"additional-cuts\"" : "" ) << "><td>" << k + 1 << "</td>";
-                outfile  << "<td>" << _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier();
-                if (_scanRunner.getCuts().at(k)->getCutChildren().size()) {
-                    outfile  << " children: ";
-                    const CutStructure::CutChildContainer_t& childNodeIds = _scanRunner.getCuts().at(k)->getCutChildren();
-                    for (size_t t=0; t < childNodeIds.size(); ++t) {
-                        outfile << _scanRunner.getNodes().at(childNodeIds[t])->getIdentifier().c_str() << ((t < childNodeIds.size() - 1) ? ", " : "");
+                // skip reporting node identifier for time-only scans
+                if (parameters.getScanType() != Parameters::TIMEONLY) {
+                    outfile  << "<td>" << _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getIdentifier();
+                    if (_scanRunner.getCuts().at(k)->getCutChildren().size()) {
+                        outfile  << " children: ";
+                        const CutStructure::CutChildContainer_t& childNodeIds = _scanRunner.getCuts().at(k)->getCutChildren();
+                        for (size_t t=0; t < childNodeIds.size(); ++t) {
+                            outfile << _scanRunner.getNodes().at(childNodeIds[t])->getIdentifier().c_str() << ((t < childNodeIds.size() - 1) ? ", " : "");
+                        }
                     }
+                    outfile << "</td>";
                 }
-                outfile << "</td>";
                 if (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) {
                     // write node cases and time window
                     printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts().at(k)->getID()]->getBrC()));
                     outfile << "<td>" << buffer.c_str() << "</td>";
                     outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
                 } else if (parameters.getModelType() == Parameters::UNIFORM) {
-                    // write node cases and time window
-                    if (parameters.isPerformingDayOfWeekAdjustment()) {
-                        printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts().at(k)->getID()]->getBrC()));
-                    } else {
-                        printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts().at(k)->getN()));
+                    // write node cases
+                    // skip reporting node cases for time-only scans
+                    if (parameters.getScanType() != Parameters::TIMEONLY) {
+                        if (parameters.isPerformingDayOfWeekAdjustment()) {
+                            printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts().at(k)->getID()]->getBrC()));
+                        } else {
+                            printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts().at(k)->getN()));
+                        }
+                        outfile << "<td>" << buffer.c_str() << "</td>";
                     }
-                    outfile << "<td>" << buffer.c_str() << "</td>";
+                    // write time window
                     outfile << "<td>" << (_scanRunner.getCuts().at(k)->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (_scanRunner.getCuts().at(k)->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
                 } else if (parameters.getModelType() == Parameters::BERNOULLI) {
                     // write number of observations
