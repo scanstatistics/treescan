@@ -141,7 +141,7 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>P:\imsadmin\code.sign.cert.ms.auth.verisign\signtool.exe sign /v /ac P:\imsadmin\code.sign.cert.ms.auth.verisign\MSCV-VSClass3.cer /f P:\imsadmin\code.sign.cert.ms.auth.verisign\ims-cross-sign.pfx /p J3llifi$h /n "Information Management Services, Inc." /t http://timestamp.verisign.com/scripts/timstamp.dll $(OutDir)$(TargetName)$(TargetExt)</Command>
+      <Command>$(SolutionDir)signbinary.bat $(OutDir)$(TargetName)$(TargetExt)</Command>
       <Message>Digitally Sign Library</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -167,7 +167,7 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>P:\imsadmin\code.sign.cert.ms.auth.verisign\signtool.exe sign /v /ac P:\imsadmin\code.sign.cert.ms.auth.verisign\MSCV-VSClass3.cer /f P:\imsadmin\code.sign.cert.ms.auth.verisign\ims-cross-sign.pfx /p J3llifi$h /n "Information Management Services, Inc." /t http://timestamp.verisign.com/scripts/timstamp.dll $(OutDir)$(TargetName)$(TargetExt)</Command>
+      <Command>$(SolutionDir)signbinary.bat $(OutDir)$(TargetName)$(TargetExt)</Command>
       <Message>Digitally Sign Library</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>

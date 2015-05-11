@@ -1,0 +1,1 @@
+P:\imsadmin\code.sign.cert.ms.auth.verisign\signtool.exe sign /v /ac P:\imsadmin\code.sign.cert.ms.auth.verisign\MSCV-VSClass3.cer /f P:\imsadmin\code.sign.cert.ms.auth.verisign\ims-cross-sign.pfx /p %%iaUzoA0cl!p /n "Information Management Services, Inc." /t http://timestamp.verisign.com/scripts/timstamp.dll %1
