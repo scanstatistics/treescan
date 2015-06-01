@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 40;
+const int Parameters::giNumParameters = 42;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -65,6 +65,8 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_power_replica != rhs._power_replica) return false;
   if (_power_alt_hypothesis_filename != rhs._power_alt_hypothesis_filename) return false;
   if (_dayofweek_adjustment != rhs._dayofweek_adjustment) return false;
+  if (_report_attributable_risk != rhs._report_attributable_risk) return false;
+  if (_attributable_risk_exposed != rhs._attributable_risk_exposed) return false;
 
   return true;
 }
@@ -153,6 +155,9 @@ void Parameters::copy(const Parameters &rhs) {
     _creationVersion = rhs._creationVersion;
 
     _dayofweek_adjustment = rhs._dayofweek_adjustment;
+
+    _report_attributable_risk = rhs._report_attributable_risk;
+    _attributable_risk_exposed = rhs._attributable_risk_exposed;
 }
 
 /* Returns the maximum temporal window in data time units. */
@@ -281,6 +286,9 @@ void Parameters::setAsDefaulted() {
     _randomlyGenerateSeed = false;
     _numRequestedParallelProcesses = 0;
     _dayofweek_adjustment = false;
+
+    _report_attributable_risk = false;
+    _attributable_risk_exposed = 0;
 }
 
 /** Sets output data file name.
@@ -360,8 +368,11 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     setOutputFileName(pt.get<std::string>("parameters.output.results-file", "").c_str(), true);
     _generateHtmlResults = pt.get<bool>("parameters.output.generate-html-results", true);
     _generateTableResults = pt.get<bool>("parameters.output.generate-table-results", true);
-    _generate_llr_results = pt.get<bool>("parameters.output.generate-llr-results", true);
-    _report_critical_values = pt.get<bool>("parameters.output.report-critical-values", false);
+    // Advanced Output - Additional Output
+    _generate_llr_results = pt.get<bool>("parameters.output.advanced.additional-output.generate-llr-results", true);
+    _report_critical_values = pt.get<bool>("parameters.output.advanced.additional-output.report-critical-values", false);
+    _report_attributable_risk = pt.get<bool>("parameters.output.advanced.additional-output.report-attributable-risk", false);
+    _attributable_risk_exposed = pt.get<unsigned int>("parameters.output.advanced.additional-output.attributable-risk-exposed", 0);
     // Power Evaluations
     _perform_power_evaluations = pt.get<bool>("parameters.analysis.advanced.power-evaluations.perform-power-evaluations", false);
     _power_evaluation_type = static_cast<PowerEvaluationType>(pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.power-evaluation-type", PE_WITH_ANALYSIS));
@@ -418,8 +429,11 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.output.results-file", _outputFileName);
     pt.put("parameters.output.generate-html-results", _generateHtmlResults);
     pt.put("parameters.output.generate-table-results", _generateTableResults);
+    // Advanced Output - Additional Output
     pt.put("parameters.output.generate-llr-results", _generate_llr_results);
     pt.put("parameters.output.report-critical-values", _report_critical_values);
+    pt.put("parameters.output.advanced.additional-output.report-attributable-risk", _report_attributable_risk);
+    pt.put("parameters.output.advanced.additional-output.attributable-risk-exposed", _attributable_risk_exposed);
     // Power Evaluations
     pt.put("parameters.analysis.advanced.power-evaluations.perform-power-evaluations", _perform_power_evaluations);
     pt.put("parameters.analysis.advanced.power-evaluations.power-evaluation-type", static_cast<unsigned int>(_power_evaluation_type));

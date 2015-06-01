@@ -40,6 +40,7 @@ bool ParametersValidate::Validate(BasePrint& printDirection) const {
     bValid &= ValidateAnalysisParameters(printDirection);
     bValid &= ValidateInputParameters(printDirection);
     bValid &= ValidateOutputParameters(printDirection);
+    bValid &= ValidateAdditionalOutputParameters(printDirection);
     bValid &= ValidateTemporalWindowParameters(printDirection);
     bValid &= ValidateAdjustmentsParameters(printDirection);
     bValid &= ValidatePowerEvaluationParametersParameters(printDirection);
@@ -233,6 +234,28 @@ bool ParametersValidate::ValidateOutputParameters(BasePrint & PrintDirection) co
         }
     } catch (prg_exception& x) {
         x.addTrace("ValidateOutputOptionParameters()","ParametersValidate");
+        throw;
+    }
+    return bValid;
+}
+
+/** Validates additional output options. */
+bool ParametersValidate::ValidateAdditionalOutputParameters(BasePrint & PrintDirection) const {
+    bool bValid=true;
+    try {
+        //validate output file
+        if (_parameters.getReportAttributableRisk()) {
+            if (_parameters.getModelType() == Parameters::BERNOULLI) {
+                PrintDirection.Printf("%s:\nThe attributable risk option is not available for the Bernoulli model.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                bValid = false;
+            }
+            if (_parameters.getAttributableRiskExposed() == 0) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe number of exposed cases for the attributable risk must be greater than zero. ", BasePrint::P_PARAMERROR);
+            }
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ValidateAdditionalOutputParameters()","ParametersValidate");
         throw;
     }
     return bValid;

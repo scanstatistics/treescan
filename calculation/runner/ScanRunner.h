@@ -36,6 +36,8 @@ public:
     void                    addCutChild(int cutID, bool clear=false) {if (clear) _cut_children.clear(); _cut_children.push_back(cutID);}
     int                     getC() const {return _C;}
     const CutChildContainer_t & getCutChildren() {return _cut_children;}
+    double                  getAttributableRisk(const ScanRunner& scanner);
+    std::string           & getAttributableRiskAsString(const ScanRunner& scanner, std::string& s);
     int                     getID() const {return _ID;}
     double                  getLogLikelihood() const {return _LogLikelihood;}
     double                  getN() const {return _N;}

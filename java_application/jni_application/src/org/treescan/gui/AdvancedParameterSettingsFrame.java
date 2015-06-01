@@ -21,6 +21,7 @@ import org.treescan.importer.FileImporter;
 import org.treescan.app.UnknownEnumException;
 
 public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
+
     public enum FocusedTabSet { INPUT, ANALYSIS, OUTPUT };
     private JPanel _glass = null;
     private final JRootPane _rootPane;
@@ -153,7 +154,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     public boolean getDefaultsSetForOutputOptions() {
-        return _reportLLRResultsAsCsvTable.isSelected() == false && _reportCriticalValuesCheckBox.isSelected() == false; 
+        boolean bReturn = true;
+        
+        bReturn &= _reportLLRResultsAsCsvTable.isSelected() == false;
+        bReturn &= _reportCriticalValuesCheckBox.isSelected() == false;
+        bReturn &= _chk_rpt_attributable_risk.isSelected() == false;
+        bReturn &= _attributable_risk_exposed.getText().equals("");
+        return bReturn; 
     }
 
     private Parameters.PowerEvaluationType getPowerEvaluationMethodType() {
@@ -240,6 +247,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Additional Output tab
         parameters.setGeneratingLLRResults(_reportLLRResultsAsCsvTable.isSelected());
         parameters.setReportCriticalValues(_reportCriticalValuesCheckBox.isSelected());
+        parameters.setReportAttributableRisk(_chk_rpt_attributable_risk.isEnabled() && _chk_rpt_attributable_risk.isSelected());
+        parameters.setAttributableRiskExposed(_attributable_risk_exposed.getText().length() > 0 ? Integer.parseInt(_attributable_risk_exposed.getText()): 0);
     }
 
     /**
@@ -317,6 +326,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Additional Output tab
         _reportCriticalValuesCheckBox.setSelected(parameters.getReportCriticalValues());
         _reportLLRResultsAsCsvTable.setSelected(parameters.isGeneratingLLRResults());
+        _chk_rpt_attributable_risk.setSelected(parameters.getReportAttributableRisk());
+        _attributable_risk_exposed.setText(parameters.getAttributableRiskExposed() > 0 ? Integer.toString(parameters.getAttributableRiskExposed()) : "");
         
         enablePowerEvaluationsGroup();
     }
@@ -328,20 +339,24 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private void setDefaultsForOutputTab() {
         _reportLLRResultsAsCsvTable.setSelected(false);
         _reportCriticalValuesCheckBox.setSelected(false);
+        _chk_rpt_attributable_risk.setSelected(false);
+        _attributable_risk_exposed.setText("");
     }
 
-    /** validates all the settings in this dialog */
+    /*
+     * Verifies that settings are valid in the context of all other parameter settings.
+     */ 
     public void CheckSettings() {
         CheckInputSettings();
         CheckInferenceSettings();
         CheckTemporalWindowSize();
         CheckPowerEvaluationSettings();
+        CheckAdditionalOutputOptions();
     }
 
-    /**
-     * Validates the power evaluations parameters in conjunction with other
-     * selected parameters.
-     */
+    /*
+     * Verifies that power evaluation settings are valid in the context of all parameter settings.
+     */   
     private void CheckPowerEvaluationSettings() {
         if (_performPowerEvalautions.isEnabled() && _performPowerEvalautions.isSelected()) {
             if (_powerEvaluationWithSpecifiedCases.isSelected()) {
@@ -378,6 +393,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
     
+    /*
+     * Verifies that input settings are valid in the context of all parameter settings.
+     */         
     private void CheckInputSettings() {
         //validate the cuts file
         if (_settings_window.getScanType() !=  Parameters.ScanType.TIMEONLY && _cutFileTextField.getText().length() > 0 && !FileAccess.ValidateFileAccess(_cutFileTextField.getText(), false)) {
@@ -385,6 +403,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
+    /*
+     * Verifies that temporal window settings are valid in the context of all parameter settings.
+     */       
     private void CheckTemporalWindowSize() {
         String sErrorMessage;
         double maximumUnitsTemporalSize = 0;
@@ -449,6 +470,23 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
+    /*
+     * Verifies that additional output settings are valid in the context of all parameter settings.
+     */
+    private void CheckAdditionalOutputOptions() throws NumberFormatException, AdvFeaturesExpection {
+        if (_chk_rpt_attributable_risk.isEnabled() && _chk_rpt_attributable_risk.isSelected()) {            
+            if (_attributable_risk_exposed.getText().trim().length() == 0) {
+                throw new AdvFeaturesExpection("Please specify a number exposed for the attributable risk.", FocusedTabSet.OUTPUT, (Component)_attributable_risk_exposed);
+            }
+            if (Integer.parseInt(_attributable_risk_exposed.getText().trim()) < 1) {
+                throw new AdvFeaturesExpection("The number exposed for the attributable risk must be greater than zero.", FocusedTabSet.OUTPUT, (Component) _attributable_risk_exposed);
+            }            
+        }
+    }
+    
+    /*
+     * Verifies that inference settings are valid in the context of all parameter settings.
+     */   
     private void CheckInferenceSettings() {
         int dNumReplications;
         if (_montCarloReplicationsTextField.getText().trim().length() == 0) {
@@ -487,6 +525,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 default: throw new UnknownEnumException(_settings_window.getConditionalType());
             }
         }
+    }
+
+    /** enables options of the Additional Output tab */
+    public void enableAdditionalOutputOptions() {
+        _chk_rpt_attributable_risk.setEnabled(_settings_window.getModelType() != Parameters.ModelType.BERNOULLI);
+        _attributable_risk_exposed.setEnabled(_chk_rpt_attributable_risk.isEnabled());
+        _chk_attributable_risk_extra.setEnabled(_chk_rpt_attributable_risk.isEnabled());
     }
     
     /**
@@ -571,6 +616,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportLLRResultsAsCsvTable = new javax.swing.JCheckBox();
         _report_critical_values_group = new javax.swing.JPanel();
         _reportCriticalValuesCheckBox = new javax.swing.JCheckBox();
+        jPanel2 = new javax.swing.JPanel();
+        _chk_rpt_attributable_risk = new javax.swing.JCheckBox();
+        _attributable_risk_exposed = new javax.swing.JTextField();
+        _chk_attributable_risk_extra = new javax.swing.JLabel();
         _advanced_adjustments_tab = new javax.swing.JPanel();
         _perform_dayofweek_adjustments = new javax.swing.JCheckBox();
         _closeButton = new javax.swing.JButton();
@@ -645,7 +694,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_cutFileBrowseButton)
                     .addComponent(_cutFileImportButton)
                     .addComponent(_cutFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(217, Short.MAX_VALUE))
+                .addContainerGap(233, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced Input", _advanced_input_tab);
@@ -828,7 +877,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(93, Short.MAX_VALUE))
+                .addContainerGap(109, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _advanced_temporal_window_tab);
@@ -889,7 +938,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advanced_inferenece_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(208, Short.MAX_VALUE))
+                .addContainerGap(224, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _advanced_inferenece_tab);
@@ -1047,7 +1096,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_alternativeHypothesisFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_alternativeHypothesisFilenameButton))
-                .addGap(0, 52, Short.MAX_VALUE))
+                .addGap(0, 68, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout _advanced_power_evaluation_tabLayout = new javax.swing.GroupLayout(_advanced_power_evaluation_tab);
@@ -1123,6 +1172,58 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(14, Short.MAX_VALUE))
         );
 
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Attributable Risk"));
+
+        _chk_rpt_attributable_risk.setText("Report attributable risk based on ");
+
+        /*
+        _attributable_risk_exposed.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_attributable_risk_exposed.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _attributable_risk_exposed.setText("0");
+            }
+        });
+        */
+        _attributable_risk_exposed.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                if (_attributable_risk_exposed.getText().length() > 0) {
+                    Utils.validatePostiveNumericKeyTyped(_attributable_risk_exposed, e, 10);
+                }
+            }
+        });
+        _attributable_risk_exposed.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _chk_attributable_risk_extra.setText("exposed.");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_chk_rpt_attributable_risk)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_attributable_risk_exposed, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_chk_attributable_risk_extra, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_attributable_risk_exposed, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_chk_attributable_risk_extra))
+                    .addComponent(_chk_rpt_attributable_risk))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout _advanced_output_tabLayout = new javax.swing.GroupLayout(_advanced_output_tab);
         _advanced_output_tab.setLayout(_advanced_output_tabLayout);
         _advanced_output_tabLayout.setHorizontalGroup(
@@ -1131,7 +1232,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addGroup(_advanced_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_report_critical_values_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_report_critical_values_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _advanced_output_tabLayout.setVerticalGroup(
@@ -1141,7 +1243,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_report_critical_values_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(130, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(72, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
@@ -1167,7 +1271,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advanced_adjustments_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_perform_dayofweek_adjustments)
-                .addContainerGap(246, Short.MAX_VALUE))
+                .addContainerGap(262, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Adjustments", _advanced_adjustments_tab);
@@ -1223,6 +1327,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _alternativeHypothesisFilename;
     private javax.swing.JButton _alternativeHypothesisFilenameButton;
     private javax.swing.JLabel _alternativeHypothesisFilenameLabel;
+    private javax.swing.JTextField _attributable_risk_exposed;
+    private javax.swing.JLabel _chk_attributable_risk_extra;
+    private javax.swing.JCheckBox _chk_rpt_attributable_risk;
     private javax.swing.JButton _closeButton;
     private javax.swing.JButton _cutFileBrowseButton;
     private javax.swing.JButton _cutFileImportButton;
@@ -1257,6 +1364,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _timeTemporalRadioButton;
     private javax.swing.JTextField _totalPowerCases;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.ButtonGroup maximumWindowButtonGroup;
     // End of variables declaration//GEN-END:variables

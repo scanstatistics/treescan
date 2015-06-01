@@ -246,6 +246,14 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getPerformDayOfWeekAdjustment());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setReportAttributableRisk", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getReportAttributableRisk());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setAttributableRiskExposed", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getAttributableRiskExposed());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -412,6 +420,14 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
 
   mid = _getMethodId_Checked(Env, clazz, "getPerformDayOfWeekAdjustment", "()Z");
   Parameters.setPerformDayOfWeekAdjustment(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getReportAttributableRisk", "()Z");
+  Parameters.setReportAttributableRisk(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getAttributableRiskExposed", "()I");
+  Parameters.setAttributableRiskExposed(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   return Parameters;

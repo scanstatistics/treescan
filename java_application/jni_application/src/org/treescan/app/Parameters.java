@@ -58,6 +58,8 @@ public class Parameters implements Cloneable {
     private int _power_replica=_replications+1;
     private String _power_alt_hypothesis_filename="";
     private boolean _dayofweek_adjustment=false;
+    private boolean _report_attributable_risk=false;
+    private int _attributable_risk_exposed=0;
 
     public Parameters() {
     	super();    	
@@ -116,9 +118,16 @@ public class Parameters implements Cloneable {
           if (!_power_alt_hypothesis_filename.equals(rhs._power_alt_hypothesis_filename)) return false;
           if (_report_critical_values != rhs._report_critical_values) return false;
           if (_dayofweek_adjustment != rhs._dayofweek_adjustment) return false;
+          if (_report_attributable_risk != rhs._report_attributable_risk) return false;
+          if (_attributable_risk_exposed != rhs._attributable_risk_exposed) return false;
           
           return true;
     }
+    
+    public boolean getReportAttributableRisk() {return _report_attributable_risk;}
+    public int getAttributableRiskExposed() {return _attributable_risk_exposed;}
+    public void setReportAttributableRisk(boolean b) {_report_attributable_risk = b;}
+    public void setAttributableRiskExposed(int i) {_attributable_risk_exposed = i;}        
     public boolean getPerformDayOfWeekAdjustment() {return _dayofweek_adjustment;}
     public void setPerformDayOfWeekAdjustment(boolean b) {_dayofweek_adjustment = b;}
     public boolean getReportCriticalValues() {return _report_critical_values;}

@@ -149,6 +149,7 @@
     <ClCompile Include="..\calculation\utility\RandomNumberGenerator.cpp" />
     <ClCompile Include="..\calculation\utility\TimeStamp.cpp" />
     <ClCompile Include="..\calculation\utility\UtilityFunctions.cpp" />
+    <ClCompile Include="squish54.cpp" />
     <ClCompile Include="squish81.cpp" />
     <ClCompile Include="squish85.cpp" />
     <ClCompile Include="test.cpp" />

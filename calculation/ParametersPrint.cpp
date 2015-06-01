@@ -96,6 +96,13 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParame
     if (_parameters.isGeneratingTableResults() && _parameters.isPrintColumnHeaders()) {
         settings.push_back(std::make_pair("Print Column Headers","Yes"));
     }
+
+    settings.push_back(std::make_pair("Attributable Risk ",(_parameters.getReportAttributableRisk() ? "Yes" : "No")));
+    if (_parameters.getReportAttributableRisk()) {
+        printString(buffer, "%u", _parameters.getAttributableRiskExposed());
+        settings.push_back(std::make_pair("Report Attributable Risk Based on # Exposed",buffer));
+    }
+
     return settings;
 }
 
@@ -105,6 +112,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(
     if (_parameters.isPerformingDayOfWeekAdjustment() && Parameters::isTemporalScanType(_parameters.getScanType())) {
         std::string buffer;
         switch (_parameters.getConditionalType()) {
+            case Parameters::TOTALCASES: // this is the time-only scan
             case Parameters::NODE: buffer = "Perform Day-of-Week Adjustment"; break;
             case Parameters::NODEANDTIME: buffer = "Perform Node by Day-of-Week Adjustment"; break;
             default: throw prg_error("Unknown conditional type (%d).", "getAdjustmentsParameters()", _parameters.getConditionalType());

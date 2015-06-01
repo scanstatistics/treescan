@@ -1,7 +1,7 @@
 [Analysis]
 ;scan type (TREEONLY=0, TREETIME=1, TIMEONLY=2)
 scan-type=2
-;probability model type (POISSON=0, BERNOULLI=1, TEMPORALSCAN=3)
+;probability model type (POISSON=0, BERNOULLI=1, UNIFORM=2, Not-Applicable=3)
 probability-model=2
 ;conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)
 conditional-type=1
@@ -23,10 +23,18 @@ data-time-range=[1,27]
 [Output]
 ;results filename
 results-filename=TemporalOnly.txt
-;create HTML results
+;create HTML results (y/n)
 results-html=y
-;create CSV results
+;create CSV results (y/n)
 results-csv=y
+
+[Advanced Input]
+;cuts filename
+cut-filename=
+;default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)
+cut-type=0
+;duplicates in case data records (y/n -- experimental)
+duplicates=n
 
 [Temporal Window]
 ;maximum temporal size as percentage of data time range (0 < x <= 50.0)
@@ -39,11 +47,11 @@ maximum-window-type=0
 minimum-window-fixed=2
 
 [Adjustments]
-; perform day of week adjustments (y/n)
+;perform day of week adjustments (y/n)
 perform-day-of-week-adjustments=n
 
 [Inference]
-;number of simulation replications (0,9,999, n999)
+;number of simulation replications (0, 9, 999, n999)
 monte-carlo-replications=999
 ;randomization seed (integer)
 randomization-seed=12345678
@@ -53,7 +61,7 @@ random-randomization-seed=n
 [Power Evaluations]
 ;perform power evaluations (y/n)
 perform-power-evaluations=n
-;power evaluation type (0=Analysis And Power Evaluation Together, 1=Only Power Evaluation With Case File, 2=Only Power Evaluation With Defined Total Cases)
+;power evaluation type (0=Analysis And Power Evaluation Together, 1=Only Power Evaluation With Count File, 2=Only Power Evaluation With Defined Total Cases)
 power-evaluation-type=0
 ;critical values type (0=Monte Carlo, 1=User Specified Values)
 critical-values-type=0
@@ -63,26 +71,22 @@ critical-value-05=0
 critical-value-01=0
 ;power evaluation critical value .001 (> 0)
 critical-value-001=0
-;total cases in power evaluation
+;total cases in power evaluation (integer)
 power-evaluation-totalcases=600
-;number of replications in power step
+;number of replications in power step (integer)
 power-evaluation-replications=1000
 ;power evaluation alternative hypothesis filename
 alternative-hypothesis-filename=
 
-[Advanced Input]
-;cuts filename
-cut-filename=
-;default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)
-cut-type=0
-;duplicates in case data records
-duplicates=n
-
 [Additional Output]
-;create LLR results
+;create LLR results (y/n)
 results-llr=n
 ;report critical values (y/n)
 report-critical-values=n
+;report attributable risk (y/n)
+report-attributable-risk=n
+;number of exposed attributable risk is based upon (positive integer)
+attributable-risk-exposed=0
 
 [Power Simulations]
 ;input simulation data (y/n)

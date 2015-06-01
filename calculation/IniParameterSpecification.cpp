@@ -150,8 +150,10 @@ void IniParameterSpecification::Build_1_1_x_ParameterList() {
 void IniParameterSpecification::Build_1_2_x_ParameterList() {
     Build_1_1_x_ParameterList();
     _parameter_info[Parameters::DAYOFWEEK_ADJUSTMENT] = ParamInfo(Parameters::DAYOFWEEK_ADJUSTMENT, "perform-day-of-week-adjustments", 1, _adjustments_section);
+    _parameter_info[Parameters::REPORT_ATTR_RISK] = ParamInfo(Parameters::REPORT_ATTR_RISK, "report-attributable-risk", 3, _additional_output_section);
+    _parameter_info[Parameters::ATTR_RISK_NUM_EXPOSED] = ParamInfo(Parameters::ATTR_RISK_NUM_EXPOSED, "attributable-risk-exposed", 4, _additional_output_section);
 
-    assert(_parameter_info.size() == 40);
+    assert(_parameter_info.size() == 42);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

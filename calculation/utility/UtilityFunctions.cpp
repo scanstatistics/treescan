@@ -9,6 +9,7 @@
 #include <boost/math/special_functions/factorials.hpp>
 using namespace boost::math;
 #include <boost/filesystem.hpp>
+#include <locale>
 
 /* returns number of combinations, given 'total' to choose from, choosing 'choose'; where order does not matter and repetition not allowed. */
 double getNumCombinations(size_t total, size_t choose) {
@@ -181,8 +182,12 @@ std::string& getValueAsString(double value, std::string& s, unsigned int iSignif
 
 /** Returns double as string with specified decimal precision.
 */
-std::string & getRoundAsString(double value, std::string& s, unsigned int precision) {
+std::string & getRoundAsString(double value, std::string& s, unsigned int precision, bool localize) {
     std::stringstream buffer;
+    if (localize) {
+        std::locale the_locale("");
+        buffer.imbue(the_locale);
+    }
     buffer << std::setprecision(precision) << std::setiosflags(std::ios_base::fixed) << value;
     s = buffer.str();
     return s;

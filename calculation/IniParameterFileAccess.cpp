@@ -240,6 +240,8 @@ void IniParameterFileAccess::WriteAdvancedOutputSettings(IniFile& WriteFile) {
     try {
         WriteIniParameter(WriteFile, Parameters::RESULTS_LLR, GetParameterString(Parameters::RESULTS_LLR, s).c_str(), GetParameterComment(Parameters::RESULTS_LLR));
         WriteIniParameter(WriteFile, Parameters::REPORT_CRITICAL_VALUES, GetParameterString(Parameters::REPORT_CRITICAL_VALUES, s).c_str(), GetParameterComment(Parameters::REPORT_CRITICAL_VALUES));
+        WriteIniParameter(WriteFile, Parameters::REPORT_ATTR_RISK, GetParameterString(Parameters::REPORT_ATTR_RISK, s).c_str(), GetParameterComment(Parameters::REPORT_ATTR_RISK));
+        WriteIniParameter(WriteFile, Parameters::ATTR_RISK_NUM_EXPOSED, GetParameterString(Parameters::ATTR_RISK_NUM_EXPOSED, s).c_str(), GetParameterComment(Parameters::ATTR_RISK_NUM_EXPOSED));
     } catch (prg_exception& x) {
         x.addTrace("WriteAdvancedOutputSettings()","IniParameterFileAccess");
         throw;

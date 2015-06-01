@@ -39,9 +39,12 @@ class Parameters {
                         RESULTS_FILE,
                         RESULTS_HTML,
                         RESULTS_CSV,
+                        /* Advanced Output - Additional Output */
                         RESULTS_LLR,
                         REPORT_CRITICAL_VALUES,
-                        /* power evaluations */
+                        REPORT_ATTR_RISK,
+                        ATTR_RISK_NUM_EXPOSED,
+                        /* Advanced Analysis - power evaluations */
                         POWER_EVALUATIONS,
                         POWER_EVALUATION_TYPE,
                         CRITICAL_VALUES_TYPE,
@@ -152,6 +155,8 @@ class Parameters {
     unsigned int                        _power_replica; /** number of replicas in power step  of power evaluation */
     std::string                         _power_alt_hypothesis_filename;
     bool                                _dayofweek_adjustment;
+    bool                                _report_attributable_risk;
+    unsigned int                        _attributable_risk_exposed;
 
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
@@ -201,6 +206,8 @@ class Parameters {
     double                              getProbability() const {return static_cast<double>(_probablility_ratio.first)/static_cast<double>(_probablility_ratio.second);}
     ratio_t                             getProbabilityRatio() const {return _probablility_ratio;}
     long                                getRandomizationSeed() const {return _randomizationSeed;}
+    bool                                getReportAttributableRisk() const {return _report_attributable_risk;}
+    unsigned int                        getAttributableRiskExposed() const {return _attributable_risk_exposed;}
     bool                                getReportCriticalValues() const {return _report_critical_values;}
     ResultsFormat                       getResultsFormat() const {return _resultsFormat;}
     ScanType                            getScanType() const {return _scan_type;}
@@ -256,6 +263,8 @@ class Parameters {
     void                                setRandomizationSeed(long lSeed) {_randomizationSeed = lSeed;}
     void                                setRandomlyGeneratingSeed(bool b) {_randomlyGenerateSeed = b;}
     void                                setReadingSimulationData(bool b) {_read_simulations = b;}
+    void                                setReportAttributableRisk(bool b) {_report_attributable_risk = b;}
+    void                                setAttributableRiskExposed(unsigned int i) {_attributable_risk_exposed = i;}
     void                                setReportCriticalValues(bool b) {_report_critical_values = b;}
     void                                setResultsFormat(ResultsFormat e) {_resultsFormat = e;}
     void                                setScanType(ScanType e) {_scan_type = e;}

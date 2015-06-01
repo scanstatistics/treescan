@@ -202,9 +202,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _initialParameters = (Parameters) _parameters.clone();
     }
 
-    /**
-     * checks 'Input Files' tab
-     */
+    /*
+     * Verifies that input settings are valid in the context of all parameter settings.
+     */   
     private void CheckInputSettings() {
         //validate the tree file
         if (!_timeonlyScanType.isSelected() && _treelFileTextField.getText().length() == 0) {
@@ -255,9 +255,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         return start_end > end_end ? 0 : end_end - start_end + 1;
     }
 
-    /**
-     * checks 'Analysis' tab
-     */
+    /*
+     * Verifies that analysis settings are valid in the context of all parameter settings.
+     */   
     private void CheckAnalysisSettings() {
         if (_BernoulliButton.isSelected()) {
             int eventProbNumerator = Integer.parseInt(_eventProbabiltyNumerator.getText().trim());
@@ -283,7 +283,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         }
     }
 
-    /** checks 'Output' tab */
+    /*
+     * Verifies that output settings are valid in the context of all parameter settings.
+     */   
     private void CheckOutputSettings() {
         if (_outputFileTextField.getText().length() == 0) {
             throw new SettingsException("Please specify a results file.", (Component) _outputFileTextField);
@@ -294,6 +296,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         }
     }
 
+    /*
+     * Verifies that settings are valid in the context of all other parameter settings.
+     */       
     public boolean CheckSettings() {
         try {
             CheckInputSettings();
@@ -528,7 +533,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _temporalEndWindowEnd.setEnabled(_temporalWindowGroup.isEnabled());
         _advancedParametersSetting.enableTemporalOptionsGroup(treeAndTime || timeOnly);
         _advancedParametersSetting.enableAdjustmentsOptions();
-        _advancedParametersSetting.enablePowerEvaluationsGroup();        
+        _advancedParametersSetting.enablePowerEvaluationsGroup(); 
+        _advancedParametersSetting.enableAdditionalOutputOptions();
         // data time range group
         _data_time_range_group.setEnabled(treeAndTime || timeOnly);
         _data_time_range_start_label.setEnabled(_data_time_range_group.isEnabled());

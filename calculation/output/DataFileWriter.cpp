@@ -233,6 +233,7 @@ const char * DataRecordWriter::OBSERVED_DIV_EXPECTED_FIELD               = "Obse
 const char * DataRecordWriter::OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD = "Observed / Expected (No Duplicates)";
 const char * DataRecordWriter::RELATIVE_RISK_FIELD                       = "Relative Risk";
 const char * DataRecordWriter::EXCESS_CASES_FIELD                        = "Excess Cases";
+const char * DataRecordWriter::ATTRIBUTABLE_RISK_FIELD                   = "Attributable Risk";
 const char * DataRecordWriter::LOG_LIKL_RATIO_FIELD                      = "Log Likelihood Ratio";
 const char * DataRecordWriter::TEST_STATISTIC_FIELD                      = "Test Statistic";
 const char * DataRecordWriter::P_VALUE_FLD                               = "P-value";
@@ -287,6 +288,10 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
     if (!(params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME)) {
         CreateField(_dataFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
         CreateField(_dataFieldDefinitions, EXCESS_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+    }
+
+    if (params.getReportAttributableRisk() && params.getModelType() != Parameters::BERNOULLI) {
+        CreateField(_dataFieldDefinitions, ATTRIBUTABLE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     }
 
     if ((params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME) ||
@@ -356,6 +361,10 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
         if (!(params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME)) {
             Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getRelativeRisk(_scanner);
             Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getExcessCases(_scanner);
+        }
+
+        if (params.getReportAttributableRisk() && params.getModelType() != Parameters::BERNOULLI) {
+            Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getAttributableRisk(_scanner);
         }
 
         if ((params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME) ||

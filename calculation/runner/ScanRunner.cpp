@@ -5,6 +5,7 @@
 #include <boost/regex.hpp>
 #include <boost/assign.hpp>
 #include <boost/dynamic_bitset.hpp>
+#include <locale>
 
 #include "ScanRunner.h"
 #include "UtilityFunctions.h"
@@ -20,6 +21,67 @@
 #include "WindowLength.h"
 #include "AlternativeHypothesisRandomizer.h"
 #include "RelativeRiskAdjustment.h"
+
+/* Calculates the attributable risk per person for cut. */
+double CutStructure::getAttributableRisk(const ScanRunner& scanner) {
+    const Parameters& parameters = scanner.getParameters();
+    double C = static_cast<double>(_C);
+    double totalC = static_cast<double>(scanner.getTotalC());
+
+    switch (parameters.getScanType()) {
+
+        case Parameters::TREEONLY: {
+            switch (parameters.getConditionalType()) {
+                case Parameters::UNCONDITIONAL :
+                case Parameters::TOTALCASES :
+                    if (parameters.getModelType() == Parameters::POISSON)
+                        return getExcessCases(scanner) / static_cast<double>(parameters.getAttributableRiskExposed());
+                    //if (parameters.getModelType() == Parameters::BERNOULLI)
+                    //    return ?;
+                    throw prg_error("Cannot calculate attributable risk: tree-only, model (%d).", "getAttributableRisk()", parameters.getModelType());
+                default: throw prg_error("Cannot calculate attributable risk: tree-only, condition type (%d).", "getAttributableRisk()", parameters.getConditionalType());
+            }
+        }
+
+        case Parameters::TIMEONLY: /* time-only, condtioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
+        case Parameters::TREETIME: {
+            switch (parameters.getConditionalType()) {
+                case Parameters::TOTALCASES : /* this option is really only for time-only */
+                case Parameters::NODE :       /* this option is really only for tree-time */
+                    return getExcessCases(scanner) / static_cast<double>(parameters.getAttributableRiskExposed());
+                case Parameters::NODEANDTIME : {
+                    double exp = getExpected(scanner);
+                    double NodeCases = static_cast<double>(scanner.getNodes()[getID()]->getBrC());
+                    // O/Eout = (NodeCases – CasesInWindow) / (NodeCases-  - Expected)
+                    double o_eout = (NodeCases - C) / (NodeCases - exp);
+                    // EHA = Expected * O/Eout
+                    double eha = exp * o_eout;
+                    // RR = CasesInWindow / EHA
+                    double rr = C / eha;
+                    // EC = CasesInWindow – EHA 
+                    double ec = C - eha;
+                    return ec / static_cast<double>(parameters.getAttributableRiskExposed());
+                }
+                default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getAttributableRisk()", parameters.getConditionalType());
+            }
+        }
+
+        default: throw prg_error("Unknown scan type (%d).", "getExcessCases()", parameters.getScanType());
+    }
+}
+
+/** Returns the attributable risk as formatted string. */
+std::string & CutStructure::getAttributableRiskAsString(const ScanRunner& scanner, std::string& s) {
+    std::stringstream ss;
+    double ar = getAttributableRisk(scanner);
+    if (ar >= 0.001) {
+        ss << getRoundAsString(ar * 1000.0, s, 1, true).c_str() << " per 1,000";
+    } else {
+        ss << getRoundAsString(ar * 1000000.0, s, 1, true).c_str() << " per 1,000,000";
+    }
+    s = ss.str().c_str();
+    return s;
+}
 
 /* Calculates the excess number of cases. See user guide for formula explanation. */
 double CutStructure::getExcessCases(const ScanRunner& scanner) {

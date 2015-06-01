@@ -70,8 +70,11 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::RESULTS_FILE            : return "results filename";
             case Parameters::RESULTS_HTML            : return "create HTML results (y/n)";
             case Parameters::RESULTS_CSV             : return "create CSV results (y/n)";
+            /* Advanced Output - Additional Output */
             case Parameters::RESULTS_LLR             : return "create LLR results (y/n)";
             case Parameters::REPORT_CRITICAL_VALUES  : return "report critical values (y/n)";
+            case Parameters::REPORT_ATTR_RISK        : return "report attributable risk (y/n)";
+            case Parameters::ATTR_RISK_NUM_EXPOSED   : return "number of exposed attributable risk is based upon (positive integer)";
             /* Power Evaluations */
             case Parameters::POWER_EVALUATIONS       : return "perform power evaluations (y/n)";
             case Parameters::POWER_EVALUATION_TYPE   : return "power evaluation type (0=Analysis And Power Evaluation Together, 1=Only Power Evaluation With Count File, 2=Only Power Evaluation With Defined Total Cases)";
@@ -135,8 +138,11 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::RESULTS_FILE             : s = _parameters.getOutputFileName(); return s;
             case Parameters::RESULTS_HTML             : return AsString(s, _parameters.isGeneratingHtmlResults());
             case Parameters::RESULTS_CSV              : return AsString(s, _parameters.isGeneratingTableResults());
+            /* Advanced Output - Additional Output */
             case Parameters::RESULTS_LLR              : return AsString(s, _parameters.isGeneratingLLRResults());
             case Parameters::REPORT_CRITICAL_VALUES   : return AsString(s, _parameters.getReportCriticalValues());
+            case Parameters::REPORT_ATTR_RISK         : return AsString(s, _parameters.getReportAttributableRisk());
+            case Parameters::ATTR_RISK_NUM_EXPOSED    : return AsString(s, _parameters.getAttributableRiskExposed());
             /* Power Evaluations */
             case Parameters::POWER_EVALUATIONS        : return AsString(s, _parameters.getPerformPowerEvaluations());
             case Parameters::POWER_EVALUATION_TYPE    : return AsString(s, _parameters.getPowerEvaluationType());
@@ -301,8 +307,11 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::RESULTS_FILE             : _parameters.setOutputFileName(value.c_str(), true); break;
             case Parameters::RESULTS_HTML             : _parameters.setGeneratingHtmlResults(ReadBoolean(value, e)); break;
             case Parameters::RESULTS_CSV              : _parameters.setGeneratingTableResults(ReadBoolean(value, e)); break;
+            /* Advanced Output - Additional Output */
             case Parameters::RESULTS_LLR              : _parameters.setGeneratingLLRResults(ReadBoolean(value, e)); break;
             case Parameters::REPORT_CRITICAL_VALUES   : _parameters.setReportCriticalValues(ReadBoolean(value, e)); break;
+            case Parameters::REPORT_ATTR_RISK         : _parameters.setReportAttributableRisk(ReadBoolean(value, e)); break;
+            case Parameters::ATTR_RISK_NUM_EXPOSED    : _parameters.setAttributableRiskExposed(ReadUnsignedInt(value, e)); break;
             /* Power Evaluations */
             case Parameters::POWER_EVALUATIONS        : _parameters.setPerformPowerEvaluations(ReadBoolean(value, e)); break;
             case Parameters::POWER_EVALUATION_TYPE    : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::PE_WITH_ANALYSIS, Parameters::PE_ONLY_SPECIFIED_CASES);

@@ -173,7 +173,11 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     PrintFormat.PrintSectionLabel(outfile, "Excess Cases", true);
                     PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer));
                 }
-
+                if (parameters.getReportAttributableRisk() && parameters.getModelType() != Parameters::BERNOULLI) {
+                    PrintFormat.PrintSectionLabel(outfile, "Attributable Risk", true);
+                    buffer = _scanRunner.getCuts().at(k)->getAttributableRiskAsString(_scanRunner, buffer);
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                }
                 if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||
                     (parameters.getScanType() == Parameters::TIMEONLY && parameters.getConditionalType() == Parameters::TOTALCASES && parameters.isPerformingDayOfWeekAdjustment()) ||
                     (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODE && parameters.isPerformingDayOfWeekAdjustment())) {
@@ -394,6 +398,9 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             if (!(parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME)) {
                 outfile << "<th>Relative Risk</th><th>Excess Cases</th>" << std::endl;
             }
+            if (parameters.getReportAttributableRisk() && parameters.getModelType() != Parameters::BERNOULLI) {
+                outfile << "<th>Attributable Risk</th>" << std::endl;
+            }
             if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||
                 (parameters.getScanType() == Parameters::TIMEONLY && parameters.getConditionalType() == Parameters::TOTALCASES && parameters.isPerformingDayOfWeekAdjustment()) ||
                 (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODE && parameters.isPerformingDayOfWeekAdjustment())) {
@@ -460,6 +467,10 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                 if (!(parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME)) {
                     outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer) << "</td>";
                     outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer) << "</td>";
+                }
+                if (parameters.getReportAttributableRisk() && parameters.getModelType() != Parameters::BERNOULLI) {
+                     buffer = _scanRunner.getCuts().at(k)->getAttributableRiskAsString(_scanRunner, buffer);
+                    outfile << "<td>" << buffer << "</td>";
                 }
                 outfile << "<td>" << printString(buffer, "%.1lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood())).c_str() << "</td>";
                 // write p-value
