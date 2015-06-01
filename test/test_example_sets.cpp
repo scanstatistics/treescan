@@ -874,11 +874,22 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases ) {
                       BOOST_CHECK_CLOSE( excess, 504.63, 0.001 );
                       BOOST_CHECK_CLOSE( llr, 529.796056, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.001, 0.0001 ); break;
+            case 10:  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "All" );
+                      BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(543) );
+                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(17) );
+                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(18) );
+                      BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(46) );
+                      BOOST_CHECK_CLOSE( expected, 40.22, 0.001 );
+                      BOOST_CHECK_CLOSE( ode, 1.14, 0.001 );
+                      BOOST_CHECK_CLOSE( rr, 1.16, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 6.24, 0.001 );
+                      BOOST_CHECK_CLOSE( llr, 0.429749, 0.00001 );
+                      BOOST_CHECK_CLOSE( p_value, 0.850, 0.0001 ); break;
             default : break;
         }
         getCSVRow(stream, data);
     }
-    if (dataRows != 1) BOOST_FAIL( "expecting 1 data rows, got " << dataRows );
+    if (dataRows != 10) BOOST_FAIL( "expecting 10 data rows, got " << dataRows );
     stream.close();
 }
 
@@ -941,8 +952,8 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases_day_of_week_adjustment
         switch (dataRows) {
             case 1 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "All" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(543) );
-                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(1) );
-                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(8) );
+                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(18) );
+                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(25) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(516) );
                       BOOST_CHECK_CLOSE( expected, 170.00, 0.001 );
                       BOOST_CHECK_CLOSE( ode, 3.04, 0.001 );
@@ -950,11 +961,22 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases_day_of_week_adjustment
                       BOOST_CHECK_CLOSE( excess, 503.69, 0.001 );
                       BOOST_CHECK_CLOSE( teststat, 502.024076, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.001, 0.0001 ); break;
+            case 10:  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "All" );
+                      BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(543) );
+                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(17) );
+                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(18) );
+                      BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(46) );
+                      BOOST_CHECK_CLOSE( expected, 34.25, 0.001 );
+                      BOOST_CHECK_CLOSE( ode, 1.34, 0.001 );
+                      BOOST_CHECK_CLOSE( rr, 1.37, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 12.54, 0.001 );
+                      BOOST_CHECK_CLOSE( teststat, 1.954667, 0.00001 );
+                      BOOST_CHECK_CLOSE( p_value, 0.167, 0.0001 ); break;
             default : break;
         }
         getCSVRow(stream, data);
     }
-    if (dataRows != 1) BOOST_FAIL( "expecting 1 data rows, got" << dataRows );
+    if (dataRows != 10) BOOST_FAIL( "expecting 10 data rows, got " << dataRows );
     stream.close();
 }
 
