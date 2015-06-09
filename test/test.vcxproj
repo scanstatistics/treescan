@@ -155,6 +155,7 @@
     <ClCompile Include="test.cpp" />
     <ClCompile Include="test_example_sets.cpp" />
     <ClCompile Include="test_helper.cpp" />
+    <ClCompile Include="unittest_Loglikelihood.cpp" />
     <ClCompile Include="unittest_ParametersValidate.cpp" />
   </ItemGroup>
   <ItemGroup>

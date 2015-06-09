@@ -4,8 +4,8 @@
 REQUIRED_ARGS=1 # Script requires 3 argument
 if [ $# -lt "$REQUIRED_ARGS" ]
 then
-  echo "Usage: `basename $0` <treescan_src directory> <boost directory> <binaries ouitput directory>])"
-  echo "   example: `basename $0` /Users/<username>/prj/treescan.development/treescan /Users/<username>/prj/boost/boost_1_56_0 /Users/<username>/prj/treescan.development/binaries/mac"
+  echo "Usage: `basename $0` <treescan_src directory> <boost directory> <binaries output directory>])"
+  echo "   example: `basename $0` /Users/treescan/prj/treescan.development/treescan /Users/treescan/prj/boost/boost_1_56_0 /Users/treescan/prj/treescan.development/binaries/mac"
   exit 1
 fi
 

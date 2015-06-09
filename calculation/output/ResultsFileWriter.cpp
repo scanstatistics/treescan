@@ -262,23 +262,33 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
 std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buffer) const {
     switch (_scanRunner.getParameters().getScanType()) {
         case Parameters::TREEONLY : {
-            buffer = "Tree Scan";
+            buffer = "Tree Only Scan";
             switch (_scanRunner.getParameters().getConditionalType()) {
                 case Parameters::UNCONDITIONAL : buffer += " with Unconditional"; break;
                 case Parameters::TOTALCASES : buffer += " with Conditional"; break;
                 case Parameters::NODE : break;
-                default: throw prg_error("Unknown conditional type (%d).", "writeASCII()", _scanRunner.getParameters().getConditionalType());
+                default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", _scanRunner.getParameters().getConditionalType());
             }
             switch (_scanRunner.getParameters().getModelType()) {
                 case Parameters::POISSON : buffer += " Poisson Model"; break;
                 case Parameters::BERNOULLI : buffer += " Bernoulli Model"; break;
                 case Parameters::UNIFORM : break;
-                default: throw prg_error("Unknown nodel type (%d).", "writeASCII()", _scanRunner.getParameters().getModelType());
+                default: throw prg_error("Unknown nodel type (%d).", "getAnalysisSuccinctStatement()", _scanRunner.getParameters().getModelType());
             }
         } break;
-        case Parameters::TREETIME : buffer = "Tree Temporal Scan"; break;
-        case Parameters::TIMEONLY : buffer = "Purely Temporal Scan"; break;
-        default: throw prg_error("Unknown scan type (%d).", "writeASCII()", _scanRunner.getParameters().getScanType());
+        case Parameters::TREETIME : 
+            buffer = "Tree Temporal Scan";
+            switch (_scanRunner.getParameters().getConditionalType()) {
+                case Parameters::NODE : buffer += " with Conditional Uniform Model"; break;
+                case Parameters::NODEANDTIME : buffer += " Conditioned on Node and Time"; break;
+                default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", _scanRunner.getParameters().getConditionalType());
+            } break;
+        case Parameters::TIMEONLY : buffer = "Time Only Scan";
+            switch (_scanRunner.getParameters().getConditionalType()) {
+                case Parameters::TOTALCASES : buffer += " with Conditional Uniform Model"; break;
+                default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", _scanRunner.getParameters().getConditionalType());
+            } break;
+        default: throw prg_error("Unknown scan type (%d).", "getAnalysisSuccinctStatement()", _scanRunner.getParameters().getScanType());
     }
     return buffer;
 }

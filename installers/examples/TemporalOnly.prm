@@ -24,9 +24,9 @@ data-time-range=[1,27]
 ;results filename
 results-filename=TemporalOnly.txt
 ;create HTML results (y/n)
-results-html=y
+results-html=n
 ;create CSV results (y/n)
-results-csv=y
+results-csv=n
 
 [Advanced Input]
 ;cuts filename

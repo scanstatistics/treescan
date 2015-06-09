@@ -42,7 +42,6 @@ public:
     }
 };
 
-
 class UnconditionalPoissonLoglikelihood : public AbstractLoglikelihood {
 public:
     UnconditionalPoissonLoglikelihood() : AbstractLoglikelihood()  {}
@@ -70,7 +69,7 @@ public:
 
     /* Calculates the conditional Bernoulli loglikelihood. */
     virtual double  LogLikelihood(int c, double n) const {
-        if(c/n > _totalC/_totalN) { 
+        if(c/n > _totalC/_totalN) {
             double nLL_A = 0.0, nLL_B = 0.0, nLL_C = 0.0, nLL_D = 0.0;
             if (c != 0)
                 nLL_A = c*log(c/n);
@@ -82,7 +81,7 @@ public:
                 nLL_D = ((_totalN-n)-(_totalC-c))*log(1-((_totalC-c)/(_totalN-n)));
             return nLL_A + nLL_B + nLL_C + nLL_D;
         }
-        return -std::numeric_limits<double>::max();
+        return UNSET_LOGLIKELIHOOD;
     }
     virtual double  LogLikelihoodRatio(double logLikelihood) const {
         if (logLikelihood == UNSET_LOGLIKELIHOOD) return 0.0;
@@ -100,15 +99,15 @@ public:
 
     /* Calculates the unconditional Bernoulli loglikelihood */
     virtual double  LogLikelihood(int c, double n) const {
-		if (c/n > _event_probability) {// currently scanning for high rates only
+        if (c/n > _event_probability) {// currently scanning for high rates only
             double dLogLikelihood=0;
-			if (n - static_cast<double>(c) > 0.0) {
-				dLogLikelihood = c * log(c/n) + (n-c) * log((n-c)/n);
-			} else {
+            if (n - static_cast<double>(c) > 0.0) {
+                dLogLikelihood = c * log(c/n) + (n-c) * log((n-c)/n);
+            } else {
                 dLogLikelihood = c * log(c/n);
             }
             return dLogLikelihood - (c * log(_event_probability) + (n-c) * log(1-_event_probability)); // actually return the loglikelihood ratio
-		}
+        }
         return UNSET_LOGLIKELIHOOD;
     }
     virtual double  LogLikelihoodRatio(double logLikelihood) const {
@@ -144,7 +143,7 @@ public:
             // we're calculating the full loglikelihood ratio here
             return loglikelihood - static_cast<double>(c) * log(r) - (n - static_cast<double>(c)) * log(1.0 - r);
         }
-        return -std::numeric_limits<double>::max();
+        return UNSET_LOGLIKELIHOOD;
     }
     virtual double  LogLikelihoodRatio(double logLikelihood) const {
         if (logLikelihood == UNSET_LOGLIKELIHOOD) return 0.0;

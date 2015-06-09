@@ -14,7 +14,6 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
                     switch (parameters.getConditionalType()) {
                         case Parameters::UNCONDITIONAL : return new UnconditionalPoissonLoglikelihood();
                         case Parameters::TOTALCASES : return new PoissonLoglikelihood(TotalC, TotalN);
-                        case Parameters::NODE :
                         default: throw prg_error("Unknown conditional type (%d).", "getNewLoglikelihood()", parameters.getConditionalType());
                     }
                 } break;

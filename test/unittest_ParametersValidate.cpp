@@ -16,8 +16,13 @@ BOOST_AUTO_TEST_CASE( test_example_bernoulli ) {
 }
 
 /* Tests parameters validation of tree temporal example date set. */
-BOOST_AUTO_TEST_CASE( test_sample_NYCfever ) {
+BOOST_AUTO_TEST_CASE( test_sample_tree_temporal ) {
     tree_temporal_fixture f;
+}
+
+/* Tests parameters validation of tree temporal example date set. */
+BOOST_AUTO_TEST_CASE( test_time_only_fixture ) {
+    time_only_fixture f;
 }
 
 BOOST_AUTO_TEST_SUITE_END()
