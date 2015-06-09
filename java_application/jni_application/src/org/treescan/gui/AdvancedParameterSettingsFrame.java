@@ -516,10 +516,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     
     /** enables options of the Adjustments tab */
     public void enableAdjustmentsOptions() {
-        _perform_dayofweek_adjustments.setEnabled(_settings_window.getScanType() == Parameters.ScanType.TREETIME);
+        _perform_dayofweek_adjustments.setEnabled(_settings_window.getScanType() == Parameters.ScanType.TREETIME || _settings_window.getScanType() == Parameters.ScanType.TIMEONLY);
         if (_perform_dayofweek_adjustments.isEnabled()) {
             // switch label based upon condition type
             switch (_settings_window.getConditionalType()) {
+                case TOTALCASES:
                 case NODE: _perform_dayofweek_adjustments.setText("Perform Day-of-Week Adjustment"); break;
                 case NODEANDTIME: _perform_dayofweek_adjustments.setText("Perform Node by Day-of-Week Adjustment"); break;
                 default: throw new UnknownEnumException(_settings_window.getConditionalType());
