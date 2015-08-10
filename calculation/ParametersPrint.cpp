@@ -272,9 +272,9 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getRunOptionsParameters(S
     std::string buffer;
     settings.clear();
     if (_parameters.getNumRequestedParallelProcesses() == 0)
-        settings.push_back(std::make_pair("Processer Usage","All Available Proccessors"));
+        settings.push_back(std::make_pair("Processer Usage","All Available Processors"));
     else {
-        printString(buffer, "At Most %u Proccessors", _parameters.getNumRequestedParallelProcesses());
+        printString(buffer, "At Most %u Processors", _parameters.getNumRequestedParallelProcesses());
         settings.push_back(std::make_pair("Processer Usage",buffer));
     }
     if (_parameters.isRandomlyGeneratingSeed())
