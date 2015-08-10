@@ -305,26 +305,28 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             CheckAnalysisSettings();
             CheckOutputSettings();
             
-            // inter-checks between data time range and temporal windows range
-            int datarange_start = Integer.parseInt(_dataTimeRangeBegin.getText().trim());
-            int datarange_end = Integer.parseInt(_dataTimeRangeEnd.getText().trim());
+            if (_treetimeScanType.isSelected() || _timeonlyScanType.isSelected()) {
+                // inter-checks between data time range and temporal windows range
+                int datarange_start = Integer.parseInt(_dataTimeRangeBegin.getText().trim());
+                int datarange_end = Integer.parseInt(_dataTimeRangeEnd.getText().trim());
 
-            int temporalstart_start = Integer.parseInt(_temporalStartWindowBegin.getText().trim());
-            int temporalstart_end = Integer.parseInt(_temporalStartWindowEnd.getText().trim());           
-            // Does the temporal start range reside within data range?
-            if (!(datarange_start <= temporalstart_start && temporalstart_end <= datarange_end)) {
-                throw new SettingsException("The temporal window start range is not within the data time range.", (Component) _temporalStartWindowBegin);            
+                int temporalstart_start = Integer.parseInt(_temporalStartWindowBegin.getText().trim());
+                int temporalstart_end = Integer.parseInt(_temporalStartWindowEnd.getText().trim());           
+                // Does the temporal start range reside within data range?
+                if (!(datarange_start <= temporalstart_start && temporalstart_end <= datarange_end)) {
+                    throw new SettingsException("The temporal window start range is not within the data time range.", (Component) _temporalStartWindowBegin);            
+                }
+                int temporalend_start = Integer.parseInt(_temporalEndWindowBegin.getText().trim());
+                int temporalend_end = Integer.parseInt(_temporalEndWindowEnd.getText().trim());
+                // Does the temporal end range reside within data range?
+                if (!(datarange_start <= temporalend_start && temporalend_end <= datarange_end)) {
+                    throw new SettingsException("The temporal window end range is not within the data time range.", (Component) _temporalEndWindowBegin);            
+                }
+                // Does the temporal window end range happen before start range.
+                if (temporalend_end < temporalstart_start) {
+                    throw new SettingsException("The temporal window end range completely preceeds the start range.", (Component) _temporalEndWindowBegin);            
+                }                        
             }
-            int temporalend_start = Integer.parseInt(_temporalEndWindowBegin.getText().trim());
-            int temporalend_end = Integer.parseInt(_temporalEndWindowEnd.getText().trim());
-            // Does the temporal end range reside within data range?
-            if (!(datarange_start <= temporalend_start && temporalend_end <= datarange_end)) {
-                throw new SettingsException("The temporal window end range is not within the data time range.", (Component) _temporalEndWindowBegin);            
-            }
-            // Does the temporal window end range happen before start range.
-            if (temporalend_end < temporalstart_start) {
-                throw new SettingsException("The temporal window end range completely preceeds the start range.", (Component) _temporalEndWindowBegin);            
-            }                        
         } catch (SettingsException e) {
             focusWindow();
             JOptionPane.showInternalMessageDialog(this, e.getMessage());

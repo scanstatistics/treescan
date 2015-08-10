@@ -4,7 +4,7 @@ scan-type=0
 ;probability model type (POISSON=0, BERNOULLI=1, UNIFORM=2, Not-Applicable=3)
 probability-model=1
 ;conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)
-conditional-type=0
+conditional-type=1
 ;case probability (integer / integer)
 event-probability=1/2
 ;start data time range (integer - integer)

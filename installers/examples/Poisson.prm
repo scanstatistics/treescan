@@ -4,7 +4,7 @@ scan-type=0
 ;probability model type (POISSON=0, BERNOULLI=1, UNIFORM=2, Not-Applicable=3)
 probability-model=0
 ;conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)
-conditional-type=0
+conditional-type=1
 ;case probability (integer / integer)
 event-probability=1/2
 ;start data time range (integer - integer)
@@ -52,7 +52,7 @@ perform-day-of-week-adjustments=n
 
 [Inference]
 ;number of simulation replications (0, 9, 999, n999)
-monte-carlo-replications=999
+monte-carlo-replications=9999
 ;randomization seed (integer)
 randomization-seed=12345678
 ;generate randomization seed (y/n)
