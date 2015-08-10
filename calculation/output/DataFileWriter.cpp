@@ -375,8 +375,9 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
         } else {
             Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = calcLogLikelihood->LogLikelihoodRatio(_scanner.getCuts().at(cutIndex)->getLogLikelihood());
         }
-
-        Record.GetFieldValue(P_VALUE_FLD).AsDouble() =  static_cast<double>(_scanner.getCuts().at(cutIndex)->getRank()) /(_scanner.getParameters().getNumReplicationsRequested() + 1);
+        if (_scanner.getParameters().getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/) {
+            Record.GetFieldValue(P_VALUE_FLD).AsDouble() =  static_cast<double>(_scanner.getCuts().at(cutIndex)->getRank()) /(_scanner.getParameters().getNumReplicationsRequested() + 1);
+        }
         _csvWriter->writeRecord(Record);
     } catch (prg_exception& x) {
         x.addTrace("write()","CutsRecordWriter");

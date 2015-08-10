@@ -188,9 +188,13 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 }
                 printString(buffer, "%.1lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood()));
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-                PrintFormat.PrintSectionLabel(outfile, "P-value", true);
-                printString(buffer, format.c_str(), (double)_scanRunner.getCuts().at(k)->getRank() /(parameters.getNumReplicationsRequested() + 1));
-                PrintFormat.PrintAlignedMarginsDataString(outfile, buffer, 2);
+                if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/) {
+                    PrintFormat.PrintSectionLabel(outfile, "P-value", true);
+                    printString(buffer, format.c_str(), (double)_scanRunner.getCuts().at(k)->getRank() /(parameters.getNumReplicationsRequested() + 1));
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer, 2);
+                } else {
+                    outfile << std::endl;
+                }
                 k++;
             }
         }
@@ -419,7 +423,10 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             } else {
                 outfile << "<th>Log Likelihood Ratio</th>" << std::endl;
             }
-            outfile << "<th>P-value</th></tr></thead><tbody>" << std::endl;
+            if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/) {
+                outfile << "<th>P-value</th>";
+            }
+            outfile << "</tr></thead><tbody>" << std::endl;
             std::string format, replicas;
             printString(replicas, "%u", parameters.getNumReplicationsRequested());
             printString(format, "%%.%dlf", replicas.size());
@@ -484,7 +491,10 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                 }
                 outfile << "<td>" << printString(buffer, "%.1lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts().at(k)->getLogLikelihood())).c_str() << "</td>";
                 // write p-value
-                outfile << "<td>" << printString(buffer, format.c_str(), (double)_scanRunner.getCuts().at(k)->getRank() /(parameters.getNumReplicationsRequested() + 1)) << "</td><tr>" << std::endl;
+                if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/) {
+                    outfile << "<td>" << printString(buffer, format.c_str(), (double)_scanRunner.getCuts().at(k)->getRank() /(parameters.getNumReplicationsRequested() + 1)) << "</td>";
+                }
+                outfile << "<tr>" << std::endl;
                 k++;
             }
             outfile << "</tbody></table></div>" << std::endl;
