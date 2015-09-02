@@ -6,16 +6,25 @@
 #include "PrjException.h"
 #include "WindowLength.h"
 
+/* Returns new AbstractMeasureList object - based on settings. */
+AbstractMeasureList * AbstractMeasureList::getNewMeasureList(const ScanRunner& scanner, ScanRunner::Loglikelihood_t& loglikelihood) {
+    return new MinimumMeasureList(scanner, loglikelihood);
+}
+
 /* constructor */
 MCSimSuccessiveFunctor::MCSimSuccessiveFunctor(boost::mutex& mutex,
                                                boost::shared_ptr<AbstractRandomizer> randomizer,
                                                const ScanRunner& scanRunner) : _mutex(mutex), _randomizer(randomizer), _scanRunner(scanRunner) {
-
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     const Parameters& parameters = _scanRunner.getParameters();
     size_t daysInDataTimeRange = Parameters::isTemporalScanType(parameters.getScanType()) ?parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
     _treeSimNodes.resize(_scanRunner.getNodes().size(), SimulationNode(daysInDataTimeRange));
     _loglikelihood.reset(AbstractLoglikelihood::getNewLoglikelihood(_scanRunner.getParameters(), _scanRunner.getTotalC(), _scanRunner.getTotalN()));
+
+    if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||
+        (parameters.getScanType() == Parameters::TIMEONLY && parameters.isPerformingDayOfWeekAdjustment()) ||
+        (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODE && parameters.isPerformingDayOfWeekAdjustment()))
+        _measure_list.reset(AbstractMeasureList::getNewMeasureList(_scanRunner, _loglikelihood));
 }
 
 MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuccessiveFunctor::param_type const & param) {
@@ -71,6 +80,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTree(
             const NodeStructure& thisNode(*(nodes.at(i)));
             // always do simple cut
             simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(_treeSimNodes.at(i).getBrC()/*_Nodes.at(i)->_SimBrC*/, nodes.at(i)->getBrN()));
+
             Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
             switch (cutType) {
                 case Parameters::SIMPLE: break; // already done
@@ -134,6 +144,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTree(
             };
          }
     } // for i<nNodes
+
     return std::make_pair(simLogLikelihood,TotalSimC);
 }
 
@@ -274,6 +285,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
 MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeTemporalConditionNodeTime(MCSimSuccessiveFunctor::param_type const & param) {
     //randomize data
     int TotalSimC = _randomizer.get()->RandomizeData(param, _scanRunner.getNodes(), _mutex, _treeSimNodes);
+    _measure_list->initialize();
 
     //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
     DataTimeRange::index_t idxAdditive = _scanRunner.getZeroTranslationAdditive();
@@ -288,7 +300,6 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
 
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
-    double simLogLikelihood = -std::numeric_limits<double>::max();
     for (size_t i=0; i < nodes.size(); ++i) {
         if (_treeSimNodes.at(i).getBrC() > 1) { //if (_Nodes.at(i)->_SimBrC > 1)
             const NodeStructure& thisNode(*(nodes.at(i)));
@@ -302,7 +313,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                 for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                     NodeStructure::count_t branchWindow = thisSimNode.getBrC_C()[iWindowStart] - thisSimNode.getBrC_C()[iWindowEnd + 1];
                     NodeStructure::expected_t branchExpected = thisNode.getBrN_C()[iWindowStart] - thisNode.getBrN_C()[iWindowEnd + 1];
-                    simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(branchWindow, branchExpected));
+                    _measure_list->add(branchWindow, branchExpected);
                 }
             }
 
@@ -332,7 +343,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                                     branchWindow += childBranchC;
                                     branchExpected += childNode.getBrN_C()[iWindowStart] - childNode.getBrN_C()[iWindowEnd + 1];
                                     //printf("Evaluating cut [%s]\n", buffer.c_str());
-                                    simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(branchWindow, branchExpected));
+                                    _measure_list->add(branchWindow, branchExpected);
                                     //++hits; printf("hits %d\n", hits);
                                 }
                             }
@@ -357,7 +368,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                                     //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                     NodeStructure::count_t stopBranchWindow = stopSimChildNode.getBrC_C()[iWindowStart] - stopSimChildNode.getBrC_C()[iWindowEnd + 1];
                                     NodeStructure::expected_t stopBranchExpected = stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1];
-                                    simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(startBranchWindow + stopBranchWindow, startBranchExpected + stopBranchExpected));
+                                    _measure_list->add(startBranchWindow + stopBranchWindow, startBranchExpected + stopBranchExpected);
                                     //++hits; printf("hits %d\n", hits);
                                 }
                             }
@@ -383,8 +394,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                                     NodeStructure::count_t stopBranchWindow = stopSimChildNode.getBrC_C()[iWindowStart] - stopSimChildNode.getBrC_C()[iWindowEnd + 1];
                                     NodeStructure::expected_t stopBranchExpected = stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1];
                                     //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
-                                    simLogLikelihood = std::max(simLogLikelihood,
-                                                                _loglikelihood->LogLikelihood(startBranchWindow + stopBranchWindow, startBranchExpected + stopBranchExpected));
+                                    _measure_list->add(startBranchWindow + stopBranchWindow, startBranchExpected + stopBranchExpected);
                                     //++hits;printf("hits %d\n", hits);
                                     for (size_t k=i+1; k < j; ++k) {
                                         const NodeStructure& middleChildNode(*(nodes.at(thisNode.getChildren().at(k))));
@@ -393,9 +403,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                                         NodeStructure::count_t middleBranchWindow = middleSimChildNode.getBrC_C()[iWindowStart] - middleSimChildNode.getBrC_C()[iWindowEnd + 1];
                                         NodeStructure::expected_t middleBranchExpected = middleChildNode.getBrN_C()[iWindowStart] - middleChildNode.getBrN_C()[iWindowEnd + 1];
                                         //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
-                                        simLogLikelihood = std::max(simLogLikelihood,
-                                                                    _loglikelihood->LogLikelihood(startBranchWindow + middleBranchWindow + stopBranchWindow,
-                                                                                                  startBranchExpected + middleBranchExpected + stopBranchExpected));
+                                        _measure_list->add(startBranchWindow + middleBranchWindow + stopBranchWindow, startBranchExpected + middleBranchExpected + stopBranchExpected);
                                         //++hits; printf("hits %d\n", hits);
                                     }
                                 }
@@ -407,5 +415,6 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
             };
          }
     } // for i<nNodes
-    return std::make_pair(simLogLikelihood,TotalSimC);
+
+    return std::make_pair(_measure_list->loglikelihood(),TotalSimC);
 }
