@@ -71,6 +71,18 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         PrintFormat.PrintSectionLabel(outfile, "Data Time Range", false);
         PrintFormat.PrintAlignedMarginsDataString(outfile, parameters.getDataTimeRangeSet().toString(buffer));
     }
+    if (parameters.getScanType() != Parameters::TIMEONLY) {
+        const TreeStatistics& treestats =  _scanRunner.getTreeStatistics();
+        PrintFormat.PrintSectionLabel(outfile, "Number of Nodes", false);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", treestats._num_nodes));
+        PrintFormat.PrintSectionLabel(outfile, "Number of Root Nodes", false);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", treestats._num_root));
+        PrintFormat.PrintSectionLabel(outfile, "Number of Leaf Nodes", false);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", treestats._num_leaf));
+        PrintFormat.PrintSectionLabel(outfile, "Number of Nodes with Children", false);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", treestats._num_parent));
+    }
+
     PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
 
     if (Parameters::isTemporalScanType(parameters.getScanType())) {
@@ -378,9 +390,15 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     if (Parameters::isTemporalScanType(parameters.getScanType())) {
         outfile << "<tr><th>Data Time Range:</th><td>" << parameters.getDataTimeRangeSet().toString(buffer).c_str() << "</td></tr>" << std::endl;
     }
+    if (parameters.getScanType() != Parameters::TIMEONLY) {
+        const TreeStatistics& treestats =  _scanRunner.getTreeStatistics();
+        outfile << "<tr><th>Number of Nodes:</th><td>" << treestats._num_nodes << "</td></tr>" << std::endl;
+        outfile << "<tr><th>Number of Root Nodes:</th><td>" << treestats._num_root << "</td></tr>" << std::endl;
+        outfile << "<tr><th>Number of Leaf Nodes:</th><td>" << treestats._num_leaf << "</td></tr>" << std::endl;
+        outfile << "<tr><th>Number of Nodes with Children:</th><td>" << treestats._num_parent << "</td></tr>" << std::endl;
+    }
     outfile << "</tbody></table></div>" << std::endl;
     outfile << "<div class=\"hr\"></div>" << std::endl;
-
     if (!parameters.getPerformPowerEvaluations() || (parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         outfile << "<div id=\"cuts\">" << std::endl;
         if (_scanRunner.getCuts().size() == 0 || _scanRunner.getCuts().at(0)->getC() == 0 || 

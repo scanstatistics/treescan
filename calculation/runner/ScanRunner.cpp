@@ -404,6 +404,24 @@ ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) cons
         return std::make_pair(false, 0);
 }
 
+/* Returns tree statistics information. */
+const TreeStatistics& ScanRunner::getTreeStatistics() const {
+    if (_tree_statistics.get()) return *_tree_statistics.get();
+
+    _tree_statistics.reset(new TreeStatistics());
+    _tree_statistics->_num_nodes = static_cast<unsigned int>(_Nodes.size());
+    NodeStructureContainer_t::const_iterator itr=_Nodes.begin();
+    for (; itr != _Nodes.end(); ++itr) {
+        const NodeStructure& node = *(*itr);
+        if (node.getChildren().empty()) 
+            ++_tree_statistics->_num_leaf;
+        else
+            ++_tree_statistics->_num_parent;
+        if (node.getParents().empty()) ++_tree_statistics->_num_root;
+    }
+    return *_tree_statistics.get();
+}
+
 /** Read the relative risks file
     -- unlike other input files of system, records read from relative risks
        file are applied directly to the measure structure, just post calculation

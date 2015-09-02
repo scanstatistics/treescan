@@ -177,6 +177,15 @@ public:
     }
 };
 
+struct TreeStatistics {
+    unsigned int _num_nodes;
+    unsigned int _num_root;
+    unsigned int _num_leaf;
+    unsigned int _num_parent;
+
+    TreeStatistics() : _num_nodes(0), _num_root(0), _num_leaf(0), _num_parent(0) {}
+};
+
 class AbstractRandomizer;
 class RelativeRiskAdjustmentHandler;
 
@@ -193,6 +202,7 @@ public:
     typedef std::deque<PowerEstimationSet_t>                    PowerEstimationContainer_t;
     typedef std::vector<unsigned int>                           TimeIntervalContainer_t;
     typedef std::vector<TimeIntervalContainer_t>                DayOfWeekIndexes_t;
+    typedef boost::shared_ptr<TreeStatistics>                   TreeStatistics_t;
 
 private:
     BasePrint                 & _print;
@@ -209,6 +219,7 @@ private:
     std::auto_ptr<CriticalValues> _critical_values;
     PowerEstimationContainer_t  _power_estimations;
     DayOfWeekIndexes_t          _day_of_week_indexes;
+    mutable TreeStatistics_t    _tree_statistics;
 
     void                        addCN_C(int id, NodeStructure::CountContainer_t& c, NodeStructure::ExpectedContainer_t& n);
     size_t                      calculateCutsCount() const;
@@ -242,6 +253,7 @@ public:
     int                                getTotalC() const {return _TotalC;}
     int                                getTotalControls() const {return _TotalControls;}
     double                             getTotalN() const {return _TotalN;}
+    const TreeStatistics             & getTreeStatistics() const;
     DataTimeRange::index_t             getZeroTranslationAdditive() const {return _zero_translation_additive;}
     bool                               run();
     void                               updateCriticalValuesList(double llr) {if (_critical_values.get()) _critical_values->add(llr);}
