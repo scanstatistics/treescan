@@ -9,20 +9,46 @@
 #include <boost/algorithm/string.hpp>
 
 /** Static method which returns newly allocated DataSource object. */
-DataSource * DataSource::getNewDataSourceObject(const std::string& sSourceFilename) {
-    return new CSVFileDataSource(sSourceFilename);
+DataSource * DataSource::getNewDataSourceObject(const std::string& sSourceFilename, const Parameters::InputSource * source) {
+    // if a InputSource is not defined, default to space delimited ascii source
+    if (!source)
+        return new CSVFileDataSource(sSourceFilename, ",", "\"", 0, false);
+    // return data source object by input source type
+    DataSource * dataSource=0;
+    switch (source->getSourceType()) {
+        case CSV : dataSource = new CSVFileDataSource(sSourceFilename, source->getDelimiter(), source->getGroup(), source->getSkip(), source->getFirstRowHeader()); break;
+        default  : dataSource = new CSVFileDataSource(sSourceFilename, ",");
+    }
+    dataSource->setFieldsMap(source->getFieldsMap());
+    return dataSource;
 }
 
+
 /** constructor */
-CSVFileDataSource::CSVFileDataSource(const std::string& sSourceFilename) : DataSource(), _readCount(0), _delimiter(","), _group("\"") {
-    try {
-        _sourceFile.open(sSourceFilename.c_str());
-        if (!_sourceFile)
-            throw resolvable_error("Error: Could not open file:\n'%s'.\n", sSourceFilename.c_str());
-    } catch (prg_exception& x) {
-        x.addTrace("constructor()","CSVFileDataSource");
-        throw;
+CSVFileDataSource::CSVFileDataSource(const std::string& sSourceFilename, const std::string& delimiter, const std::string& grouper, unsigned long skip, bool firstRowHeaders)
+                  :DataSource(), _readCount(0), _delimiter(delimiter), _grouper(grouper), _skip(skip), _ignore_empty_fields(false), _firstRowHeaders(firstRowHeaders) {
+    // special processing for 'whitespace' delimiter string
+    if (_delimiter == "" || _delimiter == " ") {
+        _delimiter = "\t\v\f\r\n ";
+        _ignore_empty_fields = true;
     }
+    _sourceFile.open(sSourceFilename.c_str());
+    if (!_sourceFile)
+        throw resolvable_error("Error: Could not open file:\n'%s'.\n", sSourceFilename.c_str());
+    // Get the byte-order mark, if there is one
+    unsigned char bom[4];
+    _sourceFile.read(reinterpret_cast<char*>(bom), 4);
+    //Since we don't know what the endian was on the machine that created the file we
+    //are reading, we'll need to check both ways.
+    if ((bom[0] == 0xef && bom[1] == 0xbb && bom[2] == 0xbf) ||             // utf-8
+        (bom[0] == 0 && bom[1] == 0 && bom[2] == 0xfe && bom[3] == 0xff) || // UTF-32, big-endian
+        (bom[0] == 0xff && bom[1] == 0xfe && bom[2] == 0 && bom[3] == 0) || // UTF-32, little-endian
+        (bom[0] == 0xfe && bom[1] == 0xff) ||                               // UTF-16, big-endian
+        (bom[0] == 0xff && bom[1] == 0xfe))                                 // UTF-16, little-endian
+      throwUnicodeException();
+    _sourceFile.seekg(0L, std::ios::beg);
+    // if first row is header, increment number of rows to skip
+    if (_firstRowHeaders) ++_skip;
 }
 
 /** Re-positions file cursor to beginning of file. */
@@ -31,6 +57,11 @@ void CSVFileDataSource::gotoFirstRecord() {
     _readCount = 0;
     _sourceFile.clear();
     _sourceFile.seekg(0L, std::ios::beg);
+    std::string readbuffer;
+    for (unsigned long i=0; i < _skip; ++i) {
+        getlinePortable(_sourceFile, readbuffer);
+        ++_readCount;
+    }
 }
 
 /** sets current parsing string -- returns indication of whether string contains any words. */
@@ -43,7 +74,17 @@ bool CSVFileDataSource::parse(const std::string& s, const std::string& delimiter
         _read_values.push_back(*itr);
         //trim any whitespace around value
         boost::trim(_read_values.back());
+        // ignore empty values if delimiter is whitespace -- boost::escaped_list_separator does not consume adjacent whitespace delimiters
+        if (!_read_values.back().size() && _ignore_empty_fields)
+            _read_values.pop_back();
     }
+
+    // if all fields are empty string, then treat this as empty record
+    size_t blanks=0;
+    for (std::vector<std::string>::const_iterator itr=_read_values.begin(); itr != _read_values.end(); ++itr)
+        if (itr->empty()) ++blanks;
+    if (blanks == _read_values.size()) _read_values.clear();
+
     return _read_values.size() > 0;
 }
 
@@ -72,7 +113,7 @@ bool CSVFileDataSource::readRecord() {
 
     _read_values.clear();
     while (isBlank && getlinePortable(_sourceFile, readbuffer)) {
-        isBlank = !parse(readbuffer, _delimiter, _group);
+        isBlank = !parse(readbuffer, _delimiter, _grouper);
         if (isBlank) {
             tripBlankRecordFlag();
             ++_readCount;
@@ -80,6 +121,30 @@ bool CSVFileDataSource::readRecord() {
     }
     ++_readCount;
     return _read_values.size() > 0;
+}
+
+/** Returns number of values */
+size_t CSVFileDataSource::getNumValues() {
+    // Field maps are all or nothing. This means that all fields are defined in mapping or straight from record parse.
+    return _fields_map.size() ? _fields_map.size() : _read_values.size();
+}
+
+std::string& CSVFileDataSource::getValueAt(long iFieldIndex) {
+    // see if value at field index is mapped FieldType
+    if (_fields_map.size()) {
+        if (iFieldIndex < static_cast<long>(_fields_map.size())) {
+            iFieldIndex = tranlateFieldIndex(iFieldIndex);
+        } else {
+            // index beyond defined mappings
+            _read_buffer.clear();
+            return _read_buffer;
+        }
+    }
+    if (iFieldIndex > static_cast<long>(_read_values.size()) - 1) {
+        _read_buffer.clear();
+        return _read_buffer;
+    }
+    return _read_values.at(static_cast<size_t>(iFieldIndex));
 }
 
 void CSVFileDataSource::throwUnicodeException() {

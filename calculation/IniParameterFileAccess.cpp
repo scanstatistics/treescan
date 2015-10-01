@@ -49,6 +49,7 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
 
         for (Parameters::ParameterType eType=Parameters::TREE_FILE; eType <= _parameters.giNumParameters; eType = Parameters::ParameterType(eType + 1))
             ReadIniParameter(SourceFile, eType);
+        ReadInputSourceSettings(SourceFile);
     } catch (prg_exception& x) {
         x.addTrace("Read()","IniParameterFileAccess");
         throw;
@@ -75,6 +76,95 @@ void IniParameterFileAccess::ReadIniParameter(const IniFile& SourceFile, Paramet
         x.addTrace("ReadIniParameter()","IniParameterFileAccess");
         throw;
     }
+}
+
+/* Reads optional input source settings. */
+void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) {
+    const char * section, * key;
+    std::string buffer;
+
+    try {
+        // tree file
+        if (GetSpecifications().GetParameterIniInfo(Parameters::TREE_FILE, &section, &key)) {
+            Parameters::InputSource source;
+            if (ReadInputSourceSection(SourceFile, section, key, source))
+                _parameters.defineInputSource(Parameters::TREE_FILE, source);
+        }
+        // case file
+        if (GetSpecifications().GetParameterIniInfo(Parameters::COUNT_FILE, &section, &key)) {
+            Parameters::InputSource source;
+            if (ReadInputSourceSection(SourceFile, section, key, source))
+                _parameters.defineInputSource(Parameters::COUNT_FILE, source);
+        }
+        // cut file
+        if (GetSpecifications().GetParameterIniInfo(Parameters::CUT_FILE, &section, &key)) {
+            Parameters::InputSource source;
+            if (ReadInputSourceSection(SourceFile, section, key, source))
+                _parameters.defineInputSource(Parameters::CUT_FILE, source);
+        }
+        // power evaluations file
+        if (GetSpecifications().GetParameterIniInfo(Parameters::POWER_EVALUATIONS_FILE, &section, &key)) {
+            Parameters::InputSource source;
+            if (ReadInputSourceSection(SourceFile, section, key, source))
+                _parameters.defineInputSource(Parameters::POWER_EVALUATIONS_FILE, source);
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ReadInputSourceSettings()","IniParameterFileAccess");
+        throw;
+    }
+}
+
+/* Reads key/values in passed source section. */
+bool IniParameterFileAccess::ReadInputSourceSection(const IniFile& SourceFile, const char* sectionName, const char* keyPrefix, Parameters::InputSource& source) {
+    long lSectionIndex, lKeyIndex=-1;
+    std::string key, buffer;
+    bool anykeys=false;
+    std::string type, map, delimiter, group, skip, header;
+
+    if ((lSectionIndex = SourceFile.GetSectionIndex(sectionName)) > -1) {
+        const IniSection  * pSection = SourceFile.GetSection(lSectionIndex);
+        // source file type
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceType);
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            type = pSection->GetLine(lKeyIndex)->GetValue();
+        }
+        // fields map
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceFieldMap);
+        source.clearFieldsMap();
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            map = pSection->GetLine(lKeyIndex)->GetValue();
+        }
+        // delimiter
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceDelimiter);
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            delimiter = pSection->GetLine(lKeyIndex)->GetValue();
+        } 
+        // grouper
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceGrouper);
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            group = pSection->GetLine(lKeyIndex)->GetValue();
+        } 
+        // skip
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceSkip);
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            skip = pSection->GetLine(lKeyIndex)->GetValue();
+         }
+        // first row header
+        printString(key, "%s-%s", keyPrefix, IniParameterSpecification::SourceFirstRowHeader);
+        if ((lKeyIndex = pSection->FindKey(key.c_str())) > -1) {
+            anykeys=true;
+            header = pSection->GetLine(lKeyIndex)->GetValue();
+        }
+        if (anykeys) {
+            setInputSource(source, trimString(type), trimString(map), trimString(delimiter), trimString(group), trimString(skip), trimString(header), gPrintDirection);
+        }
+    }
+    return anykeys;
 }
 
 /** Writes specified comment and value to file for parameter type. */
@@ -145,8 +235,14 @@ void IniParameterFileAccess::Write(const char* sFilename) {
 void IniParameterFileAccess::WriteInputSettings(IniFile& WriteFile) {
     std::string  s;
     try {
-        WriteIniParameter(WriteFile, Parameters::TREE_FILE, GetParameterString(Parameters::TREE_FILE, s).c_str(), GetParameterComment(Parameters::TREE_FILE));
-        WriteIniParameter(WriteFile, Parameters::COUNT_FILE, GetParameterString(Parameters::COUNT_FILE, s).c_str(), GetParameterComment(Parameters::COUNT_FILE));
+        GetParameterString(Parameters::TREE_FILE, s);
+        WriteIniParameter(WriteFile, Parameters::TREE_FILE, s.c_str(), GetParameterComment(Parameters::TREE_FILE));
+        if (s.size()) WriteInputSource(WriteFile, Parameters::TREE_FILE, _parameters.getInputSource(Parameters::TREE_FILE));
+
+        GetParameterString(Parameters::COUNT_FILE, s);
+        WriteIniParameter(WriteFile, Parameters::COUNT_FILE, s.c_str(), GetParameterComment(Parameters::COUNT_FILE));
+        if (s.size()) WriteInputSource(WriteFile, Parameters::COUNT_FILE, _parameters.getInputSource(Parameters::COUNT_FILE));
+
         WriteIniParameter(WriteFile, Parameters::DATA_TIME_RANGES, GetParameterString(Parameters::DATA_TIME_RANGES, s).c_str(), GetParameterComment(Parameters::DATA_TIME_RANGES));
     } catch (prg_exception& x) {
         x.addTrace("WriteInputSettings()","IniParameterFileAccess");
@@ -187,7 +283,10 @@ void IniParameterFileAccess::WriteOutputSettings(IniFile& WriteFile) {
 void IniParameterFileAccess::WriteAdvancedInputSettings(IniFile& WriteFile) {
     std::string  s;
     try {
-        WriteIniParameter(WriteFile, Parameters::CUT_FILE, GetParameterString(Parameters::CUT_FILE, s).c_str(), GetParameterComment(Parameters::CUT_FILE));
+        GetParameterString(Parameters::CUT_FILE, s);
+        WriteIniParameter(WriteFile, Parameters::CUT_FILE, s.c_str(), GetParameterComment(Parameters::CUT_FILE));
+        if (s.size()) WriteInputSource(WriteFile, Parameters::CUT_FILE, _parameters.getInputSource(Parameters::CUT_FILE));
+
         WriteIniParameter(WriteFile, Parameters::CUT_TYPE, GetParameterString(Parameters::CUT_TYPE, s).c_str(), GetParameterComment(Parameters::CUT_TYPE));
         WriteIniParameter(WriteFile, Parameters::DUPLICATES, GetParameterString(Parameters::DUPLICATES, s).c_str(), GetParameterComment(Parameters::DUPLICATES));
     } catch (prg_exception& x) {
@@ -260,7 +359,9 @@ void IniParameterFileAccess::WritePowerEvaluationsSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, Parameters::CRITICAL_VALUE_001, GetParameterString(Parameters::CRITICAL_VALUE_001, s).c_str(), GetParameterComment(Parameters::CRITICAL_VALUE_001));
         WriteIniParameter(WriteFile, Parameters::POWER_EVALUATION_TOTALCASES, GetParameterString(Parameters::POWER_EVALUATION_TOTALCASES, s).c_str(), GetParameterComment(Parameters::POWER_EVALUATION_TOTALCASES));
         WriteIniParameter(WriteFile, Parameters::POWER_EVALUATIONS_REPLICA, GetParameterString(Parameters::POWER_EVALUATIONS_REPLICA, s).c_str(), GetParameterComment(Parameters::POWER_EVALUATIONS_REPLICA));
-        WriteIniParameter(WriteFile, Parameters::POWER_EVALUATIONS_FILE, GetParameterString(Parameters::POWER_EVALUATIONS_FILE, s).c_str(), GetParameterComment(Parameters::POWER_EVALUATIONS_FILE));
+        GetParameterString(Parameters::POWER_EVALUATIONS_FILE, s);
+        WriteIniParameter(WriteFile, Parameters::POWER_EVALUATIONS_FILE, s.c_str(), GetParameterComment(Parameters::POWER_EVALUATIONS_FILE));
+        if (s.size()) WriteInputSource(WriteFile, Parameters::POWER_EVALUATIONS_FILE, _parameters.getInputSource(Parameters::POWER_EVALUATIONS_FILE));
     } catch (prg_exception& x) {
         x.addTrace("WritePowerEvaluationsSettings()","IniParameterFileAccess");
         throw;
@@ -299,6 +400,72 @@ void IniParameterFileAccess::WriteSystemSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, Parameters::CREATION_VERSION, GetParameterString(Parameters::CREATION_VERSION, s).c_str(), GetParameterComment(Parameters::CREATION_VERSION));
     } catch (prg_exception& x) {
         x.addTrace("WriteSystemSettings()","IniParameterFileAccess");
+        throw;
+    }
+}
+
+void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, Parameters::ParameterType eParameterType, const Parameters::InputSource * source) {
+    const char  * sSectionName, * sKey;
+    std::string buffer, key;
+
+    try {
+        if (source) {
+            if (GetSpecifications().GetParameterIniInfo(eParameterType, &sSectionName, &sKey)) {
+                IniSection * pSection = WriteFile.GetSection(sSectionName);
+                WriteInputSource(WriteFile, *(WriteFile.GetSection(sSectionName)), sKey, source);
+            }
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("WriteInputSource()","IniParameterFileAccess");
+        throw;
+    }
+}
+
+/** Write InputSource object to ini file. */
+void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, IniSection& section, const std::string& basekey, const Parameters::InputSource * source) {
+    std::string buffer, key;
+
+    try {
+        if (source) {
+            section.AddComment("source type (CSV=0)");
+            printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceType);
+            section.AddLine(key.c_str(), AsString(buffer, source->getSourceType()).c_str());
+
+            if (source->getFieldsMap().size()) {
+                printString(buffer, "source field map (comma separated list of integers)");
+                section.AddComment(buffer.c_str());
+                std::stringstream s;
+                for (FieldMapContainer_t::const_iterator itr=source->getFieldsMap().begin(); itr != source->getFieldsMap().end(); ++itr) {
+                    if (itr->type() == typeid(long)) {
+                        s << boost::any_cast<long>(*itr);
+                    } else {
+                        throw prg_error("Unknown type '%s'.", "WriteInputSource()", itr->type().name());
+                    }
+                    if ((itr+1) != source->getFieldsMap().end()) {s << ",";}
+                }
+                printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceFieldMap);
+                section.AddLine(key.c_str(), s.str().c_str());
+            }
+            if (source->getSourceType() == CSV) {
+                section.AddComment("csv source delimiter (leave empty for space or tab delimiter)");
+                printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceDelimiter);
+                section.AddLine(key.c_str(), source->getDelimiter().c_str());
+
+                section.AddComment("csv source group character");
+                printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceGrouper);
+                section.AddLine(key.c_str(), source->getGroup().c_str());
+
+                section.AddComment("csv source skip initial lines (i.e. meta data)");
+                printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceSkip);
+                section.AddLine(key.c_str(), AsString(buffer, source->getSkip()).c_str());
+
+                section.AddComment("csv source first row column header");
+                printString(key, "%s-%s", basekey.c_str(), IniParameterSpecification::SourceFirstRowHeader);
+                section.AddLine(key.c_str(), AsString(buffer, source->getFirstRowHeader()).c_str());
+            }
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("WriteInputSource()","IniParameterFileAccess");
         throw;
     }
 }

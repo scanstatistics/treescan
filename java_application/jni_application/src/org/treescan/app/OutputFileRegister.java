@@ -8,7 +8,7 @@
  */
 package org.treescan.app;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  *
@@ -16,7 +16,7 @@ import java.util.Vector;
  */
 public class OutputFileRegister {
 
-    private Vector<String> _outputFileNames = new Vector<String>();
+    private ArrayList<String> _outputFileNames = new ArrayList<String>();
     private static final OutputFileRegister _instance = new OutputFileRegister();
 
     /** Creates a new instance of OutputFileRegister */

@@ -433,7 +433,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
     ScanRunner::Index_t nodeIndex;
     const long nodeIdIdx=0, uAdjustmentIndex=1;
     boost::dynamic_bitset<> nodeSet;
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
+    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::POWER_EVALUATIONS_FILE)));
     bool testMultipleNodeRecords(_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL);
 
     // if unconditional Bernoulli, limit this file to a single entry for each node
@@ -535,7 +535,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
 bool ScanRunner::readCounts(const std::string& filename) {
     _print.Printf("Reading count file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
+    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::COUNT_FILE)));
     int expectedColumns = (_parameters.getScanType() == Parameters::TIMEONLY ? 2 : 3) + (_parameters.isDuplicates() ? 1 : 0);
     _caselessWindows.resize(Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() : 1);
     long identifierIdx = _parameters.getScanType() == Parameters::TIMEONLY ? -1 : 0;
@@ -684,7 +684,7 @@ bool ScanRunner::readTree(const std::string& filename) {
 
     _print.Printf("Reading tree file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
+    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::TREE_FILE)));
 
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
     while (dataSource->readRecord()) {
@@ -757,7 +757,7 @@ bool ScanRunner::readCuts(const std::string& filename) {
 
     _print.Printf("Reading cuts file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename));
+    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::CUT_FILE)));
     Parameters::cut_maps_t cut_type_maps = Parameters::getCutTypeMap();
 
     while (dataSource->readRecord()) {

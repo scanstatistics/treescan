@@ -1,28 +1,21 @@
-/*
- * ImportUtils.java
- *
- * Created on December 19, 2007, 2:21 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+
 package org.treescan.importer;
 
-import java.util.Vector;
+import java.util.ArrayList;
 import org.apache.commons.lang.StringUtils;
 
 /**
- *
- * @author Hostovic
+ * 
+ * @author hostovic
  */
 public class ImportUtils {
-
-    /** Creates a new instance of ImportUtils */
-    public ImportUtils() {
-    }
-
-    /** function called by parseLineToVectorList().  Strips sOpenGroupMarker and sCloseGroupMarker from the
-    ends of sLine */
+    /**
+     * Strips sOpenGroupMarker and sCloseGroupMarker from the ends of sLine.
+     * @param sLine - line to parse
+     * @param sOpenGroupMarker - open group marker
+     * @param sCloseGroupMarker - close group marker
+     * @return string group markers removed
+     */
     private static String trimGroupMarkers(String sLine, String sOpenGroupMarker, String sCloseGroupMarker) {
         //starts at either end, then chews its way toward the center, until a non-whitespace, non-groupmarker is encountered.
         int iStart;
@@ -67,16 +60,27 @@ public class ImportUtils {
         return sLine.substring(iStart, iEnd);
     }
 
-    /** parseLine() with identical opening & closing group markers,
-    always trims whitespace and eats group markers. */
-    public static Vector<String> parseLine(String sLine, String sDelimiter, String sGroupMarker) {
+    /**
+     * parseLine() with identical opening & closing group markers, always trims whitespace and eats group markers.
+     * @param sLine - line to parse
+     * @param sDelimiter - delimiter string
+     * @param sGroupMarker - grouping string
+     * @return 
+     */
+    public static ArrayList<String> parseLine(String sLine, String sDelimiter, String sGroupMarker) {
         return parseLine(sLine, sDelimiter, sGroupMarker, sGroupMarker, true, true);
     }
 
-    /** calls parseLine, providing sGroupMarker as both opening and closing group markers */
-    public static Vector<String> parseLine(String sLine, String sDelimiter, String sGroupMarker,
-            boolean bTrimWhitespace, boolean bStripGroupMarkers) {
-
+    /**
+     * calls parseLine, providing sGroupMarker as both opening and closing group markers
+     * @param sLine - line to parse
+     * @param sDelimiter - delimiter string
+     * @param sGroupMarker - grouping string
+     * @param bTrimWhitespace - boolean, trim whitespace or not
+     * @param bStripGroupMarkers - boolean, trim group markers or not
+     * @return collection of values from parsed string
+     */
+    public static ArrayList<String> parseLine(String sLine, String sDelimiter, String sGroupMarker, boolean bTrimWhitespace, boolean bStripGroupMarkers) {
         return parseLine(sLine, sDelimiter, sGroupMarker, sGroupMarker, bTrimWhitespace, bStripGroupMarkers);
     }
 
@@ -94,14 +98,14 @@ public class ImportUtils {
     @param bTrimWhitespace   True to return strings with no leading or trailing whitespace.
     False to leave all whitespace between delimiters.
     @param bStripGroupMarkers True to
-    Returns a Vector of Cells parsed from sLine. */
-    public static Vector<String> parseLine(String sLine, String sDelimiter, String sOpenGroupMarker, String sCloseGroupMarker,
+    Returns a ArrayList of Cells parsed from sLine. */
+    public static ArrayList<String> parseLine(String sLine, String sDelimiter, String sOpenGroupMarker, String sCloseGroupMarker,
             boolean bTrimWhitespace, boolean bStripGroupMarkers) {
 
         //because we accept strings as delimiter and grouping markers, we have to do overlapping compares
         //to find matches.  We step through the length of sLine character by character.
 
-        Vector<String> vList = new Vector<String>();
+        ArrayList<String> vList = new ArrayList<String>();
         StringBuffer buffer = new StringBuffer(""); //contains the text of our working cell
 
         boolean bGroupOpen = false; //indicates whether we're currently building a group (true
@@ -165,9 +169,9 @@ public class ImportUtils {
                         s = s.trim();
                     }
 
-                    //add s to our Vector of cells and initialize buffer with a new, empty
+                    //add s to our ArrayList of cells and initialize buffer with a new, empty
                     //string.
-                    vList.addElement(s);
+                    vList.add(s);
                     buffer = new StringBuffer("");
 
                 } else {
@@ -208,7 +212,7 @@ public class ImportUtils {
             s = s.trim();
         }
 
-        vList.addElement(s);
+        vList.add(s);
 
         return vList;
     }

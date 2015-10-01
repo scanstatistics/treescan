@@ -18,6 +18,14 @@ const char * IniParameterSpecification::PowerSimulations        = "Power Simulat
 const char * IniParameterSpecification::RunOptions              = "Run Options";
 const char * IniParameterSpecification::System                  = "System";
 
+const char * IniParameterSpecification::SourceType              = "SourceType";
+const char * IniParameterSpecification::SourceDelimiter         = "SourceDelimiter";
+const char * IniParameterSpecification::SourceGrouper           = "SourceGrouper";
+const char * IniParameterSpecification::SourceSkip              = "SourceSkip";
+const char * IniParameterSpecification::SourceFieldMap          = "SourceFieldMap";
+const char * IniParameterSpecification::SourceFirstRowHeader    = "SourceFirstRowHeader";
+
+
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
     // default to current version

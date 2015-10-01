@@ -254,6 +254,65 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getAttributableRiskExposed());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "clearInputSourceSettings", "()V");
+  Env.CallVoidMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+
+  jmethodID mid_add_source = _getMethodId_Checked(Env, clazz, "addInputSourceSettings", "(Lorg/treescan/importer/InputSourceSettings;)V");
+  jclass issclazz = Env.FindClass("org/treescan/importer/InputSourceSettings");
+  jmethodID mid_constructor = _getMethodId_Checked(Env, issclazz, "<init>", "()V");
+  Parameters::InputSourceContainer_t::const_iterator itr=Parameters.getInputSources().begin();
+  for (; itr != Parameters.getInputSources().end(); ++itr) {
+      const Parameters::InputSourceKey_t& key = itr->first;
+      const Parameters::InputSource& iss = itr->second;
+      jobject issobject = Env.NewObject(issclazz, mid_constructor);
+      Env.CallVoidMethod(jParameters, mid_add_source, issobject);
+
+      // translate ParameterType to Java InputSourceSettings.InputFileType
+      mid = _getMethodId_Checked(Env, issclazz, "setInputFileType", "(I)V");
+      switch (key) {
+        case Parameters::TREE_FILE : Env.CallVoidMethod(issobject, mid, (jint)0); break;
+        case Parameters::COUNT_FILE : Env.CallVoidMethod(issobject, mid, (jint)1); break;
+        case Parameters::CUT_FILE : Env.CallVoidMethod(issobject, mid, (jint)2); break;
+        case Parameters::POWER_EVALUATIONS_FILE : Env.CallVoidMethod(issobject, mid, (jint)3); break;
+        default : throw prg_error("Unknown parameter type for translation: %d", "copyCParametersToJParameters()", key);
+      }
+
+      mid = _getMethodId_Checked(Env, issclazz, "setSourceDataFileType", "(I)V");
+      Env.CallVoidMethod(issobject, mid, (jint)iss.getSourceType());
+
+      mid = _getMethodId_Checked(Env, issclazz, "setDelimiter", "(Ljava/lang/String;)V");
+      Env.CallVoidMethod(issobject, mid, Env.NewStringUTF(iss.getDelimiter().c_str()));
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "setGroup", "(Ljava/lang/String;)V");
+      Env.CallVoidMethod(issobject, mid, Env.NewStringUTF(iss.getGroup().c_str()));
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "setSkiplines", "(I)V");
+      Env.CallVoidMethod(issobject, mid, (jint)iss.getSkip());
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "setFirstRowHeader", "(Z)V");
+      Env.CallVoidMethod(issobject, mid, (jboolean)iss.getFirstRowHeader());
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "addFieldMapping", "(Ljava/lang/String;)V");
+      FieldMapContainer_t::const_iterator itrMap=iss.getFieldsMap().begin();
+      for (;itrMap != iss.getFieldsMap().end(); ++itrMap) {
+          std::stringstream s;
+          if (itrMap->type() == typeid(long)) {
+              long c = boost::any_cast<long>(*itrMap);
+              if (c == 0) s << c;
+              else s << (boost::any_cast<long>(*itrMap));
+          } else {
+            throw prg_error("Unknown type '%s'.", "WriteInputSource()", itrMap->type().name());
+          }
+          Env.CallVoidMethod(issobject, mid, Env.NewStringUTF(s.str().c_str()));
+          jni_error::_detectError(Env);
+      }
+  }
+
   return jParameters;
 }
 
@@ -429,6 +488,80 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   mid = _getMethodId_Checked(Env, clazz, "getAttributableRiskExposed", "()I");
   Parameters.setAttributableRiskExposed(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getInputSourceSettings", "()Ljava/util/ArrayList;");
+  jobject vectorobject = Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  jclass vclazz = Env.GetObjectClass(vectorobject);
+  mid = _getMethodId_Checked(Env, vclazz, "size", "()I");
+  jint vsize = Env.CallIntMethod(vectorobject, mid);
+  for (jint i=0; i < vsize; ++i) {
+      mid = _getMethodId_Checked(Env, vclazz, "get", "(I)Ljava/lang/Object;");
+      jobject iss_object = (jobject)Env.CallObjectMethod(vectorobject, mid, i);
+      jclass issclazz = Env.GetObjectClass(iss_object);
+
+      Parameters::InputSource inputsource;
+      inputsource.setSourceType((SourceType)getEnumTypeOrdinalIndex(Env, iss_object, "getSourceDataFileType", "Lorg/treescan/importer/InputSourceSettings$SourceDataFileType;"));
+
+      mid = _getMethodId_Checked(Env, issclazz, "getFieldMaps", "()Ljava/util/ArrayList;");
+      jobject vectorobject_mappings = Env.CallObjectMethod(iss_object, mid);
+      jni_error::_detectError(Env);
+      jclass vclazz_mappings = Env.GetObjectClass(vectorobject_mappings);
+      mid = _getMethodId_Checked(Env, vclazz_mappings, "size", "()I");
+      std::vector<boost::any> map;
+      jint vsize_mappings = Env.CallIntMethod(vectorobject_mappings, mid);
+      for (jint j=0; j < vsize_mappings; ++j) {
+        mid = _getMethodId_Checked(Env, vclazz_mappings, "get", "(I)Ljava/lang/Object;");
+        jstring str_object = (jstring)Env.CallObjectMethod(vectorobject_mappings, mid, j);
+        jni_error::_detectError(Env);
+        sFilename = Env.GetStringUTFChars(str_object, &iscopy);
+        std::string buffer(sFilename);
+        if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(str_object, sFilename);
+        int column;
+        if (!string_to_type<int>(buffer.c_str(), column))
+            throw prg_error("Unable to read parameter value '%s' as mapping item.", buffer.c_str());
+            // The field mappings will be a collection of integers. The position of element is relative to the input fields order.
+            map.push_back((long)column);
+      }
+      inputsource.setFieldsMap(map);
+
+      mid = _getMethodId_Checked(Env, issclazz, "getDelimiter", "()Ljava/lang/String;");
+      jstr = (jstring)Env.CallObjectMethod(iss_object, mid);
+      jni_error::_detectError(Env);
+      sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+      inputsource.setDelimiter(std::string(sFilename));
+      if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+      mid = _getMethodId_Checked(Env, issclazz, "getGroup", "()Ljava/lang/String;");
+      jstr = (jstring)Env.CallObjectMethod(iss_object, mid);
+      jni_error::_detectError(Env);
+      sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+      inputsource.setGroup(std::string(sFilename));
+      if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+      mid = _getMethodId_Checked(Env, issclazz, "getSkiplines", "()I");
+      inputsource.setSkip(Env.CallIntMethod(iss_object, mid));
+      jni_error::_detectError(Env);
+
+      mid = _getMethodId_Checked(Env, issclazz, "getFirstRowHeader", "()Z");
+      inputsource.setFirstRowHeader(Env.CallBooleanMethod(iss_object, mid));
+      jni_error::_detectError(Env);
+
+      /* Translate Java class InputSourceSettings.InputFileType into ParameterType.
+        {Case=0, Control, Population, Coordinates, SpecialGrid, MaxCirclePopulation, AdjustmentsByRR}
+      */
+      Parameters::ParameterType type=Parameters::TREE_FILE;
+      int filetype = getEnumTypeOrdinalIndex(Env, iss_object, "getInputFileType", "Lorg/treescan/importer/InputSourceSettings$InputFileType;");
+      switch (filetype) {
+        case 0/*Tree*/         : type = Parameters::TREE_FILE; break;
+        case 1/*Count*/        : type = Parameters::COUNT_FILE; break;
+        case 2/*Cuts*/         : type = Parameters::CUT_FILE; break;
+        case 3/*Powers Evals*/ : type = Parameters::POWER_EVALUATIONS_FILE; break;
+        default : throw prg_error("Unknown filetype for translation: %d", "copyJParametersToCParameters()", filetype);
+      }
+      Parameters.defineInputSource(type, inputsource);
+  }
+
 
   return Parameters;
 }

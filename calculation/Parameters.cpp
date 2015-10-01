@@ -67,6 +67,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_dayofweek_adjustment != rhs._dayofweek_adjustment) return false;
   if (_report_attributable_risk != rhs._report_attributable_risk) return false;
   if (_attributable_risk_exposed != rhs._attributable_risk_exposed) return false;
+  //if (_input_sources != rhs._input_sources) return false;
 
   return true;
 }
@@ -158,6 +159,8 @@ void Parameters::copy(const Parameters &rhs) {
 
     _report_attributable_risk = rhs._report_attributable_risk;
     _attributable_risk_exposed = rhs._attributable_risk_exposed;
+
+    _input_sources = rhs._input_sources;
 }
 
 /* Returns the maximum temporal window in data time units. */
@@ -289,6 +292,8 @@ void Parameters::setAsDefaulted() {
 
     _report_attributable_risk = false;
     _attributable_risk_exposed = 0;
+
+    _input_sources.clear();
 }
 
 /** Sets output data file name.

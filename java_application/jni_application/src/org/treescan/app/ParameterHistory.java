@@ -9,7 +9,7 @@
 package org.treescan.app;
 
 import java.io.File;
-import java.util.Vector;
+import java.util.ArrayList;
 import java.util.prefs.Preferences;
 
 /**
@@ -21,7 +21,7 @@ public class ParameterHistory {
     private static final String _parameterNameProperty = "Parameter";
     private static final int _maxListSize = 10;
     private Preferences _prefs = Preferences.userNodeForPackage(getClass());
-    private Vector<File> _parameterHistory = new Vector<File>();
+    private ArrayList<File> _parameterHistory = new ArrayList<File>();
     private static final ParameterHistory _instance = new ParameterHistory();
 
     /** Creates a new instance of ParameterHistory */
@@ -33,7 +33,7 @@ public class ParameterHistory {
         return _instance;
     }
 
-    public Vector<File> getHistoryList() {
+    public ArrayList<File> getHistoryList() {
         return _parameterHistory;
     }
 
@@ -46,7 +46,7 @@ public class ParameterHistory {
 
         if (_parameterHistory.size() == 0) {
             _parameterHistory.add(f);
-        } else if (!_parameterHistory.firstElement().equals(f)) {
+        } else if (!_parameterHistory.get(0).equals(f)) {
             for (int i = 1; i < _parameterHistory.size(); ++i) {
                 if (_parameterHistory.get(i).equals(f)) {
                     _parameterHistory.remove(_parameterHistory.get(i));
@@ -54,9 +54,9 @@ public class ParameterHistory {
                 }
             }
             if (_parameterHistory.size() == _maxListSize) {
-                _parameterHistory.remove(_parameterHistory.lastElement());
+                _parameterHistory.remove(_parameterHistory.get(_parameterHistory.size() - 1));
             }
-            _parameterHistory.insertElementAt(f, 0);
+            _parameterHistory.add(0, f);
         }
         WriteParametersHistory();
     }
@@ -65,7 +65,7 @@ public class ParameterHistory {
     public void ReadParametersHistory() {
         String keyName;
 
-        _parameterHistory.removeAllElements();
+        _parameterHistory.clear();
         for (int i = 0; i < _maxListSize; ++i) {
             keyName = _parameterNameProperty + i;
             String value = _prefs.get(keyName, "");

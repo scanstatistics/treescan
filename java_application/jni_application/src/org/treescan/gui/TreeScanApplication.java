@@ -12,7 +12,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Locale;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.help.HelpBroker;
@@ -38,6 +37,8 @@ import ca.guydavis.swing.desktop.CascadingWindowPositioner;
 import java.awt.Desktop;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.treescan.utils.Elevator;
@@ -72,7 +73,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     private final ApplicationPreferencesAction _applicationPreferencesAction = new ApplicationPreferencesAction();
     private JInternalFrame _focusedInternalFrame = null;
     private boolean _firstShow = true;
-    private Vector<JInternalFrame> allOpenFrames = new Vector<JInternalFrame>();
+    private ArrayList<JInternalFrame> allOpenFrames;
     private static TreeScanApplication _instance;
     public File lastBrowseDirectory = new File(System.getProperty("user.dir"));
     WindowsMenu windowsMenu = null;
@@ -91,6 +92,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
      */
     public TreeScanApplication() {
         _instance = this;
+        allOpenFrames = new ArrayList<JInternalFrame>();
         System.out.println(System.getProperties());
         initComponents();
         Preferences _prefs = Preferences.userNodeForPackage(TreeScanApplication.class);
@@ -127,7 +129,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
           // other platforms require checking to determine whether VM is 32 or 64 bit
           // in order to load appropriate JNI library
         
-          boolean is64BitVM = false;
+          boolean is64BitVM;
           String bits = null;
           String vm_name = null;
           String os_arch = null;
@@ -212,6 +214,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             super("New Session");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 openNewParameterSessionWindow("");
@@ -252,6 +255,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             super("Open Session File");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 openParameterSessionWindow();
@@ -267,7 +271,10 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
      */
     private void openParameterSessionWindow() {
         //Create a file chooser
-        FileSelectionDialog select = new FileSelectionDialog(this, "Select Settings File", new InputFileFilter[]{new InputFileFilter("txt", "Text Files (*.txt)"), new InputFileFilter("prm", "Settings Files (*.prm)")}, lastBrowseDirectory);
+        List<InputFileFilter> filters = new ArrayList<InputFileFilter>();
+        filters.add(new InputFileFilter("txt", "Text Files (*.txt)"));
+        filters.add(new InputFileFilter("prm", "Settings Files (*.prm)"));
+        FileSelectionDialog select = new FileSelectionDialog(this, "Select Settings File", filters, lastBrowseDirectory);
         File file = select.browse_load(true);
         if (file != null) {
             openNewParameterSessionWindow(file.getAbsolutePath());   
@@ -287,6 +294,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             super("Save Session");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 if (_focusedInternalFrame != null && _focusedInternalFrame instanceof ParameterSettingsFrame) {
@@ -310,6 +318,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             super("Save Session As");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 if (_focusedInternalFrame != null && _focusedInternalFrame instanceof ParameterSettingsFrame) {
@@ -332,6 +341,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             super("Close Session");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (_focusedInternalFrame != null && _focusedInternalFrame instanceof ParameterSettingsFrame) {
                 try {
@@ -353,6 +363,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             super("Preferences");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 ApplicationPreferences preferences = new ApplicationPreferences(_instance);
@@ -375,6 +386,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
 
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 if (_focusedInternalFrame instanceof AnalysisRunInternalFrame) {
@@ -398,6 +410,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             super("Exit");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             windowClosing(new WindowEvent(TreeScanApplication.this, WindowEvent.WINDOW_CLOSING));
         }
@@ -415,6 +428,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             super("Execute");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 executeAnalysis();
@@ -461,6 +475,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             super("Execute Options");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 if (_focusedInternalFrame instanceof ParameterSettingsFrame) {
@@ -484,6 +499,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             super("Help System");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 SwingHelpUtilities.setContentViewerUI("org.treescan.gui.utils.ExternalLinkContentViewerUI");
@@ -518,6 +534,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             super("User Guide");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 File path = new File(_user_guide);
@@ -560,6 +577,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         public CheckNewVersionAction() {
             super("Check for New Version");
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             showUpdateDialog();
         }
@@ -576,6 +594,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             super("Download New Version");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             showUpdateDialog();
         }
@@ -606,6 +625,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             super("Suggested Citation");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 URL n = TreeScanApplication.this.getClass().getResource("/suggested_citation.html");
@@ -627,6 +647,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             super("About TreeScan");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 AboutDialog aboutDialog = new AboutDialog(TreeScanApplication.this);
@@ -696,6 +717,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             _file = file;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 openNewParameterSessionWindow(_file.getAbsolutePath());
@@ -964,6 +986,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     public static void main(final String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -1002,6 +1025,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     /**
      * When the main window first shows, displays the start window.
      */
+    @Override
     public void windowGainedFocus(WindowEvent e) {
         if (_firstShow) {
             try {
@@ -1030,9 +1054,11 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         }
     }
 
+    @Override
     public void windowLostFocus(WindowEvent e) {
     }
 
+    @Override
     public void windowOpened(WindowEvent e) {
     }
 
@@ -1041,6 +1067,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
      * prompts user as to whether to continue closing accordingly. The ForceClose()
      * method is used to ensure that all child windows will close.
      */
+    @Override
     public void windowClosing(WindowEvent e) {
         if (getAnalysesRunning() &&
                 JOptionPane.showConfirmDialog(this, "There are analyses currently executing. Are you sure you want to exit TreeScan?", "Warning", JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
@@ -1095,44 +1122,54 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         System.exit(0);
     }
 
+    @Override
     public void windowClosed(WindowEvent e) {
     }
 
+    @Override
     public void windowIconified(WindowEvent e) {
     }
 
+    @Override
     public void windowDeiconified(WindowEvent e) {
     }
 
+    @Override
     public void windowActivated(WindowEvent e) {
     }
 
+    @Override
     public void windowDeactivated(WindowEvent e) {
     }
 
     /**
      * Adds frame to collection of internal frames.
      */
+    @Override
     public void internalFrameOpened(InternalFrameEvent e) {
-        allOpenFrames.addElement(e.getInternalFrame());
+        allOpenFrames.add(e.getInternalFrame());
     }
 
+    @Override
     public void internalFrameClosing(InternalFrameEvent e) {
     }
 
     /**
      * Responds to the start window closing event by invoking user response.
      */
+    @Override
     public void internalFrameClosed(InternalFrameEvent e) {
-        allOpenFrames.removeElement(e.getInternalFrame());
+        allOpenFrames.remove(e.getInternalFrame());
         if (e.getInternalFrame() instanceof ParameterSettingsFrame) {
             refreshOpenList();
         }
     }
 
+    @Override
     public void internalFrameIconified(InternalFrameEvent e) {
     }
 
+    @Override
     public void internalFrameDeiconified(InternalFrameEvent e) {
     }
 
@@ -1140,6 +1177,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
      * Responds to the activation of an internal frame; enabling various actions.
      * The focused internal frame is noted for reference.
      */
+    @Override
     public void internalFrameActivated(InternalFrameEvent e) {
         _focusedInternalFrame = e.getInternalFrame();
         enableActions((_focusedInternalFrame instanceof ParameterSettingsFrame), (_focusedInternalFrame instanceof AnalysisRunInternalFrame));
@@ -1148,6 +1186,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     /**
      * Responds to the activation of an internal frame; enabling various actions.
      */
+    @Override
     public void internalFrameDeactivated(InternalFrameEvent e) {
         if (_focusedInternalFrame == e.getInternalFrame()) {
             _focusedInternalFrame = null;
@@ -1155,6 +1194,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         enableActions(false, false);
     }
 
+    @Override
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     //throw new UnsupportedOperationException("Not supported yet.");
     }

@@ -40,7 +40,7 @@ public class ExceptionDialog extends javax.swing.JDialog {
     }
     
     /**
-     * Launches default emial application and creates message detailing error.
+     * Launches default email application and creates message detailing error.
      */
     private void launchDefaultClientEmail() {
         EmailClientLauncher launcher = new EmailClientLauncher();

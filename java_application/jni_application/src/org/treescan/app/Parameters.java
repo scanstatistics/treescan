@@ -1,5 +1,8 @@
 package org.treescan.app;
 
+import java.util.ArrayList;
+import org.treescan.importer.InputSourceSettings;
+
 public class Parameters implements Cloneable {	
     public native boolean Read(String filename);  
     public native void Write(String filename);
@@ -61,8 +64,11 @@ public class Parameters implements Cloneable {
     private boolean _report_attributable_risk=false;
     private int _attributable_risk_exposed=0;
 
+    private ArrayList<InputSourceSettings>     _input_sources;
+    
     public Parameters() {
-    	super();    	
+    	super();
+        _input_sources = new ArrayList<InputSourceSettings>();
     }
     @Override
     public Object clone() { 
@@ -74,6 +80,10 @@ public class Parameters implements Cloneable {
     	  newObject._countfilename = new String(_countfilename);
     	  newObject._outputfilename = new String(_outputfilename);
     	  newObject._power_alt_hypothesis_filename = new String(_power_alt_hypothesis_filename);
+          newObject._input_sources = new ArrayList<InputSourceSettings>();
+          for (InputSourceSettings iss : _input_sources) {
+            newObject._input_sources.add(iss.clone());
+          }          
     	  return newObject; 
       } catch (CloneNotSupportedException e) {
         throw new InternalError("clone() failed!");
@@ -120,9 +130,14 @@ public class Parameters implements Cloneable {
           if (_dayofweek_adjustment != rhs._dayofweek_adjustment) return false;
           if (_report_attributable_risk != rhs._report_attributable_risk) return false;
           if (_attributable_risk_exposed != rhs._attributable_risk_exposed) return false;
+          if (!_input_sources.equals(rhs._input_sources)) return false;
           
           return true;
     }
+    
+    public void addInputSourceSettings(InputSourceSettings iss) {_input_sources.add(iss);}
+    public void clearInputSourceSettings() {_input_sources.clear();}
+    public ArrayList<InputSourceSettings> getInputSourceSettings() {return _input_sources;}
     
     public boolean getReportAttributableRisk() {return _report_attributable_risk;}
     public int getAttributableRiskExposed() {return _attributable_risk_exposed;}

@@ -6,6 +6,8 @@
 #include "IniParameterFileAccess.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/detail/xml_parser_error.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/algorithm/string.hpp>
 
 //////////// ParameterAccessCoordinator //////////////////////////////////////
 
@@ -342,6 +344,83 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
         x.addTrace("SetParameter()","AbtractParameterFileAccess");
         throw;
     }
+}
+
+/** Attempts to write values to InputSource. */
+Parameters::InputSource & AbtractParameterFileAccess::setInputSource(Parameters::InputSource & source,
+                                                                     const std::string& typeStr, 
+                                                                     const std::string& mapStr, 
+                                                                     const std::string& delimiterStr, 
+                                                                     const std::string& groupStr, 
+                                                                     const std::string& skipStr,
+                                                                     const std::string& headerStr,
+                                                                     BasePrint& PrintDirection) {
+    try {
+        // set defaults
+        source.setSourceType(CSV);
+        source.clearFieldsMap();
+        source.setDelimiter(" ");
+        source.setGroup("\"");
+        source.setSkip(0);
+        source.setFirstRowHeader(false);
+
+        // source file type
+        if (typeStr.size()) {
+            int type;
+            if (!string_to_type<int>(typeStr.c_str(), type))
+                throw resolvable_error("Unable to read parameter value '%s' as %s.", typeStr.c_str(), IniParameterSpecification::SourceType);
+            if (type < CSV || type > CSV)
+                throw resolvable_error("Parameter value '%d' out of range [%d,%d] for %s.", type, CSV, CSV, IniParameterSpecification::SourceType);
+            source.setSourceType((SourceType)type);
+        }
+        // fields map
+        if (mapStr.size()) {
+            int column;
+            FieldMapContainer_t fields_map;
+            boost::escaped_list_separator<char> separator('\\', ',', '\"');
+            boost::tokenizer<boost::escaped_list_separator<char> > mappings(mapStr, separator);
+            for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=mappings.begin(); itr != mappings.end(); ++itr) {
+                std::string token(*itr);
+                trimString(token);
+                if (string_to_type<int>(token.c_str(), column)) {
+                    fields_map.push_back((long)column);
+                } else {
+                    throw resolvable_error("Unable to read parameter value '%s' as %s item.", token.c_str(), IniParameterSpecification::SourceFieldMap);
+                }
+            }
+            source.setFieldsMap(fields_map);
+        }
+        if (source.getSourceType() == CSV) {
+            source.setDelimiter(delimiterStr.size() == 0 ? " " : delimiterStr);
+            if (source.getDelimiter().size() > 1)
+                throw resolvable_error("The %s value settings is limited to 1 character. Values specified is '%s'.", IniParameterSpecification::SourceDelimiter, source.getDelimiter().c_str());
+            source.setGroup(groupStr.size() == 0 ? "\"" : groupStr);
+            if (source.getGroup().size() > 1)
+                throw resolvable_error("The %s value settings is limited to 1 character. Values specified is '%s'.", IniParameterSpecification::SourceDelimiter, source.getGroup().c_str());
+            unsigned int skip=0;
+            if (skipStr.size() > 0 && !string_to_type<unsigned int>(skipStr.c_str(), skip)) {
+                throw resolvable_error("Unable to read parameter value '%s' as %s.", skipStr.c_str(), IniParameterSpecification::SourceSkip);
+            }
+            source.setSkip(skip);
+            bool rowheader = false;
+            if (headerStr.size()) {
+                if (!(!stricmp(headerStr.c_str(),"y")   || !stricmp(headerStr.c_str(),"n") ||
+                    !strcmp(headerStr.c_str(),"1")    || !strcmp(headerStr.c_str(),"0")   ||
+                    !stricmp(headerStr.c_str(),"yes")  || !stricmp(headerStr.c_str(),"no"))) {
+                    throw resolvable_error("Unable to read parameter value '%s' as %s.", headerStr.c_str(), IniParameterSpecification::SourceFirstRowHeader);
+                }
+                rowheader = (!stricmp(headerStr.c_str(),"y") || !stricmp(headerStr.c_str(),"yes") || !strcmp(headerStr.c_str(),"1"));
+            }
+            source.setFirstRowHeader(rowheader);
+        }
+    } catch (resolvable_error &x) {
+        _read_error = true;
+        PrintDirection.Printf(x.what(), BasePrint::P_PARAMERROR);
+    } catch (prg_exception &x) {
+        x.addTrace("setInputSource()","AbtractParameterFileAccess");
+        throw;
+    }
+    return source;
 }
 
 /////////////////////  parameter_error ///////////////////////////////////////////////////////////////

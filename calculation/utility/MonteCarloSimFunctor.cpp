@@ -7,7 +7,7 @@
 #include "WindowLength.h"
 
 /* Returns new AbstractMeasureList object - based on settings. */
-AbstractMeasureList * AbstractMeasureList::getNewMeasureList(const ScanRunner& scanner, ScanRunner::Loglikelihood_t& loglikelihood) {
+AbstractMeasureList * AbstractMeasureList::getNewMeasureList(const ScanRunner& scanner, ScanRunner::Loglikelihood_t loglikelihood) {
     return new MinimumMeasureList(scanner, loglikelihood);
 }
 
@@ -18,7 +18,9 @@ MCSimSuccessiveFunctor::MCSimSuccessiveFunctor(boost::mutex& mutex,
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     const Parameters& parameters = _scanRunner.getParameters();
     size_t daysInDataTimeRange = Parameters::isTemporalScanType(parameters.getScanType()) ?parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
-    _treeSimNodes.resize(_scanRunner.getNodes().size(), SimulationNode(daysInDataTimeRange));
+    for (size_t t=0; t < _scanRunner.getNodes().size(); ++t)
+        _treeSimNodes.push_back(SimulationNode(daysInDataTimeRange));
+    //_treeSimNodes.resize(_scanRunner.getNodes().size(), SimulationNode(daysInDataTimeRange));
     _loglikelihood.reset(AbstractLoglikelihood::getNewLoglikelihood(_scanRunner.getParameters(), _scanRunner.getTotalC(), _scanRunner.getTotalN()));
 
     if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||

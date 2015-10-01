@@ -9,6 +9,7 @@
 
 package org.treescan.utils;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -35,6 +36,18 @@ public class FileAccess {
         
         return bAccessible;
     }   
+    
+    /* Get the extension of a file. */
+    public static String getExtension(File f) {
+        String ext = null;
+        String s = f.getName();
+        int i = s.lastIndexOf('.');
+        if (i > 0 && i < s.length() - 1) {
+            ext = s.substring(i + 1).toLowerCase();
+        }
+        return ext;
+    }    
+    
     public static String changeExtension(String originalName, String newExtension) {
         int lastDot = originalName.lastIndexOf(".");
         if (lastDot != -1) {

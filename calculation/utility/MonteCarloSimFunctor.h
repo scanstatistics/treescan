@@ -14,17 +14,17 @@ class AbstractMeasureList {
         typedef boost::shared_ptr<list_container_t> list_t;
 
         const ScanRunner& _scanRunner;
-        ScanRunner::Loglikelihood_t& _loglikelihood;
+        ScanRunner::Loglikelihood_t _loglikelihood;
 
     public:
-        AbstractMeasureList(const ScanRunner & scanRunner, ScanRunner::Loglikelihood_t& loglikelihood) : _scanRunner(scanRunner), _loglikelihood(loglikelihood) {}
+        AbstractMeasureList(const ScanRunner & scanRunner, ScanRunner::Loglikelihood_t loglikelihood) : _scanRunner(scanRunner), _loglikelihood(loglikelihood) {}
         virtual ~AbstractMeasureList() {}
 
         virtual void add(int c, double n) = 0;
         virtual void initialize() = 0;
         virtual double loglikelihood() = 0;
 
-        static AbstractMeasureList * getNewMeasureList(const ScanRunner& scanner, ScanRunner::Loglikelihood_t& loglikelihood);
+        static AbstractMeasureList * getNewMeasureList(const ScanRunner& scanner, ScanRunner::Loglikelihood_t loglikelihood);
 };
 
 /** Non Measurelist class -- simply stores greatest LLR. */
@@ -33,7 +33,7 @@ class NonMeasureList : public AbstractMeasureList {
         double _max_loglikelihood;
 
     public:
-        NonMeasureList(const ScanRunner & scanRunner, ScanRunner::Loglikelihood_t& loglikelihood) : AbstractMeasureList(scanRunner, loglikelihood), _max_loglikelihood(-std::numeric_limits<double>::max()) {}
+        NonMeasureList(const ScanRunner & scanRunner, ScanRunner::Loglikelihood_t loglikelihood) : AbstractMeasureList(scanRunner, loglikelihood), _max_loglikelihood(-std::numeric_limits<double>::max()) {}
         virtual ~NonMeasureList() {}
 
         virtual void add(int c, double n) { _max_loglikelihood = std::max(_max_loglikelihood, _loglikelihood->LogLikelihood(c, n)); }
@@ -47,7 +47,7 @@ class MinimumMeasureList : public AbstractMeasureList {
         list_t _min_measure;
 
     public:
-        MinimumMeasureList(const ScanRunner & scanRunner, ScanRunner::Loglikelihood_t& loglikelihood) : AbstractMeasureList(scanRunner, loglikelihood) {
+        MinimumMeasureList(const ScanRunner & scanRunner, ScanRunner::Loglikelihood_t loglikelihood) : AbstractMeasureList(scanRunner, loglikelihood) {
             _min_measure.reset(new list_container_t(_scanRunner.getTotalC() + 1));
         }
         virtual ~MinimumMeasureList() {}

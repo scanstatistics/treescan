@@ -2,8 +2,6 @@ package org.treescan.gui;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.io.File;
-import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
@@ -15,10 +13,9 @@ import org.treescan.app.AdvFeaturesExpection;
 import org.treescan.utils.FileAccess;
 import org.treescan.app.Parameters;
 import org.treescan.gui.utils.FileSelectionDialog;
-import org.treescan.gui.utils.InputFileFilter;
 import org.treescan.gui.utils.Utils;
-import org.treescan.importer.FileImporter;
 import org.treescan.app.UnknownEnumException;
+import org.treescan.importer.InputSourceSettings;
 
 public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
@@ -28,7 +25,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private final Component _rootPaneInitialGlass;
     private final UndoManager undo = new UndoManager();
     private final ParameterSettingsFrame _settings_window;
-    private DefaultListModel _dataSetsListModel = new DefaultListModel();
     private FocusedTabSet _focusedTabSet = FocusedTabSet.INPUT;
 
     /**
@@ -582,7 +578,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _advanced_input_tab = new javax.swing.JPanel();
         _cutFileLabel = new javax.swing.JLabel();
         _cutFileTextField = new javax.swing.JTextField();
-        _cutFileBrowseButton = new javax.swing.JButton();
         _cutFileImportButton = new javax.swing.JButton();
         _advanced_temporal_window_tab = new javax.swing.JPanel();
         _maxTemporalOptionsGroup = new javax.swing.JPanel();
@@ -630,40 +625,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _cutFileLabel.setText("Cut File:"); // NOI18N
 
-        _cutFileBrowseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/folder_open_small.png"))); // NOI18N
-        _cutFileBrowseButton.setToolTipText("Browse for cut file ..."); // NOI18N
-        _cutFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("csv","CSV Files (*.csv)"), new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("cut","Cut Files (*.cut)")};
-                FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Cut File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                File file = select.browse_load(true);
-                if (file != null) {
-                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                    _cutFileTextField.setText(file.getAbsolutePath());
-                }
-            }
-        });
-
         _cutFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
         _cutFileImportButton.setToolTipText("Import cut file ..."); // NOI18N
         _cutFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                try {
-                    InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("dbf","dBase Files (*.dbf)"),
-                        new InputFileFilter("csv","Delimited Files (*.csv)"),
-                        new InputFileFilter("xls","Excel Files (*.xls)"),
-                        new InputFileFilter("txt","Text Files (*.txt)"),
-                        new InputFileFilter("cut","Cut Files (*.cut)")};
-
-                    FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Cuts File Import Source", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                    File file = select.browse_load(true);
-                    if (file != null) {
-                        org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                        _settings_window.LaunchImporter(file.getAbsolutePath(), FileImporter.InputFileType.Cuts);
-                    }
-                } catch (Throwable t) {
-                    new ExceptionDialog(org.treescan.gui.TreeScanApplication.getInstance(), t).setVisible(true);
+                if (!_settings_window._input_source_map.containsKey(InputSourceSettings.InputFileType.Cut)) {
+                    _settings_window._input_source_map.put(InputSourceSettings.InputFileType.Cut, new InputSourceSettings(InputSourceSettings.InputFileType.Cut));
                 }
+                InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(InputSourceSettings.InputFileType.Cut);
+                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);
+                selectionDialog.browse_inputsource(_cutFileTextField, inputSourceSettings, _settings_window);
             }
         });
 
@@ -676,8 +648,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(_advanced_input_tabLayout.createSequentialGroup()
                         .addComponent(_cutFileTextField)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_cutFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_cutFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
@@ -692,10 +662,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_cutFileLabel)
                 .addGap(9, 9, 9)
                 .addGroup(_advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_cutFileBrowseButton)
                     .addComponent(_cutFileImportButton)
                     .addComponent(_cutFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(233, Short.MAX_VALUE))
+                .addContainerGap(253, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced Input", _advanced_input_tab);
@@ -878,7 +847,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(109, Short.MAX_VALUE))
+                .addContainerGap(129, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _advanced_temporal_window_tab);
@@ -939,7 +908,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advanced_inferenece_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(224, Short.MAX_VALUE))
+                .addContainerGap(244, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _advanced_inferenece_tab);
@@ -1032,17 +1001,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _alternativeHypothesisFilenameButton.setText("..."); // NOI18N
+        _alternativeHypothesisFilenameButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
         _alternativeHypothesisFilenameButton.setToolTipText("Open file wizard for alternative hypothesis file ..."); // NOI18N
         _alternativeHypothesisFilenameButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                InputFileFilter[] filters = new InputFileFilter[]{new InputFileFilter("csv","CSV Files (*.csv)"), new InputFileFilter("txt","Text Files (*.txt)"), new InputFileFilter("ha","Alternative Hypothesis Files (*.ha)")};
-                FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Alternative Hypothesis File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-                File file = select.browse_load(true);
-                if (file != null) {
-                    org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-                    _alternativeHypothesisFilename.setText(file.getAbsolutePath());
+                if (!_settings_window._input_source_map.containsKey(InputSourceSettings.InputFileType.Power_Evaluations)) {
+                    _settings_window._input_source_map.put(InputSourceSettings.InputFileType.Power_Evaluations, new InputSourceSettings(InputSourceSettings.InputFileType.Power_Evaluations));
                 }
+                InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(InputSourceSettings.InputFileType.Power_Evaluations);
+                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);
+                selectionDialog.browse_inputsource(_alternativeHypothesisFilename, inputSourceSettings, _settings_window);
             }
         });
 
@@ -1097,7 +1066,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_alternativeHypothesisFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_alternativeHypothesisFilenameButton))
-                .addGap(0, 68, Short.MAX_VALUE))
+                .addGap(0, 86, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout _advanced_power_evaluation_tabLayout = new javax.swing.GroupLayout(_advanced_power_evaluation_tab);
@@ -1246,7 +1215,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_report_critical_values_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(72, Short.MAX_VALUE))
+                .addContainerGap(92, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
@@ -1272,7 +1241,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advanced_adjustments_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_perform_dayofweek_adjustments)
-                .addContainerGap(262, Short.MAX_VALUE))
+                .addContainerGap(282, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Adjustments", _advanced_adjustments_tab);
@@ -1332,7 +1301,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _chk_attributable_risk_extra;
     private javax.swing.JCheckBox _chk_rpt_attributable_risk;
     private javax.swing.JButton _closeButton;
-    private javax.swing.JButton _cutFileBrowseButton;
     private javax.swing.JButton _cutFileImportButton;
     private javax.swing.JLabel _cutFileLabel;
     public javax.swing.JTextField _cutFileTextField;

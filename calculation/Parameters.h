@@ -111,7 +111,49 @@ class Parameters {
         }
     };
 
+    class InputSource {
+        private:
+            SourceType _source_type;
+            FieldMapContainer_t _fields_map;
+            // CSV specific options
+            std::string _delimiter;
+            std::string _grouper;
+            unsigned int _skip;
+            bool _first_row_headers;
+
+        public:
+            InputSource() : _skip(0) {}
+
+            InputSource(SourceType type, FieldMapContainer_t map):
+                _source_type(type), _fields_map(map), 
+                _delimiter(","), _grouper("\""), _skip(0), _first_row_headers(false) {}
+
+            InputSource(SourceType type, FieldMapContainer_t map, std::string delimiter, std::string grouper, unsigned int skip, bool first_row_headers):
+                _source_type(type), _fields_map(map), 
+                _delimiter(delimiter), _grouper(grouper), _skip(skip), _first_row_headers(first_row_headers) {}
+
+            SourceType getSourceType() const {return _source_type;}
+            void setSourceType(SourceType e) {_source_type = e;}
+            const FieldMapContainer_t & getFieldsMap() const {return _fields_map;}
+            void setFieldsMap(const FieldMapContainer_t& m) {_fields_map = m;}
+            void clearFieldsMap() {_fields_map.clear();}
+            // CSV specific options
+            const std::string & getDelimiter() const {return _delimiter;}
+            void setDelimiter(const std::string& s) {_delimiter = s;}
+            const std::string & getGroup() const {return _grouper;}
+            void setGroup(const std::string& s) {_grouper = s;}
+            unsigned int getSkip() const {return _skip;}
+            void setSkip(unsigned int u) {_skip = u;}
+            bool getFirstRowHeader() const {return _first_row_headers;}
+            void setFirstRowHeader(bool b) {_first_row_headers = b;}
+    };
+
+  public:
+    typedef ParameterType              InputSourceKey_t;
+    typedef std::map<InputSourceKey_t, InputSource> InputSourceContainer_t;
+
   private:
+    InputSourceContainer_t              _input_sources;
     unsigned int                        _numRequestedParallelProcesses;
     unsigned int                        _replications;
     std::string                         _parametersSourceFileName;
@@ -173,6 +215,7 @@ class Parameters {
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
 
+    void                                defineInputSource(ParameterType e, InputSource source) {_input_sources[e] = source;}
     ConditionalType                     getConditionalType() const {return _conditional_type;}
     const std::string                 & getCountFileName() const {return _countFileName;}
     const CreationVersion             & getCreationVersion() const {return _creationVersion;}
@@ -184,6 +227,11 @@ class Parameters {
     CutType                             getCutType() const {return _cut_type;}
     static cut_maps_t                   getCutTypeMap();
     const DataTimeRangeSet            & getDataTimeRangeSet() const {return _dataTimeRangeSet;}
+    const InputSourceContainer_t      & getInputSources() const {return _input_sources;}
+    const InputSource                 * getInputSource(ParameterType e) const {
+                                            InputSourceContainer_t::const_iterator itr = _input_sources.find(e);
+                                            return itr == _input_sources.end() ? (const InputSource*)0 : &(itr->second);
+                                        }
     const std::string                 & getInputSimulationsFilename() const {return _input_sim_file;}
     unsigned int                        getMaximumWindowInTimeUnits() const;
     unsigned int                        getMaximumWindowLength() const {return _maximum_window_length;}
