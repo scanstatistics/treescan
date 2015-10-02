@@ -49,7 +49,7 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
                         case Parameters::TOTALCASES :
                         case Parameters::NODE :
                             if (!parameters.isPerformingDayOfWeekAdjustment())
-                                return new TemporalLoglikelihood(TotalC, TotalN, parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                                return new TemporalLoglikelihood(TotalC, TotalN, parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets(), parameters.getMaximumWindowInTimeUnits());
                             return new PoissonLoglikelihood(TotalC, TotalN);
                         default: throw prg_error("Unknown conditional type (%d).", "getNewLoglikelihood()", parameters.getConditionalType());
                     }

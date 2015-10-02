@@ -121,27 +121,36 @@ protected:
     const int       _totalC;
     const double    _totalN;
     size_t          _totalDaysInRange;
+    std::vector<double> _log1;
+    std::vector<double> _log2;
 
 public:
-    TemporalLoglikelihood(int totalC, double totalN, size_t totalDaysInRange) 
-        : AbstractLoglikelihood(), _totalC(totalC), _totalN(totalN), _totalDaysInRange(totalDaysInRange) {}
+    TemporalLoglikelihood(int totalC, double totalN, size_t totalDaysInRange, unsigned int max_windowlength)
+        : AbstractLoglikelihood(), _totalC(totalC), _totalN(totalN), _totalDaysInRange(totalDaysInRange) {
+        _log1.resize(max_windowlength + 1, 0.0);
+        _log2.resize(max_windowlength + 1, 0.0);
+        for (size_t i=1; i <= max_windowlength; ++i) {
+            _log1[i] = log( static_cast<double>(i) / static_cast<double>(_totalDaysInRange));
+            _log2[i] = log(1.0 -  static_cast<double>(i) / static_cast<double>(_totalDaysInRange));
+        }
+    }
     virtual ~TemporalLoglikelihood(){}
 
     /* Calculates the conditional temporal loglikelihood. */
     virtual double  LogLikelihood(int c, double n, size_t windowLength) const {
         /* c = cases in the window for the branch under consideration, c>=0 */ 
-        /* n = total cases for the branch under consideration, inside and outside the window, n>=c */ 
+        /* n = total cases for the branch under consideration, inside and outside the window, n>=c */
         double r = static_cast<double>(windowLength) / static_cast<double>(_totalDaysInRange);
-        if (n > 0.0 && static_cast<double>(c)/n > r) { 
+        if (n > 0.0 && static_cast<double>(c)/n > r) {
             double loglikelihood = 0;
             if (c != 0) {
                 loglikelihood = static_cast<double>(c) * log(static_cast<double>(c)/n);
-            } 
+            }
             if (c != n) {
                 loglikelihood = loglikelihood + (n - static_cast<double>(c)) * log(1.0 - (static_cast<double>(c)/n));
             }
             // we're calculating the full loglikelihood ratio here
-            return loglikelihood - static_cast<double>(c) * log(r) - (n - static_cast<double>(c)) * log(1.0 - r);
+            return loglikelihood - static_cast<double>(c) * _log1[windowLength] - (n - static_cast<double>(c)) * _log2[windowLength];
         }
         return UNSET_LOGLIKELIHOOD;
     }
