@@ -290,7 +290,7 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
         CreateField(_dataFieldDefinitions, EXCESS_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     }
 
-    if (params.getReportAttributableRisk() && params.getModelType() != Parameters::BERNOULLI) {
+    if (params.getReportAttributableRisk()) {
         CreateField(_dataFieldDefinitions, ATTRIBUTABLE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     }
 
@@ -363,7 +363,7 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
             Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getExcessCases(_scanner);
         }
 
-        if (params.getReportAttributableRisk() && params.getModelType() != Parameters::BERNOULLI) {
+        if (params.getReportAttributableRisk()) {
             Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getAttributableRisk(_scanner);
         }
 

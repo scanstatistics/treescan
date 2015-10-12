@@ -336,7 +336,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         switch (_input_source_settings.getInputFileType()) {
             case Tree :
                 builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
-                builder.append("&lt;Node ID&gt;  &lt;Node Parent ID&gt;");
+                builder.append("&lt;Node ID&gt;&#44;  &lt;Node Parent ID&gt;");
                 break;
             case Counts:
                 /* build statement indicating the current parameter settings in main windows */
@@ -352,23 +352,23 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 } else {/*nop*/}
                 builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
                 if (_startingmodeltype == Parameters.ModelType.POISSON)
-                    builder.append("&lt;Node ID&gt;  &lt;Number of Cases&gt;  &lt;Population&gt;");
+                    builder.append("&lt;Node ID&gt;&#44;  &lt;Number of Cases&gt;&#44;  &lt;Population&gt;");
                 else if (_startingmodeltype == Parameters.ModelType.BERNOULLI)
-                    builder.append("&lt;Node ID&gt;  &lt;Number of Cases&gt;  &lt;Number of Controls&gt;");
+                    builder.append("&lt;Node ID&gt;&#44;  &lt;Number of Cases&gt;&#44;  &lt;Number of Controls&gt;");
                 else if (_startingmodeltype == null || _startingmodeltype == Parameters.ModelType.MODEL_NOT_APPLICABLE || _startingmodeltype == Parameters.ModelType.UNIFORM) {
                     if (_startingscantype != Parameters.ScanType.TIMEONLY)
-                        builder.append("&lt;Node ID&gt;  ");
-                    builder.append("&lt;Number of Cases&gt;  &lt;Days Since Event&gt;");
+                        builder.append("&lt;Node ID&gt;&#44;  ");
+                    builder.append("&lt;Number of Cases&gt;&#44;  &lt;Days Since Event&gt;");
                 }
                 else throw new UnknownEnumException(_startingmodeltype);
                 break;
             case Cut:
                 builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
-                builder.append("&lt;Node ID&gt;  &lt;Cut Type&gt;");
+                builder.append("&lt;Node ID&gt;&#44;  &lt;Cut Type&gt;");
                 break;
             case Power_Evaluations:
                 builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
-                builder.append("&lt;Node ID&gt;  &lt;Risk Adjustment&gt;"); break;
+                builder.append("&lt;Node ID&gt;&#44;  &lt;Risk Adjustment&gt;"); break;
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
         }
         builder.append("&nbsp;&nbsp;</span>");

@@ -23,9 +23,9 @@ struct prm_fixture : parameter_fixture {
         std::stringstream filepath;
         filepath << path.c_str() << "\\" << filename.c_str();
         // test reading parameters settings from file
-        BOOST_CHECK_EQUAL( ParameterAccessCoordinator(_parameters).read(filepath.str().c_str(), _print), true );
+        BOOST_REQUIRE_EQUAL( ParameterAccessCoordinator(_parameters).read(filepath.str().c_str(), _print), true );
         // make sure these parameters validated
-        BOOST_CHECK_EQUAL( ParametersValidate(_parameters).Validate(_print), true );
+        BOOST_REQUIRE_EQUAL( ParametersValidate(_parameters).Validate(_print), true );
     }
     virtual ~prm_fixture() { }
 };

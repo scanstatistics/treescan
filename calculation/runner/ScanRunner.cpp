@@ -27,6 +27,7 @@ double CutStructure::getAttributableRisk(const ScanRunner& scanner) {
     const Parameters& parameters = scanner.getParameters();
     double C = static_cast<double>(_C);
     double totalC = static_cast<double>(scanner.getTotalC());
+    double totalN = scanner.getTotalN();
 
     switch (parameters.getScanType()) {
 
@@ -36,8 +37,8 @@ double CutStructure::getAttributableRisk(const ScanRunner& scanner) {
                 case Parameters::TOTALCASES :
                     if (parameters.getModelType() == Parameters::POISSON)
                         return getExcessCases(scanner) / static_cast<double>(parameters.getAttributableRiskExposed());
-                    //if (parameters.getModelType() == Parameters::BERNOULLI)
-                    //    return ?;
+                    if (parameters.getModelType() == Parameters::BERNOULLI)
+                        return getExcessCases(scanner) / totalN;
                     throw prg_error("Cannot calculate attributable risk: tree-only, model (%d).", "getAttributableRisk()", parameters.getModelType());
                 default: throw prg_error("Cannot calculate attributable risk: tree-only, condition type (%d).", "getAttributableRisk()", parameters.getConditionalType());
             }
@@ -84,7 +85,7 @@ std::string & CutStructure::getAttributableRiskAsString(const ScanRunner& scanne
 }
 
 /* Calculates the excess number of cases. See user guide for formula explanation. */
-double CutStructure::getExcessCases(const ScanRunner& scanner) {
+double CutStructure::getExcessCases(const ScanRunner& scanner) const {
     const Parameters& parameters = scanner.getParameters();
     double C = static_cast<double>(_C);
     double totalC = static_cast<double>(scanner.getTotalC());
@@ -139,7 +140,7 @@ double CutStructure::getExcessCases(const ScanRunner& scanner) {
 }
 
 /** Returns cut's expected count. See user guide for formula explanation. */
-double CutStructure::getExpected(const ScanRunner& scanner) {
+double CutStructure::getExpected(const ScanRunner& scanner) const {
     const Parameters& parameters = scanner.getParameters();
     double C = static_cast<double>(_C);
     double totalC = static_cast<double>(scanner.getTotalC());
@@ -170,6 +171,11 @@ double CutStructure::getExpected(const ScanRunner& scanner) {
                         if (parameters.isPerformingDayOfWeekAdjustment()) {
                             return _N;
                         } else {
+                            /*  (N*W/T)
+                                N = number of cases in the node, through the whole time period (below, all 0604 cases)
+                                W = number of days in the temporal cluster (below, 11-6=5)
+                                T = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used)
+                            */
                             double W = static_cast<double>(_end_idx - _start_idx + 1.0);
                             double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
                             return _N * W / T;
@@ -191,6 +197,11 @@ double CutStructure::getExpected(const ScanRunner& scanner) {
                         if (parameters.isPerformingDayOfWeekAdjustment()) {
                             return _N;
                         } else {
+                            /*  (N*W/T)
+                                N = number of cases in the node, through the whole time period (below, all 0604 cases)
+                                W = number of days in the temporal cluster (below, 11-6=5)
+                                T = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used)
+                            */
                             double W = static_cast<double>(_end_idx - _start_idx + 1.0);
                             double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
                             return _N * W / T;
@@ -205,87 +216,12 @@ double CutStructure::getExpected(const ScanRunner& scanner) {
 }
 
 /** Returns cut's observed divided by expected. */
-double CutStructure::getODE(const ScanRunner& scanner) {
-    const Parameters& parameters = scanner.getParameters();
-    switch (parameters.getScanType()) {
-
-        case Parameters::TREEONLY : {
-            switch (parameters.getConditionalType()) {
-                case Parameters::UNCONDITIONAL :
-                case Parameters::TOTALCASES :
-                    if (parameters.getModelType() == Parameters::POISSON || parameters.getModelType() == Parameters::BERNOULLI) {
-                        double expected = getExpected(scanner);
-                        return expected ? static_cast<double>(getC())/expected : 0.0;
-                    }
-                    throw prg_error("Cannot determine ode: tree-only, unconditonal, model (%d).", "getODE()", parameters.getModelType());
-                default: throw prg_error("Cannot determine ode: tree-only, condition type (%d).", "getODE()", parameters.getConditionalType());
-            }
-        }
-
-        case Parameters::TREETIME: {
-            switch (parameters.getConditionalType()) {
-                case Parameters::NODE:
-                    if (parameters.getModelType() == Parameters::UNIFORM) {
-                        if (parameters.isPerformingDayOfWeekAdjustment()) {
-                            double expected = getExpected(scanner);
-                            return expected ? static_cast<double>(getC())/expected : 0.0;
-                        } else {
-                            /* C/(N*W/D) where
-                                C = number of cases in the node as well as in the the temporal cluster found (below, 06.04 cases that are 7-11 days after vaccination)
-                                N = number of cases in the node, through the whole time period (below, all 0604 cases)
-                                W = number of days in the temporal cluster (below, 11-6=5)
-                                D = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used) */
-                            double C = static_cast<double>(_C);
-                            double N = _N;
-                            double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-                            double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-                            double denominator = N * W / T;
-                            return denominator ? C/denominator : 0.0;
-                        }
-                    }
-                    throw prg_error("Cannot determine ode: tree-time, total-cases, model (%d).", "getODE()", parameters.getModelType());
-                case Parameters::NODEANDTIME :
-                    if (parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE) {
-                        double expected = getExpected(scanner);
-                        return expected ? static_cast<double>(getC())/expected : 0.0;
-                    }
-                    throw prg_error("Cannot determine ode: tree-time, node-time, model (%d).", "getODE()", parameters.getModelType());
-                default: throw prg_error("Cannot determine ode: tree-time, condition type (%d).", "getODE()", parameters.getConditionalType());
-            }
-        }
-
-        case Parameters::TIMEONLY: { /* time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
-            switch (parameters.getConditionalType()) {
-                case Parameters::TOTALCASES:
-                    if (parameters.getModelType() == Parameters::UNIFORM) {
-                        if (parameters.isPerformingDayOfWeekAdjustment()) {
-                            double expected = getExpected(scanner);
-                            return expected ? static_cast<double>(getC())/expected : 0.0;
-                        } else {
-                            /* C/(N*W/D) where
-                                C = number of cases in the node as well as in the the temporal cluster found (below, 06.04 cases that are 7-11 days after vaccination)
-                                N = number of cases in the node, through the whole time period (below, all 0604 cases)
-                                W = number of days in the temporal cluster (below, 11-6=5)
-                                D = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used) */
-                            double C = static_cast<double>(_C);
-                            double N = _N;
-                            double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-                            double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-                            double denominator = N * W / T;
-                            return denominator ? C/denominator : 0.0;
-                        }
-                    }
-                    throw prg_error("Cannot determine ode: time-only, total-cases, model (%d).", "getODE()", parameters.getModelType());
-                default: throw prg_error("Cannot determine ode: time-only, condition type (%d).", "getODE()", parameters.getConditionalType());
-            }
-        }
-
-        default : throw prg_error("Unknown scan type (%d).", "getODE()", parameters.getScanType());
-    }
+double CutStructure::getODE(const ScanRunner& scanner) const {
+    return static_cast<double>(getC())/getExpected(scanner);
 }
 
 /** Returns cut's relative risk. See user guide for formula explanation. */
-double CutStructure::getRelativeRisk(const ScanRunner& scanner) {
+double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
     double relative_risk=0;
     double C = static_cast<double>(_C);
     double totalC = static_cast<double>(scanner.getTotalC());
@@ -551,7 +487,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
                           (static_cast<int>(dataSource->getNumValues()) > expectedColumns) ? "has extra data" : "is missing data",
                           (_parameters.getScanType() == Parameters::TIMEONLY ? "" : "<identifier>, "),
                           (_parameters.isDuplicates() ? ", <duplicates>" : ""),
-                          (Parameters::isTemporalScanType(_parameters.getScanType()) ? ", <time>" : ""),
+                          (Parameters::isTemporalScanType(_parameters.getScanType()) ? ", <time>" : (_parameters.getModelType() == Parameters::POISSON ? ", <population>" : ", <controls>")),
                           dataSource->getNumValues(), (dataSource->getNumValues() == 1 ? "" : "s"));
             continue;
         }
@@ -790,6 +726,14 @@ bool ScanRunner::readCuts(const std::string& filename) {
     return readSuccess;
 }
 
+/** Returns whether cut is reportable. */
+bool ScanRunner::reportableCut(const CutStructure& cut) const {
+    return /* Does the top cut rank among replications? */
+           (_parameters.getNumReplicationsRequested() > 0 && cut.getRank() < _parameters.getNumReplicationsRequested() + 1) ||
+           /* If not performing replications, is the cut's observed greater than expected? (we're only scanning for high rates) */
+           (_parameters.getNumReplicationsRequested() == 0 && static_cast<double>(cut.getC()) > cut.getExpected(*this));
+}
+
 /* REPORT RESULTS */
 bool ScanRunner::reportResults(time_t start, time_t end) const {
     ResultsFileWriter resultsWriter(*this);
@@ -803,7 +747,7 @@ bool ScanRunner::reportResults(time_t start, time_t end) const {
     if (_parameters.isGeneratingTableResults()) {
         unsigned int k=0;
         CutsRecordWriter cutsWriter(*this);
-        while(status && k < getCuts().size() && getCuts().at(k)->getC() > 0 && getCuts().at(k)->getRank() < _parameters.getNumReplicationsRequested() + 1) {
+        while (status && k < getCuts().size() && reportableCut(*getCuts().at(k))) {
             cutsWriter.write(k);
             k++;
         }

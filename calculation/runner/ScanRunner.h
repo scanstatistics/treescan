@@ -34,18 +34,18 @@ public:
     CutStructure() : _ID(0), _C(0), _N(0), _LogLikelihood(-std::numeric_limits<double>::max()), _rank(1), _start_idx(0), _end_idx(1) {}
 
     void                    addCutChild(int cutID, bool clear=false) {if (clear) _cut_children.clear(); _cut_children.push_back(cutID);}
-    int                     getC() const {return _C;}
+    int                     getC() const {return _C; /* Observed */}
     const CutChildContainer_t & getCutChildren() {return _cut_children;}
     double                  getAttributableRisk(const ScanRunner& scanner);
     std::string           & getAttributableRiskAsString(const ScanRunner& scanner, std::string& s);
     int                     getID() const {return _ID;}
     double                  getLogLikelihood() const {return _LogLikelihood;}
     double                  getN() const {return _N;}
-    double                  getExcessCases(const ScanRunner& scanner);
-    double                  getExpected(const ScanRunner& scanner);
-    double                  getODE(const ScanRunner& scanner);
+    double                  getExcessCases(const ScanRunner& scanner) const;
+    double                  getExpected(const ScanRunner& scanner) const;
+    double                  getODE(const ScanRunner& scanner) const;
     unsigned int            getRank() const {return _rank;}
-    double                  getRelativeRisk(const ScanRunner& scanner);
+    double                  getRelativeRisk(const ScanRunner& scanner) const;
     DataTimeRange::index_t  getStartIdx() const {return _start_idx;}
     DataTimeRange::index_t  getEndIdx() const {return _end_idx;}
     unsigned int            incrementRank() {return ++_rank;}
@@ -255,6 +255,7 @@ public:
     double                             getTotalN() const {return _TotalN;}
     const TreeStatistics             & getTreeStatistics() const;
     DataTimeRange::index_t             getZeroTranslationAdditive() const {return _zero_translation_additive;}
+    bool                               reportableCut(const CutStructure& cut) const;
     bool                               run();
     void                               updateCriticalValuesList(double llr) {if (_critical_values.get()) _critical_values->add(llr);}
 };

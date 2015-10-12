@@ -101,8 +101,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     //outfile << "LLR pvalue" << std::endl;
 
     if (!_scanRunner.getParameters().getPerformPowerEvaluations() || (_scanRunner.getParameters().getPerformPowerEvaluations() && _scanRunner.getParameters().getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
-        if (_scanRunner.getCuts().size() == 0 || _scanRunner.getCuts().at(0)->getC() == 0 || 
-            (parameters.getNumReplicationsRequested() > 0 && _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested())) {
+        if (_scanRunner.getCuts().size() == 0 || !_scanRunner.reportableCut(*_scanRunner.getCuts().at(0))) {
             outfile << "No cuts were found." << std::endl;
         } else {
             outfile << "MOST LIKELY CUTS"<< std::endl << std::endl;
@@ -113,8 +112,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
             unsigned int k=0;
             outfile.setf(std::ios::fixed);
             outfile.precision(5);
-            while(k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && 
-                  (parameters.getNumReplicationsRequested() == 0 || _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1)) {
+            while(k < _scanRunner.getCuts().size() && _scanRunner.reportableCut(*_scanRunner.getCuts().at(k))) {
                 PrintFormat.SetMarginsAsCutSection( k + 1);
                 outfile << k + 1 << ")";
                 // skip reporting node identifier for time-only scans
@@ -185,7 +183,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     PrintFormat.PrintSectionLabel(outfile, "Excess Cases", true);
                     PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer));
                 }
-                if (parameters.getReportAttributableRisk() && parameters.getModelType() != Parameters::BERNOULLI) {
+                if (parameters.getReportAttributableRisk()) {
                     PrintFormat.PrintSectionLabel(outfile, "Attributable Risk", true);
                     buffer = _scanRunner.getCuts().at(k)->getAttributableRiskAsString(_scanRunner, buffer);
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
@@ -401,8 +399,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<div class=\"hr\"></div>" << std::endl;
     if (!parameters.getPerformPowerEvaluations() || (parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         outfile << "<div id=\"cuts\">" << std::endl;
-        if (_scanRunner.getCuts().size() == 0 || _scanRunner.getCuts().at(0)->getC() == 0 || 
-            (parameters.getNumReplicationsRequested() > 0 && _scanRunner.getCuts().at(0)->getRank() > parameters.getNumReplicationsRequested())) {
+        if (_scanRunner.getCuts().size() == 0 || !_scanRunner.reportableCut(*_scanRunner.getCuts().at(0))) {
             outfile << "<h3>No cuts were found.</h3>" << std::endl;
         } else {
             outfile << "<h3>MOST LIKELY CUTS</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;
@@ -430,7 +427,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             if (!(parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME)) {
                 outfile << "<th>Relative Risk</th><th>Excess Cases</th>" << std::endl;
             }
-            if (parameters.getReportAttributableRisk() && parameters.getModelType() != Parameters::BERNOULLI) {
+            if (parameters.getReportAttributableRisk()) {
                 outfile << "<th>Attributable Risk</th>" << std::endl;
             }
             if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||
@@ -452,8 +449,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             unsigned int k=0;
             outfile.setf(std::ios::fixed);
             outfile.precision(5);
-            while(k < _scanRunner.getCuts().size() && _scanRunner.getCuts().at(k)->getC() > 0 && 
-                  (parameters.getNumReplicationsRequested() == 0 || _scanRunner.getCuts().at(k)->getRank() < parameters.getNumReplicationsRequested() + 1)) {
+            while(k < _scanRunner.getCuts().size() && _scanRunner.reportableCut(*_scanRunner.getCuts().at(k))) {
                 outfile << "<tr" << (k > 9 ? " class=\"additional-cuts\"" : "" ) << "><td>" << k + 1 << "</td>";
                 // skip reporting node identifier for time-only scans
                 if (parameters.getScanType() != Parameters::TIMEONLY) {
@@ -503,7 +499,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                     outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer) << "</td>";
                     outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer) << "</td>";
                 }
-                if (parameters.getReportAttributableRisk() && parameters.getModelType() != Parameters::BERNOULLI) {
+                if (parameters.getReportAttributableRisk()) {
                      buffer = _scanRunner.getCuts().at(k)->getAttributableRiskAsString(_scanRunner, buffer);
                     outfile << "<td>" << buffer << "</td>";
                 }

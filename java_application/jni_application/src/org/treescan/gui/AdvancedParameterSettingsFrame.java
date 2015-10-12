@@ -526,7 +526,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     /** enables options of the Additional Output tab */
     public void enableAdditionalOutputOptions() {
-        _chk_rpt_attributable_risk.setEnabled(_settings_window.getModelType() != Parameters.ModelType.BERNOULLI);
+        _chk_rpt_attributable_risk.setEnabled(true);
         _attributable_risk_exposed.setEnabled(_chk_rpt_attributable_risk.isEnabled());
         _chk_attributable_risk_extra.setEnabled(_chk_rpt_attributable_risk.isEnabled());
     }

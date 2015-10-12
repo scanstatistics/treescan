@@ -190,6 +190,10 @@ bool ParametersValidate::ValidateAnalysisParameters(BasePrint& PrintDirection) c
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree and Time' is not implemented for the selected model type.\n", BasePrint::P_PARAMERROR);
                 }
+                if (_parameters.getConditionalType() == Parameters::NODE && _parameters.getModelType() != Parameters::UNIFORM) {
+                    bValid = false;
+                    PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree and Time' conditioned on the node requires the uniform model to be selected as model type.\n", BasePrint::P_PARAMERROR);
+                }
                 break;
             case Parameters::TIMEONLY:
                 if (_parameters.getConditionalType() != Parameters::TOTALCASES) {
@@ -245,10 +249,6 @@ bool ParametersValidate::ValidateAdditionalOutputParameters(BasePrint & PrintDir
     try {
         //validate output file
         if (_parameters.getReportAttributableRisk()) {
-            if (_parameters.getModelType() == Parameters::BERNOULLI) {
-                PrintDirection.Printf("%s:\nThe attributable risk option is not available for the Bernoulli model.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-                bValid = false;
-            }
             if (_parameters.getAttributableRiskExposed() == 0) {
                 bValid = false;
                 PrintDirection.Printf("Invalid Parameter Setting:\nThe number of exposed cases for the attributable risk must be greater than zero. ", BasePrint::P_PARAMERROR);
