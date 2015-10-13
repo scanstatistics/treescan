@@ -161,6 +161,8 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
         default: throw prg_error("Unknown model type (%d).", "getAnalysisParameters()", _parameters.getModelType());
     }
     if (_parameters.getModelType() == Parameters::BERNOULLI) {
+        if (_parameters.getConditionalType() == Parameters::UNCONDITIONAL)
+            settings.push_back(std::make_pair("Self-Control Design",_parameters.getSelfControlDesign() ? "Yes" : "No"));
         printString(buffer, "%u/%u", _parameters.getProbabilityRatio().first, _parameters.getProbabilityRatio().second);
         settings.push_back(std::make_pair("Case Probability",buffer));
     }

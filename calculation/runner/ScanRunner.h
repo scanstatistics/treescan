@@ -14,6 +14,7 @@
 #include <fstream>
 #include <limits>
 #include <deque>
+#include <map>
 
 class ScanRunner;
 class CutStructure {
@@ -178,10 +179,15 @@ public:
 };
 
 struct TreeStatistics {
+    typedef std::map<unsigned int, unsigned int> NodesLevel_t;
+
     unsigned int _num_nodes;
     unsigned int _num_root;
     unsigned int _num_leaf;
     unsigned int _num_parent;
+    NodesLevel_t _nodes_per_level;
+
+    unsigned int getNodeLevel(const NodeStructure& node, const ScanRunner& scanner) const;
 
     TreeStatistics() : _num_nodes(0), _num_root(0), _num_leaf(0), _num_parent(0) {}
 };

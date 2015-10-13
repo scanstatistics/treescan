@@ -77,10 +77,18 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", treestats._num_nodes));
         PrintFormat.PrintSectionLabel(outfile, "Number of Root Nodes", false);
         PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", treestats._num_root));
-        PrintFormat.PrintSectionLabel(outfile, "Number of Leaf Nodes", false);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", treestats._num_leaf));
         PrintFormat.PrintSectionLabel(outfile, "Number of Nodes with Children", false);
         PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", treestats._num_parent));
+        PrintFormat.PrintSectionLabel(outfile, "Number of Leaf Nodes", false);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", treestats._num_leaf));
+        PrintFormat.PrintSectionLabel(outfile, "Number of Levels in Tree", false);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", treestats._nodes_per_level.size()));
+        PrintFormat.PrintSectionLabel(outfile, "Nodes per Levels", false);
+        std::stringstream stringbuffer;
+        for (TreeStatistics::NodesLevel_t::const_iterator itr=treestats._nodes_per_level.begin(); itr != treestats._nodes_per_level.end(); ++itr) {
+            stringbuffer << itr->second << (itr->first == treestats._nodes_per_level.size() ? "" : ", ");
+        }
+        PrintFormat.PrintAlignedMarginsDataString(outfile, stringbuffer.str().c_str());
     }
 
     PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
@@ -392,8 +400,14 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         const TreeStatistics& treestats =  _scanRunner.getTreeStatistics();
         outfile << "<tr><th>Number of Nodes:</th><td>" << treestats._num_nodes << "</td></tr>" << std::endl;
         outfile << "<tr><th>Number of Root Nodes:</th><td>" << treestats._num_root << "</td></tr>" << std::endl;
-        outfile << "<tr><th>Number of Leaf Nodes:</th><td>" << treestats._num_leaf << "</td></tr>" << std::endl;
         outfile << "<tr><th>Number of Nodes with Children:</th><td>" << treestats._num_parent << "</td></tr>" << std::endl;
+        outfile << "<tr><th>Number of Leaf Nodes:</th><td>" << treestats._num_leaf << "</td></tr>" << std::endl;
+        outfile << "<tr><th>Number of Levels in Tree:</th><td>" << treestats._nodes_per_level.size() << "</td></tr>" << std::endl;
+        std::stringstream stringbuffer;
+        for (TreeStatistics::NodesLevel_t::const_iterator itr=treestats._nodes_per_level.begin(); itr != treestats._nodes_per_level.end(); ++itr) {
+            stringbuffer << itr->second << (itr->first == treestats._nodes_per_level.size() ? "" : ", ");
+        }
+        outfile << "<tr><th>Nodes per Levels:</th><td>" << stringbuffer.str().c_str() << "</td></tr>" << std::endl;
     }
     outfile << "</tbody></table></div>" << std::endl;
     outfile << "<div class=\"hr\"></div>" << std::endl;

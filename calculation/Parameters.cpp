@@ -67,6 +67,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_dayofweek_adjustment != rhs._dayofweek_adjustment) return false;
   if (_report_attributable_risk != rhs._report_attributable_risk) return false;
   if (_attributable_risk_exposed != rhs._attributable_risk_exposed) return false;
+  if (_self_control_design != rhs._self_control_design) return false;
   //if (_input_sources != rhs._input_sources) return false;
 
   return true;
@@ -159,7 +160,7 @@ void Parameters::copy(const Parameters &rhs) {
 
     _report_attributable_risk = rhs._report_attributable_risk;
     _attributable_risk_exposed = rhs._attributable_risk_exposed;
-
+    _self_control_design = rhs._self_control_design;
     _input_sources = rhs._input_sources;
 }
 
@@ -292,6 +293,7 @@ void Parameters::setAsDefaulted() {
 
     _report_attributable_risk = false;
     _attributable_risk_exposed = 0;
+    _self_control_design = false;
 
     _input_sources.clear();
 }
@@ -356,6 +358,7 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _modelType = static_cast<ModelType>(pt.get<unsigned int>("parameters.analysis.probability-model", POISSON));
     _probablility_ratio.first = pt.get<unsigned int>("parameters.analysis.event-probability.numerator", 1);
     _probablility_ratio.second = pt.get<unsigned int>("parameters.analysis.event-probability.denominator", 2);
+     _self_control_design = pt.get<bool>("parameters.analysis.self-control-design", false);
     _temporalStartRange.assign(pt.get<std::string>("parameters.analysis.temporal-window.start-range", "0,0"));
     _temporalEndRange.assign(pt.get<std::string>("parameters.analysis.temporal-window.end-range", "0,0"));
     // Advanced Analysis - Temporal Window
@@ -415,6 +418,7 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.analysis.scan", static_cast<unsigned int>(_scan_type));
     pt.put("parameters.analysis.conditional", static_cast<unsigned int>(_conditional_type));
     pt.put("parameters.analysis.probability-model", static_cast<unsigned int>(_modelType));
+    pt.put("parameters.analysis.self-control-design", _self_control_design);
     pt.put("parameters.analysis.event-probability.numerator", _probablility_ratio.first);
     pt.put("parameters.analysis.event-probability.denominator", _probablility_ratio.second);
     pt.put("parameters.analysis.temporal-window.start-range", _temporalStartRange.toString(buffer));

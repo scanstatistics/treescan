@@ -69,6 +69,12 @@ void run_analysis(const std::string& analysis_name, std::string& results_user_di
     AppToolkit::ToolKitDestroy();
 }
 
+std::vector<std::string>::iterator getHeaderColumnIteratorOrFail(CSV_Row_t& headerRow, const std::string& columnName) {
+    std::vector<std::string>::iterator itr = std::find(headerRow.begin(), headerRow.end(), columnName);
+    if (itr == headerRow.end()) BOOST_FAIL( "Column '" << columnName.c_str() << "' not found" );
+    return itr;
+}
+
 CSV_Row_t& getCSVRow(std::ifstream& stream, CSV_Row_t& row) {
     row.clear();
     std::string line;

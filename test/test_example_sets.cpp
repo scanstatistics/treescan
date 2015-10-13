@@ -7,12 +7,6 @@
 
 /* Tests the expected results of the example data sets */
 
-std::vector<std::string>::iterator getHeaderColumnIteratorOrFail(CSV_Row_t& headerRow, const std::string& columnName) {
-    std::vector<std::string>::iterator itr = std::find(headerRow.begin(), headerRow.end(), columnName);
-    if (itr == headerRow.end()) BOOST_FAIL( "Column '" << columnName.c_str() << "' not found" );
-    return itr;
-}
-
 /* Test Suite for the Poisson example data set. */
 BOOST_FIXTURE_TEST_SUITE( poisson_example_suite, poisson_fixture )
 

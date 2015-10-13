@@ -37,8 +37,11 @@ double CutStructure::getAttributableRisk(const ScanRunner& scanner) {
                 case Parameters::TOTALCASES :
                     if (parameters.getModelType() == Parameters::POISSON)
                         return getExcessCases(scanner) / static_cast<double>(parameters.getAttributableRiskExposed());
-                    if (parameters.getModelType() == Parameters::BERNOULLI)
+                    if (parameters.getModelType() == Parameters::BERNOULLI) {
+                        if (parameters.getSelfControlDesign())
+                            return getExcessCases(scanner) / static_cast<double>(parameters.getAttributableRiskExposed());
                         return getExcessCases(scanner) / totalN;
+                    }
                     throw prg_error("Cannot calculate attributable risk: tree-only, model (%d).", "getAttributableRisk()", parameters.getModelType());
                 default: throw prg_error("Cannot calculate attributable risk: tree-only, condition type (%d).", "getAttributableRisk()", parameters.getConditionalType());
             }
@@ -97,6 +100,8 @@ double CutStructure::getExcessCases(const ScanRunner& scanner) const {
                     if (parameters.getModelType() == Parameters::POISSON)
                         return C - _N;
                     if (parameters.getModelType() == Parameters::BERNOULLI)
+                        if (parameters.getSelfControlDesign())
+                            return C - scanner.getParameters().getProbability() * (_N - C)/(1.0 - scanner.getParameters().getProbability());
                         return C - _N * scanner.getParameters().getProbability();
                     throw prg_error("Cannot calculate excess cases: tree-only, unconditonal, model (%d).", "getExcessCases()", parameters.getModelType());
                 case Parameters::TOTALCASES :
@@ -237,7 +242,10 @@ double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
                         return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
                     }
                     if (parameters.getModelType() == Parameters::BERNOULLI) {
-                        relative_risk = C / (_N * parameters.getProbability());
+                        if (parameters.getSelfControlDesign())
+                            relative_risk = (C/parameters.getProbability()) / ((_N - C) / (1.0 - parameters.getProbability()));
+                        else
+                            relative_risk = C / (_N * parameters.getProbability());
                         return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
                     }
                     throw prg_error("Cannot calculate relative risk: tree-only, unconditonal, model (%d).", "getRelativeRisk()", parameters.getModelType());
@@ -293,6 +301,19 @@ double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
     }
 }
 
+unsigned int TreeStatistics::getNodeLevel(const NodeStructure& node, const ScanRunner& scanner) const {
+    unsigned int level=1;
+
+    const NodeStructure * node_ptr = &node;
+    while (!node_ptr->getParents().empty()) {
+        ++level;
+        // We're currently preventing nodes from having more than one parent, see https://www.squishlist.com/ims/treescan/13/.
+        node_ptr = scanner.getNodes().at(node_ptr->getParents().front());
+    }
+    return level;
+}
+
+/** class constructor */
 ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0) {
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     DataTimeRange min_max = Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getMinMax() : DataTimeRange(0,0);
@@ -343,7 +364,6 @@ ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) cons
 /* Returns tree statistics information. */
 const TreeStatistics& ScanRunner::getTreeStatistics() const {
     if (_tree_statistics.get()) return *_tree_statistics.get();
-
     _tree_statistics.reset(new TreeStatistics());
     _tree_statistics->_num_nodes = static_cast<unsigned int>(_Nodes.size());
     NodeStructureContainer_t::const_iterator itr=_Nodes.begin();
@@ -354,6 +374,11 @@ const TreeStatistics& ScanRunner::getTreeStatistics() const {
         else
             ++_tree_statistics->_num_parent;
         if (node.getParents().empty()) ++_tree_statistics->_num_root;
+        unsigned int level = _tree_statistics->getNodeLevel(node, *this);
+        if (_tree_statistics->_nodes_per_level.find(level) == _tree_statistics->_nodes_per_level.end())
+            _tree_statistics->_nodes_per_level.insert(std::make_pair(level, static_cast<unsigned int>(1)));
+        else
+            _tree_statistics->_nodes_per_level[level] += static_cast<unsigned int>(1);
     }
     return *_tree_statistics.get();
 }
@@ -664,7 +689,9 @@ bool ScanRunner::readTree(const std::string& filename) {
                     // prevent nodes from having more than one parent, see https://www.squishlist.com/ims/treescan/13/
                     if (node->refParents().size()) {
                         readSuccess = false;
-                        _print.Printf("Error: Record %ld in tree file has node with more than one parent node defined (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), identifier.c_str());
+                        _print.Printf("Error: Record %ld in tree file has node '%s' with more than one parent node defined ('%s', '%s').\n", 
+                                      BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str(),
+                                      _Nodes.at(node->refParents().front())->getIdentifier().c_str(), identifier.c_str());
                     } else {
                         node->refParents().push_back(_Nodes.at(index.second)->getID());
                         nodesWithParents.set(node->getID());

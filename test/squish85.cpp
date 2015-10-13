@@ -31,14 +31,10 @@ BOOST_AUTO_TEST_CASE( test_unconditional_poison_power_estimation ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    std::vector<std::string>::iterator itrCol1 = std::find(headers.begin(), headers.end(), std::string(DataRecordWriter::HYPOTHESIS_ALTERNATIVE_NUM_FIELD));
-    if (itrCol1 == headers.end()) BOOST_FAIL( "Hypothesis iteration column not found" );
-    std::vector<std::string>::iterator itrCol2 = std::find(headers.begin(), headers.end(), std::string(DataRecordWriter::HA_ALPHA05_FIELD));
-    if (itrCol2 == headers.end()) BOOST_FAIL( "Alpha 0.05 column not found" );
-    std::vector<std::string>::iterator itrCol3 = std::find(headers.begin(), headers.end(), std::string(DataRecordWriter::HA_ALPHA01_FIELD));
-    if (itrCol3 == headers.end()) BOOST_FAIL( "Alpha 0.01 column not found" );
-    std::vector<std::string>::iterator itrCol4 = std::find(headers.begin(), headers.end(), std::string(DataRecordWriter::HA_ALPHA001_FIELD));
-    if (itrCol4 == headers.end()) BOOST_FAIL( "Alpha 0.001 column not found" );
+    std::vector<std::string>::iterator itrCol1 = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::HYPOTHESIS_ALTERNATIVE_NUM_FIELD);
+    std::vector<std::string>::iterator itrCol2 = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::HA_ALPHA05_FIELD);
+    std::vector<std::string>::iterator itrCol3 = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::HA_ALPHA01_FIELD);
+    std::vector<std::string>::iterator itrCol4 = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::HA_ALPHA001_FIELD);
 
     // check the expected values this analysis -- there should be 3 sets of power estimations
     unsigned int dataRows=0;
@@ -46,14 +42,12 @@ BOOST_AUTO_TEST_CASE( test_unconditional_poison_power_estimation ) {
     getCSVRow(stream, data);
     while (data.size()) {
         ++dataRows;
-        unsigned int ha_num;
-        BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrCol1)).c_str(), ha_num) );
-        BOOST_CHECK_EQUAL( ha_num, dataRows );
+        unsigned int ha_num; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrCol1)).c_str(), ha_num) );
+        double alpha05; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrCol2)).c_str(), alpha05) );
+        double alpha01; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrCol3)).c_str(), alpha01) );
+        double alpha001; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrCol4)).c_str(), alpha001) );
 
-        double alpha05, alpha01, alpha001;
-        BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrCol2)).c_str(), alpha05) );
-        BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrCol3)).c_str(), alpha01) );
-        BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrCol4)).c_str(), alpha001) );
+        BOOST_CHECK_EQUAL( ha_num, dataRows );
         switch (dataRows) {
             case 1 : BOOST_REQUIRE_CLOSE( alpha05, 0.797, 0.001 );
                      BOOST_REQUIRE_CLOSE( alpha01, 0.483, 0.001 );

@@ -254,6 +254,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getAttributableRiskExposed());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setSelfControlDesign", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getSelfControlDesign());
+  jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "clearInputSourceSettings", "()V");
   Env.CallVoidMethod(jParameters, mid);
   jni_error::_detectError(Env);
@@ -487,6 +491,10 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
 
   mid = _getMethodId_Checked(Env, clazz, "getAttributableRiskExposed", "()I");
   Parameters.setAttributableRiskExposed(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getSelfControlDesign", "()Z");
+  Parameters.setSelfControlDesign(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getInputSourceSettings", "()Ljava/util/ArrayList;");

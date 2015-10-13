@@ -17,6 +17,7 @@ std::ifstream & getFileStream(std::ifstream& stream, const std::string& filename
 void run_analysis(const std::string& analysis_name, std::string& results_user_directory, Parameters& parameters, BasePrint& print);
 
 typedef std::vector<std::string> CSV_Row_t;
+std::vector<std::string>::iterator getHeaderColumnIteratorOrFail(CSV_Row_t& headerRow, const std::string& columnName);
 CSV_Row_t& getCSVRow(std::ifstream& stream, CSV_Row_t& row);
 
 #endif

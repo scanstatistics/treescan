@@ -22,6 +22,7 @@ class Parameters {
                         CONDITIONAL_TYPE,
                         MODEL_TYPE,
                         EVENT_PROBABILITY,
+                        SELF_CONTROL_DESIGN,
                         START_DATA_TIME_RANGE,
                         END_DATA_TIME_RANGE,
                         /* Advanced Analysis - Temporal Window */
@@ -199,6 +200,7 @@ class Parameters {
     bool                                _dayofweek_adjustment;
     bool                                _report_attributable_risk;
     unsigned int                        _attributable_risk_exposed;
+    bool                                _self_control_design;
 
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
@@ -258,6 +260,7 @@ class Parameters {
     unsigned int                        getAttributableRiskExposed() const {return _attributable_risk_exposed;}
     bool                                getReportCriticalValues() const {return _report_critical_values;}
     ResultsFormat                       getResultsFormat() const {return _resultsFormat;}
+    bool                                getSelfControlDesign() const {return _self_control_design;}
     ScanType                            getScanType() const {return _scan_type;}
     const std::string                 & getSourceFileName() const {return _parametersSourceFileName;}
     const DataTimeRange               & getTemporalEndRange() const {return _temporalEndRange;}
@@ -316,6 +319,7 @@ class Parameters {
     void                                setReportCriticalValues(bool b) {_report_critical_values = b;}
     void                                setResultsFormat(ResultsFormat e) {_resultsFormat = e;}
     void                                setScanType(ScanType e) {_scan_type = e;}
+    void                                setSelfControlDesign(bool b) {_self_control_design = b;}
     void                                setSourceFileName(const char * sParametersSourceFileName);
     void                                setTemporalEndRange(const DataTimeRange& range) {_temporalEndRange = range;}
     void                                setTemporalStartRange(const DataTimeRange& range) {_temporalStartRange = range;}

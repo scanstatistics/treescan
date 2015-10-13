@@ -207,9 +207,12 @@ bool ParametersValidate::ValidateAnalysisParameters(BasePrint& PrintDirection) c
                 break;
             default: throw prg_error("Unknown scan type (%d).", "ValidateAnalysisParameters()", _parameters.getScanType());
         }
-        if (_parameters.getModelType() == Parameters::BERNOULLI &&
-            (_parameters.getProbabilityRatio().first == 0 || _parameters.getProbabilityRatio().second == 0 ||
-            _parameters.getProbabilityRatio().first >= _parameters.getProbabilityRatio().second)) {
+        if (_parameters.getSelfControlDesign() && !(_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nSelf control design is implemented for the unconditional Bernoulli model only.\n", BasePrint::P_PARAMERROR);
+        }
+        if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL &&
+            (_parameters.getProbabilityRatio().first == 0 || _parameters.getProbabilityRatio().second == 0 || _parameters.getProbabilityRatio().first >= _parameters.getProbabilityRatio().second)) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nCase probabilty must be between zero and one.\n", BasePrint::P_PARAMERROR);
         }

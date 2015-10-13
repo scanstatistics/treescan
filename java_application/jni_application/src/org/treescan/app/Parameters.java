@@ -63,6 +63,7 @@ public class Parameters implements Cloneable {
     private boolean _dayofweek_adjustment=false;
     private boolean _report_attributable_risk=false;
     private int _attributable_risk_exposed=0;
+    private boolean _self_control_design=false;
 
     private ArrayList<InputSourceSettings>     _input_sources;
     
@@ -130,6 +131,7 @@ public class Parameters implements Cloneable {
           if (_dayofweek_adjustment != rhs._dayofweek_adjustment) return false;
           if (_report_attributable_risk != rhs._report_attributable_risk) return false;
           if (_attributable_risk_exposed != rhs._attributable_risk_exposed) return false;
+          if (_self_control_design != rhs._self_control_design) return false;
           if (!_input_sources.equals(rhs._input_sources)) return false;
           
           return true;
@@ -139,6 +141,8 @@ public class Parameters implements Cloneable {
     public void clearInputSourceSettings() {_input_sources.clear();}
     public ArrayList<InputSourceSettings> getInputSourceSettings() {return _input_sources;}
     
+    public boolean getSelfControlDesign() {return _self_control_design;}
+    public void setSelfControlDesign(boolean b) {_self_control_design = b;}
     public boolean getReportAttributableRisk() {return _report_attributable_risk;}
     public int getAttributableRiskExposed() {return _attributable_risk_exposed;}
     public void setReportAttributableRisk(boolean b) {_report_attributable_risk = b;}

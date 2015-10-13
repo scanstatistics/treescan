@@ -257,6 +257,7 @@ void IniParameterFileAccess::WriteAnalysisSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, Parameters::SCAN_TYPE, GetParameterString(Parameters::SCAN_TYPE, s).c_str(), GetParameterComment(Parameters::SCAN_TYPE));
         WriteIniParameter(WriteFile, Parameters::MODEL_TYPE, GetParameterString(Parameters::MODEL_TYPE, s).c_str(), GetParameterComment(Parameters::MODEL_TYPE));
         WriteIniParameter(WriteFile, Parameters::CONDITIONAL_TYPE, GetParameterString(Parameters::CONDITIONAL_TYPE, s).c_str(), GetParameterComment(Parameters::CONDITIONAL_TYPE));
+        WriteIniParameter(WriteFile, Parameters::SELF_CONTROL_DESIGN, GetParameterString(Parameters::SELF_CONTROL_DESIGN, s).c_str(), GetParameterComment(Parameters::SELF_CONTROL_DESIGN));
         WriteIniParameter(WriteFile, Parameters::EVENT_PROBABILITY, GetParameterString(Parameters::EVENT_PROBABILITY, s).c_str(), GetParameterComment(Parameters::EVENT_PROBABILITY));
         WriteIniParameter(WriteFile, Parameters::START_DATA_TIME_RANGE, GetParameterString(Parameters::START_DATA_TIME_RANGE, s).c_str(), GetParameterComment(Parameters::START_DATA_TIME_RANGE));
         WriteIniParameter(WriteFile, Parameters::END_DATA_TIME_RANGE, GetParameterString(Parameters::END_DATA_TIME_RANGE, s).c_str(), GetParameterComment(Parameters::END_DATA_TIME_RANGE));

@@ -385,6 +385,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _dataTimeRangeEnd.setText(Integer.toString(parameters.getDataTimeRangeClose()));
 
         setControlsForAnalysisOptions(parameters.getScanType(), parameters.getConditionalType(), parameters.getModelType());
+        _self_control_design.setSelected(parameters.getSelfControlDesign());
         _eventProbabiltyNumerator.setText(Integer.toString(parameters.getProbabilityRatioNumerator()));
         _eventProbabiltyDenominator.setText(Integer.toString(parameters.getProbabilityRatioDenominator()));
         _temporalStartWindowBegin.setText(Integer.toString(parameters.getTemporalStartRangeBegin()));
@@ -456,6 +457,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         } else if (_uniformButton.isEnabled() && _uniformButton.isSelected()) {
             parameters.setModelType(Parameters.ModelType.UNIFORM.ordinal());
         }
+        parameters.setSelfControlDesign(_self_control_design.isEnabled() && _self_control_design.isSelected());
         parameters.setProbabilityRatioNumerator(Integer.parseInt(_eventProbabiltyNumerator.getText()));
         parameters.setProbabilityRatioDenominator(Integer.parseInt(_eventProbabiltyDenominator.getText()));
 
@@ -555,6 +557,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _eventProbabilityLabel2.setEnabled(enabled);
         _eventProbabiltyNumerator.setEnabled(enabled);
         _eventProbabiltyDenominator.setEnabled(enabled);
+        _self_control_design.setEnabled(enabled);
         // temporal window inputs only available for tree-time or time-only
         _temporalWindowGroup.setEnabled(treeAndTime || timeOnly);
         _temporalStartWindowLabel.setEnabled(_temporalWindowGroup.isEnabled());
@@ -598,6 +601,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _eventProbabiltyNumerator = new javax.swing.JTextField();
         _eventProbabilityLabel = new javax.swing.JLabel();
         _eventProbabilityLabel2 = new javax.swing.JLabel();
+        _self_control_design = new javax.swing.JCheckBox();
         _scanStatisticPanel = new javax.swing.JPanel();
         _conditionalTotalCasesButton = new javax.swing.JRadioButton();
         _unconditionalButton = new javax.swing.JRadioButton();
@@ -650,7 +654,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _probabilityModelPanel.setPreferredSize(new java.awt.Dimension(100, 108));
 
         treeModelButtonGroup.add(_PoissonButton);
-        _PoissonButton.setSelected(true);
         _PoissonButton.setText("Poisson");
         _PoissonButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -661,6 +664,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         });
 
         treeModelButtonGroup.add(_BernoulliButton);
+        _BernoulliButton.setSelected(true);
         _BernoulliButton.setText("Bernoulli");
         _BernoulliButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -710,6 +714,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _eventProbabilityLabel2.setText("/");
 
+        _self_control_design.setText("Self-Control Design");
+
         javax.swing.GroupLayout _probabilityModelPanelLayout = new javax.swing.GroupLayout(_probabilityModelPanel);
         _probabilityModelPanel.setLayout(_probabilityModelPanelLayout);
         _probabilityModelPanelLayout.setHorizontalGroup(
@@ -717,6 +723,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(_probabilityModelPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_probabilityModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_probabilityModelPanelLayout.createSequentialGroup()
+                        .addComponent(_BernoulliButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(_self_control_design, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(_PoissonButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(_probabilityModelPanelLayout.createSequentialGroup()
                         .addGap(21, 21, 21)
                         .addComponent(_eventProbabilityLabel)
@@ -726,20 +737,18 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_eventProbabilityLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_eventProbabiltyDenominator, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _probabilityModelPanelLayout.createSequentialGroup()
-                        .addGroup(_probabilityModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(_BernoulliButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(_PoissonButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap())))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         _probabilityModelPanelLayout.setVerticalGroup(
             _probabilityModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_probabilityModelPanelLayout.createSequentialGroup()
                 .addComponent(_PoissonButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_BernoulliButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_probabilityModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_BernoulliButton)
+                    .addComponent(_self_control_design))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(_probabilityModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_eventProbabilityLabel)
                     .addComponent(_eventProbabiltyNumerator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1017,14 +1026,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             _probabilityModelPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_probabilityModelPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_uniformButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(_uniformButton, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
                 .addContainerGap())
         );
         _probabilityModelPanel1Layout.setVerticalGroup(
             _probabilityModelPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_probabilityModelPanel1Layout.createSequentialGroup()
                 .addComponent(_uniformButton)
-                .addGap(0, 59, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         _advancedAnalysisButton.setText("Advanced >>"); // NOI18N
@@ -1063,11 +1072,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_scanStatisticPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_probabilityModelPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(_probabilityModelPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE)
+                    .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_temporalWindowGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 63, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -1225,7 +1234,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_countFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_data_time_range_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 217, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 198, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -1304,7 +1313,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_reportResultsAsHTML)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportResultsAsCsvTable)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 276, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 257, Short.MAX_VALUE)
                 .addComponent(_advancedOutputButton)
                 .addContainerGap())
         );
@@ -1324,7 +1333,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1364,6 +1373,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JLabel _resultsFileLabel1;
     private javax.swing.JPanel _scanStatisticPanel;
     private javax.swing.JPanel _scanStatisticPanel1;
+    private javax.swing.JCheckBox _self_control_design;
     private javax.swing.JTextField _temporalEndWindowBegin;
     private javax.swing.JTextField _temporalEndWindowEnd;
     private javax.swing.JLabel _temporalEndWindowLabel;

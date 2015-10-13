@@ -104,9 +104,9 @@ void IniParameterSpecification::Build_1_1_x_ParameterList() {
     _parameter_info[Parameters::SCAN_TYPE] = ParamInfo(Parameters::SCAN_TYPE, "scan-type", 1, _analysis_section);
     _parameter_info[Parameters::CONDITIONAL_TYPE] = ParamInfo(Parameters::CONDITIONAL_TYPE, "conditional-type", 2, _analysis_section);
     _parameter_info[Parameters::MODEL_TYPE] = ParamInfo(Parameters::MODEL_TYPE, "probability-model", 3, _analysis_section);
-    _parameter_info[Parameters::EVENT_PROBABILITY] = ParamInfo(Parameters::EVENT_PROBABILITY, "event-probability", 4, _analysis_section);
-    _parameter_info[Parameters::START_DATA_TIME_RANGE] = ParamInfo(Parameters::START_DATA_TIME_RANGE, "window-start-range", 5, _analysis_section);
-    _parameter_info[Parameters::END_DATA_TIME_RANGE] = ParamInfo(Parameters::END_DATA_TIME_RANGE, "window-end-range", 6, _analysis_section);
+    _parameter_info[Parameters::EVENT_PROBABILITY] = ParamInfo(Parameters::EVENT_PROBABILITY, "event-probability", 5, _analysis_section);
+    _parameter_info[Parameters::START_DATA_TIME_RANGE] = ParamInfo(Parameters::START_DATA_TIME_RANGE, "window-start-range", 6, _analysis_section);
+    _parameter_info[Parameters::END_DATA_TIME_RANGE] = ParamInfo(Parameters::END_DATA_TIME_RANGE, "window-end-range", 7, _analysis_section);
 
     _parameter_info[Parameters::TREE_FILE] = ParamInfo(Parameters::TREE_FILE, "tree-filename", 1, _input_section);
     _parameter_info[Parameters::COUNT_FILE] = ParamInfo(Parameters::COUNT_FILE, "count-filename", 2, _input_section);
@@ -160,8 +160,9 @@ void IniParameterSpecification::Build_1_2_x_ParameterList() {
     _parameter_info[Parameters::DAYOFWEEK_ADJUSTMENT] = ParamInfo(Parameters::DAYOFWEEK_ADJUSTMENT, "perform-day-of-week-adjustments", 1, _adjustments_section);
     _parameter_info[Parameters::REPORT_ATTR_RISK] = ParamInfo(Parameters::REPORT_ATTR_RISK, "report-attributable-risk", 3, _additional_output_section);
     _parameter_info[Parameters::ATTR_RISK_NUM_EXPOSED] = ParamInfo(Parameters::ATTR_RISK_NUM_EXPOSED, "attributable-risk-exposed", 4, _additional_output_section);
+    _parameter_info[Parameters::SELF_CONTROL_DESIGN] = ParamInfo(Parameters::SELF_CONTROL_DESIGN, "self-control-design", 4, _analysis_section);
 
-    assert(_parameter_info.size() == 42);
+    assert(_parameter_info.size() == 43);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

@@ -54,6 +54,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::SCAN_TYPE               : return "scan type (TREEONLY=0, TREETIME=1, TIMEONLY=2)";
             case Parameters::CONDITIONAL_TYPE        : return "conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)";
             case Parameters::MODEL_TYPE              : return "probability model type (POISSON=0, BERNOULLI=1, UNIFORM=2, Not-Applicable=3)";
+            case Parameters::SELF_CONTROL_DESIGN     : return "self control design - unconditional Bernoulli only (y/n)";
             case Parameters::EVENT_PROBABILITY       : return "case probability (integer / integer)";
             case Parameters::START_DATA_TIME_RANGE   : return "start data time range (integer - integer)";
             case Parameters::END_DATA_TIME_RANGE     : return "end data time range (integer - integer)";
@@ -122,6 +123,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::SCAN_TYPE                : return AsString(s, _parameters.getScanType());
             case Parameters::CONDITIONAL_TYPE         : return AsString(s, _parameters.getConditionalType());
             case Parameters::MODEL_TYPE               : return AsString(s, _parameters.getModelType());
+            case Parameters::SELF_CONTROL_DESIGN      : return AsString(s, _parameters.getSelfControlDesign());
             case Parameters::EVENT_PROBABILITY        : return AsString(s, _parameters.getProbabilityRatio());
             case Parameters::START_DATA_TIME_RANGE    : return _parameters.getTemporalStartRange().toString(s);
             case Parameters::END_DATA_TIME_RANGE      : return _parameters.getTemporalEndRange().toString(s);
@@ -285,11 +287,12 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::DUPLICATES               : _parameters.setDuplicates(ReadBoolean(value, e)); break;
             /* Analysis */
             case Parameters::SCAN_TYPE                : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::TREEONLY, Parameters::TIMEONLY);
-                                                       _parameters.setScanType((Parameters::ScanType)iValue); break;
+                                                        _parameters.setScanType((Parameters::ScanType)iValue); break;
             case Parameters::CONDITIONAL_TYPE         : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::UNCONDITIONAL, Parameters::NODEANDTIME);
-                                                       _parameters.setConditionalType((Parameters::ConditionalType)iValue); break;
+                                                        _parameters.setConditionalType((Parameters::ConditionalType)iValue); break;
             case Parameters::MODEL_TYPE               : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::POISSON, Parameters::MODEL_NOT_APPLICABLE);
-                                                       _parameters.setModelType((Parameters::ModelType)iValue); break;
+                                                        _parameters.setModelType((Parameters::ModelType)iValue); break;
+            case Parameters::SELF_CONTROL_DESIGN      : _parameters.setSelfControlDesign(ReadBoolean(value, e)); break;
             case Parameters::EVENT_PROBABILITY        : _parameters.setProbabilityRatio(ReadRatio(value)); break;
             case Parameters::START_DATA_TIME_RANGE    : _parameters.setTemporalStartRange(DataTimeRange(value)); break;
             case Parameters::END_DATA_TIME_RANGE      : _parameters.setTemporalEndRange(DataTimeRange(value)); break;
