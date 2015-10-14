@@ -5,6 +5,8 @@ scan-type=2
 probability-model=2
 ;conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)
 conditional-type=1
+;self control design - unconditional Bernoulli only (y/n)
+self-control-design=n
 ;case probability (integer / integer)
 event-probability=1/2
 ;start data time range (integer - integer)
