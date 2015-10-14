@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
                      BOOST_CHECK_CLOSE( ode, 1.47, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.47, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 10.5, 0.001 );
-                     BOOST_CHECK_CLOSE( ar, 0.11, 0.00001 );
+                     BOOST_CHECK_CLOSE( ar, 0.052, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 5.09544, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.017, 0.0001 ); break;
             case 2 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf9" );
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
                      BOOST_CHECK_CLOSE( ode, 1.75, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.75, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 6.0, 0.001 );
-                     BOOST_CHECK_CLOSE( ar, 0.063, 0.00001 );
+                     BOOST_CHECK_CLOSE( ar, 0.03, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 5.062032, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.019, 0.0001 ); break;
             case 8  :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node2" );
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
                      BOOST_CHECK_CLOSE( ode, 1.13, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.13, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 2.0, 0.001 );
-                     BOOST_CHECK_CLOSE( ar, 0.021, 0.00001 );
+                     BOOST_CHECK_CLOSE( ar, 0.01, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 0.267462, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.972, 0.0001 ); break;
             case 9  :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf5" );
@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
                      BOOST_CHECK_CLOSE( ode, 1.14, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.14, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 0.5, 0.001 );
-                     BOOST_CHECK_CLOSE( ar, 0.0052, 0.00001 );
+                     BOOST_CHECK_CLOSE( ar, 0.0025, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 0.0716735, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.999, 0.0001 ); break;
             default : break;
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
                      BOOST_CHECK_CLOSE( ode, 1.28, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.7, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 13.59, 0.001 );
-                     BOOST_CHECK_CLOSE( ar, 0.14, 0.00001 );
+                     BOOST_CHECK_CLOSE( ar, 0.068, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 4.55287, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.031, 0.0001 ); break;
             case 2 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf9" );
@@ -318,7 +318,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
                      BOOST_CHECK_CLOSE( ode, 1.53, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.71, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 5.8, 0.001 );
-                     BOOST_CHECK_CLOSE( ar, 0.06, 0.00001 );
+                     BOOST_CHECK_CLOSE( ar, 0.029, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 4.062552, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.076, 0.0001 ); break;
             case 5 :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf4" );
@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
                      BOOST_CHECK_CLOSE( ode, 1.31, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.35, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 1.55, 0.001 );
-                     BOOST_CHECK_CLOSE( ar, 0.016, 0.00001 );
+                     BOOST_CHECK_CLOSE( ar, 0.0077, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 0.591424, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.937, 0.0001 ); break;
             case 6 :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf8" );
@@ -338,7 +338,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
                      BOOST_CHECK_CLOSE( ode, 1.21, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.25, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 1.8, 0.001 );
-                     BOOST_CHECK_CLOSE( ar, 0.019, 0.00001 );
+                     BOOST_CHECK_CLOSE( ar, 0.009, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 0.4512, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.966, 0.0001 ); break;
             default : break;

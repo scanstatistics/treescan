@@ -27,22 +27,13 @@ double CutStructure::getAttributableRisk(const ScanRunner& scanner) {
     const Parameters& parameters = scanner.getParameters();
     double C = static_cast<double>(_C);
     double totalC = static_cast<double>(scanner.getTotalC());
-    double totalN = scanner.getTotalN();
 
     switch (parameters.getScanType()) {
 
         case Parameters::TREEONLY: {
             switch (parameters.getConditionalType()) {
                 case Parameters::UNCONDITIONAL :
-                case Parameters::TOTALCASES :
-                    if (parameters.getModelType() == Parameters::POISSON)
-                        return getExcessCases(scanner) / static_cast<double>(parameters.getAttributableRiskExposed());
-                    if (parameters.getModelType() == Parameters::BERNOULLI) {
-                        if (parameters.getSelfControlDesign())
-                            return getExcessCases(scanner) / static_cast<double>(parameters.getAttributableRiskExposed());
-                        return getExcessCases(scanner) / totalN;
-                    }
-                    throw prg_error("Cannot calculate attributable risk: tree-only, model (%d).", "getAttributableRisk()", parameters.getModelType());
+                case Parameters::TOTALCASES : return getExcessCases(scanner) / static_cast<double>(parameters.getAttributableRiskExposed());
                 default: throw prg_error("Cannot calculate attributable risk: tree-only, condition type (%d).", "getAttributableRisk()", parameters.getConditionalType());
             }
         }

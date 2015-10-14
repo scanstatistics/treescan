@@ -96,7 +96,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_unconditional_bernoulli, bernoul
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
-    double expected [9] = {0.11, 0.063, 0.083, 0.026, 0.021, 0.073, 0.026, 0.021, 0.0052};
+    double expected [9] = {0.052, 0.03, 0.04, 0.013, 0.01, 0.035, 0.013, 0.01, 0.0025};
     unsigned int dataRows=0, expectedRows=9;
     CSV_Row_t data;
     getCSVRow(stream, data);
@@ -181,7 +181,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_conditional_bernoulli, bernoulli
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
-    double expected [6] = {0.14, 0.06, 0.097, 0.021, 0.016, 0.019};
+    double expected [6] = {0.068, 0.029, 0.046, 0.01, 0.0077, 0.009};
     unsigned int dataRows=0, expectedRows=6;
     CSV_Row_t data;
     getCSVRow(stream, data);
