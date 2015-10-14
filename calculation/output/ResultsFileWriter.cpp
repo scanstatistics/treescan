@@ -293,7 +293,10 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buff
             }
             switch (_scanRunner.getParameters().getModelType()) {
                 case Parameters::POISSON : buffer += " Poisson Model"; break;
-                case Parameters::BERNOULLI : buffer += " Bernoulli Model"; break;
+                case Parameters::BERNOULLI : buffer += " Bernoulli Model";
+                    if (_scanRunner.getParameters().getSelfControlDesign())
+                        buffer += " (self-control design)";
+                    break;
                 case Parameters::UNIFORM : break;
                 default: throw prg_error("Unknown nodel type (%d).", "getAnalysisSuccinctStatement()", _scanRunner.getParameters().getModelType());
             }
@@ -346,7 +349,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << ".program-info {padding: 5px 0 5px 5px;font-size: 1.1em;background: -webkit-linear-gradient(#D9D9D9, #F7F7F7); /* For Safari 5.1 to 6.0 */background: -o-linear-gradient(#D9D9D9, #F7F7F7); /* For Opera 11.1 to 12.0 */background: -moz-linear-gradient(#D9D9D9, #F7F7F7); /* For Firefox 3.6 to 15 */background: linear-gradient(#D9D9D9, #F7F7F7); /* Standard syntax */}" << std::endl;
     outfile << ".program-info h4 {margin: 2px 0 10px 0;}" << std::endl;
     outfile << "#cuts table {border: 1px solid #BDBDBD;border-collapse: collapse;width: 100%;}" << std::endl;
-    outfile << "#cuts table th {background-color: #DADAD5;text-align: center;text-align: left;white-space:nowrap;/*min-width:200px;*/}" << std::endl;
+    outfile << "#cuts table th {background-color: #DADAD5;text-align: center;text-align: left;white-space:nowrap;width:6px;/*min-width:200px;*/}" << std::endl;
     outfile << "#cuts table th, #cuts table td {border: 1px solid #C3C3C3;padding: 4px 6px;}" << std::endl;
     outfile << ".hr {background-color: #E5EECC;border: 1px solid #000000;height: 1px;/*margin: 10px 0;*//*width: 760px;*/}" << std::endl;
     outfile << "#cuts {padding: 10px;}" << std::endl;
