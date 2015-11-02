@@ -693,8 +693,6 @@ bool ScanRunner::readTree(const std::string& filename) {
     }
 
     // now confirm that there exists at least one root node
-    size_t c = nodesWithParents.count();
-    size_t s = nodesWithParents.size();
     if (nodesWithParents.count() == nodesWithParents.size()) {
         readSuccess = false;
         _print.Printf("Error: The tree file must contain at least one node which does not have a parent.\n", BasePrint::P_READERROR);

@@ -28,7 +28,6 @@ int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesP
                 for (NodeStructure::count_t c=0; c < cases; ++c) {
                     // For the associated day of week, by this idx, get the uniformly distributed time index along all of the same week day.
                     DataTimeRange::index_t idxDay = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(1), static_cast<long>(_day_of_week_indexes[idx % 7].size()), _random_number_generator));
-                    size_t time = _day_of_week_indexes[idx % 7][idxDay - 1];
                     ++(treeSimNodes.at(i).refIntC_C().at(_day_of_week_indexes[idx % 7][idxDay - 1]));
                     ++TotalSimC;
                 }

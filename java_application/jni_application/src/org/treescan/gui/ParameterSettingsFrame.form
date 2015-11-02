@@ -103,7 +103,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_temporalWindowGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="43" max="32767" attributes="0"/>
+                      <EmptySpace pref="47" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -237,7 +237,7 @@
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Conditional">
+                    <TitledBorder title="Conditional Analysis">
                       <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                         <EtchetBorder/>
                       </Border>
@@ -641,7 +641,7 @@
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="_data_time_range_group" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="202" max="32767" attributes="0"/>
+                      <EmptySpace pref="206" max="32767" attributes="0"/>
                       <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -819,7 +819,7 @@
                       <Component id="_reportResultsAsHTML" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportResultsAsCsvTable" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="261" max="32767" attributes="0"/>
+                      <EmptySpace pref="265" max="32767" attributes="0"/>
                       <Component id="_advancedOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>

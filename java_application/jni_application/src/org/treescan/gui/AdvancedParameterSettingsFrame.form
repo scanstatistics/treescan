@@ -41,7 +41,7 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <Component id="jTabbedPane1" pref="344" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" pref="336" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="_setDefaultButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -101,7 +101,7 @@
                           <Component id="_cutFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="_cutFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="257" max="32767" attributes="0"/>
+                      <EmptySpace pref="249" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -159,7 +159,7 @@
                       <Component id="_maxTemporalOptionsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_minTemporalOptionsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="133" max="32767" attributes="0"/>
+                      <EmptySpace pref="125" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -371,7 +371,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="248" max="32767" attributes="0"/>
+                      <EmptySpace pref="240" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -534,7 +534,7 @@
                               <Component id="_alternativeHypothesisFilename" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_alternativeHypothesisFilenameButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace min="0" pref="90" max="32767" attributes="0"/>
+                          <EmptySpace min="0" pref="82" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -660,12 +660,12 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="_log_likelihood_ratios_group" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_report_critical_values_group" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="96" max="32767" attributes="0"/>
+                      <EmptySpace pref="83" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -815,10 +815,13 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Report attributable risk based on "/>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_chk_rpt_attributable_risk.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        _attributable_risk_exposed.setEnabled(e.getStateChange() == java.awt.event.ItemEvent.SELECTED);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_attributable_risk_exposed">
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="/*&#xa;_attributable_risk_exposed.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_attributable_risk_exposed.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _attributable_risk_exposed.setText(&quot;0&quot;);&#xa;    }&#xa;});&#xa;*/&#xa;_attributable_risk_exposed.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        if (_attributable_risk_exposed.getText().length() &gt; 0) {&#xa;            Utils.validatePostiveNumericKeyTyped(_attributable_risk_exposed, e, 10);&#xa;        }&#xa;    }&#xa;});&#xa;_attributable_risk_exposed.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="&#xa;_attributable_risk_exposed.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;&#xa;_attributable_risk_exposed.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        if (_attributable_risk_exposed.getText().length() &gt; 0) {&#xa;            Utils.validatePostiveNumericKeyTyped(_attributable_risk_exposed, e, 10);&#xa;        }&#xa;    }&#xa;});&#xa;_attributable_risk_exposed.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_chk_attributable_risk_extra">
@@ -854,7 +857,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_perform_dayofweek_adjustments" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="286" max="32767" attributes="0"/>
+                      <EmptySpace pref="278" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
