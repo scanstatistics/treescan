@@ -705,7 +705,7 @@ bool ScanRunner::readTree(const std::string& filename) {
  Reads tree node cuts from passed file. The file format is: <node identifier>, <parent node identifier 1>, <parent node identifier 2>, ... <parent node identifier N>
  */
 bool ScanRunner::readCuts(const std::string& filename) {
-    if (_parameters.getScanType() == Parameters::TREEONLY) return true; // tree only does not read the tree structure file
+    if (_parameters.getScanType() == Parameters::TIMEONLY) return true; // time only does not read the tree structure file
 
     _print.Printf("Reading cuts file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;

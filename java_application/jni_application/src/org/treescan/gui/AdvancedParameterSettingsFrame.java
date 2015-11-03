@@ -495,6 +495,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
+     * enables or disables the advanced inputs group controls.
+     */
+    public void enableAdvancedInputsSettings(boolean bEnable) {
+        _cutFileLabel.setEnabled(bEnable);
+        _cutFileTextField.setEnabled(bEnable);
+        _cutFileImportButton.setEnabled(bEnable);
+    }
+    
+    /**
      * enables or disables the temporal options group control
      */
     public void enableTemporalOptionsGroup(boolean bEnable) {

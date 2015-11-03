@@ -93,46 +93,49 @@ public class Parameters implements Cloneable {
     @Override
     public boolean equals(Object _rhs) {
     	  Parameters rhs = (Parameters)_rhs;    	  
-    	  if (!_treefilename.equals(rhs._treefilename)) return false;
-    	  if (!_cutsfilename.equals(rhs._cutsfilename)) return false;
-    	  if (!_countfilename.equals(rhs._countfilename)) return false;
-    	  if (!_outputfilename.equals(rhs._outputfilename)) return false;
-          if (_resultsFormat != rhs._resultsFormat) return false;
-    	  if (!_sourcefilename.equals(rhs._sourcefilename)) return false;
-    	  if (_replications != rhs._replications) return false;
-    	  //if (_duplicates != rhs._duplicates) return false;
-    	  if (_randomizationSeed != rhs._randomizationSeed) return false;
-    	  if (_numprocesses != rhs._numprocesses) return false;
-    	  if (_randomlyGenerateSeed != rhs._randomlyGenerateSeed) return false;
-    	  if (_generateHtmlResults != rhs._generateHtmlResults) return false;
-    	  if (_generateTableResults != rhs._generateTableResults) return false;
-    	  if (_printColumnHeaders != rhs._printColumnHeaders) return false;
+   	  if (_scanType != rhs._scanType) return false;
+          if (_conditionalType != rhs._conditionalType) return false;
           if (_modelType != rhs._modelType) return false;
           if (_probability_ratio_numerator != rhs._probability_ratio_numerator) return false;
           if (_probability_ratio_denominator != rhs._probability_ratio_denominator) return false;
-   	  if (_scanType != rhs._scanType) return false;
-   	  if (_data_time_range_start != rhs._data_time_range_start) return false;
-   	  if (_data_time_range_end != rhs._data_time_range_end) return false;
+          if (_self_control_design != rhs._self_control_design) return false;
    	  if (_temporal_start_range_begin != rhs._temporal_start_range_begin) return false;
    	  if (_temporal_start_range_close != rhs._temporal_start_range_close) return false;
    	  if (_temporal_end_range_begin != rhs._temporal_end_range_begin) return false;
    	  if (_temporal_end_range_close != rhs._temporal_end_range_close) return false;
-          if (_generate_llr_results != rhs._generate_llr_results) return false;
           if (_maximum_window_percentage != rhs._maximum_window_percentage) return false;
           if (_maximum_window_length != rhs._maximum_window_length) return false;
           if (_maximum_window_type != rhs._maximum_window_type) return false;
           if (_minimum_window_length != rhs._minimum_window_length) return false;
+          if (_dayofweek_adjustment != rhs._dayofweek_adjustment) return false;
+    	  if (_replications != rhs._replications) return false;
           if (_perform_power_evaluations != rhs._perform_power_evaluations) return false;
           if (_power_evaluation_type != rhs._power_evaluation_type) return false;          
           if (_power_evaluation_totalcases != rhs._power_evaluation_totalcases) return false;
           if (_power_replica != rhs._power_replica) return false;
           if (!_power_alt_hypothesis_filename.equals(rhs._power_alt_hypothesis_filename)) return false;
-          if (_report_critical_values != rhs._report_critical_values) return false;
-          if (_dayofweek_adjustment != rhs._dayofweek_adjustment) return false;
+          
+    	  if (!_treefilename.equals(rhs._treefilename)) return false;
+    	  if (!_countfilename.equals(rhs._countfilename)) return false;
+   	  if (_data_time_range_start != rhs._data_time_range_start) return false;
+   	  if (_data_time_range_end != rhs._data_time_range_end) return false;
+          if (!_cutsfilename.equals(rhs._cutsfilename)) return false;
+          
+    	  if (!_outputfilename.equals(rhs._outputfilename)) return false;
+    	  if (_generateHtmlResults != rhs._generateHtmlResults) return false;
+    	  if (_generateTableResults != rhs._generateTableResults) return false;
           if (_report_attributable_risk != rhs._report_attributable_risk) return false;
           if (_attributable_risk_exposed != rhs._attributable_risk_exposed) return false;
-          if (_self_control_design != rhs._self_control_design) return false;
+          if (_generate_llr_results != rhs._generate_llr_results) return false;
+          if (_report_critical_values != rhs._report_critical_values) return false;
+          
+          if (_resultsFormat != rhs._resultsFormat) return false;
+    	  if (!_sourcefilename.equals(rhs._sourcefilename)) return false;
           if (!_input_sources.equals(rhs._input_sources)) return false;
+    	  if (_randomizationSeed != rhs._randomizationSeed) return false;
+    	  if (_numprocesses != rhs._numprocesses) return false;
+    	  if (_randomlyGenerateSeed != rhs._randomlyGenerateSeed) return false;
+    	  if (_printColumnHeaders != rhs._printColumnHeaders) return false;
           
           return true;
     }
