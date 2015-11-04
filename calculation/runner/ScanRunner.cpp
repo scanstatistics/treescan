@@ -211,11 +211,6 @@ double CutStructure::getExpected(const ScanRunner& scanner) const {
     }
 }
 
-/** Returns cut's observed divided by expected. */
-double CutStructure::getODE(const ScanRunner& scanner) const {
-    return static_cast<double>(getC())/getExpected(scanner);
-}
-
 /** Returns cut's relative risk. See user guide for formula explanation. */
 double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
     double relative_risk=0;

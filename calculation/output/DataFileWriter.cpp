@@ -229,8 +229,6 @@ const char * DataRecordWriter::OBSERVED_NO_DUPLICATES_FIELD              = "Obse
 const char * DataRecordWriter::EXPECTED_FIELD                            = "Expected";
 const char * DataRecordWriter::EXPECTED_CASES_FIELD                      = "Expected Cases";
 
-const char * DataRecordWriter::OBSERVED_DIV_EXPECTED_FIELD               = "Observed / Expected";
-const char * DataRecordWriter::OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD = "Observed / Expected (No Duplicates)";
 const char * DataRecordWriter::RELATIVE_RISK_FIELD                       = "Relative Risk";
 const char * DataRecordWriter::EXCESS_CASES_FIELD                        = "Excess Cases";
 const char * DataRecordWriter::ATTRIBUTABLE_RISK_FIELD                   = "Attributable Risk";
@@ -281,9 +279,6 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
     }
     if (params.isDuplicates())
         CreateField(_dataFieldDefinitions, OBSERVED_NO_DUPLICATES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-    CreateField(_dataFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-    if (params.isDuplicates())
-        CreateField(_dataFieldDefinitions, OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
 
     if (!(params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME)) {
         CreateField(_dataFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
@@ -354,10 +349,6 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
         }
         if (params.isDuplicates())
             Record.GetFieldValue(OBSERVED_NO_DUPLICATES_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getC() - _scanner.getNodes().at(_scanner.getCuts().at(cutIndex)->getID())->getDuplicates();
-        Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getODE(_scanner);
-        if (params.isDuplicates())
-            Record.GetFieldValue(OBSERVED_DIV_EXPECTED_NO_DUPLICATES_FIELD).AsDouble() = (_scanner.getCuts().at(cutIndex)->getC() - _scanner.getNodes().at(_scanner.getCuts().at(cutIndex)->getID())->getDuplicates())/_scanner.getCuts().at(cutIndex)->getExpected(_scanner);
-
         if (!(params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME)) {
             Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getRelativeRisk(_scanner);
             Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = _scanner.getCuts().at(cutIndex)->getExcessCases(_scanner);

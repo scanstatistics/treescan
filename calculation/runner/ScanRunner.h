@@ -44,7 +44,6 @@ public:
     double                  getN() const {return _N;}
     double                  getExcessCases(const ScanRunner& scanner) const;
     double                  getExpected(const ScanRunner& scanner) const;
-    double                  getODE(const ScanRunner& scanner) const;
     unsigned int            getRank() const {return _rank;}
     double                  getRelativeRisk(const ScanRunner& scanner) const;
     DataTimeRange::index_t  getStartIdx() const {return _start_idx;}
