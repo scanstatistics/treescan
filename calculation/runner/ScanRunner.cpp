@@ -127,10 +127,29 @@ double CutStructure::getExcessCases(const ScanRunner& scanner) const {
                         return C - W * (_N - C)/(T - W);
                     }
                     throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getExcessCases()", parameters.getModelType());
+                case Parameters::NODEANDTIME : {
+                    /* c = cases in detected cluster
+                       C = total cases in the whole tree
+                       C(n)=total cases in the cluster node, summed over the whole study time period
+                       C(t)=total cases in the cluster time window, summed over all the nodes
+                       Let E2 = (C(n)-c)*(C(t)-c) / (C-C(n)-C(t)+c) -- this is an alternative method for calculating expected counts
+                       Excess Cases = c-E2
+                       */
+                    double Cn =  static_cast<double>(scanner.getNodes()[getID()]->getBrC());
+                    double Ct = 0.0;
+                    for (size_t t=0; t < scanner.getNodes().size(); ++t)
+                        Ct += static_cast<double>(scanner.getNodes()[t]->getIntC_C()[getStartIdx()]) - static_cast<double>(scanner.getNodes()[t]->getIntC_C()[getEndIdx() + 1]);
+                    double denominator = totalC - Cn - Ct + C;
+                    if (denominator == 0.0) // This will never happen when looking for clusters with high rates.
+                        return std::numeric_limits<double>::quiet_NaN();
+                    double e2 = (Cn - C) * (Ct - C) / denominator;
+                    if (e2 == 0.0 && C == 0.0) // C == 0.0 will never happen when looking for clusters with high rates.
+                        return std::numeric_limits<double>::quiet_NaN();
+                    return C - e2;
+                }
                 default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getExcessCases()", parameters.getConditionalType());
             }
         }
-
         default: throw prg_error("Unknown scan type (%d).", "getExcessCases()", parameters.getScanType());
     }
 }
@@ -279,6 +298,26 @@ double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
                         return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
                     }
                     throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getRelativeRisk()", parameters.getModelType());
+                case Parameters::NODEANDTIME : {
+                    /* c = cases in detected cluster
+                       C = total cases in the whole tree
+                       C(n)=total cases in the cluster node, summed over the whole study time period
+                       C(t)=total cases in the cluster time window, summed over all the nodes
+                       Let E2 = (C(n)-c)*(C(t)-c) / (C-C(n)-C(t)+c) -- this is an alternative method for calculating expected counts
+                       RR = c/E2
+                       */
+                    double Cn =  static_cast<double>(scanner.getNodes()[getID()]->getBrC());
+                    double Ct = 0.0;
+                    for (size_t t=0; t < scanner.getNodes().size(); ++t)
+                        Ct += static_cast<double>(scanner.getNodes()[t]->getIntC_C()[getStartIdx()]) - static_cast<double>(scanner.getNodes()[t]->getIntC_C()[getEndIdx() + 1]);
+                    double denominator = totalC - Cn - Ct + C;
+                    if (denominator == 0.0) // This will never happen when looking for clusters with high rates.
+                        return std::numeric_limits<double>::quiet_NaN();
+                    double e2 = (Cn - C) * (Ct - C) / denominator;
+                    if (e2 == 0.0) // C == 0.0 will never happen when looking for clusters with high rates.
+                        return C == 0.0 ? std::numeric_limits<double>::quiet_NaN() : std::numeric_limits<double>::infinity()/*This will happen now and then.*/;
+                    return C / e2;
+                }
                 default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getRelativeRisk()", parameters.getConditionalType());
             }
         }

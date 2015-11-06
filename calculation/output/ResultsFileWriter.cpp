@@ -179,12 +179,10 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 }
                 PrintFormat.PrintSectionLabel(outfile, parameters.getModelType() == Parameters::UNIFORM ? "Expected Cases" : "Expected", true);
                 PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer));
-                if (!(parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME)) {
-                    PrintFormat.PrintSectionLabel(outfile, "Relative Risk", true);
-                    PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer));
-                    PrintFormat.PrintSectionLabel(outfile, "Excess Cases", true);
-                    PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer));
-                }
+                PrintFormat.PrintSectionLabel(outfile, "Relative Risk", true);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer));
+                PrintFormat.PrintSectionLabel(outfile, "Excess Cases", true);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer));
                 if (parameters.getReportAttributableRisk()) {
                     PrintFormat.PrintSectionLabel(outfile, "Attributable Risk", true);
                     buffer = _scanRunner.getCuts().at(k)->getAttributableRiskAsString(_scanRunner, buffer);
@@ -434,9 +432,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             }
             if (parameters.isDuplicates()) {outfile << "<th>Cases (Duplicates Removed)</th>";}
             outfile << "<th>" << (parameters.getModelType() == Parameters::UNIFORM ? "Expected Cases" : "Expected") << "</th>";
-            if (!(parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME)) {
-                outfile << "<th>Relative Risk</th><th>Excess Cases</th>" << std::endl;
-            }
+            outfile << "<th>Relative Risk</th><th>Excess Cases</th>" << std::endl;
             if (parameters.getReportAttributableRisk()) {
                 outfile << "<th>Attributable Risk</th>" << std::endl;
             }
@@ -501,10 +497,8 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                     // write cases, duplicates removed
                     outfile << "<td>" << _scanRunner.getCuts().at(k)->getC() - _scanRunner.getNodes().at(_scanRunner.getCuts().at(k)->getID())->getDuplicates() << "</td>";
                 outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getExpected(_scanRunner), buffer) << "</td>";
-                if (!(parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME)) {
-                    outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer) << "</td>";
-                    outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer) << "</td>";
-                }
+                outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getRelativeRisk(_scanRunner), buffer) << "</td>";
+                outfile << "<td>" << getValueAsString(_scanRunner.getCuts().at(k)->getExcessCases(_scanRunner), buffer) << "</td>";
                 if (parameters.getReportAttributableRisk()) {
                      buffer = _scanRunner.getCuts().at(k)->getAttributableRiskAsString(_scanRunner, buffer);
                     outfile << "<td>" << buffer << "</td>";

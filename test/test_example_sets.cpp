@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE( test_poisson_unconditional ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(10)) BOOST_FAIL( "expecting 10 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(9)) BOOST_FAIL( "expecting 9 columns, got " << headers.size() );
 
     // check the expected values
     unsigned int dataRows=0;
@@ -64,12 +64,11 @@ BOOST_AUTO_TEST_CASE( test_poisson_conditional ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(10)) BOOST_FAIL( "expecting 10 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(9)) BOOST_FAIL( "expecting 9 columns, got " << headers.size() );
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrObserved = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::OBSERVED_CASES_FIELD);
     std::vector<std::string>::iterator itrExpected = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXPECTED_FIELD);
-    std::vector<std::string>::iterator itrODE = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::OBSERVED_DIV_EXPECTED_FIELD);
     std::vector<std::string>::iterator itrRR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::RELATIVE_RISK_FIELD);
     std::vector<std::string>::iterator itrExcess = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXCESS_CASES_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
@@ -85,7 +84,6 @@ BOOST_AUTO_TEST_CASE( test_poisson_conditional ) {
         unsigned int cut_num; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrCutNum)).c_str(), cut_num) );
         unsigned int observed; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrObserved)).c_str(), observed) );
         double expected; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExpected)).c_str(), expected) );
-        double ode; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrODE)).c_str(), ode) );
         double rr; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), rr) );
         double excess; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExcess)).c_str(), excess) );
         double ar; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrAR)).c_str(), ar) );
@@ -97,7 +95,6 @@ BOOST_AUTO_TEST_CASE( test_poisson_conditional ) {
             case 1 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf9" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(14) );
                      BOOST_CHECK_CLOSE( expected, 2.68, 0.001 );
-                     BOOST_CHECK_CLOSE( ode, 5.22, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 6.66, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 11.9, 0.001 );
                      BOOST_CHECK_CLOSE( ar, 0.059, 0.00001 );
@@ -106,7 +103,6 @@ BOOST_AUTO_TEST_CASE( test_poisson_conditional ) {
             case 2 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node3" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(33) );
                      BOOST_CHECK_CLOSE( expected, 16.1, 0.001 );
-                     BOOST_CHECK_CLOSE( ode, 2.05, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 3.63, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 23.9, 0.001 );
                      BOOST_CHECK_CLOSE( ar, 0.12, 0.00001 );
@@ -115,7 +111,6 @@ BOOST_AUTO_TEST_CASE( test_poisson_conditional ) {
             case 5 :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf4" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(6) );
                      BOOST_CHECK_CLOSE( expected, 2.68, 0.001 );
-                     BOOST_CHECK_CLOSE( ode, 2.24, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 2.39, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 3.49, 0.001 );
                      BOOST_CHECK_CLOSE( ar, 0.017, 0.00001 );
@@ -124,7 +119,6 @@ BOOST_AUTO_TEST_CASE( test_poisson_conditional ) {
             case 6 :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf8" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(9) );
                      BOOST_CHECK_CLOSE( expected, 5.37, 0.001 );
-                     BOOST_CHECK_CLOSE( ode, 1.68, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.81, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 4.03, 0.001 );
                      BOOST_CHECK_CLOSE( ar, 0.02, 0.00001 );
@@ -166,13 +160,12 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(11)) BOOST_FAIL( "expecting 11 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(10)) BOOST_FAIL( "expecting 10 columns, got " << headers.size() );
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrObserved = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::OBSERVATIONS_FIELD);
     std::vector<std::string>::iterator itrCases = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CASES_FIELD);
     std::vector<std::string>::iterator itrExpected = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXPECTED_FIELD);
-    std::vector<std::string>::iterator itrODE = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::OBSERVED_DIV_EXPECTED_FIELD);
     std::vector<std::string>::iterator itrRR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::RELATIVE_RISK_FIELD);
     std::vector<std::string>::iterator itrExcess = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXCESS_CASES_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
@@ -189,7 +182,6 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
         unsigned int observed; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrObserved)).c_str(), observed) );
         unsigned int cases; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrCases)).c_str(), cases) );
         double expected; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExpected)).c_str(), expected) );
-        double ode; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrODE)).c_str(), ode) );
         double rr; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), rr) );
         double excess; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExcess)).c_str(), excess) );
         double ar; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrAR)).c_str(), ar) );
@@ -202,7 +194,6 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(45) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(33) );
                      BOOST_CHECK_CLOSE( expected, 22.5, 0.001 );
-                     BOOST_CHECK_CLOSE( ode, 1.47, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.47, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 10.5, 0.001 );
                      BOOST_CHECK_CLOSE( ar, 0.052, 0.00001 );
@@ -212,7 +203,6 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(16) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(14) );
                      BOOST_CHECK_CLOSE( expected, 8.00, 0.001 );
-                     BOOST_CHECK_CLOSE( ode, 1.75, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.75, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 6.0, 0.001 );
                      BOOST_CHECK_CLOSE( ar, 0.03, 0.00001 );
@@ -222,7 +212,6 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(30) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(17) );
                      BOOST_CHECK_CLOSE( expected, 15.0, 0.001 );
-                     BOOST_CHECK_CLOSE( ode, 1.13, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.13, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 2.0, 0.001 );
                      BOOST_CHECK_CLOSE( ar, 0.01, 0.00001 );
@@ -232,7 +221,6 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(7) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(4) );
                      BOOST_CHECK_CLOSE( expected, 3.5, 0.001 );
-                     BOOST_CHECK_CLOSE( ode, 1.14, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.14, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 0.5, 0.001 );
                      BOOST_CHECK_CLOSE( ar, 0.0025, 0.00001 );
@@ -269,13 +257,12 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(11)) BOOST_FAIL( "expecting 11 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(10)) BOOST_FAIL( "expecting 10 columns, got " << headers.size() );
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrObserved = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::OBSERVATIONS_FIELD);
     std::vector<std::string>::iterator itrCases = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CASES_FIELD);
     std::vector<std::string>::iterator itrExpected = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXPECTED_FIELD);
-    std::vector<std::string>::iterator itrODE = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::OBSERVED_DIV_EXPECTED_FIELD);
     std::vector<std::string>::iterator itrRR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::RELATIVE_RISK_FIELD);
     std::vector<std::string>::iterator itrExcess = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXCESS_CASES_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
@@ -292,7 +279,6 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
         unsigned int observed; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrObserved)).c_str(), observed) );
         unsigned int cases; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrCases)).c_str(), cases) );
         double expected; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExpected)).c_str(), expected) );
-        double ode; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrODE)).c_str(), ode) );
         double rr; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), rr) );
         double excess; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExcess)).c_str(), excess) );
         double ar; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrAR)).c_str(), ar) );
@@ -305,7 +291,6 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(45) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(33) );
                      BOOST_CHECK_CLOSE( expected, 25.78, 0.001 );
-                     BOOST_CHECK_CLOSE( ode, 1.28, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.7, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 13.59, 0.001 );
                      BOOST_CHECK_CLOSE( ar, 0.068, 0.00001 );
@@ -315,7 +300,6 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(16) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(14) );
                      BOOST_CHECK_CLOSE( expected, 9.17, 0.001 );
-                     BOOST_CHECK_CLOSE( ode, 1.53, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.71, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 5.8, 0.001 );
                      BOOST_CHECK_CLOSE( ar, 0.029, 0.00001 );
@@ -325,7 +309,6 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(8) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(6) );
                      BOOST_CHECK_CLOSE( expected, 4.58, 0.001 );
-                     BOOST_CHECK_CLOSE( ode, 1.31, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.35, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 1.55, 0.001 );
                      BOOST_CHECK_CLOSE( ar, 0.0077, 0.00001 );
@@ -335,7 +318,6 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(13) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(9) );
                      BOOST_CHECK_CLOSE( expected, 7.45, 0.001 );
-                     BOOST_CHECK_CLOSE( ode, 1.21, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.25, 0.001 );
                      BOOST_CHECK_CLOSE( excess, 1.8, 0.001 );
                      BOOST_CHECK_CLOSE( ar, 0.009, 0.00001 );
@@ -378,7 +360,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(13)) BOOST_FAIL( "expecting 13 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(12)) BOOST_FAIL( "expecting 12 columns, got " << headers.size() );
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrNodeCases = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_CASES_FIELD);
@@ -386,7 +368,6 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
     std::vector<std::string>::iterator itrWndEnd = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::END_WINDOW_FIELD);
     std::vector<std::string>::iterator itrWndCase = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::WNDW_CASES_FIELD);
     std::vector<std::string>::iterator itrExpected = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXPECTED_CASES_FIELD);
-    std::vector<std::string>::iterator itrODE = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::OBSERVED_DIV_EXPECTED_FIELD);
     std::vector<std::string>::iterator itrRR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::RELATIVE_RISK_FIELD);
     std::vector<std::string>::iterator itrExcess = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXCESS_CASES_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
@@ -405,7 +386,6 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
         unsigned int wndend; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrWndEnd)).c_str(), wndend) );
         unsigned int wndcases; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrWndCase)).c_str(), wndcases) );
         double expected; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExpected)).c_str(), expected) );
-        double ode; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrODE)).c_str(), ode) );
         double rr; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), rr, false) );
         double excess; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExcess)).c_str(), excess) );
         double ar; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrAR)).c_str(), ar) );
@@ -420,7 +400,6 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(5) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(21) );
                       BOOST_CHECK_CLOSE( expected, 3.29, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 6.39, 0.001 );
                       BOOST_CHECK_CLOSE( rr, 10.92, 0.001 );
                       BOOST_CHECK_CLOSE( excess, 19.08, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.095, 0.00001 );
@@ -432,7 +411,6 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(7) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(52) );
                       BOOST_CHECK_CLOSE( expected, 20.79, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 2.5, 0.001 );
                       BOOST_CHECK_CLOSE( rr, 4.24, 0.001 );
                       BOOST_CHECK_CLOSE( excess, 39.73, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.2, 0.00001 );
@@ -444,7 +422,6 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(7) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(2) );
                       BOOST_CHECK_CLOSE( expected, 0.36, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 5.6, 0.001 );
                       BOOST_CHECK_CLOSE( rr, 8.67, 0.001 );
                       BOOST_CHECK_CLOSE( excess, 1.77, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.0088, 0.00001 );
@@ -456,7 +433,6 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(7) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(3) );
                       BOOST_CHECK_CLOSE( expected, 0.79, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 3.82, 0.001 );
                       BOOST_CHECK_CLOSE( rr, 4.88, 0.001 );
                       BOOST_CHECK_CLOSE( excess, 2.38, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.012, 0.00001 );
@@ -495,7 +471,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(13)) BOOST_FAIL( "expecting 13 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(12)) BOOST_FAIL( "expecting 12 columns, got " << headers.size() );
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrNodeCases = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_CASES_FIELD);
@@ -503,7 +479,6 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
     std::vector<std::string>::iterator itrWndEnd = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::END_WINDOW_FIELD);
     std::vector<std::string>::iterator itrWndCase = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::WNDW_CASES_FIELD);
     std::vector<std::string>::iterator itrExpected = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXPECTED_CASES_FIELD);
-    std::vector<std::string>::iterator itrODE = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::OBSERVED_DIV_EXPECTED_FIELD);
     std::vector<std::string>::iterator itrRR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::RELATIVE_RISK_FIELD);
     std::vector<std::string>::iterator itrExcess = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXCESS_CASES_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
@@ -522,7 +497,6 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
         unsigned int wndend; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrWndEnd)).c_str(), wndend) );
         unsigned int wndcases; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrWndCase)).c_str(), wndcases) );
         double expected; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExpected)).c_str(), expected) );
-        double ode; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrODE)).c_str(), ode) );
         double rr; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), rr, false) );
         double excess; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExcess)).c_str(), excess) );
         double ar; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrAR)).c_str(), ar) );
@@ -537,7 +511,6 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(7) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(56) );
                       BOOST_CHECK_CLOSE( expected, 23.65, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 2.37, 0.001 );
                       BOOST_CHECK_CLOSE( rr, 4.24, 0.001 );
                       BOOST_CHECK_CLOSE( excess, 42.78, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.21, 0.001 );
@@ -549,7 +522,6 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(5) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(21) );
                       BOOST_CHECK_CLOSE( expected, 3.91, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 5.37, 0.001 );
                       BOOST_CHECK_CLOSE( rr, 9.04, 0.001 );
                       BOOST_CHECK_CLOSE( excess, 18.68, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.093, 0.001 );
@@ -561,7 +533,6 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(8) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(2) );
                       BOOST_CHECK_CLOSE( expected, 0.32, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 6.31, 0.001 );
                       BOOST_CHECK_CLOSE( rr, 9.85, 0.001 );
                       BOOST_CHECK_CLOSE( excess, 1.8, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.009, 0.001 );
@@ -573,7 +544,6 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(7) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(3) );
                       BOOST_CHECK_CLOSE( expected, 0.82, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 3.65, 0.001 );
                       BOOST_CHECK_CLOSE( rr, 4.64, 0.001 );
                       BOOST_CHECK_CLOSE( excess, 2.35, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.012, 0.001 );
@@ -610,7 +580,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(11)) BOOST_FAIL( "expecting 11 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(12)) BOOST_FAIL( "expecting 12 columns, got " << headers.size() );
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrNodeCases = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_CASES_FIELD);
@@ -618,7 +588,8 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
     std::vector<std::string>::iterator itrWndEnd = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::END_WINDOW_FIELD);
     std::vector<std::string>::iterator itrWndCase = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::WNDW_CASES_FIELD);
     std::vector<std::string>::iterator itrExpected = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXPECTED_CASES_FIELD);
-    std::vector<std::string>::iterator itrODE = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::OBSERVED_DIV_EXPECTED_FIELD);
+    std::vector<std::string>::iterator itrRR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::RELATIVE_RISK_FIELD);
+    std::vector<std::string>::iterator itrExcess = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXCESS_CASES_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
     std::vector<std::string>::iterator itrTestStat = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::TEST_STATISTIC_FIELD);
     std::vector<std::string>::iterator itrPValue = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::P_VALUE_FLD);
@@ -635,8 +606,9 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
         unsigned int wndend; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrWndEnd)).c_str(), wndend) );
         unsigned int wndcases; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrWndCase)).c_str(), wndcases) );
         double expected; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExpected)).c_str(), expected) );
-        double ode; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrODE)).c_str(), ode) );
         double ar; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrAR)).c_str(), ar) );
+        double rr; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), rr, false) );
+        double excess; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExcess)).c_str(), excess) );
         double teststat; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrTestStat)).c_str(), teststat) );
         double p_value; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrPValue)).c_str(), p_value) );
 
@@ -648,8 +620,9 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(5) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(21) );
                       BOOST_CHECK_CLOSE( expected, 10.43, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 2.01, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.068, 0.00001 );
+                      BOOST_CHECK_CLOSE( rr, 42.0, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 20.5, 0.001 );
                       BOOST_CHECK_CLOSE( teststat, 4.796446, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.021, 0.0001 ); break;
             case 2 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf5" );
@@ -658,7 +631,8 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(3) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(4) );
                       BOOST_CHECK_CLOSE( expected, 0.87, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 4.62, 0.001 );
+                      BOOST_CHECK_CLOSE( rr, 13.67, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 3.71, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.018, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 3.038383, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.363, 0.0001 ); break;
@@ -668,7 +642,8 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(17) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(2) );
                       BOOST_CHECK_CLOSE( expected, 0.45, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 4.41, 0.001 );
+                      BOOST_CHECK_CLOSE( rr, 9.33, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 1.79, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.0087, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 1.433396, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.997, 0.0001 ); break;
@@ -678,8 +653,9 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(3) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(9) );
                       BOOST_CHECK_CLOSE( expected, 4.95, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 1.82, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.024, 0.00001 );
+                      BOOST_CHECK_CLOSE( rr, 3.67, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 6.55, 0.001 );
                       BOOST_CHECK_CLOSE( teststat, 1.422299, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.998, 0.0001 ); break;
             default : break;
@@ -714,7 +690,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(11)) BOOST_FAIL( "expecting 11 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(12)) BOOST_FAIL( "expecting 12 columns, got " << headers.size() );
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrNodeCases = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_CASES_FIELD);
@@ -722,7 +698,8 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
     std::vector<std::string>::iterator itrWndEnd = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::END_WINDOW_FIELD);
     std::vector<std::string>::iterator itrWndCase = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::WNDW_CASES_FIELD);
     std::vector<std::string>::iterator itrExpected = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXPECTED_CASES_FIELD);
-    std::vector<std::string>::iterator itrODE = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::OBSERVED_DIV_EXPECTED_FIELD);
+    std::vector<std::string>::iterator itrRR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::RELATIVE_RISK_FIELD);
+    std::vector<std::string>::iterator itrExcess = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXCESS_CASES_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
     std::vector<std::string>::iterator itrTestStat = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::TEST_STATISTIC_FIELD);
     std::vector<std::string>::iterator itrPValue = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::P_VALUE_FLD);
@@ -739,8 +716,9 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
         unsigned int wndend; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrWndEnd)).c_str(), wndend) );
         unsigned int wndcases; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrWndCase)).c_str(), wndcases) );
         double expected; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExpected)).c_str(), expected) );
-        double ode; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrODE)).c_str(), ode) );
         double ar; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrAR)).c_str(), ar) );
+        double rr; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), rr, false) );
+        double excess; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExcess)).c_str(), excess) );
         double teststat; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrTestStat)).c_str(), teststat) );
         double p_value; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrPValue)).c_str(), p_value) );
 
@@ -752,7 +730,8 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(11) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(2) );
                       BOOST_CHECK_CLOSE( expected, 0.27, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 7.5, 0.001 );
+                      BOOST_CHECK_CLOSE( rr, 11.6, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 1.83, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.009, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 2.312096, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.384, 0.0001 ); break;
@@ -762,7 +741,8 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(17) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(2) );
                       BOOST_CHECK_CLOSE( expected, 0.3, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 6.72, 0.001 );
+                      BOOST_CHECK_CLOSE( rr, 5.6, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 1.64, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.0089, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 2.12392, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.504, 0.0001 ); break;
@@ -772,7 +752,8 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(12) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(1) );
                       BOOST_CHECK_CLOSE( expected, 0.15, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 6.5, 0.001 );
+                      BOOST_CHECK_CLOSE( rr, 10.0, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 0.9, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.0044, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 1.029356, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.981, 0.0001 ); break;
@@ -782,7 +763,8 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(13) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(2) );
                       BOOST_CHECK_CLOSE( expected, 0.67, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 2.99, 0.001 );
+                      BOOST_CHECK_CLOSE( rr, 4.56, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 1.56, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.0071, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 0.870215, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.999, 0.0001 ); break;
@@ -824,7 +806,7 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(13)) BOOST_FAIL( "expecting 13 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(12)) BOOST_FAIL( "expecting 12 columns, got " << headers.size() );
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrNodeCases = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_CASES_FIELD);
@@ -832,7 +814,6 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases ) {
     std::vector<std::string>::iterator itrWndEnd = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::END_WINDOW_FIELD);
     std::vector<std::string>::iterator itrWndCase = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::WNDW_CASES_FIELD);
     std::vector<std::string>::iterator itrExpected = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXPECTED_CASES_FIELD);
-    std::vector<std::string>::iterator itrODE = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::OBSERVED_DIV_EXPECTED_FIELD);
     std::vector<std::string>::iterator itrRR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::RELATIVE_RISK_FIELD);
     std::vector<std::string>::iterator itrExcess = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXCESS_CASES_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
@@ -851,7 +832,6 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases ) {
         unsigned int wndend; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrWndEnd)).c_str(), wndend) );
         unsigned int wndcases; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrWndCase)).c_str(), wndcases) );
         double expected; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExpected)).c_str(), expected) );
-        double ode; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrODE)).c_str(), ode) );
         double rr; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), rr, false) );
         double excess; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExcess)).c_str(), excess) );
         double ar; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrAR)).c_str(), ar) );
@@ -866,7 +846,6 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases ) {
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(7) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(52) );
                       BOOST_CHECK_CLOSE( expected, 20.79, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 2.5, 0.001 );
                       BOOST_CHECK_CLOSE( rr, 4.24, 0.001 );
                       BOOST_CHECK_CLOSE( excess, 39.73, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.2, 0.00001 );
@@ -878,7 +857,6 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases ) {
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(2) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(9) );
                       BOOST_CHECK_CLOSE( expected, 6.93, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 1.3, 0.001 );
                       BOOST_CHECK_CLOSE( rr, 1.33, 0.001 );
                       BOOST_CHECK_CLOSE( excess, 2.23, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.011, 0.00001 );
@@ -917,7 +895,7 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases_day_of_week_adjustment
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(13)) BOOST_FAIL( "expecting 13 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(12)) BOOST_FAIL( "expecting 12 columns, got " << headers.size() );
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrNodeCases = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_CASES_FIELD);
@@ -925,7 +903,6 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases_day_of_week_adjustment
     std::vector<std::string>::iterator itrWndEnd = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::END_WINDOW_FIELD);
     std::vector<std::string>::iterator itrWndCase = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::WNDW_CASES_FIELD);
     std::vector<std::string>::iterator itrExpected = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXPECTED_CASES_FIELD);
-    std::vector<std::string>::iterator itrODE = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::OBSERVED_DIV_EXPECTED_FIELD);
     std::vector<std::string>::iterator itrRR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::RELATIVE_RISK_FIELD);
     std::vector<std::string>::iterator itrExcess = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXCESS_CASES_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
@@ -944,7 +921,6 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases_day_of_week_adjustment
         unsigned int wndend; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrWndEnd)).c_str(), wndend) );
         unsigned int wndcases; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrWndCase)).c_str(), wndcases) );
         double expected; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExpected)).c_str(), expected) );
-        double ode; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrODE)).c_str(), ode) );
         double rr; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), rr, false) );
         double excess; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExcess)).c_str(), excess) );
         double ar; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrAR)).c_str(), ar) );
@@ -959,7 +935,6 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases_day_of_week_adjustment
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(7) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(56) );
                       BOOST_CHECK_CLOSE( expected, 23.65, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 2.37, 0.001 );
                       BOOST_CHECK_CLOSE( rr, 4.24, 0.001 );
                       BOOST_CHECK_CLOSE( excess, 42.78, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.21, 0.001 );
@@ -971,7 +946,6 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases_day_of_week_adjustment
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(2) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(9) );
                       BOOST_CHECK_CLOSE( expected, 4.9, 0.001 );
-                      BOOST_CHECK_CLOSE( ode, 1.84, 0.001 );
                       BOOST_CHECK_CLOSE( rr, 1.92, 0.001 );
                       BOOST_CHECK_CLOSE( excess, 4.32, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.022, 0.001 );

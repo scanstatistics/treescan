@@ -171,6 +171,8 @@ unsigned int getFormatPrecision(double value, unsigned int iSignificant) {
 std::string& getValueAsString(double value, std::string& s, unsigned int iSignificant) {
     if (value == std::numeric_limits<double>::infinity())
         s = "infinity";
+    else if (isnan(value))
+        s = "undefined";
     else {
         unsigned int iPrecision = getFormatPrecision(value, iSignificant);
         std::string format;
