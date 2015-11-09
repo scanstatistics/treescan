@@ -74,7 +74,7 @@ void ParametersPrint::PrintHTML(std::ostream& out) const {
 ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(SettingContainer_t & settings) const {
     std::string buffer;
     settings.clear();
-    if (_parameters.getScanType() != Parameters::TREETIME)
+    if (_parameters.getScanType() != Parameters::TIMEONLY)
         settings.push_back(std::make_pair("Tree File",_parameters.getTreeFileName()));
     settings.push_back(std::make_pair("Count File",_parameters.getCountFileName()));
     if (Parameters::isTemporalScanType(_parameters.getScanType()))
@@ -88,6 +88,12 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(Settin
 ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParameters(SettingContainer_t & settings) const {
     std::string buffer;
     settings.clear();
+
+    settings.push_back(std::make_pair("Attributable Risk ",(_parameters.getReportAttributableRisk() ? "Yes" : "No")));
+    if (_parameters.getReportAttributableRisk()) {
+        printString(buffer, "%u", _parameters.getAttributableRiskExposed());
+        settings.push_back(std::make_pair("Report Attributable Risk Based on # Exposed",buffer));
+    }
     settings.push_back(std::make_pair("Report Simulated Log Likelihood Ratios",(_parameters.isGeneratingLLRResults() ? "Yes" : "No")));
     if (_parameters.isGeneratingLLRResults()) {
         settings.push_back(std::make_pair("Simulated Log Likelihood Ratios", LoglikelihoodRatioWriter::getFilename(_parameters, buffer, false)));
@@ -96,20 +102,13 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParame
     if (_parameters.isGeneratingTableResults() && _parameters.isPrintColumnHeaders()) {
         settings.push_back(std::make_pair("Print Column Headers","Yes"));
     }
-
-    settings.push_back(std::make_pair("Attributable Risk ",(_parameters.getReportAttributableRisk() ? "Yes" : "No")));
-    if (_parameters.getReportAttributableRisk()) {
-        printString(buffer, "%u", _parameters.getAttributableRiskExposed());
-        settings.push_back(std::make_pair("Report Attributable Risk Based on # Exposed",buffer));
-    }
-
     return settings;
 }
 
 /** Prints 'Adjustments' tab parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(SettingContainer_t & settings) const {
     settings.clear();
-    if (_parameters.isPerformingDayOfWeekAdjustment() && Parameters::isTemporalScanType(_parameters.getScanType())) {
+    if (Parameters::isTemporalScanType(_parameters.getScanType())) {
         std::string buffer;
         switch (_parameters.getConditionalType()) {
             case Parameters::TOTALCASES: // this is the time-only scan
@@ -142,7 +141,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
         case Parameters::TIMEONLY : settings.push_back(std::make_pair(buffer,"Time Only")); break;
         default: throw prg_error("Unknown scan type (%d).", "getAnalysisParameters()", _parameters.getScanType());
     }
-    buffer = "Conditional";
+    buffer = "Conditional Analysis";
     switch (_parameters.getConditionalType()) {
         case Parameters::UNCONDITIONAL : settings.push_back(std::make_pair(buffer,"No (unconditional)")); break;
         case Parameters::TOTALCASES : settings.push_back(std::make_pair(buffer,"Total Cases")); break;
