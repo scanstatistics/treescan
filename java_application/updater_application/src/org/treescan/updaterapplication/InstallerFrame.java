@@ -125,33 +125,10 @@ public class InstallerFrame extends javax.swing.JFrame {
          * For now, this hack will work ...
          */
         private boolean isExtracted(ZipEntry entry) {
-            if (entry.getName().endsWith(".jar") ||
-                entry.getName().endsWith(".prm") ||
-                entry.getName().endsWith(".cas") ||
-                entry.getName().endsWith(".ctl") ||
-                entry.getName().endsWith(".pop") ||
-                entry.getName().endsWith(".geo") ||
-                entry.getName().endsWith(".grd") ||
-                entry.getName().endsWith(".pdf")) {
-                return true;
-            } else if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
-                return entry.getName().endsWith(".exe") || 
-                       entry.getName().endsWith(".dll") ? true : false;
-            } else if (System.getProperty("os.name").toLowerCase().startsWith("linux")) {
-                return entry.getName().endsWith("_x86_64_32bit") || 
-                       entry.getName().endsWith("_x86_64_64bit") || 
-                       entry.getName().endsWith("_x86_64_32bit.so") || 
-                       entry.getName().endsWith("_x86_64_64bit.so") ? true : false;
-            } else if (System.getProperty("os.name").toLowerCase().startsWith("mac") || System.getProperty("os.name").toLowerCase().startsWith("darwin")) {
-                return true; // Mac update should never be bundled with other platform updates ... so extract all files.
-            } else if (System.getProperty("os.name").toLowerCase().startsWith("sunos") || System.getProperty("os.name").toLowerCase().startsWith("solaris")) {
-                return entry.getName().endsWith("_sparc_32bit") || 
-                       entry.getName().endsWith("_sparc_64bit") || 
-                       entry.getName().endsWith("_sparc_32bit.so") || 
-                       entry.getName().endsWith("_sparc_64bit.so") ? true : false;
-            } else {//Unknown platform - default to true
-                return true;
-            }
+            /*
+             * Update archives are created for specific platforms, so all files are extracted.
+             */
+            return true;
         }
 
         /** 
