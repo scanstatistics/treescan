@@ -43,6 +43,7 @@ class IniParameterSpecification {
 
   public:
     typedef std::map<Parameters::ParameterType, ParamInfo> ParameterInfoMap_t;
+    typedef std::map<Parameters::ParameterType, ParamInfo > MultipleParameterInfoMap_t;
     typedef std::vector<ParamInfo> ParameterInfoCollection_t;
 
   public:
@@ -84,9 +85,11 @@ class IniParameterSpecification {
 
   protected:
     ParameterInfoMap_t _parameter_info;
+    MultipleParameterInfoMap_t  _multiple_parameter_info;
 
     void Build_1_1_x_ParameterList();
     void Build_1_2_x_ParameterList();
+    void Build_1_3_x_ParameterList();
 
    public:
      IniParameterSpecification();
@@ -97,6 +100,7 @@ class IniParameterSpecification {
 
     static Parameters::CreationVersion getIniVersion(const IniFile& SourceFile);
     bool GetParameterIniInfo(Parameters::ParameterType eParameterType, const char ** sSectionName, const char ** sKey) const;
+    bool GetMultipleParameterIniInfo(Parameters::ParameterType eParameterType, const char ** sSectionName, const char ** sKey) const;
     ParameterInfoCollection_t & getParameterInfoCollection(ParameterInfoCollection_t& collection) const;
 };
 //***************************************************************************

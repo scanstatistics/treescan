@@ -23,6 +23,7 @@ class ParameterProgramOptions: public AbtractParameterFileAccess {
     protected:
         const IniParameterSpecification   _specifications;
         const char * GetParameterLabel(Parameters::ParameterType e) const {return getOption(e);}
+        static unsigned int ADDITIONAL_TREEFILES;
 
     public:
         ParameterProgramOptions(Parameters& Parameters, Parameters::CreationVersion version, BasePrint& Print);

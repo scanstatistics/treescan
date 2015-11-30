@@ -49,7 +49,6 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             /* Advanced Input */
             case Parameters::CUT_FILE                : return "cuts filename";
             case Parameters::CUT_TYPE                : return "default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)";
-            case Parameters::DUPLICATES              : return "duplicates in case data records (y/n -- experimental)";
             /* Analysis */
             case Parameters::SCAN_TYPE               : return "scan type (TREEONLY=0, TREETIME=1, TIMEONLY=2)";
             case Parameters::CONDITIONAL_TYPE        : return "conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)";
@@ -112,13 +111,12 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
     try {
         switch (e) {
             /* Input */
-            case Parameters::TREE_FILE                : s = _parameters.getTreeFileName(); return s;
+            case Parameters::TREE_FILE                : s = _parameters.getTreeFileNames().front(); return s;
             case Parameters::COUNT_FILE               : s = _parameters.getCountFileName(); return s;
             case Parameters::DATA_TIME_RANGES         : return _parameters.getDataTimeRangeSet().toString(s);
             /* Advanced Input */
             case Parameters::CUT_FILE                 : s = _parameters.getCutsFileName(); return s;
             case Parameters::CUT_TYPE                 : return AsString(s, _parameters.getCutType());
-            case Parameters::DUPLICATES               : return AsString(s, _parameters.isDuplicates());
             /* Analysis */
             case Parameters::SCAN_TYPE                : return AsString(s, _parameters.getScanType());
             case Parameters::CONDITIONAL_TYPE         : return AsString(s, _parameters.getConditionalType());
@@ -284,7 +282,6 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::CUT_FILE                 : _parameters.setCutsFileName(value.c_str(), true); break;
             case Parameters::CUT_TYPE                 : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::SIMPLE, Parameters::COMBINATORIAL);
                                                         _parameters.setCutType((Parameters::CutType)iValue); break;
-            case Parameters::DUPLICATES               : _parameters.setDuplicates(ReadBoolean(value, e)); break;
             /* Analysis */
             case Parameters::SCAN_TYPE                : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::TREEONLY, Parameters::TIMEONLY);
                                                         _parameters.setScanType((Parameters::ScanType)iValue); break;

@@ -78,8 +78,10 @@ void IniParameterSpecification::setup(Parameters::CreationVersion version) {
 
     if (version.iMajor == 1 && version.iMinor == 1)
         Build_1_1_x_ParameterList();
-    else
+    else if (version.iMajor == 1 && version.iMinor == 2)
         Build_1_2_x_ParameterList();
+    else
+        Build_1_3_x_ParameterList();
 }
 
 /* Returns ini version setting or default. */
@@ -91,7 +93,7 @@ Parameters::CreationVersion IniParameterSpecification::getIniVersion(const IniFi
     // search ini for version setting
     if ((lSectionIndex = SourceFile.GetSectionIndex(System)) > -1) {
         const IniSection * pSection = SourceFile.GetSection(lSectionIndex);
-        if ((lKeyIndex = pSection->FindKey("Version")) > -1) {
+        if ((lKeyIndex = pSection->FindKey("parameters-version")) > -1) {
             sscanf(pSection->GetLine(lKeyIndex)->GetValue(), "%u.%u.%u", &version.iMajor, &version.iMinor, &version.iRelease);
             bHasVersionKey = true;
         }
@@ -118,7 +120,6 @@ void IniParameterSpecification::Build_1_1_x_ParameterList() {
 
     _parameter_info[Parameters::CUT_FILE] = ParamInfo(Parameters::CUT_FILE, "cut-filename", 1, _advanced_input_section);
     _parameter_info[Parameters::CUT_TYPE] = ParamInfo(Parameters::CUT_TYPE, "cut-type", 2, _advanced_input_section);
-    _parameter_info[Parameters::DUPLICATES] = ParamInfo(Parameters::DUPLICATES, "duplicates", 3, _advanced_input_section);
 
     _parameter_info[Parameters::MAXIMUM_WINDOW_PERCENTAGE] = ParamInfo(Parameters::MAXIMUM_WINDOW_PERCENTAGE, "maximum-window-percentage", 1, _temporal_window_section);
     _parameter_info[Parameters::MAXIMUM_WINDOW_FIXED] = ParamInfo(Parameters::MAXIMUM_WINDOW_FIXED, "maximum-window-fixed", 2, _temporal_window_section);
@@ -151,7 +152,7 @@ void IniParameterSpecification::Build_1_1_x_ParameterList() {
 
     _parameter_info[Parameters::CREATION_VERSION] = ParamInfo(Parameters::CREATION_VERSION, "parameters-version", 1, _system_section);
 
-    assert(_parameter_info.size() == 39);
+    assert(_parameter_info.size() == 38);
 }
 
 /** Version 1.2 parameter specifications. */
@@ -162,7 +163,16 @@ void IniParameterSpecification::Build_1_2_x_ParameterList() {
     _parameter_info[Parameters::ATTR_RISK_NUM_EXPOSED] = ParamInfo(Parameters::ATTR_RISK_NUM_EXPOSED, "attributable-risk-exposed", 4, _additional_output_section);
     _parameter_info[Parameters::SELF_CONTROL_DESIGN] = ParamInfo(Parameters::SELF_CONTROL_DESIGN, "self-control-design", 4, _analysis_section);
 
-    assert(_parameter_info.size() == 43);
+    assert(_parameter_info.size() == 42);
+}
+
+/** Version 1.3 parameter specifications. */
+void IniParameterSpecification::Build_1_3_x_ParameterList() {
+    Build_1_2_x_ParameterList();
+
+    _multiple_parameter_info[Parameters::TREE_FILE] = ParamInfo(Parameters::TREE_FILE, "tree-filename", 3, _advanced_input_section);
+
+    assert(_parameter_info.size() == 42);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
@@ -170,6 +180,18 @@ void IniParameterSpecification::Build_1_2_x_ParameterList() {
 bool IniParameterSpecification::GetParameterIniInfo(Parameters::ParameterType eParameterType,  const char ** sSectionName, const char ** sKey) const {
     ParameterInfoMap_t::const_iterator itr = _parameter_info.find(eParameterType);
     if (itr != _parameter_info.end()) {
+        *sSectionName = itr->second._section->_label;
+        *sKey = itr->second._label;
+        return true;
+    }
+    return false;
+}
+
+/** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
+    Returns true if parameter found else false. */
+bool IniParameterSpecification::GetMultipleParameterIniInfo(Parameters::ParameterType eParameterType,  const char ** sSectionName, const char ** sKey) const {
+    MultipleParameterInfoMap_t::const_iterator itr = _multiple_parameter_info.find(eParameterType);
+    if (itr != _multiple_parameter_info.end()) {
         *sSectionName = itr->second._section->_label;
         *sKey = itr->second._label;
         return true;

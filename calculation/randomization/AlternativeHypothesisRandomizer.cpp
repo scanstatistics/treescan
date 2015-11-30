@@ -9,8 +9,9 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
                                                                      const RelativeRiskAdjustmentHandler& adjustments,
                                                                      const Parameters& parameters, 
                                                                      int totalC,
+                                                                     bool multiparents,
                                                                      long lInitialSeed)
-                                  : AbstractRandomizer(parameters, lInitialSeed), _randomizer(randomizer), _alternative_adjustments(adjustments) {
+                                  : AbstractRandomizer(parameters, multiparents, lInitialSeed), _randomizer(randomizer), _alternative_adjustments(adjustments) {
     // Not implemented for this model yet.
     if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES)
         throw prg_error("AlternativeHypothesisRandomizater is not implemented for the conditional Bernoulli model.", "AlternativeHypothesisRandomizater()");
@@ -22,8 +23,8 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
     if (_parameters.getModelType() == Parameters::POISSON) {
         for (size_t t=0; t < treeNodes.size(); ++t) {
             _nodes_IntN_C.push_back(NodeStructure::ExpectedContainer_t());
-            _nodes_IntN_C.back().resize(treeNodes.at(t)->getIntN_C().size());
-            std::copy(treeNodes.at(t)->getIntN_C().begin(), treeNodes.at(t)->getIntN_C().end(), _nodes_IntN_C.at(t).begin());
+            _nodes_IntN_C.back().resize(treeNodes[t]->getIntN_C().size());
+            std::copy(treeNodes[t]->getIntN_C().begin(), treeNodes[t]->getIntN_C().end(), _nodes_IntN_C[t].begin());
         }
         // apply adjustments
         _alternative_adjustments.apply(_nodes_IntN_C);
@@ -64,12 +65,8 @@ int AlternativeHypothesisRandomizater::RandomizeData(unsigned int iSimulation, c
         write(_write_filename, treeSimNodes);
     }
     //------------------------ UPDATING THE TREE -----------------------------------
-    for (size_t i=0; i < treeNodes.size(); i++) {
-        if (treeNodes.at(i)->getAnforlust()==false) 
-            addSimC_C(i, treeSimNodes.at(i).refIntC_C()/*_Nodes.at(i)->_SimIntC*/, treeNodes, treeSimNodes);
-        else
-            addSimC_CAnforlust(i, treeSimNodes.at(i).refIntC_C()/*_Nodes.at(i)->_SimIntC*/, treeNodes, treeSimNodes);
-    }
+    for (size_t i=0; i < treeNodes.size(); i++)
+        addSimC_C(i, i, treeSimNodes[i].getIntC_C(), treeSimNodes, treeNodes);
     return totalCases;
 }
 

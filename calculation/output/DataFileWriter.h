@@ -46,7 +46,6 @@ class DataRecordWriter {
     static const char         * WNDW_CASES_FIELD;
     static const char         * CASES_FIELD;
     static const char         * OBSERVED_CASES_FIELD;
-    static const char         * OBSERVED_NO_DUPLICATES_FIELD;
     static const char         * EXPECTED_FIELD;
     static const char         * EXPECTED_CASES_FIELD;
     static const char         * RELATIVE_RISK_FIELD;

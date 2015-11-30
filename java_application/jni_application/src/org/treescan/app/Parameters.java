@@ -25,7 +25,7 @@ public class Parameters implements Cloneable {
     }        
     private CreationVersion _creationversion = new CreationVersion(1,1,0);
     private String _sourcefilename="";
-    private String _treefilename="";
+    private ArrayList<String> _treefilenames;
     private String _cutsfilename="";
     private String _countfilename="";
     private String _outputfilename="";
@@ -70,13 +70,15 @@ public class Parameters implements Cloneable {
     public Parameters() {
     	super();
         _input_sources = new ArrayList<InputSourceSettings>();
+        _treefilenames = new ArrayList<String>();
+        _treefilenames.add("");        
     }
     @Override
     public Object clone() { 
       try {
     	  Parameters newObject = (Parameters)super.clone(); 
     	  newObject._sourcefilename = new String(_sourcefilename);
-    	  newObject._treefilename = new String(_treefilename);
+          newObject._treefilenames = new ArrayList<String>(_treefilenames);
     	  newObject._cutsfilename = new String(_cutsfilename);
     	  newObject._countfilename = new String(_countfilename);
     	  newObject._outputfilename = new String(_outputfilename);
@@ -115,7 +117,7 @@ public class Parameters implements Cloneable {
           if (_power_replica != rhs._power_replica) return false;
           if (!_power_alt_hypothesis_filename.equals(rhs._power_alt_hypothesis_filename)) return false;
           
-    	  if (!_treefilename.equals(rhs._treefilename)) return false;
+    	  if (!_treefilenames.equals(rhs._treefilenames)) return false;
     	  if (!_countfilename.equals(rhs._countfilename)) return false;
    	  if (_data_time_range_start != rhs._data_time_range_start) return false;
    	  if (_data_time_range_end != rhs._data_time_range_end) return false;
@@ -199,8 +201,16 @@ public class Parameters implements Cloneable {
     public void setNumReplications(int i) {_replications = i;}
     public final String getSourceFileName() {return _sourcefilename;}
     public void setSourceFileName(final String s) {_sourcefilename = s;}
-    public final String getTreeFileName() {return _treefilename;}
-    public void setTreeFileName(final String s) {_treefilename = s;}
+    
+    public final String getTreeFileName(int idx/*=1*/) {
+        return _treefilenames.get(idx - 1);
+    }
+    public final ArrayList<String> getTreeFileNames() {return _treefilenames;}
+    public void setTreeFileName(final String filename, int idx/*=1*/) {
+        while (idx > _treefilenames.size())
+            _treefilenames.add("");
+        _treefilenames.set(idx - 1, filename);
+    }    
     public final String getCutsFileName() {return _cutsfilename;}
     public void setCutsFileName(final String s) {_cutsfilename = s;}
     public final String getCountFileName() {return _countfilename;}

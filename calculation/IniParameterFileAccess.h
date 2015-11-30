@@ -15,9 +15,11 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     virtual const char                * GetParameterLabel(Parameters::ParameterType eParameterType) const;
     const IniParameterSpecification   & GetSpecifications() const;
     void                                ReadIniParameter(const IniFile& SourceFile, Parameters::ParameterType eParameterType);
+    std::vector<std::string>          & ReadIniParameter(const IniFile& SourceFile, Parameters::ParameterType eParameterType, std::vector<std::string>& vParameters, size_t iSuffixIndex) const;
 
     void                                ReadInputSourceSettings(const IniFile& SourceFile);
     bool                                ReadInputSourceSection(const IniFile& SourceFile, const char* sectionName, const char* keyPrefix, Parameters::InputSource& source);
+    void                                ReadAdditionalTreeFileNameSettings(const IniFile& SourceFile);
 
     void                                WriteInputSource(IniFile& WriteFile, Parameters::ParameterType eParameterType, const Parameters::InputSource * source);
     void                                WriteInputSource(IniFile& WriteFile, IniSection& section, const std::string& basekey, const Parameters::InputSource * source);

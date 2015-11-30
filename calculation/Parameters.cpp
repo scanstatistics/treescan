@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 42;
+const int Parameters::giNumParameters = 41;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -21,7 +21,10 @@ Parameters::cut_maps_t Parameters::getCutTypeMap() {
 
 bool  Parameters::operator==(const Parameters& rhs) const {
   if (_replications != rhs._replications) return false;
-  if (_treeFileName != rhs._treeFileName) return false;
+
+  
+  if (_treeFileNames != rhs._treeFileNames) return false;
+
   if (_cutsFileName != rhs._cutsFileName) return false;  
   if (_countFileName != rhs._countFileName) return false;
   if (_dataTimeRangeSet.getDataTimeRangeSets() != rhs._dataTimeRangeSet.getDataTimeRangeSets()) return false;
@@ -34,7 +37,6 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   //if (_randomizationSeed != rhs._randomizationSeed) return false;
   if (_numRequestedParallelProcesses != rhs._numRequestedParallelProcesses) return false;
   if (_randomlyGenerateSeed != rhs._randomlyGenerateSeed) return false;
-  if (_duplicates != rhs._duplicates) return false;  
   if (_generateHtmlResults != rhs._generateHtmlResults) return false;
   if (_generateTableResults != rhs._generateTableResults) return false;
   if (_printColumnHeaders != rhs._printColumnHeaders) return false; 
@@ -107,11 +109,10 @@ void Parameters::assignMissingPath(std::string & sInputFilename, bool bCheckWrit
 
 /** Copies all class variables from the given Parameters object (rhs) into this one */
 void Parameters::copy(const Parameters &rhs) {
-    _treeFileName = rhs._treeFileName;
+    _treeFileNames = rhs._treeFileNames;
     _countFileName = rhs._countFileName;
     _dataTimeRangeSet = rhs._dataTimeRangeSet;
     _cutsFileName = rhs._cutsFileName;
-    _duplicates = rhs._duplicates;
 
     _scan_type = rhs._scan_type;
     _conditional_type = rhs._conditional_type;
@@ -213,7 +214,6 @@ const char * Parameters::getRelativeToParameterName(const FileName& fParameterNa
   return sValue.c_str();
 }
 
-
 /** Sets counts data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
@@ -233,19 +233,27 @@ void Parameters::setCutsFileName(const char * sCutsFileName, bool bCorrectForRel
 /** Sets counts data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
-void Parameters::setTreeFileName(const char * sTreeFileName, bool bCorrectForRelativePath) {
-  _treeFileName = sTreeFileName;
-  if (bCorrectForRelativePath) assignMissingPath(_treeFileName);
+void Parameters::setTreeFileName(const char * sTreeFileName, bool bCorrectForRelativePath, size_t treeIdx) {
+  if (!treeIdx)
+    throw prg_error("Index %d out of range [1,].", "setTreeFileNames()", treeIdx);
+
+  if (treeIdx > _treeFileNames.size())
+    _treeFileNames.resize(treeIdx);
+
+  _treeFileNames[treeIdx - 1] = sTreeFileName;
+  if (bCorrectForRelativePath)
+    assignMissingPath(_treeFileNames[treeIdx - 1]);
 }
 
 
 /** initializes global variables to default values */
 void Parameters::setAsDefaulted() {
-    _treeFileName = "";
+    _treeFileNames.resize(1);
+	_treeFileNames.front() = "";
+
     _countFileName = "";
     _dataTimeRangeSet = DataTimeRangeSet();
     _cutsFileName = "";
-    _duplicates = false;
 
     _scan_type = TREEONLY;
     _conditional_type = UNCONDITIONAL;
@@ -351,7 +359,6 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     // Advanced Input
     setCutsFileName(pt.get<std::string>("parameters.input.advanced.input.cuts-filename", "").c_str(), true);
     _cut_type = static_cast<CutType>(pt.get<unsigned int>("parameters.input.advanced.input.cuts-type", SIMPLE));
-    _duplicates = pt.get<bool>("parameters.input.advanced.input.duplicates", false);
     // Analysis
     _scan_type = static_cast<ScanType>(pt.get<unsigned int>("parameters.analysis.scan", TREEONLY));
     _conditional_type = static_cast<ConditionalType>(pt.get<unsigned int>("parameters.analysis.conditional", UNCONDITIONAL));
@@ -407,13 +414,12 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     std::string buffer;
 
     // Input
-    pt.put("parameters.input.tree-file", _treeFileName);
+    pt.put("parameters.input.tree-file", _treeFileNames.front());
     pt.put("parameters.input.count-file", _countFileName);
     pt.put("parameters.input.data-time-range", _dataTimeRangeSet.toString(buffer));
     // Advanced Input
     pt.put("parameters.input.advanced.input.cuts-file", _cutsFileName);
     pt.put("parameters.input-advanced.input.cuts-type", static_cast<unsigned int>(_cut_type));
-    pt.put("parameters.input.advanced.input.duplicates", _duplicates);
     // Analysis
     pt.put("parameters.analysis.scan", static_cast<unsigned int>(_scan_type));
     pt.put("parameters.analysis.conditional", static_cast<unsigned int>(_conditional_type));

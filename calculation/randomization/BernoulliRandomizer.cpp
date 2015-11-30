@@ -5,8 +5,8 @@
 #include "BernoulliRandomizer.h"
 
 /* constructor */
-BernoulliRandomizer::BernoulliRandomizer(bool conditional, int TotalC, int TotalControls, double TotalN, const Parameters& parameters, long lInitialSeed)
-                    :AbstractDenominatorDataRandomizer(parameters, lInitialSeed), _conditional(conditional), _total_C(TotalC), _total_N(TotalN), _total_Controls(TotalControls) {}
+BernoulliRandomizer::BernoulliRandomizer(bool conditional, int TotalC, int TotalControls, double TotalN, const Parameters& parameters, bool multiparents, long lInitialSeed)
+                    :AbstractDenominatorDataRandomizer(parameters, multiparents, lInitialSeed), _conditional(conditional), _total_C(TotalC), _total_N(TotalN), _total_Controls(TotalControls) {}
 
 
 /** Each of the totalMeasure number of individuals (sum of cases and controls),
@@ -49,22 +49,22 @@ int BernoulliRandomizer::randomize(unsigned int iSimulation, const AbstractNodes
         for (size_t i=0; i < treeNodes.size(); ++i) {
             nCumMeasure -= static_cast<int>(treeNodes.getIntN(i));
             while (nCumCounts > 0 && randCounts[nCumCounts-1] > nCumMeasure) {
-                treeSimNodes.at(i).refIntC()++; //treeNodes.at(i)->_SimIntC += 1;
+                treeSimNodes[i].refIntC()++;
                 nCumCounts--;
             }
-            treeSimNodes.at(i).refBrC() = 0; //treeNodes.at(i)->_SimBrC = 0;  // Initilazing the branch cases with zero
+            treeSimNodes[i].refBrC() = 0; // Initilazing the branch cases with zero
         }
         //now reverse everything if Controls < Cases
         if (_total_C >= _total_Controls) {
             for  (size_t i=0; i < treeNodes.size(); ++i)
-                treeSimNodes.at(i).refIntC() = static_cast<int>(treeNodes.getIntN(i)) - treeSimNodes.at(i).refIntC();
+                treeSimNodes[i].refIntC() = static_cast<int>(treeNodes.getIntN(i)) - treeSimNodes[i].refIntC();
         }
     } else {
         for (size_t i=0; i < treeNodes.size(); ++i) {
             int cases = _binomial_generator.GetBinomialDistributedVariable(static_cast<int>(treeNodes.getIntN(i)), static_cast<float>(treeNodes.getProbability(i)), _random_number_generator);
-            treeSimNodes.at(i).refIntC() = cases; //treeNodes.at(i)->_SimIntC = cases;
+            treeSimNodes[i].refIntC() = cases;
             TotalSimC += cases;
-            treeSimNodes.at(i).refBrC() = 0; //treeNodes.at(i)->_SimBrC = 0;  // Initilazing the branch cases with zero
+            treeSimNodes[i].refBrC() = 0; // Initilazing the branch cases with zero
         } // for i
     }
     return TotalSimC;

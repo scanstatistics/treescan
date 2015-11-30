@@ -61,22 +61,57 @@ bool ParametersValidate::ValidateAdjustmentsParameters(BasePrint & PrintDirectio
     return bValid;
 }
 
+bool ParametersValidate::ValidateInputSource(const Parameters::InputSource * source, const std::string& filename, const std::string& verbosename, BasePrint& PrintDirection) const {
+    FileName file(filename.c_str());
+
+    std::string extension(file.getExtension());
+    lowerString(extension);
+    // First exclude file types that are not readable - namely, Excel;
+    if (extension == ".xls" || extension == ".xlsx") {
+        PrintDirection.Printf("%s:\nThe Excel file '%s' cannot be read as an input file.\n.SaTScan cannot read directly from Excel files.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filename.c_str());
+        return false;
+    }
+
+    if (source) {
+        // Verify that the input source settings's source data file type matches extension.
+        bool correct_filetype=true;
+        switch (source->getSourceType()) {
+            case CSV : {
+                FieldMapContainer_t::const_iterator itrMap=source->getFieldsMap().begin();
+                for (;itrMap != source->getFieldsMap().end(); ++itrMap) {
+                     if (itrMap->type() == typeid(long) && boost::any_cast<long>(*itrMap) < 0) {
+                        PrintDirection.Printf("%s:\nThe field mapping column indexes cannot be unless than zero, got value %ld.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, boost::any_cast<long>(*itrMap));
+                        return false;
+                     }
+                }
+                correct_filetype = !(extension == ".xls"); break;
+            }
+            case EXCEL : correct_filetype = extension == ".xls" || extension == ".xlsx"; break;
+            default : throw prg_error("Unknown  source type: %d.", "ValidateInputSource()", source->getSourceType());
+        }
+        if (!correct_filetype) {
+            PrintDirection.Printf("%s:\nThe file '%s' cannot be read as an input source. The specified source type does not match the file type.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filename.c_str());
+            return false;
+        }
+    } return true;
+}
+
 /** Validates input/output file parameters. */
 bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) const {
     bool bValid=true;
     std::string buffer, buffer2;
     try {
         if (_parameters.getScanType() != Parameters::TIMEONLY) {
-            if (_parameters.getTreeFileName().empty()) {
+            if (_parameters.getTreeFileNames().size() == 0) {
                 bValid = false;
                 PrintDirection.Printf("Invalid Parameter Setting:\nNo tree file specified.\n", BasePrint::P_PARAMERROR);
-            } else if (!ValidateFileAccess(_parameters.getTreeFileName())) {
-                bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\n"
-                                       "The tree file '%s' could not be opened for reading. "
-                                       "Please confirm that the path and/or file name are valid and that you "
-                                       "have permissions to read from this directory and file.\n",
-                                       BasePrint::P_PARAMERROR, _parameters.getTreeFileName().c_str());
+            }
+            for (Parameters::FileNameContainer_t::const_iterator itr=_parameters.getTreeFileNames().begin(); itr != _parameters.getTreeFileNames().end(); ++itr) {
+                bool exists = checkFileExists(*itr, "tree", PrintDirection);
+                bValid &= exists;
+                if (exists) {
+                    bValid &= ValidateInputSource(_parameters.getInputSource(Parameters::TREE_FILE, std::distance(_parameters.getTreeFileNames().begin(), itr) + 1), *itr, "tree", PrintDirection);
+                }
             }
         }
         if (_parameters.getCountFileName().empty()) {

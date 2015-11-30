@@ -20,6 +20,7 @@ class ParametersValidate {
     bool ValidateAnalysisParameters(BasePrint & PrintDirection) const;
     bool ValidateAdjustmentsParameters(BasePrint & PrintDirection) const;
     bool ValidateInputParameters(BasePrint & PrintDirection) const;
+    bool ValidateInputSource(const Parameters::InputSource * source, const std::string& filename, const std::string& verbosename, BasePrint& PrintDirection) const;
     bool ValidateOutputParameters(BasePrint & PrintDirection) const;
     bool ValidateAdditionalOutputParameters(BasePrint & PrintDirection) const;
     bool ValidatePowerEvaluationParametersParameters(BasePrint & PrintDirection) const;

@@ -6,6 +6,8 @@
 #include "PrjException.h"
 #include "UtilityFunctions.h"
 
+unsigned int ParameterProgramOptions::ADDITIONAL_TREEFILES = 50;
+
 ParameterProgramOptions::ParameterProgramOptions(Parameters& Parameters, Parameters::CreationVersion version, BasePrint& Print)
     :AbtractParameterFileAccess(Parameters, Print), _specifications(version, Parameters) {}
 
@@ -40,6 +42,14 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         }
         opt_descriptions.back()->get<0>().add_options()(buffer.c_str(), po::value<std::string>(), GetParameterComment(itr->_type));
     }
+
+    /* multiple tree files (hidden) tab options */
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, "Additional Tree Files"), LINE_WIDTH, LINE_WIDTH/2),false,std::string())));
+    for (size_t t=0; t < ADDITIONAL_TREEFILES; ++t) {
+        opt_descriptions.back()->get<0>().add_options()
+            (printString(buffer, "%s%d", getOption(Parameters::TREE_FILE), t+2).c_str(), po::value<std::string>(), GetParameterComment(Parameters::TREE_FILE));
+    }
+
     return opt_descriptions;
 }
 
@@ -49,6 +59,13 @@ bool ParameterProgramOptions::setParameterOverrides(const po::variables_map& vm)
     for (Parameters::ParameterType eType=Parameters::TREE_FILE; eType <= _parameters.giNumParameters; eType = Parameters::ParameterType(eType + 1)) {
         if (vm.count(getOption(eType)))
             SetParameter(eType, vm[getOption(eType)].as<std::string>(), gPrintDirection);
+    }
+    /* manually scan for multiple tree file parameters */
+    for (size_t t=0; t < ADDITIONAL_TREEFILES; ++t) {
+        printString(buffer, "%s%d", getOption(Parameters::TREE_FILE), t+2);
+        if (vm.count(buffer.c_str())) {
+            _parameters.setTreeFileName(vm[buffer.c_str()].as<std::string>().c_str(), true, t + 2);
+        }
     }
     return !_read_error;
 }

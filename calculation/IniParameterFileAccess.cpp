@@ -49,12 +49,49 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
 
         for (Parameters::ParameterType eType=Parameters::TREE_FILE; eType <= _parameters.giNumParameters; eType = Parameters::ParameterType(eType + 1))
             ReadIniParameter(SourceFile, eType);
+        ReadAdditionalTreeFileNameSettings(SourceFile);
         ReadInputSourceSettings(SourceFile);
     } catch (prg_exception& x) {
         x.addTrace("Read()","IniParameterFileAccess");
         throw;
     }
     return !_read_error;
+}
+
+/** Reads parameter from ini file and returns all found key values in vector for
+    those parameters that have optional additional keys, such as files with
+    multiple datasets. */
+std::vector<std::string>& IniParameterFileAccess::ReadIniParameter(const IniFile& SourceFile, Parameters::ParameterType eParameterType, std::vector<std::string>& vParameters, size_t iSuffixIndex) const {
+    long lSectionIndex, lKeyIndex;
+    std::string sNextKey;
+    const char * sSectionName, * sKey;
+
+    vParameters.clear();
+    if (GetSpecifications().GetMultipleParameterIniInfo(eParameterType, &sSectionName, &sKey)) {
+        //read possibly other dataset case source
+        if ((lSectionIndex = SourceFile.GetSectionIndex(sSectionName)) > -1) {
+            const IniSection  * pSection = SourceFile.GetSection(lSectionIndex);
+            printString(sNextKey, "%s%i", sKey, iSuffixIndex);
+            while ((lKeyIndex = pSection->FindKey(sNextKey.c_str())) > -1) {
+                vParameters.push_back(std::string(pSection->GetLine(lKeyIndex)->GetValue()));
+                printString(sNextKey, "%s%i", sKey, ++iSuffixIndex);
+            }
+        }
+    }
+    return vParameters;
+}
+
+/** Reads additional tree file parameter settings. */
+void IniParameterFileAccess::ReadAdditionalTreeFileNameSettings(const IniFile& SourceFile) {
+    std::vector<std::string> vFilenames;
+    try {
+        ReadIniParameter(SourceFile, Parameters::TREE_FILE, vFilenames, 2);
+        for (size_t t=0; t < vFilenames.size(); ++t)
+            _parameters.setTreeFileName(vFilenames[t].c_str(), true, t + 2);
+    } catch (prg_exception& x) {
+        x.addTrace("ReadAdditionalTreeFileNameSettings()","IniParameterFileAccess");
+        throw;
+    }
 }
 
 /** Reads parameter from ini file and sets in CParameter object. If parameter specification not
@@ -80,7 +117,7 @@ void IniParameterFileAccess::ReadIniParameter(const IniFile& SourceFile, Paramet
 
 /* Reads optional input source settings. */
 void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) {
-    const char * section, * key;
+    const char * section, * advancedinput, * key;
     std::string buffer;
 
     try {
@@ -89,6 +126,19 @@ void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) 
             Parameters::InputSource source;
             if (ReadInputSourceSection(SourceFile, section, key, source))
                 _parameters.defineInputSource(Parameters::TREE_FILE, source);
+
+            // section name for advanced input settings
+            if (!GetSpecifications().GetParameterIniInfo(Parameters::CUT_FILE, &advancedinput, &key))
+                throw prg_error("Unable to determine section for advanced input settings.", "ReadInputSourceSettings()");
+
+            // now define input sources for additional tree files
+            for (unsigned int setIdx=1; setIdx < _parameters.getTreeFileNames().size(); ++setIdx) {
+                printString(buffer, "%s%u", key, (setIdx + 1));
+                Parameters::InputSource sourceset;
+                if (ReadInputSourceSection(SourceFile, advancedinput, buffer.c_str(), sourceset))
+                    _parameters.defineInputSource(Parameters::TREE_FILE, sourceset, setIdx + 1);
+            }
+
         }
         // case file
         if (GetSpecifications().GetParameterIniInfo(Parameters::COUNT_FILE, &section, &key)) {
@@ -289,7 +339,22 @@ void IniParameterFileAccess::WriteAdvancedInputSettings(IniFile& WriteFile) {
         if (s.size()) WriteInputSource(WriteFile, Parameters::CUT_FILE, _parameters.getInputSource(Parameters::CUT_FILE));
 
         WriteIniParameter(WriteFile, Parameters::CUT_TYPE, GetParameterString(Parameters::CUT_TYPE, s).c_str(), GetParameterComment(Parameters::CUT_TYPE));
-        WriteIniParameter(WriteFile, Parameters::DUPLICATES, GetParameterString(Parameters::DUPLICATES, s).c_str(), GetParameterComment(Parameters::DUPLICATES));
+    } catch (prg_exception& x) {
+        x.addTrace("WriteAdvancedInputSettings()","IniParameterFileAccess");
+        throw;
+    }
+
+    std::string   sComment;
+    const char  * sSectionName, * sBaseKey;
+    try {
+        for (size_t t=1; t < _parameters.getTreeFileNames().size(); ++t) {
+            if (GetSpecifications().GetMultipleParameterIniInfo(Parameters::TREE_FILE, &sSectionName, &sBaseKey)) {
+                printString(s, "%s%i", sBaseKey, t + 1);
+                printString(sComment, " tree filename (additional %i)", t + 1);
+                WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), _parameters.getTreeFileNames()[t].c_str(), sComment.c_str());
+                if (_parameters.getTreeFileNames()[t].size()) WriteInputSource(WriteFile, *(WriteFile.GetSection(sSectionName)), s, _parameters.getInputSource(Parameters::TREE_FILE, t+1));
+            }
+        }
     } catch (prg_exception& x) {
         x.addTrace("WriteAdvancedInputSettings()","IniParameterFileAccess");
         throw;

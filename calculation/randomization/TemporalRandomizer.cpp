@@ -6,7 +6,7 @@
 
 /* constructor */
 TemporalRandomizer::TemporalRandomizer(const ScanRunner& scanner, long lInitialSeed)
-    : AbstractRandomizer(scanner.getParameters(), lInitialSeed),
+    : AbstractRandomizer(scanner.getParameters(), scanner.getMultiParentNodesExist(), lInitialSeed),
      _total_C(scanner.getTotalC()), _total_N(scanner.getTotalN()), _time_range_sets(scanner.getParameters().getDataTimeRangeSet()), _day_of_week_indexes(scanner.getDayOfWeekIndexes()) {
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     DataTimeRange min_max = _time_range_sets.getMinMax();
@@ -28,7 +28,7 @@ int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesP
                 for (NodeStructure::count_t c=0; c < cases; ++c) {
                     // For the associated day of week, by this idx, get the uniformly distributed time index along all of the same week day.
                     DataTimeRange::index_t idxDay = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(1), static_cast<long>(_day_of_week_indexes[idx % 7].size()), _random_number_generator));
-                    ++(treeSimNodes.at(i).refIntC_C().at(_day_of_week_indexes[idx % 7][idxDay - 1]));
+                    ++(treeSimNodes[i].refIntC_C()[_day_of_week_indexes[idx % 7][idxDay - 1]]);
                     ++TotalSimC;
                 }
 
@@ -38,10 +38,10 @@ int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesP
         for (size_t i=0; i < treeNodes.size(); ++i) {
             NodeStructure::count_t nodeC = treeNodes.getIntC(i);
             if (nodeC) {
-                SimulationNode& simNode(treeSimNodes.at(i));
+                SimulationNode& simNode(treeSimNodes[i]);
                 for (NodeStructure::count_t c=0; c < nodeC; ++c) {
                     DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(zeroRange.getEnd()), _random_number_generator));
-                    ++(simNode.refIntC_C().at(idx));
+                    ++(simNode.refIntC_C()[idx]);
                     ++TotalSimC;
                 }
             }
@@ -74,12 +74,8 @@ int TemporalRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner
     // now set simulation data structures as cumulative
     std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::setCumulative));
     //------------------------ UPDATING THE TREE -----------------------------------
-    for (size_t i=0; i < treeNodes.size(); i++) {
-        if (treeNodes.at(i)->getAnforlust()==false) 
-            addSimC_C(i, treeSimNodes.at(i).refIntC_C(), treeNodes, treeSimNodes);
-        else 
-            addSimC_CAnforlust(i, treeSimNodes.at(i).refIntC_C(), treeNodes, treeSimNodes);
-    }
+    for (size_t i=0; i < treeNodes.size(); i++)
+        addSimC_C(i, i, treeSimNodes[i].getIntC_C(), treeSimNodes, treeNodes);
     return TotalSimC;
 }
 
@@ -98,7 +94,7 @@ int TemporalRandomizer::read(const std::string& filename, unsigned int simulatio
 
     size_t checkNodes = treeSimNodes.size();
     for (size_t i=0; i < treeSimNodes.size(); ++i) {
-        SimulationNode& simNode(treeSimNodes.at(i));
+        SimulationNode& simNode(treeSimNodes[i]);
         int branch = 0;
         size_t checkC = simNode.getIntC_C().size();
         for (size_t s=0; s < simNode.getIntC_C().size(); ++s) {
@@ -109,15 +105,15 @@ int TemporalRandomizer::read(const std::string& filename, unsigned int simulatio
                 throw resolvable_error("Error: Simulated data file appears to contain invalid data in simulation %d. Datum could not be read as integer for element %d of node %d.\n", simulation, s, i+1);
             }
 
-            simNode.refIntC_C().at(s) = count;
+            simNode.refIntC_C()[s] = count;
             branch += count;
         }
         total += branch;
         // check that the total read count equals node branch count?
-        if (branch != treeNodes.at(i)->getBrC())
+        if (branch != treeNodes[i]->getBrC())
             throw resolvable_error("Error: Simulation count (%d) for node %s in simulated data file does not equal branch count (%d).\n",
-                                   branch, treeNodes.at(i)->getIdentifier().c_str(), treeNodes.at(i)->getBrC());
-        treeSimNodes.at(i).refBrC() = 0;
+                                   branch, treeNodes[i]->getIdentifier().c_str(), treeNodes[i]->getBrC());
+        treeSimNodes[i].refBrC() = 0;
     }
     stream.close();
     return total;
@@ -131,9 +127,9 @@ void TemporalRandomizer::write(const std::string& filename, const SimNodeContain
     stream.open(filename.c_str(), std::ios::ate|std::ios::app);
     if (!stream) throw resolvable_error("Error: Could not open the simulated data output file '%s'.\n", filename.c_str());
     for (size_t i=0; i < treeSimNodes.size(); ++i) {
-        const SimulationNode& simNode(treeSimNodes.at(i));
+        const SimulationNode& simNode(treeSimNodes[i]);
         for (size_t s=0; s < simNode.getIntC_C().size(); ++s) {
-            stream << simNode.getIntC_C().at(s) << " ";
+            stream << simNode.getIntC_C()[s] << " ";
         }
         stream << std::endl;
     }
@@ -184,7 +180,7 @@ void ConditionalTemporalRandomizer::AssignRandomizedData(const AbstractNodesProx
         PermutedContainer_t::iterator itrP=itrPC->begin();
         // for each stationary/permutation pair, updating the number of cases for node/time
         for (; itrS != itrSC->end(); ++itrS, ++itrP) {
-            ++(treeSimNodes.at(itrS->GetStationaryVariable()).refIntC_C().at((*itrP).GetPermutedVariable()));
+            ++(treeSimNodes[itrS->GetStationaryVariable()].refIntC_C()[(*itrP).GetPermutedVariable()]);
             ++TotalSimC;
         }
     }

@@ -5,14 +5,16 @@
 #include "PoissonRandomizer.h"
 
 /* constructor */
-PoissonRandomizer::PoissonRandomizer(bool conditional, int TotalC, double TotalN, const Parameters& parameters, long lInitialSeed)
-                  : AbstractDenominatorDataRandomizer(parameters, lInitialSeed), _conditional(conditional), _total_C(TotalC), _total_N(TotalN) {}
+PoissonRandomizer::PoissonRandomizer(bool conditional, int TotalC, double TotalN, const Parameters& parameters, bool multiparents, long lInitialSeed)
+                  : AbstractDenominatorDataRandomizer(parameters, multiparents, lInitialSeed), _conditional(conditional), _total_C(TotalC), _total_N(TotalN) {}
 
 /** Creates randomized under the null hypothesis for Poisson model, assigning data to DataSet objects structures.
     Random number generator seed initialized based upon 'iSimulation' index. */
 int PoissonRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
     //reset seed of random number generator
     setSeed(iSimulation);
+    // reset simData
+    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
 
     //-------------------- GENERATING THE RANDOM DATA ------------------------------
     int cases, CasesLeft, TotalSimC;
@@ -25,10 +27,10 @@ int PoissonRandomizer::randomize(unsigned int iSimulation, const AbstractNodesPr
         for (size_t i=0; i < treeNodes.size(); i++) {
             cases = BinomialGenerator(CasesLeft, treeNodes.getIntN(i) / ExpectedLeft);
             //if(cases>0 && Node[i].IntN<0.1) cout << "node=" << i <<  ", CasesLeft=" << CasesLeft << ", c=" << cases << ", exp=" << Node[i].IntN << ", ExpLeft=" << ExpectedLeft << endl;
-            treeSimNodes.at(i).refIntC() = cases; //treeNodes.at(i)->_SimIntC = cases;
+            treeSimNodes[i].refIntC() = cases; //treeNodes.at(i)->_SimIntC = cases;
             CasesLeft -= cases;
             ExpectedLeft -= treeNodes.getIntN(i);
-            treeSimNodes.at(i).refBrC() = 0; //treeNodes.at(i)->_SimBrC = 0;  // Initilazing the branch cases with zero
+            treeSimNodes[i].refBrC() = 0; //treeNodes.at(i)->_SimBrC = 0;  // Initilazing the branch cases with zero
         } // for i
     }  else { // if unconditional
         TotalSimC=0;
@@ -36,10 +38,10 @@ int PoissonRandomizer::randomize(unsigned int iSimulation, const AbstractNodesPr
         for(size_t i=0; i < treeNodes.size(); i++) {
             cases = PoissonGenerator(treeNodes.getIntN(i));
             //if(cases>0 && Node[i].IntN<0.1) cout << "node=" << i <<  ",  c=" << cases << ", exp=" << Node[i].IntN << endl;
-            treeSimNodes.at(i).refIntC() = cases; //treeNodes.at(i)->_SimIntC=cases;
+            treeSimNodes[i].refIntC() = cases; //treeNodes.at(i)->_SimIntC=cases;
             TotalSimC += cases;
             ExpectedLeft -= treeNodes.getIntN(i);
-            treeSimNodes.at(i).refBrC() = 0; //treeNodes.at(i)->_SimBrC = 0; // Initilazing the branch cases with zero
+            treeSimNodes[i].refBrC() = 0; //treeNodes.at(i)->_SimBrC = 0; // Initilazing the branch cases with zero
         }
     }
     return TotalSimC;

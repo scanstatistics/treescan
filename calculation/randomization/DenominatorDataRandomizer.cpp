@@ -20,12 +20,8 @@ int AbstractDenominatorDataRandomizer::RandomizeData(unsigned int iSimulation, c
         write(_write_filename, treeSimNodes);
     }
     //------------------------ UPDATING THE TREE -----------------------------------
-    for (size_t i=0; i < treeNodes.size(); i++) {
-        if (treeNodes.at(i)->getAnforlust()==false) 
-            addSimC_C(i, treeSimNodes.at(i).refIntC_C()/*_Nodes.at(i)->_SimIntC*/, treeNodes, treeSimNodes);
-        else
-            addSimC_CAnforlust(i, treeSimNodes.at(i).refIntC_C()/*_Nodes.at(i)->_SimIntC*/, treeNodes, treeSimNodes);
-    }
+    for (size_t i=0; i < treeNodes.size(); i++)
+        addSimC_C(i, i, treeSimNodes[i].getIntC_C(), treeSimNodes, treeNodes);
     return TotalSimC;
 }
 
@@ -50,8 +46,8 @@ int AbstractDenominatorDataRandomizer::read(const std::string& filename, unsigne
                 throw resolvable_error("Error: Simulated data file does not contain enough data for simulation %d. Expecting %d datum but could only read %d.\n", simulation, checkNodes, i);
             throw resolvable_error("Error: Simulated data file appears to contain invalid data in simulation %d. Datum could not be read as integer for %d element.\n", simulation, i+1);
         }
-        treeSimNodes.at(i).refIntC() = count;
-        treeSimNodes.at(i).refBrC() = 0;
+        treeSimNodes[i].refIntC() = count;
+        treeSimNodes[i].refBrC() = 0;
         total_sim += count;
     }
     stream.close();
@@ -67,7 +63,7 @@ void AbstractDenominatorDataRandomizer::write(const std::string& filename, const
     stream.open(filename.c_str(), std::ios::ate|std::ios::app);
     if (!stream) throw resolvable_error("Error: Could not open the simulated data output file '%s'.\n", filename.c_str());
     for (size_t i=0; i < treeSimNodes.size(); ++i) {
-        stream << treeSimNodes.at(i).getIntC() << " ";
+        stream << treeSimNodes[i].getIntC() << " ";
     }
     stream << std::endl;
     stream.close();

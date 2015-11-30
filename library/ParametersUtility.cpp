@@ -78,84 +78,82 @@ int ParametersUtility::getEnumTypeOrdinalIndex(JNIEnv& Env, jobject& jParameters
 }
 
 /** Copies CParameter object data members to JParameters object. */
-jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters& Parameters, jobject& jParameters) {
+jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters& parameters, jobject& jParameters) {
   //set jParameters object from data members of CParameters class
   jclass clazz = Env.GetObjectClass(jParameters);
 
   jmethodID mid = _getMethodId_Checked(Env, clazz, "setNumProcesses", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getNumRequestedParallelProcesses());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getNumRequestedParallelProcesses());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setNumReplications", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getNumReplicationsRequested());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getNumReplicationsRequested());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setCountFileName", "(Ljava/lang/String;)V");
-  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getCountFileName().c_str()));
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getCountFileName().c_str()));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setCutsFileName", "(Ljava/lang/String;)V");
-  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getCutsFileName().c_str()));
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getCutsFileName().c_str()));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setTreeFileName", "(Ljava/lang/String;)V");
-  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getTreeFileName().c_str()));
-  jni_error::_detectError(Env);
+  mid = _getMethodId_Checked(Env, clazz, "setTreeFileName", "(Ljava/lang/String;I)V");
+  for (Parameters::FileNameContainer_t::const_iterator itr=parameters.getTreeFileNames().begin(); itr != parameters.getTreeFileNames().end(); ++itr) {
+    Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(itr->c_str()), (jint)(std::distance(parameters.getTreeFileNames().begin(), itr) + 1));
+    jni_error::_detectError(Env);
+  }
 
   mid = _getMethodId_Checked(Env, clazz, "setOutputFileName", "(Ljava/lang/String;)V");
-  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getOutputFileName().c_str()));
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getOutputFileName().c_str()));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setResultsFormat", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getResultsFormat());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getResultsFormat());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setSourceFileName", "(Ljava/lang/String;)V");
-  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getSourceFileName().c_str()));
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getSourceFileName().c_str()));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setRandomlyGeneratingSeed", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isRandomlyGeneratingSeed());
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.isRandomlyGeneratingSeed());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setRandomizationSeed", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getRandomizationSeed());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getRandomizationSeed());
   jni_error::_detectError(Env);
 
-  //mid = _getMethodId_Checked(Env, clazz, "setDuplicates", "(Z)V");
-  //Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isDuplicates());
-  //jni_error::_detectError(Env);
-
   mid = _getMethodId_Checked(Env, clazz, "setGeneratingHtmlResults", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isGeneratingHtmlResults());
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.isGeneratingHtmlResults());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setGeneratingTableResults", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isGeneratingTableResults());
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.isGeneratingTableResults());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setPrintColunHeaders", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isPrintColumnHeaders());
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.isPrintColumnHeaders());
   jni_error::_detectError(Env);
 
   jfieldID vfid = _getFieldId_Checked(Env, clazz, "_creationversion", "Lorg/treescan/app/Parameters$CreationVersion;");
   jobject versionobject = Env.GetObjectField(jParameters, vfid);
   jclass vclazz = Env.GetObjectClass(versionobject);
   vfid = _getFieldId_Checked(Env, vclazz, "_major", "I");
-  Env.SetIntField(versionobject, vfid, (jint)Parameters.getCreationVersion().iMajor);
+  Env.SetIntField(versionobject, vfid, (jint)parameters.getCreationVersion().iMajor);
   jni_error::_detectError(Env);
   vfid = _getFieldId_Checked(Env, vclazz, "_minor", "I");
-  Env.SetIntField(versionobject, vfid, (jint)Parameters.getCreationVersion().iMinor);
+  Env.SetIntField(versionobject, vfid, (jint)parameters.getCreationVersion().iMinor);
   jni_error::_detectError(Env);
   vfid = _getFieldId_Checked(Env, vclazz, "_release", "I");
-  Env.SetIntField(versionobject, vfid, (jint)Parameters.getCreationVersion().iRelease);
+  Env.SetIntField(versionobject, vfid, (jint)parameters.getCreationVersion().iRelease);
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setModelType", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getModelType());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getModelType());
   jni_error::_detectError(Env);
 
-  Parameters::ratio_t ratio = Parameters.getProbabilityRatio();
+  Parameters::ratio_t ratio = parameters.getProbabilityRatio();
   mid = _getMethodId_Checked(Env, clazz, "setProbabilityRatioNumerator", "(I)V");
   Env.CallVoidMethod(jParameters, mid, (jint)ratio.first);
   jni_error::_detectError(Env);
@@ -165,97 +163,97 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setScanType", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getScanType());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getScanType());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setConditionalType", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getConditionalType());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getConditionalType());
   jni_error::_detectError(Env);
 
-  if (Parameters.getDataTimeRangeSet().getDataTimeRangeSets().size()) {
+  if (parameters.getDataTimeRangeSet().getDataTimeRangeSets().size()) {
     mid = _getMethodId_Checked(Env, clazz, "setDataTimeRangeBegin", "(I)V");
-    Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getStart());
+    Env.CallVoidMethod(jParameters, mid, (jint)parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getStart());
     jni_error::_detectError(Env);
 
     mid = _getMethodId_Checked(Env, clazz, "setDataTimeRangeClose", "(I)V");
-    Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getEnd());
+    Env.CallVoidMethod(jParameters, mid, (jint)parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getEnd());
     jni_error::_detectError(Env);
   }
 
   mid = _getMethodId_Checked(Env, clazz, "setTemporalStartRangeBegin", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTemporalStartRange().getStart());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getTemporalStartRange().getStart());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setTemporalStartRangeClose", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTemporalStartRange().getEnd());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getTemporalStartRange().getEnd());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setTemporalEndRangeBegin", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTemporalEndRange().getStart());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getTemporalEndRange().getStart());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setTemporalEndRangeClose", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTemporalEndRange().getEnd());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getTemporalEndRange().getEnd());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setGeneratingLLRResults", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.isGeneratingLLRResults());
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.isGeneratingLLRResults());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setMaximumWindowPercentage", "(D)V");
-  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getMaximumWindowPercentage());
+  Env.CallVoidMethod(jParameters, mid, (jdouble)parameters.getMaximumWindowPercentage());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setMaximumWindowLength", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getMaximumWindowLength());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getMaximumWindowLength());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setMaximumWindowType", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getMaximumWindowType());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getMaximumWindowType());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setMinimumWindowLength", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getMinimumWindowLength());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getMinimumWindowLength());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setPerformPowerEvaluations", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getPerformPowerEvaluations());
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getPerformPowerEvaluations());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setPowerEvaluationType", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getPowerEvaluationType());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getPowerEvaluationType());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setPowerEvaluationTotalCases", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getPowerEvaluationTotalCases());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getPowerEvaluationTotalCases());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setPowerEvaluationReplications", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getPowerEvaluationReplications());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getPowerEvaluationReplications());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setPowerEvaluationAltHypothesisFilename", "(Ljava/lang/String;)V");
-  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getPowerEvaluationAltHypothesisFilename().c_str()));
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getPowerEvaluationAltHypothesisFilename().c_str()));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setReportCriticalValues", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getReportCriticalValues());
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getReportCriticalValues());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setPerformDayOfWeekAdjustment", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getPerformDayOfWeekAdjustment());
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getPerformDayOfWeekAdjustment());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setReportAttributableRisk", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getReportAttributableRisk());
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getReportAttributableRisk());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setAttributableRiskExposed", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getAttributableRiskExposed());
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getAttributableRiskExposed());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setSelfControlDesign", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getSelfControlDesign());
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getSelfControlDesign());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "clearInputSourceSettings", "()V");
@@ -265,8 +263,8 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   jmethodID mid_add_source = _getMethodId_Checked(Env, clazz, "addInputSourceSettings", "(Lorg/treescan/importer/InputSourceSettings;)V");
   jclass issclazz = Env.FindClass("org/treescan/importer/InputSourceSettings");
   jmethodID mid_constructor = _getMethodId_Checked(Env, issclazz, "<init>", "()V");
-  Parameters::InputSourceContainer_t::const_iterator itr=Parameters.getInputSources().begin();
-  for (; itr != Parameters.getInputSources().end(); ++itr) {
+  Parameters::InputSourceContainer_t::const_iterator itr=parameters.getInputSources().begin();
+  for (; itr != parameters.getInputSources().end(); ++itr) {
       const Parameters::InputSourceKey_t& key = itr->first;
       const Parameters::InputSource& iss = itr->second;
       jobject issobject = Env.NewObject(issclazz, mid_constructor);
@@ -274,13 +272,17 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
 
       // translate ParameterType to Java InputSourceSettings.InputFileType
       mid = _getMethodId_Checked(Env, issclazz, "setInputFileType", "(I)V");
-      switch (key) {
+      switch (key.first) {
         case Parameters::TREE_FILE : Env.CallVoidMethod(issobject, mid, (jint)0); break;
         case Parameters::COUNT_FILE : Env.CallVoidMethod(issobject, mid, (jint)1); break;
         case Parameters::CUT_FILE : Env.CallVoidMethod(issobject, mid, (jint)2); break;
         case Parameters::POWER_EVALUATIONS_FILE : Env.CallVoidMethod(issobject, mid, (jint)3); break;
-        default : throw prg_error("Unknown parameter type for translation: %d", "copyCParametersToJParameters()", key);
+        default : throw prg_error("Unknown parameter type for translation: %d", "copyCParametersToJParameters()", key.first);
       }
+
+      mid = _getMethodId_Checked(Env, issclazz, "setIndex", "(I)V");
+      Env.CallVoidMethod(issobject, mid, (jint)key.second);
+      jni_error::_detectError(Env);
 
       mid = _getMethodId_Checked(Env, issclazz, "setSourceDataFileType", "(I)V");
       Env.CallVoidMethod(issobject, mid, (jint)iss.getSourceType());
@@ -322,7 +324,7 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
 
 /** Copies JParameter object data members to CParameters object. */
 
-Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject& jParameters, Parameters& Parameters) {
+Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject& jParameters, Parameters& parameters) {
   jboolean              iscopy;
   const char          * sFilename;
 
@@ -330,75 +332,80 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   jclass clazz = Env.GetObjectClass(jParameters);
 
   jmethodID mid = _getMethodId_Checked(Env, clazz, "getNumRequestedParallelProcesses", "()I");
-  Parameters.setNumProcesses(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  parameters.setNumProcesses(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getNumReplicationsRequested", "()I");
-  Parameters.setNumReplications(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  parameters.setNumReplications(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getCountFileName", "()Ljava/lang/String;");
   jstring jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  Parameters.setCountFileName(sFilename);
+  parameters.setCountFileName(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   mid = _getMethodId_Checked(Env, clazz, "getCutsFileName", "()Ljava/lang/String;");
   jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  Parameters.setCutsFileName(sFilename);
+  parameters.setCutsFileName(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
-  mid = _getMethodId_Checked(Env, clazz, "getTreeFileName", "()Ljava/lang/String;");
-  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  mid = _getMethodId_Checked(Env, clazz, "getTreeFileNames", "()Ljava/util/ArrayList;");
+  jobject vectorobject = Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
-  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  Parameters.setTreeFileName(sFilename);
-  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+  jclass vclazz = Env.GetObjectClass(vectorobject);
+  mid = _getMethodId_Checked(Env, vclazz, "size", "()I");
+  jni_error::_detectError(Env);
+  jint vsize = Env.CallIntMethod(vectorobject, mid);
+  for (jint i=0; i < vsize; ++i) {
+      mid = _getMethodId_Checked(Env, vclazz, "get", "(I)Ljava/lang/Object;");
+      jstring str_object = (jstring)Env.CallObjectMethod(vectorobject, mid, i);
+      jni_error::_detectError(Env);
+      sFilename = Env.GetStringUTFChars(str_object, &iscopy);
+      parameters.setTreeFileName(sFilename, false, i + 1);
+      if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(str_object, sFilename);
+  }
 
   mid = _getMethodId_Checked(Env, clazz, "getOutputFileName", "()Ljava/lang/String;");
   jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  Parameters.setOutputFileName(sFilename);
+  parameters.setOutputFileName(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
-  Parameters.setResultsFormat((Parameters::ResultsFormat)getEnumTypeOrdinalIndex(Env, jParameters, "getResultsFormat", "Lorg/treescan/app/Parameters$ResultsFormat;"));
+  parameters.setResultsFormat((Parameters::ResultsFormat)getEnumTypeOrdinalIndex(Env, jParameters, "getResultsFormat", "Lorg/treescan/app/Parameters$ResultsFormat;"));
 
   mid = _getMethodId_Checked(Env, clazz, "getSourceFileName", "()Ljava/lang/String;");
   jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  Parameters.setSourceFileName(sFilename);
+  parameters.setSourceFileName(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   mid = _getMethodId_Checked(Env, clazz, "isRandomlyGeneratingSeed", "()Z");
-  Parameters.setRandomlyGeneratingSeed(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  parameters.setRandomlyGeneratingSeed(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getRandomizationSeed", "()I");
-  Parameters.setRandomizationSeed(static_cast<long>(Env.CallIntMethod(jParameters, mid)));
+  parameters.setRandomizationSeed(static_cast<long>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
-  //mid = _getMethodId_Checked(Env, clazz, "isDuplicates", "()Z");
-  //Parameters.setDuplicates(Env.CallBooleanMethod(jParameters, mid));
-  //jni_error::_detectError(Env);
-
   mid = _getMethodId_Checked(Env, clazz, "isGeneratingHtmlResults", "()Z");
-  Parameters.setGeneratingHtmlResults(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  parameters.setGeneratingHtmlResults(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "isGeneratingTableResults", "()Z");
-  Parameters.setGeneratingTableResults(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  parameters.setGeneratingTableResults(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "isPrintColumnHeaders", "()Z");
-  Parameters.setPrintColumnHeaders(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  parameters.setPrintColumnHeaders(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
-  Parameters.setModelType((Parameters::ModelType)getEnumTypeOrdinalIndex(Env, jParameters, "getModelType", "Lorg/treescan/app/Parameters$ModelType;"));
+  parameters.setModelType((Parameters::ModelType)getEnumTypeOrdinalIndex(Env, jParameters, "getModelType", "Lorg/treescan/app/Parameters$ModelType;"));
 
   Parameters::ratio_t ratio;
   mid = _getMethodId_Checked(Env, clazz, "getProbabilityRatioNumerator", "()I");
@@ -407,10 +414,10 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   mid = _getMethodId_Checked(Env, clazz, "getProbabilityRatioDenominator", "()I");
   ratio.second = static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid));
   jni_error::_detectError(Env);
-  Parameters.setProbabilityRatio(ratio);
+  parameters.setProbabilityRatio(ratio);
 
-  Parameters.setScanType((Parameters::ScanType)getEnumTypeOrdinalIndex(Env, jParameters, "getScanType", "Lorg/treescan/app/Parameters$ScanType;"));
-  Parameters.setConditionalType((Parameters::ConditionalType)getEnumTypeOrdinalIndex(Env, jParameters, "getConditionalType", "Lorg/treescan/app/Parameters$ConditionalType;"));
+  parameters.setScanType((Parameters::ScanType)getEnumTypeOrdinalIndex(Env, jParameters, "getScanType", "Lorg/treescan/app/Parameters$ScanType;"));
+  parameters.setConditionalType((Parameters::ConditionalType)getEnumTypeOrdinalIndex(Env, jParameters, "getConditionalType", "Lorg/treescan/app/Parameters$ConditionalType;"));
 
   mid = _getMethodId_Checked(Env, clazz, "getDataTimeRangeBegin", "()I");
   int begin = Env.CallIntMethod(jParameters, mid);
@@ -420,7 +427,7 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   jni_error::_detectError(Env);
   DataTimeRangeSet range_set;
   range_set.add(DataTimeRange(begin, close));
-  Parameters.setDataTimeRangeSet(range_set);
+  parameters.setDataTimeRangeSet(range_set);
 
   mid = _getMethodId_Checked(Env, clazz, "getTemporalStartRangeBegin", "()I");
   begin = Env.CallIntMethod(jParameters, mid);
@@ -428,7 +435,7 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   mid = _getMethodId_Checked(Env, clazz, "getTemporalStartRangeClose", "()I");
   close = Env.CallIntMethod(jParameters, mid);
   jni_error::_detectError(Env);
-  Parameters.setTemporalStartRange(DataTimeRange(begin, close));
+  parameters.setTemporalStartRange(DataTimeRange(begin, close));
 
   mid = _getMethodId_Checked(Env, clazz, "getTemporalEndRangeBegin", "()I");
   begin = Env.CallIntMethod(jParameters, mid);
@@ -436,73 +443,73 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   mid = _getMethodId_Checked(Env, clazz, "getTemporalEndRangeClose", "()I");
   close = Env.CallIntMethod(jParameters, mid);
   jni_error::_detectError(Env);
-  Parameters.setTemporalEndRange(DataTimeRange(begin, close));
+  parameters.setTemporalEndRange(DataTimeRange(begin, close));
 
   mid = _getMethodId_Checked(Env, clazz, "isGeneratingLLRResults", "()Z");
-  Parameters.setGeneratingLLRResults(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  parameters.setGeneratingLLRResults(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getMaximumWindowPercentage", "()D");
-  Parameters.setMaximumWindowPercentage(Env.CallDoubleMethod(jParameters, mid));
+  parameters.setMaximumWindowPercentage(Env.CallDoubleMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getMaximumWindowLength", "()I");
-  Parameters.setMaximumWindowLength(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  parameters.setMaximumWindowLength(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
-  Parameters.setMaximumWindowType((Parameters::MaximumWindowType)getEnumTypeOrdinalIndex(Env, jParameters, "getMaximumWindowType", "Lorg/treescan/app/Parameters$MaximumWindowType;"));
+  parameters.setMaximumWindowType((Parameters::MaximumWindowType)getEnumTypeOrdinalIndex(Env, jParameters, "getMaximumWindowType", "Lorg/treescan/app/Parameters$MaximumWindowType;"));
 
   mid = _getMethodId_Checked(Env, clazz, "getMinimumWindowLength", "()I");
-  Parameters.setMinimumWindowLength(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  parameters.setMinimumWindowLength(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getPerformPowerEvaluations", "()Z");
-  Parameters.setPerformPowerEvaluations(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  parameters.setPerformPowerEvaluations(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
-  Parameters.setPowerEvaluationType((Parameters::PowerEvaluationType)getEnumTypeOrdinalIndex(Env, jParameters, "getPowerEvaluationType", "Lorg/treescan/app/Parameters$PowerEvaluationType;"));
+  parameters.setPowerEvaluationType((Parameters::PowerEvaluationType)getEnumTypeOrdinalIndex(Env, jParameters, "getPowerEvaluationType", "Lorg/treescan/app/Parameters$PowerEvaluationType;"));
 
   mid = _getMethodId_Checked(Env, clazz, "getPowerEvaluationTotalCases", "()I");
-  Parameters.setPowerEvaluationTotalCases(static_cast<int>(Env.CallIntMethod(jParameters, mid)));
+  parameters.setPowerEvaluationTotalCases(static_cast<int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getPowerEvaluationReplications", "()I");
-  Parameters.setPowerEvaluationReplications(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  parameters.setPowerEvaluationReplications(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getPowerEvaluationAltHypothesisFilename", "()Ljava/lang/String;");
   jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  Parameters.setPowerEvaluationAltHypothesisFilename(sFilename);
+  parameters.setPowerEvaluationAltHypothesisFilename(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   mid = _getMethodId_Checked(Env, clazz, "getReportCriticalValues", "()Z");
-  Parameters.setReportCriticalValues(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  parameters.setReportCriticalValues(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getPerformDayOfWeekAdjustment", "()Z");
-  Parameters.setPerformDayOfWeekAdjustment(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  parameters.setPerformDayOfWeekAdjustment(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getReportAttributableRisk", "()Z");
-  Parameters.setReportAttributableRisk(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  parameters.setReportAttributableRisk(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getAttributableRiskExposed", "()I");
-  Parameters.setAttributableRiskExposed(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  parameters.setAttributableRiskExposed(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getSelfControlDesign", "()Z");
-  Parameters.setSelfControlDesign(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  parameters.setSelfControlDesign(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getInputSourceSettings", "()Ljava/util/ArrayList;");
-  jobject vectorobject = Env.CallObjectMethod(jParameters, mid);
+  vectorobject = Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
-  jclass vclazz = Env.GetObjectClass(vectorobject);
+  vclazz = Env.GetObjectClass(vectorobject);
   mid = _getMethodId_Checked(Env, vclazz, "size", "()I");
-  jint vsize = Env.CallIntMethod(vectorobject, mid);
+  vsize = Env.CallIntMethod(vectorobject, mid);
   for (jint i=0; i < vsize; ++i) {
       mid = _getMethodId_Checked(Env, vclazz, "get", "(I)Ljava/lang/Object;");
       jobject iss_object = (jobject)Env.CallObjectMethod(vectorobject, mid, i);
@@ -555,6 +562,11 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
       inputsource.setFirstRowHeader(Env.CallBooleanMethod(iss_object, mid));
       jni_error::_detectError(Env);
 
+      unsigned int idx;
+      mid = _getMethodId_Checked(Env, issclazz, "getIndex", "()I");
+      idx = static_cast<unsigned int>(Env.CallIntMethod(iss_object, mid));
+      jni_error::_detectError(Env);
+
       /* Translate Java class InputSourceSettings.InputFileType into ParameterType.
         {Case=0, Control, Population, Coordinates, SpecialGrid, MaxCirclePopulation, AdjustmentsByRR}
       */
@@ -567,9 +579,7 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
         case 3/*Powers Evals*/ : type = Parameters::POWER_EVALUATIONS_FILE; break;
         default : throw prg_error("Unknown filetype for translation: %d", "copyJParametersToCParameters()", filetype);
       }
-      Parameters.defineInputSource(type, inputsource);
+      parameters.defineInputSource(type, inputsource, idx);
   }
-
-
-  return Parameters;
+  return parameters;
 }

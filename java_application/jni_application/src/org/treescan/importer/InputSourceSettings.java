@@ -20,6 +20,7 @@ public class InputSourceSettings implements Cloneable  {
     private String _groupmarker="\"";
     private int _skip_lines=0;
     private boolean _first_row_headers=false;
+    private int _index=1;
     
     /**
      * Default constructor -- called in JNI code.
@@ -46,6 +47,7 @@ public class InputSourceSettings implements Cloneable  {
         _groupmarker = inputsource._groupmarker;
         _skip_lines = inputsource._skip_lines;
         _first_row_headers = inputsource._first_row_headers;
+        _index = inputsource._index;
     }
     
     @Override
@@ -64,7 +66,8 @@ public class InputSourceSettings implements Cloneable  {
         _delimiter = other._delimiter;
         _groupmarker = other._groupmarker;
         _skip_lines = other._skip_lines;
-        _first_row_headers = other._first_row_headers;        
+        _first_row_headers = other._first_row_headers;
+        _index = other._index;
     }
     
     @Override
@@ -73,6 +76,7 @@ public class InputSourceSettings implements Cloneable  {
         if (_source_type != other._source_type) return false;
         if (_file_type != other._file_type) return false;
         if (!_mappings.equals(other._mappings)) return false;
+        if (_index != other._index) return false;
         switch (_source_type) {
             case CSV : 
                 if (!_delimiter.equals(other._delimiter)) return false;
@@ -97,12 +101,16 @@ public class InputSourceSettings implements Cloneable  {
         hash = 31 * hash + (this._groupmarker != null ? this._groupmarker.hashCode() : 0);
         hash = 31 * hash + this._skip_lines;
         hash = 31 * hash + (this._first_row_headers ? 1 : 0);
+        hash = 31 * hash + _index;
         return hash;
     }
     
     public void ThrowOrdinalIndexException(int iInvalidOrdinal, Enum[] e) {
         throw new RuntimeException("Ordinal index " + iInvalidOrdinal + " out of range [" +  e[0].ordinal() + "," +  e[e.length - 1].ordinal() + "].");
     }    
+    
+    public int getIndex() {return _index;}
+    public void setIndex(int i) {_index = i;}
     
     public SourceDataFileType getSourceDataFileType() {return _source_type;}
     public void setSourceDataFileType(int iOrdinal) {

@@ -15,6 +15,7 @@
 #include <limits>
 #include <deque>
 #include <map>
+#include <list>
 
 class ScanRunner;
 class CutStructure {
@@ -62,10 +63,11 @@ class NodeStructure {
 public:
     typedef int count_t;
     typedef double expected_t;
-    typedef std::vector<int> RelationContainer_t;
+    typedef std::vector<NodeStructure*> RelationContainer_t;
     typedef std::vector<count_t> CountContainer_t;
     typedef std::vector<expected_t> ExpectedContainer_t;
     enum CumulativeStatus {NON_CUMULATIVE=0, CUMULATIVE};
+    typedef std::list<unsigned int> Ancestors_t;
 
 private:
     std::string             _identifier;
@@ -75,10 +77,10 @@ private:
     ExpectedContainer_t     _IntN_C, _BrN_C;    // Expected number of cases internal to the node, and with all decendants respectively.
     RelationContainer_t     _Child;             // List of node IDs of the children and parents
     RelationContainer_t     _Parent;
-    bool                    _Anforlust;         // =1 if at least one node is an ancestor in more than one way, otherwise =0 (anforlust is Swedish for 'pedigree collapse')
-    int                     _Duplicates;        // Number of duplicates that needs to be removed.
     Parameters::CutType     _cut_type;
     CumulativeStatus        _cumulative_status;
+
+    Ancestors_t             _ancestors;     // nodes which have this node in tree branch
 
     void initialize_containers(const Parameters& parameters, size_t container_size) {
         _IntC_C.resize(container_size);
@@ -95,12 +97,13 @@ private:
 
 public:
     NodeStructure(const std::string& identifier) 
-        :_identifier(identifier), _ID(0), _Anforlust(false), _Duplicates(0), _cumulative_status(NON_CUMULATIVE) {}
+        :_identifier(identifier), _ID(0), _cumulative_status(NON_CUMULATIVE) {}
     NodeStructure(const std::string& identifier, const Parameters& parameters, size_t container_size) 
-        : _identifier(identifier), _ID(0), _Anforlust(false), _Duplicates(0), _cut_type(parameters.getCutType()), _cumulative_status(NON_CUMULATIVE) {
+        : _identifier(identifier), _ID(0), _cut_type(parameters.getCutType()), _cumulative_status(NON_CUMULATIVE) {
             initialize_containers(parameters, container_size);
     }
 
+    const Ancestors_t           & getAncestors() const {return _ancestors;}
     const std::string           & getIdentifier() const {return _identifier;}
     int                           getID() const {return _ID;}
     int                           getIntC() const {return _IntC_C.front();}
@@ -108,12 +111,10 @@ public:
     int                           getBrC() const {return _BrC_C.front();}
     const CountContainer_t      & getBrC_C() const {return _BrC_C;}
     int                           getNChildren() const {return static_cast<int>(_Child.size());}
-    int                           getDuplicates() const {return _Duplicates;}
     double                        getIntN() const {return _IntN_C.front();}
     const ExpectedContainer_t   & getIntN_C() const {return _IntN_C;}
     double                        getBrN() const {return _BrN_C.front();}
     const ExpectedContainer_t   & getBrN_C() const {return _BrN_C;}
-    bool                          getAnforlust() const {return _Anforlust;}
     const RelationContainer_t   & getChildren() const {return _Child;}
     const RelationContainer_t   & getParents() const {return _Parent;}
     Parameters::CutType           getCutType() const {return _cut_type;} 
@@ -121,16 +122,26 @@ public:
     CountContainer_t            & refIntC_C() {return _IntC_C;}
     CountContainer_t            & refBrC_C() {return _BrC_C;}
     ExpectedContainer_t         & refBrN_C() {return _BrN_C;}
-    int                         & refDuplicates() {return _Duplicates;}
     RelationContainer_t         & refChildren() {return _Child;}
-    RelationContainer_t         & refParents() {return _Parent;}
 
     void                          setIdentifier(const std::string& s) {_identifier = s;}
     void                          setID(int i) {_ID = i;}
-    void                          setDuplicates(int i) {_Duplicates = i;}
-    void                          setAnforlust(bool b) {_Anforlust = b;}
     void                          setCutType(Parameters::CutType cut_type) {_cut_type = cut_type;}
 
+    void addAsParent(NodeStructure& parent) {
+        // add node of collection parents
+        if (_Parent.end() == std::find(_Parent.begin(), _Parent.end(), &parent))
+            _Parent.push_back(&parent);
+        // and add this node as child in parents collection
+        if (parent.refChildren().end() == std::find(parent.refChildren().begin(), parent.refChildren().end(), this))
+            parent.refChildren().push_back(this);
+    }
+    void setAncestors(boost::dynamic_bitset<>& ancestor_nodes) {
+        /* convert ON bits in set to indexes stored in _ancestors container */
+        _ancestors.clear();
+        for (boost::dynamic_bitset<>::size_type p=ancestor_nodes.find_first(); p != ancestor_nodes.npos; p = ancestor_nodes.find_next(p))
+            _ancestors.push_back(static_cast<unsigned int>(p));
+    }
     void setCumulative() {
         if (_cumulative_status == NON_CUMULATIVE) {
             TreeScan::cumulative(_IntC_C);
@@ -198,7 +209,6 @@ class ScanRunner {
 public:
     typedef ptr_vector<NodeStructure>                           NodeStructureContainer_t;
     typedef ptr_vector<CutStructure>                            CutStructureContainer_t;
-    typedef std::vector<int>                                    AncestorContainer_t;
     typedef std::pair<bool,size_t>                              Index_t;
     typedef boost::shared_ptr<AbstractLoglikelihood>            Loglikelihood_t;
     typedef boost::shared_ptr<RelativeRiskAdjustmentHandler>    RiskAdjustments_t;
@@ -213,7 +223,6 @@ private:
     BasePrint                 & _print;
     NodeStructureContainer_t    _Nodes;
     CutStructureContainer_t     _Cut;
-    AncestorContainer_t         _Ancestor;
     int                         _TotalC;
     int                         _TotalControls;
     double                      _TotalN;
@@ -225,15 +234,16 @@ private:
     PowerEstimationContainer_t  _power_estimations;
     DayOfWeekIndexes_t          _day_of_week_indexes;
     mutable TreeStatistics_t    _tree_statistics;
+    bool                        _has_multi_parent_nodes;
 
-    void                        addCN_C(int id, NodeStructure::CountContainer_t& c, NodeStructure::ExpectedContainer_t& n);
+    unsigned int                addCN_C(const NodeStructure& sourceNode, NodeStructure& destinationNode, boost::dynamic_bitset<>& ancestor_nodes);
     size_t                      calculateCutsCount() const;
 
     Index_t                     getNodeIndex(const std::string& identifier) const;
     bool                        readRelativeRisksAdjustments(const std::string& filename, RiskAdjustmentsContainer_t& rrAdjustments, bool consolidate);
     bool                        readCounts(const std::string& filename);
     bool                        readCuts(const std::string& filename);
-    bool                        readTree(const std::string& filename);
+    bool                        readTree(const std::string& filename, unsigned int treeOrdinal);
     bool                        reportResults(time_t start, time_t end) const;
     bool                        runPowerEvaluations();
     bool                        runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep, unsigned int iteration=0);
@@ -250,6 +260,7 @@ public:
     std::string                      & getCaselessWindowsAsString(std::string& s) const;
     const CutStructureContainer_t    & getCuts() const {return _Cut;}
     const DayOfWeekIndexes_t         & getDayOfWeekIndexes() const {return _day_of_week_indexes;}
+    bool                               getMultiParentNodesExist() const {return _has_multi_parent_nodes;}
     const NodeStructureContainer_t   & getNodes() const {return _Nodes;}
     const Parameters                 & getParameters() const {return _parameters;}
     const PowerEstimationContainer_t & getPowerEstimations() const {return _power_estimations;}

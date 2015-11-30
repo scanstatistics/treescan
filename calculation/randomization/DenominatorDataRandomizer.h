@@ -15,7 +15,7 @@ class AbstractDenominatorDataRandomizer : public AbstractRandomizer {
     virtual void write(const std::string& filename, const SimNodeContainer_t& treeSimNodes);
 
   public:
-    AbstractDenominatorDataRandomizer(const Parameters& parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractRandomizer(parameters, lInitialSeed) {}
+    AbstractDenominatorDataRandomizer(const Parameters& parameters, bool multiparents, long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractRandomizer(parameters, multiparents, lInitialSeed) {}
     virtual ~AbstractDenominatorDataRandomizer() {}
 
     virtual int RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes);

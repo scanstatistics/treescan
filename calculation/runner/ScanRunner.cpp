@@ -4,7 +4,6 @@
 #include <boost/tokenizer.hpp>
 #include <boost/regex.hpp>
 #include <boost/assign.hpp>
-#include <boost/dynamic_bitset.hpp>
 #include <locale>
 
 #include "ScanRunner.h"
@@ -333,13 +332,13 @@ unsigned int TreeStatistics::getNodeLevel(const NodeStructure& node, const ScanR
     while (!node_ptr->getParents().empty()) {
         ++level;
         // We're currently preventing nodes from having more than one parent, see https://www.squishlist.com/ims/treescan/13/.
-        node_ptr = scanner.getNodes().at(node_ptr->getParents().front());
+        node_ptr = node_ptr->getParents().front();
     }
     return level;
 }
 
 /** class constructor */
-ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0) {
+ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0), _has_multi_parent_nodes(false) {
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     DataTimeRange min_max = Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getMinMax() : DataTimeRange(0,0);
     // translate to ensure zero based additive
@@ -358,18 +357,24 @@ ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : _parame
  Adds cases and measure through the tree from each node through the tree to all its parents, and so on, to all its ancestors as well.
  If a node is a decendant to an ancestor in more than one way, the cases and measure is only added once to that ancestor.
  */
-void ScanRunner::addCN_C(int id, NodeStructure::CountContainer_t& c, NodeStructure::ExpectedContainer_t& n/*int c, double n*/) {
-    _Ancestor.at(id) = 1;
+unsigned int ScanRunner::addCN_C(const NodeStructure& sourceNode, NodeStructure& destinationNode, boost::dynamic_bitset<>& ancestor_nodes) {
+    unsigned int source_count=(sourceNode.getID() == destinationNode.getID() ? 1 : 0);
 
-    std::transform(c.begin(), c.end(), _Nodes.at(id)->refBrC_C().begin(), _Nodes.at(id)->refBrC_C().begin(), std::plus<NodeStructure::count_t>());
-    std::transform(n.begin(), n.end(), _Nodes.at(id)->refBrN_C().begin(), _Nodes.at(id)->refBrN_C().begin(), std::plus<NodeStructure::expected_t>());
-    for(size_t j=0; j < _Nodes.at(id)->getParents().size(); j++) {
-        int parent = _Nodes.at(id)->getParents().at(j);
-        if (_Ancestor.at(parent) == 0)
-            addCN_C(parent, c, n);
-        else
-            _Ancestor.at(parent) = _Ancestor.at(parent) + 1;
+    /* Test corresponding bit set to see if destination node already includes data from the source node. Sets it if wasn't previously. */
+    if (_has_multi_parent_nodes && ancestor_nodes.test_set(destinationNode.getID())) {
+        //printf("'%s' already has data from '%s'\n", destinationNode.getIdentifier().c_str(), sourceNode.getIdentifier().c_str());
+        return source_count;
     }
+
+    // add source node's data to destination nodes branch totals
+    std::transform(sourceNode.getIntC_C().begin(), sourceNode.getIntC_C().end(), destinationNode.refBrC_C().begin(), destinationNode.refBrC_C().begin(), std::plus<NodeStructure::count_t>());
+    std::transform(sourceNode.getIntN_C().begin(), sourceNode.getIntN_C().end(), destinationNode.refBrN_C().begin(), destinationNode.refBrN_C().begin(), std::plus<NodeStructure::expected_t>());
+
+    // continue walking up the tree
+    NodeStructure::RelationContainer_t::const_iterator itr=destinationNode.getParents().begin(), itr_end=destinationNode.getParents().end();
+    for (; itr != itr_end; ++itr)
+        source_count += addCN_C(sourceNode, *(*itr), ancestor_nodes);
+    return source_count;
 }
 
 /* Returns pair<bool,size_t> - first value indicates node existance, second is index into class vector _Nodes. */
@@ -489,7 +494,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
         for (; nodeIdx < nodeIdxStop; ++nodeIdx) {
             if (testMultipleNodeRecords) {
                 if (nodeSet.test(nodeIdx)) {
-                    _print.Printf("Error: Multiple records specified for node '%s' in alternative hypothesis file. Each node is limited to one entry.\n", BasePrint::P_READERROR, getNodes().at(nodeIdx)->getIdentifier().c_str());
+                    _print.Printf("Error: Multiple records specified for node '%s' in alternative hypothesis file. Each node is limited to one entry.\n", BasePrint::P_READERROR, getNodes()[nodeIdx]->getIdentifier().c_str());
                     bValid = false;
                     continue;
                 } else {
@@ -522,21 +527,19 @@ bool ScanRunner::readCounts(const std::string& filename) {
     _print.Printf("Reading count file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::COUNT_FILE)));
-    int expectedColumns = (_parameters.getScanType() == Parameters::TIMEONLY ? 2 : 3) + (_parameters.isDuplicates() ? 1 : 0);
+    int expectedColumns = (_parameters.getScanType() == Parameters::TIMEONLY ? 2 : 3);
     _caselessWindows.resize(Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() : 1);
     long identifierIdx = _parameters.getScanType() == Parameters::TIMEONLY ? -1 : 0;
     long countIdx = _parameters.getScanType() == Parameters::TIMEONLY ? 0 : 1;
-    long duplicatesIdx = _parameters.isDuplicates() ? countIdx + 1 : -1;
 
-    int count=0, controls=0, duplicates=0, daysSinceIncidence=0;
+    int count=0, controls=0, daysSinceIncidence=0;
     while (dataSource->readRecord()) {
         if (dataSource->getNumValues() != expectedColumns) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in count file %s. Expecting %s<count>%s%s but found %ld value%s.\n",
+            _print.Printf("Error: Record %ld in count file %s. Expecting %s<count>%s but found %ld value%s.\n",
                           BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(),
                           (static_cast<int>(dataSource->getNumValues()) > expectedColumns) ? "has extra data" : "is missing data",
                           (_parameters.getScanType() == Parameters::TIMEONLY ? "" : "<identifier>, "),
-                          (_parameters.isDuplicates() ? ", <duplicates>" : ""),
                           (Parameters::isTemporalScanType(_parameters.getScanType()) ? ", <time>" : (_parameters.getModelType() == Parameters::POISSON ? ", <population>" : ", <controls>")),
                           dataSource->getNumValues(), (dataSource->getNumValues() == 1 ? "" : "s"));
             continue;
@@ -550,25 +553,12 @@ bool ScanRunner::readCounts(const std::string& filename) {
                 continue;
             }
         }
-        NodeStructure * node = _Nodes.at(index.second);
+        NodeStructure * node = _Nodes[index.second];
         if  (!string_to_numeric_type<int>(dataSource->getValueAt(countIdx).c_str(), count) || count < 0) {
             readSuccess = false;
             _print.Printf("Error: Record %ld in count file references an invalid number of cases.\n"
                           "       The number of cases must be an integer value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
             continue;
-        }
-        if (_parameters.isDuplicates()) {
-            if  (!string_to_numeric_type<int>(dataSource->getValueAt(duplicatesIdx).c_str(), duplicates) || duplicates < 0) {
-                readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references an invalid number of duplicates.\n"
-                              "       The number of duplicates must be an integer value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
-                continue;
-            } else if (duplicates > count) {
-                readSuccess = false;
-                _print.Printf("Error: Record %ld in count file references more duplicates than case.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
-                continue;
-            }
-            node->refDuplicates() += duplicates;
         }
         // read model specific columns from data source
         if (_parameters.getModelType() == Parameters::POISSON) {
@@ -608,7 +598,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
                               BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
                 continue;
             }
-            node->refIntC_C().at(daysSinceIncidence + _zero_translation_additive) += count;
+            node->refIntC_C()[daysSinceIncidence + _zero_translation_additive] += count;
             _caselessWindows.set(daysSinceIncidence + _zero_translation_additive);
         } else throw prg_error("Unknown condition encountered: scan (%d), model (%d).", "readCounts()", _parameters.getScanType(), _parameters.getModelType());
     }
@@ -657,7 +647,7 @@ std::string & ScanRunner::getCaselessWindowsAsString(std::string& s) const {
 /*
  Reads tree structure from passed file. The file format is: <node identifier>, <parent node identifier 1>, <parent node identifier 2>, ... <parent node identifier N>
  */
-bool ScanRunner::readTree(const std::string& filename) {
+bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal) {
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     size_t daysInDataTimeRange = Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
 
@@ -668,7 +658,10 @@ bool ScanRunner::readTree(const std::string& filename) {
         return true;
     }
 
-    _print.Printf("Reading tree file ...\n", BasePrint::P_STDOUT);
+    if (_parameters.getTreeFileNames().size() == 1)
+        _print.Printf("Reading tree file ...\n", BasePrint::P_STDOUT);
+    else
+        _print.Printf("Reading %u%s tree file ...\n", BasePrint::P_STDOUT, treeOrdinal, getOrdinalSuffix(treeOrdinal));
     bool readSuccess=true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::TREE_FILE)));
 
@@ -690,12 +683,12 @@ bool ScanRunner::readTree(const std::string& filename) {
     if (!readSuccess) return readSuccess;
 
     //reset node identifiers to ordinal position in vector -- this is to keep the original algorithm intact since it uses vector indexes heavily
-    for (size_t i=0; i < _Nodes.size(); ++i) _Nodes.at(i)->setID(static_cast<int>(i));
+    for (size_t i=0; i < _Nodes.size(); ++i) _Nodes[i]->setID(static_cast<int>(i));
 
     // create bitset which will help determine if there exists at least one root node
     boost::dynamic_bitset<> nodesWithParents(_Nodes.size());
 
-    // now set parent nodes
+    // now set parent/children nodes
     dataSource->gotoFirstRecord();
     while (dataSource->readRecord()) {
         NodeStructure * node = 0;
@@ -711,27 +704,20 @@ bool ScanRunner::readTree(const std::string& filename) {
                 }
             } else {
                 if (node) {
-                    // prevent nodes from having more than one parent, see https://www.squishlist.com/ims/treescan/13/
-                    if (node->refParents().size()) {
-                        readSuccess = false;
-                        _print.Printf("Error: Record %ld in tree file has node '%s' with more than one parent node defined ('%s', '%s').\n", 
-                                      BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str(),
-                                      _Nodes.at(node->refParents().front())->getIdentifier().c_str(), identifier.c_str());
-                    } else {
-                        node->refParents().push_back(_Nodes.at(index.second)->getID());
-                        nodesWithParents.set(node->getID());
-                    }
-                } else node = _Nodes.at(index.second);
+                    node->addAsParent(*_Nodes[index.second]);
+                    nodesWithParents.set(node->getID());
+                    // detect nodes with multiple parents
+                    _has_multi_parent_nodes |= node->getParents().size() > 1;
+                } else node = _Nodes[index.second];
             }
         }
     }
 
-    // now confirm that there exists at least one root node
+    // confirm that there exists at least one root node
     if (nodesWithParents.count() == nodesWithParents.size()) {
         readSuccess = false;
         _print.Printf("Error: The tree file must contain at least one node which does not have a parent.\n", BasePrint::P_READERROR);
     }
-
     return readSuccess;
 }
 
@@ -760,7 +746,7 @@ bool ScanRunner::readCuts(const std::string& filename) {
             readSuccess = false;
             _print.Printf("Error: Record %ld in cut file has unknown node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), identifier.c_str());
         } else {
-            NodeStructure * node = _Nodes.at(index.second);
+            NodeStructure * node = _Nodes[index.second];
             std::string cut_type_string = lowerString(trimString(dataSource->getValueAt(static_cast<long>(1))));
 
             Parameters::cut_map_t::iterator itr_abbr = cut_type_maps.first.find(cut_type_string);
@@ -797,7 +783,7 @@ bool ScanRunner::reportResults(time_t start, time_t end) const {
     if (_parameters.isGeneratingTableResults()) {
         unsigned int k=0;
         CutsRecordWriter cutsWriter(*this);
-        while (status && k < getCuts().size() && reportableCut(*getCuts().at(k))) {
+        while (status && k < getCuts().size() && reportableCut(*getCuts()[k])) {
             cutsWriter.write(k);
             k++;
         }
@@ -814,8 +800,11 @@ bool ScanRunner::run() {
     time_t gStartTime, gEndTime;
     time(&gStartTime); //get start time
 
-    if (!readTree(_parameters.getTreeFileName()))
-        throw resolvable_error("\nProblem encountered when reading the data from the tree file.");
+    for (Parameters::FileNameContainer_t::const_iterator itr=_parameters.getTreeFileNames().begin(); itr != _parameters.getTreeFileNames().end(); ++itr) {
+        if (!readTree(*itr, static_cast<unsigned int>(std::distance(_parameters.getTreeFileNames().begin(), itr) + 1)))
+            throw resolvable_error("\nProblem encountered when reading the data from the tree file: \n%s.", itr->c_str());
+        if (_print.GetIsCanceled()) return false;
+    }
     if (_print.GetIsCanceled()) return false;
 
     if (_parameters.getCutsFileName().length() && !readCuts(_parameters.getCutsFileName()))
@@ -914,7 +903,7 @@ bool ScanRunner::runPowerEvaluations() {
     for (size_t t=0; t < riskAdjustments.size(); ++t) {
         _print.Printf("\nDoing the alternative replications for power set %d\n", BasePrint::P_STDOUT, t+1);
         boost::shared_ptr<AbstractRandomizer> core_randomizer(AbstractRandomizer::getNewRandomizer(*this));
-        boost::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, *riskAdjustments[t], _parameters, _TotalC));
+        boost::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, *riskAdjustments[t], _parameters, _TotalC, _has_multi_parent_nodes));
         if (_parameters.isWritingSimulationData()) {
             if (t == 0 && _parameters.getCriticalValuesType() == Parameters::CV_POWER_VALUES)
                 // if we didn't perform monte carlo simulations, truncate simulations write file on first power simulation
@@ -1012,8 +1001,8 @@ bool ScanRunner::scanTree() {
     //std::string buffer;
     //int hits=0;
     for (size_t n=0; n < _Nodes.size(); ++n) {
-        if (_Nodes.at(n)->getBrC() > 1) {
-            const NodeStructure& thisNode(*(_Nodes.at(n)));
+        if (_Nodes[n]->getBrC() > 1) {
+            const NodeStructure& thisNode(*_Nodes[n]);
 
             // Always do simple cut for each node
             //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
@@ -1028,14 +1017,14 @@ bool ScanRunner::scanTree() {
                     CutStructure::CutChildContainer_t currentChildren;
                     // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
                     for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
-                        const NodeStructure& firstChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                        const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
                         currentChildren.clear();
                         currentChildren.push_back(firstChildNode.getID());
                         //buffer = firstChildNode.getIdentifier().c_str();
                         int sumBranchC=firstChildNode.getBrC();
                         double sumBranchN=firstChildNode.getBrN();
                         for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
-                            const NodeStructure& childNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                            const NodeStructure& childNode(*(thisNode.getChildren()[j]));
                             currentChildren.push_back(childNode.getID());
                             //buffer += ",";
                             //buffer += childNode.getIdentifier();
@@ -1053,9 +1042,9 @@ bool ScanRunner::scanTree() {
                 case Parameters::PAIRS:
                     // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
                     for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
-                        const NodeStructure& startChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                        const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
                         for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
-                            const NodeStructure& stopChildNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                            const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
                             //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                             CutStructure * cut = updateCuts(n, startChildNode.getBrC() + stopChildNode.getBrC(), startChildNode.getBrN() + stopChildNode.getBrN(), calcLogLikelihood);
                             if (cut) {
@@ -1067,9 +1056,9 @@ bool ScanRunner::scanTree() {
                 case Parameters::TRIPLETS:
                     // Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
                     for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
-                        const NodeStructure& startChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                        const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
                         for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
-                            const NodeStructure& stopChildNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                            const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
                             //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                             CutStructure * cut = updateCuts(n, startChildNode.getBrC() + stopChildNode.getBrC(), startChildNode.getBrN() + stopChildNode.getBrN(), calcLogLikelihood);
                             if (cut) {
@@ -1078,7 +1067,7 @@ bool ScanRunner::scanTree() {
                             }
                             //++hits;printf("hits %d\n", hits);
                             for (size_t k=i+1; k < j; ++k) {
-                                const NodeStructure& middleChildNode(*(_Nodes.at(thisNode.getChildren().at(k))));
+                                const NodeStructure& middleChildNode(*(thisNode.getChildren()[k]));
                                 //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                 CutStructure * cut = updateCuts(n, startChildNode.getBrC() + middleChildNode.getBrC() + stopChildNode.getBrC(), startChildNode.getBrN() + middleChildNode.getBrN() + stopChildNode.getBrN(), calcLogLikelihood);
                                 if (cut) {
@@ -1097,7 +1086,7 @@ bool ScanRunner::scanTree() {
     }
     if (_Cut.size()) {
         std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
-        _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.at(0)->getLogLikelihood()));
+        _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut[0]->getLogLikelihood()));
     }
     return _Cut.size() != 0;
 }
@@ -1120,8 +1109,8 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
     //std::string buffer;
     //int hits=0;
     for (size_t n=0; n < _Nodes.size(); ++n) {
-        if (_Nodes.at(n)->getBrC() > 1) {
-            const NodeStructure& thisNode(*(_Nodes.at(n)));
+        if (_Nodes[n]->getBrC() > 1) {
+            const NodeStructure& thisNode(*(_Nodes[n]));
 
             // always do simple cut
             //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
@@ -1149,14 +1138,14 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                         iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
-                                const NodeStructure& firstChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                                const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
                                 currentChildren.clear();
                                 currentChildren.push_back(firstChildNode.getID());
                                 //buffer = firstChildNode.getIdentifier().c_str();
                                 NodeStructure::count_t branchWindow = firstChildNode.getBrC_C()[iWindowStart] - firstChildNode.getBrC_C()[iWindowEnd + 1];
                                 NodeStructure::expected_t branchSum = static_cast<NodeStructure::expected_t>(firstChildNode.getBrC());
                                 for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
-                                    const NodeStructure& childNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                                    const NodeStructure& childNode(*(thisNode.getChildren()[j]));
                                     currentChildren.push_back(childNode.getID());
                                     //buffer += ",";
                                     //buffer += childNode.getIdentifier();
@@ -1181,11 +1170,11 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                         iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
-                                const NodeStructure& startChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                                const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
                                 NodeStructure::count_t startBranchWindow = startChildNode.getBrC_C()[iWindowStart] - startChildNode.getBrC_C()[iWindowEnd + 1];
                                 NodeStructure::expected_t startBranchSum = static_cast<NodeStructure::expected_t>(startChildNode.getBrC());
                                 for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
-                                    const NodeStructure& stopChildNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                                    const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
                                     //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                     NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
                                     NodeStructure::expected_t stopBranchSum = static_cast<NodeStructure::expected_t>(stopChildNode.getBrC());
@@ -1207,11 +1196,11 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                         iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
-                                const NodeStructure& startChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                                const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
                                 NodeStructure::count_t startBranchWindow = startChildNode.getBrC_C()[iWindowStart] - startChildNode.getBrC_C()[iWindowEnd + 1];
                                 NodeStructure::expected_t startBranchSum = static_cast<NodeStructure::expected_t>(startChildNode.getBrC());
                                 for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
-                                    const NodeStructure& stopChildNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                                    const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
                                     //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                     NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
                                     NodeStructure::expected_t stopBranchSum = static_cast<NodeStructure::expected_t>(stopChildNode.getBrC());
@@ -1222,7 +1211,7 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                                     }
                                     //++hits;printf("hits %d\n", hits);
                                     for (size_t k=i+1; k < j; ++k) {
-                                        const NodeStructure& middleChildNode(*(_Nodes.at(thisNode.getChildren().at(k))));
+                                        const NodeStructure& middleChildNode(*(thisNode.getChildren()[k]));
                                         NodeStructure::count_t middleBranchWindow = middleChildNode.getBrC_C()[iWindowStart] - middleChildNode.getBrC_C()[iWindowEnd + 1];
                                         NodeStructure::expected_t middleBranchSum = static_cast<NodeStructure::expected_t>(middleChildNode.getBrC());
                                         //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
@@ -1245,7 +1234,7 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
     }
     if (_Cut.size()) {
         std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
-        _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.at(0)->getLogLikelihood()));
+        _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut[0]->getLogLikelihood()));
     }
     return _Cut.size() != 0;
 }
@@ -1268,8 +1257,8 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
     //std::string buffer;
     //int hits=0;
     for (size_t n=0; n < _Nodes.size(); ++n) {
-        if (_Nodes.at(n)->getBrC() > 1) {
-            const NodeStructure& thisNode(*(_Nodes.at(n)));
+        if (_Nodes[n]->getBrC() > 1) {
+            const NodeStructure& thisNode(*(_Nodes[n]));
 
             // always do simple cut
             //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
@@ -1299,14 +1288,14 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                         iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
-                                const NodeStructure& firstChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                                const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
                                 currentChildren.clear();
                                 currentChildren.push_back(firstChildNode.getID());
                                 //buffer = firstChildNode.getIdentifier().c_str();
                                 NodeStructure::count_t branchWindow = firstChildNode.getBrC_C()[iWindowStart] - firstChildNode.getBrC_C()[iWindowEnd + 1];
                                 NodeStructure::expected_t branchExpected = firstChildNode.getBrN_C()[iWindowStart] - firstChildNode.getBrN_C()[iWindowEnd + 1];
                                 for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
-                                    const NodeStructure& childNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                                    const NodeStructure& childNode(*(thisNode.getChildren()[j]));
                                     currentChildren.push_back(childNode.getID());
                                     //buffer += ",";
                                     //buffer += childNode.getIdentifier();
@@ -1331,11 +1320,11 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                         iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
-                                const NodeStructure& startChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                                const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
                                 NodeStructure::count_t startBranchWindow = startChildNode.getBrC_C()[iWindowStart] - startChildNode.getBrC_C()[iWindowEnd + 1];
                                 NodeStructure::expected_t startBranchExpected = startChildNode.getBrN_C()[iWindowStart] - startChildNode.getBrN_C()[iWindowEnd + 1];
                                 for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
-                                    const NodeStructure& stopChildNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                                    const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
                                     //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                     NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
                                     NodeStructure::expected_t stopBranchExpected = stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1];
@@ -1357,11 +1346,11 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                         iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
-                                const NodeStructure& startChildNode(*(_Nodes.at(thisNode.getChildren().at(i))));
+                                const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
                                 NodeStructure::count_t startBranchWindow = startChildNode.getBrC_C()[iWindowStart] - startChildNode.getBrC_C()[iWindowEnd + 1];
                                 NodeStructure::expected_t startBranchExpected = startChildNode.getBrN_C()[iWindowStart] - startChildNode.getBrN_C()[iWindowEnd + 1];
                                 for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
-                                    const NodeStructure& stopChildNode(*(_Nodes.at(thisNode.getChildren().at(j))));
+                                    const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
                                     //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                     NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
                                     NodeStructure::expected_t stopBranchExpected = stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1];
@@ -1372,7 +1361,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                                     }
                                     //++hits;printf("hits %d\n", hits);
                                     for (size_t k=i+1; k < j; ++k) {
-                                        const NodeStructure& middleChildNode(*(_Nodes.at(thisNode.getChildren().at(k))));
+                                        const NodeStructure& middleChildNode(*(thisNode.getChildren()[k]));
                                         NodeStructure::count_t middleBranchWindow = middleChildNode.getBrC_C()[iWindowStart] - middleChildNode.getBrC_C()[iWindowEnd + 1];
                                         NodeStructure::expected_t middleBranchExpected = middleChildNode.getBrN_C()[iWindowStart] - middleChildNode.getBrN_C()[iWindowEnd + 1];
                                         //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
@@ -1395,7 +1384,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
     }
     if (_Cut.size()) {
         std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
-        _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.at(0)->getLogLikelihood()));
+        _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut[0]->getLogLikelihood()));
     }
     return _Cut.size() != 0;
 }
@@ -1436,8 +1425,8 @@ CutStructure * ScanRunner::updateCuts(size_t node_index, int BrC, double BrN, co
     // at this point, we're replacing a cut with better log likeloihood cut
     if (cut->getLogLikelihood() > (*itr)->getLogLikelihood()) {
         size_t idx = std::distance(_Cut.begin(), itr);
-        delete _Cut.at(idx); _Cut.at(idx)=0;
-        _Cut.at(idx) = cut.release();
+        delete _Cut[idx]; _Cut[idx]=0;
+        _Cut[idx] = cut.release();
         return _Cut[idx];
     }
     return 0;
@@ -1445,9 +1434,6 @@ CutStructure * ScanRunner::updateCuts(size_t node_index, int BrC, double BrN, co
 
 /* SETTING UP THE TREE */
 bool ScanRunner::setupTree() {
-    double adjustN;
-    int parent;
-
     _print.Printf("Setting up the tree ...\n", BasePrint::P_STDOUT);
 
     // Initialize variables
@@ -1559,34 +1545,24 @@ bool ScanRunner::setupTree() {
         // This is ok since this option can not be peformed in conjunction with analysis - so the cases in tree are not used.
         if (_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES)
             _TotalC = _parameters.getPowerEvaluationTotalCases();
-        adjustN = _TotalC/_TotalN;
+        double adjustN = _TotalC/_TotalN;
         for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr)
             std::transform((*itr)->getIntN_C().begin(), (*itr)->getIntN_C().end(), (*itr)->refIntN_C().begin(), std::bind1st(std::multiplies<double>(), adjustN)); // (*itr)->refIntN() *= adjustN;
         _TotalN = _TotalC;
     }
-
-    // For each node, calculates the observed and expected number of cases for that
-    // node together with all of its children, grandchildren, etc.
-    // Checks whether anforlust is true or false for each node.
-    // Also checks whether a node is an ancestor to itslef, which is not allowed.
-    _Ancestor.resize(_Nodes.size(), 0);
-    for (size_t i=0; i < _Nodes.size(); ++i) {
-        std::fill(_Ancestor.begin(), _Ancestor.end(), 0);
-        addCN_C(static_cast<int>(i), _Nodes.at(i)->refIntC_C(), _Nodes.at(i)->refIntN_C());
-        if (_Ancestor[i] > 1) {
-            _print.Printf("Error: Node '%s' has itself as an ancestor.\n", BasePrint::P_ERROR, _Nodes.at(i)->getIdentifier().c_str());
+    /* For each node, calculates the observed and expected number of cases for that
+       node together with all of its children, grandchildren, etc. */
+    boost::dynamic_bitset<> ancestor_nodes(_has_multi_parent_nodes ? _Nodes.size() : 0);
+    for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr < _Nodes.end(); ++itr) {
+        ancestor_nodes.reset();
+        if (addCN_C(*(*itr), *(*itr), ancestor_nodes) > 1) {
+            _print.Printf("Error: Node '%s' has itself as an ancestor.\n", BasePrint::P_ERROR, (*itr)->getIdentifier().c_str());
             return false;
-        } // if Ancestor[i]>1
-        for (size_t j=0; j < _Nodes.size(); ++j) if(_Ancestor[j] > 1) _Nodes.at(i)->setAnforlust(true);
-    } // for i<nNodes
-
-    // For each node calculates the number of children and sets up the list of child IDs
-    for (size_t i=0; i < _Nodes.size(); ++i) {
-        for (size_t j=0; j < _Nodes.at(i)->getParents().size(); ++j) {
-            parent = _Nodes.at(i)->getParents().at(j);
-            _Nodes.at(parent)->refChildren().push_back(static_cast<int>(i));
-        } // for j
-    } // for i < nNodes
+        }
+        // If we're do replications and there exist nodes with multiple parents, set ancestor indexes for this node.
+        if (_parameters.getNumReplicationsRequested() > 0 && _has_multi_parent_nodes)
+            (*itr)->setAncestors(ancestor_nodes);
+    }
 
     if (_parameters.getModelType() == Parameters::POISSON ||
         _parameters.getModelType() == Parameters::BERNOULLI ||
@@ -1596,12 +1572,12 @@ bool ScanRunner::setupTree() {
         // Checks that no node has negative expected cases or that a node with zero expected has observed cases.
         for (size_t i=0; i < _Nodes.size(); ++i) {
             // cout << "Node=" << i << ", BrC=" << Node[i].BrC << ", BrN=" << Node[i].BrN << endl;
-            if (_Nodes.at(i)->getBrN() < 0 ) {
-                _print.Printf("Error: Node '%s' has negative expected cases.\n", BasePrint::P_ERROR, _Nodes.at(i)->getIdentifier().c_str());
+            if (_Nodes[i]->getBrN() < 0 ) {
+                _print.Printf("Error: Node '%s' has negative expected cases.\n", BasePrint::P_ERROR, _Nodes[i]->getIdentifier().c_str());
                 return false;
             }
-            if (_Nodes.at(i)->getBrN() == 0 && _Nodes.at(i)->getBrC() > 0) {
-                _print.Printf("Error: Node '%s' has observed cases but zero expected.\n", BasePrint::P_ERROR, _Nodes.at(i)->getIdentifier().c_str());
+            if (_Nodes[i]->getBrN() == 0 && _Nodes[i]->getBrC() > 0) {
+                _print.Printf("Error: Node '%s' has observed cases but zero expected.\n", BasePrint::P_ERROR, _Nodes[i]->getIdentifier().c_str());
                 return false;
             }
         } // for i
@@ -1609,6 +1585,5 @@ bool ScanRunner::setupTree() {
 
     // Now we can set the data structures of NodeStructure to cumulative -- only relevant for temporal model since other models have one element arrays.
     std::for_each(_Nodes.begin(), _Nodes.end(), std::mem_fun(&NodeStructure::setCumulative));
-
     return true;
 }

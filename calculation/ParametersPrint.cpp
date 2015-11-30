@@ -75,12 +75,10 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(Settin
     std::string buffer;
     settings.clear();
     if (_parameters.getScanType() != Parameters::TIMEONLY)
-        settings.push_back(std::make_pair("Tree File",_parameters.getTreeFileName()));
+        settings.push_back(std::make_pair("Tree File",_parameters.getTreeFileNames().front()));
     settings.push_back(std::make_pair("Count File",_parameters.getCountFileName()));
     if (Parameters::isTemporalScanType(_parameters.getScanType()))
         settings.push_back(std::make_pair("Data Time Range",_parameters.getDataTimeRangeSet().toString(buffer)));
-    //buffer = (_parameters.isDuplicates() ? "Yes" : "No");
-    //settings.push_back(std::make_pair("Duplicates",buffer));
     return settings;
 }
 
@@ -126,6 +124,10 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdvancedInputParameter
     settings.clear();
     if (_parameters.getScanType() != Parameters::TIMEONLY)
         settings.push_back(std::make_pair("Cut File",_parameters.getCutsFileName()));
+    if (_parameters.getScanType() != Parameters::TIMEONLY && _parameters.getTreeFileNames().size() > 1) {
+        for (Parameters::FileNameContainer_t::const_iterator itr=_parameters.getTreeFileNames().begin()+1; itr != _parameters.getTreeFileNames().end(); ++itr)
+            settings.push_back(std::make_pair("Tree File", *itr));
+    }
     return settings;
 }
 

@@ -23,6 +23,7 @@ class AlternativeHypothesisRandomizater : public AbstractRandomizer {
                                           const RelativeRiskAdjustmentHandler& adjustments,
                                           const Parameters& parameters, 
                                           int totalC,
+                                          bool multiparents,
                                           long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
         AlternativeHypothesisRandomizater(const AlternativeHypothesisRandomizater& other) : AbstractRandomizer(other), _alternative_adjustments(other._alternative_adjustments) {
             _randomizer.reset(other._randomizer->clone());

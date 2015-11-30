@@ -16,7 +16,6 @@ class Parameters {
                         /* Advanced Input */
                         CUT_FILE,
                         CUT_TYPE,
-                        DUPLICATES,
                         /* Analysis */
                         SCAN_TYPE,
                         CONDITIONAL_TYPE,
@@ -87,6 +86,7 @@ class Parameters {
     enum MaximumWindowType {PERCENTAGE_WINDOW=0, FIXED_LENGTH};
     typedef std::map<std::string,Parameters::CutType> cut_map_t;
     typedef std::pair<cut_map_t, cut_map_t> cut_maps_t;
+    typedef std::vector<std::string> FileNameContainer_t;
 
     struct CreationVersion {
         unsigned int iMajor;
@@ -150,7 +150,7 @@ class Parameters {
     };
 
   public:
-    typedef ParameterType              InputSourceKey_t;
+    typedef std::pair<ParameterType, unsigned int> InputSourceKey_t; // ParameterType , index
     typedef std::map<InputSourceKey_t, InputSource> InputSourceContainer_t;
 
   private:
@@ -158,7 +158,9 @@ class Parameters {
     unsigned int                        _numRequestedParallelProcesses;
     unsigned int                        _replications;
     std::string                         _parametersSourceFileName;
-    std::string                         _treeFileName;
+
+    FileNameContainer_t                 _treeFileNames;
+
     std::string                         _cutsFileName;
     std::string                         _countFileName;
     DataTimeRangeSet                    _dataTimeRangeSet;
@@ -169,7 +171,6 @@ class Parameters {
     struct CreationVersion              _creationVersion;
     long                                _randomizationSeed;
     bool                                _randomlyGenerateSeed;
-    bool                                _duplicates;
     bool                                _generateHtmlResults;
     bool                                _generateTableResults;
     bool                                _printColumnHeaders;
@@ -217,7 +218,7 @@ class Parameters {
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
 
-    void                                defineInputSource(ParameterType e, InputSource source) {_input_sources[e] = source;}
+    void                                defineInputSource(ParameterType e, InputSource source, unsigned int idx=1) {_input_sources[std::make_pair(e,idx)] = source;}
     ConditionalType                     getConditionalType() const {return _conditional_type;}
     const std::string                 & getCountFileName() const {return _countFileName;}
     const CreationVersion             & getCreationVersion() const {return _creationVersion;}
@@ -230,8 +231,8 @@ class Parameters {
     static cut_maps_t                   getCutTypeMap();
     const DataTimeRangeSet            & getDataTimeRangeSet() const {return _dataTimeRangeSet;}
     const InputSourceContainer_t      & getInputSources() const {return _input_sources;}
-    const InputSource                 * getInputSource(ParameterType e) const {
-                                            InputSourceContainer_t::const_iterator itr = _input_sources.find(e);
+    const InputSource                 * getInputSource(ParameterType e, unsigned int idx=1) const {
+                                            InputSourceContainer_t::const_iterator itr = _input_sources.find(std::make_pair(e,idx));
                                             return itr == _input_sources.end() ? (const InputSource*)0 : &(itr->second);
                                         }
     const std::string                 & getInputSimulationsFilename() const {return _input_sim_file;}
@@ -265,9 +266,9 @@ class Parameters {
     const std::string                 & getSourceFileName() const {return _parametersSourceFileName;}
     const DataTimeRange               & getTemporalEndRange() const {return _temporalEndRange;}
     const DataTimeRange               & getTemporalStartRange() const {return _temporalStartRange;}
-    const std::string                 & getTreeFileName() const {return _treeFileName;}
 
-    bool                                isDuplicates() const {return _duplicates;}
+    const FileNameContainer_t         & getTreeFileNames() const {return _treeFileNames;}
+
     bool                                isGeneratingHtmlResults() const {return _generateHtmlResults;}
     bool                                isGeneratingLLRResults() const {return _generate_llr_results;}
     bool                                isGeneratingTableResults() const {return _generateTableResults;}
@@ -289,7 +290,6 @@ class Parameters {
     void                                setCutsFileName(const char * sCutsFileName, bool bCorrectForRelativePath=false);
     void                                setCutType(CutType e) {_cut_type = e;}
     void                                setDataTimeRangeSet(const DataTimeRangeSet& set) {_dataTimeRangeSet = set;}
-    void                                setDuplicates(bool b) {_duplicates = b;}
     void                                setGeneratingHtmlResults(bool b) {_generateHtmlResults = b;}
     void                                setGeneratingLLRResults(bool b) {_generate_llr_results = b;}
     void                                setGeneratingTableResults(bool b) {_generateTableResults = b;}
@@ -323,7 +323,9 @@ class Parameters {
     void                                setSourceFileName(const char * sParametersSourceFileName);
     void                                setTemporalEndRange(const DataTimeRange& range) {_temporalEndRange = range;}
     void                                setTemporalStartRange(const DataTimeRange& range) {_temporalStartRange = range;}
-    void                                setTreeFileName(const char * sTreeFileName, bool bCorrectForRelativePath=false);
+
+    void                                setTreeFileName(const char * sTreeFileName, bool bCorrectForRelativePath=false, size_t treeIdx=1);
+
     void                                setWritingSimulationData(bool b) {_write_simulations = b;}
     void                                setVersion(const CreationVersion& vVersion) {_creationVersion = vVersion;}
 

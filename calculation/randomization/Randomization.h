@@ -68,10 +68,10 @@ class NodesProxy : public AbstractNodesProxy {
 
         virtual NodesProxy * clone() {return new NodesProxy(*this);}
         virtual size_t  size() const {return _treeNodes.size();}
-        virtual double  getIntN(size_t i) const {return _treeNodes.at(i)->getIntN();}
-        virtual int     getIntC(size_t i) const {return _treeNodes.at(i)->getIntC();}
-        virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const {return _treeNodes.at(i)->getIntC_C();}
-        virtual int     getBrC(size_t i) const {return _treeNodes.at(i)->getBrC();}
+        virtual double  getIntN(size_t i) const {return _treeNodes[i]->getIntN();}
+        virtual int     getIntC(size_t i) const {return _treeNodes[i]->getIntC();}
+        virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const {return _treeNodes[i]->getIntC_C();}
+        virtual int     getBrC(size_t i) const {return _treeNodes[i]->getBrC();}
         virtual double  getProbability(size_t i) const {return _event_probability;}
 };
 
@@ -85,7 +85,7 @@ class AlternativeExpectedNodesProxy : public AbstractNodesProxy {
 
         virtual AlternativeExpectedNodesProxy * clone() {return new AlternativeExpectedNodesProxy(*this);}
         virtual size_t  size() const {return _treeNodes.size();}
-        virtual double  getIntN(size_t i) const {return _treeNodes.at(i).front();}
+        virtual double  getIntN(size_t i) const {return _treeNodes[i].front();}
         virtual int     getIntC(size_t i) const {throw prg_error("AlternativeExpectedNodesProxy::getIntC(size_t) not implemented.","getIntC(size_t)");}
         virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const {throw prg_error("AlternativeExpectedNodesProxy::getIntC_C(size_t) not implemented.","getIntC_C(size_t)");}
         virtual int     getBrC(size_t i) const {throw prg_error("AlternativeExpectedNodesProxy::getBrC(size_t) not implemented.","getBrC(size_t)");}
@@ -107,11 +107,11 @@ class AlternativeProbabilityNodesProxy : public NodesProxy {
 
         virtual AlternativeProbabilityNodesProxy * clone() {return new AlternativeProbabilityNodesProxy(*this);}
         virtual size_t  size() const {return _treeNodes.size();}
-        virtual double  getIntN(size_t i) const {return _treeNodes.at(i)->getIntN();}
-        virtual int     getIntC(size_t i) const {return _treeNodes.at(i)->getIntC();}
+        virtual double  getIntN(size_t i) const {return _treeNodes[i]->getIntN();}
+        virtual int     getIntC(size_t i) const {return _treeNodes[i]->getIntC();}
         virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const {throw prg_error("AlternativeProbabilityNodesProxy::getIntC_C(size_t) not implemented.","getIntC_C(size_t)");}
-        virtual int     getBrC(size_t i) const {return _treeNodes.at(i)->getBrC();}
-        virtual double  getProbability(size_t i) const {return _treeNodeProbability.at(i);}
+        virtual int     getBrC(size_t i) const {return _treeNodes[i]->getBrC();}
+        virtual double  getProbability(size_t i) const {return _treeNodeProbability[i];}
 };
 
 typedef std::vector<SimulationNode> SimNodeContainer_t;
@@ -120,6 +120,10 @@ typedef std::vector<SimulationNode> SimNodeContainer_t;
 class AbstractRandomizer {
     friend class AlternativeHypothesisRandomizater;
 
+    private:
+        void _addSimC_C_ancestor_list(size_t source_id, const NodeStructure::CountContainer_t& c, SimNodeContainer_t& treeSimNodes, const ScanRunner::NodeStructureContainer_t& treeNodes);
+        void _addSimC_C_recursive(size_t id, const NodeStructure::CountContainer_t& c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes);
+
     protected:
         RandomNumberGenerator _random_number_generator;  /** generates random numbers */
         const Parameters& _parameters;
@@ -127,18 +131,17 @@ class AbstractRandomizer {
         std::string _read_filename;
         bool _write_data;
         std::string _write_filename;
+        bool _multiparents;
 
-        void addSimC_C(size_t id, NodeStructure::CountContainer_t& c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes);
-        void addSimC_CAnforlust(size_t id, NodeStructure::CountContainer_t& c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes);
+        void addSimC_C(size_t source_id, size_t target_id, const NodeStructure::CountContainer_t& c, SimNodeContainer_t& treeSimNodes, const ScanRunner::NodeStructureContainer_t& treeNodes);
         void setSeed(unsigned int iSimulationIndex);
-
         virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) = 0;
         virtual int read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) = 0;
         virtual void write(const std::string& filename, const SimNodeContainer_t& treeSimNodes) = 0;
 
     public:
-        AbstractRandomizer(const Parameters& parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed) 
-            : _parameters(parameters), _random_number_generator(lInitialSeed), _read_data(false), _write_data(false) {}
+        AbstractRandomizer(const Parameters& parameters, bool multiparents, long lInitialSeed=RandomNumberGenerator::glDefaultSeed) 
+            : _parameters(parameters), _random_number_generator(lInitialSeed), _read_data(false), _write_data(false), _multiparents(multiparents) {}
         virtual ~AbstractRandomizer() {}
 
         virtual AbstractRandomizer * clone() const = 0;

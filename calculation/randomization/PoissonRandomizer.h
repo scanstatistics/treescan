@@ -19,7 +19,7 @@ protected:
     virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
 
 public:
-    PoissonRandomizer(bool conditional, int TotalC, double TotalN, const Parameters& parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+    PoissonRandomizer(bool conditional, int TotalC, double TotalN, const Parameters& parameters, bool multiparents, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~PoissonRandomizer() {}
 
     virtual PoissonRandomizer * clone() const {return new PoissonRandomizer(*this);}

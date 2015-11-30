@@ -63,6 +63,7 @@ template <typename T>           bool type_to_string(T& t, std::string& s) {
                                     return true;
                                 }
 std::string                   & getDerivedFilename(const std::string& source, const std::string& suffix, const std::string& extension, std::string& destination);
+const char                    * getOrdinalSuffix(unsigned int ordinal);
 
 template<class _OutTy> inline
 void writePadRight(const std::string& text, _OutTy& destintation, size_t width, const char& padValue) {

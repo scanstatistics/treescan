@@ -18,7 +18,7 @@ class BernoulliRandomizer : public AbstractDenominatorDataRandomizer {
         virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
 
     public:
-        BernoulliRandomizer(bool conditional, int TotalC, int TotalControls, double TotalN, const Parameters& parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+        BernoulliRandomizer(bool conditional, int TotalC, int TotalControls, double TotalN, const Parameters& parameters, bool multiparents, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
         virtual ~BernoulliRandomizer() {}
 
         virtual BernoulliRandomizer * clone() const {return new BernoulliRandomizer(*this);}

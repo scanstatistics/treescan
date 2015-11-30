@@ -16,15 +16,15 @@ AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const ScanRunner& scan
             switch (parameters.getConditionalType()) {
                 case Parameters::UNCONDITIONAL :
                     if (parameters.getModelType() == Parameters::POISSON)
-                        return new PoissonRandomizer(false, scanner.getTotalC(), scanner.getTotalN(), parameters);
+                        return new PoissonRandomizer(false, scanner.getTotalC(), scanner.getTotalN(), parameters, scanner.getMultiParentNodesExist());
                     if (parameters.getModelType() == Parameters::BERNOULLI)
-                        return new BernoulliRandomizer(false, scanner.getTotalC(), scanner.getTotalControls(), scanner.getTotalN(), parameters);
+                        return new BernoulliRandomizer(false, scanner.getTotalC(), scanner.getTotalControls(), scanner.getTotalN(), parameters, scanner.getMultiParentNodesExist());
                     throw prg_error("Cannot determine randomizer: tree-only, unconditonal, model (%d).", "getNewRandomizer()", parameters.getModelType());
                 case Parameters::TOTALCASES :
                     if (parameters.getModelType() == Parameters::POISSON)
-                        return new PoissonRandomizer(true, scanner.getTotalC(), scanner.getTotalN(), parameters);
+                        return new PoissonRandomizer(true, scanner.getTotalC(), scanner.getTotalN(), parameters, scanner.getMultiParentNodesExist());
                     if (parameters.getModelType() == Parameters::BERNOULLI)
-                        return new BernoulliRandomizer(true, scanner.getTotalC(), scanner.getTotalControls(), scanner.getTotalN(), parameters);
+                        return new BernoulliRandomizer(true, scanner.getTotalC(), scanner.getTotalControls(), scanner.getTotalN(), parameters, scanner.getMultiParentNodesExist());
                     throw prg_error("Cannot determine randomizer: tree-only, total-cases, model (%d).", "getNewRandomizer()", parameters.getModelType());
                 default: throw prg_error("Cannot determine randomizer: tree-only, condition type (%d).", "getNewRandomizer()", parameters.getConditionalType());
             }
@@ -59,24 +59,33 @@ AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const ScanRunner& scan
 }
 
 /*
- Adds simulated cases up the tree from branhes to all its parents, and so on, for a node without anforlust.
+ Adds simulated cases up the tree from branches to all its parents, and so on, for a node without anforlust.
  */
-void AbstractRandomizer::addSimC_C(size_t id, NodeStructure::CountContainer_t& c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) {
-    std::transform(c.begin(), c.end(), treeSimNodes.at(id).refBrC_C().begin(), treeSimNodes.at(id).refBrC_C().begin(), std::plus<int>());
-    for(size_t j=0; j < treeNodes.at(id)->getParents().size(); ++j) 
-        addSimC_C(treeNodes.at(id)->getParents()[j], c, treeNodes, treeSimNodes);
+void AbstractRandomizer::addSimC_C(size_t source_id, size_t target_id, const NodeStructure::CountContainer_t& c, SimNodeContainer_t& treeSimNodes, const ScanRunner::NodeStructureContainer_t& treeNodes) {
+    if (_multiparents)
+        _addSimC_C_ancestor_list(source_id, c, treeSimNodes, treeNodes);
+    else
+        _addSimC_C_recursive(target_id, c, treeNodes, treeSimNodes);
 }
 
 /*
- Adds simulated cases up the tree from branhes to all its parents, and so on, for a node with anforlust.
- Note: This code can be made more efficient by storing in memory the ancestral
- nodes that should be updated with additional simlated cases from the node
- with internal cases. To do sometime in the future.
+ Adds simulated cases up the tree from branches to all its parents, and so on, for a node without anforlust.
  */
-void AbstractRandomizer::addSimC_CAnforlust(size_t id, NodeStructure::CountContainer_t& c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) {
-    std::transform(c.begin(), c.end(), treeSimNodes.at(id).refBrC_C().begin(), treeSimNodes.at(id).refBrC_C().begin(), std::plus<int>());
-    for (size_t j=0; j < treeNodes.at(id)->getParents().size(); ++j) 
-        addSimC_CAnforlust(treeNodes.at(id)->getParents()[j], c, treeNodes, treeSimNodes);
+void AbstractRandomizer::_addSimC_C_ancestor_list(size_t source_id, const NodeStructure::CountContainer_t& c, SimNodeContainer_t& treeSimNodes, const ScanRunner::NodeStructureContainer_t& treeNodes) {
+    const NodeStructure * node = treeNodes[source_id];
+    for (NodeStructure::Ancestors_t::const_iterator itr=node->getAncestors().begin(); itr != node->getAncestors().end(); ++itr) {
+        // add source node's data to destination nodes branch totals
+        std::transform(c.begin(), c.end(), treeSimNodes.at(*itr).refBrC_C().begin(), treeSimNodes.at(*itr).refBrC_C().begin(), std::plus<int>());
+    }
+}
+
+/*
+ Adds simulated cases up the tree from branhes to all its parents, and so on, for a node without anforlust.
+ */
+void AbstractRandomizer::_addSimC_C_recursive(size_t id, const NodeStructure::CountContainer_t& c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) {
+    std::transform(c.begin(), c.end(), treeSimNodes[id].refBrC_C().begin(), treeSimNodes[id].refBrC_C().begin(), std::plus<int>());
+    for(size_t j=0; j < treeNodes[id]->getParents().size(); ++j) 
+        _addSimC_C_recursive(treeNodes[id]->getParents()[j]->getID(), c, treeNodes, treeSimNodes);
 }
 
 /** Reset seed of randomizer for particular simulation index. */
