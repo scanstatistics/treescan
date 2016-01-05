@@ -18,13 +18,13 @@ AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const ScanRunner& scan
                     if (parameters.getModelType() == Parameters::POISSON)
                         return new PoissonRandomizer(false, scanner.getTotalC(), scanner.getTotalN(), parameters, scanner.getMultiParentNodesExist());
                     if (parameters.getModelType() == Parameters::BERNOULLI)
-                        return new BernoulliRandomizer(false, scanner.getTotalC(), scanner.getTotalControls(), scanner.getTotalN(), parameters, scanner.getMultiParentNodesExist());
+                        return new UnconditionalBernoulliRandomizer(scanner.getTotalC(), scanner.getTotalControls(), parameters, scanner.getMultiParentNodesExist());
                     throw prg_error("Cannot determine randomizer: tree-only, unconditonal, model (%d).", "getNewRandomizer()", parameters.getModelType());
                 case Parameters::TOTALCASES :
                     if (parameters.getModelType() == Parameters::POISSON)
                         return new PoissonRandomizer(true, scanner.getTotalC(), scanner.getTotalN(), parameters, scanner.getMultiParentNodesExist());
                     if (parameters.getModelType() == Parameters::BERNOULLI)
-                        return new BernoulliRandomizer(true, scanner.getTotalC(), scanner.getTotalControls(), scanner.getTotalN(), parameters, scanner.getMultiParentNodesExist());
+                        return new ConditionalBernoulliRandomizer(scanner.getTotalC(), scanner.getTotalControls(), parameters, scanner.getMultiParentNodesExist());
                     throw prg_error("Cannot determine randomizer: tree-only, total-cases, model (%d).", "getNewRandomizer()", parameters.getModelType());
                 default: throw prg_error("Cannot determine randomizer: tree-only, condition type (%d).", "getNewRandomizer()", parameters.getConditionalType());
             }

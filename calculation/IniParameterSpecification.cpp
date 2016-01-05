@@ -170,9 +170,10 @@ void IniParameterSpecification::Build_1_2_x_ParameterList() {
 void IniParameterSpecification::Build_1_3_x_ParameterList() {
     Build_1_2_x_ParameterList();
 
+    _parameter_info[Parameters::POWER_BASELINE_PROBABILITY] = ParamInfo(Parameters::POWER_BASELINE_PROBABILITY, "baseline-probability", 10, _power_evaluations_section);
     _multiple_parameter_info[Parameters::TREE_FILE] = ParamInfo(Parameters::TREE_FILE, "tree-filename", 3, _advanced_input_section);
 
-    assert(_parameter_info.size() == 42);
+    assert(_parameter_info.size() == 43);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

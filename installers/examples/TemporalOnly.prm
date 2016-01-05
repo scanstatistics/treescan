@@ -35,8 +35,6 @@ results-csv=n
 cut-filename=
 ;default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)
 cut-type=0
-;duplicates in case data records (y/n -- experimental)
-duplicates=n
 
 [Temporal Window]
 ;maximum temporal size as percentage of data time range (0 < x <= 50.0)
@@ -79,6 +77,8 @@ power-evaluation-totalcases=600
 power-evaluation-replications=1000
 ;power evaluation alternative hypothesis filename
 alternative-hypothesis-filename=
+;power baseline probability (integer / integer)
+baseline-probability=1/2
 
 [Additional Output]
 ;create LLR results (y/n)

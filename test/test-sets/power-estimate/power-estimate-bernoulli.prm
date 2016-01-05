@@ -2,9 +2,9 @@
 ;scan type (TREEONLY=0, TREETIME=1, TIMEONLY=2)
 scan-type=0
 ;probability model type (POISSON=0, BERNOULLI=1, UNIFORM=2, Not-Applicable=3)
-probability-model=0
+probability-model=1
 ;conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)
-conditional-type=1
+conditional-type=0
 ;self control design - unconditional Bernoulli only (y/n)
 self-control-design=n
 ;case probability (integer / integer)
@@ -16,15 +16,15 @@ window-end-range=[0,0]
 
 [Input]
 ;tree structure filename
-tree-filename=tree.tre
+tree-filename=power-estimate.tre
 ;count data filename
-count-filename=Poisson.cas
+count-filename=power-estimate.cas
 ;data time ranges (integer - integer)
 data-time-range=[0,0]
 
 [Output]
 ;results filename
-results-filename=Poisson.txt
+results-filename=power-estimate.txt
 ;create HTML results (y/n)
 results-html=n
 ;create CSV results (y/n)
@@ -60,7 +60,7 @@ random-randomization-seed=n
 
 [Power Evaluations]
 ;perform power evaluations (y/n)
-perform-power-evaluations=n
+perform-power-evaluations=y
 ;power evaluation type (0=Analysis And Power Evaluation Together, 1=Only Power Evaluation With Count File, 2=Only Power Evaluation With Defined Total Cases)
 power-evaluation-type=0
 ;critical values type (0=Monte Carlo, 1=User Specified Values)
@@ -74,15 +74,15 @@ critical-value-001=0
 ;total cases in power evaluation (integer)
 power-evaluation-totalcases=600
 ;number of replications in power step (integer)
-power-evaluation-replications=1000
+power-evaluation-replications=10000
 ;power evaluation alternative hypothesis filename
-alternative-hypothesis-filename=
+alternative-hypothesis-filename=power-estimate-bernoulli.alt
 ;power baseline probability (integer / integer)
 baseline-probability=1/2
 
 [Additional Output]
 ;create LLR results (y/n)
-results-llr=n
+results-llr=y
 ;report critical values (y/n)
 report-critical-values=n
 ;report attributable risk (y/n)

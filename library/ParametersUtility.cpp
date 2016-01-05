@@ -319,6 +319,15 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
       }
   }
 
+  ratio = parameters.getPowerBaselineProbabilityRatio();
+  mid = _getMethodId_Checked(Env, clazz, "setPowerBaselineProbabilityRatioNumerator", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)ratio.first);
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setPowerBaselineProbabilityRatioDenominator", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)ratio.second);
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -581,5 +590,14 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
       }
       parameters.defineInputSource(type, inputsource, idx);
   }
+
+  mid = _getMethodId_Checked(Env, clazz, "getPowerBaselineProbabilityRatioNumerator", "()I");
+  ratio.first = static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+  mid = _getMethodId_Checked(Env, clazz, "getPowerBaselineProbabilityRatioDenominator", "()I");
+  ratio.second = static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+  parameters.setPowerBaselineProbabilityRatio(ratio);
+
   return parameters;
 }

@@ -231,23 +231,25 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     if (parameters.getPerformPowerEvaluations()) {
         // sanity check
         if (_scanRunner.getPowerEstimations().size() == 0)
-            throw prg_error("Number of power estimations is zero.", "ResultsFileWriter::writeASCII(...)");
-        outfile << std::endl << "Estimated Power" << std::endl;
-        writePadRight("Alpha", outfile, 25, ' ');
-        writePadRight("0.05", outfile, 20, ' ');
-        writePadRight("0.01", outfile, 20, ' ');
-        outfile << "0.001" << std::endl;
-        writePadRight("-----", outfile, 25, ' ');
-        writePadRight("----", outfile, 20, ' ');
-        writePadRight("----", outfile, 20, ' ');
-        outfile << "-----" << std::endl;
-        std::string buffer;
-        ScanRunner::PowerEstimationContainer_t::const_iterator itr=_scanRunner.getPowerEstimations().begin(), itr_end=_scanRunner.getPowerEstimations().end();
-        for (;itr != itr_end; ++itr) {
-            writePadRight(printString(buffer, "Alternative #%u", std::distance(_scanRunner.getPowerEstimations().begin(), itr) + 1), outfile, 25, ' ');
-            writePadRight(getRoundAsString(itr->get<0>(),buffer, 3), outfile, 20, ' ');
-            writePadRight(getRoundAsString(itr->get<1>(),buffer, 3), outfile, 20, ' ');
-            outfile << getRoundAsString(itr->get<2>(),buffer, 3) << std::endl;
+            outfile << "No estimates power values to report." << std::endl; //throw prg_error("Number of power estimations is zero.", "ResultsFileWriter::writeASCII(...)");
+        else {
+            outfile << std::endl << "Estimated Power" << std::endl;
+            writePadRight("Alpha", outfile, 25, ' ');
+            writePadRight("0.05", outfile, 20, ' ');
+            writePadRight("0.01", outfile, 20, ' ');
+            outfile << "0.001" << std::endl;
+            writePadRight("-----", outfile, 25, ' ');
+            writePadRight("----", outfile, 20, ' ');
+            writePadRight("----", outfile, 20, ' ');
+            outfile << "-----" << std::endl;
+            std::string buffer;
+            ScanRunner::PowerEstimationContainer_t::const_iterator itr=_scanRunner.getPowerEstimations().begin(), itr_end=_scanRunner.getPowerEstimations().end();
+            for (;itr != itr_end; ++itr) {
+                writePadRight(printString(buffer, "Alternative #%u", std::distance(_scanRunner.getPowerEstimations().begin(), itr) + 1), outfile, 25, ' ');
+                writePadRight(getRoundAsString(itr->get<0>(),buffer, 3), outfile, 20, ' ');
+                writePadRight(getRoundAsString(itr->get<1>(),buffer, 3), outfile, 20, ' ');
+                outfile << getRoundAsString(itr->get<2>(),buffer, 3) << std::endl;
+            }
         }
     }
 

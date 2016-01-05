@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 41;
+const int Parameters::giNumParameters = 42;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -66,6 +66,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_power_evaluation_totalcases != rhs._power_evaluation_totalcases) return false;
   if (_power_replica != rhs._power_replica) return false;
   if (_power_alt_hypothesis_filename != rhs._power_alt_hypothesis_filename) return false;
+  if (_power_baseline_probablility_ratio != rhs._power_baseline_probablility_ratio) return false;
   if (_dayofweek_adjustment != rhs._dayofweek_adjustment) return false;
   if (_report_attributable_risk != rhs._report_attributable_risk) return false;
   if (_attributable_risk_exposed != rhs._attributable_risk_exposed) return false;
@@ -143,6 +144,7 @@ void Parameters::copy(const Parameters &rhs) {
     _power_evaluation_totalcases = rhs._power_evaluation_totalcases;
     _power_replica = rhs._power_replica;
     _power_alt_hypothesis_filename = rhs._power_alt_hypothesis_filename;
+    _power_baseline_probablility_ratio = rhs._power_baseline_probablility_ratio;
 
     _read_simulations = rhs._read_simulations;
     _input_sim_file = rhs._input_sim_file;
@@ -249,7 +251,7 @@ void Parameters::setTreeFileName(const char * sTreeFileName, bool bCorrectForRel
 /** initializes global variables to default values */
 void Parameters::setAsDefaulted() {
     _treeFileNames.resize(1);
-	_treeFileNames.front() = "";
+    _treeFileNames.front() = "";
 
     _countFileName = "";
     _dataTimeRangeSet = DataTimeRangeSet();
@@ -290,6 +292,7 @@ void Parameters::setAsDefaulted() {
     _power_evaluation_totalcases = 600;
     _power_replica = _replications + 1;
     _power_alt_hypothesis_filename = "";
+    _power_baseline_probablility_ratio = ratio_t(1,2);
 
     _creationVersion.iMajor = atoi(VERSION_MAJOR);
     _creationVersion.iMinor = atoi(VERSION_MINOR);
@@ -397,6 +400,8 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _critical_value_001 = pt.get<double>("parameters.analysis.advanced.power-evaluations.critical-value-001", 0);
     _power_evaluation_totalcases = pt.get<int>("parameters.analysis.advanced.power-evaluations.totalcases", 0);
     _power_replica = pt.get<int>("parameters.analysis.advanced.power-evaluations.replications", _replications + 1);
+    _power_baseline_probablility_ratio.first = pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.baseline-probability.numerator", 1);
+    _power_baseline_probablility_ratio.second = pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.baseline-probability.denominator", 2);
     setPowerEvaluationAltHypothesisFilename(pt.get<std::string>("parameters.analysis.advanced.power-evaluations.alternative-hypothesis-file", "").c_str(), true);
     // Power Simulations
     _read_simulations = pt.get<bool>("parameters.power-simulations.input-simulations", true);
@@ -459,6 +464,8 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.analysis.advanced.power-evaluations.totalcases", _power_evaluation_totalcases);
     pt.put("parameters.analysis.advanced.power-evaluations.replications", _power_replica);
     pt.put("parameters.analysis.advanced.power-evaluations.alternative-hypothesis-file", _power_alt_hypothesis_filename);
+    pt.put("parameters.analysis.advanced.power-evaluations.baseline-probability.numerator", _power_baseline_probablility_ratio.first);
+    pt.put("parameters.analysis.advanced.power-evaluations.baseline-probability.denominator", _power_baseline_probablility_ratio.second);
     // Power Simulations
     pt.put("parameters.power-simulations.input-simulations", _read_simulations);
     pt.put("parameters.power-simulations.input-simulations-file", _input_sim_file);

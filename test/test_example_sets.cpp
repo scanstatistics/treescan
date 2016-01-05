@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
                      BOOST_CHECK_CLOSE( excess, 10.5, 0.001 );
                      BOOST_CHECK_CLOSE( ar, 0.052, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 5.09544, 0.00001 );
-                     BOOST_CHECK_CLOSE( p_value, 0.017, 0.0001 ); break;
+                     BOOST_CHECK_CLOSE( p_value, 0.008, 0.0001 ); break;
             case 2 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf9" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(16) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(14) );
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
                      BOOST_CHECK_CLOSE( excess, 6.0, 0.001 );
                      BOOST_CHECK_CLOSE( ar, 0.03, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 5.062032, 0.00001 );
-                     BOOST_CHECK_CLOSE( p_value, 0.019, 0.0001 ); break;
+                     BOOST_CHECK_CLOSE( p_value, 0.01, 0.0001 ); break;
             case 8  :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node2" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(30) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(17) );
@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
                      BOOST_CHECK_CLOSE( excess, 2.0, 0.001 );
                      BOOST_CHECK_CLOSE( ar, 0.01, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 0.267462, 0.00001 );
-                     BOOST_CHECK_CLOSE( p_value, 0.972, 0.0001 ); break;
+                     BOOST_CHECK_CLOSE( p_value, 0.956, 0.0001 ); break;
             case 9  :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf5" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(7) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(4) );
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
                      BOOST_CHECK_CLOSE( excess, 0.5, 0.001 );
                      BOOST_CHECK_CLOSE( ar, 0.0025, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 0.0716735, 0.00001 );
-                     BOOST_CHECK_CLOSE( p_value, 0.999, 0.0001 ); break;
+                     BOOST_CHECK_CLOSE( p_value, 0.994, 0.0001 ); break;
             default : break;
         }
         getCSVRow(stream, data);

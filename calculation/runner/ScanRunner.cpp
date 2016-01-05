@@ -20,6 +20,7 @@
 #include "WindowLength.h"
 #include "AlternativeHypothesisRandomizer.h"
 #include "RelativeRiskAdjustment.h"
+#include "BernoulliRandomizer.h"
 
 /* Calculates the attributable risk per person for cut. */
 double CutStructure::getAttributableRisk(const ScanRunner& scanner) {
@@ -425,9 +426,9 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
     const long nodeIdIdx=0, uAdjustmentIndex=1;
     boost::dynamic_bitset<> nodeSet;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::POWER_EVALUATIONS_FILE)));
-    bool testMultipleNodeRecords(_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL);
+    bool testMultipleNodeRecords(_parameters.getModelType() == Parameters::BERNOULLI);
 
-    // if unconditional Bernoulli, limit this file to a single entry for each node
+    // if unconditional/conditional Bernoulli, limit this file to a single entry for each node
     if (testMultipleNodeRecords)
         nodeSet.resize(_Nodes.size());
 
@@ -460,19 +461,21 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
         double alternative_hypothesis;
         if (dataSource->getValueAt(uAdjustmentIndex).size() < 1) {
             _print.Printf("Error: Record %ld of alternative hypothesis file missing %s.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(),
-                          _parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL ? "event probability" : "relative risk");
+                          _parameters.getModelType() == Parameters::BERNOULLI ? "event probability" : "relative risk");
             bValid = false;
             continue;
         }
-        if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
+        if (_parameters.getModelType() == Parameters::BERNOULLI) {
             if (!string_to_numeric_type<double>(dataSource->getValueAt(uAdjustmentIndex).c_str(), alternative_hypothesis) || alternative_hypothesis < 0.0 || alternative_hypothesis > 1.0) {
                 bValid = false;
                 _print.Printf("Error: Record %ld in alternative hypothesis file references an invalid case probability for node '%s'.\n"
                               "       The event probability must be a numeric value between zero and one (inclusive).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
                 continue;
-            } else if (alternative_hypothesis < _parameters.getProbability()) {
-                _print.Printf("Warning: Record %ld in alternative hypothesis file references a case probability of %g, which is less than standard case probability of %g.\n",
-                              BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), alternative_hypothesis, _parameters.getProbability());
+            } else if (_parameters.getConditionalType() == Parameters::UNCONDITIONAL && alternative_hypothesis < _parameters.getProbability()) {
+                _print.Printf("%s: Record %ld in alternative hypothesis file references a case probability of %g, which is less than standard case probability of %g.\n",
+                              BasePrint::P_READERROR, (_parameters.getConditionalType() == Parameters::UNCONDITIONAL ? "Warning" : "Error"),
+                              dataSource->getCurrentRecordIndex(), alternative_hypothesis, _parameters.getProbability());
+                bValid &= _parameters.getConditionalType() == Parameters::UNCONDITIONAL;
             }
         } else {
             if (!string_to_numeric_type<double>(dataSource->getValueAt(uAdjustmentIndex).c_str(), alternative_hypothesis) || alternative_hypothesis < 0) {
@@ -485,7 +488,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
 
         size_t iNumWords = dataSource->getNumValues();
         if (iNumWords > 2) {
-            _print.Printf("Error: Record %i of alternative hypothesis file contains are columns of data.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
+            _print.Printf("Error: Record %i of alternative hypothesis file contains extra columns of data.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
             bValid = false;
             continue;
         }
@@ -898,11 +901,51 @@ bool ScanRunner::runPowerEvaluations() {
     if (!readRelativeRisksAdjustments(_parameters.getPowerEvaluationAltHypothesisFilename(), riskAdjustments, false))
         throw resolvable_error("There were problems reading the alternative hypothesis file.", "runPowerEvaluations()");
     if (!riskAdjustments.size())
-        throw resolvable_error("Power evaluations can not be performed. No adjustments found in the alternative hypothesis file.", "runPowerEvaluations()");
+        throw resolvable_error("Power evaluations can not be performed. No adjustments found in the alternative hypothesis file.");
     SimulationVariables simVarsCopy(_simVars);
     for (size_t t=0; t < riskAdjustments.size(); ++t) {
         _print.Printf("\nDoing the alternative replications for power set %d\n", BasePrint::P_STDOUT, t+1);
-        boost::shared_ptr<AbstractRandomizer> core_randomizer(AbstractRandomizer::getNewRandomizer(*this));
+        boost::shared_ptr<AbstractRandomizer> core_randomizer;
+        if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES) {
+            // calculate the number of individuals in the nodes with an excess risk
+            unsigned int n1=0;
+            const AdjustmentsContainer_t& adj = riskAdjustments[t]->get();
+            double rsk_adjustment = adj.begin()->second.begin()->getRelativeRisk();
+            for (AdjustmentsContainer_t::const_iterator itr=adj.begin(); itr != adj.end(); ++itr) {
+                n1 += static_cast<unsigned int>(_Nodes[itr->first]->getIntN());
+                if (!macro_equal(itr->second.begin()->getRelativeRisk(), rsk_adjustment, DBL_CMP_TOLERANCE))
+                    throw resolvable_error("For the conditional Bernoulli model, the relative risks must be the same for all nodes in each power set in the alternative hypothesis file.");
+            }
+            // Verify that event probability is less than the alternative hypothesis.
+            if (macro_less_than(adj.begin()->second.begin()->getRelativeRisk(), _parameters.getPowerBaselineProbability(), DBL_CMP_TOLERANCE))
+                throw resolvable_error("The relative risks in power set %d, of the alternative hypothesis file, is less than the baseline event probability.", t+1);
+
+            /* Check that values for p0, p1 and total cases is reasonable in terms of actual data. */
+            double z = 0.001; // now we will set z=0.001, but we should experiment a little with different values
+            double C = getTotalC();
+            double N = static_cast<double>(getTotalC() + getTotalControls());
+            double p0 = _parameters.getPowerBaselineProbability();
+            double p1 = riskAdjustments[t]->get().begin()->second.begin()->getRelativeRisk();
+            double p = (n1*p1+(N-n1)*p0)/N;
+            BinomialGenerator bg;
+            double z_check = bg.getBinomialDistributionProbability(static_cast<unsigned int>(C), static_cast<unsigned int>(N), p);
+            if (!(z < z_check && z_check < 1.0 - z)) {
+                double X = (n1 * p1 + (N - n1) * p0);
+                throw resolvable_error("\nWith the specified null and alternative hypotheses in power set %d, the expected number of cases is %.1lf,\n"
+                                       "but the observed number of cases is %d, which is unrealistic for the null and alternative hypotheses specified.\n"
+                                       "Please specify either a total number of observed cases to be approximately %.1lf, or, change the null and/or\n"
+                                       "alternative hypothesis so that the expected number of cases, n1 * p1 + (N - n1) * p0 is approximately %d.\n"
+                                       "Current values are: n1 = %d, p1 = %g, N = %d, p0 = %g\n",
+                                       t+1, X, getTotalC(), X, getTotalC(), n1, p1, static_cast<unsigned int>(N), p0);
+            }
+
+            core_randomizer.reset(new ConditionalBernoulliAlternativeHypothesisRandomizer(getNodes(), *riskAdjustments[t],
+                                                                                          getTotalC(), getTotalControls(),
+                                                                                          _parameters.getPowerBaselineProbability(), 
+                                                                                          riskAdjustments[t]->get().begin()->second.begin()->getRelativeRisk()/*risk is required to be same for all nodes*/,
+                                                                                          n1, _parameters, getMultiParentNodesExist()));
+        } else
+            core_randomizer.reset(AbstractRandomizer::getNewRandomizer(*this));
         boost::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, *riskAdjustments[t], _parameters, _TotalC, _has_multi_parent_nodes));
         if (_parameters.isWritingSimulationData()) {
             if (t == 0 && _parameters.getCriticalValuesType() == Parameters::CV_POWER_VALUES)
@@ -1447,7 +1490,7 @@ bool ScanRunner::setupTree() {
     for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
         _TotalC = std::accumulate((*itr)->refIntC_C().begin(), (*itr)->refIntC_C().end(), _TotalC);
     }
-    // Check for minimum number od cases.
+    // Check for minimum number of cases.
     if (!_parameters.getPerformPowerEvaluations() || !(_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES)) {
         // The conditional Poisson should not be performed with less than cases.
         if (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::TOTALCASES && _TotalC < 2/* minimum number of cases */) {
@@ -1534,9 +1577,20 @@ bool ScanRunner::setupTree() {
     for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
         _TotalN = std::accumulate((*itr)->refIntN_C().begin(), (*itr)->refIntN_C().end(), _TotalN);
     }
+
     // controls are read with population for Bernoulli -- so calculate total controls now
     if (_parameters.getModelType() == Parameters::BERNOULLI) {
-        _TotalControls = std::max(static_cast<int>(_TotalN) - _TotalC, 0);
+        if (_parameters.getPerformPowerEvaluations() && _parameters.getConditionalType() == Parameters::TOTALCASES &&_parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES) {
+            // check that the user specifed number of power cases is not greater than the total population (cases + controls)
+            if (static_cast<double>(_parameters.getPowerEvaluationTotalCases()) > _TotalN) {
+                _print.Printf("Error: The user specified number of total cases is greater than the total population defined in case file.\n", BasePrint::P_ERROR);
+                return false;
+            }
+            _TotalC = _parameters.getPowerEvaluationTotalCases();
+            _TotalControls = static_cast<int>(_TotalN) - _TotalC;
+        } else {
+            _TotalControls = std::max(static_cast<int>(_TotalN) - _TotalC, 0);
+        }
     }
 
     // Calculates the expected counts for each node and the total.

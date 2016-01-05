@@ -55,6 +55,8 @@ class AbstractNodesProxy {
         virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const = 0;
         virtual int      getBrC(size_t i) const = 0;
         virtual double   getProbability(size_t i) const = 0;
+
+        virtual int getID(size_t i) const = 0;
 };
 
 class NodesProxy : public AbstractNodesProxy {
@@ -73,6 +75,7 @@ class NodesProxy : public AbstractNodesProxy {
         virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const {return _treeNodes[i]->getIntC_C();}
         virtual int     getBrC(size_t i) const {return _treeNodes[i]->getBrC();}
         virtual double  getProbability(size_t i) const {return _event_probability;}
+        virtual int getID(size_t i) const {return _treeNodes[i]->getID();}
 };
 
 class AlternativeExpectedNodesProxy : public AbstractNodesProxy {
@@ -90,6 +93,8 @@ class AlternativeExpectedNodesProxy : public AbstractNodesProxy {
         virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const {throw prg_error("AlternativeExpectedNodesProxy::getIntC_C(size_t) not implemented.","getIntC_C(size_t)");}
         virtual int     getBrC(size_t i) const {throw prg_error("AlternativeExpectedNodesProxy::getBrC(size_t) not implemented.","getBrC(size_t)");}
         virtual double  getProbability(size_t i) const {throw prg_error("AlternativeExpectedNodesProxy::getProbability(size_t) not implemented.","getProbability(size_t)");}
+
+        virtual int getID(size_t i) const {throw prg_error("AlternativeExpectedNodesProxy::getID(size_t) not implemented.","getID(size_t)");}
 };
 
 class AlternativeProbabilityNodesProxy : public NodesProxy {
@@ -112,6 +117,8 @@ class AlternativeProbabilityNodesProxy : public NodesProxy {
         virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const {throw prg_error("AlternativeProbabilityNodesProxy::getIntC_C(size_t) not implemented.","getIntC_C(size_t)");}
         virtual int     getBrC(size_t i) const {return _treeNodes[i]->getBrC();}
         virtual double  getProbability(size_t i) const {return _treeNodeProbability[i];}
+
+        virtual int getID(size_t i) const {throw prg_error("AlternativeProbabilityNodesProxy::getID(size_t) not implemented.","getID(size_t)");}
 };
 
 typedef std::vector<SimulationNode> SimNodeContainer_t;

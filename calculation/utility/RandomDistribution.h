@@ -3,6 +3,8 @@
 #define __RANDOMDISTRIBUTION_H
 //*****************************************************************************
 #include "RandomNumberGenerator.h"
+#include <boost/math/distributions/binomial.hpp>
+//using boost::math::binomial;
 
 /**********************************************************************
  file: RandomDistribution.h
@@ -31,6 +33,10 @@ class BinomialGenerator {
     virtual ~BinomialGenerator(){}
 
     long        GetBinomialDistributedVariable(long n, float pp, RandomNumberGenerator & rng);
+    double      getBinomialDistributionProbability(unsigned int successes, unsigned int trials, double probability) {
+                    boost::math::binomial distribution(trials, probability);
+                    return boost::math::pdf(distribution, successes);
+                }
 };
 //*****************************************************************************
 #endif

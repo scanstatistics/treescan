@@ -308,10 +308,6 @@ bool ParametersValidate::ValidatePowerEvaluationParametersParameters(BasePrint &
         PrintDirection.Printf("%s:\nThe power evaluation is only available for the Poisson and Bernoulli models.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         bValid = false;
     }
-    if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() != Parameters::UNCONDITIONAL) {
-        PrintDirection.Printf("%s:\nThe power evaluation is available for unconditional Bernoulli only.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-        bValid = false;
-    }
     if (_parameters.getNumReplicationsRequested() < 999) {
         PrintDirection.Printf("%s:\nThe minimum number of standard replications in the power evaluation is %u.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, 999);
         bValid = false;
@@ -351,9 +347,14 @@ bool ParametersValidate::ValidatePowerEvaluationParametersParameters(BasePrint &
         bValid = false;
     }
     if (_parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES &&
-        !(_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::TOTALCASES)) {
-        PrintDirection.Printf("%s:\nThe power evaluation option to define total cases is only permitted with the conditional Poisson model.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        !((_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI) && _parameters.getConditionalType() == Parameters::TOTALCASES)) {
+        PrintDirection.Printf("%s:\nThe power evaluation option to define total cases is only permitted with the conditional Poisson or conditional Bernoulli models.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         bValid = false;
+    }
+    if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES &&
+        (_parameters.getPowerBaselineProbabilityRatio().first == 0 || _parameters.getPowerBaselineProbabilityRatio().second == 0 || _parameters.getPowerBaselineProbabilityRatio().first >= _parameters.getPowerBaselineProbabilityRatio().second)) {
+        bValid = false;
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation baseline probabilty must be between zero and one.\n", BasePrint::P_PARAMERROR);
     }
     return bValid;
 }

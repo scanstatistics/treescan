@@ -161,9 +161,8 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
         case Parameters::MODEL_NOT_APPLICABLE: break;
         default: throw prg_error("Unknown model type (%d).", "getAnalysisParameters()", _parameters.getModelType());
     }
-    if (_parameters.getModelType() == Parameters::BERNOULLI) {
-        if (_parameters.getConditionalType() == Parameters::UNCONDITIONAL)
-            settings.push_back(std::make_pair("Self-Control Design",_parameters.getSelfControlDesign() ? "Yes" : "No"));
+    if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
+        settings.push_back(std::make_pair("Self-Control Design",_parameters.getSelfControlDesign() ? "Yes" : "No"));
         printString(buffer, "%u/%u", _parameters.getProbabilityRatio().first, _parameters.getProbabilityRatio().second);
         settings.push_back(std::make_pair("Case Probability",buffer));
     }
@@ -250,6 +249,10 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getPowerEvaluationsParame
         settings.push_back(std::make_pair("Alternative Hypothesis Results", PowerEstimationRecordWriter::getFilename(_parameters, buffer)));
         if (_parameters.isGeneratingLLRResults()) {
             settings.push_back(std::make_pair("Simulated Log Likelihood Ratios (HA)", LoglikelihoodRatioWriter::getFilename(_parameters, buffer, true)));
+        }
+        if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES) {
+            printString(buffer, "%u/%u", _parameters.getPowerBaselineProbabilityRatio().first, _parameters.getPowerBaselineProbabilityRatio().second);
+            settings.push_back(std::make_pair("Baseline Probability",buffer));
         }
     }
     return settings;

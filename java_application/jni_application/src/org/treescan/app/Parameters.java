@@ -64,6 +64,8 @@ public class Parameters implements Cloneable {
     private boolean _report_attributable_risk=false;
     private int _attributable_risk_exposed=0;
     private boolean _self_control_design=false;
+    private int _power_baseline_probability_ratio_numerator=1;
+    private int _power_baseline_probability_ratio_denominator=2;
 
     private ArrayList<InputSourceSettings>     _input_sources;
     
@@ -138,6 +140,9 @@ public class Parameters implements Cloneable {
     	  if (_numprocesses != rhs._numprocesses) return false;
     	  if (_randomlyGenerateSeed != rhs._randomlyGenerateSeed) return false;
     	  if (_printColumnHeaders != rhs._printColumnHeaders) return false;
+
+          if (_power_baseline_probability_ratio_numerator != rhs._power_baseline_probability_ratio_numerator) return false;
+          if (_power_baseline_probability_ratio_denominator != rhs._power_baseline_probability_ratio_denominator) return false;
           
           return true;
     }
@@ -249,5 +254,10 @@ public class Parameters implements Cloneable {
     public ConditionalType getConditionalType() {return _conditionalType;}
     public void setConditionalType(int ord) {try { _conditionalType = ConditionalType.values()[ord]; } catch (ArrayIndexOutOfBoundsException e) { ThrowEnumException(ord, ConditionalType.values()); } }
     public final boolean isGeneratingLLRResults() {return _generate_llr_results;}
-    public void setGeneratingLLRResults(boolean b) {_generate_llr_results=b;}    
+    public void setGeneratingLLRResults(boolean b) {_generate_llr_results=b;}
+    
+    public int getPowerBaselineProbabilityRatioNumerator() {return _power_baseline_probability_ratio_numerator;}
+    public void setPowerBaselineProbabilityRatioNumerator(int i) {_power_baseline_probability_ratio_numerator = i;}
+    public int getPowerBaselineProbabilityRatioDenominator() {return _power_baseline_probability_ratio_denominator;}
+    public void setPowerBaselineProbabilityRatioDenominator(int i) {_power_baseline_probability_ratio_denominator = i;}    
 }

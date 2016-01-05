@@ -87,6 +87,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::POWER_EVALUATION_TOTALCASES : return "total cases in power evaluation (integer)";
             case Parameters::POWER_EVALUATIONS_REPLICA : return "number of replications in power step (integer)";
             case Parameters::POWER_EVALUATIONS_FILE : return "power evaluation alternative hypothesis filename";
+            case Parameters::POWER_BASELINE_PROBABILITY : return "power baseline probability (integer / integer)";
             /* Power Simulations */
             case Parameters::READ_SIMULATIONS        : return "input simulation data (y/n)";
             case Parameters::INPUT_SIM_FILE          : return "input simulation filename";
@@ -155,6 +156,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::POWER_EVALUATION_TOTALCASES : return AsString(s, _parameters.getPowerEvaluationTotalCases());
             case Parameters::POWER_EVALUATIONS_REPLICA : return AsString(s, _parameters.getPowerEvaluationReplications());
             case Parameters::POWER_EVALUATIONS_FILE    : s = _parameters.getPowerEvaluationAltHypothesisFilename(); return s;
+            case Parameters::POWER_BASELINE_PROBABILITY : return AsString(s, _parameters.getPowerBaselineProbabilityRatio());
             /* Power Simulations */
             case Parameters::READ_SIMULATIONS         : return AsString(s, _parameters.isReadingSimulationData());
             case Parameters::INPUT_SIM_FILE           : s = _parameters.getInputSimulationsFilename(); return s;
@@ -326,6 +328,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::POWER_EVALUATION_TOTALCASES : _parameters.setPowerEvaluationTotalCases(ReadInt(value, e)); break;
             case Parameters::POWER_EVALUATIONS_REPLICA : _parameters.setPowerEvaluationReplications(ReadUnsignedInt(value, e)); break;
             case Parameters::POWER_EVALUATIONS_FILE   : _parameters.setPowerEvaluationAltHypothesisFilename(value.c_str(), true); break;
+            case Parameters::POWER_BASELINE_PROBABILITY : _parameters.setPowerBaselineProbabilityRatio(ReadRatio(value)); break;
             /* Power Simulations */
             case Parameters::READ_SIMULATIONS         : _parameters.setReadingSimulationData(ReadBoolean(value, e)); break;
             case Parameters::INPUT_SIM_FILE           : _parameters.setInputSimulationsFilename(value.c_str(), true); break;

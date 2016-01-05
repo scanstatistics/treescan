@@ -239,6 +239,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setPowerEvaluationTotalCases(Integer.parseInt((_totalPowerCases.getText().length() > 0 ? _totalPowerCases.getText() : "600")));
         parameters.setPowerEvaluationReplications(Integer.parseInt(_numberPowerReplications.getText()));
         parameters.setPowerEvaluationAltHypothesisFilename(_alternativeHypothesisFilename.getText());
+        parameters.setPowerBaselineProbabilityRatioNumerator(Integer.parseInt(_eventProbabiltyNumerator.getText()));
+        parameters.setPowerBaselineProbabilityRatioDenominator(Integer.parseInt(this._eventProbabiltyDenominator.getText()));
         
         // Additional Output tab
         parameters.setGeneratingLLRResults(_reportLLRResultsAsCsvTable.isSelected());
@@ -318,6 +320,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _totalPowerCases.setText(Integer.toString(parameters.getPowerEvaluationTotalCases()));
         _numberPowerReplications.setText(Integer.toString(parameters.getPowerEvaluationReplications()));
         _alternativeHypothesisFilename.setText(parameters.getPowerEvaluationAltHypothesisFilename());
+        _eventProbabiltyNumerator.setText(Integer.toString(parameters.getPowerBaselineProbabilityRatioNumerator()));
+        _eventProbabiltyDenominator.setText(Integer.toString(parameters.getPowerBaselineProbabilityRatioDenominator()));
         
         // Additional Output tab
         _reportCriticalValuesCheckBox.setSelected(parameters.getReportCriticalValues());
@@ -361,8 +365,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
                 Parameters.ModelType modelType = _settings_window.getModelType();
                 Parameters.ConditionalType conditonalType = _settings_window.getConditionalType();
-                if (!(modelType == Parameters.ModelType.POISSON && conditonalType == Parameters.ConditionalType.TOTALCASES)) {
-                    throw new AdvFeaturesExpection("The power evaluation option to define total cases is only permitted with the conditional Poisson model.\n", FocusedTabSet.ANALYSIS, (Component) _totalPowerCases);
+                if (!((modelType == Parameters.ModelType.POISSON || modelType == Parameters.ModelType.BERNOULLI) && conditonalType == Parameters.ConditionalType.TOTALCASES)) {
+                    throw new AdvFeaturesExpection("The power evaluation option to define total cases is only permitted with the conditional Poisson and Bernoulli models.\n", FocusedTabSet.ANALYSIS, (Component) _totalPowerCases);
                 }
             }
             int replica = Integer.parseInt(_montCarloReplicationsTextField.getText());
@@ -385,6 +389,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (!FileAccess.ValidateFileAccess(_alternativeHypothesisFilename.getText(), false)) {
                 throw new AdvFeaturesExpection("The alternative hypothesis file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
+            }
+            if (_settings_window.getModelType() == Parameters.ModelType.BERNOULLI && _settings_window.getConditionalType() == Parameters.ConditionalType.TOTALCASES) {
+                int eventProbNumerator = Integer.parseInt(_eventProbabiltyNumerator.getText().trim());
+                int eventProbDenominator = Integer.parseInt(_eventProbabiltyDenominator.getText().trim());
+                if (eventProbNumerator == 0 || eventProbDenominator == 0 || eventProbNumerator >= eventProbDenominator) {
+                    throw new AdvFeaturesExpection("Please specify an event probabilty that is between zero and one.", FocusedTabSet.ANALYSIS,(Component) _eventProbabiltyNumerator);
+                }
             }
         }
     }
@@ -547,9 +558,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         Parameters.ScanType scanType = _settings_window.getScanType();
         Parameters.ModelType eModelType = _settings_window.getModelType();
 
-        boolean bEnableGroup = scanType == Parameters.ScanType.TREEONLY && 
-                               (eModelType == Parameters.ModelType.POISSON || 
-                                (eModelType == Parameters.ModelType.BERNOULLI && _settings_window.getConditionalType() == Parameters.ConditionalType.UNCONDITIONAL));
+        boolean bEnableGroup = scanType == Parameters.ScanType.TREEONLY && (eModelType == Parameters.ModelType.POISSON || eModelType == Parameters.ModelType.BERNOULLI);
         _powerEvaluationsGroup.setEnabled(bEnableGroup);
         _performPowerEvalautions.setEnabled(bEnableGroup);
         _partOfRegularAnalysis.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
@@ -560,7 +569,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             default:
         }                
         _powerEvaluationWithSpecifiedCases.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected() && 
-                                                      eModelType == Parameters.ModelType.POISSON &&
+                                                      (eModelType == Parameters.ModelType.POISSON || eModelType == Parameters.ModelType.BERNOULLI) &&
                                                       _settings_window.getConditionalType() == Parameters.ConditionalType.TOTALCASES);        
         if (_powerEvaluationsGroup.isEnabled() && _powerEvaluationWithSpecifiedCases.isSelected() && !_powerEvaluationWithSpecifiedCases.isEnabled())
             _powerEvaluationWithCaseFile.setSelected(true);            
@@ -571,6 +580,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _alternativeHypothesisFilenameButton.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
         _numberPowerReplicationsLabel.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
         _numberPowerReplications.setEnabled(bEnableGroup && _performPowerEvalautions.isSelected());
+        
+        boolean enableEvent = eModelType == Parameters.ModelType.BERNOULLI && _settings_window.getConditionalType() == Parameters.ConditionalType.TOTALCASES;
+        _eventProbabilityLabel.setEnabled(_performPowerEvalautions.isSelected() && enableEvent);
+        _eventProbabiltyNumerator.setEnabled(_performPowerEvalautions.isSelected() && enableEvent);
+        _eventProbabilityLabel2.setEnabled(_performPowerEvalautions.isSelected() && enableEvent);
+        _eventProbabiltyDenominator.setEnabled(_performPowerEvalautions.isSelected() && enableEvent);
     }
 
     /**
@@ -616,6 +631,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _alternativeHypothesisFilenameLabel = new javax.swing.JLabel();
         _alternativeHypothesisFilename = new javax.swing.JTextField();
         _alternativeHypothesisFilenameButton = new javax.swing.JButton();
+        _eventProbabilityLabel = new javax.swing.JLabel();
+        _eventProbabiltyNumerator = new javax.swing.JTextField();
+        _eventProbabilityLabel2 = new javax.swing.JLabel();
+        _eventProbabiltyDenominator = new javax.swing.JTextField();
         _advanced_output_tab = new javax.swing.JPanel();
         _log_likelihood_ratios_group = new javax.swing.JPanel();
         _reportLLRResultsAsCsvTable = new javax.swing.JCheckBox();
@@ -674,7 +693,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_cutFileImportButton)
                     .addComponent(_cutFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(257, Short.MAX_VALUE))
+                .addContainerGap(261, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced Input", _advanced_input_tab);
@@ -857,7 +876,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(133, Short.MAX_VALUE))
+                .addContainerGap(137, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _advanced_temporal_window_tab);
@@ -918,7 +937,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advanced_inferenece_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(248, Short.MAX_VALUE))
+                .addContainerGap(252, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _advanced_inferenece_tab);
@@ -1026,6 +1045,46 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _eventProbabilityLabel.setText("Case Probability:");
+
+        _eventProbabiltyNumerator.setText("1");
+        _eventProbabiltyNumerator.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_eventProbabiltyNumerator.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _eventProbabiltyNumerator.setText("1");
+            }
+        });
+        _eventProbabiltyNumerator.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_eventProbabiltyNumerator, e, 6);
+            }
+        });
+        _eventProbabiltyNumerator.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _eventProbabilityLabel2.setText("/");
+
+        _eventProbabiltyDenominator.setText("2");
+        _eventProbabiltyDenominator.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_eventProbabiltyDenominator.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _eventProbabiltyDenominator.setText("2");
+            }
+        });
+        _eventProbabiltyDenominator.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_eventProbabiltyDenominator, e, 6);
+            }
+        });
+        _eventProbabiltyDenominator.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
         javax.swing.GroupLayout _powerEvaluationsGroupLayout = new javax.swing.GroupLayout(_powerEvaluationsGroup);
         _powerEvaluationsGroup.setLayout(_powerEvaluationsGroupLayout);
         _powerEvaluationsGroupLayout.setHorizontalGroup(
@@ -1041,17 +1100,27 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_totalPowerCases, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_powerEvaluationWithSpecifiedCasesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(_powerEvaluationWithSpecifiedCasesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE))
                     .addComponent(_alternativeHypothesisFilenameLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
-                        .addComponent(_numberPowerReplicationsLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_numberPowerReplications, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 231, Short.MAX_VALUE))
                     .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
                         .addComponent(_alternativeHypothesisFilename)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_alternativeHypothesisFilenameButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(_alternativeHypothesisFilenameButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                        .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                                .addComponent(_eventProbabilityLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_eventProbabiltyNumerator, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_eventProbabilityLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_eventProbabiltyDenominator, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
+                                .addComponent(_numberPowerReplicationsLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_numberPowerReplications, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         _powerEvaluationsGroupLayout.setVerticalGroup(
@@ -1069,6 +1138,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_powerEvaluationWithSpecifiedCasesLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_eventProbabilityLabel)
+                    .addComponent(_eventProbabiltyNumerator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_eventProbabilityLabel2)
+                    .addComponent(_eventProbabiltyDenominator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_numberPowerReplicationsLabel)
                     .addComponent(_numberPowerReplications, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -1077,7 +1152,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_alternativeHypothesisFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_alternativeHypothesisFilenameButton))
-                .addGap(0, 90, Short.MAX_VALUE))
+                .addContainerGap(90, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout _advanced_power_evaluation_tabLayout = new javax.swing.GroupLayout(_advanced_power_evaluation_tab);
@@ -1091,10 +1166,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         );
         _advanced_power_evaluation_tabLayout.setVerticalGroup(
             _advanced_power_evaluation_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_advanced_power_evaluation_tabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(_powerEvaluationsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Power Evaluation", _advanced_power_evaluation_tab);
@@ -1230,7 +1302,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_report_critical_values_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(91, Short.MAX_VALUE))
+                .addContainerGap(95, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
@@ -1256,7 +1328,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advanced_adjustments_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_perform_dayofweek_adjustments)
-                .addContainerGap(286, Short.MAX_VALUE))
+                .addContainerGap(290, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Adjustments", _advanced_adjustments_tab);
@@ -1290,7 +1362,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -1319,6 +1391,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JButton _cutFileImportButton;
     private javax.swing.JLabel _cutFileLabel;
     public javax.swing.JTextField _cutFileTextField;
+    private javax.swing.JLabel _eventProbabilityLabel;
+    private javax.swing.JLabel _eventProbabilityLabel2;
+    private javax.swing.JTextField _eventProbabiltyDenominator;
+    private javax.swing.JTextField _eventProbabiltyNumerator;
     private javax.swing.JLabel _labelMonteCarloReplications;
     private javax.swing.JPanel _log_likelihood_ratios_group;
     private javax.swing.JTextField _maxTemporalClusterSizeTextField;

@@ -12,9 +12,6 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
                                                                      bool multiparents,
                                                                      long lInitialSeed)
                                   : AbstractRandomizer(parameters, multiparents, lInitialSeed), _randomizer(randomizer), _alternative_adjustments(adjustments) {
-    // Not implemented for this model yet.
-    if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES)
-        throw prg_error("AlternativeHypothesisRandomizater is not implemented for the conditional Bernoulli model.", "AlternativeHypothesisRandomizater()");
     if (Parameters::isTemporalScanType(_parameters.getScanType()))
         throw prg_error("AlternativeHypothesisRandomizater is not implemented for the temporal scan types.", "AlternativeHypothesisRandomizater()");
 
@@ -29,19 +26,23 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
         // apply adjustments
         _alternative_adjustments.apply(_nodes_IntN_C);
         if (_parameters.getConditionalType() == Parameters::TOTALCASES) {
-        // now re-calibrate expected counts given adjustments
-        double newTotalN=0.0;
-        for(RelativeRiskAdjustmentHandler::NodesExpectedContainer_t::const_iterator itr=_nodes_IntN_C.begin(); itr != _nodes_IntN_C.end(); ++itr) {
-            newTotalN = std::accumulate(itr->begin(), itr->end(), newTotalN);
-        }
-        double adjustN = static_cast<double>(totalC)/newTotalN;
-        for(RelativeRiskAdjustmentHandler::NodesExpectedContainer_t::iterator itr=_nodes_IntN_C.begin(); itr != _nodes_IntN_C.end(); ++itr) {
-            std::transform(itr->begin(), itr->end(), itr->begin(), std::bind1st(std::multiplies<double>(), adjustN));
+            // now re-calibrate expected counts given adjustments
+            double newTotalN=0.0;
+            for(RelativeRiskAdjustmentHandler::NodesExpectedContainer_t::const_iterator itr=_nodes_IntN_C.begin(); itr != _nodes_IntN_C.end(); ++itr) {
+                newTotalN = std::accumulate(itr->begin(), itr->end(), newTotalN);
+            }
+            double adjustN = static_cast<double>(totalC)/newTotalN;
+            for(RelativeRiskAdjustmentHandler::NodesExpectedContainer_t::iterator itr=_nodes_IntN_C.begin(); itr != _nodes_IntN_C.end(); ++itr) {
+                std::transform(itr->begin(), itr->end(), itr->begin(), std::bind1st(std::multiplies<double>(), adjustN));
             }
         }
         _nodes_proxy.reset(new AlternativeExpectedNodesProxy(_nodes_IntN_C));
     } else if  (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
         _nodes_proxy.reset(new AlternativeProbabilityNodesProxy(treeNodes, _alternative_adjustments, _parameters.getProbability()));
+    } else if  (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES) {
+        /* We won't actually use this NodesProxy instance. The ConditionalBernoulliAlternativeHypothesisRandomizer class will
+           contain two different instances of NodesProxy - one for alternative hypothesis nodes, the other for the remainding nodes. */
+        _nodes_proxy.reset(new NodesProxy(treeNodes));
     }
 }
 

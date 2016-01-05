@@ -54,6 +54,7 @@ class Parameters {
                         POWER_EVALUATION_TOTALCASES,
                         POWER_EVALUATIONS_REPLICA,
                         POWER_EVALUATIONS_FILE,
+                        POWER_BASELINE_PROBABILITY,
                         /* power simulations */
                         READ_SIMULATIONS,
                         INPUT_SIM_FILE,
@@ -198,6 +199,7 @@ class Parameters {
     int                                 _power_evaluation_totalcases;
     unsigned int                        _power_replica; /** number of replicas in power step  of power evaluation */
     std::string                         _power_alt_hypothesis_filename;
+    ratio_t                             _power_baseline_probablility_ratio;
     bool                                _dayofweek_adjustment;
     bool                                _report_attributable_risk;
     unsigned int                        _attributable_risk_exposed;
@@ -254,6 +256,8 @@ class Parameters {
     int                                 getPowerEvaluationTotalCases() const {return _power_evaluation_totalcases;}
     PowerEvaluationType                 getPowerEvaluationType() const {return _power_evaluation_type;}
     unsigned int                        getPowerEvaluationReplications() const {return _power_replica;}
+    double                              getPowerBaselineProbability() const {return static_cast<double>(_power_baseline_probablility_ratio.first)/static_cast<double>(_power_baseline_probablility_ratio.second);}
+    ratio_t                             getPowerBaselineProbabilityRatio() const {return _power_baseline_probablility_ratio;}
     double                              getProbability() const {return static_cast<double>(_probablility_ratio.first)/static_cast<double>(_probablility_ratio.second);}
     ratio_t                             getProbabilityRatio() const {return _probablility_ratio;}
     long                                getRandomizationSeed() const {return _randomizationSeed;}
@@ -309,6 +313,7 @@ class Parameters {
     void                                setPowerEvaluationAltHypothesisFilename(const char * s, bool bCorrectForRelativePath=false);
     void                                setPowerEvaluationTotalCases(int i) {_power_evaluation_totalcases = i;}
     void                                setPowerEvaluationType(PowerEvaluationType e) {_power_evaluation_type = e;}
+    void                                setPowerBaselineProbabilityRatio(ratio_t r) {_power_baseline_probablility_ratio = r;}
     void                                setPrintColumnHeaders(bool b) {_printColumnHeaders=b;}
     void                                setProbabilityRatio(ratio_t r) {_probablility_ratio = r;}
     void                                setRandomizationSeed(long lSeed) {_randomizationSeed = lSeed;}
