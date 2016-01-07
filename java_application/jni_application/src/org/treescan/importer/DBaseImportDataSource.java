@@ -13,15 +13,19 @@ import com.linuxense.javadbf.DBFField;
 import com.linuxense.javadbf.DBFReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DBaseImportDataSource implements ImportDataSource {
 
     private final File _sourceFile;
+    InputStream _inputStream=null;
     private final DBFReader _reader;
     private int _currentRowNumber = 0;
     private boolean _formatDates;
@@ -33,8 +37,8 @@ public class DBaseImportDataSource implements ImportDataSource {
         _sourceFile = file;
         _formatDates = formatDates;
         try {
-            InputStream inputStream = new FileInputStream(_sourceFile);
-            _reader = new DBFReader(inputStream);
+            _inputStream = new FileInputStream(_sourceFile);
+            _reader = new DBFReader(_inputStream);
             for (int i=0; i < _reader.getFieldCount(); ++i) {
                 String name = _reader.getField(i).getName();
                 _column_names.add(name.isEmpty() ? ("Column " + (i + 1)) : name);
@@ -44,6 +48,14 @@ public class DBaseImportDataSource implements ImportDataSource {
         }
     }
 
+    public void close() {        
+        try {
+            if (_inputStream != null) {_inputStream.close(); _inputStream=null;}
+        } catch (IOException ex) {
+            Logger.getLogger(XLSImportDataSource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }   
+    
     /**
      * Returns number of records in file.
      */

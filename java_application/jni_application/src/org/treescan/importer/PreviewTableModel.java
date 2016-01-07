@@ -31,6 +31,10 @@ public class PreviewTableModel extends AbstractTableModel {
         }        
     }
 
+    public void close() {
+        _data_source.close();
+    }
+    
     /** Returns the number of columns in table. */
     public int getColumnCount() {
         return _maxFieldCount;

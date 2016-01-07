@@ -510,10 +510,12 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.CSV) {
                     CSVImportDataSource source = new CSVImportDataSource(file, _input_source_settings.getFirstRowHeader(), '\n', _input_source_settings.getDelimiter().charAt(0), _input_source_settings.getGroup().charAt(0), _input_source_settings.getSkiplines());
                     names = source.getColumnNames();
+                    source.close();
                 } else if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel97_2003 ||
                            _input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
                     XLSImportDataSource source = new XLSImportDataSource(file, true);
                     names = source.getColumnNames();
+                    source.close();
                 }
                 
                 for (int i=0; names != null && i < names.length; ++i) {
@@ -570,6 +572,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     
     /** Calls appropriate preparation methods then shows panel. */
     private void makeActivePanel(String targetCardName) throws Exception {
+        if (_preview_table_model != null) { _preview_table_model.close(); _preview_table_model = null; }
+        
         if (targetCardName.equals(_source_settings_cardname)) {
             prepFileSourceOptionsPanel();
             bringPanelToFront(targetCardName, _source_settings_buttons_cardname);
@@ -714,12 +718,15 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         //create the table mapping_model
         File file = new File(getSourceFilename());
         if (file.exists()) {
+            if (_preview_table_model != null) {_preview_table_model.close(); _preview_table_model=null;}
             if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel97_2003 ||
                        _input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
-                _preview_table_model = new PreviewTableModel(new XLSImportDataSource(new File(getSourceFilename()), true));
+                ImportDataSource source = new XLSImportDataSource(new File(getSourceFilename()), true);
+                _preview_table_model = new PreviewTableModel(source);
             } else {
                 int skipRows = Integer.parseInt(_ignoreRowsTextField.getText());
-                _preview_table_model = new PreviewTableModel(new CSVImportDataSource(file, _firstRowColumnHeadersCheckBox.isSelected(), '\n', getColumnDelimiter(), getGroupMarker(), skipRows));
+                ImportDataSource source = new CSVImportDataSource(file, _firstRowColumnHeadersCheckBox.isSelected(), '\n', getColumnDelimiter(), getGroupMarker(), skipRows);
+                _preview_table_model = new PreviewTableModel(source);
             }
         }
         //now assign mapping_model to table object
@@ -979,6 +986,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     _main_content_panel.add(_outputSettingsPanel, _output_settings_cardname);
                 }
                 makeActivePanel(_source_settings_cardname);
+            } else {
+                if (_preview_table_model != null) {
+                    _preview_table_model.close();
+                    _preview_table_model = null;
+                }                
             }
             getRootPane().setDefaultButton( acceptButton );
             _source_filename.requestFocusInWindow();
@@ -1874,6 +1886,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         private WaitCursor waitCursor = new WaitCursor(FileSourceWizard.this);
         private FileImporter _importer;
+        private ImportDataSource _source=null;
 
         @Override
         public Void doInBackground() {
@@ -1886,7 +1899,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 _progressBar.setVisible(true);
                 _progressBar.setValue(0);
                 VariableMappingTableModel model = (VariableMappingTableModel) _mapping_table.getModel();
-                _importer = new FileImporter(getImportSource(), model._static_variables, _destinationFile, _progressBar);
+                _source = getImportSource();
+                _importer = new FileImporter(_source, model._static_variables, _destinationFile, _progressBar);
                 _importer.importFile();
                 if (!_importer.getCancelled()) {
                     _executed_import = true;
@@ -1908,6 +1922,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             } catch (Throwable t) {
                 new ExceptionDialog(FileSourceWizard.this, t).setVisible(true);
             } finally {
+                if (_source != null) _source.close();
                 cancelButton.removeActionListener(this);
                 cancelButton.setEnabled(false);
                 previousButtonOutSettings.setEnabled(true);

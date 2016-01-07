@@ -124,7 +124,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 case CSV :
                 default : source = new CSVImportDataSource(new File(filename), iss.getFirstRowHeader(), '\n', iss.getDelimiter().charAt(0), iss.getGroup().charAt(0), iss.getSkiplines());
             }
-            return source.getColumnNames().length;
+            int num_columns = source.getColumnNames().length;
+            source.close();
+            return num_columns;
         } catch (Exception e) {}
         return 0;
     }     

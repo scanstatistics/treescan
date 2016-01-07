@@ -4,6 +4,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.poi.hssf.record.RecordFormatException;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
@@ -29,15 +31,17 @@ public class XLSImportDataSource implements ImportDataSource {
     private int _sheet_index = 0;
     private ArrayList<Object> _column_names = new ArrayList<Object>();
     private boolean _hasHeader=false;
+    private InputStream _input_stream=null;
     
     public XLSImportDataSource(File file, boolean hasHeader) {
         _current_row = 0;
         _hasHeader = hasHeader;
         try {
+            _input_stream = new FileInputStream(file);
             if (FileAccess.getExtension(file).equals("xlsx"))
-                _workbook = new XSSFWorkbook(new FileInputStream(file));
+                _workbook = new XSSFWorkbook(_input_stream);
             else
-                _workbook = new HSSFWorkbook(new FileInputStream(file));
+                _workbook = new HSSFWorkbook(_input_stream);
         } catch (RecordFormatException e) {
             throw new RuntimeException(e);
         } catch (FileNotFoundException e) {
@@ -72,9 +76,12 @@ public class XLSImportDataSource implements ImportDataSource {
         }
     }
 
-    public void close() throws IOException {
-        //does nothing because the HSSF lib does not need the file
-        //after constructing the workbook so I close it right away
+    public void close() {        
+        try {
+            if (_input_stream != null) {_input_stream.close(); _input_stream=null;}
+        } catch (IOException ex) {
+            Logger.getLogger(XLSImportDataSource.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /* Sets what sheet to read from. */

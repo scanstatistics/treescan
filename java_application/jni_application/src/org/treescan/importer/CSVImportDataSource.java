@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * CSVImportDataSource acts as a data source for the Importer by reading
@@ -16,7 +18,7 @@ import java.util.ArrayList;
  */
 public class CSVImportDataSource implements ImportDataSource {
     protected File _sourceFile;
-    protected InputStream _inputStream;
+    protected InputStream _inputStream=null;
     protected char _rowDelimiter='\n';
     protected char _colDelimiter=',';
     protected char _groupDelimiter='"';
@@ -57,6 +59,14 @@ public class CSVImportDataSource implements ImportDataSource {
         }
     }
 
+    public void close() {        
+        try {
+            if (_inputStream != null) {_inputStream.close(); _inputStream=null;}
+        } catch (IOException ex) {
+            Logger.getLogger(XLSImportDataSource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     /** 
      * @return number of records in file
      */

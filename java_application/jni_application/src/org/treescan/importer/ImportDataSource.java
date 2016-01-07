@@ -30,4 +30,6 @@ public interface ImportDataSource {
     public int getNumRecords();
 
     public Object[] readRow();
+    
+    public void close();
 }
