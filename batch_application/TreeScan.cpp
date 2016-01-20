@@ -101,9 +101,9 @@ int main(int argc, char* argv[]) {
         }
 
         /* hidden options */
-        po::options_description hidden("Hidden options", 200);
-        hidden.add_options()("randomization-seed", po::value<std::string>(), "randomization seed (0 < Seed < 2147483647)")
-                            ("random-randomization-seed", po::value<std::string>(), "randomly generate seed");
+        //po::options_description hidden("Hidden options", 200);
+        //hidden.add_options()("randomization-seed", po::value<std::string>(), "randomization seed (0 < Seed < 2147483647)")
+        //                    ("random-randomization-seed", po::value<std::string>(), "randomly generate seed");
 
         /* positional options */
         po::positional_options_description pd; 
@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
         parameterOptions.getOptions(opt_descriptions);
         for (size_t t=0; t < opt_descriptions.size(); ++t)
             cmdline_options.add(opt_descriptions[t]->get<0>());
-        cmdline_options.add(application).add(hidden);
+        cmdline_options.add(application); //.add(hidden);
         // display help if no additional arguments specified 
         if (argc < 2) {
             usage_message(argv[0], application, parameterOptions, opt_descriptions, false, console);
