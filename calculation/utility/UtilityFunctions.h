@@ -11,13 +11,26 @@ using namespace TreeScan;
 
 namespace TreeScan {
     template <class T>
-    T& cumulative(T& t) {
+    T& cumulative_backward(T& t) {
         typename T::reverse_iterator from(t.end()), until(t.begin());
         for (; from != until; ++from) {
             typename T::reverse_iterator prior(from + 1);
             if (prior != until) {
                 *prior += *from;
             }
+        }
+        return t;
+    }
+
+    template <class T>
+    T& cumulative_forward(T& t) {
+        typename T::iterator from(t.begin()), until(t.end());
+        for (; from != until;) {
+            typename T::iterator next(from + 1);
+            if (next != until) {
+                *next += *from;
+            }
+            ++from;
         }
         return t;
     }

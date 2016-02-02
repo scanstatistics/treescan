@@ -21,6 +21,7 @@
 #include "AlternativeHypothesisRandomizer.h"
 #include "RelativeRiskAdjustment.h"
 #include "BernoulliRandomizer.h"
+#include "TemporalRandomizer.h"
 
 /* Calculates the attributable risk per person for cut. */
 double CutStructure::getAttributableRisk(const ScanRunner& scanner) {
@@ -423,7 +424,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
 
     bool bValid=true, bEmpty=true;
     ScanRunner::Index_t nodeIndex;
-    const long nodeIdIdx=0, uAdjustmentIndex=1;
+    const long nodeIdIdx=0, uAdjustmentIndex=1, startidx=2, endidx=3;
     boost::dynamic_bitset<> nodeSet;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::POWER_EVALUATIONS_FILE)));
     bool testMultipleNodeRecords(_parameters.getModelType() == Parameters::BERNOULLI);
@@ -485,9 +486,27 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
                 continue;
             }
         }
+        DataTimeRange::index_t start=0, end=0;
+        if (_parameters.getScanType() == Parameters::TIMEONLY || _parameters.getScanType() == Parameters::TREETIME) {
+            if (!string_to_numeric_type<DataTimeRange::index_t>(dataSource->getValueAt(startidx).c_str(), start) || _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(start).first == false) {
+                bValid = false;
+                _print.Printf("Error: Record %ld in alternative hypothesis file references an invalid start range index for node '%s'.\n"
+                              "Value must be an integer within the defined data time range.", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
+                continue;
+            }
+            if (!string_to_numeric_type<DataTimeRange::index_t>(dataSource->getValueAt(endidx).c_str(), end) || _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(end).first == false) {
+                bValid = false;
+                _print.Printf("Error: Record %ld in alternative hypothesis file references an invalid end range index for node '%s'.\n"
+                              "Value must be an integer within the defined data time range.", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
+                continue;
+            }
+            // translate index to zero index
+            start = start + _zero_translation_additive;
+            end = end + _zero_translation_additive;
+        }
 
         size_t iNumWords = dataSource->getNumValues();
-        if (iNumWords > 2) {
+        if (iNumWords > (_parameters.getScanType() == Parameters::TREEONLY ? 2 : 4)) {
             _print.Printf("Error: Record %i of alternative hypothesis file contains extra columns of data.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
             bValid = false;
             continue;
@@ -504,7 +523,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
                     nodeSet.set(nodeIdx);
                 }
             }
-            adjustments->add(nodeIdx, alternative_hypothesis);
+            adjustments->add(nodeIdx, alternative_hypothesis, start, end);
         }
     }
 
@@ -907,6 +926,7 @@ bool ScanRunner::runPowerEvaluations() {
         _print.Printf("\nDoing the alternative replications for power set %d\n", BasePrint::P_STDOUT, t+1);
         boost::shared_ptr<AbstractRandomizer> core_randomizer;
         if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES) {
+            /* Randomization is specialized for the conditional Bernoulli and power evaluations. */
             // calculate the number of individuals in the nodes with an excess risk
             unsigned int n1=0;
             const AdjustmentsContainer_t& adj = riskAdjustments[t]->get();
@@ -938,14 +958,18 @@ bool ScanRunner::runPowerEvaluations() {
                                        "Current values are: n1 = %d, p1 = %g, N = %d, p0 = %g\n",
                                        t+1, X, getTotalC(), X, getTotalC(), n1, p1, static_cast<unsigned int>(N), p0);
             }
-
             core_randomizer.reset(new ConditionalBernoulliAlternativeHypothesisRandomizer(getNodes(), *riskAdjustments[t],
                                                                                           getTotalC(), getTotalControls(),
                                                                                           _parameters.getPowerBaselineProbability(), 
                                                                                           riskAdjustments[t]->get().begin()->second.begin()->getRelativeRisk()/*risk is required to be same for all nodes*/,
                                                                                           n1, _parameters, getMultiParentNodesExist()));
-        } else
+        } else if (Parameters::isTemporalScanType(_parameters.getScanType())) {
+            /* Randomization is specialized for the tree-time/time-only scans and power evaluations. */
+            core_randomizer.reset(new TemporalAlternativeHypothesisRandomizer(*this));
+        } else {
+            /* Use the same randomizer as the null hypothesis randomization. */
             core_randomizer.reset(AbstractRandomizer::getNewRandomizer(*this));
+        }
         boost::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, *riskAdjustments[t], _parameters, _TotalC, _has_multi_parent_nodes));
         if (_parameters.isWritingSimulationData()) {
             if (t == 0 && _parameters.getCriticalValuesType() == Parameters::CV_POWER_VALUES)

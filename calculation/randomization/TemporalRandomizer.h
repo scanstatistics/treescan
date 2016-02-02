@@ -48,5 +48,17 @@ class ConditionalTemporalRandomizer : public TemporalRandomizer, public Abstract
         virtual ~ConditionalTemporalRandomizer() {}
         virtual ConditionalTemporalRandomizer * clone() const {return new ConditionalTemporalRandomizer(*this);}
 };
+
+/** Tree temporal randomizer for alternative hypothesis in power estimations. */
+class TemporalAlternativeHypothesisRandomizer : public TemporalRandomizer {
+protected:
+    virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
+
+public:
+    TemporalAlternativeHypothesisRandomizer(const ScanRunner& scanner, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+    virtual ~TemporalAlternativeHypothesisRandomizer() {}
+
+    virtual TemporalAlternativeHypothesisRandomizer * clone() const {return new TemporalAlternativeHypothesisRandomizer(*this);}
+};
 //******************************************************************************
 #endif

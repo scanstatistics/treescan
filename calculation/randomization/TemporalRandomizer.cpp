@@ -3,6 +3,10 @@
 #pragma hdrstop
 //******************************************************************************
 #include "TemporalRandomizer.h"
+#include <boost/random.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
+
+using boost::mt19937;
 
 /* constructor */
 TemporalRandomizer::TemporalRandomizer(const ScanRunner& scanner, long lInitialSeed)
@@ -186,4 +190,92 @@ void ConditionalTemporalRandomizer::AssignRandomizedData(const AbstractNodesProx
     }
     if (TotalSimC != _total_C) // sanity check
         throw prg_error("Number of simulated cases does not equal total cases: %d != %d.", "ConditionalTemporalRandomizer::AssignRandomizedData(...)", TotalSimC, _total_C);
+}
+
+//////////////////////////////// TemporalAlternativeHypothesisRandomizer //////////////////////////////////////////
+
+/* constructor */
+TemporalAlternativeHypothesisRandomizer::TemporalAlternativeHypothesisRandomizer(const ScanRunner& scanner, long lInitialSeed) : TemporalRandomizer(scanner, lInitialSeed) {}
+
+/** Creates randomized under the null hypothesis for Poisson model, assigning data to DataSet objects structures.
+    Random number generator seed initialized based upon 'iSimulation' index. */
+int TemporalAlternativeHypothesisRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
+    setSeed(iSimulation);
+    // clear simulation data
+    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
+
+    // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
+    const DataTimeRange& range = _time_range_sets.getDataTimeRangeSets().front(); // TODO: for now, only take the first
+    DataTimeRange zeroRange(range.getStart() + _zero_translation_additive, range.getEnd() + _zero_translation_additive);
+    int TotalSimC = 0;
+
+    mt19937 generator(iSimulation);
+    if (_parameters.isPerformingDayOfWeekAdjustment()) {
+        throw prg_error("TemporalAlternativeHypothesisRandomizer is not implemented for the day of week adjustment.", "randomize()");
+
+        /* NOTE: Below was my best guess at this algorithm for the day of week adjustment. Martin said it wasn't correct since the process of aligning
+                 the randomized index to a day of week index did not fairly work when those segments could not all be equal in length. We would have to
+                 create separate measure arrays for each day of week as a pre-step. Martin decided to hold-off on this effort. */
+
+        ///* Iterate through all nodes, randomizing the location of cases within each nodes temporal window - but keeps cases on same day of week (Monday, Tuesday, etc.). */
+        //for (size_t i=0; i < treeNodes.size(); ++i) {
+        //    SimulationNode& simNode(treeSimNodes[i]);
+        //    const NodeStructure::CountContainer_t & counts = treeNodes.getIntC_C(i);
+        //    /* Iterate through all temporal indexes and redistribute the cases within same day of week. */
+        //    for (size_t idx=0; idx < counts.size(); ++idx) {
+        //        NodeStructure::count_t nodeC = counts[idx] - (idx + 1 == counts.size() ? 0 : counts[idx + 1]);
+        //        /* Are there cases in this interval? */
+        //        if (nodeC) {
+        //            /* Get the collection of temporal indexes for day of week. that idx belongs to. */
+        //            const ScanRunner::TimeIntervalContainer_t dowIndexes = _day_of_week_indexes[idx % 7];
+        //            /* Get adjusted values for this node -- this is the measure array we adjusted from the alternative hypothesis file. */
+        //            const NodeStructure::ExpectedContainer_t& measure = treeNodes.getIntN_C(i);
+        //            /* Create a distribution from zero to cumulative maximum in elevated risk array -- for current node and current day of week (idx % 7). */
+        //            boost::random::uniform_real_distribution<> distribution(0.0, measure[std::min(dowIndexes.back(),static_cast<unsigned int>(zeroRange.getEnd()))]);
+        //            /* For each case, distribute to other same day of week - by using the adjusted measure array. */
+        //            for (NodeStructure::count_t c=0; c < nodeC; ++c) {
+        //                /* Randomly generate a value between zero and cumulative maximum, then find where that value fails in measure array. */
+        //                NodeStructure::ExpectedContainer_t::const_iterator itr = std::upper_bound(measure.begin(), measure.end(), distribution(generator));
+        //                DataTimeRange::index_t idx = std::max(0, (itr == measure.end() ? static_cast<DataTimeRange::index_t>(measure.size()) : static_cast<DataTimeRange::index_t>(std::distance(measure.begin(), itr))) - 1);
+        //                /* Now we know where the random value fails in the context of entire data time range, but need to convert that value to the day of week indexes. */
+        //                ScanRunner::TimeIntervalContainer_t::const_iterator itrDOWIdx = std::upper_bound(dowIndexes.begin(), dowIndexes.end(), static_cast<unsigned int>(idx));
+        //                DataTimeRange::index_t idxDOW = std::max(0, (itrDOWIdx == dowIndexes.end() ? static_cast<DataTimeRange::index_t>(dowIndexes.size()) : static_cast<DataTimeRange::index_t>(std::distance(dowIndexes.begin(), itrDOWIdx))) - 1);
+        //                /* Now we can assign this randomized case and update total. */
+        //                ++(simNode.refIntC_C()[dowIndexes[idxDOW]]);
+        //                ++TotalSimC;
+        //            }
+        //        }
+        //    }
+        //}
+    } else {
+        /* Iterate through all the nodes and redistribute cases within the same node's intervals. */
+        for (size_t i=0; i < treeNodes.size(); ++i) {
+            NodeStructure::count_t nodeC = treeNodes.getIntC(i);
+            if (nodeC) { /* Are there cases in this node? */
+                SimulationNode& simNode(treeSimNodes[i]);
+                /* Get adjusted values for this node -- this is the measure array we adjusted from the alternative hypothesis file. */
+                const NodeStructure::ExpectedContainer_t& measure = treeNodes.getIntN_C(i);
+                /* Create a distribution from zero to cumulative maximum in elevated risk array -- for current node. */
+                boost::random::uniform_real_distribution<> distribution(0.0, measure.back());
+                /* For each case, distribute to other interval - by using the adjusted measure array. */
+                for (NodeStructure::count_t c=0; c < nodeC; ++c) {
+                    /* For each case, randomly generate a value between zero and cumulative maximum, then find where that value fails in measure array. */
+                    double rv = distribution(generator);
+                    NodeStructure::ExpectedContainer_t::const_iterator itr = std::upper_bound(measure.begin(), measure.end(), rv);
+                    DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(std::distance(measure.begin(), itr)) - 1;
+                    /* Now we can assign this randomized case and update total. */
+                    ++(simNode.refIntC_C()[idx]);
+                    ++TotalSimC;
+                }
+            }
+        }
+    }
+    // sanity check
+    if (TotalSimC != _total_C)
+        throw prg_error("Number of simulated cases does not equal total cases: %d != %d.", "TemporalAlternativeHypothesisRandomizer::randomize(...)", TotalSimC, _total_C);
+
+    // now set simulation data structures as cumulative
+    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::setCumulative));
+
+    return _total_C;
 }

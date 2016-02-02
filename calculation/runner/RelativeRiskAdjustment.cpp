@@ -111,6 +111,16 @@ void RelativeRiskAdjustmentHandler::add(size_t nodeId, double rr, DataTimeRange:
 
 void RelativeRiskAdjustmentHandler::apply(NodesExpectedContainer_t& nodeExpected) const {
     for (AdjustmentsContainer_t::const_iterator itr=_adjustments.begin(); itr != _adjustments.end(); ++itr) {
+        NodeStructure::ExpectedContainer_t& node_expected = nodeExpected.at(itr->first);
+        RelativeRiskContainer_t::const_iterator itrR = itr->second.begin(), itrRE = itr->second.end();
+        for (; itrR != itrRE; ++itrR) {
+            for (DataTimeRange::index_t t=itrR->getStartIdx(); t <= itrR->getEndIdx(); ++t) {
+                node_expected[t] *= itrR->getRelativeRisk();
+            }
+        }
+    }
+
+    /*for (AdjustmentsContainer_t::const_iterator itr=_adjustments.begin(); itr != _adjustments.end(); ++itr) {
         NodeStructure::ExpectedContainer_t::iterator itrB = nodeExpected.at(itr->first).begin(), itrE = nodeExpected.at(itr->first).end();
         for (; itrB != itrE; ++itrB) {
             RelativeRiskContainer_t::const_iterator itrR = itr->second.begin(), itrRE = itr->second.end();
@@ -119,7 +129,7 @@ void RelativeRiskAdjustmentHandler::apply(NodesExpectedContainer_t& nodeExpected
                 *itrB *= itrR->getRelativeRisk();
             }
         }
-    }
+    }*/
 }
 
 /* Gets the alternative hypothesis values as event probabilities. */

@@ -12,9 +12,6 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
                                                                      bool multiparents,
                                                                      long lInitialSeed)
                                   : AbstractRandomizer(parameters, multiparents, lInitialSeed), _randomizer(randomizer), _alternative_adjustments(adjustments) {
-    if (Parameters::isTemporalScanType(_parameters.getScanType()))
-        throw prg_error("AlternativeHypothesisRandomizater is not implemented for the temporal scan types.", "AlternativeHypothesisRandomizater()");
-
     _randomizer->_read_data = false;
     _randomizer->_write_data = false;
     if (_parameters.getModelType() == Parameters::POISSON) {
@@ -36,14 +33,33 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
                 std::transform(itr->begin(), itr->end(), itr->begin(), std::bind1st(std::multiplies<double>(), adjustN));
             }
         }
-        _nodes_proxy.reset(new AlternativeExpectedNodesProxy(_nodes_IntN_C));
+        _nodes_proxy.reset(new AlternativeExpectedNodesProxy(treeNodes, _nodes_IntN_C));
     } else if  (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
         _nodes_proxy.reset(new AlternativeProbabilityNodesProxy(treeNodes, _alternative_adjustments, _parameters.getProbability()));
     } else if  (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES) {
         /* We won't actually use this NodesProxy instance. The ConditionalBernoulliAlternativeHypothesisRandomizer class will
-           contain two different instances of NodesProxy - one for alternative hypothesis nodes, the other for the remainding nodes. */
+           contain two different instances of NodesProxy - one for alternative hypothesis nodes, the other for the null hypothesis nodes. */
         _nodes_proxy.reset(new NodesProxy(treeNodes));
-    }
+    } else if ((_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE) ||
+               (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES)) {
+        size_t daysInDataTimeRange = _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets();
+        for (size_t t=0; t < treeNodes.size(); ++t) {
+            _nodes_IntN_C.push_back(NodeStructure::ExpectedContainer_t());
+            // Assign one expected event to each node-time entry.
+            _nodes_IntN_C.back().resize(daysInDataTimeRange, 1.0);
+        }
+        // For each node-time entry, multiply with the relative risk.
+        _alternative_adjustments.apply(_nodes_IntN_C);
+        // Set cumulative
+        RelativeRiskAdjustmentHandler::NodesExpectedContainer_t::iterator itr=_nodes_IntN_C.begin();
+        for (; itr != _nodes_IntN_C.end(); ++itr) {
+            // Add zero to front -- so we have a lower limit when we're determining position during randomization.
+            itr->insert(itr->begin(), 0);
+            TreeScan::cumulative_forward<NodeStructure::ExpectedContainer_t>(*itr);
+        }
+        _nodes_proxy.reset(new AlternativeExpectedNodesProxy(treeNodes, _nodes_IntN_C));
+    } else
+        throw prg_exception("Unknown context for alternative hypothesis encountered.", "AlternativeHypothesisRandomizater()");
 }
 
 int AlternativeHypothesisRandomizater::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {

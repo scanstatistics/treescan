@@ -211,7 +211,9 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getOutputParameters(Setti
 ParametersPrint::SettingContainer_t & ParametersPrint::getPowerEvaluationsParameters(SettingContainer_t & settings) const {
     std::string buffer, buffer2;
     settings.clear();
-    if (_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI) {
+    if (_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI ||
+        (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES) ||
+        (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE)) {
         settings.push_back(std::make_pair("Perform Power Evaluations", (_parameters.getPerformPowerEvaluations() ? "Yes" : "No")));
         if (!_parameters.getPerformPowerEvaluations()) return settings;
         buffer = "Power Evaluation Type";

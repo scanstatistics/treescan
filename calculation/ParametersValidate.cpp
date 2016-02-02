@@ -304,8 +304,16 @@ bool ParametersValidate::ValidatePowerEvaluationParametersParameters(BasePrint &
     if (!_parameters.getPerformPowerEvaluations()) return true;
 
     bool bValid=true;
-    if (!(_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI)) {
-        PrintDirection.Printf("%s:\nThe power evaluation is only available for the Poisson and Bernoulli models.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+    if (!(_parameters.getModelType() == Parameters::POISSON ||
+          _parameters.getModelType() == Parameters::BERNOULLI ||
+          (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES) ||
+          (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE)
+         )) {
+        PrintDirection.Printf("%s:\nThe power evaluation is only available for the Poisson and Bernoulli models, Tree-Time scan conditioned on node and Time-Only scan.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        bValid = false;
+    }
+    if (Parameters::isTemporalScanType(_parameters.getScanType()) && _parameters.isPerformingDayOfWeekAdjustment()) {
+        PrintDirection.Printf("%s:\nThe day of week adjustment is not implemented for the power evaluation.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         bValid = false;
     }
     if (_parameters.getNumReplicationsRequested() < 999) {

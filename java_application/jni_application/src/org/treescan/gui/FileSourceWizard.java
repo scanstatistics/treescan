@@ -368,7 +368,10 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 break;
             case Power_Evaluations:
                 builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
-                builder.append("&lt;Node ID&gt;&#44;  &lt;Risk Adjustment&gt;"); break;
+                builder.append("&lt;Node ID&gt;&#44;  &lt;Risk Adjustment&gt;"); 
+                if (_startingscantype == Parameters.ScanType.TIMEONLY || _startingscantype == Parameters.ScanType.TREETIME) {
+                    builder.append("&#44; &lt;Start&gt;&#44;  &lt;End&gt;");                     
+                } break;
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
         }
         builder.append("&nbsp;&nbsp;</span>");
@@ -842,6 +845,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _import_variables.clear();
         _import_variables.add(new ImportVariable("Node ID", 0, true, null, null));
         _import_variables.add(new ImportVariable("Relative Risk", 1, true, null, null));
+        _import_variables.add(new ImportVariable("Start", 2, true, null, null));
+        _import_variables.add(new ImportVariable("End", 3, true, null, null));
     }
         
     /** Sets InputSourceSettings object from user selections in wizard. */
@@ -924,6 +929,13 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case Tree:
             case Cut:
             case Power_Evaluations:
+                /* start and end dates are only for temporal scans*/
+                _import_variables.get(2).setShowing(_displayVariablesComboBox.getSelectedIndex() == 6 /* Time-Only */ ||
+                                                    _displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */);
+                model.setShowing(_import_variables.get(2));
+                _import_variables.get(3).setShowing(_displayVariablesComboBox.getSelectedIndex() == 6 /* Time-Only */ ||
+                                                    _displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */);
+                model.setShowing(_import_variables.get(3));
             default:
                 for (ImportVariable variable : _import_variables) {
                     variable.setShowing(true);

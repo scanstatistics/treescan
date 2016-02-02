@@ -144,10 +144,10 @@ public:
     }
     void setCumulative() {
         if (_cumulative_status == NON_CUMULATIVE) {
-            TreeScan::cumulative(_IntC_C);
-            TreeScan::cumulative(_BrC_C);
-            TreeScan::cumulative(_IntN_C);
-            TreeScan::cumulative(_BrN_C);
+            TreeScan::cumulative_backward(_IntC_C);
+            TreeScan::cumulative_backward(_BrC_C);
+            TreeScan::cumulative_backward(_IntN_C);
+            TreeScan::cumulative_backward(_BrN_C);
         }
         _cumulative_status = CUMULATIVE;
     }

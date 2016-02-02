@@ -53,6 +53,8 @@ class MinimumMeasureList : public AbstractMeasureList {
         virtual ~MinimumMeasureList() {}
 
         virtual void add(int c, double n) {
+            assert(c >= 0);
+            if (c < 0) exit(1);
             if ((*_min_measure)[c] > n)
                 (*_min_measure)[c] = n;
         }
