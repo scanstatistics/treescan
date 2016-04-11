@@ -926,9 +926,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                                                     _displayVariablesComboBox.getSelectedIndex() == 6 /* Time-Only */);
                 model.setShowing(_import_variables.get(4));
                 break;
-            case Tree:
-            case Cut:
             case Power_Evaluations:
+                for (ImportVariable variable : _import_variables) {
+                    variable.setShowing(true);
+                    model.setShowing(variable);
+                }
                 /* start and end dates are only for temporal scans*/
                 _import_variables.get(2).setShowing(_displayVariablesComboBox.getSelectedIndex() == 6 /* Time-Only */ ||
                                                     _displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */);
@@ -936,6 +938,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 _import_variables.get(3).setShowing(_displayVariablesComboBox.getSelectedIndex() == 6 /* Time-Only */ ||
                                                     _displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */);
                 model.setShowing(_import_variables.get(3));
+                break;
+            case Tree:
+            case Cut: 
             default:
                 for (ImportVariable variable : _import_variables) {
                     variable.setShowing(true);
