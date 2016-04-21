@@ -103,7 +103,9 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         }
     }
 
-    if (!_scanRunner.getParameters().getPerformPowerEvaluations() || (_scanRunner.getParameters().getPerformPowerEvaluations() && _scanRunner.getParameters().getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
+    if (parameters.getSequentialScan() && static_cast<unsigned int>(_scanRunner.getTotalC()) > parameters.getSequentialMaximumSignal()) {
+        outfile << "Note: The sequential scan reached or exceeded the specified maximum cases." << std::endl << "      The sequential analysis is over." << std::endl;
+    } else if (!parameters.getPerformPowerEvaluations() || (parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         if (_scanRunner.getCuts().size() == 0 || !_scanRunner.reportableCut(*_scanRunner.getCuts()[0])) {
             outfile << "No cuts were found." << std::endl;
         } else {
@@ -266,38 +268,44 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
 
 /** Returns a string which is */
 std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buffer) const {
-    switch (_scanRunner.getParameters().getScanType()) {
+    const Parameters& parameters = _scanRunner.getParameters();
+    switch (parameters.getScanType()) {
         case Parameters::TREEONLY : {
             buffer = "Tree Only Scan";
-            switch (_scanRunner.getParameters().getConditionalType()) {
+            switch (parameters.getConditionalType()) {
                 case Parameters::UNCONDITIONAL : buffer += " with Unconditional"; break;
                 case Parameters::TOTALCASES : buffer += " with Conditional"; break;
                 case Parameters::NODE : break;
-                default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", _scanRunner.getParameters().getConditionalType());
+                default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", parameters.getConditionalType());
             }
-            switch (_scanRunner.getParameters().getModelType()) {
+            switch (parameters.getModelType()) {
                 case Parameters::POISSON : buffer += " Poisson Model"; break;
                 case Parameters::BERNOULLI : buffer += " Bernoulli Model";
                     if (_scanRunner.getParameters().getSelfControlDesign())
                         buffer += " (self-control design)";
                     break;
                 case Parameters::UNIFORM : break;
-                default: throw prg_error("Unknown nodel type (%d).", "getAnalysisSuccinctStatement()", _scanRunner.getParameters().getModelType());
+                default: throw prg_error("Unknown nodel type (%d).", "getAnalysisSuccinctStatement()", parameters.getModelType());
             }
         } break;
         case Parameters::TREETIME : 
             buffer = "Tree Temporal Scan";
-            switch (_scanRunner.getParameters().getConditionalType()) {
+            switch (parameters.getConditionalType()) {
                 case Parameters::NODE : buffer += " with Conditional Uniform Model"; break;
                 case Parameters::NODEANDTIME : buffer += " Conditioned on Node and Time"; break;
-                default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", _scanRunner.getParameters().getConditionalType());
+                default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", parameters.getConditionalType());
             } break;
-        case Parameters::TIMEONLY : buffer = "Time Only Scan";
-            switch (_scanRunner.getParameters().getConditionalType()) {
+        case Parameters::TIMEONLY : 
+            buffer = parameters.getSequentialScan() ? "Time Only Sequential Scan" : "Time Only Scan";
+            switch (parameters.getConditionalType()) {
                 case Parameters::TOTALCASES : buffer += " with Conditional Uniform Model"; break;
-                default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", _scanRunner.getParameters().getConditionalType());
+                default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", parameters.getConditionalType());
             } break;
-        default: throw prg_error("Unknown scan type (%d).", "getAnalysisSuccinctStatement()", _scanRunner.getParameters().getScanType());
+            if (parameters.getSequentialScan()) {
+                std::string temp;
+                buffer += printString(temp, ", %d out of %u cases observed.", _scanRunner.getTotalC(), parameters.getSequentialMaximumSignal());
+            }
+        default: throw prg_error("Unknown scan type (%d).", "getAnalysisSuccinctStatement()", parameters.getScanType());
     }
     return buffer;
 }
@@ -398,7 +406,9 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     }
     outfile << "</tbody></table></div>" << std::endl;
     outfile << "<div class=\"hr\"></div>" << std::endl;
-    if (!parameters.getPerformPowerEvaluations() || (parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
+    if (parameters.getSequentialScan() && static_cast<unsigned int>(_scanRunner.getTotalC()) > parameters.getSequentialMaximumSignal()) {
+        outfile << "<div class=\"warning\">Note: The sequential scan reached or exceeded the specified maximum cases. The sequential analysis is over.</div><div class=\"hr\"></div>";
+    } else if (!parameters.getPerformPowerEvaluations() || (parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         outfile << "<div id=\"cuts\">" << std::endl;
         if (_scanRunner.getCuts().size() == 0 || !_scanRunner.reportableCut(*_scanRunner.getCuts()[0])) {
             outfile << "<h3>No cuts were found.</h3>" << std::endl;

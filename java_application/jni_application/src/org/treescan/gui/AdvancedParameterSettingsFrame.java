@@ -2,6 +2,9 @@ package org.treescan.gui;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
@@ -15,6 +18,7 @@ import org.treescan.app.Parameters;
 import org.treescan.gui.utils.FileSelectionDialog;
 import org.treescan.gui.utils.Utils;
 import org.treescan.app.UnknownEnumException;
+import org.treescan.gui.utils.InputFileFilter;
 import org.treescan.importer.InputSourceSettings;
 
 public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
@@ -139,6 +143,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 50.0);
         bReturn &= (Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()) == 1);
         bReturn &= (Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()) == 2);        
+        // Sequential Scan tab
+        bReturn &= (_perform_sequential_scan.isSelected() == false);
+        bReturn &= _maximum_cases_signal.getText().equals("200");
+        bReturn &= _minimum_cases_signal.getText().equals("3");
+        bReturn &= _sequential_analysis_file.getText().equals("");
+        
         // Power Evaluations tab
         bReturn &= (_performPowerEvaluations.isSelected() == false);
         bReturn &= (_partOfRegularAnalysis.isSelected() == true);
@@ -197,6 +207,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 jTabbedPane1.addTab("Temporal Window", null, _advanced_temporal_window_tab, null);
                 jTabbedPane1.addTab("Adjustments", null, _advanced_adjustments_tab, null);                
                 jTabbedPane1.addTab("Inference", null, _advanced_inferenece_tab, null);
+                jTabbedPane1.addTab("Sequential Analysis", null, _sequential_analysis_tab, null);                
                 jTabbedPane1.addTab("Power Evaluation", null, _advanced_power_evaluation_tab, null);                
                 break;
             case INPUT:
@@ -242,6 +253,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setPowerBaselineProbabilityRatioNumerator(Integer.parseInt(_eventProbabiltyNumerator.getText()));
         parameters.setPowerBaselineProbabilityRatioDenominator(Integer.parseInt(this._eventProbabiltyDenominator.getText()));
         
+        // Seqential Analysis tab
+        parameters.setSequentialScan(_sequential_analysis_group.isEnabled() && _perform_sequential_scan.isSelected());
+        parameters.setSequentialMaximumSignal(Integer.parseInt(_maximum_cases_signal.getText()));
+        parameters.setSequentialMinimumSignal(Integer.parseInt(_minimum_cases_signal.getText()));
+        parameters.setSequentialFilename(_sequential_analysis_file.getText());
+        
         // Additional Output tab
         parameters.setGeneratingLLRResults(_reportLLRResultsAsCsvTable.isSelected());
         parameters.setReportCriticalValues(_reportCriticalValuesCheckBox.isSelected());
@@ -286,6 +303,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _minTemporalClusterSizeUnitsTextField.setText("2");
         // Adjustments tab
         _perform_dayofweek_adjustments.setSelected(false);
+        // Sequential Scan tab
+        _perform_sequential_scan.setSelected(false);
+        _maximum_cases_signal.setText("200");
+        _minimum_cases_signal.setText("3");
+        _sequential_analysis_file.setText("");        
         // Power Evaluations tab
         _performPowerEvaluations.setSelected(false);
         _partOfRegularAnalysis.setSelected(true);
@@ -323,6 +345,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _eventProbabiltyNumerator.setText(Integer.toString(parameters.getPowerBaselineProbabilityRatioNumerator()));
         _eventProbabiltyDenominator.setText(Integer.toString(parameters.getPowerBaselineProbabilityRatioDenominator()));
         
+        // Seqential Analysis tab
+        _perform_sequential_scan.setSelected(parameters.getSequentialScan());
+        _maximum_cases_signal.setText(Integer.toString(parameters.getSequentialMaximumSignal()));
+        _minimum_cases_signal.setText(Integer.toString(parameters.getSequentialMinimumSignal()));
+        _sequential_analysis_file.setText(parameters.getSequentialFilename());
+        
         // Additional Output tab
         _reportCriticalValuesCheckBox.setSelected(parameters.getReportCriticalValues());
         _reportLLRResultsAsCsvTable.setSelected(parameters.isGeneratingLLRResults());
@@ -330,6 +358,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _attributable_risk_exposed.setText(parameters.getAttributableRiskExposed() > 0 ? Integer.toString(parameters.getAttributableRiskExposed()) : "");
         
         enablePowerEvaluationsGroup();
+        enableSequentialAnalysisGroup();
     }
 
     /**
@@ -350,10 +379,30 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         CheckInputSettings();
         CheckInferenceSettings();
         CheckTemporalWindowSize();
+        CheckSequentialAnalysisSettings();
         CheckPowerEvaluationSettings();
         CheckAdditionalOutputOptions();
     }
 
+    /*
+     * Verifies that sequential scan settings are valid in the context of all parameter settings.
+     */   
+    private void CheckSequentialAnalysisSettings() {
+        if (_perform_sequential_scan.isEnabled() && _perform_sequential_scan.isSelected()) {            
+            int minimum_cases_to_signal = Integer.parseInt(_minimum_cases_signal.getText());
+            if (minimum_cases_to_signal < 3) {
+                throw new AdvFeaturesExpection("The minimum number of cases to signal must be 3 or greater.\n", FocusedTabSet.ANALYSIS, (Component) _minimum_cases_signal);
+            }
+            int maximum_cases_to_signal = Integer.parseInt(_maximum_cases_signal.getText());
+            if (minimum_cases_to_signal > maximum_cases_to_signal) {
+                throw new AdvFeaturesExpection("The minimum number of cases to signal must be than the maximum to signal.\n", FocusedTabSet.ANALYSIS, (Component) _minimum_cases_signal);
+            }
+            if (_sequential_analysis_file.getText().length() == 0) {
+                throw new AdvFeaturesExpection("Please specify a sequential analysis filename.", FocusedTabSet.ANALYSIS, (Component) _sequential_analysis_file);
+            }
+        }
+    }
+    
     /*
      * Verifies that power evaluation settings are valid in the context of all parameter settings.
      */   
@@ -595,6 +644,24 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
+     * Enabled the sequential analysis group based upon current settings.
+     */
+    public void enableSequentialAnalysisGroup() {
+        Parameters.ScanType scanType = _settings_window.getScanType();
+
+        boolean bEnableGroup = scanType == Parameters.ScanType.TIMEONLY;
+        _sequential_analysis_group.setEnabled(bEnableGroup);
+        _perform_sequential_scan.setEnabled(bEnableGroup);
+        _maximum_cases_signal_label.setEnabled(bEnableGroup && _perform_sequential_scan.isSelected());
+        _maximum_cases_signal.setEnabled(bEnableGroup && _perform_sequential_scan.isSelected());
+        _minimum_cases_signal_label.setEnabled(bEnableGroup && _perform_sequential_scan.isSelected());
+        _minimum_cases_signal.setEnabled(bEnableGroup && _perform_sequential_scan.isSelected());
+        _sequential_analysis_file_label.setEnabled(bEnableGroup && _perform_sequential_scan.isSelected());
+        _sequential_analysis_file.setEnabled(bEnableGroup && _perform_sequential_scan.isSelected());
+        _sequential_analysis_file_browse.setEnabled(bEnableGroup && _perform_sequential_scan.isSelected());
+    }
+    
+    /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
@@ -652,10 +719,21 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _chk_attributable_risk_extra = new javax.swing.JLabel();
         _advanced_adjustments_tab = new javax.swing.JPanel();
         _perform_dayofweek_adjustments = new javax.swing.JCheckBox();
+        _sequential_analysis_tab = new javax.swing.JPanel();
+        _sequential_analysis_group = new javax.swing.JPanel();
+        _perform_sequential_scan = new javax.swing.JCheckBox();
+        _maximum_cases_signal_label = new javax.swing.JLabel();
+        _maximum_cases_signal = new javax.swing.JTextField();
+        _minimum_cases_signal_label = new javax.swing.JLabel();
+        _minimum_cases_signal = new javax.swing.JTextField();
+        _sequential_analysis_file_label = new javax.swing.JLabel();
+        _sequential_analysis_file = new javax.swing.JTextField();
+        _sequential_analysis_file_browse = new javax.swing.JButton();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
+        setPreferredSize(new java.awt.Dimension(575, 440));
 
         _cutFileLabel.setText("Cut File:"); // NOI18N
 
@@ -699,7 +777,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_cutFileImportButton)
                     .addComponent(_cutFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(273, Short.MAX_VALUE))
+                .addContainerGap(265, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced Input", _advanced_input_tab);
@@ -882,7 +960,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(149, Short.MAX_VALUE))
+                .addContainerGap(141, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _advanced_temporal_window_tab);
@@ -943,7 +1021,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advanced_inferenece_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(264, Short.MAX_VALUE))
+                .addContainerGap(256, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _advanced_inferenece_tab);
@@ -1158,7 +1236,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_alternativeHypothesisFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_alternativeHypothesisFilenameButton))
-                .addContainerGap(102, Short.MAX_VALUE))
+                .addContainerGap(94, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout _advanced_power_evaluation_tabLayout = new javax.swing.GroupLayout(_advanced_power_evaluation_tab);
@@ -1308,7 +1386,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_report_critical_values_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(107, Short.MAX_VALUE))
+                .addContainerGap(99, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
@@ -1335,10 +1413,161 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advanced_adjustments_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_perform_dayofweek_adjustments)
-                .addContainerGap(302, Short.MAX_VALUE))
+                .addContainerGap(294, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Adjustments", _advanced_adjustments_tab);
+
+        _sequential_analysis_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Sequential Analysis"));
+
+        _perform_sequential_scan.setText("Perform Sequential Analysis");
+        _perform_sequential_scan.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSequentialAnalysisGroup();
+                enableSetDefaultsButton();
+            }
+        });
+
+        _maximum_cases_signal_label.setText("Maximum Cases to Signal");
+
+        _maximum_cases_signal.setText("200");
+        _maximum_cases_signal.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_maximum_cases_signal.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _maximum_cases_signal.setText("200");
+                enableSetDefaultsButton();
+            }
+        });
+        _maximum_cases_signal.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_maximum_cases_signal, e, 10);
+            }
+        });
+        _maximum_cases_signal.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _minimum_cases_signal_label.setText("Minimum Cases to Signal");
+
+        _minimum_cases_signal.setText("3");
+        _minimum_cases_signal.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_minimum_cases_signal.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _minimum_cases_signal.setText("200");
+                enableSetDefaultsButton();
+            }
+        });
+        _minimum_cases_signal.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_minimum_cases_signal, e, 10);
+            }
+        });
+        _minimum_cases_signal.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _sequential_analysis_file_label.setText("Sequential Analysis File:"); // NOI18N
+
+        _sequential_analysis_file.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
+        _sequential_analysis_file_browse.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
+        _sequential_analysis_file_browse.setToolTipText("Open file wizard for sequential analysis file ..."); // NOI18N
+        _sequential_analysis_file_browse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                List<InputFileFilter> filters = new ArrayList<InputFileFilter>();
+                filters.add(new InputFileFilter("csv","Sequential Scan Files (*.csv)"));
+                FileSelectionDialog select = new FileSelectionDialog(TreeScanApplication.getInstance(), "Select Sequential Scan File", filters, TreeScanApplication.getInstance().lastBrowseDirectory);
+                File file = select.browse_saveas();
+                if (file != null) {
+                    TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
+                    String filename = file.getAbsolutePath();
+                    if (new File(filename).getName().lastIndexOf('.') == -1){
+                        filename = filename + ".csv";
+                    }
+                    _sequential_analysis_file.setText(filename);
+                }
+            }
+        });
+
+        javax.swing.GroupLayout _sequential_analysis_groupLayout = new javax.swing.GroupLayout(_sequential_analysis_group);
+        _sequential_analysis_group.setLayout(_sequential_analysis_groupLayout);
+        _sequential_analysis_groupLayout.setHorizontalGroup(
+            _sequential_analysis_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_sequential_analysis_groupLayout.createSequentialGroup()
+                .addGroup(_sequential_analysis_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_sequential_analysis_groupLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(_sequential_analysis_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(_perform_sequential_scan, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(_sequential_analysis_groupLayout.createSequentialGroup()
+                                .addGap(17, 17, 17)
+                                .addComponent(_sequential_analysis_file)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_sequential_analysis_file_browse, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(_sequential_analysis_groupLayout.createSequentialGroup()
+                        .addGap(27, 27, 27)
+                        .addGroup(_sequential_analysis_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(_sequential_analysis_file_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(_sequential_analysis_groupLayout.createSequentialGroup()
+                                .addGroup(_sequential_analysis_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(_sequential_analysis_groupLayout.createSequentialGroup()
+                                        .addComponent(_minimum_cases_signal_label, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(_minimum_cases_signal, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(_sequential_analysis_groupLayout.createSequentialGroup()
+                                        .addComponent(_maximum_cases_signal_label, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(_maximum_cases_signal, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGap(0, 320, Short.MAX_VALUE)))))
+                .addContainerGap())
+        );
+        _sequential_analysis_groupLayout.setVerticalGroup(
+            _sequential_analysis_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_sequential_analysis_groupLayout.createSequentialGroup()
+                .addComponent(_perform_sequential_scan)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_sequential_analysis_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_maximum_cases_signal_label)
+                    .addComponent(_maximum_cases_signal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(_sequential_analysis_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_minimum_cases_signal_label)
+                    .addComponent(_minimum_cases_signal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_sequential_analysis_file_label)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_sequential_analysis_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_sequential_analysis_file, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_sequential_analysis_file_browse))
+                .addGap(0, 144, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout _sequential_analysis_tabLayout = new javax.swing.GroupLayout(_sequential_analysis_tab);
+        _sequential_analysis_tab.setLayout(_sequential_analysis_tabLayout);
+        _sequential_analysis_tabLayout.setHorizontalGroup(
+            _sequential_analysis_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_sequential_analysis_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_sequential_analysis_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _sequential_analysis_tabLayout.setVerticalGroup(
+            _sequential_analysis_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_sequential_analysis_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_sequential_analysis_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        jTabbedPane1.addTab("Sequential Analysis", _sequential_analysis_tab);
 
         _closeButton.setText("Close"); // NOI18N
         _closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1369,7 +1598,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -1408,9 +1637,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _maxTemporalClusterSizeUnitsTextField;
     private javax.swing.JPanel _maxTemporalOptionsGroup;
     private javax.swing.JLabel _maxTemporalTimeUnitsLabel;
+    private javax.swing.JTextField _maximum_cases_signal;
+    private javax.swing.JLabel _maximum_cases_signal_label;
     private javax.swing.JTextField _minTemporalClusterSizeUnitsTextField;
     private javax.swing.JPanel _minTemporalOptionsGroup;
     private javax.swing.JLabel _minTemporalTimeUnitsLabel;
+    private javax.swing.JTextField _minimum_cases_signal;
+    private javax.swing.JLabel _minimum_cases_signal_label;
     private javax.swing.JTextField _montCarloReplicationsTextField;
     private javax.swing.JTextField _numberPowerReplications;
     private javax.swing.JLabel _numberPowerReplicationsLabel;
@@ -1419,6 +1652,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _percentageTemporalRadioButton;
     private javax.swing.JCheckBox _performPowerEvaluations;
     private javax.swing.JCheckBox _perform_dayofweek_adjustments;
+    private javax.swing.JCheckBox _perform_sequential_scan;
     private javax.swing.ButtonGroup _powerEstimationButtonGroup;
     private javax.swing.JRadioButton _powerEvaluationWithCaseFile;
     private javax.swing.JRadioButton _powerEvaluationWithSpecifiedCases;
@@ -1427,6 +1661,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JCheckBox _reportCriticalValuesCheckBox;
     private javax.swing.JCheckBox _reportLLRResultsAsCsvTable;
     private javax.swing.JPanel _report_critical_values_group;
+    private javax.swing.JTextField _sequential_analysis_file;
+    private javax.swing.JButton _sequential_analysis_file_browse;
+    private javax.swing.JLabel _sequential_analysis_file_label;
+    private javax.swing.JPanel _sequential_analysis_group;
+    private javax.swing.JPanel _sequential_analysis_tab;
     private javax.swing.JButton _setDefaultButton;
     private javax.swing.JRadioButton _timeTemporalRadioButton;
     private javax.swing.JTextField _totalPowerCases;

@@ -14,6 +14,7 @@ JNIEXPORT jboolean JNICALL Java_org_treescan_app_Parameters_Read(JNIEnv * pEnv, 
 
   try {
      const char *sParameterFilename = pEnv->GetStringUTFChars(filename, &iscopy);
+
      if (sParameterFilename) {
        PrintNull NoPrint;
        ParameterAccessCoordinator(parameters).read(sParameterFilename, NoPrint);
@@ -328,6 +329,22 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jint)ratio.second);
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setSequentialScan", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getSequentialScan());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setSequentialMinimumSignal", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getSequentialMinimumSignal());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setSequentialMaximumSignal", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getSequentialMaximumSignal());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setSequentialFilename", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getSequentialFilename().c_str()));
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -598,6 +615,25 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   ratio.second = static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid));
   jni_error::_detectError(Env);
   parameters.setPowerBaselineProbabilityRatio(ratio);
+
+  mid = _getMethodId_Checked(Env, clazz, "getSequentialScan", "()Z");
+  parameters.setSequentialScan(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getSequentialMinimumSignal", "()I");
+  parameters.setSequentialMinimumSignal(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setSequentialMaximumSignal", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getSequentialMaximumSignal());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getSequentialFilename", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  parameters.setSequentialFilename(sFilename);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   return parameters;
 }

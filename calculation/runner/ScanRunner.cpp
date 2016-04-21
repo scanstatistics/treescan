@@ -841,6 +841,14 @@ bool ScanRunner::run() {
         throw resolvable_error("\nProblem encountered when setting up tree.");
     if (_print.GetIsCanceled()) return false;
 
+    if (_parameters.getSequentialScan() && static_cast<unsigned int>(_TotalC) > _parameters.getSequentialMaximumSignal()) {
+        // The sequential scan reached target number of cases. Don't continue analysis - instead report such in results file.
+        _parameters.setReportCriticalValues(false);
+        time(&gEndTime); //get end time
+        if (!reportResults(gStartTime, gEndTime)) return false;
+        return true;
+    }
+
     // Track critical values if requested or we're performing power evaluations and we're actually calculating the critical values.
     if (_parameters.getReportCriticalValues() || (_parameters.getPerformPowerEvaluations() && _parameters.getCriticalValuesType() == Parameters::CV_MONTECARLO)) {
         _critical_values.reset(new CriticalValues(_parameters.getNumReplicationsRequested()));
@@ -868,7 +876,9 @@ bool ScanRunner::run() {
                     remove(_parameters.getOutputSimulationsFilename().c_str());
                     randomizer->setWriting(_parameters.getOutputSimulationsFilename());
                 }
-                if (!runsimulations(randomizer, _parameters.getNumReplicationsRequested(), false)) return false;
+                if (_parameters.getSequentialScan()) {
+                    if (!runsequentialsimulations(_parameters.getNumReplicationsRequested())) return false;
+                } else if (!runsimulations(randomizer, _parameters.getNumReplicationsRequested(), false)) return false;
             }
         }
     }
@@ -1034,6 +1044,69 @@ bool ScanRunner::runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer
             throw prg_error("At least %d jobs remain uncompleted.", "ScanRunner", jobSource.GetUnregisteredJobCount());
     } catch (prg_exception& x) {
         x.addTrace("runsimulations()","ScanRunner");
+        throw;
+    }
+    return true;
+}
+
+/* DOING THE MONTE CARLO SIMULATIONS */
+bool ScanRunner::runsequentialsimulations(unsigned int num_relica) {
+    const char * sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %lf\n";
+    unsigned long ulParallelProcessCount = std::min(_parameters.getNumParallelProcessesToExecute(), num_relica);
+
+    try {
+        PrintQueue lclPrintDirection(_print, false);
+        MCSimJobSource jobSource(::GetCurrentTime_HighResolution(), lclPrintDirection, sReplicationFormatString, *this, num_relica, false);
+        typedef contractor<MCSimJobSource> contractor_type;
+        contractor_type theContractor(jobSource);
+
+        boost::shared_ptr<SequentialFileDataSource> source;
+        boost::shared_ptr<SequentialScanLoglikelihoodRatioWriter> sequential_writer;
+        std::string buffer;
+        if (ValidateFileAccess(SequentialScanLoglikelihoodRatioWriter::getFilename(_parameters, buffer), false)) {
+            source.reset(new SequentialFileDataSource(buffer, _parameters));
+            source->gotoFirstRecord();
+            // If reading sequential LLR values from file data source, limit to one thread to simply reading file.
+            ulParallelProcessCount = 1;
+        } else {
+            sequential_writer.reset(new SequentialScanLoglikelihoodRatioWriter(*this));
+        }
+
+        //run threads:
+        boost::thread_group tg;
+        boost::mutex thread_mutex;
+        for (unsigned u=0; u < ulParallelProcessCount; ++u) {
+            try {
+                if (source.get()) {
+                    SequentialReadMCSimSuccessiveFunctor mcsf(thread_mutex, *this, source);
+                    tg.create_thread(subcontractor<contractor_type,SequentialReadMCSimSuccessiveFunctor>(theContractor,mcsf));
+                } else {
+                    SequentialMCSimSuccessiveFunctor mcsf(thread_mutex, *this, sequential_writer);
+                    tg.create_thread(subcontractor<contractor_type,SequentialMCSimSuccessiveFunctor>(theContractor,mcsf));
+                }
+            } catch (std::bad_alloc &) {
+                if (u == 0) throw; // if this is the first thread, re-throw exception
+                _print.Printf("Notice: Insufficient memory to create %u%s parallel simulation ... continuing analysis with %u parallel simulations.\n", BasePrint::P_NOTICE, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u);
+                break;
+            } catch (prg_exception& x) {
+                if (u == 0) throw; // if this is the first thread, re-throw exception
+                _print.Printf("Error: Program exception occurred creating %u%s parallel simulation ... continuing analysis with %u parallel simulations.\nException:%s\n", BasePrint::P_ERROR, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u, x.what());
+                break;
+            } catch (...) {
+                if (u == 0) throw prg_error("Unknown program error occurred.\n","runsimulations()"); // if this is the first thread, throw exception
+                _print.Printf("Error: Unknown program exception occurred creating %u%s parallel simulation ... continuing analysis with %u parallel simulations.\n", BasePrint::P_ERROR, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u);
+                break;
+            }
+        }
+        tg.join_all();
+
+        //propagate exceptions if needed
+        theContractor.throw_unhandled_exception();
+        jobSource.Assert_NoExceptionsCaught();
+        if (jobSource.GetUnregisteredJobCount() > 0)
+            throw prg_error("At least %d jobs remain uncompleted.", "ScanRunner", jobSource.GetUnregisteredJobCount());
+    } catch (prg_exception& x) {
+        x.addTrace("runsequentialsimulations()","ScanRunner");
         throw;
     }
     return true;
@@ -1513,6 +1586,14 @@ bool ScanRunner::setupTree() {
     // Calculates the total number of cases
     for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
         _TotalC = std::accumulate((*itr)->refIntC_C().begin(), (*itr)->refIntC_C().end(), _TotalC);
+    }
+    // If executing sequential scan and the number of cases in counts file is less than user specified total seqnential cases.
+    if (_parameters.getSequentialScan() && static_cast<unsigned int>(_TotalC) > _parameters.getSequentialMaximumSignal()) {
+        /* abort this analysis -- return true so that returned to function won't think that an error occurred. */
+
+        //_print.Printf("Error: For the sequential scan, the number of cases in the count file must be less than or equal to the total sequential cases.\n"
+        //              "       The count file defines %i cases while the specified number of sequential cases is %u.", BasePrint::P_ERROR, _TotalC, _parameters.getSequentialMaximumSignal());
+        return true;
     }
     // Check for minimum number of cases.
     if (!_parameters.getPerformPowerEvaluations() || !(_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES)) {

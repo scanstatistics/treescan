@@ -617,7 +617,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _advancedParametersSetting.enableAdvancedInputsSettings(!timeOnly);
         _advancedParametersSetting.enableTemporalOptionsGroup(treeAndTime || timeOnly);
         _advancedParametersSetting.enableAdjustmentsOptions();
-        _advancedParametersSetting.enablePowerEvaluationsGroup(); 
+        _advancedParametersSetting.enablePowerEvaluationsGroup();
+        _advancedParametersSetting.enableSequentialAnalysisGroup();
         _advancedParametersSetting.enableAdditionalOutputOptions();
         // data time range group
         _data_time_range_group.setEnabled(treeAndTime || timeOnly);

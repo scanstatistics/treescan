@@ -20,6 +20,7 @@ class WindowLength : public AbstractWindowLength {
         int _maximum;
 
     public:
+        WindowLength() : _minimum(0), _maximum(0) {}
         WindowLength(int minimum, int maximum) : _minimum(minimum), _maximum(maximum) {}
         virtual ~WindowLength() {}
 

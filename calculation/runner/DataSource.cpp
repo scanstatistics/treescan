@@ -5,8 +5,11 @@
 #include "DataSource.h"
 #include "PrjException.h"
 #include "UtilityFunctions.h"
+#include "DataFileWriter.h"
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
+
+using namespace boost;
 
 /** Static method which returns newly allocated DataSource object. */
 DataSource * DataSource::getNewDataSourceObject(const std::string& sSourceFilename, const Parameters::InputSource * source) {
@@ -65,27 +68,27 @@ void CSVFileDataSource::gotoFirstRecord() {
 }
 
 /** sets current parsing string -- returns indication of whether string contains any words. */
-bool CSVFileDataSource::parse(const std::string& s, const std::string& delimiter, const std::string& grouper) {
-    _read_values.clear();
+bool CSVFileDataSource::parse(const std::string& s, std::vector<std::string>& read_values, bool ignore_empty_fields, const std::string& delimiter, const std::string& grouper) {
+    read_values.clear();
     std::string e("\\");
     boost::escaped_list_separator<char> separator(e, delimiter, grouper);
     boost::tokenizer<boost::escaped_list_separator<char> > values(s, separator);
     for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=values.begin(); itr != values.end(); ++itr) {
-        _read_values.push_back(*itr);
+        read_values.push_back(*itr);
         //trim any whitespace around value
-        boost::trim(_read_values.back());
+        boost::trim(read_values.back());
         // ignore empty values if delimiter is whitespace -- boost::escaped_list_separator does not consume adjacent whitespace delimiters
-        if (!_read_values.back().size() && _ignore_empty_fields)
-            _read_values.pop_back();
+        if (!read_values.back().size() && ignore_empty_fields)
+            read_values.pop_back();
     }
 
     // if all fields are empty string, then treat this as empty record
     size_t blanks=0;
-    for (std::vector<std::string>::const_iterator itr=_read_values.begin(); itr != _read_values.end(); ++itr)
+    for (std::vector<std::string>::const_iterator itr=read_values.begin(); itr != read_values.end(); ++itr)
         if (itr->empty()) ++blanks;
-    if (blanks == _read_values.size()) _read_values.clear();
+    if (blanks == read_values.size()) read_values.clear();
 
-    return _read_values.size() > 0;
+    return read_values.size() > 0;
 }
 
 /** Attempts to read line from source and parse into 'words'. If read count is zero, first
@@ -113,7 +116,7 @@ bool CSVFileDataSource::readRecord() {
 
     _read_values.clear();
     while (isBlank && getlinePortable(_sourceFile, readbuffer)) {
-        isBlank = !parse(readbuffer, _delimiter, _grouper);
+        isBlank = !parse(readbuffer, _read_values, _ignore_empty_fields, _delimiter, _grouper);
         if (isBlank) {
             tripBlankRecordFlag();
             ++_readCount;
@@ -149,4 +152,46 @@ std::string& CSVFileDataSource::getValueAt(long iFieldIndex) {
 
 void CSVFileDataSource::throwUnicodeException() {
     throw resolvable_error("Error: The file contains data that is Unicode formatted. Expecting ASCII file.\n");
+}
+
+
+//////////////////////////// SequentialFileDataSource //////////////////////////////////////////////
+
+/** constructor */
+SequentialFileDataSource::SequentialFileDataSource(const std::string& sSourceFilename, const Parameters& parameters) :
+    CSVFileDataSource(sSourceFilename, ",", "\"", 1, true) {
+    std::string currentparameters, sourceparameters;
+
+    // get the settings string for the current parameter settings
+    boost::trim(SequentialScanLoglikelihoodRatioWriter::getSequentialParametersString(parameters, currentparameters));
+
+    // read first line from source data file, it should contain same parameter settings string
+    while (sourceparameters.empty() && getlinePortable(_sourceFile, sourceparameters)) {
+        boost::trim(sourceparameters);
+    }
+    if (sourceparameters.empty())
+        throw resolvable_error("Error: The sequential analysis source file does not contain data.\n");
+
+    // compare to ensure that this source file was created with current parameter settings
+    if (sourceparameters != currentparameters)
+        throw resolvable_error("Error: The analysis was stopped. The sequential analysis source file was created with parameter settings that are\n"
+                               "       different than current analysis. You must either revert settings to those that created the initial sequential\n"
+                               "       analysis file or specify a different sequential analysis filename to be created.\n");
+    //_readCount = 1;
+}
+
+/** Returns the next LLR value in data source. */
+boost::optional<double> SequentialFileDataSource::nextLLR() {
+    boost::optional<double> llr;
+
+    if (readRecord()) {
+        if (getNumValues() != 1)
+            throw resolvable_error("Error: The sequential scan source file contains a record with extra data, record %u.\n", getCurrentRecordIndex());
+        double value;
+        if (!string_to_numeric_type<double>(getValueAt(0).c_str(), value)) {
+            throw resolvable_error("Error: The sequential scan source file contains record with value that is not numeric, record %u, value %s.\n", getCurrentRecordIndex(), getValueAt(0).c_str());
+        }
+        llr.reset(value);
+    }
+    return llr;
 }

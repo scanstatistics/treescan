@@ -5,6 +5,7 @@
 #include "MonteCarloSimFunctor.h"
 #include "PrjException.h"
 #include "WindowLength.h"
+#include "DataSource.h"
 
 /* Returns new AbstractMeasureList object - based on settings. */
 AbstractMeasureList * AbstractMeasureList::getNewMeasureList(const ScanRunner& scanner, ScanRunner::Loglikelihood_t loglikelihood) {
@@ -417,4 +418,154 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
     } // for i<nNodes
 
     return std::make_pair(_measure_list->loglikelihood(),TotalSimC);
+}
+
+/////////////////////////// SequentialMCSimSuccessiveFunctor //////////////////////////////////////
+
+/* constructor */
+SequentialMCSimSuccessiveFunctor::SequentialMCSimSuccessiveFunctor(boost::mutex& mutex, const ScanRunner& scanner, boost::shared_ptr<SequentialScanLoglikelihoodRatioWriter> writer) 
+    : _mutex(mutex), _scanRunner(scanner), _sequential_writer(writer) {
+    // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
+    const Parameters& parameters = _scanRunner.getParameters();
+    _treeSimNode.reset(new SimulationNode(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1));
+
+    // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
+    DataTimeRange min_max = parameters.getDataTimeRangeSet().getMinMax();
+    DataTimeRange::index_t zero_translation_additive = (min_max.getStart() <= 0) ? std::abs(min_max.getStart()) : min_max.getStart() * -1;
+    const DataTimeRange& actual_range = parameters.getDataTimeRangeSet().getDataTimeRangeSets().front(); // TODO: for now, only take the first
+    _range = DataTimeRange(actual_range.getStart() + zero_translation_additive, actual_range.getEnd() + zero_translation_additive);
+
+    // Define the start and end windows with the zero index offset already incorporated.
+    DataTimeRange::index_t idxAdditive = _scanRunner.getZeroTranslationAdditive();
+    _startWindow = DataTimeRange(_scanRunner.getParameters().getTemporalStartRange().getStart() + idxAdditive,
+                                 _scanRunner.getParameters().getTemporalStartRange().getEnd() + idxAdditive),
+    _endWindow = DataTimeRange(_scanRunner.getParameters().getTemporalEndRange().getStart() + idxAdditive,
+                               _scanRunner.getParameters().getTemporalEndRange().getEnd() + idxAdditive);
+
+    // Define the minimum and maximum window lengths.
+    _window = WindowLength(static_cast<int>(_scanRunner.getParameters().getMinimumWindowLength()) - 1,
+                           static_cast<int>(_scanRunner.getParameters().getMaximumWindowInTimeUnits()) - 1);
+
+    _loglikelihood.reset(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN()));
+}
+
+SequentialMCSimSuccessiveFunctor::result_type SequentialMCSimSuccessiveFunctor::operator() (SequentialMCSimSuccessiveFunctor::param_type const & param) {
+    result_type temp_result;
+
+    try {
+        int iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
+        unsigned int min_cases_to_signal = _scanRunner.getParameters().getSequentialMinimumSignal();
+        unsigned int total_sequential_cases = _scanRunner.getParameters().getSequentialMaximumSignal();
+        unsigned int total_cases = 0;
+        double simLogLikelihood = -std::numeric_limits<double>::max();
+
+        // initialize randomizer seed for this simulation
+        _random_number_generator.SetSeedOffset(param);
+
+        // clear data from last simulation
+        _treeSimNode->clear();
+
+        // First assign cases up to the minimum signal.
+        for (unsigned int cases=0; cases < min_cases_to_signal - 1; ++cases) {
+            DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(_range.getStart()), static_cast<long>(_range.getEnd()), _random_number_generator));
+            ++(_treeSimNode->refBrC_C()[idx]);
+            ++total_cases;
+        }
+        _treeSimNode->setCumulative();
+        // Once at the minimum number of cases, start adding cases one at a time -- calculating log likelihood ratio and keeping maximum.
+        for (unsigned int cases=min_cases_to_signal; cases <= total_sequential_cases; ++cases) {
+            DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(_range.getStart()), static_cast<long>(_range.getEnd()), _random_number_generator));
+            // add new case to cumulative collection
+            for (size_t w=idx; ; --w) {
+                ++(_treeSimNode->refBrC_C()[w]);
+                if (w == 0) break;
+            }
+            ++total_cases;
+            // Now calculate the maximum log likelihood for current number of cases.
+            NodeStructure::expected_t branchSum = static_cast<NodeStructure::expected_t>(_treeSimNode->getBrC());
+            iMaxEndWindow = std::min(_endWindow.getEnd(), _startWindow.getEnd() + _window.maximum());
+            for (iWindowEnd=_endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                iMinWindowStart = std::max(iWindowEnd - _window.maximum(), _startWindow.getStart());
+                iWindowStart = std::min(_startWindow.getEnd(), iWindowEnd - _window.minimum());
+                for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                    NodeStructure::count_t branchWindow = _treeSimNode->getBrC_C()[iWindowStart] - _treeSimNode->getBrC_C()[iWindowEnd + 1];
+                    simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(branchWindow, branchSum, iWindowEnd - iWindowStart + 1));
+                }
+            }
+        }
+        temp_result.dSuccessfulResult = std::make_pair(simLogLikelihood, total_cases);
+        temp_result.bUnExceptional = true;
+
+        // write maximum log likelihood to sequential simulations data file
+        _sequential_writer->write(simLogLikelihood, _mutex);
+    } catch (memory_exception & e) {
+        temp_result.eException_type = MCSimJobSource::result_type::memory;
+        temp_result.Exception = prg_exception(e.what(), "SequentialMCSimSuccessiveFunctor");
+        temp_result.bUnExceptional = false;
+    } catch (resolvable_error & e) {
+        temp_result.eException_type = MCSimJobSource::result_type::resolvable;
+        temp_result.Exception = prg_exception(e.what(), "SequentialMCSimSuccessiveFunctor");
+        temp_result.bUnExceptional = false;
+    } catch (prg_exception & e) {
+        temp_result.eException_type = MCSimJobSource::result_type::prg;
+        temp_result.Exception = e;
+        temp_result.bUnExceptional = false;
+    } catch (std::exception & e) {
+        temp_result.eException_type = MCSimJobSource::result_type::std;
+        temp_result.Exception = prg_exception(e.what(), "SequentialMCSimSuccessiveFunctor");
+        temp_result.bUnExceptional = false;
+    } catch (...) {
+        temp_result.eException_type = MCSimJobSource::result_type::unknown;
+        temp_result.Exception = prg_exception("(...) -- unknown error", "SequentialMCSimSuccessiveFunctor");
+        temp_result.bUnExceptional = false;
+    }
+    if (!temp_result.bUnExceptional) {
+        temp_result.Exception.addTrace("operator()", "SequentialMCSimSuccessiveFunctor");
+    }
+    return temp_result;
+}
+
+/////////////////////////// SequentialReadMCSimSuccessiveFunctor //////////////////////////////////////
+
+/* constructor */
+SequentialReadMCSimSuccessiveFunctor::SequentialReadMCSimSuccessiveFunctor(boost::mutex& mutex, const ScanRunner& scanner, boost::shared_ptr<SequentialFileDataSource> source) 
+    : _mutex(mutex), _scanRunner(scanner), _source(source) {}
+
+SequentialReadMCSimSuccessiveFunctor::result_type SequentialReadMCSimSuccessiveFunctor::operator() (SequentialReadMCSimSuccessiveFunctor::param_type const & param) {
+    result_type temp_result;
+
+    try {
+        /* read next log likelihood from the data source */
+        boost::optional<double> simLogLikelihood = _source->nextLLR();
+        if (simLogLikelihood) {
+            temp_result.dSuccessfulResult = std::make_pair(simLogLikelihood.get(), _scanRunner.getTotalC());
+            temp_result.bUnExceptional = true;
+        } else
+            throw prg_error("Simulation %u could not read LLR value from file.", "operator()", param);
+
+    } catch (memory_exception & e) {
+        temp_result.eException_type = MCSimJobSource::result_type::memory;
+        temp_result.Exception = prg_exception(e.what(), "SequentialReadMCSimSuccessiveFunctor");
+        temp_result.bUnExceptional = false;
+    } catch (resolvable_error & e) {
+        temp_result.eException_type = MCSimJobSource::result_type::resolvable;
+        temp_result.Exception = prg_exception(e.what(), "SequentialReadMCSimSuccessiveFunctor");
+        temp_result.bUnExceptional = false;
+    } catch (prg_exception & e) {
+        temp_result.eException_type = MCSimJobSource::result_type::prg;
+        temp_result.Exception = e;
+        temp_result.bUnExceptional = false;
+    } catch (std::exception & e) {
+        temp_result.eException_type = MCSimJobSource::result_type::std;
+        temp_result.Exception = prg_exception(e.what(), "SequentialReadMCSimSuccessiveFunctor");
+        temp_result.bUnExceptional = false;
+    } catch (...) {
+        temp_result.eException_type = MCSimJobSource::result_type::unknown;
+        temp_result.Exception = prg_exception("(...) -- unknown error", "SequentialReadMCSimSuccessiveFunctor");
+        temp_result.bUnExceptional = false;
+    }
+    if (!temp_result.bUnExceptional) {
+        temp_result.Exception.addTrace("operator()", "SequentialReadMCSimSuccessiveFunctor");
+    }
+    return temp_result;
 }

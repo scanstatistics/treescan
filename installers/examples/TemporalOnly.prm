@@ -58,6 +58,16 @@ randomization-seed=12345678
 ;generate randomization seed (y/n)
 random-randomization-seed=n
 
+[Sequential Scan]
+;perform sequential scan - time-only scan (y/n)
+sequential-scan=n
+;sequential scan maximum cases for signal (integer)
+sequential-maximum-signal=200
+;sequential scan - minimum cases to signal (integer)
+sequential-minimum-signal=3
+;sequential scan filename
+sequential-filename=
+
 [Power Evaluations]
 ;perform power evaluations (y/n)
 perform-power-evaluations=n

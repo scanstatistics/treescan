@@ -55,6 +55,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::MODEL_TYPE              : return "probability model type (POISSON=0, BERNOULLI=1, UNIFORM=2, Not-Applicable=3)";
             case Parameters::SELF_CONTROL_DESIGN     : return "self control design - unconditional Bernoulli only (y/n)";
             case Parameters::EVENT_PROBABILITY       : return "case probability (integer / integer)";
+            case Parameters::SEQUENTIAL_SCAN         : return "perform sequential scan - time-only scan (y/n)";
+            case Parameters::SEQUENTIAL_MAX_SIGNAL   : return "sequential scan maximum cases for signal (integer)";
             case Parameters::START_DATA_TIME_RANGE   : return "start data time range (integer - integer)";
             case Parameters::END_DATA_TIME_RANGE     : return "end data time range (integer - integer)";
             /* Advanced Analysis - Temporal Window */
@@ -62,6 +64,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::MAXIMUM_WINDOW_FIXED    : return "maximum temporal size as fixed time length (integer)";
             case Parameters::MAXIMUM_WINDOW_TYPE     : return "maximum temporal size selection (PERCENTAGE_WINDOW=0, FIXED_LENGTH=1)";
             case Parameters::MINIMUM_WINDOW_FIXED    : return "minimum temporal size as fixed time length (integer)";
+            case Parameters::SEQUENTIAL_MIN_SIGNAL   : return "sequential scan - minimum cases to signal (integer)";
+            case Parameters::SEQUENTIAL_FILE         : return "sequential scan filename";
             /* Advanced Analysis - Adjustments */
             case Parameters::DAYOFWEEK_ADJUSTMENT    : return "perform day of week adjustments (y/n)";
             /* Advanced Analysis - Inference */
@@ -124,6 +128,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::MODEL_TYPE               : return AsString(s, _parameters.getModelType());
             case Parameters::SELF_CONTROL_DESIGN      : return AsString(s, _parameters.getSelfControlDesign());
             case Parameters::EVENT_PROBABILITY        : return AsString(s, _parameters.getProbabilityRatio());
+            case Parameters::SEQUENTIAL_SCAN          : return AsString(s, _parameters.getSequentialScan());
+            case Parameters::SEQUENTIAL_MAX_SIGNAL    : return AsString(s, _parameters.getSequentialMaximumSignal());
             case Parameters::START_DATA_TIME_RANGE    : return _parameters.getTemporalStartRange().toString(s);
             case Parameters::END_DATA_TIME_RANGE      : return _parameters.getTemporalEndRange().toString(s);
             /* Advanced Analysis - Temporal Window */
@@ -131,6 +137,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::MAXIMUM_WINDOW_FIXED     : return AsString(s, _parameters.getMaximumWindowLength());
             case Parameters::MAXIMUM_WINDOW_TYPE      : return AsString(s, _parameters.getMaximumWindowType());
             case Parameters::MINIMUM_WINDOW_FIXED     : return AsString(s, _parameters.getMinimumWindowLength());
+            case Parameters::SEQUENTIAL_MIN_SIGNAL    : return AsString(s, _parameters.getSequentialMinimumSignal());
+            case Parameters::SEQUENTIAL_FILE          : s = _parameters.getSequentialFilename(); return s;
             /* Advanced Analysis - Adjustments */
             case Parameters::DAYOFWEEK_ADJUSTMENT    : return AsString(s, _parameters.getPerformDayOfWeekAdjustment());
             /* Advanced Analysis - Inference */
@@ -293,6 +301,8 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
                                                         _parameters.setModelType((Parameters::ModelType)iValue); break;
             case Parameters::SELF_CONTROL_DESIGN      : _parameters.setSelfControlDesign(ReadBoolean(value, e)); break;
             case Parameters::EVENT_PROBABILITY        : _parameters.setProbabilityRatio(ReadRatio(value)); break;
+            case Parameters::SEQUENTIAL_SCAN          : _parameters.setSequentialScan(ReadBoolean(value, e)); break;
+            case Parameters::SEQUENTIAL_MAX_SIGNAL    : _parameters.setSequentialMaximumSignal(ReadUnsignedInt(value, e)); break;
             case Parameters::START_DATA_TIME_RANGE    : _parameters.setTemporalStartRange(DataTimeRange(value)); break;
             case Parameters::END_DATA_TIME_RANGE      : _parameters.setTemporalEndRange(DataTimeRange(value)); break;
             /* Advanced Analysis - Temporal Window */
@@ -301,6 +311,8 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::MAXIMUM_WINDOW_TYPE      : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::PERCENTAGE_WINDOW, Parameters::FIXED_LENGTH);
                                                         _parameters.setMaximumWindowType((Parameters::MaximumWindowType)iValue); break;
             case Parameters::MINIMUM_WINDOW_FIXED     : _parameters.setMinimumWindowLength(ReadUnsignedInt(value, e)); break;
+            case Parameters::SEQUENTIAL_MIN_SIGNAL    : _parameters.setSequentialMinimumSignal(ReadUnsignedInt(value, e)); break;
+            case Parameters::SEQUENTIAL_FILE          : _parameters.setSequentialFilename(value.c_str(), true); break;
             /* Advanced Analysis - Adjustments */
             case Parameters::DAYOFWEEK_ADJUSTMENT    : _parameters.setPerformDayOfWeekAdjustment(ReadBoolean(value, e)); break;
             /* Advanced Analysis Inference */

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include "Parameters.h"
+#include <boost/optional.hpp>
 
 /** Input data source abstraction. */
 class DataSource {
@@ -38,7 +39,7 @@ class DataSource {
 
 /** CSV file data source. */
 class CSVFileDataSource : public DataSource {
-    private:
+    protected:
         std::string _delimiter;
         std::string _grouper;
         unsigned long _skip;
@@ -49,7 +50,7 @@ class CSVFileDataSource : public DataSource {
         bool _ignore_empty_fields;
         std::string _read_buffer;
 
-        bool parse(const std::string& s, const std::string& delimiter=",", const std::string& grouper="\"");
+        bool parse(const std::string& s, std::vector<std::string>& read_values, bool ignore_empty_fields, const std::string& delimiter=",", const std::string& grouper="\"");
         void throwUnicodeException();
 
     public:
@@ -61,6 +62,15 @@ class CSVFileDataSource : public DataSource {
         virtual std::string              & getValueAt(long iFieldIndex);
         virtual void                       gotoFirstRecord();
         virtual bool                       readRecord();
+};
+
+/** Sequential scan file data source. */
+class SequentialFileDataSource : public CSVFileDataSource {
+    public:
+        SequentialFileDataSource(const std::string& sSourceFilename, const Parameters& parameters);
+        virtual ~SequentialFileDataSource() {}
+
+        boost::optional<double>  nextLLR();
 };
 //******************************************************************************
 #endif

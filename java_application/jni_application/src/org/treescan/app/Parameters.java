@@ -66,7 +66,11 @@ public class Parameters implements Cloneable {
     private boolean _self_control_design=false;
     private int _power_baseline_probability_ratio_numerator=1;
     private int _power_baseline_probability_ratio_denominator=2;
-
+    private boolean _sequential_scan=false;
+    private int _sequential_min_signal=3;
+    private int _sequential_max_signal=200;
+    private String _sequential_file="";
+    
     private ArrayList<InputSourceSettings>     _input_sources;
     
     public Parameters() {
@@ -85,6 +89,7 @@ public class Parameters implements Cloneable {
     	  newObject._countfilename = new String(_countfilename);
     	  newObject._outputfilename = new String(_outputfilename);
     	  newObject._power_alt_hypothesis_filename = new String(_power_alt_hypothesis_filename);
+          newObject._sequential_file = new String(_sequential_file);
           newObject._input_sources = new ArrayList<InputSourceSettings>();
           for (InputSourceSettings iss : _input_sources) {
             newObject._input_sources.add(iss.clone());
@@ -118,6 +123,10 @@ public class Parameters implements Cloneable {
           if (_power_evaluation_totalcases != rhs._power_evaluation_totalcases) return false;
           if (_power_replica != rhs._power_replica) return false;
           if (!_power_alt_hypothesis_filename.equals(rhs._power_alt_hypothesis_filename)) return false;
+          if (_sequential_scan != rhs._sequential_scan) return false;
+          if (_sequential_min_signal != rhs._sequential_min_signal) return false;
+          if (_sequential_max_signal != rhs._sequential_max_signal) return false;
+          if (!_sequential_file.equals(rhs._sequential_file)) return false;
           
     	  if (!_treefilenames.equals(rhs._treefilenames)) return false;
     	  if (!_countfilename.equals(rhs._countfilename)) return false;
@@ -146,6 +155,16 @@ public class Parameters implements Cloneable {
           
           return true;
     }
+
+    public boolean getSequentialScan() {return _sequential_scan;}
+    public void setSequentialScan(boolean b) {_sequential_scan = b;}
+    
+    public int getSequentialMinimumSignal() {return _sequential_min_signal;}
+    public void setSequentialMinimumSignal(int i) {_sequential_min_signal = i;}
+    public int getSequentialMaximumSignal() {return _sequential_max_signal;}
+    public void setSequentialMaximumSignal(int i) {_sequential_max_signal = i;}
+    public String getSequentialFilename() {return _sequential_file;}
+    public void setSequentialFilename(String s) {_sequential_file = s;}    
     
     public void addInputSourceSettings(InputSourceSettings iss) {_input_sources.add(iss);}
     public void clearInputSourceSettings() {_input_sources.clear();}

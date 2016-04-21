@@ -41,6 +41,7 @@ class RandomNumberGenerator {
     float               GetRandomFloat();
     long                GetSeed() const {return glSeed;}
     void                SetSeed(long lSeed);
+    void                SetSeedOffset(unsigned int offset);
     int                 Test();
 };
 #endif

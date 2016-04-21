@@ -5,6 +5,7 @@
 #include "DataFileWriter.h"
 #include "PrjException.h"
 #include "ScanRunner.h"
+#include "IniParameterFileAccess.h"
 
 /** class constructor */
 RecordBuffer::RecordBuffer(const ptr_vector<FieldDef>& vFields) : vFieldDefinitions(vFields) {
@@ -146,34 +147,24 @@ void RecordBuffer::SetFieldIsBlank(unsigned int iFieldNumber, bool bBlank) {
 const char * CSVDataFileWriter::CSV_FILE_EXT = ".csv";
 
 /** constructor */
-CSVDataFileWriter::CSVDataFileWriter(const std::string& filename, const ptr_vector<FieldDef>& vFieldDefs, bool printHeaders, bool append) {
+CSVDataFileWriter::CSVDataFileWriter(std::ofstream& outfile, const ptr_vector<FieldDef>& vFieldDefs, bool printHeaders, bool append) : _outfile(outfile) {
+    try {
+        if (!_outfile.is_open())
+            throw resolvable_error("std::ofstream is not open.");
 
-  try {
-    _outfile.open(filename.c_str(), append ? std::ofstream::app : std::ofstream::trunc);
-    if (!_outfile.is_open())
-      throw resolvable_error("Unable to open/create file %s.", filename.c_str());
-
-    //write column headers when requested
-    if (printHeaders) {
-        ptr_vector<FieldDef>::const_iterator itr=vFieldDefs.begin(), itr_end=vFieldDefs.end();
-        for (; itr != itr_end; ++itr) {
-            _outfile << (*itr)->GetName();
-            if (itr + 1 != itr_end) _outfile << ",";
+        //write column headers when requested
+        if (printHeaders) {
+            ptr_vector<FieldDef>::const_iterator itr=vFieldDefs.begin(), itr_end=vFieldDefs.end();
+            for  (; itr != itr_end; ++itr) {
+                _outfile << (*itr)->GetName();
+                if (itr + 1 != itr_end) _outfile << ",";
+            }
+            _outfile << std::endl;
         }
-        _outfile << std::endl;
+    } catch (prg_exception& x) {
+        x.addTrace("constructor()","CSVDataFileWriter");
+        throw;
     }
-  } catch (prg_exception& x) {
-    x.addTrace("constructor()","CSVDataFileWriter");
-    throw;
-  }
-}
-
-/** destructor */
-CSVDataFileWriter::~CSVDataFileWriter() {
-  try {
-    _outfile.close();
-  }
-  catch (...){}
 }
 
 // creates the formatted string from the precision and type of the field value and stores the formatted
@@ -295,11 +286,21 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
 
     printString(buffer, "%u", params.getNumReplicationsRequested());
     CreateField(_dataFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, static_cast<unsigned short>(buffer.size()));
-    _csvWriter.reset(new CSVDataFileWriter(getFilename(params, buffer), _dataFieldDefinitions, params.isPrintColumnHeaders()));
+
+    _outfile.open(getFilename(params, buffer).c_str(), std::ofstream::trunc);
+    if (!_outfile.is_open())
+      throw resolvable_error("Unable to open/create file %s.", buffer.c_str());
+    _csvWriter.reset(new CSVDataFileWriter(_outfile, _dataFieldDefinitions, params.isPrintColumnHeaders()));
   } catch (prg_exception& x) {
     x.addTrace("constructor()","CutsRecordWriter");
     throw;
   }
+}
+
+CutsRecordWriter::~CutsRecordWriter() {
+    try {
+        _outfile.close();
+  } catch (...) { }
 }
 
 std::string& CutsRecordWriter::getFilename(const Parameters& parameters, std::string& buffer) {
@@ -379,11 +380,21 @@ PowerEstimationRecordWriter::PowerEstimationRecordWriter(const ScanRunner& scanR
         CreateField(_dataFieldDefinitions, HA_ALPHA05_FIELD, FieldValue::ALPHA_FLD, 19, 0, uwOffset, 0);
         CreateField(_dataFieldDefinitions, HA_ALPHA01_FIELD, FieldValue::ALPHA_FLD, 19, 0, uwOffset, 0);
         CreateField(_dataFieldDefinitions, HA_ALPHA001_FIELD, FieldValue::ALPHA_FLD, 19, 0, uwOffset, 0);
-        _csvWriter.reset(new CSVDataFileWriter(getFilename(_scanner.getParameters(), buffer), _dataFieldDefinitions, _scanner.getParameters().isPrintColumnHeaders()));
+
+        _outfile.open(getFilename(_scanner.getParameters(), buffer).c_str(), std::ofstream::trunc);
+        if (!_outfile.is_open())
+            throw resolvable_error("Unable to open/create file %s.", buffer.c_str());
+        _csvWriter.reset(new CSVDataFileWriter(_outfile, _dataFieldDefinitions, _scanner.getParameters().isPrintColumnHeaders()));
     } catch (prg_exception& x) {
         x.addTrace("constructor()","PowerEstimationRecordWriter");
         throw;
     }
+}
+
+PowerEstimationRecordWriter::~PowerEstimationRecordWriter() {
+    try {
+        _outfile.close();
+    } catch (...) { }
 }
 
 /* Returns the filename which alternative hypothesis are written. The filename is a derivative of the main results filename. */
@@ -417,16 +428,37 @@ const char * LoglikelihoodRatioWriter::LLR_FILE_SUFFIX       = "_llr";
 const char * LoglikelihoodRatioWriter::LLR_HA_FILE_SUFFIX    = "_llr_ha";
 const char * LoglikelihoodRatioWriter::LOG_LIKL_RATIO_FIELD  = "LLR";
 
+LoglikelihoodRatioWriter::LoglikelihoodRatioWriter(const ScanRunner& scanRunner) : _scanner(scanRunner) {
+  unsigned short uwOffset=0;
+  std::string buffer;
+  try {
+    CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
+  } catch (prg_exception& x) {
+    x.addTrace("constructor()","LoglikelihoodRatioWriter");
+    throw;
+  }
+}
+
 LoglikelihoodRatioWriter::LoglikelihoodRatioWriter(const ScanRunner& scanRunner, bool ispower, bool append) : _scanner(scanRunner) {
   unsigned short uwOffset=0;
   std::string buffer;
   try {
     CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
-    _csvWriter.reset(new CSVDataFileWriter(getFilename(_scanner.getParameters(), buffer, ispower), _dataFieldDefinitions, _scanner.getParameters().isPrintColumnHeaders() && !append, append));
+
+    _outfile.open(getFilename(_scanner.getParameters(), buffer, ispower).c_str(), append ? std::ofstream::app : std::ofstream::trunc);
+    if (!_outfile.is_open())
+        throw resolvable_error("Unable to open/create file %s.", buffer.c_str());
+    _csvWriter.reset(new CSVDataFileWriter(_outfile, _dataFieldDefinitions, _scanner.getParameters().isPrintColumnHeaders() && !append, append));
   } catch (prg_exception& x) {
     x.addTrace("constructor()","LoglikelihoodRatioWriter");
     throw;
   }
+}
+
+LoglikelihoodRatioWriter::~LoglikelihoodRatioWriter() {
+    try {
+        _outfile.close();
+    } catch (...) { }
 }
 
 std::string& LoglikelihoodRatioWriter::getFilename(const Parameters& parameters, std::string& buffer, bool ispower) {
@@ -444,4 +476,84 @@ void LoglikelihoodRatioWriter::write(double llr) const {
         x.addTrace("write()","LoglikelihoodRatioWriter");
         throw;
     }
+}
+
+///////////////////////////////// SequentialScanLoglikelihoodRatioWriter ////////////////////////////////////
+
+const char * SequentialScanLoglikelihoodRatioWriter::SEQUENTIAL_FILE_SUFFIX       = "_sequential";
+
+SequentialScanLoglikelihoodRatioWriter::SequentialScanLoglikelihoodRatioWriter(const ScanRunner& scanRunner) : LoglikelihoodRatioWriter(scanRunner) {
+    std::string buffer;
+    try {
+        _outfile.open(getFilename(_scanner.getParameters(), buffer).c_str(), std::ofstream::trunc);
+        if (!_outfile.is_open())
+            throw resolvable_error("Unable to open/create file %s.", buffer.c_str());
+        // Write the parameter settings that generated this collection of log likelihood values.
+        _outfile << getSequentialParametersString(scanRunner.getParameters(), buffer).c_str() << std::endl;
+
+        _csvWriter.reset(new CSVDataFileWriter(_outfile, _dataFieldDefinitions, true, false));
+    } catch (prg_exception& x) {
+        x.addTrace("constructor()","SequentialScanLoglikelihoodRatioWriter");
+        throw;
+    }
+}
+
+/** Gets the expected filename or user specified name -- if provided. */
+std::string& SequentialScanLoglikelihoodRatioWriter::getFilename(const Parameters& parameters, std::string& buffer) {
+    if (parameters.getSequentialFilename().size())
+        buffer = parameters.getSequentialFilename(); 
+    else 
+        getDerivedFilename(parameters.getOutputFileName(), SequentialScanLoglikelihoodRatioWriter::SEQUENTIAL_FILE_SUFFIX, CSVDataFileWriter::CSV_FILE_EXT, buffer);
+    return buffer;
+}
+
+SequentialScanLoglikelihoodRatioWriter::ParametersList_t & SequentialScanLoglikelihoodRatioWriter::getSequentialParametersList(SequentialScanLoglikelihoodRatioWriter::ParametersList_t& parameterslist) {
+    parameterslist.clear();
+
+    parameterslist.push_back(Parameters::SCAN_TYPE);
+    parameterslist.push_back(Parameters::CONDITIONAL_TYPE);
+    parameterslist.push_back(Parameters::MODEL_TYPE);
+
+    parameterslist.push_back(Parameters::DATA_TIME_RANGES);
+    parameterslist.push_back(Parameters::START_DATA_TIME_RANGE);
+    parameterslist.push_back(Parameters::END_DATA_TIME_RANGE);
+
+    parameterslist.push_back(Parameters::MAXIMUM_WINDOW_PERCENTAGE);
+    parameterslist.push_back(Parameters::MAXIMUM_WINDOW_FIXED);
+    parameterslist.push_back(Parameters::MAXIMUM_WINDOW_TYPE);
+    parameterslist.push_back(Parameters::MINIMUM_WINDOW_FIXED);
+
+    parameterslist.push_back(Parameters::REPLICATIONS);
+
+    parameterslist.push_back(Parameters::SEQUENTIAL_MAX_SIGNAL);
+    parameterslist.push_back(Parameters::SEQUENTIAL_MIN_SIGNAL);
+
+    return parameterslist;
+}
+
+std::string & SequentialScanLoglikelihoodRatioWriter::getSequentialParametersString(const Parameters& parameters, std::string& buffer) {
+    std::stringstream s;
+    ParametersList_t parameterlist;
+    PrintNull printNull;
+
+    try {
+        IniParameterFileAccess access(const_cast<Parameters&>(parameters), printNull);
+        getSequentialParametersList(parameterlist);
+
+        s << "settings=";
+        for (ParametersList_t::const_iterator itr=parameterlist.begin(); itr != parameterlist.end(); ++itr) {
+            if (itr != parameterlist.begin()) s << ";";
+            s << access.GetParameterString(*itr, buffer).c_str();
+        }
+        buffer = s.str();
+    } catch (prg_exception& x) {
+        x.addTrace("getSequentialParametersString()","SequentialScanLoglikelihoodRatioWriter");
+        throw;
+    }
+    return buffer;
+}
+
+void SequentialScanLoglikelihoodRatioWriter::write(double llr, boost::mutex& mutex) const {
+    boost::mutex::scoped_lock lock(mutex);
+    LoglikelihoodRatioWriter::write(llr);
 }

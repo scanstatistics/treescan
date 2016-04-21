@@ -12,7 +12,6 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
   private:
     const IniParameterSpecification   * gpSpecifications;
 
-    virtual const char                * GetParameterLabel(Parameters::ParameterType eParameterType) const;
     const IniParameterSpecification   & GetSpecifications() const;
     void                                ReadIniParameter(const IniFile& SourceFile, Parameters::ParameterType eParameterType);
     std::vector<std::string>          & ReadIniParameter(const IniFile& SourceFile, Parameters::ParameterType eParameterType, std::vector<std::string>& vParameters, size_t iSuffixIndex) const;
@@ -36,6 +35,7 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                WriteAdvancedAnalysisInferenceSettings(IniFile& WriteFile);
     void                                WriteAdvancedOutputSettings(IniFile& WriteFile);
     void                                WriteRunOptionSettings(IniFile& WriteFile);
+    void                                WriteSequentialScanSettings(IniFile& WriteFile);
     void                                WritePowerEvaluationsSettings(IniFile& WriteFile);
     void                                WritePowerSimulationsSettings(IniFile& WriteFile);
     void                                WriteSystemSettings(IniFile& WriteFile);
@@ -43,6 +43,8 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
   public:
      IniParameterFileAccess(Parameters& Parameters, BasePrint& PrintDirection);
      virtual ~IniParameterFileAccess();
+
+     virtual const char               * GetParameterLabel(Parameters::ParameterType eParameterType) const;
 
      virtual bool                       Read(const char* szFilename);
      virtual void                       Write(const char * szFilename);

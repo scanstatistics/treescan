@@ -26,6 +26,8 @@ void ParametersPrint::Print(std::ostream& out) const {
     WriteSettingsContainer(getAdjustmentsParameters(settings), "Adjustments", out);
     //print 'Inference' tab settings
     WriteSettingsContainer(getInferenceParameters(settings), "Inference", out);
+    //print 'Sequential Analysis' tab settings
+    WriteSettingsContainer(getSequentialScanParameters(settings), "Sequential Analysis", out);
     //print 'Power Evaluations' tab settings
     WriteSettingsContainer(getPowerEvaluationsParameters(settings), "Power Evaluations", out);
     //print 'Advanced Input' tab settings
@@ -169,6 +171,24 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
     if (Parameters::isTemporalScanType(_parameters.getScanType())) {
         settings.push_back(std::make_pair("Temporal Time Window Start", _parameters.getTemporalStartRange().toString(buffer)));
         settings.push_back(std::make_pair("Temporal Time Window End", _parameters.getTemporalEndRange().toString(buffer)));
+    }
+    return settings;
+}
+
+/** Prints 'Sequential Analysis' tab parameters to file stream. */
+ParametersPrint::SettingContainer_t & ParametersPrint::getSequentialScanParameters(SettingContainer_t & settings) const {
+    std::string buffer;
+    settings.clear();
+
+    if (_parameters.getScanType() == Parameters::TIMEONLY) {
+        settings.push_back(std::make_pair("Sequential Scan", _parameters.getSequentialScan() ? "Yes" : "No"));
+        if (_parameters.getSequentialScan()) {
+            printString(buffer, "%u", _parameters.getSequentialMinimumSignal());
+            settings.push_back(std::make_pair("Sequnetial Minimum Cases to Signal", buffer));
+            printString(buffer, "%u", _parameters.getSequentialMaximumSignal());
+            settings.push_back(std::make_pair("Sequnetial Maximum Cases to Signal", buffer));
+            settings.push_back(std::make_pair("Sequential File", SequentialScanLoglikelihoodRatioWriter::getFilename(_parameters, buffer)));
+        }
     }
     return settings;
 }

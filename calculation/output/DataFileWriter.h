@@ -7,6 +7,7 @@
 #include "ptr_vector.h"
 #include <iostream>
 #include <fstream>
+#include "boost/thread/mutex.hpp"
 
 /** Collection of field values for buffering records of additional output files.*/
 class RecordBuffer {
@@ -81,14 +82,14 @@ class CSVDataFileWriter {
    public:
      static const char        * CSV_FILE_EXT;
 
-   protected :
-     std::ofstream              _outfile;
+   protected:
+     std::ofstream  & _outfile;
 
      void                       createFormatString(std::string& sValue, const FieldDef& FieldDef, const FieldValue& fv);
 
-   public :
-      CSVDataFileWriter(const std::string& filename, const ptr_vector<FieldDef>& vFieldDefs, bool printHeaders, bool append=false);
-      virtual ~CSVDataFileWriter();
+   public:
+      CSVDataFileWriter(std::ofstream& outfile, const ptr_vector<FieldDef>& vFieldDefs, bool printHeaders, bool append=false);
+      virtual ~CSVDataFileWriter() {}
 
      virtual void	            writeRecord(const RecordBuffer& Record);
 };
@@ -99,12 +100,13 @@ class CutsRecordWriter : public DataRecordWriter {
     static const char         * CUT_FILE_SUFFIX;
 
   private:
-       const ScanRunner                  &  _scanner;
-       std::auto_ptr<CSVDataFileWriter>     _csvWriter;
+       const ScanRunner & _scanner;
+       std::ofstream _outfile;
+       std::auto_ptr<CSVDataFileWriter> _csvWriter;
 
    public:
        CutsRecordWriter(const ScanRunner& scanRunner);
-       virtual ~CutsRecordWriter() {}
+       virtual ~CutsRecordWriter();
 
        static std::string & getFilename(const Parameters& parameters, std::string& buffer);
 
@@ -117,12 +119,13 @@ class PowerEstimationRecordWriter : public DataRecordWriter {
     static const char         * POWER_FILE_SUFFIX;
 
   private:
-       const ScanRunner                  &  _scanner;
-       std::auto_ptr<CSVDataFileWriter>     _csvWriter;
+       const ScanRunner & _scanner;
+       std::ofstream _outfile;
+       std::auto_ptr<CSVDataFileWriter> _csvWriter;
 
    public:
        PowerEstimationRecordWriter(const ScanRunner& scanRunner);
-       virtual ~PowerEstimationRecordWriter() {}
+       virtual ~PowerEstimationRecordWriter();
 
        static std::string & getFilename(const Parameters& parameters, std::string& buffer);
 
@@ -136,16 +139,39 @@ class LoglikelihoodRatioWriter : public DataRecordWriter {
         static const char * LLR_HA_FILE_SUFFIX;
         static const char * LOG_LIKL_RATIO_FIELD;
 
-        const ScanRunner &  _scanner;
+        const ScanRunner & _scanner;
+        std::ofstream _outfile;
         std::auto_ptr<CSVDataFileWriter> _csvWriter;
+
+        LoglikelihoodRatioWriter(const ScanRunner& scanRunner);
 
     public:
         LoglikelihoodRatioWriter(const ScanRunner& scanRunner, bool ispower, bool append);
-        virtual ~LoglikelihoodRatioWriter() {}
+        virtual ~LoglikelihoodRatioWriter();
 
         static std::string & getFilename(const Parameters& parameters, std::string& buffer, bool ispower);
 
         void write(double llr) const;
+};
+
+/** Sequential Scan - Loglikelihood ratio data file writer. */
+class SequentialScanLoglikelihoodRatioWriter : public LoglikelihoodRatioWriter {
+    public:
+        typedef std::vector<Parameters::ParameterType> ParametersList_t;
+        static const char * SEQUENTIAL_FILE_SUFFIX;
+
+    protected:
+        ParametersList_t _sequential_parameters;
+
+    public:
+        SequentialScanLoglikelihoodRatioWriter(const ScanRunner& scanRunner);
+        virtual ~SequentialScanLoglikelihoodRatioWriter() {}
+
+        static std::string & getFilename(const Parameters& parameters, std::string& buffer);
+        static ParametersList_t & getSequentialParametersList(ParametersList_t& parameterslist);
+        static std::string & getSequentialParametersString(const Parameters& parameters, std::string& buffer);
+
+        void write(double llr, boost::mutex& mutex) const;
 };
 //******************************************************************************
 #endif

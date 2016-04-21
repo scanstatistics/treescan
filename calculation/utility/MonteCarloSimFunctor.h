@@ -7,6 +7,7 @@
 #include "ScanRunner.h"
 #include "MCSimJobSource.h"
 #include "Randomization.h"
+#include "WindowLength.h"
 
 class AbstractMeasureList {
     protected:
@@ -128,7 +129,6 @@ private:
     boost::shared_ptr<AbstractRandomizer>     _randomizer;
     const ScanRunner                        & _scanRunner;
 
-    //boost::shared_ptr<std::vector<double> >     _measure;
     boost::shared_ptr<AbstractMeasureList>     _measure_list;
 
     successful_result_type scanTree(param_type const & param);
@@ -138,6 +138,49 @@ private:
 public:
     MCSimSuccessiveFunctor(boost::mutex& mutex, boost::shared_ptr<AbstractRandomizer> randomizer, const ScanRunner& scanRunner);
     //~MCSimSuccessiveFunctor() {}
+    result_type operator() (param_type const & param);
+};
+
+//runs jobs for the "successive" algorithm for the sequential purely temporal scan
+class SequentialMCSimSuccessiveFunctor {
+public:
+    typedef unsigned int param_type;
+    typedef MCSimJobSource::result_type result_type;
+    typedef MCSimJobSource::successful_result_type successful_result_type;
+    
+private:
+    boost::mutex & _mutex;
+    boost::shared_ptr<SimulationNode> _treeSimNode;
+    ScanRunner::Loglikelihood_t _loglikelihood;
+    const ScanRunner & _scanRunner;
+    RandomNumberGenerator _random_number_generator;  /** generates random numbers */
+    DataTimeRange _range;
+    DataTimeRange _startWindow;
+    DataTimeRange _endWindow;
+    WindowLength _window;
+    boost::shared_ptr<SequentialScanLoglikelihoodRatioWriter> _sequential_writer;
+
+public:
+    SequentialMCSimSuccessiveFunctor(boost::mutex& mutex, const ScanRunner& scanner, boost::shared_ptr<SequentialScanLoglikelihoodRatioWriter> writer);
+    result_type operator() (param_type const & param);
+};
+
+class SequentialFileDataSource;
+
+//runs jobs for the "successive" algorithm for the sequential purely temporal scan
+class SequentialReadMCSimSuccessiveFunctor {
+public:
+    typedef unsigned int param_type;
+    typedef MCSimJobSource::result_type result_type;
+    typedef MCSimJobSource::successful_result_type successful_result_type;
+    
+private:
+    boost::mutex & _mutex;
+    const ScanRunner & _scanRunner;
+    boost::shared_ptr<SequentialFileDataSource> _source;
+
+public:
+    SequentialReadMCSimSuccessiveFunctor(boost::mutex& mutex, const ScanRunner& scanner, boost::shared_ptr<SequentialFileDataSource> source);
     result_type operator() (param_type const & param);
 };
 //******************************************************************************

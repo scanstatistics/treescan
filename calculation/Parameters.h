@@ -22,6 +22,10 @@ class Parameters {
                         MODEL_TYPE,
                         EVENT_PROBABILITY,
                         SELF_CONTROL_DESIGN,
+                        SEQUENTIAL_SCAN,
+                        SEQUENTIAL_MIN_SIGNAL,
+                        SEQUENTIAL_MAX_SIGNAL,
+                        SEQUENTIAL_FILE,
                         START_DATA_TIME_RANGE,
                         END_DATA_TIME_RANGE,
                         /* Advanced Analysis - Temporal Window */
@@ -204,6 +208,10 @@ class Parameters {
     bool                                _report_attributable_risk;
     unsigned int                        _attributable_risk_exposed;
     bool                                _self_control_design;
+    bool                                _sequential_scan;
+    unsigned int                        _sequential_min_signal;
+    unsigned int                        _sequential_max_signal;
+    std::string                         _sequential_file;
 
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
@@ -265,8 +273,12 @@ class Parameters {
     unsigned int                        getAttributableRiskExposed() const {return _attributable_risk_exposed;}
     bool                                getReportCriticalValues() const {return _report_critical_values;}
     ResultsFormat                       getResultsFormat() const {return _resultsFormat;}
-    bool                                getSelfControlDesign() const {return _self_control_design;}
     ScanType                            getScanType() const {return _scan_type;}
+    bool                                getSelfControlDesign() const {return _self_control_design;}
+    bool                                getSequentialScan() const {return _sequential_scan;}
+    unsigned int                        getSequentialMinimumSignal() const {return _sequential_min_signal;}
+    unsigned int                        getSequentialMaximumSignal() const {return _sequential_max_signal;}
+    const std::string                 & getSequentialFilename() const {return _sequential_file;}
     const std::string                 & getSourceFileName() const {return _parametersSourceFileName;}
     const DataTimeRange               & getTemporalEndRange() const {return _temporalEndRange;}
     const DataTimeRange               & getTemporalStartRange() const {return _temporalStartRange;}
@@ -280,6 +292,7 @@ class Parameters {
     bool                                isPrintColumnHeaders() const {return _printColumnHeaders;}
     bool                                isRandomlyGeneratingSeed() const {return _randomlyGenerateSeed;}
     bool                                isReadingSimulationData() const {return _read_simulations;}
+    bool                                isSequentialScan() const {return _sequential_scan && _scan_type == Parameters::TIMEONLY;}
     static bool                         isSpatialScanType(ScanType e) {return e == Parameters::TREEONLY || e == Parameters::TREETIME;}
     static bool                         isTemporalScanType(ScanType e) {return e == Parameters::TIMEONLY || e == Parameters::TREETIME;}
     bool                                isWritingSimulationData() const {return _write_simulations;}
@@ -325,6 +338,12 @@ class Parameters {
     void                                setResultsFormat(ResultsFormat e) {_resultsFormat = e;}
     void                                setScanType(ScanType e) {_scan_type = e;}
     void                                setSelfControlDesign(bool b) {_self_control_design = b;}
+
+    void                                setSequentialScan(bool b) {_sequential_scan = b;}
+    void                                setSequentialMinimumSignal(unsigned int i) {_sequential_min_signal = i;}
+    void                                setSequentialMaximumSignal(unsigned int i) {_sequential_max_signal = i;}
+    void                                setSequentialFilename(const char * s, bool bCorrectForRelativePath=false);
+
     void                                setSourceFileName(const char * sParametersSourceFileName);
     void                                setTemporalEndRange(const DataTimeRange& range) {_temporalEndRange = range;}
     void                                setTemporalStartRange(const DataTimeRange& range) {_temporalStartRange = range;}

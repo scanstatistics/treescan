@@ -23,6 +23,7 @@ class ParametersPrint {
     SettingContainer_t & getInferenceParameters(SettingContainer_t & settings) const;
     SettingContainer_t & getInputParameters(SettingContainer_t & settings) const;
     SettingContainer_t & getOutputParameters(SettingContainer_t & settings) const;
+    SettingContainer_t & getSequentialScanParameters(SettingContainer_t & settings) const;
     SettingContainer_t & getPowerEvaluationsParameters(SettingContainer_t & settings) const;
     SettingContainer_t & getPowerSimulationsParameters(SettingContainer_t & settings) const;
     SettingContainer_t & getRunOptionsParameters(SettingContainer_t & settings) const;

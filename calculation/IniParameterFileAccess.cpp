@@ -255,6 +255,7 @@ void IniParameterFileAccess::writeSections(IniFile& ini, const IniParameterSpeci
         WriteAdvancedAnalysisTemporalWindowSettings(ini);
         WriteAdvancedAnalysisAdjustmentsSettings(ini);
         WriteAdvancedAnalysisInferenceSettings(ini);
+        WriteSequentialScanSettings(ini);
         WritePowerEvaluationsSettings(ini);
         WriteAdvancedOutputSettings(ini);
         WritePowerSimulationsSettings(ini);
@@ -313,6 +314,20 @@ void IniParameterFileAccess::WriteAnalysisSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, Parameters::END_DATA_TIME_RANGE, GetParameterString(Parameters::END_DATA_TIME_RANGE, s).c_str(), GetParameterComment(Parameters::END_DATA_TIME_RANGE));
     } catch (prg_exception& x) {
         x.addTrace("WriteAnalysisSettings()","IniParameterFileAccess");
+        throw;
+    }
+}
+
+/** Writes parameter settings grouped under 'Sequential Scan'. */
+void IniParameterFileAccess::WriteSequentialScanSettings(IniFile& WriteFile) {
+    std::string s;
+    try {
+        WriteIniParameter(WriteFile, Parameters::SEQUENTIAL_SCAN, GetParameterString(Parameters::SEQUENTIAL_SCAN, s).c_str(), GetParameterComment(Parameters::SEQUENTIAL_SCAN));
+        WriteIniParameter(WriteFile, Parameters::SEQUENTIAL_MAX_SIGNAL, GetParameterString(Parameters::SEQUENTIAL_MAX_SIGNAL, s).c_str(), GetParameterComment(Parameters::SEQUENTIAL_MAX_SIGNAL));
+        WriteIniParameter(WriteFile, Parameters::SEQUENTIAL_MIN_SIGNAL, GetParameterString(Parameters::SEQUENTIAL_MIN_SIGNAL, s).c_str(), GetParameterComment(Parameters::SEQUENTIAL_MIN_SIGNAL));
+        WriteIniParameter(WriteFile, Parameters::SEQUENTIAL_FILE, GetParameterString(Parameters::SEQUENTIAL_FILE, s).c_str(), GetParameterComment(Parameters::SEQUENTIAL_FILE));
+    } catch (prg_exception& x) {
+        x.addTrace("WriteSequentialScanSettings()","IniParameterFileAccess");
         throw;
     }
 }

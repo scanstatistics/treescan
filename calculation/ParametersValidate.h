@@ -26,6 +26,7 @@ class ParametersValidate {
     bool ValidatePowerEvaluationParametersParameters(BasePrint & PrintDirection) const;
     bool ValidateRandomizationSeed(BasePrint& PrintDirection) const;
     bool ValidateTemporalWindowParameters(BasePrint & PrintDirection) const;
+    bool ValidateSequentialScanParameters(BasePrint & PrintDirection) const;
 
   public:
     ParametersValidate(const Parameters& parameters) : _parameters(parameters) {}

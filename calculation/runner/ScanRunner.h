@@ -247,6 +247,7 @@ private:
     bool                        reportResults(time_t start, time_t end) const;
     bool                        runPowerEvaluations();
     bool                        runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep, unsigned int iteration=0);
+    bool                        runsequentialsimulations(unsigned int num_relica);
     bool                        scanTree();
     bool                        scanTreeTemporalConditionNode();
     bool                        scanTreeTemporalConditionNodeTime();

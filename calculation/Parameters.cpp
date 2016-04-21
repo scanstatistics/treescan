@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 42;
+const int Parameters::giNumParameters = 46;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -72,6 +72,10 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_attributable_risk_exposed != rhs._attributable_risk_exposed) return false;
   if (_self_control_design != rhs._self_control_design) return false;
   //if (_input_sources != rhs._input_sources) return false;
+  if (_sequential_scan != rhs._sequential_scan) return false;
+  if (_sequential_min_signal != rhs._sequential_min_signal) return false;
+  if (_sequential_max_signal != rhs._sequential_max_signal) return false;
+  if (_sequential_file != rhs._sequential_file) return false;
 
   return true;
 }
@@ -165,6 +169,11 @@ void Parameters::copy(const Parameters &rhs) {
     _attributable_risk_exposed = rhs._attributable_risk_exposed;
     _self_control_design = rhs._self_control_design;
     _input_sources = rhs._input_sources;
+
+    _sequential_scan = rhs._sequential_scan;
+    _sequential_min_signal = rhs._sequential_min_signal;
+    _sequential_max_signal = rhs._sequential_max_signal;
+    _sequential_file = rhs._sequential_file;
 }
 
 /* Returns the maximum temporal window in data time units. */
@@ -307,6 +316,11 @@ void Parameters::setAsDefaulted() {
     _self_control_design = false;
 
     _input_sources.clear();
+
+    _sequential_scan = false;
+    _sequential_min_signal=3;
+    _sequential_max_signal=200;
+    _sequential_file="";
 }
 
 /** Sets output data file name.
@@ -316,6 +330,15 @@ void Parameters::setAsDefaulted() {
 void Parameters::setOutputFileName(const char * sOutPutFileName, bool bCorrectForRelativePath) {
   _outputFileName = sOutPutFileName;
   if (bCorrectForRelativePath) assignMissingPath(_outputFileName, true);
+}
+
+/** Sets sequential scan file name.
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file
+    does not exist. */
+void Parameters::setSequentialFilename(const char * s, bool bCorrectForRelativePath) {
+  _sequential_file = s;
+  if (bCorrectForRelativePath) assignMissingPath(_sequential_file, false);
 }
 
 /** Sets power evaluation alternative hypothesis data file name.
@@ -355,13 +378,6 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     }
     setSourceFileName(filename.c_str());
 
-    // Input
-    setTreeFileName(pt.get<std::string>("parameters.input.tree-filename", "").c_str(), true);
-    setCountFileName(pt.get<std::string>("parameters.input.count-filename", "").c_str(), true);
-    _dataTimeRangeSet.assign(pt.get<std::string>("parameters.input.data-time-range", "0,0"));
-    // Advanced Input
-    setCutsFileName(pt.get<std::string>("parameters.input.advanced.input.cuts-filename", "").c_str(), true);
-    _cut_type = static_cast<CutType>(pt.get<unsigned int>("parameters.input.advanced.input.cuts-type", SIMPLE));
     // Analysis
     _scan_type = static_cast<ScanType>(pt.get<unsigned int>("parameters.analysis.scan", TREEONLY));
     _conditional_type = static_cast<ConditionalType>(pt.get<unsigned int>("parameters.analysis.conditional", UNCONDITIONAL));
@@ -382,15 +398,11 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _replications = pt.get<unsigned int>("parameters.analysis.advanced.inference.replications", 999);
     _randomizationSeed = pt.get<unsigned int>("parameters.analysis.advanced.inference.seed", static_cast<unsigned int>(RandomNumberGenerator::glDefaultSeed));
     _randomlyGenerateSeed = pt.get<bool>("parameters.analysis.advanced.inference.generate-seed", false);
-    // Output
-    setOutputFileName(pt.get<std::string>("parameters.output.results-file", "").c_str(), true);
-    _generateHtmlResults = pt.get<bool>("parameters.output.generate-html-results", true);
-    _generateTableResults = pt.get<bool>("parameters.output.generate-table-results", true);
-    // Advanced Output - Additional Output
-    _generate_llr_results = pt.get<bool>("parameters.output.advanced.additional-output.generate-llr-results", true);
-    _report_critical_values = pt.get<bool>("parameters.output.advanced.additional-output.report-critical-values", false);
-    _report_attributable_risk = pt.get<bool>("parameters.output.advanced.additional-output.report-attributable-risk", false);
-    _attributable_risk_exposed = pt.get<unsigned int>("parameters.output.advanced.additional-output.attributable-risk-exposed", 0);
+    // Advanced Analysis - Inference
+    _sequential_scan = pt.get<bool>("parameters.analysis.advanced.sequential-scan.sequential-scan", false);
+    _sequential_max_signal = pt.get<unsigned int>("parameters.analysis.advanced.sequential-scan.sequential-maximum-signal", 200);
+    _sequential_min_signal = pt.get<unsigned int>("parameters.analysis.advanced.sequential-scan.squential-minimum-signal", 3);
+    setSequentialFilename(pt.get<std::string>("parameters.analysis.advanced.sequential-scan.sequential-filename", "").c_str(), true);
     // Power Evaluations
     _perform_power_evaluations = pt.get<bool>("parameters.analysis.advanced.power-evaluations.perform-power-evaluations", false);
     _power_evaluation_type = static_cast<PowerEvaluationType>(pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.power-evaluation-type", PE_WITH_ANALYSIS));
@@ -403,6 +415,22 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _power_baseline_probablility_ratio.first = pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.baseline-probability.numerator", 1);
     _power_baseline_probablility_ratio.second = pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.baseline-probability.denominator", 2);
     setPowerEvaluationAltHypothesisFilename(pt.get<std::string>("parameters.analysis.advanced.power-evaluations.alternative-hypothesis-file", "").c_str(), true);
+    // Input
+    setTreeFileName(pt.get<std::string>("parameters.input.tree-filename", "").c_str(), true);
+    setCountFileName(pt.get<std::string>("parameters.input.count-filename", "").c_str(), true);
+    _dataTimeRangeSet.assign(pt.get<std::string>("parameters.input.data-time-range", "0,0"));
+    // Advanced Input
+    setCutsFileName(pt.get<std::string>("parameters.input.advanced.input.cuts-filename", "").c_str(), true);
+    _cut_type = static_cast<CutType>(pt.get<unsigned int>("parameters.input.advanced.input.cuts-type", SIMPLE));
+    // Output
+    setOutputFileName(pt.get<std::string>("parameters.output.results-file", "").c_str(), true);
+    _generateHtmlResults = pt.get<bool>("parameters.output.generate-html-results", true);
+    _generateTableResults = pt.get<bool>("parameters.output.generate-table-results", true);
+    // Advanced Output - Additional Output
+    _generate_llr_results = pt.get<bool>("parameters.output.advanced.additional-output.generate-llr-results", true);
+    _report_critical_values = pt.get<bool>("parameters.output.advanced.additional-output.report-critical-values", false);
+    _report_attributable_risk = pt.get<bool>("parameters.output.advanced.additional-output.report-attributable-risk", false);
+    _attributable_risk_exposed = pt.get<unsigned int>("parameters.output.advanced.additional-output.attributable-risk-exposed", 0);
     // Power Simulations
     _read_simulations = pt.get<bool>("parameters.power-simulations.input-simulations", true);
     setInputSimulationsFilename(pt.get<std::string>("parameters.power-simulations.input-simulations-file", "").c_str(), true);
@@ -418,13 +446,6 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     ptree pt;
     std::string buffer;
 
-    // Input
-    pt.put("parameters.input.tree-file", _treeFileNames.front());
-    pt.put("parameters.input.count-file", _countFileName);
-    pt.put("parameters.input.data-time-range", _dataTimeRangeSet.toString(buffer));
-    // Advanced Input
-    pt.put("parameters.input.advanced.input.cuts-file", _cutsFileName);
-    pt.put("parameters.input-advanced.input.cuts-type", static_cast<unsigned int>(_cut_type));
     // Analysis
     pt.put("parameters.analysis.scan", static_cast<unsigned int>(_scan_type));
     pt.put("parameters.analysis.conditional", static_cast<unsigned int>(_conditional_type));
@@ -445,6 +466,18 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.analysis.advanced.inference.replications", _replications);
     pt.put("parameters.analysis.advanced.inference.seed", _randomizationSeed);
     pt.put("parameters.analysis.advanced.inference.generate-seed", _randomlyGenerateSeed);
+    // Advanced Analysis - Sequential Scan
+    pt.put("parameters.analysis.advanced.sequential-scan.sequential-scan", _sequential_scan);
+    pt.put("parameters.analysis.advanced.sequential-scan.sequential-maximum-signal", _sequential_max_signal);
+    pt.put("parameters.analysis.advanced.sequential-scan.squential-minimum-signal", _sequential_min_signal);
+    pt.put("parameters.analysis.advanced.sequential-scan.sequential-filename", _sequential_file);
+    // Input
+    pt.put("parameters.input.tree-file", _treeFileNames.front());
+    pt.put("parameters.input.count-file", _countFileName);
+    pt.put("parameters.input.data-time-range", _dataTimeRangeSet.toString(buffer));
+    // Advanced Input
+    pt.put("parameters.input.advanced.input.cuts-file", _cutsFileName);
+    pt.put("parameters.input-advanced.input.cuts-type", static_cast<unsigned int>(_cut_type));
     // Output
     pt.put("parameters.output.results-file", _outputFileName);
     pt.put("parameters.output.generate-html-results", _generateHtmlResults);

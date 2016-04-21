@@ -492,3 +492,37 @@ bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) co
   return true;
 }
 
+bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirection) const {
+    bool bValid=true;
+    if (_parameters.getSequentialScan()) {
+        if (!(_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES)) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nSequential scan is only implemented for the time-only scan conditioned on total cases.\n", BasePrint::P_PARAMERROR);
+        }
+        //if (_parameters.getSequentialMaximumSignal() < 2) {
+        //    bValid = false;
+        //    PrintDirection.Printf("Invalid Parameter Setting:\nThe total cases for sequential scan must be 2 or more.\n", BasePrint::P_PARAMERROR);
+        //}
+        if (!(_parameters.getSequentialMinimumSignal() >= 2 && _parameters.getSequentialMinimumSignal() < _parameters.getSequentialMaximumSignal())) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, the minimum number of cases to signal must be greater than 1 and less than total ssequential cases.\n", BasePrint::P_PARAMERROR);
+        }
+        if (_parameters.getNumReplicationsRequested() < 999) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, the minimum number of replications is 999.\n", BasePrint::P_PARAMERROR);
+        }
+        if (_parameters.getPerformDayOfWeekAdjustment()) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan is not implemented for the day of week adjustment.\n", BasePrint::P_PARAMERROR);
+        }
+        if (_parameters.getPerformPowerEvaluations()) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan is not implemented for the power estimation.\n", BasePrint::P_PARAMERROR);
+        }
+        if (_parameters.isWritingSimulationData() || _parameters.isReadingSimulationData()) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan is not implemented with the options to read or write simulation data.\n", BasePrint::P_PARAMERROR);
+        }
+    }
+    return true;
+}
