@@ -7,7 +7,10 @@
     - call /prj/treescan/installers/IzPack/bin/compile /prj/treescan/installers/IzPackInstaller/install_windows.xml -b . -o install_windows.jar -k standard
 -->
 
-<installation version="1.0">
+<izpack:installation version="5.0"
+                     xmlns:izpack="http://izpack.org/schema/installation"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://izpack.org/schema/installation http://izpack.org/schema/5.0/izpack-installation-5.0.xsd">
 
     <!--
         The info section.
@@ -58,22 +61,17 @@
     </resources>
 
     <listeners>
-        <listener installer="RegistryInstallerListener"
-            uninstaller="RegistryUninstallerListener" >
-            <os family="windows"/>
-        </listener>
+        <listener classname="RegistryInstallerListener" stage="install"/>
+        <listener classname="RegistryUninstallerListener" stage="uninstall"/>
     </listeners>
 
-    <native type="3rdparty" name="COIOSHelper.dll" stage="both">
-      <os family="windows"/>
-    </native>
+    <natives>
+      <native type="3rdparty" name="COIOSHelper.dll" uninstaller="true"/>
+      <native type="3rdparty" name="COIOSHelper_x64.dll" uninstaller="true"/>
 
-    <native type="3rdparty" name="COIOSHelper_x64.dll" stage="both">
-      <os family="windows"/>
-    </native>
-
-    <native type="izpack" name="ShellLink.dll"/>
-    <native type="izpack" name="ShellLink_x64.dll"/>
+      <native type="izpack" name="ShellLink.dll" uninstaller="true"/>
+      <native type="izpack" name="ShellLink_x64.dll" uninstaller="true"/>
+    </natives>
 
     <variables>
        <variable name="DesktopShortcutCheckboxEnabled" value="true"/>
@@ -111,12 +109,12 @@
             <file src="/prj/treescan/build/treescan/installers/documents/userguide.pdf" targetdir="$INSTALL_PATH"/>
         </pack>
 
-        <pack name="Windows Specific Files" required="yes" os="windows">
+        <pack name="Windows Specific Files" required="yes">
             <description>Windows Specific Files</description>
-            <file src="/prj/treescan/build/treescan/java_application/jni_application/dist/TreeScan.exe" targetdir="$INSTALL_PATH" /> />
-            <file src="/prj/treescan/build/treescan/batch_application/Win32/Release/treescan32.exe" targetdir="$INSTALL_PATH" /> />
+            <file src="/prj/treescan/build/treescan/java_application/jni_application/dist/TreeScan.exe" targetdir="$INSTALL_PATH" />
+            <file src="/prj/treescan/build/treescan/batch_application/Win32/Release/treescan32.exe" targetdir="$INSTALL_PATH" />
             <file src="/prj/treescan/build/treescan/library/Win32/Release/treescan32.dll" targetdir="$INSTALL_PATH" />
-            <file src="/prj/treescan/build/treescan/batch_application/x64/Release/treescan64.exe" targetdir="$INSTALL_PATH" /> />
+            <file src="/prj/treescan/build/treescan/batch_application/x64/Release/treescan64.exe" targetdir="$INSTALL_PATH" />
             <file src="/prj/treescan/build/treescan/library/x64/Release/treescan64.dll" targetdir="$INSTALL_PATH" />
             <file src="/prj/treescan/build/treescan/installers/resources/TreeScan.ico" targetdir="$INSTALL_PATH" />
         </pack>
@@ -132,4 +130,4 @@
         </pack>
     </packs>
 
-</installation>
+</izpack:installation>

@@ -7,7 +7,11 @@
     - call /prj/treescan/installers/IzPack/bin/compile /prj/treescan/installers/IzPackInstaller/install_linux.xml -b . -o install_linux.jar -k standard
 -->
 
-<installation version="1.0">
+<izpack:installation version="5.0"                                                                                                       
+                     xmlns:izpack="http://izpack.org/schema/installation"                                                                
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"                                                               
+                     xsi:schemaLocation="http://izpack.org/schema/installation http://izpack.org/schema/5.0/izpack-installation-5.0.xsd">
+
 
     <!--
         The info section.
@@ -84,7 +88,7 @@
             <file src="/prj/treescan/build/treescan/installers/documents/userguide.pdf" targetdir="$INSTALL_PATH"/>
         </pack>
 
-        <pack name="Linux Specific Files" required="yes" os="unix" >
+        <pack name="Linux Specific Files" required="yes">
             <description>Linux Specific Files</description>
             <file src="/prj/treescan/build/binaries/linux/treescan32" targetdir="$INSTALL_PATH" />
             <file src="/prj/treescan/build/binaries/linux/treescan64" targetdir="$INSTALL_PATH" />
@@ -108,4 +112,4 @@
         </pack>
     </packs>
 
-</installation>
+</izpack:installation>

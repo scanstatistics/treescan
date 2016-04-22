@@ -5,7 +5,7 @@ build="/prj/treescan/build"
 installer_version="/prj/treescan/installers/v.1.3.x"
 
 launch4j=$build/packages/launch4j/launch4j-3.0.1
-IzPack=$build/packages/IzPack/IzPack4.3.5
+IzPack=$build/packages/IzPack/IzPack5.0.8
 
 ############ Windows ##############################################################################
 # Build Windows TreeScan executable from java jar file ... TreeScan.jar -> TreeScan.exe.

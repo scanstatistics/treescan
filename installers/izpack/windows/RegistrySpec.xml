@@ -6,7 +6,10 @@
     $Id: RegistrySpec.xml 2163 2008-05-18 13:48:36Z jponge $
 -->
 
-<registry>
+<izpack:registry version="5.0"
+                 xmlns:izpack="http://izpack.org/schema/registry"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://izpack.org/schema/registry http://izpack.org/schema/5.0/izpack-registry-5.0.xsd">
     <pack name="UninstallStuff">
         <!-- Special "pack", if not defined an uninstall key will be generated automatically -->
         <!-- The variable $UNINSTALL_NAME can be only used if CheckedHelloPanel will be used
@@ -34,5 +37,5 @@
                root="HKLM"
                string="techsupport@treescan.org"/>
     </pack>
-</registry>
+</izpack:registry>
 

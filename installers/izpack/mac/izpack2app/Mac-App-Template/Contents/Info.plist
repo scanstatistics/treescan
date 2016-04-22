@@ -23,16 +23,16 @@
 	<key>Java</key>
 	<dict>
 		<key>MainClass</key>
-		<string>com.izforge.izpack.installer.Installer</string>
-		<key>JVMVersion</key>
-		<string>1.5+</string>
-		<key>ClassPath</key>
-			<string>$JAVAROOT/__JAR__</string>
-		<key>Properties</key>
-		<dict>
-			<key>apple.laf.useScreenMenuBar</key>
-			<string>true</string>
-		</dict>
-	</dict>
+    <string>com.izforge.izpack.installer.bootstrap.Installer</string>
+    <key>JVMVersion</key>
+    <string>1.4+</string>
+    <key>ClassPath</key>
+      <string>$JAVAROOT/__JAR__</string>
+    <key>Properties</key>
+    <dict>
+      <key>apple.laf.useScreenMenuBar</key>
+      <string>true</string>
+    </dict>
+  </dict>
 </dict>
 </plist>
