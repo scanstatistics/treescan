@@ -90,5 +90,15 @@ void AbstractRandomizer::_addSimC_C_recursive(size_t id, const NodeStructure::Co
 
 /** Reset seed of randomizer for particular simulation index. */
 void AbstractRandomizer::setSeed(unsigned int iSimulationIndex) {
-    _random_number_generator.SetSeedOffset(iSimulationIndex);
+    try {
+        //calculate seed as unsigned long
+        unsigned long ulSeed = _random_number_generator.GetInitialSeed() + iSimulationIndex;
+        //compare to max seed(declared as positive signed long)
+        if (ulSeed >= static_cast<unsigned long>(_random_number_generator.GetMaxSeed()))
+            throw prg_error("Calculated seed for simulation %u, exceeds defined limit of %i.", "setSeed()", iSimulationIndex, _random_number_generator.GetMaxSeed());
+        _random_number_generator.SetSeed(static_cast<long>(ulSeed));
+    } catch (prg_exception& x) {
+        x.addTrace("setSeed()","AbstractRandomizer");
+        throw;
+    }
 }

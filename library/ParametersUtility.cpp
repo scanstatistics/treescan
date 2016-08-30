@@ -14,7 +14,6 @@ JNIEXPORT jboolean JNICALL Java_org_treescan_app_Parameters_Read(JNIEnv * pEnv, 
 
   try {
      const char *sParameterFilename = pEnv->GetStringUTFChars(filename, &iscopy);
-
      if (sParameterFilename) {
        PrintNull NoPrint;
        ParameterAccessCoordinator(parameters).read(sParameterFilename, NoPrint);
@@ -329,6 +328,17 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jint)ratio.second);
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setRestrictTreeLevels", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getRestrictTreeLevels());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setRestrictedTreeLevels", "(Ljava/lang/String;)V");
+  std::string s;
+  if (!typelist_csv_string<unsigned int>(parameters.getRestrictedTreeLevels(), s)) 
+	  throw prg_error("Unable to convert tree levels", "copyCParametersToJParameters()");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(s.c_str()));
+  jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "setSequentialScan", "(Z)V");
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getSequentialScan());
   jni_error::_detectError(Env);
@@ -615,6 +625,22 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   ratio.second = static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid));
   jni_error::_detectError(Env);
   parameters.setPowerBaselineProbabilityRatio(ratio);
+
+  mid = _getMethodId_Checked(Env, clazz, "getRestrictTreeLevels", "()Z");
+  parameters.setRestrictTreeLevels(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getRestrictedTreeLevels", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  Parameters::RestrictTreeLevels_t list;
+  if (!csv_string_to_typelist<unsigned int>(sFilename, list)) {
+	  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+	  throw prg_error("Unable to convert tree levels", "copyJParametersToCParameters()");
+  }
+  parameters.setRestrictedTreeLevels(list);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   mid = _getMethodId_Checked(Env, clazz, "getSequentialScan", "()Z");
   parameters.setSequentialScan(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));

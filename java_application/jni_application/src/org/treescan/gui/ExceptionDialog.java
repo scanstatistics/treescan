@@ -52,7 +52,7 @@ public class ExceptionDialog extends javax.swing.JDialog {
      * Attempts to get tech support email address; defaults to last known tech address.
      */
     private String getEmailAddress() {
-        String emailAddress = "techsupport@satscan.org"; // default value
+        String emailAddress = "techsupport@treescan.org"; // default value
         try {
             emailAddress = AppConstants.getTechnicalSupportEmail();
         } catch (Throwable e) {

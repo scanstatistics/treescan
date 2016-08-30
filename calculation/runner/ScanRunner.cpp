@@ -327,18 +327,6 @@ double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
     }
 }
 
-unsigned int TreeStatistics::getNodeLevel(const NodeStructure& node, const ScanRunner& scanner) const {
-    unsigned int level=1;
-
-    const NodeStructure * node_ptr = &node;
-    while (!node_ptr->getParents().empty()) {
-        ++level;
-        // We're currently preventing nodes from having more than one parent, see https://www.squishlist.com/ims/treescan/13/.
-        node_ptr = node_ptr->getParents().front();
-    }
-    return level;
-}
-
 /** class constructor */
 ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0), _has_multi_parent_nodes(false) {
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
@@ -406,13 +394,22 @@ const TreeStatistics& ScanRunner::getTreeStatistics() const {
         else
             ++_tree_statistics->_num_parent;
         if (node.getParents().empty()) ++_tree_statistics->_num_root;
-        unsigned int level = _tree_statistics->getNodeLevel(node, *this);
+		unsigned int level = node.getLevel();
         if (_tree_statistics->_nodes_per_level.find(level) == _tree_statistics->_nodes_per_level.end())
             _tree_statistics->_nodes_per_level.insert(std::make_pair(level, static_cast<unsigned int>(1)));
         else
             _tree_statistics->_nodes_per_level[level] += static_cast<unsigned int>(1);
     }
     return *_tree_statistics.get();
+}
+
+/* Returns true if NodeStructure is evaluated in scanning processing. */
+bool ScanRunner::isEvaluated(const NodeStructure& node) const {
+	// If node does not have cases in branch, it is not evaluated.
+	if (node.getBrC() <= 1) return false;
+	if (_parameters.getScanType() != Parameters::TIMEONLY && _parameters.getRestrictTreeLevels())
+		return std::find(_parameters.getRestrictedTreeLevels().begin(), _parameters.getRestrictedTreeLevels().end(), node.getLevel()) == _parameters.getRestrictedTreeLevels().end();
+	return true;
 }
 
 /** Read the relative risks file
@@ -424,10 +421,14 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
 
     bool bValid=true, bEmpty=true;
     ScanRunner::Index_t nodeIndex;
-    const long nodeIdIdx=0, uAdjustmentIndex=1, startidx=2, endidx=3;
+    const long nodeIdIdx=0, 
+		uAdjustmentIndex = _parameters.getScanType() != Parameters::TIMEONLY ? 1 : 0, 
+		startidx = _parameters.getScanType() != Parameters::TIMEONLY ? 2 : 1, 
+		endidx = _parameters.getScanType() != Parameters::TIMEONLY ? 3 : 2;
     boost::dynamic_bitset<> nodeSet;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::POWER_EVALUATIONS_FILE)));
     bool testMultipleNodeRecords(_parameters.getModelType() == Parameters::BERNOULLI);
+	std::string nodeId("all");
 
     // if unconditional/conditional Bernoulli, limit this file to a single entry for each node
     if (testMultipleNodeRecords)
@@ -449,15 +450,17 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
         }
         bEmpty=false;
         //read node identifier
-        std::string nodeId = dataSource->getValueAt(nodeIdIdx);
-        if (lowerString(nodeId) != "all") {
-            nodeIndex = getNodeIndex(dataSource->getValueAt(nodeIdIdx));
-            if (!nodeIndex.first) {
-                bValid = false;
-                _print.Printf("Error: Record %ld in alternative hypothesis file references unknown node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
-                continue;
-            }
-        }
+		if (_parameters.getScanType() != Parameters::TIMEONLY) {
+			nodeId = dataSource->getValueAt(nodeIdIdx);
+			if (lowerString(nodeId) != "all") {
+				nodeIndex = getNodeIndex(dataSource->getValueAt(nodeIdIdx));
+				if (!nodeIndex.first) {
+					bValid = false;
+					_print.Printf("Error: Record %ld in alternative hypothesis file references unknown node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
+					continue;
+				}
+			}
+		}
         //read alternative hypothesis value
         double alternative_hypothesis;
         if (dataSource->getValueAt(uAdjustmentIndex).size() < 1) {
@@ -546,6 +549,13 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
 
 /* Reads count and population data from passed file. The file format is: <node identifier>, <count>, <population> */
 bool ScanRunner::readCounts(const std::string& filename) {
+	// We won't actually read the counts file in this situation but define the total from user specificied value.
+	if (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES && 
+		_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES) {
+		_Nodes.front()->refIntC_C().front() = _parameters.getPowerEvaluationTotalCases();
+		return true;
+	}
+
     _print.Printf("Reading count file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::COUNT_FILE)));
@@ -1141,8 +1151,8 @@ bool ScanRunner::scanTree() {
     //std::string buffer;
     //int hits=0;
     for (size_t n=0; n < _Nodes.size(); ++n) {
-        if (_Nodes[n]->getBrC() > 1) {
-            const NodeStructure& thisNode(*_Nodes[n]);
+        const NodeStructure& thisNode(*_Nodes[n]);
+        if (isEvaluated(thisNode)) {
 
             // Always do simple cut for each node
             //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
@@ -1249,7 +1259,7 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
     //std::string buffer;
     //int hits=0;
     for (size_t n=0; n < _Nodes.size(); ++n) {
-        if (_Nodes[n]->getBrC() > 1) {
+        if (isEvaluated(*_Nodes[n])) {
             const NodeStructure& thisNode(*(_Nodes[n]));
 
             // always do simple cut
@@ -1397,7 +1407,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
     //std::string buffer;
     //int hits=0;
     for (size_t n=0; n < _Nodes.size(); ++n) {
-        if (_Nodes[n]->getBrC() > 1) {
+        if (isEvaluated(*_Nodes[n])) {
             const NodeStructure& thisNode(*(_Nodes[n]));
 
             // always do simple cut
@@ -1744,5 +1754,7 @@ bool ScanRunner::setupTree() {
 
     // Now we can set the data structures of NodeStructure to cumulative -- only relevant for temporal model since other models have one element arrays.
     std::for_each(_Nodes.begin(), _Nodes.end(), std::mem_fun(&NodeStructure::setCumulative));
+	// We can now set each nodes calculated level in tree strcuture.
+    std::for_each(_Nodes.begin(), _Nodes.end(), std::mem_fun(&NodeStructure::assignLevel));
     return true;
 }

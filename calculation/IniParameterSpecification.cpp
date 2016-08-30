@@ -175,12 +175,15 @@ void IniParameterSpecification::Build_1_3_x_ParameterList() {
     _parameter_info[Parameters::POWER_BASELINE_PROBABILITY] = ParamInfo(Parameters::POWER_BASELINE_PROBABILITY, "baseline-probability", 10, _power_evaluations_section);
     _multiple_parameter_info[Parameters::TREE_FILE] = ParamInfo(Parameters::TREE_FILE, "tree-filename", 3, _advanced_input_section);
 
+    _parameter_info[Parameters::RESTRICT_TREE_LEVELS] = ParamInfo(Parameters::RESTRICT_TREE_LEVELS, "restrict-tree-levels", 4, _inference_section);
+    _parameter_info[Parameters::RESTRICTED_TREE_LEVELS] = ParamInfo(Parameters::RESTRICTED_TREE_LEVELS, "excluded-tree-levels", 5, _inference_section);
+
     _parameter_info[Parameters::SEQUENTIAL_SCAN] = ParamInfo(Parameters::SEQUENTIAL_SCAN, "sequential-scan", 1, _sequential_scan_section);
     _parameter_info[Parameters::SEQUENTIAL_MAX_SIGNAL] = ParamInfo(Parameters::SEQUENTIAL_MAX_SIGNAL, "sequential-maximum-signal", 2, _sequential_scan_section);
     _parameter_info[Parameters::SEQUENTIAL_MIN_SIGNAL] = ParamInfo(Parameters::SEQUENTIAL_MIN_SIGNAL, "sequential-minimum-signal", 3, _sequential_scan_section);
     _parameter_info[Parameters::SEQUENTIAL_FILE] = ParamInfo(Parameters::SEQUENTIAL_FILE, "sequential-filename", 4, _sequential_scan_section);
 
-    assert(_parameter_info.size() == 47);
+    assert(_parameter_info.size() == 49);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

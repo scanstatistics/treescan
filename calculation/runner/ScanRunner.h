@@ -79,6 +79,7 @@ private:
     RelationContainer_t     _Parent;
     Parameters::CutType     _cut_type;
     CumulativeStatus        _cumulative_status;
+	unsigned int            _level;             // calculated node level
 
     Ancestors_t             _ancestors;     // nodes which have this node in tree branch
 
@@ -95,11 +96,28 @@ private:
         }
     }
 
+	/* Obtain the level of this node - giving consideration for multiple trees and potential for multiple parents.
+	   If multiple parents, use the shortest distance (https://www.squishlist.com/ims/treescan/29/). */
+    static unsigned int getLevel(const NodeStructure& node) {
+		/* If level already calculated, just return that level. */
+		if (node.getLevel()) 
+			return node.getLevel();
+
+		/* If node doesn't have parents, then level is one. */
+		if (node.getParents().empty()) return 1;
+
+		unsigned int parent_level=std::numeric_limits<unsigned int>::max();
+		for (NodeStructure::RelationContainer_t::const_iterator itr=node.getParents().begin(); itr != node.getParents().end(); ++itr) {
+			parent_level = std::min(parent_level, getLevel(*(*itr)));
+		}
+		return parent_level + 1;
+	}
+
 public:
     NodeStructure(const std::string& identifier) 
-        :_identifier(identifier), _ID(0), _cumulative_status(NON_CUMULATIVE) {}
+        :_identifier(identifier), _ID(0), _cumulative_status(NON_CUMULATIVE), _level(0) {}
     NodeStructure(const std::string& identifier, const Parameters& parameters, size_t container_size) 
-        : _identifier(identifier), _ID(0), _cut_type(parameters.getCutType()), _cumulative_status(NON_CUMULATIVE) {
+        : _identifier(identifier), _ID(0), _cut_type(parameters.getCutType()), _cumulative_status(NON_CUMULATIVE), _level(0) {
             initialize_containers(parameters, container_size);
     }
 
@@ -111,6 +129,7 @@ public:
     int                           getBrC() const {return _BrC_C.front();}
     const CountContainer_t      & getBrC_C() const {return _BrC_C;}
     int                           getNChildren() const {return static_cast<int>(_Child.size());}
+	unsigned int                  getLevel() const {return _level;}
     double                        getIntN() const {return _IntN_C.front();}
     const ExpectedContainer_t   & getIntN_C() const {return _IntN_C;}
     double                        getBrN() const {return _BrN_C.front();}
@@ -136,6 +155,10 @@ public:
         if (parent.refChildren().end() == std::find(parent.refChildren().begin(), parent.refChildren().end(), this))
             parent.refChildren().push_back(this);
     }
+	void assignLevel() {
+		/* Warning - this method could cause infinite loop if check for circular dependency is not first performed. */
+		_level = getLevel(*this);
+	}
     void setAncestors(boost::dynamic_bitset<>& ancestor_nodes) {
         /* convert ON bits in set to indexes stored in _ancestors container */
         _ancestors.clear();
@@ -197,8 +220,6 @@ struct TreeStatistics {
     unsigned int _num_parent;
     NodesLevel_t _nodes_per_level;
 
-    unsigned int getNodeLevel(const NodeStructure& node, const ScanRunner& scanner) const;
-
     TreeStatistics() : _num_nodes(0), _num_root(0), _num_leaf(0), _num_parent(0) {}
 };
 
@@ -219,7 +240,7 @@ public:
     typedef std::vector<TimeIntervalContainer_t>                DayOfWeekIndexes_t;
     typedef boost::shared_ptr<TreeStatistics>                   TreeStatistics_t;
 
-private:
+protected:
     BasePrint                 & _print;
     NodeStructureContainer_t    _Nodes;
     CutStructureContainer_t     _Cut;
@@ -272,6 +293,7 @@ public:
     double                             getTotalN() const {return _TotalN;}
     const TreeStatistics             & getTreeStatistics() const;
     DataTimeRange::index_t             getZeroTranslationAdditive() const {return _zero_translation_additive;}
+	bool                               isEvaluated(const NodeStructure& node) const;
     bool                               reportableCut(const CutStructure& cut) const;
     bool                               run();
     void                               updateCriticalValuesList(double llr) {if (_critical_values.get()) _critical_values->add(llr);}

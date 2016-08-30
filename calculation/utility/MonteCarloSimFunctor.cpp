@@ -70,6 +70,17 @@ MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuc
     return temp_result;
 }
 
+/* Returns true if NodeStructure/SimulationNode is evaluated in scanning processing. */
+bool MCSimSuccessiveFunctor::isEvaluated(const NodeStructure& node, const SimulationNode& simNode) const {
+	// If node does not have cases in branch, it is not evaluated.
+	if (simNode.getBrC() <= 1) return false;
+	if (_scanRunner.getParameters().getScanType() != Parameters::TIMEONLY && _scanRunner.getParameters().getRestrictTreeLevels())
+		return std::find(_scanRunner.getParameters().getRestrictedTreeLevels().begin(), 
+		                 _scanRunner.getParameters().getRestrictedTreeLevels().end(), 
+						 node.getLevel()) == _scanRunner.getParameters().getRestrictedTreeLevels().end();
+	return true;
+}
+
 /* This function randomizes data and scans tree for either the Poisson or Bernoulli model. */
 MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTree(MCSimSuccessiveFunctor::param_type const & param) {
     //randomize data
@@ -79,8 +90,8 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTree(
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
     double simLogLikelihood = -std::numeric_limits<double>::max();
     for (size_t i=0; i < nodes.size(); ++i) {
-        if (_treeSimNodes[i].getBrC() > 1) {
-            const NodeStructure& thisNode(*(nodes[i]));
+		const NodeStructure& thisNode(*(nodes[i]));
+        if (isEvaluated(thisNode, _treeSimNodes[i])) {
             // always do simple cut
             simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(_treeSimNodes[i].getBrC(), nodes[i]->getBrN()));
 
@@ -171,9 +182,9 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
     double simLogLikelihood = -std::numeric_limits<double>::max();
     for (size_t i=0; i < nodes.size(); ++i) {
-        if (_treeSimNodes[i].getBrC() > 1) {
-            const NodeStructure& thisNode(*(nodes[i]));
-            const SimulationNode& thisSimNode(_treeSimNodes[i]);
+		const NodeStructure& thisNode(*(nodes[i]));
+        const SimulationNode& thisSimNode(_treeSimNodes[i]);
+        if (isEvaluated(thisNode, thisSimNode)) {
 
             // always do simple cut
             iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
@@ -303,9 +314,9 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
 
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
     for (size_t i=0; i < nodes.size(); ++i) {
-        if (_treeSimNodes[i].getBrC() > 1) {
-            const NodeStructure& thisNode(*(nodes[i]));
-            const SimulationNode& thisSimNode(_treeSimNodes[i]);
+		const NodeStructure& thisNode(*(nodes[i]));
+        const SimulationNode& thisSimNode(_treeSimNodes[i]);
+        if (isEvaluated(thisNode, thisSimNode)) {
 
             // always do simple cut
             iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());

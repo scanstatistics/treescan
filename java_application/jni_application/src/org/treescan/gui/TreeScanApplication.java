@@ -61,7 +61,8 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
 
     private static final String _application = System.getProperty("user.dir") + System.getProperty("file.separator") + "TreeScan.jar";
     private static final String _user_guide = System.getProperty("user.dir") + System.getProperty("file.separator") + "userguide.pdf";
-    private static Boolean _debug_url = new Boolean(false);
+    private static String _debug_url = "";
+    private static String _debug_auth = "";
     private static String _run_args[] = new String[]{};
     private static final long serialVersionUID = 1L;
     private final ExecuteSessionAction _executeSessionAction = new ExecuteSessionAction();
@@ -191,16 +192,20 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         return args.toString();
     }
 
-    /**
-     * Sets flag for debug application update.
-     * @param is64bitEnabled
-     */
-    public static void setDebugURL(boolean debugURL) {
-        _debug_url = new Boolean(debugURL);
+    public static void setDebugURL(String debug_url) {
+        _debug_url = debug_url;
     }
 
-    public static Boolean getDebugURL() {
+    public static String getDebugURL() {
         return _debug_url;
+    }
+
+    public static void setDebugAuth(String debug_auth) {
+        _debug_auth = debug_auth;
+    }
+
+    public static String getDebugAuth() {
+        return _debug_auth;
     }
 
     /**
@@ -1001,12 +1006,19 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
                     }
                 } catch (Throwable e) {
                 }
-                //check and show End User License Agreement if not "unrequested":
                 String DEBUG_URL_STRING = "-debug-url";
-                boolean debugURL = false;
+                String DEBUG_AUTH_STRING = "-debug-auth";
                 for (int i = 0; i < args.length; ++i) {
                     if (args[i].startsWith(DEBUG_URL_STRING)) {
-                        debugURL = true;
+                        String [] argument = args[i].split("=");
+                        if (argument.length == 2 && argument[1].startsWith("http")) {
+                            TreeScanApplication.setDebugURL(argument[1]);
+                        }
+                    } else if (args[i].startsWith(DEBUG_AUTH_STRING)) {
+                        String [] argument = args[i].split("=");
+                        if (argument.length == 2) {
+                            TreeScanApplication.setDebugAuth(argument[1]);
+                        }
                     }
                 }
                 try {
@@ -1015,7 +1027,6 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
                     new ExceptionDialog(null, e).setVisible(true);
                     return;
                 }
-                TreeScanApplication.setDebugURL(debugURL);
                 TreeScanApplication.setRunArgs(args);                
                 new TreeScanApplication().setVisible(true);
             }

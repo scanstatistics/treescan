@@ -1,0 +1,84 @@
+Leaf1,	Node1
+Leaf1,	Node2
+
+Leaf2,	Node1
+Leaf3,	Node1
+
+Leaf4,	Node2
+Leaf4,	Node3
+
+Leaf5,	Node2
+Leaf6,	Node2
+Leaf7,	Node2
+
+Leaf8,	Node3
+Leaf9,	Node3
+Leaf10,	Node3
+Leaf11, Node3
+
+Leaf12,	Node4
+
+Node3,	Node5
+Node2,	Node5
+
+Node1,	Node6
+Node3,	Node6
+Node4,	Node6
+
+Node5,	Root1
+Node6,	Root1
+
+Root1,
+
+Leaf1,	Node7
+
+Leaf2,	Node7
+Leaf3,	Node7
+
+Leaf4,	Node8
+
+Leaf5,	Node8
+Leaf6,	Node8
+Leaf7,	Node8
+
+Leaf8,	Node9
+Leaf9,	Node9
+Leaf10,	Node9
+Leaf11, Node9
+
+Leaf12,	Node10
+
+Node7,	Node11
+Node8,	Node11
+
+Node9,	Node12
+Node10,	Node12
+
+Node11,	Root2
+Node12,	Root2
+
+Root2,
+
+Leaf1,	Node14
+Leaf4,	Node15
+Leaf5,	Node14
+Leaf6,	Node14
+Leaf7,	Node14
+Leaf8,	Node15
+Leaf9,	Node15
+Leaf10,	Node15
+Leaf11, Node15
+Leaf12,	Node15
+Node14,	Root3
+Node15,	Root3
+Root3,
+
+Leaf1, Node200
+Node200, Node199
+Node199, Node198
+Node198, Node197
+Node197, Node196
+Node196, Node195
+Node195, Node194
+Node194, Root4
+Root4

@@ -55,6 +55,7 @@ class DataRecordWriter {
     static const char         * LOG_LIKL_RATIO_FIELD;
     static const char         * TEST_STATISTIC_FIELD;
     static const char         * P_VALUE_FLD;
+    static const char         * P_LEVEL_FLD;
     static const char         * HYPOTHESIS_ALTERNATIVE_NUM_FIELD;
     static const char         * HA_ALPHA05_FIELD;
     static const char         * HA_ALPHA01_FIELD;

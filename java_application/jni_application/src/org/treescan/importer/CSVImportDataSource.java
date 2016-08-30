@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PushbackInputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -18,7 +19,7 @@ import java.util.logging.Logger;
  */
 public class CSVImportDataSource implements ImportDataSource {
     protected File _sourceFile;
-    protected InputStream _inputStream=null;
+    protected PushbackInputStream _pushbackStream;
     protected char _rowDelimiter='\n';
     protected char _colDelimiter=',';
     protected char _groupDelimiter='"';
@@ -30,7 +31,7 @@ public class CSVImportDataSource implements ImportDataSource {
 
     public CSVImportDataSource(File file, boolean hasHeader, char rowDelimiter, char colDelimiter, char groupDelimiter, int skip) throws FileNotFoundException {
         _sourceFile = file;
-        _inputStream = new FileInputStream(_sourceFile);
+        _pushbackStream = new PushbackInputStream(new FileInputStream(_sourceFile));
         _hasHeader = hasHeader;
         _rowDelimiter = rowDelimiter;
         _colDelimiter = colDelimiter;
@@ -61,7 +62,7 @@ public class CSVImportDataSource implements ImportDataSource {
 
     public void close() {        
         try {
-            if (_inputStream != null) {_inputStream.close(); _inputStream=null;}
+            if (_pushbackStream != null) {_pushbackStream.close(); _pushbackStream=null;}
         } catch (IOException ex) {
             Logger.getLogger(XLSImportDataSource.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -152,12 +153,12 @@ public class CSVImportDataSource implements ImportDataSource {
      */
     public void reset() {
         try {
-            if (_inputStream != null) {
-                _inputStream.close();
+            if (_pushbackStream != null) {
+                _pushbackStream.close();
             }
-            _inputStream = new FileInputStream(_sourceFile);
+            _pushbackStream = new PushbackInputStream(new FileInputStream(_sourceFile));
         } catch (IOException e) {
-            _inputStream = null;
+            _pushbackStream = null;
         }
         _currentRowNumber = 0;
     }
@@ -169,20 +170,30 @@ public class CSVImportDataSource implements ImportDataSource {
      */
     private String readLine() throws IOException {
         //if gStream is null no line can be read
-        if (_inputStream == null) {
+        if (_pushbackStream == null) {
             throw new IOException("Null Stream");
         }
 
         StringBuilder line = new StringBuilder();
-        int c = _inputStream.read();
+        int c = _pushbackStream.read();
         if (c < 0) {
             return null;
         }//throw new EOFException();
-        while ((c != _rowDelimiter) && (c >= 0)) {
-            if ((char)c != '\r') {
+        while (c >= 0) {
+            if (c == _rowDelimiter) {
+                break;
+            }
+            if (c == '\r') {
+                // peek at next character, to see if it is delimiter
+                c = _pushbackStream.read();
+                if (c != _rowDelimiter) {
+                    _pushbackStream.unread(c);
+                }
+                break;
+            } else {
                 line.append((char) c);
             }
-            c = _inputStream.read();
+            c = _pushbackStream.read();
         }
         return line.toString();
     }

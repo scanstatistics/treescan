@@ -241,7 +241,7 @@ public class AboutDialog extends javax.swing.JDialog {
             .addComponent(jTabbedPane1)
         );
 
-        jTabbedPane1.getAccessibleContext().setAccessibleName("About SaTScan");
+        jTabbedPane1.getAccessibleContext().setAccessibleName("About TreeScan");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents

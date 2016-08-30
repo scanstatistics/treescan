@@ -80,7 +80,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private boolean _executed_import=false;
     private boolean _needs_import_save=false;
     private boolean _refresh_related_settings=false;
-
+    private boolean _excel_has_header=true;
+    
     /** Creates new form FileSourceWizard */
     public FileSourceWizard(java.awt.Frame parent,
                               final String sourceFile,
@@ -367,8 +368,18 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 builder.append("&lt;Node ID&gt;&#44;  &lt;Cut Type&gt;");
                 break;
             case Power_Evaluations:
+                if (_startingscantype == Parameters.ScanType.TIMEONLY)
+                    builder.append(" using the time-only scan");                
+                else if (_startingscantype == Parameters.ScanType.TREEONLY)
+                    builder.append(" using the tree-only scan");
+                else if (_startingscantype == Parameters.ScanType.TREETIME)
+                    builder.append(" using the tree-time scan");
+                
                 builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
-                builder.append("&lt;Node ID&gt;&#44;  &lt;Risk Adjustment&gt;"); 
+                if (_startingscantype == Parameters.ScanType.TIMEONLY)
+                    builder.append("&lt;Risk Adjustment&gt;  ");
+                else
+                    builder.append("&lt;Node ID&gt;&#44;  &lt;Risk Adjustment&gt;"); 
                 if (_startingscantype == Parameters.ScanType.TIMEONLY || _startingscantype == Parameters.ScanType.TREETIME) {
                     builder.append("&#44; &lt;Start&gt;&#44;  &lt;End&gt;");                     
                 } break;
@@ -393,7 +404,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private ImportDataSource getImportSource() throws FileNotFoundException {
         if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel97_2003 ||
                    _input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
-            return new XLSImportDataSource(new File(getSourceFilename()), true);
+            return new XLSImportDataSource(new File(getSourceFilename()), _excel_has_header);
         } else {
             int skipRows = Integer.parseInt(_ignoreRowsTextField.getText());
             return new CSVImportDataSource(new File(getSourceFilename()), _firstRowColumnHeadersCheckBox.isSelected(), '\n', getColumnDelimiter(), getGroupMarker(), skipRows);
@@ -516,7 +527,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     source.close();
                 } else if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel97_2003 ||
                            _input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
-                    XLSImportDataSource source = new XLSImportDataSource(file, true);
+                    XLSImportDataSource source = new XLSImportDataSource(file, _excel_has_header);
                     names = source.getColumnNames();
                     source.close();
                 }
@@ -724,7 +735,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             if (_preview_table_model != null) {_preview_table_model.close(); _preview_table_model=null;}
             if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel97_2003 ||
                        _input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.Excel) {
-                ImportDataSource source = new XLSImportDataSource(new File(getSourceFilename()), true);
+                 _excel_has_header = JOptionPane.showConfirmDialog(this, "Does the first row in this Excel file contain column headers?", 
+                                                                   "Excel Options", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;                
+                ImportDataSource source = new XLSImportDataSource(new File(getSourceFilename()), _excel_has_header);
                 _preview_table_model = new PreviewTableModel(source);
             } else {
                 int skipRows = Integer.parseInt(_ignoreRowsTextField.getText());
@@ -847,6 +860,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _import_variables.add(new ImportVariable("Relative Risk", 1, true, null, null));
         _import_variables.add(new ImportVariable("Start", 2, true, null, null));
         _import_variables.add(new ImportVariable("End", 3, true, null, null));
+        /*if (_startingscantype != Parameters.ScanType.TIMEONLY)
+            _import_variables.add(new ImportVariable("Node ID", 0, true, null, null));
+        _import_variables.add(new ImportVariable("Relative Risk", _startingscantype != Parameters.ScanType.TIMEONLY ? 1 : 0, true, null, null));
+        _import_variables.add(new ImportVariable("Start", _startingscantype != Parameters.ScanType.TIMEONLY ? 2 : 1, true, null, null));
+        _import_variables.add(new ImportVariable("End", _startingscantype != Parameters.ScanType.TIMEONLY ? 3 : 2, true, null, null));*/
     }
         
     /** Sets InputSourceSettings object from user selections in wizard. */
@@ -931,6 +949,10 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     variable.setShowing(true);
                     model.setShowing(variable);
                 }
+                // Node ID variable
+                _import_variables.get(0).setShowing(_displayVariablesComboBox.getSelectedIndex() != 6/* Time-Only*/);
+                model.setShowing(_import_variables.get(0));
+                
                 /* start and end dates are only for temporal scans*/
                 _import_variables.get(2).setShowing(_displayVariablesComboBox.getSelectedIndex() == 6 /* Time-Only */ ||
                                                     _displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */);

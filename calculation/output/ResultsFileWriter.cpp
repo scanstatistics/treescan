@@ -134,6 +134,10 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                         }
                     }
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer.c_str());
+
+					PrintFormat.PrintSectionLabel(outfile, "Tree Level", true);
+					printString(buffer, "%ld", _scanRunner.getNodes()[_scanRunner.getCuts()[k]->getID()]->getLevel());
+					PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                 }
 
                 if (parameters.getConditionalType() == Parameters::NODEANDTIME) {
@@ -188,15 +192,15 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 } else {
                     PrintFormat.PrintSectionLabel(outfile, "Log Likelihood Ratio", true);
                 }
-                printString(buffer, "%.1lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts()[k]->getLogLikelihood()));
+                printString(buffer, "%.6lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts()[k]->getLogLikelihood()));
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                 if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/) {
                     PrintFormat.PrintSectionLabel(outfile, "P-value", true);
                     printString(buffer, format.c_str(), (double)_scanRunner.getCuts()[k]->getRank() /(parameters.getNumReplicationsRequested() + 1));
-                    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer, 2);
-                } else {
-                    outfile << std::endl;
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                 }
+
+				outfile << std::endl;
                 k++;
             }
         }
@@ -417,7 +421,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             outfile << "<thead><tr><th>No.</th>";
             // skip reporting node identifier for time-only scans
             if (parameters.getScanType() != Parameters::TIMEONLY) {
-                outfile << "<th>Node Identifier</th>";
+                outfile << "<th>Node Identifier</th><th>Tree Level</th>";
             }
             if (Parameters::isTemporalScanType(parameters.getScanType())) {
                // skip reporting node cases for time-only scans
@@ -469,6 +473,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                         }
                     }
                     outfile << "</td>";
+                    outfile << "<td>" << printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts()[k]->getID()]->getLevel())).c_str() << "</td>";
                 }
                 if (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) {
                     // write node cases and time window
@@ -501,7 +506,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                      buffer = _scanRunner.getCuts()[k]->getAttributableRiskAsString(_scanRunner, buffer);
                     outfile << "<td>" << buffer << "</td>";
                 }
-                outfile << "<td>" << printString(buffer, "%.1lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts()[k]->getLogLikelihood())).c_str() << "</td>";
+                outfile << "<td>" << printString(buffer, "%.6lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts()[k]->getLogLikelihood())).c_str() << "</td>";
                 // write p-value
                 if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/) {
                     outfile << "<td>" << printString(buffer, format.c_str(), (double)_scanRunner.getCuts()[k]->getRank() /(parameters.getNumReplicationsRequested() + 1)) << "</td>";

@@ -72,6 +72,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::REPLICATIONS            : return "number of simulation replications (0, 9, 999, n999)";
             case Parameters::RANDOMIZATION_SEED      : return "randomization seed (integer)";
             case Parameters::RANDOMLY_GENERATE_SEED  : return "generate randomization seed (y/n)";
+            case Parameters::RESTRICT_TREE_LEVELS    : return "restrict tree levels evaluated (y/n)";
+            case Parameters::RESTRICTED_TREE_LEVELS  : return "tree levels excluded from evaluation (csv list of unsigned integers, root level is 1)";
             /* Output */
             case Parameters::RESULTS_FILE            : return "results filename";
             case Parameters::RESULTS_HTML            : return "create HTML results (y/n)";
@@ -145,6 +147,9 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::REPLICATIONS             : return AsString(s, _parameters.getNumReplicationsRequested());
             case Parameters::RANDOMIZATION_SEED       : return AsString(s, static_cast<unsigned int>(_parameters.getRandomizationSeed()));
             case Parameters::RANDOMLY_GENERATE_SEED   : return AsString(s, _parameters.isRandomlyGeneratingSeed());
+			case Parameters::RESTRICT_TREE_LEVELS     : return AsString(s, _parameters.getRestrictTreeLevels());
+			case Parameters::RESTRICTED_TREE_LEVELS   : typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), s);
+				                                        return s;
             /* Output */
             case Parameters::RESULTS_FILE             : s = _parameters.getOutputFileName(); return s;
             case Parameters::RESULTS_HTML             : return AsString(s, _parameters.isGeneratingHtmlResults());
@@ -319,6 +324,14 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::REPLICATIONS             : _parameters.setNumReplications(ReadUnsignedInt(value, e)); break;
             case Parameters::RANDOMIZATION_SEED       : _parameters.setRandomizationSeed(static_cast<long>(ReadInt(value, e))); break;
             case Parameters::RANDOMLY_GENERATE_SEED   : _parameters.setRandomlyGeneratingSeed(ReadBoolean(value, e)); break;
+			case Parameters::RESTRICT_TREE_LEVELS     : _parameters.setRestrictTreeLevels(ReadBoolean(value, e)); break;
+            case Parameters::RESTRICTED_TREE_LEVELS   : {
+				                                        std::vector<unsigned int> list;
+				                                        if (!csv_string_to_typelist<unsigned int>(value.c_str(), list))
+														    throw parameter_error("Invalid Parameter Setting:\nFor parameter '%s', unable to read as comma separated list of integers.\n", GetParameterLabel(e), value.c_str());
+														_parameters.setRestrictedTreeLevels(list);
+														}
+														break;
             /* Output */
             case Parameters::RESULTS_FILE             : _parameters.setOutputFileName(value.c_str(), true); break;
             case Parameters::RESULTS_HTML             : _parameters.setGeneratingHtmlResults(ReadBoolean(value, e)); break;

@@ -66,6 +66,8 @@ public class Parameters implements Cloneable {
     private boolean _self_control_design=false;
     private int _power_baseline_probability_ratio_numerator=1;
     private int _power_baseline_probability_ratio_denominator=2;
+    private boolean _restrict_tree_levels=false;
+    private String _restricted_tree_levels = "";	
     private boolean _sequential_scan=false;
     private int _sequential_min_signal=3;
     private int _sequential_max_signal=200;
@@ -93,7 +95,8 @@ public class Parameters implements Cloneable {
           newObject._input_sources = new ArrayList<InputSourceSettings>();
           for (InputSourceSettings iss : _input_sources) {
             newObject._input_sources.add(iss.clone());
-          }          
+          }
+          newObject._restricted_tree_levels = new String(_restricted_tree_levels);
     	  return newObject; 
       } catch (CloneNotSupportedException e) {
         throw new InternalError("clone() failed!");
@@ -151,11 +154,18 @@ public class Parameters implements Cloneable {
     	  if (_printColumnHeaders != rhs._printColumnHeaders) return false;
 
           if (_power_baseline_probability_ratio_numerator != rhs._power_baseline_probability_ratio_numerator) return false;
-          if (_power_baseline_probability_ratio_denominator != rhs._power_baseline_probability_ratio_denominator) return false;
+          if (_power_baseline_probability_ratio_denominator != rhs._power_baseline_probability_ratio_denominator) return false;          
+          if (_restrict_tree_levels != rhs._restrict_tree_levels) return false;
+          if (!_restricted_tree_levels.equals(rhs._restricted_tree_levels)) return false;
           
           return true;
     }
 
+    public boolean getRestrictTreeLevels() {return _restrict_tree_levels;}
+    public void setRestrictTreeLevels(boolean b) {_restrict_tree_levels = b;}
+    public final String getRestrictedTreeLevels() {return _restricted_tree_levels;}
+    public void setRestrictedTreeLevels(final String s) {_restricted_tree_levels = s;}
+	
     public boolean getSequentialScan() {return _sequential_scan;}
     public void setSequentialScan(boolean b) {_sequential_scan = b;}
     

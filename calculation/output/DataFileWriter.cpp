@@ -225,6 +225,7 @@ const char * DataRecordWriter::ATTRIBUTABLE_RISK_FIELD                   = "Attr
 const char * DataRecordWriter::LOG_LIKL_RATIO_FIELD                      = "Log Likelihood Ratio";
 const char * DataRecordWriter::TEST_STATISTIC_FIELD                      = "Test Statistic";
 const char * DataRecordWriter::P_VALUE_FLD                               = "P-value";
+const char * DataRecordWriter::P_LEVEL_FLD                               = "Tree Level";
 const size_t DataRecordWriter::DEFAULT_LOC_FIELD_SIZE                    = 30;
 const size_t DataRecordWriter::MAX_LOC_FIELD_SIZE                        = 254;
 
@@ -245,6 +246,9 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
   try {
     CreateField(_dataFieldDefinitions, CUT_NUM_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     CreateField(_dataFieldDefinitions, NODE_ID_FIELD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()), 0, uwOffset, 0);
+	if (params.getScanType() != Parameters::TIMEONLY) {
+		CreateField(_dataFieldDefinitions, P_LEVEL_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+	}
     switch (params.getModelType()) {
         case Parameters::BERNOULLI :
             CreateField(_dataFieldDefinitions, OBSERVATIONS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
@@ -316,6 +320,9 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
     try {
         Record.GetFieldValue(CUT_NUM_FIELD).AsDouble() = cutIndex + 1;
         Record.GetFieldValue(NODE_ID_FIELD).AsString() = _scanner.getNodes()[_scanner.getCuts()[cutIndex]->getID()]->getIdentifier();
+		if (params.getScanType() != Parameters::TIMEONLY) {
+			Record.GetFieldValue(P_LEVEL_FLD).AsDouble() = static_cast<int>(_scanner.getNodes()[_scanner.getCuts()[cutIndex]->getID()]->getLevel());
+		}
         switch (params.getModelType()) {
             case Parameters::BERNOULLI :
                 Record.GetFieldValue(OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(_scanner.getCuts()[cutIndex]->getN());
@@ -359,6 +366,7 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
         if (_scanner.getParameters().getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/) {
             Record.GetFieldValue(P_VALUE_FLD).AsDouble() =  static_cast<double>(_scanner.getCuts()[cutIndex]->getRank()) /(_scanner.getParameters().getNumReplicationsRequested() + 1);
         }
+
         _csvWriter->writeRecord(Record);
     } catch (prg_exception& x) {
         x.addTrace("write()","CutsRecordWriter");

@@ -1,7 +1,9 @@
 package org.treescan.gui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Font;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +20,7 @@ import org.treescan.app.Parameters;
 import org.treescan.gui.utils.FileSelectionDialog;
 import org.treescan.gui.utils.Utils;
 import org.treescan.app.UnknownEnumException;
+import org.treescan.gui.utils.TextPrompt;
 import org.treescan.gui.utils.InputFileFilter;
 import org.treescan.importer.InputSourceSettings;
 
@@ -34,7 +37,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      * Creates new form ParameterSettingsFrame
      */
-    public AdvancedParameterSettingsFrame(final JRootPane rootPane, final ParameterSettingsFrame analysisSettingsWindow, final Parameters parameters) {
+    public AdvancedParameterSettingsFrame(final JRootPane rootPane, final ParameterSettingsFrame analysisSettingsWindow/*, final Parameters parameters*/) {
         initComponents();
 
         setFrameIcon(new ImageIcon(getClass().getResource("/TreeScan.png")));
@@ -51,7 +54,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _glass.addMouseMotionListener(adapter);
         // Add modal internal frame to glass pane
         _glass.add(this);
-        setupInterface(parameters);
+        //setupInterface(parameters);
     }
 
     /**
@@ -138,7 +141,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     public boolean getDefaultsSetForAnalysisOptions() {
         boolean bReturn = true;
+        // Inference tab
         bReturn &= (Integer.parseInt(_montCarloReplicationsTextField.getText()) == 999);
+        bReturn &= (_restrict_evaluated_levels.isSelected() == false);
+        bReturn &= _restricted_levels.getText().equals("");
+        
         bReturn &= _percentageTemporalRadioButton.isSelected();
         bReturn &= (Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 50.0);
         bReturn &= (Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()) == 1);
@@ -234,7 +241,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         // Inference tab
         parameters.setNumReplications(Integer.parseInt(_montCarloReplicationsTextField.getText()));
-
+        parameters.setRestrictTreeLevels(_restrict_evaluated_levels.isSelected());
+        parameters.setRestrictedTreeLevels(_restricted_levels.getText());
+        
         // Temporal Window tab
         parameters.setMaximumWindowPercentage(Double.parseDouble(_maxTemporalClusterSizeTextField.getText()));
         parameters.setMaximumWindowLength(Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()));
@@ -296,7 +305,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * controls pulled these default values from the CParameter class
      */
     private void setDefaultsForAnalysisTabs() {
+        // Inference tab
         _montCarloReplicationsTextField.setText("999");
+        _restrict_evaluated_levels.setSelected(false);
+        _restricted_levels.setText("");
+        
         _percentageTemporalRadioButton.setSelected(true);
         _maxTemporalClusterSizeTextField.setText("50");
         _maxTemporalClusterSizeUnitsTextField.setText("1");
@@ -316,13 +329,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _numberPowerReplications.setText("1000");       
     }
 
-    private void setupInterface(final Parameters parameters) {
+    public void setupInterface(final Parameters parameters) {
         // Advanced Input tab
         _cutFileTextField.setText(parameters.getCutsFileName());
         _cutFileTextField.setCaretPosition(0);
         
         // Inference tab
         _montCarloReplicationsTextField.setText(Integer.toString(parameters.getNumReplicationsRequested()));
+        _restrict_evaluated_levels.setSelected(parameters.getRestrictTreeLevels());
+        _restricted_levels.setText(parameters.getRestrictedTreeLevels());
         
         // Temporal Window tab
         _percentageTemporalRadioButton.setSelected(parameters.getMaximumWindowType() == Parameters.MaximumWindowType.PERCENTAGE_WINDOW);
@@ -414,8 +429,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
                 Parameters.ModelType modelType = _settings_window.getModelType();
                 Parameters.ConditionalType conditonalType = _settings_window.getConditionalType();
-                if (!((modelType == Parameters.ModelType.POISSON || modelType == Parameters.ModelType.BERNOULLI) && conditonalType == Parameters.ConditionalType.TOTALCASES)) {
-                    throw new AdvFeaturesExpection("The power evaluation option to define total cases is only permitted with the conditional Poisson and Bernoulli models.\n", FocusedTabSet.ANALYSIS, (Component) _totalPowerCases);
+                if (!((modelType == Parameters.ModelType.POISSON || 
+                       modelType == Parameters.ModelType.BERNOULLI || 
+                       _settings_window.getScanType() == Parameters.ScanType.TIMEONLY) && conditonalType == Parameters.ConditionalType.TOTALCASES)) {
+                    throw new AdvFeaturesExpection("The power evaluation option to define total cases is only permitted with the conditional Poisson model, Bernoulli model or time-only scan.\n", FocusedTabSet.ANALYSIS, (Component) _totalPowerCases);
                 }
             }
             int replica = Integer.parseInt(_montCarloReplicationsTextField.getText());
@@ -552,6 +569,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (!((dNumReplications == 0 || dNumReplications == 9 || dNumReplications == 19 || (dNumReplications + 1) % 1000 == 0))) {
             throw new AdvFeaturesExpection("Invalid number of Monte Carlo replications.\nChoices are: 0, 9, 999, or value ending in 999.", FocusedTabSet.ANALYSIS, (Component) _montCarloReplicationsTextField);
         }
+        if (_restrict_evaluated_levels.isEnabled() && _restrict_evaluated_levels.isSelected()) {
+            if (_restricted_levels.getText().trim().length() == 0) {
+                throw new AdvFeaturesExpection("Please specify a comma separated list of integers that represent node levels.", FocusedTabSet.ANALYSIS, (Component)_restricted_levels);
+            }           
+            List<Integer> list = new ArrayList<Integer>();
+            try {
+                for (String field : _restricted_levels.getText().split(","))
+                    list.add(Integer.parseInt(field.trim()));
+            } catch (java.lang.NumberFormatException e) {
+                throw new AdvFeaturesExpection("Please specify a comma separated list of integers that represent node levels.", FocusedTabSet.ANALYSIS, (Component)_restricted_levels);                
+            }            
+        }
     }
 
     /**
@@ -624,7 +653,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             default:
         }                
         _powerEvaluationWithSpecifiedCases.setEnabled(bEnableGroup && _performPowerEvaluations.isSelected() && 
-                                                      (eModelType == Parameters.ModelType.POISSON || eModelType == Parameters.ModelType.BERNOULLI) &&
+                                                      (eModelType == Parameters.ModelType.POISSON || eModelType == Parameters.ModelType.BERNOULLI || scanType == Parameters.ScanType.TIMEONLY) &&
                                                       _settings_window.getConditionalType() == Parameters.ConditionalType.TOTALCASES);        
         if (_powerEvaluationsGroup.isEnabled() && _powerEvaluationWithSpecifiedCases.isSelected() && !_powerEvaluationWithSpecifiedCases.isEnabled())
             _powerEvaluationWithCaseFile.setSelected(true);            
@@ -641,6 +670,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _eventProbabiltyNumerator.setEnabled(_performPowerEvaluations.isSelected() && enableEvent);
         _eventProbabilityLabel2.setEnabled(_performPowerEvaluations.isSelected() && enableEvent);
         _eventProbabiltyDenominator.setEnabled(_performPowerEvaluations.isSelected() && enableEvent);
+    }
+
+    /**
+     * Enabled the restricted levels group based upon current settings.
+     */
+    public void enableRestrictedLevelsGroup() {
+        boolean bEnableGroup = _settings_window.getScanType() != Parameters.ScanType.TIMEONLY;
+        _restrict_evaluated_levels.setEnabled(bEnableGroup);
+        _restricted_levels.setEnabled(bEnableGroup && _restrict_evaluated_levels.isSelected());
     }
 
     /**
@@ -691,6 +729,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         jPanel1 = new javax.swing.JPanel();
         _labelMonteCarloReplications = new javax.swing.JLabel();
         _montCarloReplicationsTextField = new javax.swing.JTextField();
+        jPanel3 = new javax.swing.JPanel();
+        _restricted_levels = new javax.swing.JTextField();
+        _restrict_evaluated_levels = new javax.swing.JCheckBox();
         _advanced_power_evaluation_tab = new javax.swing.JPanel();
         _powerEvaluationsGroup = new javax.swing.JPanel();
         _performPowerEvaluations = new javax.swing.JCheckBox();
@@ -1007,13 +1048,50 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Tree Levels"));
+
+        TextPrompt tp = new TextPrompt("enter comma separated list of integers - root is 1", _restricted_levels);
+        tp.setForeground( Color.BLUE );
+        tp.changeAlpha(0.5f);
+        tp.changeStyle(Font.BOLD + Font.ITALIC);
+
+        _restrict_evaluated_levels.setText("Do not evaluate tree levels:");
+        _restrict_evaluated_levels.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableRestrictedLevelsGroup();
+                enableSetDefaultsButton();
+            }
+        });
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_restrict_evaluated_levels)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_restricted_levels)
+                .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_restrict_evaluated_levels)
+                    .addComponent(_restricted_levels, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout _advanced_inferenece_tabLayout = new javax.swing.GroupLayout(_advanced_inferenece_tab);
         _advanced_inferenece_tab.setLayout(_advanced_inferenece_tabLayout);
         _advanced_inferenece_tabLayout.setHorizontalGroup(
             _advanced_inferenece_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_advanced_inferenece_tabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(_advanced_inferenece_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _advanced_inferenece_tabLayout.setVerticalGroup(
@@ -1021,7 +1099,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advanced_inferenece_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(259, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(203, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _advanced_inferenece_tab);
@@ -1659,6 +1739,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JCheckBox _reportCriticalValuesCheckBox;
     private javax.swing.JCheckBox _reportLLRResultsAsCsvTable;
     private javax.swing.JPanel _report_critical_values_group;
+    private javax.swing.JCheckBox _restrict_evaluated_levels;
+    private javax.swing.JTextField _restricted_levels;
     private javax.swing.JTextField _sequential_analysis_file;
     private javax.swing.JButton _sequential_analysis_file_browse;
     private javax.swing.JLabel _sequential_analysis_file_label;
@@ -1669,6 +1751,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _totalPowerCases;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.ButtonGroup maximumWindowButtonGroup;
     // End of variables declaration//GEN-END:variables

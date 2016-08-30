@@ -355,8 +355,8 @@ bool ParametersValidate::ValidatePowerEvaluationParametersParameters(BasePrint &
         bValid = false;
     }
     if (_parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES &&
-        !((_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI) && _parameters.getConditionalType() == Parameters::TOTALCASES)) {
-        PrintDirection.Printf("%s:\nThe power evaluation option to define total cases is only permitted with the conditional Poisson or conditional Bernoulli models.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        !((_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI || _parameters.getScanType() == Parameters::TIMEONLY) && _parameters.getConditionalType() == Parameters::TOTALCASES)) {
+        PrintDirection.Printf("%s:\nThe power evaluation option to define total cases is only permitted with the conditional Poisson model or conditional Bernoulli model or time only scan.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         bValid = false;
     }
     if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES &&

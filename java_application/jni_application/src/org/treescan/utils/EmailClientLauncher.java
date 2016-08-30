@@ -28,9 +28,9 @@ public class EmailClientLauncher {
         //append environment variables
         StringBuilder info = new StringBuilder("System Information:\n");
         try { //JNI library might not be available.
-            info.append("SaTScan Application Version").append(" : ").append(AppConstants.getGraphicalVersion()).append("\n");
-            info.append("SaTScan Engine Version").append(" : ").append(AppConstants.getVersion()).append("\n");
-            info.append("SaTScan Version Id").append(" : ").append(AppConstants.getVersionId()).append("\n");
+            info.append("TreeScan Application Version").append(" : ").append(AppConstants.getGraphicalVersion()).append("\n");
+            info.append("TreeScan Engine Version").append(" : ").append(AppConstants.getVersion()).append("\n");
+            info.append("TreeScan Version Id").append(" : ").append(AppConstants.getVersionId()).append("\n");
         } catch (Throwable e) {}
         info.append("os.name").append(" : ").append(System.getProperty("os.name")).append("\n");
         info.append("java.vendor").append(" : ").append(System.getProperty("java.vm.vendor")).append("\n");

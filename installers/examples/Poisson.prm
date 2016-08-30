@@ -53,6 +53,10 @@ perform-day-of-week-adjustments=n
 [Inference]
 ;number of simulation replications (0, 9, 999, n999)
 monte-carlo-replications=9999
+;restrict tree levels evaluated (y/n)
+restrict-tree-levels=n
+;tree levels excluded from evaluation (csv list of unsigned integers, root level is 1)
+excluded-tree-levels=
 ;randomization seed (integer)
 randomization-seed=12345678
 ;generate randomization seed (y/n)
@@ -116,5 +120,5 @@ parallel-processes=0
 
 [System]
 ;parameters version - do not modify
-parameters-version=1.3.0
+parameters-version=1.4.0
 

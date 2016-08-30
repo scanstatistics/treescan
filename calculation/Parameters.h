@@ -39,6 +39,8 @@ class Parameters {
                         REPLICATIONS,
                         RANDOMIZATION_SEED,
                         RANDOMLY_GENERATE_SEED,
+						RESTRICT_TREE_LEVELS,
+						RESTRICTED_TREE_LEVELS,
                         /* Output */
                         RESULTS_FILE,
                         RESULTS_HTML,
@@ -157,6 +159,7 @@ class Parameters {
   public:
     typedef std::pair<ParameterType, unsigned int> InputSourceKey_t; // ParameterType , index
     typedef std::map<InputSourceKey_t, InputSource> InputSourceContainer_t;
+    typedef std::vector<unsigned int> RestrictTreeLevels_t;
 
   private:
     InputSourceContainer_t              _input_sources;
@@ -208,6 +211,8 @@ class Parameters {
     bool                                _report_attributable_risk;
     unsigned int                        _attributable_risk_exposed;
     bool                                _self_control_design;
+	bool                                _restrict_tree_levels;
+	RestrictTreeLevels_t                _restricted_tree_levels;
     bool                                _sequential_scan;
     unsigned int                        _sequential_min_signal;
     unsigned int                        _sequential_max_signal;
@@ -270,6 +275,8 @@ class Parameters {
     ratio_t                             getProbabilityRatio() const {return _probablility_ratio;}
     long                                getRandomizationSeed() const {return _randomizationSeed;}
     bool                                getReportAttributableRisk() const {return _report_attributable_risk;}
+	bool                                getRestrictTreeLevels() const {return _restrict_tree_levels;}
+	const RestrictTreeLevels_t        & getRestrictedTreeLevels() const {return _restricted_tree_levels;}
     unsigned int                        getAttributableRiskExposed() const {return _attributable_risk_exposed;}
     bool                                getReportCriticalValues() const {return _report_critical_values;}
     ResultsFormat                       getResultsFormat() const {return _resultsFormat;}
@@ -333,6 +340,8 @@ class Parameters {
     void                                setRandomlyGeneratingSeed(bool b) {_randomlyGenerateSeed = b;}
     void                                setReadingSimulationData(bool b) {_read_simulations = b;}
     void                                setReportAttributableRisk(bool b) {_report_attributable_risk = b;}
+	void                                setRestrictTreeLevels(bool b) {_restrict_tree_levels = b;}
+	void                                setRestrictedTreeLevels(const RestrictTreeLevels_t& r) {_restricted_tree_levels = r;}
     void                                setAttributableRiskExposed(unsigned int i) {_attributable_risk_exposed = i;}
     void                                setReportCriticalValues(bool b) {_report_critical_values = b;}
     void                                setResultsFormat(ResultsFormat e) {_resultsFormat = e;}

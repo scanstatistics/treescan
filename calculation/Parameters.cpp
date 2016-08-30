@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 46;
+const int Parameters::giNumParameters = 48;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -71,6 +71,8 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_report_attributable_risk != rhs._report_attributable_risk) return false;
   if (_attributable_risk_exposed != rhs._attributable_risk_exposed) return false;
   if (_self_control_design != rhs._self_control_design) return false;
+  if (_restrict_tree_levels != rhs._restrict_tree_levels) return false;
+  if (_restricted_tree_levels != rhs._restricted_tree_levels) return false;
   //if (_input_sources != rhs._input_sources) return false;
   if (_sequential_scan != rhs._sequential_scan) return false;
   if (_sequential_min_signal != rhs._sequential_min_signal) return false;
@@ -170,6 +172,9 @@ void Parameters::copy(const Parameters &rhs) {
     _self_control_design = rhs._self_control_design;
     _input_sources = rhs._input_sources;
 
+    _restrict_tree_levels = rhs._restrict_tree_levels;
+    _restricted_tree_levels = rhs._restricted_tree_levels;
+	
     _sequential_scan = rhs._sequential_scan;
     _sequential_min_signal = rhs._sequential_min_signal;
     _sequential_max_signal = rhs._sequential_max_signal;
@@ -317,6 +322,9 @@ void Parameters::setAsDefaulted() {
 
     _input_sources.clear();
 
+    _restrict_tree_levels = false;
+	_restricted_tree_levels.clear();
+
     _sequential_scan = false;
     _sequential_min_signal=3;
     _sequential_max_signal=200;
@@ -370,6 +378,7 @@ void Parameters::setOutputSimulationsFilename(const char * s, bool bCorrectForRe
 void Parameters::read(const std::string &filename, ParametersFormat type) {
     using boost::property_tree::ptree;
     ptree pt;
+	std::string buffer;
 
     switch (type) {
         case JSON: read_json(filename, pt); break;
@@ -398,6 +407,9 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _replications = pt.get<unsigned int>("parameters.analysis.advanced.inference.replications", 999);
     _randomizationSeed = pt.get<unsigned int>("parameters.analysis.advanced.inference.seed", static_cast<unsigned int>(RandomNumberGenerator::glDefaultSeed));
     _randomlyGenerateSeed = pt.get<bool>("parameters.analysis.advanced.inference.generate-seed", false);
+    _restrict_tree_levels = pt.get<bool>("parameters.analysis.advanced.inference.restrict-tree-levels", false);
+	buffer = pt.get<std::string>("parameters.analysis.advanced.inference.restricted-tree-levels", false);
+	csv_string_to_typelist<unsigned int>(buffer.c_str(), _restricted_tree_levels);
     // Advanced Analysis - Inference
     _sequential_scan = pt.get<bool>("parameters.analysis.advanced.sequential-scan.sequential-scan", false);
     _sequential_max_signal = pt.get<unsigned int>("parameters.analysis.advanced.sequential-scan.sequential-maximum-signal", 200);
@@ -466,6 +478,8 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.analysis.advanced.inference.replications", _replications);
     pt.put("parameters.analysis.advanced.inference.seed", _randomizationSeed);
     pt.put("parameters.analysis.advanced.inference.generate-seed", _randomlyGenerateSeed);
+    pt.put("parameters.analysis.advanced.inference.restrict-tree-levels", _restrict_tree_levels);
+	typelist_csv_string<unsigned int>(_restricted_tree_levels, buffer);		
     // Advanced Analysis - Sequential Scan
     pt.put("parameters.analysis.advanced.sequential-scan.sequential-scan", _sequential_scan);
     pt.put("parameters.analysis.advanced.sequential-scan.sequential-maximum-signal", _sequential_max_signal);

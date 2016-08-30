@@ -53,7 +53,7 @@
         <Property name="opaque" type="boolean" value="true"/>
       </Properties>
       <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="About SaTScan"/>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="About TreeScan"/>
       </AccessibilityProperties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>

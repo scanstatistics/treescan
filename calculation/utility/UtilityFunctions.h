@@ -6,6 +6,7 @@
 #include "PrjException.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
+#include<boost/tokenizer.hpp>
 
 using namespace TreeScan;
 
@@ -62,7 +63,39 @@ template <typename T>           bool string_to_numeric_type(const char * s, T& t
 template <typename T>           bool string_to_type(const char * s, T& t) {
                                     try {
                                         t = boost::lexical_cast<T>(s);
-                                    } catch (boost::bad_lexical_cast& b) {
+                                    } catch (boost::bad_lexical_cast&) {
+                                        return false;
+                                    } 
+                                    return true;
+                                }
+template <typename T>           bool csv_string_to_typelist(const char * s, std::vector<T>& list) {
+                                    try {
+										list.clear();
+										std::string value(s);
+										boost::escaped_list_separator<char> separator('\\', ',', '\"');
+										boost::tokenizer<boost::escaped_list_separator<char> > identifiers(value, separator);
+										for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=identifiers.begin(); itr != identifiers.end(); ++itr) {
+											std::string token(*itr);
+											T t = boost::lexical_cast<T>(trimString(token).c_str());
+											list.push_back(t);
+										}
+                                    } catch (boost::bad_lexical_cast&) {
+                                        return false;
+                                    } 
+                                    return true;
+                                }
+template <typename T>           bool typelist_csv_string(const std::vector<T>& list, std::string& s) {
+                                    try {
+										std::stringstream buffer;
+										if (list.empty()) {
+											s = "";
+										} else {
+											buffer << boost::lexical_cast<std::string>(*(list.begin()));
+											for (typename std::vector<T>::const_iterator itr=list.begin() + 1; itr != list.end(); ++itr)
+												buffer << "," << boost::lexical_cast<std::string>(*itr);
+											s = buffer.str();
+										}
+                                    } catch (boost::bad_lexical_cast&) {
                                         return false;
                                     } 
                                     return true;

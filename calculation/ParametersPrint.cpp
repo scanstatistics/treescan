@@ -199,6 +199,15 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInferenceParameters(Se
     settings.clear();
     printString(buffer, "%u", _parameters.getNumReplicationsRequested());  
     settings.push_back(std::make_pair("Number of Replications",buffer));
+
+    if (_parameters.getScanType() != Parameters::TIMEONLY) {
+		settings.push_back(std::make_pair("Restrict Tree Levels", _parameters.getRestrictTreeLevels() ? "Yes" : "No"));
+		if (_parameters.getRestrictTreeLevels()) {
+			typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), buffer);
+			settings.push_back(std::make_pair("Tree Levels Excluded From Evaluation", buffer));
+		}
+    }
+
     buffer = "Cut Type";
     switch (_parameters.getCutType()) {
         case Parameters::PAIRS : settings.push_back(std::make_pair(buffer,"Pairs")); break;

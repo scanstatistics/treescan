@@ -1,30 +1,30 @@
 [Analysis]
 ;scan type (TREEONLY=0, TREETIME=1, TIMEONLY=2)
-scan-type=1
+scan-type=0
 ;probability model type (POISSON=0, BERNOULLI=1, UNIFORM=2, Not-Applicable=3)
-probability-model=2
+probability-model=0
 ;conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)
-conditional-type=3
+conditional-type=1
 ;self control design - unconditional Bernoulli only (y/n)
 self-control-design=n
 ;case probability (integer / integer)
 event-probability=1/2
 ;start data time range (integer - integer)
-window-start-range=[1,14]
+window-start-range=[0,0]
 ;end data time range (integer - integer)
-window-end-range=[1,21]
+window-end-range=[0,0]
 
 [Input]
 ;tree structure filename
-tree-filename=tree.tre
+tree-filename=multiple-trees.tre
 ;count data filename
-count-filename=TreeTemporal.cas
+count-filename=poisson.cas
 ;data time ranges (integer - integer)
-data-time-range=[1,28]
+data-time-range=[0,0]
 
 [Output]
 ;results filename
-results-filename=TreeTemporal.txt
+results-filename=poisson.txt
 ;create HTML results (y/n)
 results-html=n
 ;create CSV results (y/n)
@@ -53,24 +53,10 @@ perform-day-of-week-adjustments=n
 [Inference]
 ;number of simulation replications (0, 9, 999, n999)
 monte-carlo-replications=999
-;restrict tree levels evaluated (y/n)
-restrict-tree-levels=n
-;tree levels excluded from evaluation (csv list of unsigned integers, root level is 1)
-excluded-tree-levels=
 ;randomization seed (integer)
 randomization-seed=12345678
 ;generate randomization seed (y/n)
 random-randomization-seed=n
-
-[Sequential Scan]
-;perform sequential scan - time-only scan (y/n)
-sequential-scan=n
-;sequential scan maximum cases for signal (integer)
-sequential-maximum-signal=200
-;sequential scan - minimum cases to signal (integer)
-sequential-minimum-signal=3
-;sequential scan filename
-sequential-filename=
 
 [Power Evaluations]
 ;perform power evaluations (y/n)
@@ -91,8 +77,6 @@ power-evaluation-totalcases=600
 power-evaluation-replications=1000
 ;power evaluation alternative hypothesis filename
 alternative-hypothesis-filename=
-;power baseline probability (integer / integer)
-baseline-probability=1/2
 
 [Additional Output]
 ;create LLR results (y/n)
@@ -120,5 +104,5 @@ parallel-processes=0
 
 [System]
 ;parameters version - do not modify
-parameters-version=1.4.0
+parameters-version=1.3.0
 

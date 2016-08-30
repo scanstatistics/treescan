@@ -418,7 +418,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      * setup interface from parameter settings
      */
     private void setupInterface(final Parameters parameters) {
-        _advancedParametersSetting = new AdvancedParameterSettingsFrame(_rootPane, this, parameters);
+        _advancedParametersSetting = new AdvancedParameterSettingsFrame(_rootPane, this/*, parameters*/);
         title = parameters.getSourceFileName();
         if (title == null || title.length() == 0) {
             title = "New Session";
@@ -448,7 +448,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         for (int i=0; i < parameters.getInputSourceSettings().size(); ++i) {
             InputSourceSettings iss = parameters.getInputSourceSettings().get(i);
             _input_source_map.put(iss.getInputFileType().toString() + iss.getIndex(), iss);
-        }        
+        }
+        _advancedParametersSetting.setupInterface(parameters);
     }
 
     /**
@@ -618,6 +619,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _advancedParametersSetting.enableTemporalOptionsGroup(treeAndTime || timeOnly);
         _advancedParametersSetting.enableAdjustmentsOptions();
         _advancedParametersSetting.enablePowerEvaluationsGroup();
+        _advancedParametersSetting.enableRestrictedLevelsGroup();		
         _advancedParametersSetting.enableSequentialAnalysisGroup();
         _advancedParametersSetting.enableAdditionalOutputOptions();
         // data time range group

@@ -406,6 +406,8 @@ void IniParameterFileAccess::WriteAdvancedAnalysisInferenceSettings(IniFile& Wri
     std::string s;
     try {
         WriteIniParameter(WriteFile, Parameters::REPLICATIONS, GetParameterString(Parameters::REPLICATIONS, s).c_str(), GetParameterComment(Parameters::REPLICATIONS));
+        WriteIniParameter(WriteFile, Parameters::RESTRICT_TREE_LEVELS, GetParameterString(Parameters::RESTRICT_TREE_LEVELS, s).c_str(), GetParameterComment(Parameters::RESTRICT_TREE_LEVELS));
+        WriteIniParameter(WriteFile, Parameters::RESTRICTED_TREE_LEVELS, GetParameterString(Parameters::RESTRICTED_TREE_LEVELS, s).c_str(), GetParameterComment(Parameters::RESTRICTED_TREE_LEVELS));
         WriteIniParameter(WriteFile, Parameters::RANDOMIZATION_SEED, GetParameterString(Parameters::RANDOMIZATION_SEED, s).c_str(), GetParameterComment(Parameters::RANDOMIZATION_SEED));
         WriteIniParameter(WriteFile, Parameters::RANDOMLY_GENERATE_SEED, GetParameterString(Parameters::RANDOMLY_GENERATE_SEED, s).c_str(), GetParameterComment(Parameters::RANDOMLY_GENERATE_SEED));
     } catch (prg_exception& x) {
