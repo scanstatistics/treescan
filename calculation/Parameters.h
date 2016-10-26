@@ -61,6 +61,7 @@ class Parameters {
                         POWER_EVALUATIONS_REPLICA,
                         POWER_EVALUATIONS_FILE,
                         POWER_BASELINE_PROBABILITY,
+                        POWER_Z,
                         /* power simulations */
                         READ_SIMULATIONS,
                         INPUT_SIM_FILE,
@@ -217,6 +218,7 @@ class Parameters {
     unsigned int                        _sequential_min_signal;
     unsigned int                        _sequential_max_signal;
     std::string                         _sequential_file;
+    double                              _power_z;
 
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
@@ -271,6 +273,7 @@ class Parameters {
     unsigned int                        getPowerEvaluationReplications() const {return _power_replica;}
     double                              getPowerBaselineProbability() const {return static_cast<double>(_power_baseline_probablility_ratio.first)/static_cast<double>(_power_baseline_probablility_ratio.second);}
     ratio_t                             getPowerBaselineProbabilityRatio() const {return _power_baseline_probablility_ratio;}
+    double                              getPowerZ() const { return _power_z; }
     double                              getProbability() const {return static_cast<double>(_probablility_ratio.first)/static_cast<double>(_probablility_ratio.second);}
     ratio_t                             getProbabilityRatio() const {return _probablility_ratio;}
     long                                getRandomizationSeed() const {return _randomizationSeed;}
@@ -334,6 +337,7 @@ class Parameters {
     void                                setPowerEvaluationTotalCases(int i) {_power_evaluation_totalcases = i;}
     void                                setPowerEvaluationType(PowerEvaluationType e) {_power_evaluation_type = e;}
     void                                setPowerBaselineProbabilityRatio(ratio_t r) {_power_baseline_probablility_ratio = r;}
+    void                                setPowerZ(double d) { _power_z = d; }
     void                                setPrintColumnHeaders(bool b) {_printColumnHeaders=b;}
     void                                setProbabilityRatio(ratio_t r) {_probablility_ratio = r;}
     void                                setRandomizationSeed(long lSeed) {_randomizationSeed = lSeed;}

@@ -93,6 +93,8 @@ power-evaluation-replications=1000
 alternative-hypothesis-filename=
 ;power baseline probability (integer / integer)
 baseline-probability=1/2
+;power z value (0 < z <= 0.01)
+power-z=0.009
 
 [Additional Output]
 ;create LLR results (y/n)

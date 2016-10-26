@@ -961,7 +961,7 @@ bool ScanRunner::runPowerEvaluations() {
                 throw resolvable_error("The relative risks in power set %d, of the alternative hypothesis file, is less than the baseline event probability.", t+1);
 
             /* Check that values for p0, p1 and total cases is reasonable in terms of actual data. */
-            double z = 0.001; // now we will set z=0.001, but we should experiment a little with different values
+            double z = _parameters.getPowerZ();
             double C = getTotalC();
             double N = static_cast<double>(getTotalC() + getTotalControls());
             double p0 = _parameters.getPowerBaselineProbability();
@@ -975,7 +975,7 @@ bool ScanRunner::runPowerEvaluations() {
                                        "but the observed number of cases is %d, which is unrealistic for the null and alternative hypotheses specified.\n"
                                        "Please specify either a total number of observed cases to be approximately %.1lf, or, change the null and/or\n"
                                        "alternative hypothesis so that the expected number of cases, n1 * p1 + (N - n1) * p0 is approximately %d.\n"
-                                       "Current values are: n1 = %d, p1 = %g, N = %d, p0 = %g\n",
+                                       "Current values are: n1 = %d, p1 = %g, N = %d, p0 = %g.\n",
                                        t+1, X, getTotalC(), X, getTotalC(), n1, p1, static_cast<unsigned int>(N), p0);
             }
             core_randomizer.reset(new ConditionalBernoulliAlternativeHypothesisRandomizer(getNodes(), *riskAdjustments[t],

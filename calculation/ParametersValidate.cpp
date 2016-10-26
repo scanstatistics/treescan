@@ -359,10 +359,15 @@ bool ParametersValidate::ValidatePowerEvaluationParametersParameters(BasePrint &
         PrintDirection.Printf("%s:\nThe power evaluation option to define total cases is only permitted with the conditional Poisson model or conditional Bernoulli model or time only scan.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         bValid = false;
     }
-    if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES &&
-        (_parameters.getPowerBaselineProbabilityRatio().first == 0 || _parameters.getPowerBaselineProbabilityRatio().second == 0 || _parameters.getPowerBaselineProbabilityRatio().first >= _parameters.getPowerBaselineProbabilityRatio().second)) {
-        bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation baseline probabilty must be between zero and one.\n", BasePrint::P_PARAMERROR);
+    if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES) {
+        if (_parameters.getPowerBaselineProbabilityRatio().first == 0 || _parameters.getPowerBaselineProbabilityRatio().second == 0 || _parameters.getPowerBaselineProbabilityRatio().first >= _parameters.getPowerBaselineProbabilityRatio().second) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation baseline probabilty must be between zero and one.\n", BasePrint::P_PARAMERROR);
+        }
+        if (_parameters.getPowerZ() <= 0 || 0.01 < _parameters.getPowerZ()) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation Z constant must be greater than zero and no greater than 0.01.\n", BasePrint::P_PARAMERROR);
+        }
     }
     return bValid;
 }

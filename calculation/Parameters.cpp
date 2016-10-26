@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 48;
+const int Parameters::giNumParameters = 49;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -78,6 +78,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_sequential_min_signal != rhs._sequential_min_signal) return false;
   if (_sequential_max_signal != rhs._sequential_max_signal) return false;
   if (_sequential_file != rhs._sequential_file) return false;
+  if (_power_z != rhs._power_z) return false;
 
   return true;
 }
@@ -151,6 +152,7 @@ void Parameters::copy(const Parameters &rhs) {
     _power_replica = rhs._power_replica;
     _power_alt_hypothesis_filename = rhs._power_alt_hypothesis_filename;
     _power_baseline_probablility_ratio = rhs._power_baseline_probablility_ratio;
+    _power_z = rhs._power_z;
 
     _read_simulations = rhs._read_simulations;
     _input_sim_file = rhs._input_sim_file;
@@ -307,6 +309,7 @@ void Parameters::setAsDefaulted() {
     _power_replica = _replications + 1;
     _power_alt_hypothesis_filename = "";
     _power_baseline_probablility_ratio = ratio_t(1,2);
+    _power_z = 0.001;
 
     _creationVersion.iMajor = atoi(VERSION_MAJOR);
     _creationVersion.iMinor = atoi(VERSION_MINOR);
@@ -427,6 +430,7 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _power_baseline_probablility_ratio.first = pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.baseline-probability.numerator", 1);
     _power_baseline_probablility_ratio.second = pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.baseline-probability.denominator", 2);
     setPowerEvaluationAltHypothesisFilename(pt.get<std::string>("parameters.analysis.advanced.power-evaluations.alternative-hypothesis-file", "").c_str(), true);
+    _power_z = pt.get<double>("parameters.analysis.advanced.power-evaluations.power-z", 0.001);
     // Input
     setTreeFileName(pt.get<std::string>("parameters.input.tree-filename", "").c_str(), true);
     setCountFileName(pt.get<std::string>("parameters.input.count-filename", "").c_str(), true);
@@ -513,6 +517,7 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.analysis.advanced.power-evaluations.alternative-hypothesis-file", _power_alt_hypothesis_filename);
     pt.put("parameters.analysis.advanced.power-evaluations.baseline-probability.numerator", _power_baseline_probablility_ratio.first);
     pt.put("parameters.analysis.advanced.power-evaluations.baseline-probability.denominator", _power_baseline_probablility_ratio.second);
+    pt.put("parameters.analysis.advanced.power-evaluations.power-z", _power_z);
     // Power Simulations
     pt.put("parameters.power-simulations.input-simulations", _read_simulations);
     pt.put("parameters.power-simulations.input-simulations-file", _input_sim_file);

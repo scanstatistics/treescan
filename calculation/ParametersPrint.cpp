@@ -284,6 +284,10 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getPowerEvaluationsParame
         if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES) {
             printString(buffer, "%u/%u", _parameters.getPowerBaselineProbabilityRatio().first, _parameters.getPowerBaselineProbabilityRatio().second);
             settings.push_back(std::make_pair("Baseline Probability",buffer));
+            if (_parameters.getPowerZ() != 0.001) {
+                printString(buffer, "%lf", _parameters.getPowerZ());
+                settings.push_back(std::make_pair("Power Z", buffer));
+            }
         }
     }
     return settings;

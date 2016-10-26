@@ -82,8 +82,10 @@ void IniParameterSpecification::setup(Parameters::CreationVersion version) {
         Build_1_1_x_ParameterList();
     else if (version.iMajor == 1 && version.iMinor == 2)
         Build_1_2_x_ParameterList();
-    else
+    else if (version.iMajor == 1 && version.iMinor == 3)
         Build_1_3_x_ParameterList();
+    else
+        Build_1_4_x_ParameterList();
 }
 
 /* Returns ini version setting or default. */
@@ -178,12 +180,20 @@ void IniParameterSpecification::Build_1_3_x_ParameterList() {
     _parameter_info[Parameters::RESTRICT_TREE_LEVELS] = ParamInfo(Parameters::RESTRICT_TREE_LEVELS, "restrict-tree-levels", 4, _inference_section);
     _parameter_info[Parameters::RESTRICTED_TREE_LEVELS] = ParamInfo(Parameters::RESTRICTED_TREE_LEVELS, "excluded-tree-levels", 5, _inference_section);
 
+    assert(_parameter_info.size() == 45);
+}
+
+/** Version 1.4 parameter specifications. */
+void IniParameterSpecification::Build_1_4_x_ParameterList() {
+    Build_1_3_x_ParameterList();
+
     _parameter_info[Parameters::SEQUENTIAL_SCAN] = ParamInfo(Parameters::SEQUENTIAL_SCAN, "sequential-scan", 1, _sequential_scan_section);
     _parameter_info[Parameters::SEQUENTIAL_MAX_SIGNAL] = ParamInfo(Parameters::SEQUENTIAL_MAX_SIGNAL, "sequential-maximum-signal", 2, _sequential_scan_section);
     _parameter_info[Parameters::SEQUENTIAL_MIN_SIGNAL] = ParamInfo(Parameters::SEQUENTIAL_MIN_SIGNAL, "sequential-minimum-signal", 3, _sequential_scan_section);
     _parameter_info[Parameters::SEQUENTIAL_FILE] = ParamInfo(Parameters::SEQUENTIAL_FILE, "sequential-filename", 4, _sequential_scan_section);
+    _parameter_info[Parameters::POWER_Z] = ParamInfo(Parameters::POWER_Z, "power-z", 10, _power_evaluations_section);
 
-    assert(_parameter_info.size() == 49);
+    assert(_parameter_info.size() == 50);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

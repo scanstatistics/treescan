@@ -446,6 +446,7 @@ void IniParameterFileAccess::WritePowerEvaluationsSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, Parameters::POWER_EVALUATIONS_FILE, s.c_str(), GetParameterComment(Parameters::POWER_EVALUATIONS_FILE));
         if (s.size()) WriteInputSource(WriteFile, Parameters::POWER_EVALUATIONS_FILE, _parameters.getInputSource(Parameters::POWER_EVALUATIONS_FILE));
         WriteIniParameter(WriteFile, Parameters::POWER_BASELINE_PROBABILITY, GetParameterString(Parameters::POWER_BASELINE_PROBABILITY, s).c_str(), GetParameterComment(Parameters::POWER_BASELINE_PROBABILITY));
+        WriteIniParameter(WriteFile, Parameters::POWER_Z, GetParameterString(Parameters::POWER_Z, s).c_str(), GetParameterComment(Parameters::POWER_Z));
     } catch (prg_exception& x) {
         x.addTrace("WritePowerEvaluationsSettings()","IniParameterFileAccess");
         throw;
