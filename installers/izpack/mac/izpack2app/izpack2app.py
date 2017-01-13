@@ -30,20 +30,21 @@ def main():
 	
 	if os.path.exists(app): rmtree(app)
 	copytree(os.path.join(base, 'Mac-App-Template'), app)
-	java_folder = os.path.join(app, 'Contents/Resources/Java/')
+	java_folder = os.path.join(app, 'Contents/Java/')
 	if not os.path.exists(java_folder): os.mkdir(java_folder)
 	copy(jar, java_folder)
 
-	def reducer(str, line):
-		return str + line
-
-	plist_path = os.path.join(app, 'Contents/Info.plist')
-	plist = open(plist_path, 'r')
-	plist_content = reduce(reducer, plist.readlines(), '').replace('__JAR__', jar_name)
-	plist.close()
-	plist = open(plist_path, 'w')
-	plist.write(plist_content)
-	plist.close()
+	'''This is no longer necessary for Oracle Java (versions greater than 1.6).'''
+	#def reducer(str, line):
+	#	return str + line
+  #
+	#plist_path = os.path.join(app, 'Contents/Info.plist')
+	#plist = open(plist_path, 'r')
+	#plist_content = reduce(reducer, plist.readlines(), '').replace('__JAR__', jar_name)
+	#plist.close()
+	#plist = open(plist_path, 'w')
+	#plist.write(plist_content)
+	#plist.close()
 	
 if __name__ == '__main__':
 	if (len(sys.argv) != 3):
