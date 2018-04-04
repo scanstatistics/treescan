@@ -50,6 +50,8 @@ import org.treescan.utils.Elevator;
  */
 import javax.help.SwingHelpUtilities;
 import javax.swing.KeyStroke;
+import org.apache.commons.lang3.JavaVersion;
+import org.apache.commons.lang3.SystemUtils;
 import org.treescan.gui.utils.FileSelectionDialog;
 import org.treescan.gui.utils.MacOSApplication;
 
@@ -59,8 +61,8 @@ import org.treescan.gui.utils.MacOSApplication;
  */
 public class TreeScanApplication extends javax.swing.JFrame implements WindowFocusListener, WindowListener, InternalFrameListener, ClipboardOwner {
 
-    private static final String _application = System.getProperty("user.dir") + System.getProperty("file.separator") + "TreeScan.jar";
-    private static final String _user_guide = System.getProperty("user.dir") + System.getProperty("file.separator") + "userguide.pdf";
+    private static String _application = null;
+    private static String _user_guide = null;
     private static String _debug_url = "";
     private static String _debug_auth = "";
     private static String _run_args[] = new String[]{};
@@ -85,7 +87,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     private static String RELAUNCH_ARGS_OPTION = "relaunch_args=";
     private static String RELAUNCH_TOKEN = "&";
     private static String CHECK_UPDATE_START = "true";
-    private MacOSApplication _mac_os_app = new MacOSApplication();
+    private Object _mac_os_app = null;
     private final UpdateCheckDialog _updateCheck;
 
     /**
@@ -111,6 +113,26 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         softwareUpdateAvailable.setVisible(false);
         setLocationRelativeTo(null);
         _updateCheck = new UpdateCheckDialog(this);
+        
+        // Define the paths to application jar file and installed user guide.
+        if (SystemUtils.IS_OS_MAC) {
+            /* The 'user.dir' property is different on Mac. We're defining the 'java.library.path' in the Info.plist file to be
+               "$APP_ROOT/Contents/Java/", so we'll derive needed directories from that value. */
+            String java_lib_path = new File(SystemUtils.JAVA_LIBRARY_PATH).getAbsolutePath();
+            // The jar is in the folder referenced by "java.library.path".
+            _application = java_lib_path + File.separator + "TreeTScan.jar";
+            // The user guide is on the directory above the application root.
+            _user_guide = java_lib_path.substring(0, java_lib_path.substring(0, java_lib_path.lastIndexOf(".app")).lastIndexOf(File.separator)) + File.separator + "userguide.pdf";            
+            /* Java 9 removed underlying interface for the MacOSApplication class. Skip this class for Java 9+ until we move beyond Java 8. 
+               This implementation isn't ideal but don't see a way to support both at the same time. */
+            if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9) == false) {
+                _mac_os_app = new MacOSApplication();
+            }
+        } else {
+            _application = SystemUtils.getUserDir().getAbsolutePath() + File.separator  + "TreeTScan.jar";
+            _user_guide = SystemUtils.getUserDir().getAbsolutePath() + File.separator + "userguide.pdf";            
+        }        
+        
     }
 
     public static TreeScanApplication getInstance() {

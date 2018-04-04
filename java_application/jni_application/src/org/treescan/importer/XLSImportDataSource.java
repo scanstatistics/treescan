@@ -6,7 +6,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.poi.hssf.record.RecordFormatException;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -42,8 +41,6 @@ public class XLSImportDataSource implements ImportDataSource {
                 _workbook = new XSSFWorkbook(_input_stream);
             else
                 _workbook = new HSSFWorkbook(_input_stream);
-        } catch (RecordFormatException e) {
-            throw new RuntimeException(e);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (org.apache.poi.hssf.OldExcelFormatException e) {
@@ -211,9 +208,8 @@ public class XLSImportDataSource implements ImportDataSource {
      * cell is blank or unsupported an empty String is returned.
      */
     private String getCellValue(Cell cell) {
-        int cellType = cell.getCellType();
-        switch (cellType) {
-            case Cell.CELL_TYPE_NUMERIC:
+        switch (cell.getCellTypeEnum()) {
+            case NUMERIC:
                 double cellValue = cell.getNumericCellValue();
                 //check if this is a date
                 boolean isPoiKnownDate = DateUtil.isCellDateFormatted(cell) || DateUtil.isInternalDateFormat(cell.getCellStyle().getDataFormat());
@@ -246,12 +242,12 @@ public class XLSImportDataSource implements ImportDataSource {
                     return (number.toString());
                 }
 
-            case Cell.CELL_TYPE_BOOLEAN: return cell.getBooleanCellValue() + "";
+            case BOOLEAN: return cell.getBooleanCellValue() + "";
                 
-            case Cell.CELL_TYPE_STRING: return (cell.getStringCellValue());
+            case STRING: return (cell.getStringCellValue());
                 
             //If this is a formula evaluate it to a value
-            case Cell.CELL_TYPE_FORMULA:
+            case FORMULA:
                 String cellResult = String.valueOf(cell.getNumericCellValue());
                 return cellResult.equals("NaN") ? cell.getStringCellValue() : cellResult;
 
