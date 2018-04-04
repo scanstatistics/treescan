@@ -1,6 +1,6 @@
 
 REM Signing a file: (cross-certificate)
-\\nfsl.omni.imsweb.com\treescan\build\treescan\installers\izpack\sign4j\sign4j.exe --verbose \\nfsl.omni.imsweb.com\imsadmin\code.sign.cert.ms.auth.verisign\signtool.exe sign /v /ac \\nfsl.omni.imsweb.com\imsadmin\code.sign.cert.ms.auth.verisign\MSCV-VSClass3.cer /f \\nfsl.omni.imsweb.com\imsadmin\code.sign.cert.ms.auth.verisign\ims-cross-sign.pfx /p %%iaUzoA0cl!p /n "Information Management Services, Inc." /t http://timestamp.verisign.com/scripts/timstamp.dll \\nfsl.omni.imsweb.com\treescan\installers\v.1.4.x\install-1_4_windows.exe
+\\oriole-03-int\treescan\build\treescan\installers\izpack\sign4j\sign4j.exe --verbose \\oriole-03-int\imsadmin\code.sign.cert.ms.auth.verisign\signtool.exe sign /v /ac \\oriole-03-int\imsadmin\code.sign.cert.ms.auth.verisign\MSCV-VSClass3.cer /f \\oriole-03-int\imsadmin\code.sign.cert.ms.auth.verisign\ims-cross-sign-2017.pfx /p "YKtNv&otBfX7" /n "Information Management Services, Inc." /t http://timestamp.verisign.com/scripts/timstamp.dll \\oriole-03-int\treescan\installers\v.1.4.x\install-1_4_windows.exe
 
 REM To verify the file is signed correctly:
-\\nfsl.omni.imsweb.com\imsadmin\code.sign.cert.ms.auth.verisign\signtool.exe verify /pa /v \\nfsl.omni.imsweb.com\treescan\installers\v.1.4.x\install-1_4_windows.exe
+\\oriole-03-int\imsadmin\code.sign.cert.ms.auth.verisign\signtool.exe verify /pa /v \\oriole-03-int\treescan\installers\v.1.4.x\install-1_4_windows.exe
