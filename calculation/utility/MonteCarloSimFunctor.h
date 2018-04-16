@@ -159,7 +159,7 @@ private:
     DataTimeRange _range;
     DataTimeRange _startWindow;
     DataTimeRange _endWindow;
-    WindowLength _window;
+    boost::shared_ptr<AbstractWindowLength> _window;
     boost::shared_ptr<SequentialScanLoglikelihoodRatioWriter> _sequential_writer;
 
 public:

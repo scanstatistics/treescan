@@ -238,6 +238,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public void saveParameterSettings(Parameters parameters) {
         // Input tab
         parameters.setCutsFileName(_cutFileTextField.getText());
+        parameters.setApplyingRiskWindowRestriction(_apply_risk_window_restriction.isEnabled() && _apply_risk_window_restriction.isSelected());
+        parameters.setRiskWindowPercentage(Double.parseDouble(_risk_window_percentage.getText()));
 
         // Inference tab
         parameters.setNumReplications(Integer.parseInt(_montCarloReplicationsTextField.getText()));
@@ -298,6 +300,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     private void setDefaultsForInputTab() {
         _cutFileTextField.setText("");
+        _apply_risk_window_restriction.setSelected(false);
+        _risk_window_percentage.setText("50");
     }
 
     /**
@@ -333,6 +337,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Advanced Input tab
         _cutFileTextField.setText(parameters.getCutsFileName());
         _cutFileTextField.setCaretPosition(0);
+        _apply_risk_window_restriction.setSelected(parameters.isApplyingRiskWindowRestriction());
+        _risk_window_percentage.setText(Double.toString(parameters.getRiskWindowPercentage()));
         
         // Inference tab
         _montCarloReplicationsTextField.setText(Integer.toString(parameters.getNumReplicationsRequested()));
@@ -586,10 +592,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      * enables or disables the advanced inputs group controls.
      */
-    public void enableAdvancedInputsSettings(boolean bEnable) {
-        _cutFileLabel.setEnabled(bEnable);
-        _cutFileTextField.setEnabled(bEnable);
-        _cutFileImportButton.setEnabled(bEnable);
+    public void enableAdvancedInputsSettings(boolean enableCutFile, boolean enableRiskWindowGroup) {
+        _cutFileLabel.setEnabled(enableCutFile);
+        _cutFileTextField.setEnabled(enableCutFile);
+        _cutFileImportButton.setEnabled(enableCutFile);
+        
+        _risk_window_group.setEnabled(enableRiskWindowGroup);
+        _apply_risk_window_restriction.setEnabled(enableRiskWindowGroup);
+        _risk_window_percentage.setEnabled(enableRiskWindowGroup && _apply_risk_window_restriction.isSelected());
+        _risk_window_percentage_label.setEnabled(enableRiskWindowGroup);
     }
     
     /**
@@ -725,6 +736,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _minTemporalOptionsGroup = new javax.swing.JPanel();
         _minTemporalClusterSizeUnitsTextField = new javax.swing.JTextField();
         _minTemporalTimeUnitsLabel = new javax.swing.JLabel();
+        _risk_window_group = new javax.swing.JPanel();
+        _apply_risk_window_restriction = new javax.swing.JCheckBox();
+        _risk_window_percentage = new javax.swing.JTextField();
+        _risk_window_percentage_label = new javax.swing.JLabel();
         _advanced_inferenece_tab = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         _labelMonteCarloReplications = new javax.swing.JLabel();
@@ -801,13 +816,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addGroup(_advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(_advanced_input_tabLayout.createSequentialGroup()
+                        .addComponent(_cutFileLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(_advanced_input_tabLayout.createSequentialGroup()
                         .addComponent(_cutFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_cutFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
-                    .addGroup(_advanced_input_tabLayout.createSequentialGroup()
-                        .addComponent(_cutFileLabel)
-                        .addGap(0, 552, Short.MAX_VALUE))))
+                        .addContainerGap())))
         );
         _advanced_input_tabLayout.setVerticalGroup(
             _advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -983,6 +998,74 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap())
         );
 
+        _risk_window_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Risk Window"));
+
+        _apply_risk_window_restriction.setText("Restriction risk windows to");
+        _apply_risk_window_restriction.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                _risk_window_percentage.setEnabled(e.getStateChange() == java.awt.event.ItemEvent.SELECTED);
+                enableSetDefaultsButton();
+            }
+        });
+        _apply_risk_window_restriction.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                _apply_risk_window_restrictionActionPerformed(evt);
+            }
+        });
+
+        _risk_window_percentage.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                double dMaxValue =  100.0;
+                while (_risk_window_percentage.getText().length() == 0 ||
+                    Double.parseDouble(_risk_window_percentage.getText()) <= 0 ||
+                    Double.parseDouble(_risk_window_percentage.getText()) > dMaxValue) {
+                    if (undo.canUndo()) undo.undo(); else _risk_window_percentage.setText("50");
+                }
+                enableSetDefaultsButton();
+            }
+        });
+
+        _risk_window_percentage.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                if (_risk_window_percentage.getText().length() > 0) {
+                    Utils.validatePostiveNumericKeyTyped(_risk_window_percentage, e, 5);
+                }
+            }
+        });
+
+        _risk_window_percentage.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _risk_window_percentage_label.setText(" percent of evaluated windows.");
+
+        javax.swing.GroupLayout _risk_window_groupLayout = new javax.swing.GroupLayout(_risk_window_group);
+        _risk_window_group.setLayout(_risk_window_groupLayout);
+        _risk_window_groupLayout.setHorizontalGroup(
+            _risk_window_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_risk_window_groupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_apply_risk_window_restriction)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_risk_window_percentage, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_risk_window_percentage_label, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _risk_window_groupLayout.setVerticalGroup(
+            _risk_window_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_risk_window_groupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_risk_window_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(_risk_window_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_risk_window_percentage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_risk_window_percentage_label))
+                    .addComponent(_apply_risk_window_restriction))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout _advanced_temporal_window_tabLayout = new javax.swing.GroupLayout(_advanced_temporal_window_tab);
         _advanced_temporal_window_tab.setLayout(_advanced_temporal_window_tabLayout);
         _advanced_temporal_window_tabLayout.setHorizontalGroup(
@@ -991,7 +1074,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addGroup(_advanced_temporal_window_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_risk_window_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _advanced_temporal_window_tabLayout.setVerticalGroup(
@@ -1001,7 +1085,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(144, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_risk_window_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(82, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _advanced_temporal_window_tab);
@@ -1688,6 +1774,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void _apply_risk_window_restrictionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__apply_risk_window_restrictionActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event__apply_risk_window_restrictionActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel _advanced_adjustments_tab;
     private javax.swing.JPanel _advanced_inferenece_tab;
@@ -1698,6 +1789,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _alternativeHypothesisFilename;
     private javax.swing.JButton _alternativeHypothesisFilenameButton;
     private javax.swing.JLabel _alternativeHypothesisFilenameLabel;
+    private javax.swing.JCheckBox _apply_risk_window_restriction;
     private javax.swing.JTextField _attributable_risk_exposed;
     private javax.swing.JLabel _chk_attributable_risk_extra;
     private javax.swing.JCheckBox _chk_rpt_attributable_risk;
@@ -1741,6 +1833,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _report_critical_values_group;
     private javax.swing.JCheckBox _restrict_evaluated_levels;
     private javax.swing.JTextField _restricted_levels;
+    private javax.swing.JPanel _risk_window_group;
+    private javax.swing.JTextField _risk_window_percentage;
+    private javax.swing.JLabel _risk_window_percentage_label;
     private javax.swing.JTextField _sequential_analysis_file;
     private javax.swing.JButton _sequential_analysis_file_browse;
     private javax.swing.JLabel _sequential_analysis_file_label;

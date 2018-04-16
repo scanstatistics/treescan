@@ -352,7 +352,6 @@ void IniParameterFileAccess::WriteAdvancedInputSettings(IniFile& WriteFile) {
         GetParameterString(Parameters::CUT_FILE, s);
         WriteIniParameter(WriteFile, Parameters::CUT_FILE, s.c_str(), GetParameterComment(Parameters::CUT_FILE));
         if (s.size()) WriteInputSource(WriteFile, Parameters::CUT_FILE, _parameters.getInputSource(Parameters::CUT_FILE));
-
         WriteIniParameter(WriteFile, Parameters::CUT_TYPE, GetParameterString(Parameters::CUT_TYPE, s).c_str(), GetParameterComment(Parameters::CUT_TYPE));
     } catch (prg_exception& x) {
         x.addTrace("WriteAdvancedInputSettings()","IniParameterFileAccess");
@@ -384,6 +383,8 @@ void IniParameterFileAccess::WriteAdvancedAnalysisTemporalWindowSettings(IniFile
         WriteIniParameter(WriteFile, Parameters::MAXIMUM_WINDOW_FIXED, GetParameterString(Parameters::MAXIMUM_WINDOW_FIXED, s).c_str(), GetParameterComment(Parameters::MAXIMUM_WINDOW_FIXED));
         WriteIniParameter(WriteFile, Parameters::MAXIMUM_WINDOW_TYPE, GetParameterString(Parameters::MAXIMUM_WINDOW_TYPE, s).c_str(), GetParameterComment(Parameters::MAXIMUM_WINDOW_TYPE));
         WriteIniParameter(WriteFile, Parameters::MINIMUM_WINDOW_FIXED, GetParameterString(Parameters::MINIMUM_WINDOW_FIXED, s).c_str(), GetParameterComment(Parameters::MINIMUM_WINDOW_FIXED));
+        WriteIniParameter(WriteFile, Parameters::APPLY_RISK_WINDOW_RESTRICTION, GetParameterString(Parameters::APPLY_RISK_WINDOW_RESTRICTION, s).c_str(), GetParameterComment(Parameters::APPLY_RISK_WINDOW_RESTRICTION));
+        WriteIniParameter(WriteFile, Parameters::RISK_WINDOW_PERCENTAGE, GetParameterString(Parameters::RISK_WINDOW_PERCENTAGE, s).c_str(), GetParameterComment(Parameters::RISK_WINDOW_PERCENTAGE));
     } catch (prg_exception& x) {
         x.addTrace("WriteAdvancedAnalysisTemporalWindowSettings()","IniParameterFileAccess");
         throw;

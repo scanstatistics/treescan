@@ -81,14 +81,14 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
+                              <Component id="_cutFileLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
                               <Component id="_cutFileTextField" pref="503" max="32767" attributes="1"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_cutFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="_cutFileLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="0" pref="552" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -150,6 +150,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="_maxTemporalOptionsGroup" alignment="0" max="32767" attributes="0"/>
                           <Component id="_minTemporalOptionsGroup" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_risk_window_group" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -162,7 +163,9 @@
                       <Component id="_maxTemporalOptionsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_minTemporalOptionsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="144" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_risk_window_group" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="82" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -344,6 +347,73 @@
                 <Component class="javax.swing.JLabel" name="_minTemporalTimeUnitsLabel">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="data time units" noResource="true"/>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JPanel" name="_risk_window_group">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Risk Window">
+                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                        <EtchetBorder/>
+                      </Border>
+                    </TitledBorder>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_apply_risk_window_restriction" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_risk_window_percentage" min="-2" pref="70" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_risk_window_percentage_label" pref="277" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Group type="103" alignment="1" groupAlignment="3" attributes="0">
+                                  <Component id="_risk_window_percentage" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_risk_window_percentage_label" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="_apply_risk_window_restriction" alignment="1" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JCheckBox" name="_apply_risk_window_restriction">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Restriction risk windows to"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_apply_risk_window_restrictionActionPerformed"/>
+                  </Events>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_apply_risk_window_restriction.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        _risk_window_percentage.setEnabled(e.getStateChange() == java.awt.event.ItemEvent.SELECTED);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_risk_window_percentage">
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="&#xa;_risk_window_percentage.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        double dMaxValue =  100.0;&#xa;        while (_risk_window_percentage.getText().length() == 0 ||&#xa;                Double.parseDouble(_risk_window_percentage.getText()) &lt;= 0 ||&#xa;                Double.parseDouble(_risk_window_percentage.getText()) &gt; dMaxValue) {&#xa;            if (undo.canUndo()) undo.undo(); else _risk_window_percentage.setText(&quot;50&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;&#xa;_risk_window_percentage.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        if (_risk_window_percentage.getText().length() &gt; 0) {&#xa;            Utils.validatePostiveNumericKeyTyped(_risk_window_percentage, e, 5);&#xa;        }&#xa;    }&#xa;});&#xa;&#xa;_risk_window_percentage.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_risk_window_percentage_label">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value=" percent of evaluated windows."/>
                   </Properties>
                 </Component>
               </SubComponents>

@@ -49,6 +49,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             /* Advanced Input */
             case Parameters::CUT_FILE                : return "cuts filename";
             case Parameters::CUT_TYPE                : return "default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)";
+            case Parameters::APPLY_RISK_WINDOW_RESTRICTION : return "apply risk window restriction - (y/n)";
+            case Parameters::RISK_WINDOW_PERCENTAGE  : return "risk window percentage (0 < x <= 100.0)";
             /* Analysis */
             case Parameters::SCAN_TYPE               : return "scan type (TREEONLY=0, TREETIME=1, TIMEONLY=2)";
             case Parameters::CONDITIONAL_TYPE        : return "conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)";
@@ -125,7 +127,9 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             /* Advanced Input */
             case Parameters::CUT_FILE                 : s = _parameters.getCutsFileName(); return s;
             case Parameters::CUT_TYPE                 : return AsString(s, _parameters.getCutType());
-            /* Analysis */
+            case Parameters::APPLY_RISK_WINDOW_RESTRICTION : return AsString(s, _parameters.isApplyingRiskWindowRestriction());
+            case Parameters::RISK_WINDOW_PERCENTAGE   : return AsString(s, _parameters.getRiskWindowPercentage());
+                /* Analysis */
             case Parameters::SCAN_TYPE                : return AsString(s, _parameters.getScanType());
             case Parameters::CONDITIONAL_TYPE         : return AsString(s, _parameters.getConditionalType());
             case Parameters::MODEL_TYPE               : return AsString(s, _parameters.getModelType());
@@ -299,6 +303,8 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::CUT_FILE                 : _parameters.setCutsFileName(value.c_str(), true); break;
             case Parameters::CUT_TYPE                 : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::SIMPLE, Parameters::COMBINATORIAL);
                                                         _parameters.setCutType((Parameters::CutType)iValue); break;
+            case Parameters::APPLY_RISK_WINDOW_RESTRICTION : _parameters.setApplyingRiskWindowRestriction(ReadBoolean(value, e)); break;
+            case Parameters::RISK_WINDOW_PERCENTAGE   : return _parameters.setRiskWindowPercentage(ReadDouble(value, e)); break;
             /* Analysis */
             case Parameters::SCAN_TYPE                : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::TREEONLY, Parameters::TIMEONLY);
                                                         _parameters.setScanType((Parameters::ScanType)iValue); break;

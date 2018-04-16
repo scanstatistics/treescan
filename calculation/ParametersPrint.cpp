@@ -123,12 +123,20 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(
 
 /** Prints 'Advanced Input' tab parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getAdvancedInputParameters(SettingContainer_t & settings) const {
+    std::string buffer;
     settings.clear();
     if (_parameters.getScanType() != Parameters::TIMEONLY)
         settings.push_back(std::make_pair("Cut File",_parameters.getCutsFileName()));
     if (_parameters.getScanType() != Parameters::TIMEONLY && _parameters.getTreeFileNames().size() > 1) {
         for (Parameters::FileNameContainer_t::const_iterator itr=_parameters.getTreeFileNames().begin()+1; itr != _parameters.getTreeFileNames().end(); ++itr)
             settings.push_back(std::make_pair("Tree File", *itr));
+    }
+    if (_parameters.isTemporalScanType(_parameters.getScanType())) {
+        settings.push_back(std::make_pair("Apply Risk Window Restriction", (_parameters.isApplyingRiskWindowRestriction() ? "Yes" : "No")));
+        if (_parameters.isApplyingRiskWindowRestriction()) {
+            printString(buffer, "Restrict Risk Window to %g%%", _parameters.getRiskWindowPercentage());
+            settings.push_back(std::make_pair("Maximum Temporal Window", buffer));
+        }
     }
     return settings;
 }

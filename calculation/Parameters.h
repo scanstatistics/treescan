@@ -16,6 +16,8 @@ class Parameters {
                         /* Advanced Input */
                         CUT_FILE,
                         CUT_TYPE,
+                        APPLY_RISK_WINDOW_RESTRICTION,
+                        RISK_WINDOW_PERCENTAGE,
                         /* Analysis */
                         SCAN_TYPE,
                         CONDITIONAL_TYPE,
@@ -219,6 +221,8 @@ class Parameters {
     unsigned int                        _sequential_max_signal;
     std::string                         _sequential_file;
     double                              _power_z;
+    bool                                _apply_risk_window_restriction;
+    double                              _risk_window_percentage;
 
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
@@ -235,6 +239,10 @@ class Parameters {
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
 
+    bool                                isApplyingRiskWindowRestriction() const { return _apply_risk_window_restriction; }
+    void                                setApplyingRiskWindowRestriction(bool b) { _apply_risk_window_restriction = b; }
+    double                              getRiskWindowPercentage() const { return _risk_window_percentage; }
+    void                                setRiskWindowPercentage(double d) { _risk_window_percentage = d; }
     void                                defineInputSource(ParameterType e, InputSource source, unsigned int idx=1) {_input_sources[std::make_pair(e,idx)] = source;}
     ConditionalType                     getConditionalType() const {return _conditional_type;}
     const std::string                 & getCountFileName() const {return _countFileName;}

@@ -72,6 +72,8 @@ public class Parameters implements Cloneable {
     private int _sequential_min_signal=3;
     private int _sequential_max_signal=200;
     private String _sequential_file="";
+    private boolean _apply_risk_window_restriction=false;
+    private double _risk_window_percentage=50.0;
     
     private ArrayList<InputSourceSettings>     _input_sources;
     
@@ -136,6 +138,8 @@ public class Parameters implements Cloneable {
    	  if (_data_time_range_start != rhs._data_time_range_start) return false;
    	  if (_data_time_range_end != rhs._data_time_range_end) return false;
           if (!_cutsfilename.equals(rhs._cutsfilename)) return false;
+    	  if (_apply_risk_window_restriction != rhs._apply_risk_window_restriction) return false;
+    	  if (_risk_window_percentage != rhs._risk_window_percentage) return false;
           
     	  if (!_outputfilename.equals(rhs._outputfilename)) return false;
     	  if (_generateHtmlResults != rhs._generateHtmlResults) return false;
@@ -161,6 +165,10 @@ public class Parameters implements Cloneable {
           return true;
     }
 
+    public boolean isApplyingRiskWindowRestriction() { return _apply_risk_window_restriction; }
+    public void setApplyingRiskWindowRestriction(boolean b) { _apply_risk_window_restriction = b; }
+    public double getRiskWindowPercentage() { return _risk_window_percentage; }
+    public void setRiskWindowPercentage(double d) { _risk_window_percentage = d; }    
     public boolean getRestrictTreeLevels() {return _restrict_tree_levels;}
     public void setRestrictTreeLevels(boolean b) {_restrict_tree_levels = b;}
     public final String getRestrictedTreeLevels() {return _restricted_tree_levels;}

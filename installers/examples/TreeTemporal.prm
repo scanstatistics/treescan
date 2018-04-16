@@ -45,6 +45,10 @@ maximum-window-fixed=1
 maximum-window-type=0
 ;minimum temporal size as fixed time length (integer)
 minimum-window-fixed=2
+;apply risk window restriction - (y/n)
+apply-risk-window-restriction=n
+;risk window percentage (0 < x <= 100.0)
+risk-window-percentage=50
 
 [Adjustments]
 ;perform day of week adjustments (y/n)
@@ -94,7 +98,7 @@ alternative-hypothesis-filename=
 ;power baseline probability (integer / integer)
 baseline-probability=1/2
 ;power z value (0 < z <= 0.01)
-power-z=0.009
+power-z=0.001
 
 [Additional Output]
 ;create LLR results (y/n)

@@ -175,8 +175,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                   endWindow(_scanRunner.getParameters().getTemporalEndRange().getStart() + idxAdditive,
                               _scanRunner.getParameters().getTemporalEndRange().getEnd() + idxAdditive);
     // Define the minimum and maximum window lengths.
-    WindowLength window(static_cast<int>(_scanRunner.getParameters().getMinimumWindowLength()) - 1,
-                        static_cast<int>(_scanRunner.getParameters().getMaximumWindowInTimeUnits()) - 1);
+    boost::shared_ptr<AbstractWindowLength> window(_scanRunner.getNewWindowLength());
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
 
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
@@ -187,10 +186,9 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
         if (isEvaluated(thisNode, thisSimNode)) {
 
             // always do simple cut
-            iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+            iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
             for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                 for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                     NodeStructure::count_t branchWindow = thisSimNode.getBrC_C()[iWindowStart] - thisSimNode.getBrC_C()[iWindowEnd + 1];
                     NodeStructure::expected_t branchSum = static_cast<NodeStructure::expected_t>(thisSimNode.getBrC());
@@ -203,10 +201,9 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                 case Parameters::SIMPLE: break; // already done
                 case Parameters::ORDINAL:
                     // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
-                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                                 const SimulationNode& firstSimChildNode(_treeSimNodes[thisNode.getChildren()[i]->getID()]);
@@ -230,10 +227,9 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                     break;
                 case Parameters::PAIRS:
                     // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
-                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                                 const SimulationNode& startSimChildNode(_treeSimNodes[thisNode.getChildren()[i]->getID()]);
@@ -253,10 +249,9 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                     break;
                 case Parameters::TRIPLETS:
                     // Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
-                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                                 const SimulationNode& startSimChildNode(_treeSimNodes[thisNode.getChildren()[i]->getID()]);
@@ -308,8 +303,8 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                   endWindow(_scanRunner.getParameters().getTemporalEndRange().getStart() + idxAdditive,
                               _scanRunner.getParameters().getTemporalEndRange().getEnd() + idxAdditive);
     // Define the minimum and maximum window lengths.
-    WindowLength window(static_cast<int>(_scanRunner.getParameters().getMinimumWindowLength()) - 1,
-                        static_cast<int>(_scanRunner.getParameters().getMaximumWindowInTimeUnits()) - 1);
+
+    boost::shared_ptr<AbstractWindowLength> window(_scanRunner.getNewWindowLength());
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
 
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
@@ -319,10 +314,9 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
         if (isEvaluated(thisNode, thisSimNode)) {
 
             // always do simple cut
-            iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+            iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
             for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                 for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                     NodeStructure::count_t branchWindow = thisSimNode.getBrC_C()[iWindowStart] - thisSimNode.getBrC_C()[iWindowEnd + 1];
                     NodeStructure::expected_t branchExpected = thisNode.getBrN_C()[iWindowStart] - thisNode.getBrN_C()[iWindowEnd + 1];
@@ -335,10 +329,9 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                 case Parameters::SIMPLE: break; // already done
                 case Parameters::ORDINAL:
                     // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
-                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                                 const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
@@ -364,10 +357,9 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                     break;
                 case Parameters::PAIRS:
                     // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
-                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                                 const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
@@ -389,10 +381,9 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                     break;
                 case Parameters::TRIPLETS:
                     // Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
-                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                                 const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
@@ -454,9 +445,7 @@ SequentialMCSimSuccessiveFunctor::SequentialMCSimSuccessiveFunctor(boost::mutex&
                                _scanRunner.getParameters().getTemporalEndRange().getEnd() + idxAdditive);
 
     // Define the minimum and maximum window lengths.
-    _window = WindowLength(static_cast<int>(_scanRunner.getParameters().getMinimumWindowLength()) - 1,
-                           static_cast<int>(_scanRunner.getParameters().getMaximumWindowInTimeUnits()) - 1);
-
+    _window = _scanRunner.getNewWindowLength();
     _loglikelihood.reset(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN()));
 }
 
@@ -494,10 +483,9 @@ SequentialMCSimSuccessiveFunctor::result_type SequentialMCSimSuccessiveFunctor::
             ++total_cases;
             // Now calculate the maximum log likelihood for current number of cases.
             NodeStructure::expected_t branchSum = static_cast<NodeStructure::expected_t>(_treeSimNode->getBrC());
-            iMaxEndWindow = std::min(_endWindow.getEnd(), _startWindow.getEnd() + _window.maximum());
+            iMaxEndWindow = std::min(_endWindow.getEnd(), _startWindow.getEnd() + _window->maximum());
             for (iWindowEnd=_endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                iMinWindowStart = std::max(iWindowEnd - _window.maximum(), _startWindow.getStart());
-                iWindowStart = std::min(_startWindow.getEnd(), iWindowEnd - _window.minimum());
+                _window->windowstart(_startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                 for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                     NodeStructure::count_t branchWindow = _treeSimNode->getBrC_C()[iWindowStart] - _treeSimNode->getBrC_C()[iWindowEnd + 1];
                     simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(branchWindow, branchSum, iWindowEnd - iWindowStart + 1));

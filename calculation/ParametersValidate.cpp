@@ -190,6 +190,12 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                                       BasePrint::P_PARAMERROR, endRange.toString(buffer2).c_str(), startRange.toString(buffer).c_str());
             }
         }
+        if (_parameters.isTemporalScanType(_parameters.getScanType()) && _parameters.isApplyingRiskWindowRestriction()) {
+            if (_parameters.getRiskWindowPercentage() <= 0.0 || _parameters.getMaximumWindowPercentage() > 100.0) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe risk window percentage must be greater than zero and less than or equal to 100.\n", BasePrint::P_PARAMERROR);
+            }
+        }
     } catch (prg_exception& x) {
         x.addTrace("ValidateFileParameters()","ParametersValidate");
         throw;
@@ -378,23 +384,23 @@ bool ParametersValidate::ValidateTemporalWindowParameters(BasePrint & PrintDirec
     if (_parameters.getModelType() == Parameters::UNIFORM) {
         switch (_parameters.getMaximumWindowType()) {
             case Parameters::PERCENTAGE_WINDOW: {
-                if (_parameters.getMaximumWindowPercentage() < 0 || _parameters.getMaximumWindowPercentage() > 50.0) {
+                if (_parameters.getMaximumWindowPercentage() <= 0 || _parameters.getMaximumWindowPercentage() > 50.0) {
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nThe percent of the maximum window must be greater than zero and less than or equal to 50.\n", BasePrint::P_PARAMERROR);
                 }
                 unsigned int max_length = static_cast<unsigned int>(std::floor(static_cast<double>(_parameters.getDataTimeRangeSet().getMinMax().numDaysInRange()) * _parameters.getMaximumWindowPercentage()/100.0));
-                if (_parameters.getMinimumWindowLength() < 0 || _parameters.getMinimumWindowLength() > max_length) {
+                if (_parameters.getMinimumWindowLength() <= 0 || _parameters.getMinimumWindowLength() > max_length) {
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nThe minimum window length must be greater than zero and no greater than the specified maximum window length.\nWith a specifed maximum as %g%%, the maximum window length is %u.\n", BasePrint::P_PARAMERROR, _parameters.getMaximumWindowPercentage(), max_length);
                 }
             } break;
             case Parameters::FIXED_LENGTH: {
                 unsigned int max_length = static_cast<unsigned int>(std::floor(static_cast<double>(_parameters.getDataTimeRangeSet().getMinMax().numDaysInRange()) * 0.5));
-                if (_parameters.getMaximumWindowLength() < 0 || _parameters.getMaximumWindowLength() > max_length) {
+                if (_parameters.getMaximumWindowLength() <= 0 || _parameters.getMaximumWindowLength() > max_length) {
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum window length must be greater than zero and no greater than 50%% of data time range (%u time units).\n", BasePrint::P_PARAMERROR, max_length);
                 }
-                if (_parameters.getMinimumWindowLength() < 0 || _parameters.getMinimumWindowLength() > _parameters.getMaximumWindowLength()) {
+                if (_parameters.getMinimumWindowLength() <= 0 || _parameters.getMinimumWindowLength() > _parameters.getMaximumWindowLength()) {
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nThe minimum window length must be greater than zero and no greater than the specified maximum window length.\n", BasePrint::P_PARAMERROR);
                 }

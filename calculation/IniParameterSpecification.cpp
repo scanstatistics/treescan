@@ -192,8 +192,10 @@ void IniParameterSpecification::Build_1_4_x_ParameterList() {
     _parameter_info[Parameters::SEQUENTIAL_MIN_SIGNAL] = ParamInfo(Parameters::SEQUENTIAL_MIN_SIGNAL, "sequential-minimum-signal", 3, _sequential_scan_section);
     _parameter_info[Parameters::SEQUENTIAL_FILE] = ParamInfo(Parameters::SEQUENTIAL_FILE, "sequential-filename", 4, _sequential_scan_section);
     _parameter_info[Parameters::POWER_Z] = ParamInfo(Parameters::POWER_Z, "power-z", 10, _power_evaluations_section);
+    _parameter_info[Parameters::APPLY_RISK_WINDOW_RESTRICTION] = ParamInfo(Parameters::APPLY_RISK_WINDOW_RESTRICTION, "apply-risk-window-restriction", 5, _temporal_window_section);
+    _parameter_info[Parameters::RISK_WINDOW_PERCENTAGE] = ParamInfo(Parameters::RISK_WINDOW_PERCENTAGE, "risk-window-percentage", 6, _temporal_window_section);
 
-    assert(_parameter_info.size() == 50);
+    assert(_parameter_info.size() == 52);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

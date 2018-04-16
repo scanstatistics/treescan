@@ -17,7 +17,6 @@
 #include "DataFileWriter.h"
 #include "DataSource.h"
 #include "ResultsFileWriter.h"
-#include "WindowLength.h"
 #include "AlternativeHypothesisRandomizer.h"
 #include "RelativeRiskAdjustment.h"
 #include "BernoulliRandomizer.h"
@@ -341,6 +340,12 @@ ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : _parame
             _day_of_week_indexes[idx % 7].push_back(idx);
         }
     }
+}
+
+boost::shared_ptr<AbstractWindowLength> ScanRunner::getNewWindowLength() const {
+    if (_parameters.isApplyingRiskWindowRestriction())
+        return boost::shared_ptr<AbstractWindowLength>(new RiskPercentageWindowLength(_parameters, static_cast<int>(_parameters.getMinimumWindowLength()) - 1, static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1, _zero_translation_additive));
+    return boost::shared_ptr<AbstractWindowLength>(new WindowLength(_parameters, static_cast<int>(_parameters.getMinimumWindowLength()) - 1, static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1));
 }
 
 /*
@@ -1252,8 +1257,7 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                   endWindow(_parameters.getTemporalEndRange().getStart() + _zero_translation_additive,
                             _parameters.getTemporalEndRange().getEnd() + _zero_translation_additive);
     // Define the minimum and maximum window lengths.
-    WindowLength window(static_cast<int>(_parameters.getMinimumWindowLength()) - 1,
-                        static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1);
+    boost::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
 
     //std::string buffer;
@@ -1264,10 +1268,9 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
 
             // always do simple cut
             //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
-            iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+            iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
             for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                 for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                     //_print.Printf("%d to %d\n", BasePrint::P_STDOUT,iWindowStart, iWindowEnd);
                     updateCuts(n, thisNode.getBrC_C()[iWindowStart] - thisNode.getBrC_C()[iWindowEnd + 1], static_cast<NodeStructure::expected_t>(thisNode.getBrC()), calcLogLikelihood, iWindowStart, iWindowEnd);
@@ -1282,10 +1285,9 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                 case Parameters::ORDINAL: {
                     // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
                     CutStructure::CutChildContainer_t currentChildren;
-                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                                 const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
@@ -1314,10 +1316,9 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                 } break;
                 case Parameters::PAIRS:
                     // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
-                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                                 const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
@@ -1340,10 +1341,9 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                     } break;
                 case Parameters::TRIPLETS:
                     // Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
-                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                                 const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
@@ -1400,8 +1400,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                   endWindow(_parameters.getTemporalEndRange().getStart() + _zero_translation_additive,
                             _parameters.getTemporalEndRange().getEnd() + _zero_translation_additive);
     // Define the minimum and maximum window lengths.
-    WindowLength window(static_cast<int>(_parameters.getMinimumWindowLength()) - 1,
-                        static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1);
+    boost::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
 
     //std::string buffer;
@@ -1412,10 +1411,9 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
 
             // always do simple cut
             //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
-            iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+            iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
             for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                 for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                     //_print.Printf("%d to %d\n", BasePrint::P_STDOUT,iWindowStart, iWindowEnd);
                     updateCuts(n, thisNode.getBrC_C()[iWindowStart] - thisNode.getBrC_C()[iWindowEnd + 1],
@@ -1432,10 +1430,9 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                 case Parameters::ORDINAL: {
                     // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
                     CutStructure::CutChildContainer_t currentChildren;
-                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                                 const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
@@ -1464,10 +1461,9 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                 } break;
                 case Parameters::PAIRS:
                     // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
-                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                                 const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
@@ -1490,10 +1486,9 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                     } break;
                 case Parameters::TRIPLETS:
                     // Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
-                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window.maximum());
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                     for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                        iMinWindowStart = std::max(iWindowEnd - window.maximum(), startWindow.getStart());
-                        iWindowStart = std::min(startWindow.getEnd(), iWindowEnd - window.minimum());
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                             for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
                                 const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));

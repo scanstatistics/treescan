@@ -355,6 +355,14 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getSequentialFilename().c_str()));
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setApplyingRiskWindowRestriction", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.isApplyingRiskWindowRestriction());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setRiskWindowPercentage", "(D)V");
+  Env.CallVoidMethod(jParameters, mid, (jdouble)parameters.getRiskWindowPercentage());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -660,6 +668,14 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
   parameters.setSequentialFilename(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+  mid = _getMethodId_Checked(Env, clazz, "isApplyingRiskWindowRestriction", "()Z");
+  parameters.setApplyingRiskWindowRestriction(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getRiskWindowPercentage", "()D");
+  parameters.setRiskWindowPercentage(Env.CallDoubleMethod(jParameters, mid));
+  jni_error::_detectError(Env);
 
   return parameters;
 }

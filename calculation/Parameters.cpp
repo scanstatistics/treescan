@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 49;
+const int Parameters::giNumParameters = 52;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -79,6 +79,8 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_sequential_max_signal != rhs._sequential_max_signal) return false;
   if (_sequential_file != rhs._sequential_file) return false;
   if (_power_z != rhs._power_z) return false;
+  if (_apply_risk_window_restriction != rhs._apply_risk_window_restriction) return false;
+  if (_risk_window_percentage != rhs._risk_window_percentage) return false;
 
   return true;
 }
@@ -181,6 +183,9 @@ void Parameters::copy(const Parameters &rhs) {
     _sequential_min_signal = rhs._sequential_min_signal;
     _sequential_max_signal = rhs._sequential_max_signal;
     _sequential_file = rhs._sequential_file;
+
+    _apply_risk_window_restriction = rhs._apply_risk_window_restriction;
+    _risk_window_percentage = rhs._risk_window_percentage;
 }
 
 /* Returns the maximum temporal window in data time units. */
@@ -332,6 +337,9 @@ void Parameters::setAsDefaulted() {
     _sequential_min_signal=3;
     _sequential_max_signal=200;
     _sequential_file="";
+
+    _apply_risk_window_restriction = false;
+    _risk_window_percentage = 50.0;	
 }
 
 /** Sets output data file name.
@@ -438,6 +446,8 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     // Advanced Input
     setCutsFileName(pt.get<std::string>("parameters.input.advanced.input.cuts-filename", "").c_str(), true);
     _cut_type = static_cast<CutType>(pt.get<unsigned int>("parameters.input.advanced.input.cuts-type", SIMPLE));
+    _apply_risk_window_restriction = pt.get<bool>("parameters.input.advanced.input.apply-risk-window-restriction", false);
+    _risk_window_percentage = pt.get<double>("parameters.input.advanced.input.risk-window-percentage", 50.0);
     // Output
     setOutputFileName(pt.get<std::string>("parameters.output.results-file", "").c_str(), true);
     _generateHtmlResults = pt.get<bool>("parameters.output.generate-html-results", true);
@@ -496,6 +506,8 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     // Advanced Input
     pt.put("parameters.input.advanced.input.cuts-file", _cutsFileName);
     pt.put("parameters.input-advanced.input.cuts-type", static_cast<unsigned int>(_cut_type));
+    pt.put("parameters.input.advanced.input.apply-risk-window-restriction", _apply_risk_window_restriction);
+    pt.put("parameters.input.advanced.input.risk-window-percentage", _risk_window_percentage);
     // Output
     pt.put("parameters.output.results-file", _outputFileName);
     pt.put("parameters.output.generate-html-results", _generateHtmlResults);

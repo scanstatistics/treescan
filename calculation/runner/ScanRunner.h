@@ -10,6 +10,7 @@
 #include "SimulationVariables.h"
 #include "Parameters.h"
 #include "CriticalValues.h"
+#include "WindowLength.h"
 #include <iostream>
 #include <fstream>
 #include <limits>
@@ -297,6 +298,8 @@ public:
     bool                               reportableCut(const CutStructure& cut) const;
     bool                               run();
     void                               updateCriticalValuesList(double llr) {if (_critical_values.get()) _critical_values->add(llr);}
+
+    boost::shared_ptr<AbstractWindowLength> getNewWindowLength() const;
 };
 //***************************************************************************
 #endif
