@@ -9,11 +9,16 @@
 /** Abstraction for Poisson data randomizers */
 class TemporalRandomizer : public AbstractRandomizer {
 protected:
+    typedef std::list<std::pair<int, NodeStructure::count_t> > censor_distribution_t;
+    typedef std::vector<censor_distribution_t> node_censor_container_t;
+
     int                         _total_C;
     double                      _total_N;
     const DataTimeRangeSet    & _time_range_sets;
     DataTimeRange::index_t      _zero_translation_additive;
     const ScanRunner::DayOfWeekIndexes_t  & _day_of_week_indexes;
+    bool                        _censored_data;
+    node_censor_container_t     _node_censors;
 
     virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
     virtual int read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes);

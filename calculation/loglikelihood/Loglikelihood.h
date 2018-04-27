@@ -13,11 +13,14 @@ public:
     virtual double LogLikelihood(int c, double n) const {
         throw prg_error("LogLikelihood(int,int) not implemented.", "LogLikelihood()");
     }
+    virtual double LogLikelihood(int c, double n, int bc, double bn) const {
+        throw prg_error("LogLikelihood(int,int,int,int) not implemented.", "LogLikelihood()");
+    }    
     virtual double LogLikelihood(int c, double n, size_t windowLength) const {
         throw prg_error("LogLikelihood(int,int,size_t) not implemented.", "LogLikelihood()");
     }
     virtual double LogLikelihoodRatio(double logLikelihood) const = 0;
-    static AbstractLoglikelihood * getNewLoglikelihood(const Parameters& parameters, int TotalC, double TotalN);
+    static AbstractLoglikelihood * getNewLoglikelihood(const Parameters& parameters, int TotalC, double TotalN, bool censored_data);
     static double UNSET_LOGLIKELIHOOD;
 };
 
@@ -39,6 +42,28 @@ public:
     virtual double  LogLikelihoodRatio(double logLikelihood) const {
         if (logLikelihood == UNSET_LOGLIKELIHOOD) return 0.0;
         return logLikelihood - _totalC * log(_totalC/_totalN);
+    }
+};
+
+class PoissonCensoredLoglikelihood : public AbstractLoglikelihood {
+public:
+    PoissonCensoredLoglikelihood() : AbstractLoglikelihood() {}
+    virtual ~PoissonCensoredLoglikelihood() {}
+
+    /* Calculates the conditional Poisson loglikelihood. */
+    virtual double  LogLikelihood(int c, double n, int bc, double bn) const {
+        /* c = cases in the window for the branch under consideration */
+        /* n = expected cases in the window for the branch under consideration */
+        /* bc = total cases for the branch under consideration, inside and outside the window */
+        /* bn = total expected cases for the branch under consideration, inside and outside the window */
+
+        if (c - n < 0.0001) return UNSET_LOGLIKELIHOOD;
+        if (c == bc) return c * log(c / n);
+        return c * log(c / n) + (bc - c) * log((bc - c) / (bn - n));
+    }
+    virtual double  LogLikelihoodRatio(double logLikelihood) const {
+        if (logLikelihood == UNSET_LOGLIKELIHOOD) return 0.0;
+        return logLikelihood;
     }
 };
 

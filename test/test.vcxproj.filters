@@ -288,6 +288,9 @@
     <ClCompile Include="squish85.cpp">
       <Filter>Source Files\regression_tests</Filter>
     </ClCompile>
+    <ClCompile Include="squish97.cpp">
+      <Filter>Source Files\integration_tests</Filter>
+    </ClCompile>
     <ClCompile Include="squish62.cpp">
       <Filter>Source Files\integration_tests</Filter>
     </ClCompile>

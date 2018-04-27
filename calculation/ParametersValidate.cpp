@@ -196,6 +196,21 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                 PrintDirection.Printf("Invalid Parameter Setting:\nThe risk window percentage must be greater than zero and less than or equal to 100.\n", BasePrint::P_PARAMERROR);
             }
         }
+
+        if (_parameters.isForcedCensoredAlgorithm()) {
+            if (_parameters.getModelType() != Parameters::UNIFORM) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nForced censored algorithm is only permitted with the uniform model.\n", BasePrint::P_PARAMERROR);
+            }
+            if (_parameters.isPerformingDayOfWeekAdjustment()) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nForced censored algorithm is not permitted with day of week adjustment.\n", BasePrint::P_PARAMERROR);
+            }
+            if (_parameters.isSequentialScan()) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nForced censored algorithm is not permitted with sequential scan.\n", BasePrint::P_PARAMERROR);
+            }
+        }
     } catch (prg_exception& x) {
         x.addTrace("ValidateFileParameters()","ParametersValidate");
         throw;

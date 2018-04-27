@@ -315,7 +315,7 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
     const Parameters& params = _scanner.getParameters();
     std::string buffer;
     RecordBuffer Record(_dataFieldDefinitions);
-    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_scanner.getParameters(), _scanner.getTotalC(), _scanner.getTotalN()));
+    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_scanner.getParameters(), _scanner.getTotalC(), _scanner.getTotalN(), _scanner.isCensoredData()));
 
     try {
         Record.GetFieldValue(CUT_NUM_FIELD).AsDouble() = cutIndex + 1;
@@ -337,7 +337,7 @@ void CutsRecordWriter::write(unsigned int cutIndex) const {
             case Parameters::MODEL_NOT_APPLICABLE :
             default :
                 if (Parameters::isTemporalScanType(params.getScanType())) {
-                    if (params.isPerformingDayOfWeekAdjustment() || params.getConditionalType() == Parameters::NODEANDTIME) {
+                    if (params.isPerformingDayOfWeekAdjustment() || params.getConditionalType() == Parameters::NODEANDTIME || _scanner.isCensoredData()) {
                         Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getNodes()[_scanner.getCuts()[cutIndex]->getID()]->getBrC());
                     } else {
                         Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getCuts()[cutIndex]->getN());

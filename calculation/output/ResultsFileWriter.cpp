@@ -44,7 +44,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
 
     AsciiPrintFormat PrintFormat;
     Parameters& parameters(const_cast<Parameters&>(_scanRunner.getParameters()));
-    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN()));
+    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN(), _scanRunner.isCensoredData()));
 
     PrintFormat.PrintVersionHeader(outfile);
     std::string buffer = ctime(&start);
@@ -58,6 +58,12 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         !(parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_ONLY_CASEFILE && parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
         PrintFormat.PrintSectionLabel(outfile, "Total Cases", false);
         PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getTotalC()));
+        if (_scanRunner.isCensoredData()) {
+            PrintFormat.PrintSectionLabel(outfile, "Total Censored Cases", false);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getNumCensoredCases()));
+            PrintFormat.PrintSectionLabel(outfile, "Average Censoring Time", false);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getAvgCensorTime()));
+        }
     }
     if (parameters.getModelType() == Parameters::POISSON) {
         PrintFormat.PrintSectionLabel(outfile, "Total Expected", false);
@@ -152,7 +158,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     // skip reporting node cases for time-only scans
                     if (parameters.getScanType() != Parameters::TIMEONLY) {
                         PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
-                        if (parameters.isPerformingDayOfWeekAdjustment()) {
+                        if (parameters.isPerformingDayOfWeekAdjustment() || _scanRunner.isCensoredData()) {
                             printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts()[k]->getID()]->getBrC()));
                         } else {
                             printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts()[k]->getN()));
@@ -334,7 +340,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     std::ofstream outfile;
     openStream(getFilenameHTML(parameters, buffer), outfile);
     if (!outfile) return false;
-    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN()));
+    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN(), _scanRunner.isCensoredData()));
 
     outfile << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << std::endl; 
     outfile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <!-- this has to be after the doctype so that IE6 doesn't use quirks mode -->" << std::endl;
@@ -385,6 +391,10 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     if (!parameters.getPerformPowerEvaluations() || 
         !(parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_ONLY_CASEFILE && parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
         outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
+        if (_scanRunner.isCensoredData()) {
+            outfile << "<tr><th>Total Censored Cases:</th><td>" << _scanRunner.getNumCensoredCases() << "</td></tr>" << std::endl;
+            outfile << "<tr><th>Average Censoring Time:</th><td>" << _scanRunner.getAvgCensorTime() << "</td></tr>" << std::endl;
+        }
     }
     if (parameters.getModelType() == Parameters::POISSON) {
         outfile << "<tr><th>Total Expected:</th><td>" << getValueAsString(_scanRunner.getTotalN(), buffer, 1).c_str() << "</td></tr>" << std::endl;
@@ -484,7 +494,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                     // write node cases
                     // skip reporting node cases for time-only scans
                     if (parameters.getScanType() != Parameters::TIMEONLY) {
-                        if (parameters.isPerformingDayOfWeekAdjustment()) {
+                        if (parameters.isPerformingDayOfWeekAdjustment() && _scanRunner.isCensoredData()) {
                             printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts()[k]->getID()]->getBrC()));
                         } else {
                             printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts()[k]->getN()));

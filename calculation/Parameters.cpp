@@ -81,6 +81,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_power_z != rhs._power_z) return false;
   if (_apply_risk_window_restriction != rhs._apply_risk_window_restriction) return false;
   if (_risk_window_percentage != rhs._risk_window_percentage) return false;
+  if (_forced_censored_algorithm != rhs._forced_censored_algorithm) return false;
 
   return true;
 }
@@ -183,6 +184,8 @@ void Parameters::copy(const Parameters &rhs) {
     _sequential_min_signal = rhs._sequential_min_signal;
     _sequential_max_signal = rhs._sequential_max_signal;
     _sequential_file = rhs._sequential_file;
+
+    _forced_censored_algorithm = rhs._forced_censored_algorithm;
 
     _apply_risk_window_restriction = rhs._apply_risk_window_restriction;
     _risk_window_percentage = rhs._risk_window_percentage;
@@ -339,7 +342,9 @@ void Parameters::setAsDefaulted() {
     _sequential_file="";
 
     _apply_risk_window_restriction = false;
-    _risk_window_percentage = 50.0;	
+    _risk_window_percentage = 50.0;
+
+    _forced_censored_algorithm = false;
 }
 
 /** Sets output data file name.

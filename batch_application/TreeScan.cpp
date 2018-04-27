@@ -101,9 +101,9 @@ int main(int argc, char* argv[]) {
         }
 
         /* hidden options */
-        //po::options_description hidden("Hidden options", 200);
-        //hidden.add_options()("randomization-seed", po::value<std::string>(), "randomization seed (0 < Seed < 2147483647)")
-        //                    ("random-randomization-seed", po::value<std::string>(), "randomly generate seed");
+        bool force_censored_algorithm = false;
+        po::options_description hidden("Hidden options", 200);
+        hidden.add_options()("force-censor-algorithm,k", po::bool_switch(&force_censored_algorithm), "Force Censor Algorithm");
 
         /* positional options */
         po::positional_options_description pd; 
@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
         parameterOptions.getOptions(opt_descriptions);
         for (size_t t=0; t < opt_descriptions.size(); ++t)
             cmdline_options.add(opt_descriptions[t]->get<0>());
-        cmdline_options.add(application); //.add(hidden);
+        cmdline_options.add(application).add(hidden);
         // display help if no additional arguments specified 
         if (argc < 2) {
             usage_message(argv[0], application, parameterOptions, opt_descriptions, false, console);
@@ -151,6 +151,7 @@ int main(int argc, char* argv[]) {
         if (vm.count("write-parameters")) {
             ParameterAccessCoordinator(parameters).write(vm["write-parameters"].as<std::string>().c_str(), console);
         }
+        if (force_censored_algorithm) parameters.setForcedCensoredAlgorithm(true);
         /* validate parameters - print errors to console */
         if (!ParametersValidate(parameters).Validate(console))
             throw resolvable_error("\nThe parameter file contains incorrect settings that prevent TreeScan from continuing. "

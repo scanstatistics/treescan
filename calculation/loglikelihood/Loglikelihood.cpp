@@ -6,7 +6,7 @@
 double AbstractLoglikelihood::UNSET_LOGLIKELIHOOD = -std::numeric_limits<double>::max();
 
 /** returns new randomizer given parameter settings. */
-AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Parameters& parameters, int TotalC, double TotalN) {
+AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Parameters& parameters, int TotalC, double TotalN, bool censored_data) {
     switch (parameters.getScanType()) {
         case Parameters::TREEONLY: {
             switch (parameters.getModelType()) {
@@ -44,6 +44,9 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
                     if (parameters.isPerformingDayOfWeekAdjustment()) {
                         /* TODO: Martin said to stud this log-likelihood for now. He needs to work through the correct function. */
                         return new PoissonLoglikelihood(TotalC, TotalN);
+                    }
+                    if (censored_data) {
+                        return new PoissonCensoredLoglikelihood();
                     }
                     switch (parameters.getConditionalType()) {
                         case Parameters::TOTALCASES :

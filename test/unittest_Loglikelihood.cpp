@@ -13,16 +13,16 @@ BOOST_AUTO_TEST_CASE( test_get_newloglikelihood_treeonly_scan_poisson_model ) {
     parameters.setConditionalType(Parameters::UNCONDITIONAL);
     parameters.setModelType(Parameters::POISSON);
 
-    BOOST_CHECK( dynamic_cast<UnconditionalPoissonLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0)) != 0 );
+    BOOST_CHECK( dynamic_cast<UnconditionalPoissonLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false)) != 0 );
 
     parameters.setConditionalType(Parameters::TOTALCASES);
-    BOOST_CHECK( dynamic_cast<PoissonLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0)) != 0 );
+    BOOST_CHECK( dynamic_cast<PoissonLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false)) != 0 );
 
     parameters.setConditionalType(Parameters::NODE);
-    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0), prg_error);
+    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false), prg_error);
 
     parameters.setConditionalType(Parameters::NODEANDTIME);
-    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0), prg_error);
+    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false), prg_error);
 }
 
 BOOST_AUTO_TEST_CASE( test_get_newloglikelihood_treeonly_scan_bernoulli_model ) {
@@ -32,16 +32,16 @@ BOOST_AUTO_TEST_CASE( test_get_newloglikelihood_treeonly_scan_bernoulli_model ) 
     parameters.setConditionalType(Parameters::UNCONDITIONAL);
     parameters.setModelType(Parameters::BERNOULLI);
 
-    BOOST_CHECK( dynamic_cast<UnconditionalBernoulliLogLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0)) != 0 );
+    BOOST_CHECK( dynamic_cast<UnconditionalBernoulliLogLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false)) != 0 );
 
     parameters.setConditionalType(Parameters::TOTALCASES);
-    BOOST_CHECK( dynamic_cast<BernoulliLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0)) != 0 );
+    BOOST_CHECK( dynamic_cast<BernoulliLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false)) != 0 );
 
     parameters.setConditionalType(Parameters::NODE);
-    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0), prg_error);
+    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false), prg_error);
 
     parameters.setConditionalType(Parameters::NODEANDTIME);
-    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0), prg_error);
+    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false), prg_error);
 }
 
 BOOST_AUTO_TEST_CASE( test_get_newloglikelihood_treetime_scan ) {
@@ -51,32 +51,32 @@ BOOST_AUTO_TEST_CASE( test_get_newloglikelihood_treetime_scan ) {
     parameters.setScanType(Parameters::TREETIME);
     parameters.setConditionalType(Parameters::NODE);
     parameters.setModelType(Parameters::UNIFORM);
-    BOOST_CHECK( dynamic_cast<TemporalLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0)) != 0 );
+    BOOST_CHECK( dynamic_cast<TemporalLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false)) != 0 );
 
     // tree-time scan, conditioned on node, poisson/bernoulli/not-applicable models
     parameters.setModelType(Parameters::POISSON);
-    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0), prg_error);
+    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false), prg_error);
     parameters.setModelType(Parameters::BERNOULLI);
-    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0), prg_error);
+    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false), prg_error);
     parameters.setModelType(Parameters::MODEL_NOT_APPLICABLE);
-    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0), prg_error);
+    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false), prg_error);
 
     // tree-time scan, conditioned on node, uniform model, day of week adjustment
     parameters.setModelType(Parameters::UNIFORM);
     parameters.setPerformDayOfWeekAdjustment(true);
-    BOOST_CHECK( dynamic_cast<PoissonLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0)) != 0 );
+    BOOST_CHECK( dynamic_cast<PoissonLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false)) != 0 );
 
     // tree-time scan, conditioned on node and time
     parameters.setPerformDayOfWeekAdjustment(false);
     parameters.setConditionalType(Parameters::NODEANDTIME);
     parameters.setModelType(Parameters::MODEL_NOT_APPLICABLE);
-    BOOST_CHECK( dynamic_cast<PoissonLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0)) != 0 );
+    BOOST_CHECK( dynamic_cast<PoissonLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false)) != 0 );
 
     // tree-time scan, conditioned on node and time, day of week adjustment
     parameters.setConditionalType(Parameters::NODEANDTIME);
     parameters.setModelType(Parameters::MODEL_NOT_APPLICABLE);
     parameters.setPerformDayOfWeekAdjustment(true);
-    BOOST_CHECK( dynamic_cast<PoissonLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0)) != 0 );
+    BOOST_CHECK( dynamic_cast<PoissonLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false)) != 0 );
 }
 
 BOOST_AUTO_TEST_CASE( test_get_newloglikelihood_timeonly_scan ) {
@@ -86,20 +86,20 @@ BOOST_AUTO_TEST_CASE( test_get_newloglikelihood_timeonly_scan ) {
     parameters.setScanType(Parameters::TIMEONLY);
     parameters.setConditionalType(Parameters::TOTALCASES);
     parameters.setModelType(Parameters::UNIFORM);
-    BOOST_CHECK( dynamic_cast<TemporalLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0)) != 0 );
+    BOOST_CHECK( dynamic_cast<TemporalLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false)) != 0 );
 
     // time-only scan, conditioned on node, poisson/bernoulli/not-applicable models
     parameters.setModelType(Parameters::POISSON);
-    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0), prg_error);
+    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false), prg_error);
     parameters.setModelType(Parameters::BERNOULLI);
-    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0), prg_error);
+    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false), prg_error);
     parameters.setModelType(Parameters::MODEL_NOT_APPLICABLE);
-    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0), prg_error);
+    BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false), prg_error);
 
     // time-only scan, conditioned on node, uniform model, day of week adjustment
     parameters.setModelType(Parameters::UNIFORM);
     parameters.setPerformDayOfWeekAdjustment(true);
-    BOOST_CHECK( dynamic_cast<PoissonLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0)) != 0 );
+    BOOST_CHECK( dynamic_cast<PoissonLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false)) != 0 );
 
     // time-only scan, conditioned on node and time
     /*parameters.setPerformDayOfWeekAdjustment(false);
@@ -254,6 +254,27 @@ BOOST_AUTO_TEST_CASE( test_loglikelihoodratio ) {
     UnconditionalBernoulliLogLoglikelihood l(0.5);
     BOOST_CHECK_EQUAL( l.LogLikelihoodRatio(AbstractLoglikelihood::UNSET_LOGLIKELIHOOD), 0.0 );
     BOOST_CHECK_CLOSE( l.LogLikelihoodRatio(-10.13851), -10.13851, 0.0001 );
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+/* Test Suite for the PoissonCensoredLoglikelihood class. */
+BOOST_AUTO_TEST_SUITE(test_poission_censored_loglikelihood)
+
+/* Tests results with TemporalLoglikelihood with PoissonCensoredLoglikelihood. */
+BOOST_AUTO_TEST_CASE( test_loglikelihood_to_temporal ) {
+    TemporalLoglikelihood temporal(98, 98.0, 28, 14);
+    PoissonCensoredLoglikelihood censored;
+
+    /* For this test situation, there were 98 total cases, time period 1-28, 21 cases in window, 46 on node. */
+    BOOST_CHECK_CLOSE(temporal.LogLikelihood(21, 46, 2), censored.LogLikelihood(21, 46.0/28.0 * 2.0, 46, 46), 0.0001);
+}
+
+/* Tests PoissonCensoredLoglikelihood::LogLikelihoodRatio. */
+BOOST_AUTO_TEST_CASE(test_loglikelihoodratio) {
+    PoissonCensoredLoglikelihood l;
+    BOOST_CHECK_EQUAL(l.LogLikelihoodRatio(AbstractLoglikelihood::UNSET_LOGLIKELIHOOD), 0.0);
+    BOOST_CHECK_CLOSE(l.LogLikelihoodRatio(-10.13851), -10.13851, 0.0001);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

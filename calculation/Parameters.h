@@ -224,6 +224,8 @@ class Parameters {
     bool                                _apply_risk_window_restriction;
     double                              _risk_window_percentage;
 
+    bool                                _forced_censored_algorithm;
+
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
     const char                        * getRelativeToParameterName(const FileName& fParameterName, const std::string& sFilename, std::string& sValue) const;
@@ -238,6 +240,9 @@ class Parameters {
     Parameters                        & operator=(const Parameters &rhs)  {if (this != &rhs) copy(rhs); return (*this);}
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
+
+    bool                                isForcedCensoredAlgorithm() const { return _forced_censored_algorithm; }
+    void                                setForcedCensoredAlgorithm(bool b) { _forced_censored_algorithm = b; }
 
     bool                                isApplyingRiskWindowRestriction() const { return _apply_risk_window_restriction; }
     void                                setApplyingRiskWindowRestriction(bool b) { _apply_risk_window_restriction = b; }

@@ -15,6 +15,14 @@ TemporalRandomizer::TemporalRandomizer(const ScanRunner& scanner, long lInitialS
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     DataTimeRange min_max = _time_range_sets.getMinMax();
     _zero_translation_additive = (min_max.getStart() <= 0) ? std::abs(min_max.getStart()) : min_max.getStart() * -1;
+    /* If data is censored, store censor distibution for each node so randomizations are quicker. */
+    _censored_data = scanner.isCensoredData();
+    if (scanner.isCensoredData()) {
+        _node_censors.resize(scanner.getNodes().size());
+        for (size_t t=0; t < scanner.getNodes().size(); ++t) {
+            scanner.getNodes()[t]->getCensorDistribution(_node_censors[t]);
+        }
+    }
 }
 
 int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
@@ -26,16 +34,42 @@ int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesP
 
     if (_parameters.isPerformingDayOfWeekAdjustment()) {
         for (size_t i=0; i < treeNodes.size(); ++i) {
-            const NodeStructure::CountContainer_t & counts = treeNodes.getIntC_C(i);
-            for (size_t idx=0; idx < counts.size(); ++idx) {
-                NodeStructure::count_t cases = counts[idx] - (idx + 1 == counts.size() ? 0 : counts[idx + 1]);
-                for (NodeStructure::count_t c=0; c < cases; ++c) {
-                    // For the associated day of week, by this idx, get the uniformly distributed time index along all of the same week day.
-                    DataTimeRange::index_t idxDay = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(1), static_cast<long>(_day_of_week_indexes[idx % 7].size()), _random_number_generator));
-                    ++(treeSimNodes[i].refIntC_C()[_day_of_week_indexes[idx % 7][idxDay - 1]]);
+            SimulationNode& simNode(treeSimNodes[i]);
+            if (treeNodes.getIntC(i)) {
+                const NodeStructure::CountContainer_t & counts = treeNodes.getIntC_C(i);
+                for (size_t idx = 0; idx < counts.size(); ++idx) {
+                    NodeStructure::count_t cases = counts[idx] - (idx + 1 == counts.size() ? 0 : counts[idx + 1]);
+                    for (NodeStructure::count_t c = 0; c < cases; ++c) {
+                        // For the associated day of week, by this idx, get the uniformly distributed time index along all of the same week day.
+                        DataTimeRange::index_t idxDay = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(1), static_cast<long>(_day_of_week_indexes[idx % 7].size()), _random_number_generator));
+                        ++(simNode.refIntC_C()[_day_of_week_indexes[idx % 7][idxDay - 1]]);
+                        ++TotalSimC;
+                    }
+                }
+            }
+        }
+    } else if (_censored_data) {
+        for (size_t i=0; i < treeNodes.size(); ++i) {
+            NodeStructure::count_t nodeC = treeNodes.getIntC(i);
+            if (nodeC) {
+                const NodeStructure::CensorDist_t& censor_distribution = _node_censors[i];
+                SimulationNode& simNode(treeSimNodes[i]);
+                int censor_count=0;
+                for (NodeStructure::CensorDist_t::const_iterator itr=censor_distribution.begin(); itr != censor_distribution.end(); ++itr) {
+                    for (NodeStructure::count_t c=0; c < itr->second; ++c) {
+                        // Distribute the censored case within specified censor period.
+                        DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(itr->first - 1), _random_number_generator));
+                        ++(simNode.refIntC_C()[idx]);
+                        ++TotalSimC;
+                        ++censor_count;
+                    }
+                }
+                // Now apply any of the cases that were not censored on this node -- they are distributed across entire data time range.
+                for (NodeStructure::count_t c=0; c < nodeC - censor_count; ++c) {
+                    DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(zeroRange.getEnd()), _random_number_generator));
+                    ++(simNode.refIntC_C()[idx]);
                     ++TotalSimC;
                 }
-
             }
         }
     } else {

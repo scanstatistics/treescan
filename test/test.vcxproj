@@ -156,6 +156,7 @@
     <ClCompile Include="squish81.cpp" />
     <ClCompile Include="squish62.cpp" />
     <ClCompile Include="squish85.cpp" />
+    <ClCompile Include="squish97.cpp" />
     <ClCompile Include="squish122.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="test_example_sets.cpp" />

@@ -17,6 +17,7 @@
 #include <deque>
 #include <map>
 #include <list>
+#include <numeric>
 
 class ScanRunner;
 class CutStructure {
@@ -69,6 +70,7 @@ public:
     typedef std::vector<expected_t> ExpectedContainer_t;
     enum CumulativeStatus {NON_CUMULATIVE=0, CUMULATIVE};
     typedef std::list<unsigned int> Ancestors_t;
+    typedef std::list<std::pair<int, count_t> > CensorDist_t;
 
 private:
     std::string             _identifier;
@@ -81,6 +83,8 @@ private:
     Parameters::CutType     _cut_type;
     CumulativeStatus        _cumulative_status;
 	unsigned int            _level;             // calculated node level
+
+    CountContainer_t        _IntC_Censored;     // Number of censored cases internal to the ndoe.
 
     Ancestors_t             _ancestors;     // nodes which have this node in tree branch
 
@@ -123,6 +127,23 @@ public:
     }
 
     const Ancestors_t           & getAncestors() const {return _ancestors;}
+    CensorDist_t                & getCensorDistribution(CensorDist_t& censor_distribution) const {
+        censor_distribution.clear();
+        NodeStructure::count_t nodeCensored=0, nodeCount = getIntC();
+        const CountContainer_t& censored = getIntC_Censored();
+        for (size_t z=0; z < censored.size(); ++z) {
+            if (censored[z]) {
+                censor_distribution.push_back(std::make_pair(z, censored[z]));
+                nodeCensored += censored[z];
+                if (nodeCensored == nodeCount) break;
+            }
+        }
+
+        if (nodeCount - nodeCensored)
+            censor_distribution.push_back(std::make_pair(this->_IntC_C.size() - 1, nodeCount - nodeCensored));
+
+        return censor_distribution;
+    }
     const std::string           & getIdentifier() const {return _identifier;}
     int                           getID() const {return _ID;}
     int                           getIntC() const {return _IntC_C.front();}
@@ -138,12 +159,28 @@ public:
     const RelationContainer_t   & getChildren() const {return _Child;}
     const RelationContainer_t   & getParents() const {return _Parent;}
     Parameters::CutType           getCutType() const {return _cut_type;} 
-    ExpectedContainer_t         & refIntN_C() {return _IntN_C;}
+    ExpectedContainer_t         & refIntN_C() {
+                                    if (_IntN_C.size() == 0) {
+                                        _IntN_C.resize(_IntC_C.size(), 0);
+                                    }
+                                    return _IntN_C;
+                                  }
     CountContainer_t            & refIntC_C() {return _IntC_C;}
     CountContainer_t            & refBrC_C() {return _BrC_C;}
-    ExpectedContainer_t         & refBrN_C() {return _BrN_C;}
+    ExpectedContainer_t         & refBrN_C() {
+                                    if (_BrN_C.size() == 0) {
+                                        _BrN_C.resize(_IntC_C.size(), 0);
+                                    }
+                                    return _BrN_C;
+                                  }
     RelationContainer_t         & refChildren() {return _Child;}
 
+    const CountContainer_t      & getIntC_Censored() const { return _IntC_Censored; }
+    CountContainer_t            & refIntC_Censored() {
+                                    if (_IntC_Censored.size() == 0) {
+                                        _IntC_Censored.resize(_IntC_C.size(), 0);
+                                    }
+                                    return _IntC_Censored; }
     void                          setIdentifier(const std::string& s) {_identifier = s;}
     void                          setID(int i) {_ID = i;}
     void                          setCutType(Parameters::CutType cut_type) {_cut_type = cut_type;}
@@ -257,6 +294,9 @@ protected:
     DayOfWeekIndexes_t          _day_of_week_indexes;
     mutable TreeStatistics_t    _tree_statistics;
     bool                        _has_multi_parent_nodes;
+    bool                        _censored_data;
+    int                         _num_censored_cases;
+    DataTimeRange::index_t      _avg_censor_time;
 
     unsigned int                addCN_C(const NodeStructure& sourceNode, NodeStructure& destinationNode, boost::dynamic_bitset<>& ancestor_nodes);
     size_t                      calculateCutsCount() const;
@@ -272,13 +312,19 @@ protected:
     bool                        runsequentialsimulations(unsigned int num_relica);
     bool                        scanTree();
     bool                        scanTreeTemporalConditionNode();
+    bool                        scanTreeTemporalConditionNodeCensored();
     bool                        scanTreeTemporalConditionNodeTime();
     bool                        setupTree();
-    CutStructure *              updateCuts(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx=0, DataTimeRange::index_t endIdx=1);
+    CutStructure *              calculateCut(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx=0, DataTimeRange::index_t endIdx=1);
+    CutStructure *              calculateCut(size_t node_index, int C, double N, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdxa, DataTimeRange::index_t endIdx);
+    CutStructure *              updateCut(std::auto_ptr<CutStructure>& cut);
 
 public:
     ScanRunner(const Parameters& parameters, BasePrint& print);
 
+    bool                               isCensoredData() const { return _censored_data; }
+    DataTimeRange::index_t             getAvgCensorTime() const { return _avg_censor_time; }
+    int                                getNumCensoredCases() const { return _num_censored_cases; }
     const CriticalValues             & getCriticalValues() const {return *_critical_values;}
     std::string                      & getCaselessWindowsAsString(std::string& s) const;
     const CutStructureContainer_t    & getCuts() const {return _Cut;}

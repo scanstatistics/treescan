@@ -1,0 +1,126 @@
+[Analysis]
+;scan type (TREEONLY=0, TREETIME=1, TIMEONLY=2)
+scan-type=1
+;probability model type (POISSON=0, BERNOULLI=1, UNIFORM=2, Not-Applicable=3)
+probability-model=2
+;conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)
+conditional-type=2
+;self control design - unconditional Bernoulli only (y/n)
+self-control-design=n
+;case probability (integer / integer)
+event-probability=1/2
+;start data time range (integer - integer)
+window-start-range=[1,14]
+;end data time range (integer - integer)
+window-end-range=[1,21]
+
+[Input]
+;tree structure filename
+tree-filename=tree.tre
+;count data filename
+count-filename=TreeTemporal-censordata.cas
+;data time ranges (integer - integer)
+data-time-range=[1,28]
+
+[Output]
+;results filename
+results-filename=TreeTemporal-censordata.txt
+;create HTML results (y/n)
+results-html=n
+;create CSV results (y/n)
+results-csv=n
+
+[Advanced Input]
+;cuts filename
+cut-filename=
+;default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)
+cut-type=0
+
+[Temporal Window]
+;maximum temporal size as percentage of data time range (0 < x <= 50.0)
+maximum-window-percentage=50
+;maximum temporal size as fixed time length (integer)
+maximum-window-fixed=1
+;maximum temporal size selection (PERCENTAGE_WINDOW=0, FIXED_LENGTH=1)
+maximum-window-type=0
+;minimum temporal size as fixed time length (integer)
+minimum-window-fixed=2
+
+[Adjustments]
+;perform day of week adjustments (y/n)
+perform-day-of-week-adjustments=n
+
+[Inference]
+;number of simulation replications (0, 9, 999, n999)
+monte-carlo-replications=999
+;restrict tree levels evaluated (y/n)
+restrict-tree-levels=n
+;tree levels excluded from evaluation (csv list of unsigned integers, root level is 1)
+excluded-tree-levels=
+;randomization seed (integer)
+randomization-seed=12345678
+;generate randomization seed (y/n)
+random-randomization-seed=n
+
+[Sequential Scan]
+;perform sequential scan - time-only scan (y/n)
+sequential-scan=n
+;sequential scan maximum cases for signal (integer)
+sequential-maximum-signal=200
+;sequential scan - minimum cases to signal (integer)
+sequential-minimum-signal=3
+;sequential scan filename
+sequential-filename=
+
+[Power Evaluations]
+;perform power evaluations (y/n)
+perform-power-evaluations=n
+;power evaluation type (0=Analysis And Power Evaluation Together, 1=Only Power Evaluation With Count File, 2=Only Power Evaluation With Defined Total Cases)
+power-evaluation-type=0
+;critical values type (0=Monte Carlo, 1=User Specified Values)
+critical-values-type=0
+;power evaluation critical value .05 (> 0)
+critical-value-05=0
+;power evaluation critical value .01 (> 0)
+critical-value-01=0
+;power evaluation critical value .001 (> 0)
+critical-value-001=0
+;total cases in power evaluation (integer)
+power-evaluation-totalcases=600
+;number of replications in power step (integer)
+power-evaluation-replications=1000
+;power evaluation alternative hypothesis filename
+alternative-hypothesis-filename=
+;power baseline probability (integer / integer)
+baseline-probability=1/2
+;power z value (0 < z <= 0.01)
+power-z=0.001
+
+[Additional Output]
+;create LLR results (y/n)
+results-llr=y
+;report critical values (y/n)
+report-critical-values=n
+;report attributable risk (y/n)
+report-attributable-risk=n
+;number of exposed attributable risk is based upon (positive integer)
+attributable-risk-exposed=0
+
+[Power Simulations]
+;input simulation data (y/n)
+input-simulations=n
+;input simulation filename
+input-simulations-file=
+;output simulation data (y/n)
+output-simulations=n
+;output simulation filename
+output-simulations-file=
+
+[Run Options]
+;number of parallel processes to execute (0=All Processors, x=At Most X Processors)
+parallel-processes=0
+
+[System]
+;parameters version - do not modify
+parameters-version=1.4.0
+
