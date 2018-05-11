@@ -51,11 +51,47 @@ bool ParametersValidate::Validate(BasePrint& printDirection) const {
 /** Validates 'Adjustments' parameters. */
 bool ParametersValidate::ValidateAdjustmentsParameters(BasePrint & PrintDirection) const {
     bool bValid=true;
+    std::string buffer, buffer2;
 
     if (_parameters.getPerformDayOfWeekAdjustment()) {
         if (_parameters.getScanType() == Parameters::TREEONLY) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nThe day of week adjustment is not implemented for the 'Tree Only' scan type.\n", BasePrint::P_PARAMERROR);
+        }
+    }
+    if (_parameters.isApplyingExclusionTimeRanges()) {
+        if (!(_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME)) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe option to exclude specific time ranges is only implemented for 'Tree-Time' scans conditioned on both node and time.\n", BasePrint::P_PARAMERROR);
+        }
+
+        const DataTimeRange & data_time_range = _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
+        const DataTimeRangeSet::rangeset_t& exclusionSets = _parameters.getExclusionTimeRangeSet().getDataTimeRangeSets();
+        if (exclusionSets.size() == 0) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe option to exclude specific time ranges is selected but no exlusions are defined.\n", BasePrint::P_PARAMERROR);
+        }
+        // Validate each exclusion range.
+        for (DataTimeRangeSet::rangeset_t::const_iterator itrOuter = exclusionSets.begin(); itrOuter != exclusionSets.end(); ++itrOuter) {
+            if (itrOuter->getStart() >= itrOuter->getEnd()) {
+                bValid = false;
+                PrintDirection.Printf("The exclusion time range start '%d' must be before the data time range end '%d'.\n",
+                                      BasePrint::P_PARAMERROR, itrOuter->getStart(), itrOuter->getEnd());
+            }
+            // Validate that the exclusion time ranges are within the user defined data time range.
+            if (!data_time_range.encloses(*itrOuter)) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe exclusion time range '%s' is not with the data time range '%s'.\n",
+                                       BasePrint::P_PARAMERROR, itrOuter->toString(buffer).c_str(), data_time_range.toString(buffer2).c_str());
+            }
+            // Validate that the current exclusion range does not overlap with other exclusion ranges.
+            for (DataTimeRangeSet::rangeset_t::const_iterator itrInner=itrOuter+1; itrInner != exclusionSets.end(); ++itrInner) {
+                if (itrOuter->overlaps(*itrInner)) {
+                    bValid = false;
+                    PrintDirection.Printf("Invalid Parameter Setting:\nThe data time range '%s' overlaps with other range '%s'.\n",
+                        BasePrint::P_PARAMERROR, itrOuter->toString(buffer).c_str(), itrInner->toString(buffer2).c_str());
+                }
+            }
         }
     }
     return bValid;

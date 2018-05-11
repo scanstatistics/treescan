@@ -70,7 +70,9 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::SEQUENTIAL_FILE         : return "sequential scan filename";
             /* Advanced Analysis - Adjustments */
             case Parameters::DAYOFWEEK_ADJUSTMENT    : return "perform day of week adjustments (y/n)";
-            /* Advanced Analysis - Inference */
+            case Parameters::APPLY_EXCLUSION_RANGES  : return "apply exclusion time ranges (y/n)";
+            case Parameters::EXCLUSION_RANGES        : return "exclusion time ranges (comma separated list of: integer - integer)";
+                /* Advanced Analysis - Inference */
             case Parameters::REPLICATIONS            : return "number of simulation replications (0, 9, 999, n999)";
             case Parameters::RANDOMIZATION_SEED      : return "randomization seed (integer)";
             case Parameters::RANDOMLY_GENERATE_SEED  : return "generate randomization seed (y/n)";
@@ -147,7 +149,9 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::SEQUENTIAL_MIN_SIGNAL    : return AsString(s, _parameters.getSequentialMinimumSignal());
             case Parameters::SEQUENTIAL_FILE          : s = _parameters.getSequentialFilename(); return s;
             /* Advanced Analysis - Adjustments */
-            case Parameters::DAYOFWEEK_ADJUSTMENT    : return AsString(s, _parameters.getPerformDayOfWeekAdjustment());
+            case Parameters::DAYOFWEEK_ADJUSTMENT     : return AsString(s, _parameters.getPerformDayOfWeekAdjustment());
+            case Parameters::APPLY_EXCLUSION_RANGES   : return AsString(s, _parameters.isApplyingExclusionTimeRanges());
+            case Parameters::EXCLUSION_RANGES         : return _parameters.getExclusionTimeRangeSet().toString(s);
             /* Advanced Analysis - Inference */
             case Parameters::REPLICATIONS             : return AsString(s, _parameters.getNumReplicationsRequested());
             case Parameters::RANDOMIZATION_SEED       : return AsString(s, static_cast<unsigned int>(_parameters.getRandomizationSeed()));
@@ -327,7 +331,9 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::SEQUENTIAL_MIN_SIGNAL    : _parameters.setSequentialMinimumSignal(ReadUnsignedInt(value, e)); break;
             case Parameters::SEQUENTIAL_FILE          : _parameters.setSequentialFilename(value.c_str(), true); break;
             /* Advanced Analysis - Adjustments */
-            case Parameters::DAYOFWEEK_ADJUSTMENT    : _parameters.setPerformDayOfWeekAdjustment(ReadBoolean(value, e)); break;
+            case Parameters::DAYOFWEEK_ADJUSTMENT     : _parameters.setPerformDayOfWeekAdjustment(ReadBoolean(value, e)); break;
+            case Parameters::APPLY_EXCLUSION_RANGES   : _parameters.setApplyingExclusionTimeRanges(ReadBoolean(value, e)); break;
+            case Parameters::EXCLUSION_RANGES         : _parameters.setExclusionTimeRangeSet(DataTimeRangeSet(value)); break;
             /* Advanced Analysis Inference */
             case Parameters::REPLICATIONS             : _parameters.setNumReplications(ReadUnsignedInt(value, e)); break;
             case Parameters::RANDOMIZATION_SEED       : _parameters.setRandomizationSeed(static_cast<long>(ReadInt(value, e))); break;

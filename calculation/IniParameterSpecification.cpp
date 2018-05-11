@@ -194,8 +194,10 @@ void IniParameterSpecification::Build_1_4_x_ParameterList() {
     _parameter_info[Parameters::POWER_Z] = ParamInfo(Parameters::POWER_Z, "power-z", 10, _power_evaluations_section);
     _parameter_info[Parameters::APPLY_RISK_WINDOW_RESTRICTION] = ParamInfo(Parameters::APPLY_RISK_WINDOW_RESTRICTION, "apply-risk-window-restriction", 5, _temporal_window_section);
     _parameter_info[Parameters::RISK_WINDOW_PERCENTAGE] = ParamInfo(Parameters::RISK_WINDOW_PERCENTAGE, "risk-window-percentage", 6, _temporal_window_section);
+    _parameter_info[Parameters::APPLY_EXCLUSION_RANGES] = ParamInfo(Parameters::APPLY_EXCLUSION_RANGES, "apply-exclusion-data-ranges", 2, _adjustments_section);
+    _parameter_info[Parameters::EXCLUSION_RANGES] = ParamInfo(Parameters::EXCLUSION_RANGES, "exclusion-data-ranges", 3, _adjustments_section);
 
-    assert(_parameter_info.size() == 52);
+    assert(_parameter_info.size() == 54);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

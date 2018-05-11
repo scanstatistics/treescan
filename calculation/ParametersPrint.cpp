@@ -107,6 +107,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParame
 
 /** Prints 'Adjustments' tab parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(SettingContainer_t & settings) const {
+    std::string buffer;
     settings.clear();
     if (Parameters::isTemporalScanType(_parameters.getScanType())) {
         std::string buffer;
@@ -117,6 +118,11 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(
             default: throw prg_error("Unknown conditional type (%d).", "getAdjustmentsParameters()", _parameters.getConditionalType());
         }
         settings.push_back(std::make_pair("Perform Day of Week Adjustment",(_parameters.getPerformDayOfWeekAdjustment() ? "Yes" : "No")));
+    }
+    if (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) {
+        settings.push_back(std::make_pair("Apply Data Time Range Exclusions", (_parameters.isApplyingExclusionTimeRanges() ? "Yes" : "No")));
+        if (_parameters.isApplyingExclusionTimeRanges())
+            settings.push_back(std::make_pair("Data Time Range Exclusions", _parameters.getExclusionTimeRangeSet().toString(buffer)));
     }
     return settings;
 }

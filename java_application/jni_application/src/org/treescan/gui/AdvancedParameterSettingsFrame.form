@@ -85,7 +85,7 @@
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
-                              <Component id="_cutFileTextField" pref="503" max="32767" attributes="1"/>
+                              <Component id="_cutFileTextField" pref="551" max="32767" attributes="1"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_cutFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -104,7 +104,7 @@
                           <Component id="_cutFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="_cutFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="268" max="32767" attributes="0"/>
+                      <EmptySpace pref="274" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -165,7 +165,7 @@
                       <Component id="_minTemporalOptionsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_risk_window_group" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="82" max="32767" attributes="0"/>
+                      <EmptySpace pref="88" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -205,7 +205,7 @@
                                   <Component id="_maxTemporalTimeUnitsLabel" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="231" max="32767" attributes="0"/>
+                          <EmptySpace pref="279" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -373,7 +373,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_risk_window_percentage" min="-2" pref="70" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_risk_window_percentage_label" pref="277" max="32767" attributes="0"/>
+                          <Component id="_risk_window_percentage_label" pref="325" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -449,7 +449,7 @@
                       <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="203" max="32767" attributes="0"/>
+                      <EmptySpace pref="209" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -476,7 +476,7 @@
                           <Component id="_labelMonteCarloReplications" min="-2" max="-2" attributes="1"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_montCarloReplicationsTextField" min="-2" pref="58" max="-2" attributes="0"/>
-                          <EmptySpace pref="171" max="32767" attributes="0"/>
+                          <EmptySpace pref="219" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -641,7 +641,7 @@
                                           <Component id="_numberPowerReplications" min="-2" pref="58" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace min="0" pref="183" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="231" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -681,7 +681,7 @@
                               <Component id="_alternativeHypothesisFilename" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_alternativeHypothesisFilenameButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="97" max="32767" attributes="0"/>
+                          <EmptySpace pref="107" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -838,7 +838,7 @@
                       <Component id="_log_likelihood_ratios_group" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_report_critical_values_group" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="102" max="32767" attributes="0"/>
+                      <EmptySpace pref="120" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -962,7 +962,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_attributable_risk_exposed" min="-2" pref="70" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_chk_attributable_risk_extra" pref="243" max="32767" attributes="0"/>
+                          <Component id="_chk_attributable_risk_extra" pref="291" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1018,9 +1018,12 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_perform_dayofweek_adjustments" pref="542" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jPanel5" max="32767" attributes="0"/>
+                          <Component id="_group_exclusions" alignment="0" max="32767" attributes="0"/>
+                      </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -1028,22 +1031,97 @@
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="jPanel5" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="_group_exclusions" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_perform_dayofweek_adjustments" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="297" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JCheckBox" name="_perform_dayofweek_adjustments">
+            <Container class="javax.swing.JPanel" name="_group_exclusions">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Perform Day of Week Adjustments"/>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Data Time Range Exclusions">
+                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                        <EtchetBorder/>
+                      </Border>
+                    </TitledBorder>
+                  </Border>
+                </Property>
               </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_perform_dayofweek_adjustments.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enablePowerEvaluationsGroup();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
-              </AuxValues>
-            </Component>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_apply_time_range_restrictions" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_time_range_restrictions" pref="413" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="3" pref="3" max="-2" attributes="0"/>
+                                  <Component id="_time_range_restrictions" max="32767" attributes="0"/>
+                              </Group>
+                              <Component id="_apply_time_range_restrictions" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JTextField" name="_time_range_restrictions">
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="TextPrompt trp = new TextPrompt(&quot;enter comma separated range list (e.g. [5-10],[12-18])&quot;, _time_range_restrictions);&#xd;&#xa;trp.setForeground( Color.BLUE );&#xd;&#xa;trp.changeAlpha(0.5f);&#xd;&#xa;trp.changeStyle(Font.BOLD + Font.ITALIC);"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_apply_time_range_restrictions">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Apply Range Exclusions"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_apply_time_range_restrictions.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableTimeRangeExclusionsGroup();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JPanel" name="jPanel5">
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="_perform_dayofweek_adjustments" alignment="1" pref="582" max="32767" attributes="0"/>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="_perform_dayofweek_adjustments" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JCheckBox" name="_perform_dayofweek_adjustments">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Perform Day of Week Adjustments"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_perform_dayofweek_adjustments.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enablePowerEvaluationsGroup();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+              </SubComponents>
+            </Container>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_sequential_analysis_tab">
@@ -1120,7 +1198,7 @@
                                               <Component id="_minimum_cases_signal" min="-2" pref="71" max="-2" attributes="0"/>
                                               <Component id="_maximum_cases_signal" alignment="0" min="-2" pref="80" max="-2" attributes="0"/>
                                           </Group>
-                                          <EmptySpace min="0" pref="257" max="32767" attributes="0"/>
+                                          <EmptySpace min="0" pref="305" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -1150,7 +1228,7 @@
                               <Component id="_sequential_analysis_file" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_sequential_analysis_file_browse" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace min="0" pref="147" max="32767" attributes="0"/>
+                          <EmptySpace min="0" pref="157" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>

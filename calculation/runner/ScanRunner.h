@@ -295,8 +295,9 @@ protected:
     mutable TreeStatistics_t    _tree_statistics;
     bool                        _has_multi_parent_nodes;
     bool                        _censored_data;
-    int                         _num_censored_cases;
+    NodeStructure::count_t       _num_censored_cases;
     DataTimeRange::index_t      _avg_censor_time;
+    NodeStructure::count_t      _num_cases_excluded;
 
     unsigned int                addCN_C(const NodeStructure& sourceNode, NodeStructure& destinationNode, boost::dynamic_bitset<>& ancestor_nodes);
     size_t                      calculateCutsCount() const;
@@ -324,7 +325,8 @@ public:
 
     bool                               isCensoredData() const { return _censored_data; }
     DataTimeRange::index_t             getAvgCensorTime() const { return _avg_censor_time; }
-    int                                getNumCensoredCases() const { return _num_censored_cases; }
+    NodeStructure::count_t             getNumCensoredCases() const { return _num_censored_cases; }
+    NodeStructure::count_t             getNumExcludedCases() const { return _num_cases_excluded; }
     const CriticalValues             & getCriticalValues() const {return *_critical_values;}
     std::string                      & getCaselessWindowsAsString(std::string& s) const;
     const CutStructureContainer_t    & getCuts() const {return _Cut;}

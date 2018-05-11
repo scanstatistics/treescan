@@ -396,6 +396,8 @@ void IniParameterFileAccess::WriteAdvancedAnalysisAdjustmentsSettings(IniFile& W
     std::string s;
     try {
         WriteIniParameter(WriteFile, Parameters::DAYOFWEEK_ADJUSTMENT, GetParameterString(Parameters::DAYOFWEEK_ADJUSTMENT, s).c_str(), GetParameterComment(Parameters::DAYOFWEEK_ADJUSTMENT));
+        WriteIniParameter(WriteFile, Parameters::APPLY_EXCLUSION_RANGES, GetParameterString(Parameters::APPLY_EXCLUSION_RANGES, s).c_str(), GetParameterComment(Parameters::APPLY_EXCLUSION_RANGES));
+        WriteIniParameter(WriteFile, Parameters::EXCLUSION_RANGES, GetParameterString(Parameters::EXCLUSION_RANGES, s).c_str(), GetParameterComment(Parameters::EXCLUSION_RANGES));
     } catch (prg_exception& x) {
         x.addTrace("WriteAdvancedAnalysisAdjustmentsSettings()","IniParameterFileAccess");
         throw;

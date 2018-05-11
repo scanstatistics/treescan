@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 52;
+const int Parameters::giNumParameters = 54;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -82,6 +82,8 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_apply_risk_window_restriction != rhs._apply_risk_window_restriction) return false;
   if (_risk_window_percentage != rhs._risk_window_percentage) return false;
   if (_forced_censored_algorithm != rhs._forced_censored_algorithm) return false;
+  if (_apply_exclusion_ranges != rhs._apply_exclusion_ranges) return false;
+  if (_exclusion_time_ranges != rhs._exclusion_time_ranges) return false;
 
   return true;
 }
@@ -189,6 +191,9 @@ void Parameters::copy(const Parameters &rhs) {
 
     _apply_risk_window_restriction = rhs._apply_risk_window_restriction;
     _risk_window_percentage = rhs._risk_window_percentage;
+
+    _apply_exclusion_ranges = rhs._apply_exclusion_ranges;
+    _exclusion_time_ranges = rhs._exclusion_time_ranges;
 }
 
 /* Returns the maximum temporal window in data time units. */
@@ -345,6 +350,9 @@ void Parameters::setAsDefaulted() {
     _risk_window_percentage = 50.0;
 
     _forced_censored_algorithm = false;
+
+    _apply_exclusion_ranges = false;
+    _exclusion_time_ranges = DataTimeRangeSet();
 }
 
 /** Sets output data file name.
@@ -419,6 +427,8 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _minimum_window_length = pt.get<unsigned int>("parameters.analysis.advanced.temporal-window.minimum-window-length", 2);
     // Advanced Analysis - Adjustments Window
     _dayofweek_adjustment = pt.get<bool>("parameters.analysis.advanced.adjustments.perform-day-of-week-adjustments", false);
+    _apply_exclusion_ranges = pt.get<bool>("parameters.analysis.advanced.adjustments.apply-exclusion-time-ranges", false);
+    _exclusion_time_ranges.assign(pt.get<std::string>("parameters.analysis.advanced.adjustments.exclusion-time-ranges", "0,0"));
     // Advanced Analysis - Inference
     _replications = pt.get<unsigned int>("parameters.analysis.advanced.inference.replications", 999);
     _randomizationSeed = pt.get<unsigned int>("parameters.analysis.advanced.inference.seed", static_cast<unsigned int>(RandomNumberGenerator::glDefaultSeed));
@@ -493,6 +503,8 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.analysis.advanced.temporal-window.minimum-window-length", _minimum_window_length);
     // Advanced Analysis - Adjustments
     pt.put("parameters.analysis.advanced.adjustments.perform-day-of-week-adjustments", _dayofweek_adjustment);
+    pt.put("parameters.analysis.advanced.adjustments.apply-exclusion-time-ranges", _apply_exclusion_ranges);
+    pt.put("parameters.analysis.advanced.adjustments.exclusion-time-ranges", _exclusion_time_ranges.toString(buffer));
     // Advanced Analysis - Inference
     pt.put("parameters.analysis.advanced.inference.replications", _replications);
     pt.put("parameters.analysis.advanced.inference.seed", _randomizationSeed);

@@ -74,6 +74,8 @@ public class Parameters implements Cloneable {
     private String _sequential_file="";
     private boolean _apply_risk_window_restriction=false;
     private double _risk_window_percentage=50.0;
+    private boolean _apply_exclusion_ranges=false;
+    private String _exclusion_time_ranges="";
     
     private ArrayList<InputSourceSettings>     _input_sources;
     
@@ -94,6 +96,7 @@ public class Parameters implements Cloneable {
     	  newObject._outputfilename = new String(_outputfilename);
     	  newObject._power_alt_hypothesis_filename = new String(_power_alt_hypothesis_filename);
           newObject._sequential_file = new String(_sequential_file);
+          newObject._exclusion_time_ranges = new String(_exclusion_time_ranges);
           newObject._input_sources = new ArrayList<InputSourceSettings>();
           for (InputSourceSettings iss : _input_sources) {
             newObject._input_sources.add(iss.clone());
@@ -161,10 +164,18 @@ public class Parameters implements Cloneable {
           if (_power_baseline_probability_ratio_denominator != rhs._power_baseline_probability_ratio_denominator) return false;          
           if (_restrict_tree_levels != rhs._restrict_tree_levels) return false;
           if (!_restricted_tree_levels.equals(rhs._restricted_tree_levels)) return false;
+          if (_apply_exclusion_ranges != rhs._apply_exclusion_ranges) return false;
+          if (!_exclusion_time_ranges.equals(rhs._exclusion_time_ranges)) return false;
           
           return true;
     }
 
+    public boolean isApplyingExclusionTimeRanges() {return _apply_exclusion_ranges;}
+    public void setApplyingExclusionTimeRanges(boolean b) {_apply_exclusion_ranges = b;}
+    public final String getExclusionTimeRangeSet() {return _exclusion_time_ranges;}
+    public void setExclusionTimeRangeSet(final String s) {_exclusion_time_ranges = s;}
+    
+    
     public boolean isApplyingRiskWindowRestriction() { return _apply_risk_window_restriction; }
     public void setApplyingRiskWindowRestriction(boolean b) { _apply_risk_window_restriction = b; }
     public double getRiskWindowPercentage() { return _risk_window_percentage; }

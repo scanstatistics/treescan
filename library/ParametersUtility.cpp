@@ -363,6 +363,15 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jdouble)parameters.getRiskWindowPercentage());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setApplyingExclusionTimeRanges", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.isApplyingExclusionTimeRanges());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setExclusionTimeRangeSet", "(Ljava/lang/String;)V");
+  parameters.getExclusionTimeRangeSet().toString(s);
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(s.c_str()));
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -676,6 +685,18 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   mid = _getMethodId_Checked(Env, clazz, "getRiskWindowPercentage", "()D");
   parameters.setRiskWindowPercentage(Env.CallDoubleMethod(jParameters, mid));
   jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "isApplyingExclusionTimeRanges", "()Z");
+  parameters.setApplyingExclusionTimeRanges(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getExclusionTimeRangeSet", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  printf("sFilename = %s\n", sFilename);
+  parameters.setExclusionTimeRangeSet(DataTimeRangeSet(std::string(sFilename)));
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   return parameters;
 }

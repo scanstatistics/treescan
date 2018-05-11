@@ -37,6 +37,8 @@ class Parameters {
                         MINIMUM_WINDOW_FIXED,
                         /* Advanced Analysis - Adjustments */
                         DAYOFWEEK_ADJUSTMENT,
+                        APPLY_EXCLUSION_RANGES,
+                        EXCLUSION_RANGES,
                         /* Advanced Analysis - Inference */
                         REPLICATIONS,
                         RANDOMIZATION_SEED,
@@ -225,6 +227,8 @@ class Parameters {
     double                              _risk_window_percentage;
 
     bool                                _forced_censored_algorithm;
+    bool                                _apply_exclusion_ranges;
+    DataTimeRangeSet                    _exclusion_time_ranges;
 
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
@@ -241,9 +245,10 @@ class Parameters {
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
 
+    bool                                isApplyingExclusionTimeRanges() const { return _apply_exclusion_ranges; }
+    void                                setApplyingExclusionTimeRanges(bool b) { _apply_exclusion_ranges = b; }
     bool                                isForcedCensoredAlgorithm() const { return _forced_censored_algorithm; }
     void                                setForcedCensoredAlgorithm(bool b) { _forced_censored_algorithm = b; }
-
     bool                                isApplyingRiskWindowRestriction() const { return _apply_risk_window_restriction; }
     void                                setApplyingRiskWindowRestriction(bool b) { _apply_risk_window_restriction = b; }
     double                              getRiskWindowPercentage() const { return _risk_window_percentage; }
@@ -260,6 +265,7 @@ class Parameters {
     CutType                             getCutType() const {return _cut_type;}
     static cut_maps_t                   getCutTypeMap();
     const DataTimeRangeSet            & getDataTimeRangeSet() const {return _dataTimeRangeSet;}
+    const DataTimeRangeSet            & getExclusionTimeRangeSet() const { return _exclusion_time_ranges; }
     const InputSourceContainer_t      & getInputSources() const {return _input_sources;}
     const InputSource                 * getInputSource(ParameterType e, unsigned int idx=1) const {
                                             InputSourceContainer_t::const_iterator itr = _input_sources.find(std::make_pair(e,idx));
@@ -330,6 +336,7 @@ class Parameters {
     void                                setCutsFileName(const char * sCutsFileName, bool bCorrectForRelativePath=false);
     void                                setCutType(CutType e) {_cut_type = e;}
     void                                setDataTimeRangeSet(const DataTimeRangeSet& set) {_dataTimeRangeSet = set;}
+    void                                setExclusionTimeRangeSet(const DataTimeRangeSet& set) { _exclusion_time_ranges = set; }
     void                                setGeneratingHtmlResults(bool b) {_generateHtmlResults = b;}
     void                                setGeneratingLLRResults(bool b) {_generate_llr_results = b;}
     void                                setGeneratingTableResults(bool b) {_generateTableResults = b;}

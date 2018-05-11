@@ -328,7 +328,7 @@ double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
 
 /** class constructor */
 ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : 
-    _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0),_has_multi_parent_nodes(false), _censored_data(false), _num_censored_cases(0), _avg_censor_time(0) {
+    _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0),_has_multi_parent_nodes(false), _censored_data(false), _num_censored_cases(0), _avg_censor_time(0), _num_cases_excluded(0) {
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     DataTimeRange min_max = Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getMinMax() : DataTimeRange(0,0);
     // translate to ensure zero based additive
@@ -640,6 +640,15 @@ bool ScanRunner::readCounts(const std::string& filename) {
                               "The specified value is not within any of the data time ranges you have defined.",
                               BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
                 continue;
+            }
+
+            if (_parameters.isApplyingExclusionTimeRanges()) {
+                // If applying exclusion time range and this event is in one of the exclusion ranges, skip the record (TreeTime conditioned on Node/Time only).
+                DataTimeRangeSet::rangeset_index_t rangeIdxExclusion = _parameters.getExclusionTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
+                if (rangeIdxExclusion.first == true) {
+                    ++_num_cases_excluded;
+                    continue;
+                }
             }
 
             // If the probably model is uniform, there is possibly another column - censored time.

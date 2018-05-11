@@ -161,8 +161,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (_partOfRegularAnalysis.isSelected() == true);
         bReturn &= _totalPowerCases.getText().equals("600");
         bReturn &= _alternativeHypothesisFilename.getText().equals("");
-        bReturn &= _numberPowerReplications.getText().equals("1000");  
+        bReturn &= _numberPowerReplications.getText().equals("1000");
+        
+        // Adjustments tab
         bReturn &= _perform_dayofweek_adjustments.isSelected() == false;
+        bReturn &= _apply_time_range_restrictions.isSelected() == false;
+        bReturn &= _time_range_restrictions.getText().equals("");
+        
         return bReturn;
     }
 
@@ -254,6 +259,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         
         // Adjustments tab
         parameters.setPerformDayOfWeekAdjustment(_perform_dayofweek_adjustments.isEnabled() && _perform_dayofweek_adjustments.isSelected());
+        parameters.setApplyingExclusionTimeRanges(_apply_time_range_restrictions.isEnabled() && _apply_time_range_restrictions.isSelected());
+        parameters.setExclusionTimeRangeSet(_time_range_restrictions.getText());
         
         // Power Evaluations tab
         parameters.setPerformPowerEvaluations(_powerEvaluationsGroup.isEnabled() && _performPowerEvaluations.isSelected());
@@ -320,6 +327,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _minTemporalClusterSizeUnitsTextField.setText("2");
         // Adjustments tab
         _perform_dayofweek_adjustments.setSelected(false);
+        _apply_time_range_restrictions.setSelected(false);
+        _time_range_restrictions.setText("");
         // Sequential Scan tab
         _perform_sequential_scan.setSelected(false);
         _maximum_cases_signal.setText("200");
@@ -354,6 +363,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         
         // Adjustments tab
         _perform_dayofweek_adjustments.setSelected(parameters.getPerformDayOfWeekAdjustment());
+        _apply_time_range_restrictions.setSelected(parameters.isApplyingExclusionTimeRanges());
+        _time_range_restrictions.setText(parameters.getExclusionTimeRangeSet());        
         
         // Power Evaluations tab
         _performPowerEvaluations.setSelected(parameters.getPerformPowerEvaluations());
@@ -633,6 +644,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
+    public void enableTimeRangeExclusionsGroup() {
+        _group_exclusions.setEnabled(_settings_window.getScanType() == Parameters.ScanType.TREETIME && _settings_window.getConditionalType() == Parameters.ConditionalType.NODEANDTIME);
+        _apply_time_range_restrictions.setEnabled(_group_exclusions.isEnabled());
+        _time_range_restrictions.setEnabled(_apply_time_range_restrictions.isEnabled() && _apply_time_range_restrictions.isSelected());
+    }
+    
     /** enables options of the Additional Output tab */
     public void enableAdditionalOutputOptions() {
         _chk_rpt_attributable_risk.setEnabled(true);
@@ -774,6 +791,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _attributable_risk_exposed = new javax.swing.JTextField();
         _chk_attributable_risk_extra = new javax.swing.JLabel();
         _advanced_adjustments_tab = new javax.swing.JPanel();
+        _group_exclusions = new javax.swing.JPanel();
+        _time_range_restrictions = new javax.swing.JTextField();
+        _apply_time_range_restrictions = new javax.swing.JCheckBox();
+        jPanel5 = new javax.swing.JPanel();
         _perform_dayofweek_adjustments = new javax.swing.JCheckBox();
         _sequential_analysis_tab = new javax.swing.JPanel();
         _sequential_analysis_group = new javax.swing.JPanel();
@@ -819,7 +840,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_cutFileLabel)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(_advanced_input_tabLayout.createSequentialGroup()
-                        .addComponent(_cutFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
+                        .addComponent(_cutFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_cutFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())))
@@ -833,7 +854,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_cutFileImportButton)
                     .addComponent(_cutFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(268, Short.MAX_VALUE))
+                .addContainerGap(274, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced Input", _advanced_input_tab);
@@ -935,7 +956,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_maxTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_maxTemporalTimeUnitsLabel)))
-                .addContainerGap(231, Short.MAX_VALUE))
+                .addContainerGap(279, Short.MAX_VALUE))
         );
         _maxTemporalOptionsGroupLayout.setVerticalGroup(
             _maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1051,7 +1072,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_risk_window_percentage, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_risk_window_percentage_label, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+                .addComponent(_risk_window_percentage_label, javax.swing.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
                 .addContainerGap())
         );
         _risk_window_groupLayout.setVerticalGroup(
@@ -1087,7 +1108,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_risk_window_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(82, Short.MAX_VALUE))
+                .addContainerGap(88, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _advanced_temporal_window_tab);
@@ -1123,7 +1144,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_labelMonteCarloReplications)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(171, Short.MAX_VALUE))
+                .addContainerGap(219, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1187,7 +1208,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(203, Short.MAX_VALUE))
+                .addContainerGap(209, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _advanced_inferenece_tab);
@@ -1370,7 +1391,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                 .addComponent(_numberPowerReplicationsLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(_numberPowerReplications, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 183, Short.MAX_VALUE)))
+                        .addGap(0, 231, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         _powerEvaluationsGroupLayout.setVerticalGroup(
@@ -1402,7 +1423,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_alternativeHypothesisFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_alternativeHypothesisFilenameButton))
-                .addContainerGap(97, Short.MAX_VALUE))
+                .addContainerGap(107, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout _advanced_power_evaluation_tabLayout = new javax.swing.GroupLayout(_advanced_power_evaluation_tab);
@@ -1516,7 +1537,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_attributable_risk_exposed, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_chk_attributable_risk_extra, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
+                .addComponent(_chk_attributable_risk_extra, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -1552,10 +1573,47 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_report_critical_values_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(102, Short.MAX_VALUE))
+                .addContainerGap(120, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
+
+        _group_exclusions.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Data Time Range Exclusions"));
+
+        TextPrompt trp = new TextPrompt("enter comma separated range list (e.g. [5-10],[12-18])", _time_range_restrictions);
+        trp.setForeground( Color.BLUE );
+        trp.changeAlpha(0.5f);
+        trp.changeStyle(Font.BOLD + Font.ITALIC);
+
+        _apply_time_range_restrictions.setText("Apply Range Exclusions");
+        _apply_time_range_restrictions.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableTimeRangeExclusionsGroup();
+                enableSetDefaultsButton();
+            }
+        });
+
+        javax.swing.GroupLayout _group_exclusionsLayout = new javax.swing.GroupLayout(_group_exclusions);
+        _group_exclusions.setLayout(_group_exclusionsLayout);
+        _group_exclusionsLayout.setHorizontalGroup(
+            _group_exclusionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_group_exclusionsLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_apply_time_range_restrictions)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_time_range_restrictions, javax.swing.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _group_exclusionsLayout.setVerticalGroup(
+            _group_exclusionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_group_exclusionsLayout.createSequentialGroup()
+                .addGroup(_group_exclusionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_group_exclusionsLayout.createSequentialGroup()
+                        .addGap(3, 3, 3)
+                        .addComponent(_time_range_restrictions))
+                    .addComponent(_apply_time_range_restrictions))
+                .addGap(11, 11, 11))
+        );
 
         _perform_dayofweek_adjustments.setText("Perform Day of Week Adjustments");
         _perform_dayofweek_adjustments.addItemListener(new java.awt.event.ItemListener() {
@@ -1565,21 +1623,36 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(_perform_dayofweek_adjustments, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 582, Short.MAX_VALUE)
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(_perform_dayofweek_adjustments)
+        );
+
         javax.swing.GroupLayout _advanced_adjustments_tabLayout = new javax.swing.GroupLayout(_advanced_adjustments_tab);
         _advanced_adjustments_tab.setLayout(_advanced_adjustments_tabLayout);
         _advanced_adjustments_tabLayout.setHorizontalGroup(
             _advanced_adjustments_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_advanced_adjustments_tabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_perform_dayofweek_adjustments, javax.swing.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE)
+                .addGroup(_advanced_adjustments_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_group_exclusions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _advanced_adjustments_tabLayout.setVerticalGroup(
             _advanced_adjustments_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_advanced_adjustments_tabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_perform_dayofweek_adjustments)
-                .addContainerGap(297, Short.MAX_VALUE))
+                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_group_exclusions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab("Adjustments", _advanced_adjustments_tab);
@@ -1690,7 +1763,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                 .addGroup(_sequential_analysis_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(_minimum_cases_signal, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(_maximum_cases_signal, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(0, 257, Short.MAX_VALUE)))))
+                                .addGap(0, 305, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         _sequential_analysis_groupLayout.setVerticalGroup(
@@ -1711,7 +1784,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_sequential_analysis_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_sequential_analysis_file, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_sequential_analysis_file_browse))
-                .addGap(0, 147, Short.MAX_VALUE))
+                .addGap(0, 157, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout _sequential_analysis_tabLayout = new javax.swing.GroupLayout(_sequential_analysis_tab);
@@ -1790,6 +1863,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JButton _alternativeHypothesisFilenameButton;
     private javax.swing.JLabel _alternativeHypothesisFilenameLabel;
     private javax.swing.JCheckBox _apply_risk_window_restriction;
+    private javax.swing.JCheckBox _apply_time_range_restrictions;
     private javax.swing.JTextField _attributable_risk_exposed;
     private javax.swing.JLabel _chk_attributable_risk_extra;
     private javax.swing.JCheckBox _chk_rpt_attributable_risk;
@@ -1801,6 +1875,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _eventProbabilityLabel2;
     private javax.swing.JTextField _eventProbabiltyDenominator;
     private javax.swing.JTextField _eventProbabiltyNumerator;
+    private javax.swing.JPanel _group_exclusions;
     private javax.swing.JLabel _labelMonteCarloReplications;
     private javax.swing.JPanel _log_likelihood_ratios_group;
     private javax.swing.JTextField _maxTemporalClusterSizeTextField;
@@ -1843,10 +1918,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _sequential_analysis_tab;
     private javax.swing.JButton _setDefaultButton;
     private javax.swing.JRadioButton _timeTemporalRadioButton;
+    private javax.swing.JTextField _time_range_restrictions;
     private javax.swing.JTextField _totalPowerCases;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.ButtonGroup maximumWindowButtonGroup;
     // End of variables declaration//GEN-END:variables
