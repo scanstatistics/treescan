@@ -318,7 +318,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
             // always do simple cut
             iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
             for (iWindowEnd = endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart, thisNode.getMinCensoredBr());
                 for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                     NodeStructure::count_t branchWindow = thisSimNode.getBrC_C()[iWindowStart] - thisSimNode.getBrC_C()[iWindowEnd + 1];
                     NodeStructure::expected_t branchSum = thisNode.getBrN_C()[iWindowStart] - thisNode.getBrN_C()[iWindowEnd + 1];
@@ -333,7 +333,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                 // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
                 iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                 for (iWindowEnd = endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                    window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                    window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart, thisNode.getMinCensoredBr());
                     for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                         for (size_t i = 0; i < thisNode.getChildren().size() - 1; ++i) {
                             const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
@@ -364,7 +364,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                 // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
                 iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                 for (iWindowEnd = endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                    window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                    window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart, thisNode.getMinCensoredBr());
                     for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                         for (size_t i = 0; i < thisNode.getChildren().size() - 1; ++i) {
                             const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
@@ -391,7 +391,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                 // Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
                 iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                 for (iWindowEnd = endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                    window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                    window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart, thisNode.getMinCensoredBr());
                     for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                         for (size_t i = 0; i < thisNode.getChildren().size() - 1; ++i) {
                             const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));

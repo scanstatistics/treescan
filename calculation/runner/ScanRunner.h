@@ -85,6 +85,7 @@ private:
 	unsigned int            _level;             // calculated node level
 
     CountContainer_t        _IntC_Censored;     // Number of censored cases internal to the ndoe.
+    count_t                 _min_censored_Br;   // minimum censored on branch
 
     Ancestors_t             _ancestors;     // nodes which have this node in tree branch
 
@@ -120,12 +121,21 @@ private:
 
 public:
     NodeStructure(const std::string& identifier) 
-        :_identifier(identifier), _ID(0), _cumulative_status(NON_CUMULATIVE), _level(0) {}
+        :_identifier(identifier), _ID(0), _cumulative_status(NON_CUMULATIVE), _level(0), _min_censored_Br(0) {}
     NodeStructure(const std::string& identifier, const Parameters& parameters, size_t container_size) 
-        : _identifier(identifier), _ID(0), _cut_type(parameters.getCutType()), _cumulative_status(NON_CUMULATIVE), _level(0) {
+        : _identifier(identifier), _ID(0), _cut_type(parameters.getCutType()), _cumulative_status(NON_CUMULATIVE), _level(0), _min_censored_Br(0) {
             initialize_containers(parameters, container_size);
     }
 
+    void                          calcMinCensored() {
+        _min_censored_Br = _IntC_C.size() - 1;
+        for (int i=0; i < _IntC_Censored.size(); ++i) {
+            if (_IntC_Censored[i]) {
+                _min_censored_Br = i;
+                break;
+            }
+        }
+    }
     const Ancestors_t           & getAncestors() const {return _ancestors;}
     CensorDist_t                & getCensorDistribution(CensorDist_t& censor_distribution) const {
         censor_distribution.clear();
@@ -152,6 +162,7 @@ public:
     const CountContainer_t      & getBrC_C() const {return _BrC_C;}
     int                           getNChildren() const {return static_cast<int>(_Child.size());}
 	unsigned int                  getLevel() const {return _level;}
+    count_t                       getMinCensoredBr() const { return _min_censored_Br; }
     double                        getIntN() const {return _IntN_C.front();}
     const ExpectedContainer_t   & getIntN_C() const {return _IntN_C;}
     double                        getBrN() const {return _BrN_C.front();}
@@ -184,6 +195,7 @@ public:
     void                          setIdentifier(const std::string& s) {_identifier = s;}
     void                          setID(int i) {_ID = i;}
     void                          setCutType(Parameters::CutType cut_type) {_cut_type = cut_type;}
+    void                          setMinCensoredBr(count_t c) { _min_censored_Br = c; }
 
     void addAsParent(NodeStructure& parent) {
         // add node of collection parents

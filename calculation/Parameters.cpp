@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 54;
+const int Parameters::giNumParameters = 57;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -84,6 +84,9 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_forced_censored_algorithm != rhs._forced_censored_algorithm) return false;
   if (_apply_exclusion_ranges != rhs._apply_exclusion_ranges) return false;
   if (_exclusion_time_ranges != rhs._exclusion_time_ranges) return false;
+  if (_minimum_censor_time != rhs._minimum_censor_time) return false;
+  if (_minimum_censor_percentage != rhs._minimum_censor_percentage) return false;
+  if (_risk_window_censor_alt_denominator != rhs._risk_window_censor_alt_denominator) return false;
 
   return true;
 }
@@ -194,6 +197,10 @@ void Parameters::copy(const Parameters &rhs) {
 
     _apply_exclusion_ranges = rhs._apply_exclusion_ranges;
     _exclusion_time_ranges = rhs._exclusion_time_ranges;
+
+    _minimum_censor_time = rhs._minimum_censor_time;
+    _minimum_censor_percentage = rhs._minimum_censor_percentage;
+    _risk_window_censor_alt_denominator = rhs._risk_window_censor_alt_denominator;
 }
 
 /* Returns the maximum temporal window in data time units. */
@@ -353,6 +360,10 @@ void Parameters::setAsDefaulted() {
 
     _apply_exclusion_ranges = false;
     _exclusion_time_ranges = DataTimeRangeSet();
+
+    _minimum_censor_time = 50;
+    _minimum_censor_percentage = 10;
+    _risk_window_censor_alt_denominator = 2.0;
 }
 
 /** Sets output data file name.

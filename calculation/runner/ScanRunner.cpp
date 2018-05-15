@@ -346,6 +346,13 @@ ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) :
 }
 
 boost::shared_ptr<AbstractWindowLength> ScanRunner::getNewWindowLength() const {
+    if (isCensoredData())
+        return boost::shared_ptr<AbstractWindowLength>(new CensoredRiskPercentageWindowLength(_parameters, 
+                                                                                              static_cast<int>(_parameters.getMinimumWindowLength()) - 1, 
+                                                                                              static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1, 
+                                                                                              _zero_translation_additive,
+                                                                                              _parameters.getRiskWindowAltCensorDenominator()
+                                                                                             ));
     if (_parameters.isApplyingRiskWindowRestriction())
         return boost::shared_ptr<AbstractWindowLength>(new RiskPercentageWindowLength(_parameters, static_cast<int>(_parameters.getMinimumWindowLength()) - 1, static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1, _zero_translation_additive));
     return boost::shared_ptr<AbstractWindowLength>(new WindowLength(_parameters, static_cast<int>(_parameters.getMinimumWindowLength()) - 1, static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1));
@@ -367,6 +374,8 @@ unsigned int ScanRunner::addCN_C(const NodeStructure& sourceNode, NodeStructure&
     // add source node's data to destination nodes branch totals
     std::transform(sourceNode.getIntC_C().begin(), sourceNode.getIntC_C().end(), destinationNode.refBrC_C().begin(), destinationNode.refBrC_C().begin(), std::plus<NodeStructure::count_t>());
     std::transform(sourceNode.getIntN_C().begin(), sourceNode.getIntN_C().end(), destinationNode.refBrN_C().begin(), destinationNode.refBrN_C().begin(), std::plus<NodeStructure::expected_t>());
+
+    destinationNode.setMinCensoredBr(std::min(sourceNode.getMinCensoredBr(), destinationNode.getMinCensoredBr()));
 
     // continue walking up the tree
     NodeStructure::RelationContainer_t::const_iterator itr=destinationNode.getParents().begin(), itr_end=destinationNode.getParents().end();
@@ -668,10 +677,10 @@ bool ScanRunner::readCounts(const std::string& filename) {
                             BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
                         continue;
                     }
-                    if (censortime < 2) {
+                    if (censortime < _parameters.getMinimumCensorTime()) {
                         _print.Printf("Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
-                            "The censoring time is not allowed to be less than 2. This observation will be ignored.",
-                            BasePrint::P_WARNING, dataSource->getCurrentRecordIndex());
+                            "The censoring time is less than user specified minimum of %u. This observation will be ignored.",
+                            BasePrint::P_WARNING, dataSource->getCurrentRecordIndex(), _parameters.getMinimumCensorTime());
                         continue;
                     }
                     DataTimeRange minmax = _parameters.getDataTimeRangeSet().getMinMax();
@@ -681,7 +690,13 @@ bool ScanRunner::readCounts(const std::string& filename) {
                             BasePrint::P_WARNING, dataSource->getCurrentRecordIndex());
                         continue;
                     }
-
+                    DataTimeRange::index_t positive_range_days = minmax.numDaysInPositiveRange();
+                    if (censortime < positive_range_days * (static_cast<double>(_parameters.getMinimumCensorPercentage()) / 100.0)) {
+                        _print.Printf("Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
+                            "The censoring time is less than the %d%% of the positive data time range - which is %d days long. This observation will be ignored.",
+                            BasePrint::P_WARNING, dataSource->getCurrentRecordIndex(), _parameters.getMinimumCensorPercentage(), positive_range_days);
+                        continue;
+                    }
                     // If the censor time equals the data time range end, then this record isn't really censoring.
                     if (censortime < minmax.getEnd()) {
                         // Now that we know there is censored data, check parameter settings are valid.
@@ -1489,7 +1504,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
             //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
             iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
             for (iWindowEnd = endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart, thisNode.getMinCensoredBr());
                 for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                     //_print.Printf("%d to %d\n", BasePrint::P_STDOUT,iWindowStart, iWindowEnd);
                     calculateCut(n, thisNode.getBrC_C()[iWindowStart] - thisNode.getBrC_C()[iWindowEnd + 1], 
@@ -1508,7 +1523,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
                 CutStructure::CutChildContainer_t currentChildren;
                 iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                 for (iWindowEnd = endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                    window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                    window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart, thisNode.getMinCensoredBr());
                     for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                         for (size_t i = 0; i < thisNode.getChildren().size() - 1; ++i) {
                             const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
@@ -1543,7 +1558,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
                 // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
                 iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                 for (iWindowEnd = endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                    window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                    window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart, thisNode.getMinCensoredBr());
                     for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                         for (size_t i = 0; i < thisNode.getChildren().size() - 1; ++i) {
                             const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
@@ -1572,7 +1587,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
                 // Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
                 iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
                 for (iWindowEnd = endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-                    window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                    window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart, thisNode.getMinCensoredBr());
                     for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                         for (size_t i = 0; i < thisNode.getChildren().size() - 1; ++i) {
                             const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
@@ -1929,12 +1944,13 @@ bool ScanRunner::setupTree() {
                 if (_censored_data) {
                     // If there exists censored data, the expected counts were added during the case file read. Now we need to add expected counts for cases that are not censored.
                     size_t daysInDataTimeRange = _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets();
+                    DataTimeRange minmax = _parameters.getDataTimeRangeSet().getMinMax();
                     for (size_t n=0; n < _Nodes.size(); ++n) {
                         NodeStructure::count_t nodeCount=0, nodeNonCensored=0, nodeCensored=0;
                         NodeStructure& node = *(_Nodes[n]);
                         nodeCount = std::accumulate(node.getIntC_C().begin(), node.getIntC_C().end(), nodeCount);
-                        if (node.getIntC_Censored().size()) 
-                            nodeCensored = std::accumulate(node.refIntC_Censored().begin(), node.refIntC_Censored().end(), nodeCensored);
+                        nodeCensored = std::accumulate(node.getIntC_Censored().begin(), node.getIntC_Censored().end(), nodeCensored);
+                        node.calcMinCensored();
                         nodeNonCensored = nodeCount - nodeCensored;
                         for (size_t t=0; t < daysInDataTimeRange && nodeNonCensored != 0; ++t)
                             node.refIntN_C()[t] += static_cast<double>(nodeNonCensored) / static_cast<double>(daysInDataTimeRange);

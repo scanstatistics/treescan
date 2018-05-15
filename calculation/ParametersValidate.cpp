@@ -232,7 +232,6 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                 PrintDirection.Printf("Invalid Parameter Setting:\nThe risk window percentage must be greater than zero and less than or equal to 100.\n", BasePrint::P_PARAMERROR);
             }
         }
-
         if (_parameters.isForcedCensoredAlgorithm()) {
             if (_parameters.getModelType() != Parameters::UNIFORM) {
                 bValid = false;
@@ -247,8 +246,20 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                 PrintDirection.Printf("Invalid Parameter Setting:\nForced censored algorithm is not permitted with sequential scan.\n", BasePrint::P_PARAMERROR);
             }
         }
+        if (_parameters.getMinimumCensorTime() < 2) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe minimum allowed censor time can not be less than 2.\n", BasePrint::P_PARAMERROR);
+        }
+        if (_parameters.getMinimumCensorPercentage() <= 0 || _parameters.getMinimumCensorPercentage() > 100) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe minimum censor time, as a percentage of data time range, must be greater than zero and less than or equal to 100.\n", BasePrint::P_PARAMERROR);
+        }
+        if (_parameters.getRiskWindowAltCensorDenominator() < 2) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe risk window alernative censor denominator can not be less than 2.\n", BasePrint::P_PARAMERROR);
+        }
     } catch (prg_exception& x) {
-        x.addTrace("ValidateFileParameters()","ParametersValidate");
+        x.addTrace("ValidateInputParameters()","ParametersValidate");
         throw;
     }
     return bValid;

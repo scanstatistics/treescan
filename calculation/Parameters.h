@@ -18,6 +18,9 @@ class Parameters {
                         CUT_TYPE,
                         APPLY_RISK_WINDOW_RESTRICTION,
                         RISK_WINDOW_PERCENTAGE,
+                        MINIMUM_CENSOR_TIME,
+                        MINIMUM_CENSOR_PERCENTAGE,
+                        RSK_WND_ALT_CENSOR_DENOM,
                         /* Analysis */
                         SCAN_TYPE,
                         CONDITIONAL_TYPE,
@@ -225,6 +228,9 @@ class Parameters {
     double                              _power_z;
     bool                                _apply_risk_window_restriction;
     double                              _risk_window_percentage;
+    unsigned int                        _minimum_censor_time;
+    unsigned int                        _minimum_censor_percentage;
+    double                              _risk_window_censor_alt_denominator;
 
     bool                                _forced_censored_algorithm;
     bool                                _apply_exclusion_ranges;
@@ -244,6 +250,13 @@ class Parameters {
     Parameters                        & operator=(const Parameters &rhs)  {if (this != &rhs) copy(rhs); return (*this);}
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
+
+    double                              getRiskWindowAltCensorDenominator() const { return _risk_window_censor_alt_denominator; }
+    void                                setRiskWindowAltCensorDenominator(double d) { _risk_window_censor_alt_denominator = d; }
+    unsigned int                        getMinimumCensorTime() const { return _minimum_censor_time; }
+    void                                setMinimumCensorTime(unsigned int u) { _minimum_censor_time = u; }
+    unsigned int                        getMinimumCensorPercentage() const { return _minimum_censor_percentage; }
+    void                                setMinimumCensorPercentage(unsigned int u) { _minimum_censor_percentage = u; }
 
     bool                                isApplyingExclusionTimeRanges() const { return _apply_exclusion_ranges; }
     void                                setApplyingExclusionTimeRanges(bool b) { _apply_exclusion_ranges = b; }

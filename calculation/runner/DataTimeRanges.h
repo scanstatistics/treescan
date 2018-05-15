@@ -48,6 +48,9 @@ class DataTimeRange {
         size_t numDaysInRange() const {
             return static_cast<size_t>(getEnd() - getStart() + 1);
         }
+        size_t numDaysInPositiveRange() const {
+            return static_cast<size_t>(std::max(getEnd(), 1) - std::max(getStart(), 1) + 1);
+        }
 };
 
 class DataTimeRangeSet {
@@ -79,7 +82,6 @@ class DataTimeRangeSet {
             return rangeIdx;
         }
         DataTimeRange getMinMax() const {
-            // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
             DataTimeRange::index_t min=std::numeric_limits<DataTimeRange::index_t>::max(), 
                                    max=std::numeric_limits<DataTimeRange::index_t>::min();
             for (DataTimeRangeSet::rangeset_t::const_iterator itr=_rangesets.begin(); itr != _rangesets.end(); ++itr) {
@@ -89,7 +91,6 @@ class DataTimeRangeSet {
             return DataTimeRange(min,max);
         }
         size_t getTotalDaysAcrossRangeSets() const {
-            // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
             DataTimeRange min_max = getMinMax();
             return min_max.numDaysInRange();
         }

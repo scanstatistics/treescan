@@ -353,6 +353,9 @@ void IniParameterFileAccess::WriteAdvancedInputSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, Parameters::CUT_FILE, s.c_str(), GetParameterComment(Parameters::CUT_FILE));
         if (s.size()) WriteInputSource(WriteFile, Parameters::CUT_FILE, _parameters.getInputSource(Parameters::CUT_FILE));
         WriteIniParameter(WriteFile, Parameters::CUT_TYPE, GetParameterString(Parameters::CUT_TYPE, s).c_str(), GetParameterComment(Parameters::CUT_TYPE));
+        WriteIniParameter(WriteFile, Parameters::MINIMUM_CENSOR_TIME, GetParameterString(Parameters::MINIMUM_CENSOR_TIME, s).c_str(), GetParameterComment(Parameters::MINIMUM_CENSOR_TIME));
+        WriteIniParameter(WriteFile, Parameters::MINIMUM_CENSOR_PERCENTAGE, GetParameterString(Parameters::MINIMUM_CENSOR_PERCENTAGE, s).c_str(), GetParameterComment(Parameters::MINIMUM_CENSOR_PERCENTAGE));
+        WriteIniParameter(WriteFile, Parameters::RSK_WND_ALT_CENSOR_DENOM, GetParameterString(Parameters::RSK_WND_ALT_CENSOR_DENOM, s).c_str(), GetParameterComment(Parameters::RSK_WND_ALT_CENSOR_DENOM));
     } catch (prg_exception& x) {
         x.addTrace("WriteAdvancedInputSettings()","IniParameterFileAccess");
         throw;

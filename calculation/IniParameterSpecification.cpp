@@ -197,7 +197,11 @@ void IniParameterSpecification::Build_1_4_x_ParameterList() {
     _parameter_info[Parameters::APPLY_EXCLUSION_RANGES] = ParamInfo(Parameters::APPLY_EXCLUSION_RANGES, "apply-exclusion-data-ranges", 2, _adjustments_section);
     _parameter_info[Parameters::EXCLUSION_RANGES] = ParamInfo(Parameters::EXCLUSION_RANGES, "exclusion-data-ranges", 3, _adjustments_section);
 
-    assert(_parameter_info.size() == 54);
+    _parameter_info[Parameters::MINIMUM_CENSOR_TIME] = ParamInfo(Parameters::MINIMUM_CENSOR_TIME, "minimum-censor-time", 5, _advanced_input_section);
+    _parameter_info[Parameters::MINIMUM_CENSOR_PERCENTAGE] = ParamInfo(Parameters::MINIMUM_CENSOR_PERCENTAGE, "min-censor-percentage", 6, _advanced_input_section);
+    _parameter_info[Parameters::RSK_WND_ALT_CENSOR_DENOM] = ParamInfo(Parameters::RSK_WND_ALT_CENSOR_DENOM, "risk-window-alt-censor-denominator", 7, _advanced_input_section);
+
+    assert(_parameter_info.size() == 57);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
