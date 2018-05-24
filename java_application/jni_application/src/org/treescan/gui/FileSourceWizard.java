@@ -360,6 +360,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     if (_startingscantype != Parameters.ScanType.TIMEONLY)
                         builder.append("&lt;Node ID&gt;&#44;  ");
                     builder.append("&lt;Number of Cases&gt;&#44;  &lt;Days Since Event&gt;");
+                    if (_startingmodeltype == Parameters.ModelType.UNIFORM)
+                        builder.append("&#44; &lt;Censor Time&gt;(optional)");
                 }
                 else throw new UnknownEnumException(_startingmodeltype);
                 break;
@@ -851,6 +853,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _import_variables.add(new ImportVariable("Population", 2, true, null, null));
         _import_variables.add(new ImportVariable("Controls", 2, true, null, null));
         _import_variables.add(new ImportVariable("Days Since Event", 2, true, null, null));        
+        _import_variables.add(new ImportVariable("Censored Time", 3, false, null, null));        
     }
     
     /** Setup field descriptors for power evaluations file. */
@@ -943,6 +946,10 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                                                     _displayVariablesComboBox.getSelectedIndex() == 5 /* Tree-time, Condition Node-Time */ ||
                                                     _displayVariablesComboBox.getSelectedIndex() == 6 /* Time-Only */);
                 model.setShowing(_import_variables.get(4));
+                // Days Since Event
+                _import_variables.get(5).setShowing(_displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */ ||
+                                                    _displayVariablesComboBox.getSelectedIndex() == 6 /* Time-Only */);
+                model.setShowing(_import_variables.get(5));
                 break;
             case Power_Evaluations:
                 for (ImportVariable variable : _import_variables) {
