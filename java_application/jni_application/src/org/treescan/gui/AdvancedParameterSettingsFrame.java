@@ -1580,7 +1580,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _group_exclusions.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Data Time Range Exclusions"));
 
-        TextPrompt trp = new TextPrompt("enter comma separated range list (e.g. [5-10],[12-18])", _time_range_restrictions);
+        TextPrompt trp = new TextPrompt("enter semi-colon separated range list (e.g. [-7,0];[12,18])", _time_range_restrictions);
         trp.setForeground( Color.BLUE );
         trp.changeAlpha(0.5f);
         trp.changeStyle(Font.BOLD + Font.ITALIC);
