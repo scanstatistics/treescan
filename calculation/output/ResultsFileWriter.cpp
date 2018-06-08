@@ -8,6 +8,7 @@
 #include "AsciiPrintFormat.h"
 #include "ParametersPrint.h"
 #include "UtilityFunctions.h"
+#include "Toolkit.h"
 
 std::string& ResultsFileWriter::getFilenameHTML(const Parameters& parameters, std::string& buffer) {
   return getDerivedFilename(parameters.getOutputFileName(), "", ".html", buffer);
@@ -342,6 +343,25 @@ std::string & ResultsFileWriter::getTotalRunningTime(time_t start, time_t end, s
     return buffer;
 }
 
+std::string & ResultsFileWriter::stripNodeIdForHtml(std::string & s) {
+    std::string buffer;
+    buffer.reserve(s.size());
+    for (size_t pos = 0; pos != s.size(); ++pos) {
+        switch (s[pos]) {
+        case '&':  buffer.append("-amp-"); break;
+        case '\"': buffer.append("-quot-"); break;
+        case '\'': buffer.append("-apos-"); break;
+        case '<':  buffer.append("-lt-"); break;
+        case '>':  buffer.append("-gt-"); break;
+        case '.':  buffer.append("-period-"); break;
+        case '#':  buffer.append("-num-"); break;
+        default:   buffer.append(&s[pos], 1); break;
+        }
+    }
+    s.swap(buffer);
+    return s;
+}
+
 bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     std::string buffer;
     Parameters& parameters(const_cast<Parameters&>(_scanRunner.getParameters()));
@@ -350,52 +370,62 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     if (!outfile) return false;
     ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN(), _scanRunner.isCensoredData()));
 
-    outfile << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << std::endl; 
-    outfile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <!-- this has to be after the doctype so that IE6 doesn't use quirks mode -->" << std::endl;
+    outfile << "<!DOCTYPE html>" << std::endl; 
+    outfile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " << std::endl;
     outfile << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">" << std::endl;
-    outfile << "<head><style type=\"text/css\">" << std::endl;
-    outfile << "body {color: #353535;font: 0.75em Arial,Garuda,sans-serif;padding: 0 20px 0 20px; }" << std::endl;
-    outfile << "#banner {font-family:\"Arial Bold\";height: 70px;color: white;font-size: 3em;text-align: center;vertical-align: middle;background: -webkit-linear-gradient(#F7F7F7, #D9D9D9); /* For Safari 5.1 to 6.0 */background: -o-linear-gradient(#F7F7F7, #D9D9D9); /* For Opera 11.1 to 12.0 */background: -moz-linear-gradient(#F7F7F7, #D9D9D9); /* For Firefox 3.6 to 15 */background: linear-gradient(#F7F7F7, #D9D9D9); /* Standard syntax */}" << std::endl;
-    outfile << ".program-info {padding: 5px 0 5px 5px;font-size: 1.1em;background: -webkit-linear-gradient(#D9D9D9, #F7F7F7); /* For Safari 5.1 to 6.0 */background: -o-linear-gradient(#D9D9D9, #F7F7F7); /* For Opera 11.1 to 12.0 */background: -moz-linear-gradient(#D9D9D9, #F7F7F7); /* For Firefox 3.6 to 15 */background: linear-gradient(#D9D9D9, #F7F7F7); /* Standard syntax */}" << std::endl;
-    outfile << ".program-info h4 {margin: 2px 0 10px 0;}" << std::endl;
-    outfile << "#cuts table {border: 1px solid #BDBDBD;border-collapse: collapse;width: 100%;}" << std::endl;
-    outfile << "#cuts table th {background-color: #DADAD5;text-align: center;text-align: left;white-space:nowrap;width:6px;/*min-width:200px;*/}" << std::endl;
-    outfile << "#cuts table th, #cuts table td {border: 1px solid #C3C3C3;padding: 4px 6px;}" << std::endl;
-    outfile << ".hr {background-color: #E5EECC;border: 1px solid #000000;height: 1px;/*margin: 10px 0;*//*width: 760px;*/}" << std::endl;
-    outfile << "#cuts {padding: 10px;}" << std::endl;
-    outfile << "#cuts h3 {margin-top: 0px;margin-bottom: 4px;}" << std::endl;
-    outfile << ".reported-cut {margin: 20px 0px 0px 20px;}" << std::endl;
-    outfile << "#parameter-settings {padding: 10px;}" << std::endl;
-    outfile << "#parameter-settings h4 {margin-top: 2px;margin-bottom: 2px;}" << std::endl;
-    outfile << ".parameter-section {margin-left: 20px;}" << std::endl;
-    outfile << ".parameter-section h4 {font-weight: bold;margin-top: 2px;margin-bottom: 2px;}" << std::endl;
-    outfile << ".parameter-section table {margin-left: 20px;}" << std::endl;
-    outfile << ".parameter-section table th {text-align: left;}" << std::endl;
-    //outfile << ".additional-cuts {display: none;}" << std::endl;
-    outfile << "#id_more_cuts {text-decoration: underline;}" << std::endl;
-    outfile << "#id_more_cuts:hover {cursor: pointer;}" << std::endl;
-    outfile << "#id_cuts th:hover {cursor: pointer;}" << std::endl;
-    outfile << ".warning {background-color:#816834;color:white;padding:10px;}" << std::endl;
-    outfile << "</style>" << std::endl;
+    outfile << "<head>" << std::endl;
+    outfile << "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css\">" << std::endl;
+    outfile << "<link rel=\"stylesheet\" href=\"https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css\">" << std::endl;
+    outfile << "<link rel=\"stylesheet\" href=\"http://tools.imsweb.com/~hostovic/treescan/tree-visualization/treescan-results.css\">" << std::endl;
+    outfile << "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\">" << std::endl;
+    outfile << "</head>" << std::endl;
+    if (parameters.getScanType() != Parameters::TIMEONLY) {
+        outfile << "<script src=\"http://tools.imsweb.com/~hostovic/treescan/tree-visualization/raphael.js\" type=\"text/javascript\"></script>" << std::endl;
+        outfile << "<script src=\"http://tools.imsweb.com/~hostovic/treescan/tree-visualization/Treant.js\" type=\"text/javascript\"></script>" << std::endl;
+    }
+    outfile << "<script src=\"https://code.jquery.com/jquery-3.3.1.js\" type=\"text/javascript\"></script>" << std::endl;
+    outfile << "<script src=\"https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js\" type=\"text/javascript\"></script>" << std::endl;
+    outfile << "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js\" type=\"text/javascript\"></script>" << std::endl;
+    outfile << "<script src=\"https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js\" type=\"text/javascript\"></script>" << std::endl;
 
-    // TODO: host these from treescan website or link to local copy?
-    outfile << "<script src=\"http://www.treescan.org/javascript/jquery/jquery-1.10.2/jquery-1.10.2.min.js\" type=\"text/javascript\"></script>" << std::endl;
-    // TODO: css and image resources for table sorter
-    outfile << "<script src=\"http://www.treescan.org/javascript/jquery/jquery-tablesorter-2.0/jquery.tablesorter.min.js\" type=\"text/javascript\"></script>" << std::endl;
+    if (parameters.getScanType() != Parameters::TIMEONLY) {
+        outfile << "<script type=\"text/javascript\" charset=\"utf-8\">" << std::endl;
+        outfile << "var chart_config = { chart: { container: \"#treescan-tree-visualization\", levelSeparation: 20, siblingSeparation: 15, subTeeSeparation: 15, rootOrientation: \"WEST\", ";
+        outfile << "hideRootNode: " << (_scanRunner.getRootNodes().size() > 1 ? "true" : "false") << ", " << std::endl;
+        outfile << "node: { HTMLclass: \"treescan-node-tree\", drawLineThrough: false, collapsable: true }, connectors: { type: \"bCurve\"} }, ";
+        outfile << "nodeStructure: ";
 
-    outfile << "<script type=\"text/javascript\" charset=\"utf-8\">$(document).ready(function() {" << std::endl;
-    outfile << "    //$('.additional-cuts').hide();" << std::endl;
-    outfile << "    $('#id_more_cuts').click(function(){$('.additional-cuts').toggle();});" << std::endl;
-    outfile << "    $('#id_cuts').tablesorter(); " << std::endl;
-    outfile << "});</script>" << std::endl;
-    printString(buffer, "<span style=\"color:#005683;\">Tree</span><span style=\"color:#EE383A;\">Scan</span> <span style=\"color:#2A6691;font-size: 18px;\">v%s.%s%s%s%s%s</span>", VERSION_MAJOR, VERSION_MINOR, (!strcmp(VERSION_RELEASE, "0") ? "" : "."), (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE), (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE);
-    outfile << "</head>" << std::endl << "<body><div id=\"banner\"><div id=\"title\">" << buffer << "<div style=\"color:#2A6691;font-size: 14px;\">Software for the Tree-Based Scan Statistic</div></div></div>" << std::endl;
+        // create a map of NodeID to Cut objects
+        std::map<int, const CutStructure*> node_cut_map;
+        ScanRunner::CutStructureContainer_t::const_iterator itr = _scanRunner.getCuts().begin(), enditr = _scanRunner.getCuts().end();
+        for (; itr != enditr; ++itr) {
+            node_cut_map[(*itr)->getID()] = (*itr);
+        }
+
+        if (_scanRunner.getRootNodes().size() > 1)
+            outfile << " { text:{name:\"Root\"}, children: [" << std::endl;
+
+        for (NodeStructure::RelationContainer_t::const_iterator itr = _scanRunner.getRootNodes().begin(); itr != _scanRunner.getRootNodes().end(); ++itr) {
+            writeJsTreeNode(outfile, *(*itr), node_cut_map, 2);
+            if (itr + 1 != _scanRunner.getRootNodes().end()) outfile << ",";
+        }
+
+        if (_scanRunner.getRootNodes().size() > 1)
+            outfile << "] }" << std::endl;
+
+        outfile << "};</script>" << std::endl;
+    }
+    outfile << "<script src=\"http://tools.imsweb.com/~hostovic/treescan/tree-visualization/treescan-results.js\" type=\"text/javascript\"></script>" << std::endl;
+    outfile << "<body>" << std::endl;
+    buffer = AppToolkit::getToolkit().GetWebSite();
+    outfile << "<table width=\"100%\" border=\"0\" cellpadding=\"2\" cellspacing=\"0\" bgcolor=\"#F8FAFA\" style=\"border-collapse: collapse;\">";
+    outfile << "<tbody><tr style=\"background-image:url('" << buffer << "images/bannerbg.jpg'); background-repeat:repeat-x;\">";
+    outfile << "<td width=\"130\" height=\"125\" align=\"center\" style=\"background: url(" << buffer << "images/TreeScan_logo.png) no-repeat center;\"></td>";
+    outfile << "<td align=\"center\"><img height=\"120\" style=\"margin-left:-20px;\" src=\"" << buffer << "images/banner.jpg\" alt=\"TreeScan&trade; - Software for the spatial, temporal, and space-time scan statistics\" title=\"TreeScan&trade; - Software for the spatial, temporal, and space-time scan statistics\"></td></tr></tbody></table>";
+
     outfile << "<div class=\"hr\"></div><div class=\"program-info\">" << std::endl;
-
     outfile << getAnalysisSuccinctStatement(buffer);
-
     outfile << "<table style=\"text-align: left;\"><tbody>" << std::endl;
-
     if (!parameters.getPerformPowerEvaluations() || 
         !(parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_ONLY_CASEFILE && parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
         outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
@@ -433,6 +463,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "<tr><th>Nodes per Levels:</th><td>" << stringbuffer.str().c_str() << "</td></tr>" << std::endl;
     }
     outfile << "</tbody></table></div>" << std::endl;
+
     outfile << "<div class=\"hr\"></div>" << std::endl;
     if (parameters.getSequentialScan() && static_cast<unsigned int>(_scanRunner.getTotalC()) > parameters.getSequentialMaximumSignal()) {
         outfile << "<div class=\"warning\">Note: The sequential scan reached or exceeded the specified maximum cases. The sequential analysis is over.</div><div class=\"hr\"></div>";
@@ -441,7 +472,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         if (_scanRunner.getCuts().size() == 0 || !_scanRunner.reportableCut(*_scanRunner.getCuts()[0])) {
             outfile << "<h3>No cuts were found.</h3>" << std::endl;
         } else {
-            outfile << "<h3>MOST LIKELY CUTS</h3><div style=\"overflow:auto;max-height:350px;\"><table id=\"id_cuts\">" << std::endl;
+            outfile << "<h3>MOST LIKELY CUTS</h3><div><table id=\"id_cuts\" class=\"display\" style=\"width:100%\">" << std::endl;
             outfile << "<thead><tr><th>No.</th>";
             // skip reporting node identifier for time-only scans
             if (parameters.getScanType() != Parameters::TIMEONLY) {
@@ -484,16 +515,19 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             unsigned int k=0;
             outfile.setf(std::ios::fixed);
             outfile.precision(5);
-            while(k < _scanRunner.getCuts().size() && _scanRunner.reportableCut(*_scanRunner.getCuts()[k])) {
-                outfile << "<tr" << (k > 9 ? " class=\"additional-cuts\"" : "" ) << "><td>" << k + 1 << "</td>";
+            while (k < _scanRunner.getCuts().size() && _scanRunner.reportableCut(*_scanRunner.getCuts()[k])) {
+                buffer = _scanRunner.getNodes()[_scanRunner.getCuts()[k]->getID()]->getIdentifier();
+                outfile << "<tr id=\"tr-" << stripNodeIdForHtml(buffer) << "\"><td>" << k + 1 << "</td>";
                 // skip reporting node identifier for time-only scans
                 if (parameters.getScanType() != Parameters::TIMEONLY) {
-                    outfile  << "<td>" << _scanRunner.getNodes()[_scanRunner.getCuts()[k]->getID()]->getIdentifier();
+                    buffer = _scanRunner.getNodes()[_scanRunner.getCuts()[k]->getID()]->getIdentifier();
+                    outfile  << "<td>" << htmlencode(buffer);
                     if (_scanRunner.getCuts()[k]->getCutChildren().size()) {
                         outfile  << " children: ";
                         const CutStructure::CutChildContainer_t& childNodeIds = _scanRunner.getCuts()[k]->getCutChildren();
                         for (size_t t=0; t < childNodeIds.size(); ++t) {
-                            outfile << _scanRunner.getNodes()[childNodeIds[t]]->getIdentifier().c_str() << ((t < childNodeIds.size() - 1) ? ", " : "");
+                            buffer = _scanRunner.getNodes()[childNodeIds[t]]->getIdentifier();
+                            outfile << htmlencode(buffer) << ((t < childNodeIds.size() - 1) ? ", " : "");
                         }
                     }
                     outfile << "</td>";
@@ -535,15 +569,33 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                 if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/) {
                     outfile << "<td>" << printString(buffer, format.c_str(), (double)_scanRunner.getCuts()[k]->getRank() /(parameters.getNumReplicationsRequested() + 1)) << "</td>";
                 }
-                outfile << "<tr>" << std::endl;
+                outfile << "</tr>" << std::endl;
                 k++;
             }
-            outfile << "</tbody></table></div>" << std::endl;
-            if (k > 10) {
-                outfile << "<!-- <span id=\"id_more_cuts\">Toggle Additional Cuts</span> -->" << std::endl;
-            }
-            outfile << "</div>" << std::endl;
+            outfile << "</tbody></table></div></div>" << std::endl;
         }
+    }
+
+    if (parameters.getScanType() != Parameters::TIMEONLY) {
+        outfile << "<a class=\"btn btn-primary btn-sm\" id=\"show_tree\" data-toggle=\"collapse\" href=\"#collapseExample\" role=\"button\" aria-expanded=\"false\" aria-controls=\"collapseExample\">Tree Visualization</a>" << std::endl;
+        outfile << "<div class=\"collapse\" id=\"collapseExample\"><h3>Visualization of Analysis Tree  <span id=\"loading_graph\">... loading <i class=\"fa fa-circle-o-notch fa-spin\"></i></span><span id=\"fail_message\"></h3>";
+        outfile << "<div class=\"row\">" << std::endl;
+
+        outfile << "<div class=\"col-2\"><div class=\"custom-control custom-radio\">" << std::endl;
+        outfile << "<input type=\"radio\" class=\"custom-control-input\" id=\"customControlValidation2\" name=\"radio-stacked\" legend=\"legend-p-value\" required checked=checked>" << std::endl;
+        outfile << "<label class=\"custom-control-label\" for=\"customControlValidation2\">Color Nodes by P-Value</label></div>" << std::endl;
+        outfile << "<div class=\"custom-control custom-radio mb-3\">" << std::endl;
+        outfile << "<input type=\"radio\" class=\"custom-control-input\" id=\"customControlValidation3\" name=\"radio-stacked\" legend=\"legend-relative-risk\" required>" << std::endl;
+        outfile << "<label class=\"custom-control-label\" for=\"customControlValidation3\">Color Nodes by Relative Risk</label></div></div>" << std::endl;
+
+        outfile << "<div class=\"col-10\"><div class='chart-legend legend-p-value'><div class='legend-title'>P-Value Legend</div><div class='legend-scale'>" << std::endl;
+        outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span>&gt; 0.05</li><li><span style='background:#DBD51B;'></span>0.05</li>";
+        outfile << "<li><span style='background:#FFC300;'></span>0.01</li><li><span style='background:#FF5733;'></span>0.001</li></ul></div></div>" << std::endl;
+        outfile << "<div class='chart-legend legend-relative-risk'><div class='legend-title'>Relative Risk Legend</div><div class='legend-scale'>";
+        outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span>&le; 2</li><li><span style='background:#DBD51B;'></span>2</li>";
+        outfile << "<li><span style='background:#FFC300;'></span>4</li><li><span style='background:#FF5733;'></span>&ge; 8</li></ul></div></div></div>" << std::endl;
+        outfile << "<p style=\"font-style:italic; padding-left:15px; \">Selecting the circle in the upper right corner of each node will expand/collapse children under node. The color of circle indicates maximum p-value / relative risk found in children nodes.</p></div>" << std::endl;
+        outfile << "<div class=\"chart\" id=\"treescan-tree-visualization\" style=\"background-color: #EAEDED; border: 2px solid #566573; border-radius: 5px; padding:2px;\"> </div></div>" << std::endl;
     }
 
     outfile << "<div class=\"hr\"></div>" << std::endl;
@@ -610,7 +662,86 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "</tbody></table></div>" << std::endl;
 
     outfile << "</body></html>" << std::endl;
-
     outfile.close();
+
     return true;
+}
+
+/* Convert the p-value to class name to be used in html/javascript. */
+const char * ResultsFileWriter::getPvalueClass(double pval, bool childClass) {
+    if (pval <= 0.001)
+        return (childClass ? "pvalue-001-children " : "pvalue-001 ");
+    else if (pval <= 0.01)
+        return (childClass ? "pvalue-01-children " : "pvalue-01 ");
+    else if (pval <= 0.05)
+        return (childClass ? "pvalue-05-children " : "pvalue-05 ");
+    else
+        return (childClass ? "pvalue-less-children " : "pvalue-less ");
+}
+
+/* Convert the relative risk to class name to be used in html/javascript. */
+const char * ResultsFileWriter::getRelativeRiskClass(double rr, bool childClass) {
+    if (rr >= 8)
+        return (childClass ? "rr-8-children " : "rr-8 ");
+    else if (rr >= 4)
+        return (childClass ? "rr-4-children " : "rr-4 ");
+    else if (rr >= 2)
+        return (childClass ? "rr-2-children " : "rr-2 ");
+    else
+        return (childClass ? "rr-less-children " : "rr-less ");
+}
+
+ResultsFileWriter::BestCutSet_t ResultsFileWriter::writeJsTreeNode(std::ofstream & outfile, const NodeStructure& node, const std::map<int, const CutStructure*>& cutMap, int collapseAtLevel) {
+    std::string buffer;
+
+    buffer = node.getIdentifier();
+    outfile << "{ HTMLid: '" << stripNodeIdForHtml(buffer) << "', innerHTML: \"<ul><li><a data-toggle='tooltip' title='<ul><li class=" << buffer << ">";
+    buffer = node.getIdentifier();
+    outfile << htmlencode(buffer) << "</li></ul>' data-html='true'>";
+    // Truncate identifier if longer than 25 characters -- so it can fit in node box outline.
+    buffer = node.getIdentifier();
+    if (buffer.size() > 25) {
+        buffer.resize(25);
+        buffer.resize(27, '.');
+    }
+    outfile << htmlencode(buffer) << "</a></li>";
+
+    BestCutSet_t best_pval_rr(std::numeric_limits<double>::max(), -std::numeric_limits<double>::max());
+    std::map<int, const CutStructure*>::const_iterator itr = cutMap.find(node.getID());
+    if (itr != cutMap.end()) {
+        best_pval_rr.get<0>() = (double)itr->second->getRank() / (_scanRunner.getParameters().getNumReplicationsRequested() + 1);
+        best_pval_rr.get<1>() = itr->second->getRelativeRisk(_scanRunner);
+        outfile << "<li>Relative Risk: " << getValueAsString(best_pval_rr.get<1>(), buffer) << "</li><li>P-Value: ";
+        std::string format, replicas;
+        printString(replicas, "%u", _scanRunner.getParameters().getNumReplicationsRequested());
+        printString(format, "%%.%dlf", replicas.size());
+        printString(buffer, format.c_str(), best_pval_rr.get<0>());
+        outfile << buffer << "</li>";
+    }
+    outfile << "</ul><div class='nbottom'></div>\"";
+
+    BestCutSet_t best_pval_rr_children(std::numeric_limits<double>::max(), -std::numeric_limits<double>::max());
+    if (node.getChildren().size()) {
+        if (node.getLevel() >= collapseAtLevel) outfile << ", collapsed : true ";
+        outfile << ", children: [" << std::endl;
+        for (NodeStructure::RelationContainer_t::const_iterator itr = node.getChildren().begin(); itr != node.getChildren().end(); ++itr) {
+            BestCutSet_t test = writeJsTreeNode(outfile, *(*itr), cutMap, collapseAtLevel);
+            best_pval_rr_children.get<0>() = std::min(best_pval_rr_children.get<0>(), test.get<0>());
+            best_pval_rr_children.get<1>() = std::max(best_pval_rr_children.get<1>(), test.get<1>());
+            if (itr + 1 != node.getChildren().end()) outfile << ",";
+        }
+        outfile << "]" << std::endl;
+    }
+
+    // Get the class names for node relative risk and p-value. Do this for best child node as well.
+    buffer = getRelativeRiskClass(best_pval_rr.get<1>(), false);
+    buffer += getPvalueClass(best_pval_rr.get<0>(), false);
+    buffer += getRelativeRiskClass(best_pval_rr_children.get<1>(), true);
+    buffer += getPvalueClass(best_pval_rr_children.get<0>(), true);
+    outfile << ", HTMLclass: \"" << buffer << "\"" << "}" << std::endl;
+
+    // Now take the best relative risk and p-value to pass back to calling parent.
+    best_pval_rr.get<0>() = std::min(best_pval_rr_children.get<0>(), best_pval_rr.get<0>());
+    best_pval_rr.get<1>() = std::max(best_pval_rr_children.get<1>(), best_pval_rr.get<1>());
+    return best_pval_rr;
 }

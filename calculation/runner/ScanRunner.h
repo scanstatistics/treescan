@@ -18,6 +18,7 @@
 #include <map>
 #include <list>
 #include <numeric>
+#include <iomanip>
 
 class ScanRunner;
 class CutStructure {
@@ -205,9 +206,10 @@ public:
         if (parent.refChildren().end() == std::find(parent.refChildren().begin(), parent.refChildren().end(), this))
             parent.refChildren().push_back(this);
     }
-	void assignLevel() {
+	unsigned int assignLevel() {
 		/* Warning - this method could cause infinite loop if check for circular dependency is not first performed. */
 		_level = getLevel(*this);
+        return _level;
 	}
     void setAncestors(boost::dynamic_bitset<>& ancestor_nodes) {
         /* convert ON bits in set to indexes stored in _ancestors container */
@@ -223,6 +225,14 @@ public:
             TreeScan::cumulative_backward(_BrN_C);
         }
         _cumulative_status = CUMULATIVE;
+    }
+    void getAncestoryString(std::stringstream& s, int padding) const {
+        if (_Parent.size() == 0) {
+            s << std::setfill('0') << std::setw(padding) << getLevel() << "-" << getIdentifier();
+            return;
+        }
+        _Parent.front()->getAncestoryString(s, padding);
+        s << "," << std::setfill('0') << std::setw(padding) << getLevel() << "-" << getIdentifier();
     }
 };
 
@@ -293,6 +303,7 @@ public:
 protected:
     BasePrint                 & _print;
     NodeStructureContainer_t    _Nodes;
+    NodeStructure::RelationContainer_t _rootNodes;
     CutStructureContainer_t     _Cut;
     int                         _TotalC;
     int                         _TotalControls;
@@ -319,7 +330,7 @@ protected:
     bool                        readCounts(const std::string& filename);
     bool                        readCuts(const std::string& filename);
     bool                        readTree(const std::string& filename, unsigned int treeOrdinal);
-    bool                        reportResults(time_t start, time_t end) const;
+    bool                        reportResults(time_t start, time_t end);
     bool                        runPowerEvaluations();
     bool                        runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep, unsigned int iteration=0);
     bool                        runsequentialsimulations(unsigned int num_relica);
@@ -345,6 +356,7 @@ public:
     const DayOfWeekIndexes_t         & getDayOfWeekIndexes() const {return _day_of_week_indexes;}
     bool                               getMultiParentNodesExist() const {return _has_multi_parent_nodes;}
     const NodeStructureContainer_t   & getNodes() const {return _Nodes;}
+    const NodeStructure::RelationContainer_t & getRootNodes() const { return _rootNodes; }
     const Parameters                 & getParameters() const {return _parameters;}
     const PowerEstimationContainer_t & getPowerEstimations() const {return _power_estimations;}
     BasePrint                        & getPrint() {return _print;}
@@ -361,5 +373,31 @@ public:
 
     boost::shared_ptr<AbstractWindowLength> getNewWindowLength() const;
 };
+
+class CompareCutsByAncestoryString {
+    public:
+    const ScanRunner::NodeStructureContainer_t & _nodes;
+    size_t _padding_size;
+
+    public:
+    CompareCutsByAncestoryString(const ScanRunner& scanner) : _nodes(scanner.getNodes()) {
+        std::string buffer;
+        size_t t = scanner.getTreeStatistics()._nodes_per_level.size();
+        type_to_string<size_t>(t, buffer);
+        _padding_size = buffer.size();
+    }
+    bool operator() (const CutStructure * lhs, const CutStructure * rhs) {
+        std::stringstream _stream_buffer_lhs, _stream_buffer_rhs;
+        std::string _buffer_lhs, _buffer_rhs;
+
+        _nodes[lhs->getID()]->getAncestoryString(_stream_buffer_lhs, _padding_size);
+        _buffer_lhs = _stream_buffer_lhs.str();
+        _nodes[rhs->getID()]->getAncestoryString(_stream_buffer_rhs, _padding_size);
+        _buffer_rhs = _stream_buffer_rhs.str();
+
+        return _buffer_lhs < _buffer_rhs;
+    }
+};
+
 //***************************************************************************
 #endif

@@ -21,6 +21,7 @@
 #include "RelativeRiskAdjustment.h"
 #include "BernoulliRandomizer.h"
 #include "TemporalRandomizer.h"
+#include "Toolkit.h"
 
 /* Calculates the attributable risk per person for cut. */
 double CutStructure::getAttributableRisk(const ScanRunner& scanner) {
@@ -843,6 +844,7 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
         readSuccess = false;
         _print.Printf("Error: The tree file must contain at least one node which does not have a parent.\n", BasePrint::P_READERROR);
     }
+
     return readSuccess;
 }
 
@@ -896,19 +898,39 @@ bool ScanRunner::reportableCut(const CutStructure& cut) const {
 }
 
 /* REPORT RESULTS */
-bool ScanRunner::reportResults(time_t start, time_t end) const {
+bool ScanRunner::reportResults(time_t start, time_t end) {
     ResultsFileWriter resultsWriter(*this);
 
-    bool status = resultsWriter.writeASCII(start, end);
-    if (status && _parameters.isGeneratingHtmlResults()) {
-        std::string buffer;
-        status = resultsWriter.writeHTML(start, end);
+    if (!resultsWriter.writeASCII(start, end))
+        return false;
+
+    if (_parameters.isGeneratingHtmlResults() || _parameters.isGeneratingTableResults()) {
+        /* If ordering tree organization (https://www.squishlist.com/ims/treescan/100/), first widdle the cut list down to those that we'll be reporting. */
+        bool reportingCuts = !(_parameters.getSequentialScan() && static_cast<unsigned int>(getTotalC()) > _parameters.getSequentialMaximumSignal());
+        reportingCuts &= !(_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() != Parameters::PE_WITH_ANALYSIS);
+        reportingCuts &= (getCuts().size() > 0 && reportableCut(*getCuts()[0]));
+        CutStructureContainer_t::iterator itr = _Cut.begin();
+        for (; itr != _Cut.end(); ++itr) {
+            if (!reportableCut(*(*itr))) {
+                break; // Found first cut that was is not reportable. Remove cuts here and after.
+            }
+        }
+        if (itr != _Cut.end()) _Cut.kill(itr, _Cut.end());
+        // Sort by ancestry string
+        std::sort(_Cut.begin(), _Cut.end(), CompareCutsByAncestoryString(*this));
+        /* Now anything that iterates over the cuts will use the ancestry ordering -- HTML file and CSV table. */
     }
+
+    if (_parameters.isGeneratingHtmlResults()) {
+        if (!resultsWriter.writeHTML(start, end))
+            return false;
+    }
+
     // write cuts to supplemental reports file
     if (_parameters.isGeneratingTableResults()) {
         unsigned int k=0;
         CutsRecordWriter cutsWriter(*this);
-        while (status && k < getCuts().size() && reportableCut(*getCuts()[k])) {
+        while (k < getCuts().size() && reportableCut(*getCuts()[k])) {
             cutsWriter.write(k);
             k++;
         }
@@ -917,7 +939,7 @@ bool ScanRunner::reportResults(time_t start, time_t end) const {
     if (_parameters.getPerformPowerEvaluations()) {
         PowerEstimationRecordWriter(*this).write();
     }
-    return status;
+    return true;
 }
 
 /* Run Scan. */
@@ -995,6 +1017,7 @@ bool ScanRunner::run() {
     }
 
     if (_print.GetIsCanceled()) return false;
+
     time(&gEndTime); //get end time
     if (!reportResults(gStartTime, gEndTime)) return false;
 
@@ -1855,17 +1878,14 @@ CutStructure * ScanRunner::updateCut(std::auto_ptr<CutStructure>& cut) {
 bool ScanRunner::setupTree() {
     _print.Printf("Setting up the tree ...\n", BasePrint::P_STDOUT);
 
-    // Initialize variables
+    // Initialize variables and calculates the total number of cases
     _TotalC = 0; _TotalN = 0;
     for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
         std::fill((*itr)->refBrC_C().begin(), (*itr)->refBrC_C().end(), 0);
         std::fill((*itr)->refBrN_C().begin(), (*itr)->refBrN_C().end(), 0);
-    }
-
-    // Calculates the total number of cases
-    for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
         _TotalC = std::accumulate((*itr)->refIntC_C().begin(), (*itr)->refIntC_C().end(), _TotalC);
     }
+
     // If executing sequential scan and the number of cases in counts file is less than user specified total seqnential cases.
     if (_parameters.getSequentialScan() && static_cast<unsigned int>(_TotalC) > _parameters.getSequentialMaximumSignal()) {
         /* abort this analysis -- return true so that returned to function won't think that an error occurred. */
@@ -2037,8 +2057,13 @@ bool ScanRunner::setupTree() {
     }
 
     // Now we can set the data structures of NodeStructure to cumulative -- only relevant for temporal model since other models have one element arrays.
-    std::for_each(_Nodes.begin(), _Nodes.end(), std::mem_fun(&NodeStructure::setCumulative));
-	// We can now set each nodes calculated level in tree strcuture.
+	// We can now set each nodes calculated level in tree structure.
     std::for_each(_Nodes.begin(), _Nodes.end(), std::mem_fun(&NodeStructure::assignLevel));
+    for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
+        (*itr)->setCumulative();
+        if ((*itr)->assignLevel() == 1)
+            _rootNodes.push_back((*itr));
+    }
+
     return true;
 }

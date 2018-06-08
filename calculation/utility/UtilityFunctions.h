@@ -37,6 +37,7 @@ namespace TreeScan {
     }
 }
 
+
 double                          getNumCombinations(size_t total, size_t choose);
 unsigned int                    GetNumSystemProcessors();
 void                            ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection);
@@ -51,6 +52,7 @@ std::string                   & getRoundAsString(double value, std::string& s, u
 std::string                   & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath);
 std::string                   & GetUserTemporaryDirectory(std::string& s);
 bool                            getlinePortable(std::ifstream& readstream, std::string& line);
+std::string                   & htmlencode(std::string& data);
 template <typename T>           bool string_to_numeric_type(const char * s, T& t, bool test_finite=true) {
                                     try {
                                         t = boost::lexical_cast<T>(s);
