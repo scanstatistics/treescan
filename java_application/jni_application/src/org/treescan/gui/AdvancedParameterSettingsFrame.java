@@ -219,7 +219,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 jTabbedPane1.addTab("Temporal Window", null, _advanced_temporal_window_tab, null);
                 jTabbedPane1.addTab("Adjustments", null, _advanced_adjustments_tab, null);                
                 jTabbedPane1.addTab("Inference", null, _advanced_inferenece_tab, null);
-                jTabbedPane1.addTab("Sequential Analysis", null, _sequential_analysis_tab, null);                
+                /* Not exposed in gui: https://www.squishlist.com/ims/treescan/62/
+                   jTabbedPane1.addTab("Sequential Analysis", null, _sequential_analysis_tab, null);                
+                */
                 jTabbedPane1.addTab("Power Evaluation", null, _advanced_power_evaluation_tab, null);                
                 break;
             case INPUT:
@@ -272,10 +274,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setPowerBaselineProbabilityRatioDenominator(Integer.parseInt(this._eventProbabiltyDenominator.getText()));
         
         // Seqential Analysis tab
+        /* Not exposed in gui: https://www.squishlist.com/ims/treescan/62/
         parameters.setSequentialScan(_sequential_analysis_group.isEnabled() && _perform_sequential_scan.isSelected());
         parameters.setSequentialMaximumSignal(Integer.parseInt(_maximum_cases_signal.getText()));
         parameters.setSequentialMinimumSignal(Integer.parseInt(_minimum_cases_signal.getText()));
         parameters.setSequentialFilename(_sequential_analysis_file.getText());
+        */
         
         // Additional Output tab
         parameters.setGeneratingLLRResults(_reportLLRResultsAsCsvTable.isSelected());
@@ -378,10 +382,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _eventProbabiltyDenominator.setText(Integer.toString(parameters.getPowerBaselineProbabilityRatioDenominator()));
         
         // Seqential Analysis tab
+        _perform_sequential_scan.setSelected(false);
+        /* Not exposed in gui: https://www.squishlist.com/ims/treescan/62/
         _perform_sequential_scan.setSelected(parameters.getSequentialScan());
         _maximum_cases_signal.setText(Integer.toString(parameters.getSequentialMaximumSignal()));
         _minimum_cases_signal.setText(Integer.toString(parameters.getSequentialMinimumSignal()));
         _sequential_analysis_file.setText(parameters.getSequentialFilename());
+        */
         
         // Additional Output tab
         _reportCriticalValuesCheckBox.setSelected(parameters.getReportCriticalValues());
