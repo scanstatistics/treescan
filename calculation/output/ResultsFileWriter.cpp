@@ -759,17 +759,19 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
     unsigned int children_count = 0;
     if (node.getChildren().size()) {
         unsigned int significantChildNodes = 0, significantBranches = 0;
-        std::vector<std::stringstream> childNodestreams(node.getChildren().size());
+        std::vector<boost::shared_ptr<std::stringstream> > childNodestreams;
+        for (size_t t = 0; t < node.getChildren().size(); ++t)
+            childNodestreams.push_back(boost::shared_ptr<std::stringstream>());
         std::vector<NodeSet_t> childrenNodesets;
         // Iterate over children recursively obtain branch stream and p-value/relative risk by node and best child.
-        std::vector<std::stringstream>::iterator itrStream = childNodestreams.begin();
+        std::vector<boost::shared_ptr<std::stringstream> >::iterator itrStream = childNodestreams.begin();
         // Copy the children and sort by identified.
         NodeStructure::RelationContainer_t childrenCopy = node.getChildren();
         std::sort(childrenCopy.begin(), childrenCopy.end(), CompareNodeStructureByIdentifier());
         NodeStructure::RelationContainer_t::const_iterator itrChild = childrenCopy.begin();
 
         for (; itrChild != childrenCopy.end(); ++itrChild, ++itrStream) {
-            childrenNodesets.push_back(writeJsTreeNode(*itrStream, *(*itrChild), cutMap, collapseAtLevel));
+            childrenNodesets.push_back(writeJsTreeNode(*(*itrStream), *(*itrChild), cutMap, collapseAtLevel));
             if (childrenNodesets.back().get<0>().get<0>() <= 0.05) {
                 ++significantChildNodes;
                 ++significantBranches;
@@ -785,7 +787,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
                 // Rule 1 - Include child node if it or one off it's siblings are significant. This means we're including all children if we're including one.
                 std::vector<NodeSet_t>::iterator itrNodeSets = childrenNodesets.begin();
                 for (itrStream = childNodestreams.begin(); itrStream != childNodestreams.end(); ++itrStream, ++itrNodeSets) {
-                    childrenstream << itrStream->str();
+                    childrenstream << (*itrStream)->str();
                     if ((itrStream + 1) != childNodestreams.end()) childrenstream << ", ";
                     best_pval_rr_children.get<0>() = std::min(best_pval_rr_children.get<0>(), itrNodeSets->get<0>().get<0>());
                     best_pval_rr_children.get<0>() = std::min(best_pval_rr_children.get<0>(), itrNodeSets->get<1>().get<0>());
@@ -799,7 +801,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
                 for (itrStream = childNodestreams.begin(); itrNodeSets != childrenNodesets.end(); ++itrNodeSets, ++itrStream) {
                     if (itrNodeSets->get<0>().get<0>() <= 0.05 || itrNodeSets->get<1>().get<0>() <= 0.05) {
                         if (children_count > 0) childrenstream << ",";
-                        childrenstream << (*itrStream).str();
+                        childrenstream << (*itrStream)->str();
                         best_pval_rr_children.get<0>() = std::min(best_pval_rr_children.get<0>(), itrNodeSets->get<0>().get<0>());
                         best_pval_rr_children.get<0>() = std::min(best_pval_rr_children.get<0>(), itrNodeSets->get<1>().get<0>());
                         best_pval_rr_children.get<1>() = std::max(best_pval_rr_children.get<1>(), itrNodeSets->get<0>().get<1>());
