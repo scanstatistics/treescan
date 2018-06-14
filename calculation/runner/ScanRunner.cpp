@@ -663,7 +663,8 @@ bool ScanRunner::readCounts(const std::string& filename) {
 
             // If the probably model is uniform, there is possibly another column - censored time.
             if (_parameters.getModelType() == Parameters::UNIFORM) {
-                if (dataSource->getNumValues() == expectedColumns + 1) {
+                // If this column is missing or blank, just ignore the column in this record.
+                if ((dataSource->getNumValues() == expectedColumns + 1) && dataSource->getValueAt(expectedColumns).size() != 0) {
                     if (!string_to_numeric_type<int>(dataSource->getValueAt(expectedColumns).c_str(), censortime)) {
                         readSuccess = false;
                         _print.Printf("Error: Record %ld in count file references an invalid 'censoring time' value.\n"
