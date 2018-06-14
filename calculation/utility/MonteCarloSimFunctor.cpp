@@ -8,7 +8,7 @@
 #include "DataSource.h"
 
 /* Returns new AbstractMeasureList object - based on settings. */
-AbstractMeasureList * AbstractMeasureList::getNewMeasureList(const ScanRunner& scanner, ScanRunner::Loglikelihood_t loglikelihood) {
+AbstractMeasureList * AbstractMeasureList::getNewMeasureList(const ScanRunner& scanner, Loglikelihood_t loglikelihood) {
     return new MinimumMeasureList(scanner, loglikelihood);
 }
 

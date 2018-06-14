@@ -24,6 +24,8 @@ public:
     static double UNSET_LOGLIKELIHOOD;
 };
 
+typedef boost::shared_ptr<AbstractLoglikelihood> Loglikelihood_t;
+
 class PoissonLoglikelihood : public AbstractLoglikelihood {
 protected:
     const int       _totalC;

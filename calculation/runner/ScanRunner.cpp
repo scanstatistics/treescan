@@ -915,8 +915,19 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
                 break; // Found first cut that was is not reportable. Remove cuts here and after.
             }
         }
-        if (itr != _Cut.end()) _Cut.kill(itr, _Cut.end());
-        // Sort by ancestry string
+        
+        if (itr != _Cut.end()) {
+            // Move non-reportable cuts to separate vector.
+            CutStructureContainer_t::iterator itrTemp = itr;
+            for (; itr != _Cut.end(); ++itr) {
+                _trimmed_cuts.push_back(*itr);
+                *itr = 0;
+            }
+            // Erase, not kill, the elements from this vector.
+            _Cut.erase(itrTemp, _Cut.end());
+        }
+
+        // Sort by ancestry string --- this is the order we want to report in html and csv output files.
         std::sort(_Cut.begin(), _Cut.end(), CompareCutsByAncestoryString(*this));
         /* Now anything that iterates over the cuts will use the ancestry ordering -- HTML file and CSV table. */
     }
@@ -1265,7 +1276,7 @@ size_t ScanRunner::calculateCutsCount() const {
 /* SCANNING THE TREE */
 bool ScanRunner::scanTree() {
     _print.Printf("Scanning the tree ...\n", BasePrint::P_STDOUT);
-    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
+    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
 
     //std::string buffer;
     //int hits=0;
@@ -1363,7 +1374,7 @@ bool ScanRunner::scanTree() {
 /* SCANNING THE TREE for temporal model */
 bool ScanRunner::scanTreeTemporalConditionNode() {
     _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
-    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
+    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
 
     // Define the start and end windows with the zero index offset already incorporated.
     DataTimeRange startWindow(_parameters.getTemporalStartRange().getStart() + _zero_translation_additive,
@@ -1506,7 +1517,7 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
 /* SCANNING THE TREE for temporal model conditioned on node and censored. */
 bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
     _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
-    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
+   Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
 
     // Define the start and end windows with the zero index offset already incorporated.
     DataTimeRange startWindow(_parameters.getTemporalStartRange().getStart() + _zero_translation_additive,
@@ -1669,7 +1680,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
 /* SCANNING THE TREE for temporal model -- conditioned on the total cases across nodes and time. */
 bool ScanRunner::scanTreeTemporalConditionNodeTime() {
     _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
-    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
+    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
 
     // Define the start and end windows with the zero index offset already incorporated.
     DataTimeRange startWindow(_parameters.getTemporalStartRange().getStart() + _zero_translation_additive,
@@ -1822,7 +1833,7 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, 
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN, endIdx - startIdx + 1);
     else
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN);
-    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) 0;
+    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) return 0;
 
     std::auto_ptr<CutStructure> cut(new CutStructure());
     cut->setLogLikelihood(loglikelihood);
@@ -1837,7 +1848,7 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, 
 
 CutStructure * ScanRunner::calculateCut(size_t node_index, int C, double N, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx) {
     double loglikelihood = logCalculator->LogLikelihood(C, N, BrC, BrN);
-    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) 0;
+    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) return 0;
 
     std::auto_ptr<CutStructure> cut(new CutStructure());
     cut->setLogLikelihood(loglikelihood);

@@ -51,7 +51,7 @@ private://data members
   const char                              * gszReplicationFormatString;
   std::auto_ptr<LoglikelihoodRatioWriter>   _ratio_writer;
   ScanRunner                              & grRunner;
-  ScanRunner::Loglikelihood_t               grLoglikelihood;
+  Loglikelihood_t               grLoglikelihood;
   bool                                      _isPowerStep;
 
 private://functions

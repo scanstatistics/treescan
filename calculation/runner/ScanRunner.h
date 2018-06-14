@@ -291,7 +291,6 @@ public:
     typedef ptr_vector<NodeStructure>                           NodeStructureContainer_t;
     typedef ptr_vector<CutStructure>                            CutStructureContainer_t;
     typedef std::pair<bool,size_t>                              Index_t;
-    typedef boost::shared_ptr<AbstractLoglikelihood>            Loglikelihood_t;
     typedef boost::shared_ptr<RelativeRiskAdjustmentHandler>    RiskAdjustments_t;
     typedef std::vector<RiskAdjustments_t>                      RiskAdjustmentsContainer_t;
     typedef boost::tuple<double, double, double>                PowerEstimationSet_t;
@@ -305,6 +304,7 @@ protected:
     NodeStructureContainer_t    _Nodes;
     NodeStructure::RelationContainer_t _rootNodes;
     CutStructureContainer_t     _Cut;
+    CutStructureContainer_t     _trimmed_cuts;
     int                         _TotalC;
     int                         _TotalControls;
     double                      _TotalN;
@@ -353,6 +353,7 @@ public:
     const CriticalValues             & getCriticalValues() const {return *_critical_values;}
     std::string                      & getCaselessWindowsAsString(std::string& s) const;
     const CutStructureContainer_t    & getCuts() const {return _Cut;}
+    const CutStructureContainer_t    & getTrimmedCuts() const { return _trimmed_cuts; }
     const DayOfWeekIndexes_t         & getDayOfWeekIndexes() const {return _day_of_week_indexes;}
     bool                               getMultiParentNodesExist() const {return _has_multi_parent_nodes;}
     const NodeStructureContainer_t   & getNodes() const {return _Nodes;}

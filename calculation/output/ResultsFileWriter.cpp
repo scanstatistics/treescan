@@ -45,7 +45,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
 
     AsciiPrintFormat PrintFormat;
     Parameters& parameters(const_cast<Parameters&>(_scanRunner.getParameters()));
-    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN(), _scanRunner.isCensoredData()));
+    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN(), _scanRunner.isCensoredData()));
 
     PrintFormat.PrintVersionHeader(outfile);
     std::string buffer = ctime(&start);
@@ -132,16 +132,20 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
             unsigned int k=0;
             outfile.setf(std::ios::fixed);
             outfile.precision(5);
-            while(k < _scanRunner.getCuts().size() && _scanRunner.reportableCut(*_scanRunner.getCuts()[k])) {
+
+            ScanRunner::CutStructureContainer_t::const_iterator itrCuts = _scanRunner.getCuts().begin(), itrCutsEnd = _scanRunner.getCuts().end();
+            for (; itrCuts != itrCutsEnd; ++itrCuts) {
+                CutStructure& thisCut = *(*itrCuts);
+                const NodeStructure& thisNode = *(_scanRunner.getNodes()[thisCut.getID()]);
                 PrintFormat.SetMarginsAsCutSection( k + 1);
                 outfile << k + 1 << ")";
                 // skip reporting node identifier for time-only scans
                 if (parameters.getScanType() != Parameters::TIMEONLY) {
                     PrintFormat.PrintSectionLabel(outfile, "Node Identifier", false);
-                    buffer = _scanRunner.getNodes()[_scanRunner.getCuts()[k]->getID()]->getIdentifier();
-                    if (_scanRunner.getCuts()[k]->getCutChildren().size()) {
+                    buffer = thisNode.getIdentifier();
+                    if (thisCut.getCutChildren().size()) {
                         buffer += " children: ";
-                        const CutStructure::CutChildContainer_t& childNodeIds = _scanRunner.getCuts()[k]->getCutChildren();
+                        const CutStructure::CutChildContainer_t& childNodeIds = thisCut.getCutChildren();
                         for (size_t t=0; t < childNodeIds.size(); ++t) {
                             buffer +=  _scanRunner.getNodes()[childNodeIds[t]]->getIdentifier();
                             if (t < childNodeIds.size() - 1)
@@ -151,16 +155,16 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer.c_str());
 
 					PrintFormat.PrintSectionLabel(outfile, "Tree Level", true);
-					printString(buffer, "%ld", _scanRunner.getNodes()[_scanRunner.getCuts()[k]->getID()]->getLevel());
+					printString(buffer, "%ld", thisNode.getLevel());
 					PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                 }
 
                 if (parameters.getConditionalType() == Parameters::NODEANDTIME) {
                     PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
-                    printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts()[k]->getID()]->getBrC()));
+                    printString(buffer, "%ld", static_cast<int>(thisNode.getBrC()));
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     PrintFormat.PrintSectionLabel(outfile, "Time Window", true);
-                    printString(buffer, "%ld to %ld", _scanRunner.getCuts()[k]->getStartIdx() - _scanRunner.getZeroTranslationAdditive(), _scanRunner.getCuts()[k]->getEndIdx() - _scanRunner.getZeroTranslationAdditive());
+                    printString(buffer, "%ld to %ld", thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(), thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive());
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     PrintFormat.PrintSectionLabel(outfile, "Cases in Window", true);
                 } else if (parameters.getModelType() == Parameters::UNIFORM) {
@@ -168,32 +172,32 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     if (parameters.getScanType() != Parameters::TIMEONLY) {
                         PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
                         if (parameters.isPerformingDayOfWeekAdjustment() || _scanRunner.isCensoredData()) {
-                            printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts()[k]->getID()]->getBrC()));
+                            printString(buffer, "%ld", static_cast<int>(thisNode.getBrC()));
                         } else {
-                            printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts()[k]->getN()));
+                            printString(buffer, "%ld", static_cast<int>(thisCut.getN()));
                         }
                         PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     }
                     PrintFormat.PrintSectionLabel(outfile, "Time Window", parameters.getScanType() != Parameters::TIMEONLY);
-                    printString(buffer, "%ld to %ld", _scanRunner.getCuts()[k]->getStartIdx() - _scanRunner.getZeroTranslationAdditive(), _scanRunner.getCuts()[k]->getEndIdx() - _scanRunner.getZeroTranslationAdditive());
+                    printString(buffer, "%ld to %ld", thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(), thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive());
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     PrintFormat.PrintSectionLabel(outfile, "Cases in Window", true);
                 } else if (parameters.getModelType() == Parameters::BERNOULLI) {
                     PrintFormat.PrintSectionLabel(outfile, "Observations", true);
-                    printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts()[k]->getN()));
+                    printString(buffer, "%ld", static_cast<int>(thisCut.getN()));
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     PrintFormat.PrintSectionLabel(outfile, "Cases", true);
                 } else if (parameters.getModelType() == Parameters::POISSON) {
                     PrintFormat.PrintSectionLabel(outfile, "Observed Cases", true);
                 }
-                printString(buffer, "%ld", _scanRunner.getCuts()[k]->getC());
+                printString(buffer, "%ld", thisCut.getC());
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                 PrintFormat.PrintSectionLabel(outfile, parameters.getModelType() == Parameters::UNIFORM ? "Expected Cases" : "Expected", true);
-                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts()[k]->getExpected(_scanRunner), buffer));
+                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getExpected(_scanRunner), buffer));
                 PrintFormat.PrintSectionLabel(outfile, "Relative Risk", true);
-                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts()[k]->getRelativeRisk(_scanRunner), buffer));
+                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getRelativeRisk(_scanRunner), buffer));
                 PrintFormat.PrintSectionLabel(outfile, "Excess Cases", true);
-                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getCuts()[k]->getExcessCases(_scanRunner), buffer));
+                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getExcessCases(_scanRunner), buffer));
                 if (parameters.getReportAttributableRisk()) {
                     PrintFormat.PrintSectionLabel(outfile, "Attributable Risk", true);
                     buffer = _scanRunner.getCuts()[k]->getAttributableRiskAsString(_scanRunner, buffer);
@@ -207,11 +211,11 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 } else {
                     PrintFormat.PrintSectionLabel(outfile, "Log Likelihood Ratio", true);
                 }
-                printString(buffer, "%.6lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts()[k]->getLogLikelihood()));
+                printString(buffer, "%.6lf", calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood()));
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                 if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/) {
                     PrintFormat.PrintSectionLabel(outfile, "P-value", true);
-                    printString(buffer, format.c_str(), (double)_scanRunner.getCuts()[k]->getRank() /(parameters.getNumReplicationsRequested() + 1));
+                    printString(buffer, format.c_str(), (double)thisCut.getRank() /(parameters.getNumReplicationsRequested() + 1));
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                 }
 
@@ -368,54 +372,66 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     std::ofstream outfile;
     openStream(getFilenameHTML(parameters, buffer), outfile);
     if (!outfile) return false;
-    ScanRunner::Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN(), _scanRunner.isCensoredData()));
+    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN(), _scanRunner.isCensoredData()));
 
     outfile << "<!DOCTYPE html>" << std::endl; 
     outfile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " << std::endl;
     outfile << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">" << std::endl;
     outfile << "<head>" << std::endl;
-    outfile << "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css\">" << std::endl;
-    outfile << "<link rel=\"stylesheet\" href=\"https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css\">" << std::endl;
-    outfile << "<link rel=\"stylesheet\" href=\"http://tools.imsweb.com/~hostovic/treescan/tree-visualization/treescan-results.css\">" << std::endl;
-    outfile << "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\">" << std::endl;
+    outfile << "<link rel=\"stylesheet\" href=\"https://www.treescan.org/libs/bootstrap.4.1.1/bootstrap.4.1.1.css\">" << std::endl;
+    outfile << "<link rel=\"stylesheet\" href=\"https://www.treescan.org/libs/datatables.1.10.16/css/jquery.dataTables.min.css\">" << std::endl;
+    outfile << "<link rel=\"stylesheet\" href=\"https://www.treescan.org/html-results/treescan-results.1.0.css\">" << std::endl;
+    outfile << "<link rel=\"stylesheet\" href=\"http://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css\">" << std::endl;
     outfile << "</head>" << std::endl;
     if (parameters.getScanType() != Parameters::TIMEONLY) {
-        outfile << "<script src=\"http://tools.imsweb.com/~hostovic/treescan/tree-visualization/raphael.js\" type=\"text/javascript\"></script>" << std::endl;
-        outfile << "<script src=\"http://tools.imsweb.com/~hostovic/treescan/tree-visualization/Treant.js\" type=\"text/javascript\"></script>" << std::endl;
+        outfile << "<script src=\"https://www.treescan.org/libs/raphael.2.1.4.js\" type=\"text/javascript\"></script>" << std::endl;
+        outfile << "<script src=\"https://www.treescan.org/libs/Treant-20180418.js\" type=\"text/javascript\"></script>" << std::endl;
     }
-    outfile << "<script src=\"https://code.jquery.com/jquery-3.3.1.js\" type=\"text/javascript\"></script>" << std::endl;
-    outfile << "<script src=\"https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js\" type=\"text/javascript\"></script>" << std::endl;
-    outfile << "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js\" type=\"text/javascript\"></script>" << std::endl;
-    outfile << "<script src=\"https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js\" type=\"text/javascript\"></script>" << std::endl;
+    outfile << "<script src=\"https://www.treescan.org/libs/jquery.3.3.1/jquery-3.3.1.js\" type=\"text/javascript\"></script>" << std::endl;
+    outfile << "<script src=\"https://www.treescan.org/libs/datatables.1.10.16/js/jquery.dataTables.min.js\" type=\"text/javascript\"></script>" << std::endl;
+    outfile << "<script src=\"https://www.treescan.org/libs/bootstrap.4.1.1/popper.4.1.1.js\" type=\"text/javascript\"></script>" << std::endl;
+    outfile << "<script src=\"https://www.treescan.org/libs/bootstrap.4.1.1/bootstrap.4.1.1.js\" type=\"text/javascript\"></script>" << std::endl;
 
-    if (parameters.getScanType() != Parameters::TIMEONLY) {
+    /* Determine if we can show the tree visualization. Since we're pruning the tree by minimum p-value of 0.05, we can't possibly have any significant 
+       nodes if the number of replications is less than 19 -- which impies the necessary rank out of 20 is 1 to meet at most 0.05. */
+    bool canShowTreeGraph = parameters.getNumReplicationsRequested() >= 19 && parameters.getScanType() != Parameters::TIMEONLY;
+
+    if (canShowTreeGraph) {
         outfile << "<script type=\"text/javascript\" charset=\"utf-8\">" << std::endl;
         outfile << "var chart_config = { chart: { container: \"#treescan-tree-visualization\", levelSeparation: 20, siblingSeparation: 15, subTeeSeparation: 15, rootOrientation: \"WEST\", ";
-        outfile << "hideRootNode: " << (_scanRunner.getRootNodes().size() > 1 ? "true" : "false") << ", " << std::endl;
+        outfile << "hideRootNode: true, " << std::endl;
         outfile << "node: { HTMLclass: \"treescan-node-tree\", drawLineThrough: false, collapsable: true }, connectors: { type: \"bCurve\"} }, ";
         outfile << "nodeStructure: ";
-
         // create a map of NodeID to Cut objects
         std::map<int, const CutStructure*> node_cut_map;
         ScanRunner::CutStructureContainer_t::const_iterator itr = _scanRunner.getCuts().begin(), enditr = _scanRunner.getCuts().end();
-        for (; itr != enditr; ++itr) {
+        for (; itr != enditr; ++itr)
             node_cut_map[(*itr)->getID()] = (*itr);
-        }
-
-        if (_scanRunner.getRootNodes().size() > 1)
-            outfile << " { text:{name:\"Root\"}, children: [" << std::endl;
-
+        // Add the trimmed cuts as well.
+        enditr = _scanRunner.getTrimmedCuts().end();
+        for (itr = _scanRunner.getTrimmedCuts().begin(); itr != enditr; ++itr)
+            node_cut_map[(*itr)->getID()] = (*itr);
+        outfile << " { text:{name:\"Root\"}";
+        std::stringstream  rootstream;
+        unsigned int root_counter = 0;
         for (NodeStructure::RelationContainer_t::const_iterator itr = _scanRunner.getRootNodes().begin(); itr != _scanRunner.getRootNodes().end(); ++itr) {
-            writeJsTreeNode(outfile, *(*itr), node_cut_map, 2);
-            if (itr + 1 != _scanRunner.getRootNodes().end()) outfile << ",";
+            // For each root node, walk down tree looking for significant nodes.
+            std::stringstream  nodestream;
+            NodeSet_t test = writeJsTreeNode(nodestream, *(*itr), node_cut_map, 2);
+            // If the best p-value for this node or down along descendent's branch meets threshold, then include branch in nodes. Otherwise exclude entire branch.
+            BestCutSet_t best_branch(std::min(test.get<0>().get<0>(), test.get<1>().get<0>()), std::max(test.get<0>().get<1>(), test.get<1>().get<1>()));
+            if (best_branch.get<0>() <= 0.05) {
+                if (root_counter > 0) rootstream << ",";
+                ++root_counter;
+                rootstream << nodestream.str();
+            }
         }
-
-        if (_scanRunner.getRootNodes().size() > 1)
-            outfile << "] }" << std::endl;
-
+        if (root_counter > 0)
+            outfile << ", children: [" << std::endl << rootstream.str() << "]";
+        outfile << " }" << std::endl;
         outfile << "};</script>" << std::endl;
     }
-    outfile << "<script src=\"http://tools.imsweb.com/~hostovic/treescan/tree-visualization/treescan-results.js\" type=\"text/javascript\"></script>" << std::endl;
+    outfile << "<script src=\"https://www.treescan.org/html-results/treescan-results.1.0.js\" type=\"text/javascript\"></script>" << std::endl;
     outfile << "<body>" << std::endl;
     buffer = AppToolkit::getToolkit().GetWebSite();
     outfile << "<table width=\"100%\" border=\"0\" cellpadding=\"2\" cellspacing=\"0\" bgcolor=\"#F8FAFA\" style=\"border-collapse: collapse;\">";
@@ -512,71 +528,24 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             printString(replicas, "%u", parameters.getNumReplicationsRequested());
             printString(format, "%%.%dlf", replicas.size());
 
-            unsigned int k=0;
             outfile.setf(std::ios::fixed);
             outfile.precision(5);
-            while (k < _scanRunner.getCuts().size() && _scanRunner.reportableCut(*_scanRunner.getCuts()[k])) {
-                buffer = _scanRunner.getNodes()[_scanRunner.getCuts()[k]->getID()]->getIdentifier();
-                outfile << "<tr id=\"tr-" << stripNodeIdForHtml(buffer) << "\"><td>" << k + 1 << "</td>";
-                // skip reporting node identifier for time-only scans
-                if (parameters.getScanType() != Parameters::TIMEONLY) {
-                    buffer = _scanRunner.getNodes()[_scanRunner.getCuts()[k]->getID()]->getIdentifier();
-                    outfile  << "<td>" << htmlencode(buffer);
-                    if (_scanRunner.getCuts()[k]->getCutChildren().size()) {
-                        outfile  << " children: ";
-                        const CutStructure::CutChildContainer_t& childNodeIds = _scanRunner.getCuts()[k]->getCutChildren();
-                        for (size_t t=0; t < childNodeIds.size(); ++t) {
-                            buffer = _scanRunner.getNodes()[childNodeIds[t]]->getIdentifier();
-                            outfile << htmlencode(buffer) << ((t < childNodeIds.size() - 1) ? ", " : "");
-                        }
-                    }
-                    outfile << "</td>";
-                    outfile << "<td>" << printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts()[k]->getID()]->getLevel())).c_str() << "</td>";
-                }
-                if (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) {
-                    // write node cases and time window
-                    printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts()[k]->getID()]->getBrC()));
-                    outfile << "<td>" << buffer.c_str() << "</td>";
-                    outfile << "<td>" << (_scanRunner.getCuts()[k]->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (_scanRunner.getCuts()[k]->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
-                } else if (parameters.getModelType() == Parameters::UNIFORM) {
-                    // write node cases
-                    // skip reporting node cases for time-only scans
-                    if (parameters.getScanType() != Parameters::TIMEONLY) {
-                        if (parameters.isPerformingDayOfWeekAdjustment() && _scanRunner.isCensoredData()) {
-                            printString(buffer, "%ld", static_cast<int>(_scanRunner.getNodes()[_scanRunner.getCuts()[k]->getID()]->getBrC()));
-                        } else {
-                            printString(buffer, "%ld", static_cast<int>(_scanRunner.getCuts()[k]->getN()));
-                        }
-                        outfile << "<td>" << buffer.c_str() << "</td>";
-                    }
-                    // write time window
-                    outfile << "<td>" << (_scanRunner.getCuts()[k]->getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (_scanRunner.getCuts()[k]->getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
-                } else if (parameters.getModelType() == Parameters::BERNOULLI) {
-                    // write number of observations
-                    outfile << "<td>" << static_cast<int>(_scanRunner.getCuts()[k]->getN()) << "</td>";
-                }
-                // write cases in window or cases or observed cases, depending on settings
-                outfile << "<td>" << _scanRunner.getCuts()[k]->getC() << "</td>";
-                outfile << "<td>" << getValueAsString(_scanRunner.getCuts()[k]->getExpected(_scanRunner), buffer) << "</td>";
-                outfile << "<td>" << getValueAsString(_scanRunner.getCuts()[k]->getRelativeRisk(_scanRunner), buffer) << "</td>";
-                outfile << "<td>" << getValueAsString(_scanRunner.getCuts()[k]->getExcessCases(_scanRunner), buffer) << "</td>";
-                if (parameters.getReportAttributableRisk()) {
-                     buffer = _scanRunner.getCuts()[k]->getAttributableRiskAsString(_scanRunner, buffer);
-                    outfile << "<td>" << buffer << "</td>";
-                }
-                outfile << "<td>" << printString(buffer, "%.6lf", calcLogLikelihood->LogLikelihoodRatio(_scanRunner.getCuts()[k]->getLogLikelihood())).c_str() << "</td>";
-                // write p-value
-                if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/) {
-                    outfile << "<td>" << printString(buffer, format.c_str(), (double)_scanRunner.getCuts()[k]->getRank() /(parameters.getNumReplicationsRequested() + 1)) << "</td>";
-                }
-                outfile << "</tr>" << std::endl;
-                k++;
-            }
-            outfile << "</tbody></table></div></div>" << std::endl;
+            ScanRunner::CutStructureContainer_t::const_iterator itrCuts = _scanRunner.getCuts().begin(), itrCutsEnd = _scanRunner.getCuts().end();
+            for (unsigned int k=0; itrCuts != itrCutsEnd; ++itrCuts, ++k)
+                addTableRowForCut(*(*itrCuts), k, calcLogLikelihood, format, outfile);
+            outfile << "</tbody></table></div>" << std::endl;
+            outfile << "</div></div>" << std::endl;
+
+            outfile << "<div id=\"id_trimmed_cuts\" style=\"display:none;\"><table>";
+            itrCuts = _scanRunner.getTrimmedCuts().begin();
+            itrCutsEnd = _scanRunner.getTrimmedCuts().end();
+            for (; itrCuts != itrCutsEnd; ++itrCuts)
+                addTableRowForCut(*(*itrCuts), 0, calcLogLikelihood, format, outfile);
+            outfile << "</table></div>" << std::endl;
         }
     }
 
-    if (parameters.getScanType() != Parameters::TIMEONLY) {
+    if (canShowTreeGraph) {
         outfile << "<a class=\"btn btn-primary btn-sm\" id=\"show_tree\" data-toggle=\"collapse\" href=\"#collapseExample\" role=\"button\" aria-expanded=\"false\" aria-controls=\"collapseExample\">Tree Visualization</a>" << std::endl;
         outfile << "<div class=\"collapse\" id=\"collapseExample\"><h3>Visualization of Analysis Tree  <span id=\"loading_graph\">... loading <i class=\"fa fa-circle-o-notch fa-spin\"></i></span><span id=\"fail_message\"></h3>";
         outfile << "<div class=\"row\">" << std::endl;
@@ -589,11 +558,11 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "<label class=\"custom-control-label\" for=\"customControlValidation3\">Color Nodes by Relative Risk</label></div></div>" << std::endl;
 
         outfile << "<div class=\"col-10\"><div class='chart-legend legend-p-value'><div class='legend-title'>P-Value Legend</div><div class='legend-scale'>" << std::endl;
-        outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span>&gt; 0.05</li><li><span style='background:#DBD51B;'></span>0.05</li>";
-        outfile << "<li><span style='background:#FFC300;'></span>0.01</li><li><span style='background:#FF5733;'></span>0.001</li></ul></div></div>" << std::endl;
+        outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span><span class=\"legend-val\">&gt; 0.05</span></li><li><span style='background:#DBD51B;'></span><span class=\"legend-val\">0.05</span></li>";
+        outfile << "<li><span style='background:#FFC300;'></span><span class=\"legend-val\">0.01</span></li><li><span style='background:#FF5733;'></span><span class=\"legend-val\">0.001</span></li></ul></div></div>" << std::endl;
         outfile << "<div class='chart-legend legend-relative-risk'><div class='legend-title'>Relative Risk Legend</div><div class='legend-scale'>";
-        outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span>&le; 2</li><li><span style='background:#DBD51B;'></span>2</li>";
-        outfile << "<li><span style='background:#FFC300;'></span>4</li><li><span style='background:#FF5733;'></span>&ge; 8</li></ul></div></div></div>" << std::endl;
+        outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span><span class=\"legend-val\">&le; 2</span></li><li><span style='background:#DBD51B;'></span><span class=\"legend-val\">2</span></li>";
+        outfile << "<li><span style='background:#FFC300;'></span><span class=\"legend-val\">4</span></li><li><span style='background:#FF5733;'></span><span class=\"legend-val\">&ge; 8</span></li></ul></div></div></div>" << std::endl;
         outfile << "<p style=\"font-style:italic; padding-left:15px; \">Selecting the circle in the upper right corner of each node will expand/collapse children under node. The color of circle indicates maximum p-value / relative risk found in children nodes.</p></div>" << std::endl;
         outfile << "<div class=\"chart\" id=\"treescan-tree-visualization\" style=\"background-color: #EAEDED; border: 2px solid #566573; border-radius: 5px; padding:2px;\"> </div></div>" << std::endl;
     }
@@ -667,6 +636,70 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     return true;
 }
 
+/* Write table row for cut. */
+std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, int k, Loglikelihood_t & calcLogLikelihood, const std::string& format, std::ofstream& outfile) {
+    const Parameters& parameters = _scanRunner.getParameters();
+    const NodeStructure& thisNode = *(_scanRunner.getNodes()[thisCut.getID()]);
+    std::string buffer(thisNode.getIdentifier());
+    outfile << "<tr id=\"tr-" << stripNodeIdForHtml(buffer) << "\"><td>" << k + 1 << "</td>";
+    // skip reporting node identifier for time-only scans
+    if (parameters.getScanType() != Parameters::TIMEONLY) {
+        buffer = thisNode.getIdentifier();
+        outfile << "<td>" << htmlencode(buffer);
+        if (thisCut.getCutChildren().size()) {
+            outfile << " children: ";
+            const CutStructure::CutChildContainer_t& childNodeIds = thisCut.getCutChildren();
+            for (size_t t = 0; t < childNodeIds.size(); ++t) {
+                buffer = _scanRunner.getNodes()[childNodeIds[t]]->getIdentifier();
+                outfile << htmlencode(buffer) << ((t < childNodeIds.size() - 1) ? ", " : "");
+            }
+        }
+        outfile << "</td>";
+        outfile << "<td>" << printString(buffer, "%ld", static_cast<int>(thisNode.getLevel())).c_str() << "</td>";
+    }
+    if (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) {
+        // write node cases and time window
+        printString(buffer, "%ld", static_cast<int>(thisNode.getBrC()));
+        outfile << "<td>" << buffer.c_str() << "</td>";
+        outfile << "<td>" << (thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
+    }
+    else if (parameters.getModelType() == Parameters::UNIFORM) {
+        // write node cases
+        // skip reporting node cases for time-only scans
+        if (parameters.getScanType() != Parameters::TIMEONLY) {
+            if (parameters.isPerformingDayOfWeekAdjustment() && _scanRunner.isCensoredData()) {
+                printString(buffer, "%ld", static_cast<int>(thisNode.getBrC()));
+            }
+            else {
+                printString(buffer, "%ld", static_cast<int>(thisCut.getN()));
+            }
+            outfile << "<td>" << buffer.c_str() << "</td>";
+        }
+        // write time window
+        outfile << "<td>" << (thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
+    }
+    else if (parameters.getModelType() == Parameters::BERNOULLI) {
+        // write number of observations
+        outfile << "<td>" << static_cast<int>(thisCut.getN()) << "</td>";
+    }
+    // write cases in window or cases or observed cases, depending on settings
+    outfile << "<td>" << thisCut.getC() << "</td>";
+    outfile << "<td>" << getValueAsString(thisCut.getExpected(_scanRunner), buffer) << "</td>";
+    outfile << "<td>" << getValueAsString(thisCut.getRelativeRisk(_scanRunner), buffer) << "</td>";
+    outfile << "<td>" << getValueAsString(thisCut.getExcessCases(_scanRunner), buffer) << "</td>";
+    if (parameters.getReportAttributableRisk()) {
+        buffer = thisCut.getAttributableRiskAsString(_scanRunner, buffer);
+        outfile << "<td>" << buffer << "</td>";
+    }
+    outfile << "<td>" << printString(buffer, "%.6lf", calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood())).c_str() << "</td>";
+    // write p-value
+    if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/) {
+        outfile << "<td>" << printString(buffer, format.c_str(), (double)thisCut.getRank() / (parameters.getNumReplicationsRequested() + 1)) << "</td>";
+    }
+    outfile << "</tr>" << std::endl;
+    return outfile;
+}
+
 /* Convert the p-value to class name to be used in html/javascript. */
 const char * ResultsFileWriter::getPvalueClass(double pval, bool childClass) {
     if (pval <= 0.001)
@@ -691,57 +724,107 @@ const char * ResultsFileWriter::getRelativeRiskClass(double rr, bool childClass)
         return (childClass ? "rr-less-children " : "rr-less ");
 }
 
-ResultsFileWriter::BestCutSet_t ResultsFileWriter::writeJsTreeNode(std::ofstream & outfile, const NodeStructure& node, const std::map<int, const CutStructure*>& cutMap, int collapseAtLevel) {
-    std::string buffer;
-
+ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstream & outfile, const NodeStructure& node, const std::map<int, const CutStructure*>& cutMap, int collapseAtLevel) {
+    std::stringstream nodestream;
+    // Write header section to this nodestream.
+    std::string buffer(node.getIdentifier());
+    nodestream << "{ HTMLid: '" << stripNodeIdForHtml(buffer) << "', innerHTML: \"<ul><li><a data-toggle='tooltip' title='<ul><li class=" << buffer << ">";
     buffer = node.getIdentifier();
-    outfile << "{ HTMLid: '" << stripNodeIdForHtml(buffer) << "', innerHTML: \"<ul><li><a data-toggle='tooltip' title='<ul><li class=" << buffer << ">";
-    buffer = node.getIdentifier();
-    outfile << htmlencode(buffer) << "</li></ul>' data-html='true'>";
+    nodestream << htmlencode(buffer) << "</li></ul>' data-html='true'>";
     // Truncate identifier if longer than 25 characters -- so it can fit in node box outline.
     buffer = node.getIdentifier();
     if (buffer.size() > 25) {
         buffer.resize(25);
         buffer.resize(27, '.');
     }
-    outfile << htmlencode(buffer) << "</a></li>";
-
-    BestCutSet_t best_pval_rr(std::numeric_limits<double>::max(), -std::numeric_limits<double>::max());
+    nodestream << htmlencode(buffer) << "</a></li>";
+    // Add quick info in node that details the relative risk and p-value if there is a cut.
+    BestCutSet_t node_pval_rr(std::numeric_limits<double>::max(), -std::numeric_limits<double>::max());
     std::map<int, const CutStructure*>::const_iterator itr = cutMap.find(node.getID());
     if (itr != cutMap.end()) {
-        best_pval_rr.get<0>() = (double)itr->second->getRank() / (_scanRunner.getParameters().getNumReplicationsRequested() + 1);
-        best_pval_rr.get<1>() = itr->second->getRelativeRisk(_scanRunner);
-        outfile << "<li>Relative Risk: " << getValueAsString(best_pval_rr.get<1>(), buffer) << "</li><li>P-Value: ";
+        node_pval_rr.get<0>() = (double)itr->second->getRank() / (_scanRunner.getParameters().getNumReplicationsRequested() + 1);
+        node_pval_rr.get<1>() = itr->second->getRelativeRisk(_scanRunner);
+        nodestream << "<li>RR = " << getValueAsString(node_pval_rr.get<1>(), buffer) << ", p = ";
         std::string format, replicas;
         printString(replicas, "%u", _scanRunner.getParameters().getNumReplicationsRequested());
         printString(format, "%%.%dlf", replicas.size());
-        printString(buffer, format.c_str(), best_pval_rr.get<0>());
-        outfile << buffer << "</li>";
+        printString(buffer, format.c_str(), node_pval_rr.get<0>());
+        nodestream << buffer << "</li>";
     }
-    outfile << "</ul><div class='nbottom'></div>\"";
+    nodestream << "</ul><div class='nbottom'></div>\"";
 
+    // Create a stream for children nodes, if any.
     BestCutSet_t best_pval_rr_children(std::numeric_limits<double>::max(), -std::numeric_limits<double>::max());
+    std::stringstream childrenstream;
+    unsigned int children_count = 0;
     if (node.getChildren().size()) {
-        if (node.getLevel() >= collapseAtLevel) outfile << ", collapsed : true ";
-        outfile << ", children: [" << std::endl;
-        for (NodeStructure::RelationContainer_t::const_iterator itr = node.getChildren().begin(); itr != node.getChildren().end(); ++itr) {
-            BestCutSet_t test = writeJsTreeNode(outfile, *(*itr), cutMap, collapseAtLevel);
-            best_pval_rr_children.get<0>() = std::min(best_pval_rr_children.get<0>(), test.get<0>());
-            best_pval_rr_children.get<1>() = std::max(best_pval_rr_children.get<1>(), test.get<1>());
-            if (itr + 1 != node.getChildren().end()) outfile << ",";
+        unsigned int significantChildNodes = 0, significantBranches = 0;
+        std::vector<std::stringstream> childNodestreams(node.getChildren().size());
+        std::vector<NodeSet_t> childrenNodesets;
+        // Iterate over children recursively obtain branch stream and p-value/relative risk by node and best child.
+        std::vector<std::stringstream>::iterator itrStream = childNodestreams.begin();
+        // Copy the children and sort by identified.
+        NodeStructure::RelationContainer_t childrenCopy = node.getChildren();
+        std::sort(childrenCopy.begin(), childrenCopy.end(), CompareNodeStructureByIdentifier());
+        NodeStructure::RelationContainer_t::const_iterator itrChild = childrenCopy.begin();
+
+        for (; itrChild != childrenCopy.end(); ++itrChild, ++itrStream) {
+            childrenNodesets.push_back(writeJsTreeNode(*itrStream, *(*itrChild), cutMap, collapseAtLevel));
+            if (childrenNodesets.back().get<0>().get<0>() <= 0.05) {
+                ++significantChildNodes;
+                ++significantBranches;
+            } 
+            if (childrenNodesets.back().get<1>().get<0>() <= 0.05)
+                ++significantBranches;
         }
-        outfile << "]" << std::endl;
+        if (significantChildNodes > 0 || significantBranches > 0) {
+            // There exist significant child nodes and/or significant descendents, so we're including at least some children of this node.
+            if (node.getLevel() >= collapseAtLevel) childrenstream << ", collapsed : true ";
+            childrenstream << ", children: [" << std::endl;
+            if (significantChildNodes > 0) {
+                // Rule 1 - Include child node if it or one off it's siblings are significant. This means we're including all children if we're including one.
+                std::vector<NodeSet_t>::iterator itrNodeSets = childrenNodesets.begin();
+                for (itrStream = childNodestreams.begin(); itrStream != childNodestreams.end(); ++itrStream, ++itrNodeSets) {
+                    childrenstream << itrStream->str();
+                    if ((itrStream + 1) != childNodestreams.end()) childrenstream << ", ";
+                    best_pval_rr_children.get<0>() = std::min(best_pval_rr_children.get<0>(), itrNodeSets->get<0>().get<0>());
+                    best_pval_rr_children.get<0>() = std::min(best_pval_rr_children.get<0>(), itrNodeSets->get<1>().get<0>());
+                    best_pval_rr_children.get<1>() = std::max(best_pval_rr_children.get<1>(), itrNodeSets->get<0>().get<1>());
+                    best_pval_rr_children.get<1>() = std::max(best_pval_rr_children.get<1>(), itrNodeSets->get<1>().get<1>());
+                    ++children_count;
+                }
+            } else {
+                // Rule 2 - include child node if it or at least one descendent is significant.
+                std::vector<NodeSet_t>::iterator itrNodeSets = childrenNodesets.begin();
+                for (itrStream = childNodestreams.begin(); itrNodeSets != childrenNodesets.end(); ++itrNodeSets, ++itrStream) {
+                    if (itrNodeSets->get<0>().get<0>() <= 0.05 || itrNodeSets->get<1>().get<0>() <= 0.05) {
+                        if (children_count > 0) childrenstream << ",";
+                        childrenstream << (*itrStream).str();
+                        best_pval_rr_children.get<0>() = std::min(best_pval_rr_children.get<0>(), itrNodeSets->get<0>().get<0>());
+                        best_pval_rr_children.get<0>() = std::min(best_pval_rr_children.get<0>(), itrNodeSets->get<1>().get<0>());
+                        best_pval_rr_children.get<1>() = std::max(best_pval_rr_children.get<1>(), itrNodeSets->get<0>().get<1>());
+                        best_pval_rr_children.get<1>() = std::max(best_pval_rr_children.get<1>(), itrNodeSets->get<1>().get<1>());
+                        ++children_count;
+                    }
+                }
+            }
+
+            childrenstream << "]" << std::endl;
+        }
+
     }
+
+    // Write the node and children streams to caller's stream.
+    outfile << nodestream.str();
+    if (children_count > 0) outfile << childrenstream.str();
 
     // Get the class names for node relative risk and p-value. Do this for best child node as well.
-    buffer = getRelativeRiskClass(best_pval_rr.get<1>(), false);
-    buffer += getPvalueClass(best_pval_rr.get<0>(), false);
+    buffer = getRelativeRiskClass(node_pval_rr.get<1>(), false);
+    buffer += getPvalueClass(node_pval_rr.get<0>(), false);
     buffer += getRelativeRiskClass(best_pval_rr_children.get<1>(), true);
     buffer += getPvalueClass(best_pval_rr_children.get<0>(), true);
     outfile << ", HTMLclass: \"" << buffer << "\"" << "}" << std::endl;
 
-    // Now take the best relative risk and p-value to pass back to calling parent.
-    best_pval_rr.get<0>() = std::min(best_pval_rr_children.get<0>(), best_pval_rr.get<0>());
-    best_pval_rr.get<1>() = std::max(best_pval_rr_children.get<1>(), best_pval_rr.get<1>());
-    return best_pval_rr;
+    // Return the pairs for node and best child node separately.
+    return NodeSet_t(node_pval_rr, best_pval_rr_children);
 }
