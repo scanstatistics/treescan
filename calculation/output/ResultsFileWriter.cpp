@@ -547,7 +547,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
 
     if (canShowTreeGraph) {
         outfile << "<a class=\"btn btn-primary btn-sm\" id=\"show_tree\" data-toggle=\"collapse\" href=\"#collapseExample\" role=\"button\" aria-expanded=\"false\" aria-controls=\"collapseExample\">Tree Visualization</a>" << std::endl;
-        outfile << "<div class=\"collapse\" id=\"collapseExample\"><h3>Visualization of Analysis Tree  <span id=\"loading_graph\">... loading <i class=\"fa fa-circle-o-notch fa-spin\"></i></span><span id=\"fail_message\"></h3>";
+        outfile << "<div class=\"collapse\" id=\"collapseExample\"><h3>Visualization of Analysis Tree  <span id=\"loading_graph\">... loading <i class=\"fa fa-circle-o-notch fa-spin\"></i></span><span id=\"fail_message\"></span></h3>";
         outfile << "<div class=\"row\">" << std::endl;
 
         outfile << "<div class=\"col-2\"><div class=\"custom-control custom-radio\">" << std::endl;
@@ -563,8 +563,9 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "<div class='chart-legend legend-relative-risk'><div class='legend-title'>Relative Risk Legend</div><div class='legend-scale'>";
         outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span><span class=\"legend-val\">&le; 2</span></li><li><span style='background:#DBD51B;'></span><span class=\"legend-val\">2</span></li>";
         outfile << "<li><span style='background:#FFC300;'></span><span class=\"legend-val\">4</span></li><li><span style='background:#FF5733;'></span><span class=\"legend-val\">&ge; 8</span></li></ul></div></div></div>" << std::endl;
-        outfile << "<p style=\"font-style:italic; padding-left:15px; \">Selecting the circle in the upper right corner of each node will expand/collapse children under node. The color of circle indicates maximum p-value / relative risk found in children nodes.</p></div>" << std::endl;
-        outfile << "<div class=\"chart\" id=\"treescan-tree-visualization\" style=\"background-color: #EAEDED; border: 2px solid #566573; border-radius: 5px; padding:2px;\"> </div></div>" << std::endl;
+        outfile << "</div><div class=\"chart\" id=\"treescan-tree-visualization\" style=\"background-color: #EAEDED; border: 2px solid #566573; border-radius: 5px; padding:2px;\"> </div>" << std::endl;
+        outfile << "<div class=\"row\" style=\"font-style:italic; margin:5px 20px 10px 30px;font-size: 1.1em;\"><ol><li>Selecting the circle in the upper right corner of each node will expand/collapse children under node. The color of circle indicates best p-value &#47; relative risk found in children nodes.</li>";
+        outfile << "<li>The visualization tree only displays nodes with significant p-values (&le; 0.05). Siblings and ancestry to root are also displayed for significant nodes, regardless of their p-value.</li></ol></div></div>" << std::endl;
     }
 
     outfile << "<div class=\"hr\"></div>" << std::endl;
@@ -761,7 +762,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
         unsigned int significantChildNodes = 0, significantBranches = 0;
         std::vector<boost::shared_ptr<std::stringstream> > childNodestreams;
         for (size_t t = 0; t < node.getChildren().size(); ++t)
-            childNodestreams.push_back(boost::shared_ptr<std::stringstream>());
+            childNodestreams.push_back(boost::shared_ptr<std::stringstream>(new std::stringstream()));
         std::vector<NodeSet_t> childrenNodesets;
         // Iterate over children recursively obtain branch stream and p-value/relative risk by node and best child.
         std::vector<boost::shared_ptr<std::stringstream> >::iterator itrStream = childNodestreams.begin();
