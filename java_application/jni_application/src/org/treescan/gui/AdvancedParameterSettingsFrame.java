@@ -7,6 +7,8 @@ import java.awt.Font;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
@@ -419,6 +421,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         CheckInputSettings();
         CheckInferenceSettings();
         CheckTemporalWindowSize();
+        CheckAdjustmentSettings();
         CheckSequentialAnalysisSettings();
         CheckPowerEvaluationSettings();
         CheckAdditionalOutputOptions();
@@ -608,6 +611,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
+    /** Verifies that adjustment options are valid. */
+    private void CheckAdjustmentSettings() {
+        if (_apply_time_range_restrictions.isEnabled() && _apply_time_range_restrictions.isSelected()) {
+            if (_time_range_restrictions.getText().trim().length() == 0)
+                throw new AdvFeaturesExpection("Please specify a semi-colon separated list of ranges (e.g. [2,4];[7,20]).", FocusedTabSet.ANALYSIS, (Component)_time_range_restrictions);
+            if (!_time_range_restrictions.getText().trim().replace(" ", "").matches("^\\[-?\\d+,-?\\d+\\](;\\[-?\\d+,-?\\d+\\])*$"))
+                throw new AdvFeaturesExpection("Not a valid semi-colon separated list of ranges (e.g. [2,4];[7,20]).", FocusedTabSet.ANALYSIS, (Component)_time_range_restrictions);
+        }
+    }
+            
+    
     /**
      * enables or disables the advanced inputs group controls.
      */

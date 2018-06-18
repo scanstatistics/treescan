@@ -10,6 +10,7 @@
 
 DataTimeRange DataTimeRange::parse(const std::string& from) {
     std::string val = from;
+    val.erase(std::remove(val.begin(), val.end(), ' '), val.end());
     trimString(val, "[");
     trimString(val, "]");
 
@@ -23,11 +24,11 @@ DataTimeRange DataTimeRange::parse(const std::string& from) {
          }
     }
     if  (values.size() != 2) {
-        throw prg_exception("Range must be defined by two indices, got %u.","parse()", values.size());
+        throw prg_exception("Range must be defined by two indices, got %d.","parse()", values.size());
     }
     DataTimeRange time_range(values.front(), values.back());
     if  (time_range.getStart() > time_range.getEnd()) {
-        throw prg_exception("Range start index must be before or on the end index, got [%u,%u].","parse()", time_range.getStart(), time_range.getEnd());
+        throw prg_exception("Range start index must be before or on the end index, got [%d,%d].","parse()", time_range.getStart(), time_range.getEnd());
     }
     return time_range;
 }

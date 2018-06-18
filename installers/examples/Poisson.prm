@@ -7,11 +7,11 @@ probability-model=0
 conditional-type=1
 ;self control design - unconditional Bernoulli only (y/n)
 self-control-design=n
-;case probability (integer / integer)
+;case probability (integer/integer)
 event-probability=1/2
-;start data time range (integer - integer)
+;start data time range: [integer,integer]
 window-start-range=[0,0]
-;end data time range (integer - integer)
+;end data time range: [integer,integer]
 window-end-range=[0,0]
 
 [Input]
@@ -19,7 +19,7 @@ window-end-range=[0,0]
 tree-filename=tree.tre
 ;count data filename
 count-filename=Poisson.cas
-;data time ranges (integer - integer)
+;data time ranges: [integer,integer]
 data-time-range=[0,0]
 
 [Output]
@@ -35,6 +35,12 @@ results-csv=n
 cut-filename=
 ;default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)
 cut-type=0
+;minimum censor time (2 <= x)
+minimum-censor-time=50
+;minimum censor time percentage of study period (0 < x <= 100.0)
+min-censor-percentage=10
+;risk window alternative censor denominator (integer)
+risk-window-alt-censor-denominator=2
 
 [Temporal Window]
 ;maximum temporal size as percentage of data time range (0 < x <= 50.0)
@@ -53,6 +59,10 @@ risk-window-percentage=50
 [Adjustments]
 ;perform day of week adjustments (y/n)
 perform-day-of-week-adjustments=n
+;apply exclusion time ranges (y/n)
+apply-exclusion-data-ranges=n
+;exclusion time ranges (semi-colon separated list of ranges: [integer,integer];[integer,integer])
+exclusion-data-ranges=
 
 [Inference]
 ;number of simulation replications (0, 9, 999, n999)
@@ -95,7 +105,7 @@ power-evaluation-totalcases=600
 power-evaluation-replications=1000
 ;power evaluation alternative hypothesis filename
 alternative-hypothesis-filename=
-;power baseline probability (integer / integer)
+;power baseline probability (integer/integer)
 baseline-probability=1/2
 ;power z value (0 < z <= 0.01)
 power-z=0.001

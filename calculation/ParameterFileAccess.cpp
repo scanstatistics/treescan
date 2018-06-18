@@ -45,7 +45,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             /* Input */
             case Parameters::TREE_FILE               : return "tree structure filename";
             case Parameters::COUNT_FILE              : return "count data filename";
-            case Parameters::DATA_TIME_RANGES        : return "data time ranges (integer - integer)";
+            case Parameters::DATA_TIME_RANGES        : return "data time ranges: [integer,integer]";
             /* Advanced Input */
             case Parameters::CUT_FILE                : return "cuts filename";
             case Parameters::CUT_TYPE                : return "default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)";
@@ -59,11 +59,11 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::CONDITIONAL_TYPE        : return "conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)";
             case Parameters::MODEL_TYPE              : return "probability model type (POISSON=0, BERNOULLI=1, UNIFORM=2, Not-Applicable=3)";
             case Parameters::SELF_CONTROL_DESIGN     : return "self control design - unconditional Bernoulli only (y/n)";
-            case Parameters::EVENT_PROBABILITY       : return "case probability (integer / integer)";
+            case Parameters::EVENT_PROBABILITY       : return "case probability (integer/integer)";
             case Parameters::SEQUENTIAL_SCAN         : return "perform sequential scan - time-only scan (y/n)";
             case Parameters::SEQUENTIAL_MAX_SIGNAL   : return "sequential scan maximum cases for signal (integer)";
-            case Parameters::START_DATA_TIME_RANGE   : return "start data time range (integer - integer)";
-            case Parameters::END_DATA_TIME_RANGE     : return "end data time range (integer - integer)";
+            case Parameters::START_DATA_TIME_RANGE   : return "start data time range: [integer,integer]";
+            case Parameters::END_DATA_TIME_RANGE     : return "end data time range: [integer,integer]";
             /* Advanced Analysis - Temporal Window */
             case Parameters::MAXIMUM_WINDOW_PERCENTAGE : return "maximum temporal size as percentage of data time range (0 < x <= 50.0)";
             case Parameters::MAXIMUM_WINDOW_FIXED    : return "maximum temporal size as fixed time length (integer)";
@@ -74,7 +74,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             /* Advanced Analysis - Adjustments */
             case Parameters::DAYOFWEEK_ADJUSTMENT    : return "perform day of week adjustments (y/n)";
             case Parameters::APPLY_EXCLUSION_RANGES  : return "apply exclusion time ranges (y/n)";
-            case Parameters::EXCLUSION_RANGES        : return "exclusion time ranges (comma separated list of: integer - integer)";
+            case Parameters::EXCLUSION_RANGES: return "exclusion time ranges (semi-colon separated list of ranges: [integer,integer];[integer,integer])";
                 /* Advanced Analysis - Inference */
             case Parameters::REPLICATIONS            : return "number of simulation replications (0, 9, 999, n999)";
             case Parameters::RANDOMIZATION_SEED      : return "randomization seed (integer)";
@@ -100,7 +100,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::POWER_EVALUATION_TOTALCASES : return "total cases in power evaluation (integer)";
             case Parameters::POWER_EVALUATIONS_REPLICA : return "number of replications in power step (integer)";
             case Parameters::POWER_EVALUATIONS_FILE : return "power evaluation alternative hypothesis filename";
-            case Parameters::POWER_BASELINE_PROBABILITY : return "power baseline probability (integer / integer)";
+            case Parameters::POWER_BASELINE_PROBABILITY : return "power baseline probability (integer/integer)";
             case Parameters::POWER_Z                 : return "power z value (0 < z <= 0.01)";
                 /* Power Simulations */
             case Parameters::READ_SIMULATIONS        : return "input simulation data (y/n)";

@@ -73,9 +73,9 @@ bool ParametersValidate::ValidateAdjustmentsParameters(BasePrint & PrintDirectio
         }
         // Validate each exclusion range.
         for (DataTimeRangeSet::rangeset_t::const_iterator itrOuter = exclusionSets.begin(); itrOuter != exclusionSets.end(); ++itrOuter) {
-            if (itrOuter->getStart() >= itrOuter->getEnd()) {
+            if (itrOuter->getStart() > itrOuter->getEnd()) {
                 bValid = false;
-                PrintDirection.Printf("The exclusion time range start '%d' must be before the data time range end '%d'.\n",
+                PrintDirection.Printf("The exclusion time range start '%d' must be before or equal the data time range end '%d'.\n",
                                       BasePrint::P_PARAMERROR, itrOuter->getStart(), itrOuter->getEnd());
             }
             // Validate that the exclusion time ranges are within the user defined data time range.
