@@ -274,6 +274,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setPowerBaselineProbabilityRatioDenominator(Integer.parseInt(this._eventProbabiltyDenominator.getText()));
         
         // Seqential Analysis tab
+        parameters.setSequentialScan(false);
         /* Not exposed in gui: https://www.squishlist.com/ims/treescan/62/
         parameters.setSequentialScan(_sequential_analysis_group.isEnabled() && _perform_sequential_scan.isSelected());
         parameters.setSequentialMaximumSignal(Integer.parseInt(_maximum_cases_signal.getText()));
