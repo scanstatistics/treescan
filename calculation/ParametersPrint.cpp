@@ -137,13 +137,6 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdvancedInputParameter
         for (Parameters::FileNameContainer_t::const_iterator itr=_parameters.getTreeFileNames().begin()+1; itr != _parameters.getTreeFileNames().end(); ++itr)
             settings.push_back(std::make_pair("Tree File", *itr));
     }
-    if (_parameters.isTemporalScanType(_parameters.getScanType())) {
-        settings.push_back(std::make_pair("Apply Risk Window Restriction", (_parameters.isApplyingRiskWindowRestriction() ? "Yes" : "No")));
-        if (_parameters.isApplyingRiskWindowRestriction()) {
-            printString(buffer, "Restrict Risk Window to %g%%", _parameters.getRiskWindowPercentage());
-            settings.push_back(std::make_pair("Maximum Temporal Window", buffer));
-        }
-    }
     return settings;
 }
 
@@ -358,9 +351,9 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getSystemParameters(Setti
 
 /** Prints 'Temporal Window' tab parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParameters(SettingContainer_t & settings) const {
+    std::string buffer;
     settings.clear();
     if (_parameters.getScanType() == Parameters::TREETIME) {
-        std::string buffer;
         switch (_parameters.getMaximumWindowType()) {
             case Parameters::PERCENTAGE_WINDOW :
                 printString(buffer, "%g%% of Data Time Range", _parameters.getMaximumWindowPercentage());
@@ -374,6 +367,13 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParamete
         }
         printString(buffer, "%u Time Units", _parameters.getMinimumWindowLength());
         settings.push_back(std::make_pair("Minimum Temporal Window",buffer));
+    }
+    if (_parameters.isTemporalScanType(_parameters.getScanType())) {
+        settings.push_back(std::make_pair("Apply Risk Window Restriction", (_parameters.isApplyingRiskWindowRestriction() ? "Yes" : "No")));
+        if (_parameters.isApplyingRiskWindowRestriction()) {
+            printString(buffer, "Restrict Risk Window to %g%%", _parameters.getRiskWindowPercentage());
+            settings.push_back(std::make_pair("Maximum Temporal Window", buffer));
+        }
     }
     return settings;
 }

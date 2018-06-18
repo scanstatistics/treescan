@@ -1071,7 +1071,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _risk_window_percentage.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 if (_risk_window_percentage.getText().length() > 0) {
-                    Utils.validatePostiveNumericKeyTyped(_risk_window_percentage, e, 5);
+                    Utils.validatePostiveFloatKeyTyped(_risk_window_percentage, e, 5);
                 }
             }
         });

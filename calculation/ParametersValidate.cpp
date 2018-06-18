@@ -227,7 +227,7 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
             }
         }
         if (_parameters.isTemporalScanType(_parameters.getScanType()) && _parameters.isApplyingRiskWindowRestriction()) {
-            if (_parameters.getRiskWindowPercentage() <= 0.0 || _parameters.getMaximumWindowPercentage() > 100.0) {
+            if (_parameters.getRiskWindowPercentage() <= 0.0 || _parameters.getRiskWindowPercentage() > 100.0) {
                 bValid = false;
                 PrintDirection.Printf("Invalid Parameter Setting:\nThe risk window percentage must be greater than zero and less than or equal to 100.\n", BasePrint::P_PARAMERROR);
             }
