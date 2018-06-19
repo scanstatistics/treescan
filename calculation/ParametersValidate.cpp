@@ -245,6 +245,10 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                 bValid = false;
                 PrintDirection.Printf("Invalid Parameter Setting:\nForced censored algorithm is not permitted with sequential scan.\n", BasePrint::P_PARAMERROR);
             }
+            if (_parameters.getPerformPowerEvaluations()) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nForced censored algorithm is not permitted with power evaluations.\n", BasePrint::P_PARAMERROR);
+            }
         }
         if (_parameters.getMinimumCensorTime() < 2) {
             bValid = false;

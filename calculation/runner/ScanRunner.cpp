@@ -706,6 +706,8 @@ bool ScanRunner::readCounts(const std::string& filename) {
                             throw resolvable_error("Error: The day of week adjustment is not implemented for censored data.");
                         if (_parameters.isSequentialScan())
                             throw resolvable_error("Error: The sequential scan is not implemented for censored data.");
+                        if (_parameters.getPerformPowerEvaluations())
+                            throw resolvable_error("Error: The power evaluations option is not implemented for censored data.");
                         // Now mark the parameter settings to say that this data set has censored data.
                         _censored_data = true;
                         // Note the censored case in the censored data array for this node.
