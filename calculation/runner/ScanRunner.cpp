@@ -928,9 +928,11 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
             _Cut.erase(itrTemp, _Cut.end());
         }
 
-        // Sort by ancestry string --- this is the order we want to report in html and csv output files.
-        std::sort(_Cut.begin(), _Cut.end(), CompareCutsByAncestoryString(*this));
-        /* Now anything that iterates over the cuts will use the ancestry ordering -- HTML file and CSV table. */
+        if (_parameters.getScanType() != Parameters::TIMEONLY) {
+            // Sort by ancestry string --- this is the order we want to report in html and csv output files.
+            std::sort(_Cut.begin(), _Cut.end(), CompareCutsByAncestoryString(*this));
+            /* Now anything that iterates over the cuts will use the ancestry ordering -- HTML file and CSV table. */
+        }
     }
 
     if (_parameters.isGeneratingHtmlResults()) {
@@ -942,7 +944,7 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
     if (_parameters.isGeneratingTableResults()) {
         unsigned int k=0;
         CutsRecordWriter cutsWriter(*this);
-        while (k < getCuts().size() && reportableCut(*getCuts()[k])) {
+        while (k < getCuts().size()) {
             cutsWriter.write(k);
             k++;
         }

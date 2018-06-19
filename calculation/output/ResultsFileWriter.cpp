@@ -136,6 +136,8 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
             ScanRunner::CutStructureContainer_t::const_iterator itrCuts = _scanRunner.getCuts().begin(), itrCutsEnd = _scanRunner.getCuts().end();
             for (; itrCuts != itrCutsEnd; ++itrCuts) {
                 CutStructure& thisCut = *(*itrCuts);
+                if (!_scanRunner.reportableCut(thisCut))
+                    break;
                 const NodeStructure& thisNode = *(_scanRunner.getNodes()[thisCut.getID()]);
                 PrintFormat.SetMarginsAsCutSection( k + 1);
                 outfile << k + 1 << ")";
@@ -561,11 +563,11 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span><span class=\"legend-val\">&gt; 0.05</span></li><li><span style='background:#DBD51B;'></span><span class=\"legend-val\">0.05</span></li>";
         outfile << "<li><span style='background:#FFC300;'></span><span class=\"legend-val\">0.01</span></li><li><span style='background:#FF5733;'></span><span class=\"legend-val\">0.001</span></li></ul></div></div>" << std::endl;
         outfile << "<div class='chart-legend legend-relative-risk'><div class='legend-title'>Relative Risk Legend</div><div class='legend-scale'>";
-        outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span><span class=\"legend-val\">&le; 2</span></li><li><span style='background:#DBD51B;'></span><span class=\"legend-val\">2</span></li>";
+        outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span><span class=\"legend-val\">&lt; 2</span></li><li><span style='background:#DBD51B;'></span><span class=\"legend-val\">2</span></li>";
         outfile << "<li><span style='background:#FFC300;'></span><span class=\"legend-val\">4</span></li><li><span style='background:#FF5733;'></span><span class=\"legend-val\">&ge; 8</span></li></ul></div></div></div>" << std::endl;
         outfile << "</div><div class=\"chart\" id=\"treescan-tree-visualization\" style=\"background-color: #EAEDED; border: 2px solid #566573; border-radius: 5px; padding:2px;\"> </div>" << std::endl;
-        outfile << "<div class=\"row\" style=\"font-style:italic; margin:5px 20px 10px 30px;font-size: 1.1em;\"><ol><li>Selecting the circle in the upper right corner of each node will expand/collapse children under node. The color of circle indicates best p-value &#47; relative risk found in children nodes.</li>";
-        outfile << "<li>The visualization tree only displays nodes with significant p-values (&le; 0.05). Siblings and ancestry to root are also displayed for significant nodes, regardless of their p-value.</li></ol></div></div>" << std::endl;
+        outfile << "<div class=\"row\" style=\"font-style:italic; margin:5px 20px 10px 30px;font-size: 1.1em;\"><ol><li>Selecting the circle in the upper right corner of each node will expand/collapse children under node. The color of circle indicates best p-value &#47; relative risk found in descendent nodes.</li>";
+        outfile << "<li>The visualization tree displays nodes with significant p-values (&le; 0.05). Siblings and ancestry to root are also displayed for significant nodes, regardless of their p-value.</li></ol></div></div>" << std::endl;
     }
 
     outfile << "<div class=\"hr\"></div>" << std::endl;

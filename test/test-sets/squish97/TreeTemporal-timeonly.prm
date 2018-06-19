@@ -35,6 +35,12 @@ results-csv=n
 cut-filename=
 ;default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)
 cut-type=0
+;minimum censor time (2 <= x)
+minimum-censor-time=10
+;minimum censor time percentage of study period (0 < x <= 100.0)
+min-censor-percentage=10
+;risk window alternative censor denominator (integer)
+risk-window-alt-censor-denominator=2
 
 [Temporal Window]
 ;maximum temporal size as percentage of data time range (0 < x <= 50.0)
@@ -45,10 +51,18 @@ maximum-window-fixed=1
 maximum-window-type=0
 ;minimum temporal size as fixed time length (integer)
 minimum-window-fixed=2
+;apply risk window restriction - (y/n)
+apply-risk-window-restriction=n
+;risk window percentage (0 < x <= 100.0)
+risk-window-percentage=50
 
 [Adjustments]
 ;perform day of week adjustments (y/n)
 perform-day-of-week-adjustments=n
+;apply exclusion time ranges (y/n)
+apply-exclusion-data-ranges=n
+;exclusion time ranges (semi-colon separated list of ranges: [integer,integer];[integer,integer])
+exclusion-data-ranges=
 
 [Inference]
 ;number of simulation replications (0, 9, 999, n999)

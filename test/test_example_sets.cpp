@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE( test_poisson_conditional ) {
 
         BOOST_CHECK_EQUAL( cut_num, dataRows );
         switch (dataRows) {
-            case 1 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf9" );
+            case 6 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf9" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(14) );
                      BOOST_CHECK_CLOSE( expected, 2.68, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 6.66, 0.001 );
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE( test_poisson_conditional ) {
                      BOOST_CHECK_CLOSE( ar, 0.059, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 13.136308, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.0001, 0.0001 ); break;
-            case 2 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node3" );
+            case 3 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node3" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(33) );
                      BOOST_CHECK_CLOSE( expected, 16.1, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 3.63, 0.001 );
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE( test_poisson_conditional ) {
                      BOOST_CHECK_CLOSE( ar, 0.12, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 11.148394, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.0001, 0.0001 ); break;
-            case 5 :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf4" );
+            case 1 :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf4" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(6) );
                      BOOST_CHECK_CLOSE( expected, 2.68, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 2.39, 0.001 );
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE( test_poisson_conditional ) {
                      BOOST_CHECK_CLOSE( ar, 0.017, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 1.619486, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.4879, 0.0001 ); break;
-            case 6 :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf8" );
+            case 5 :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf8" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(9) );
                      BOOST_CHECK_CLOSE( expected, 5.37, 0.001 );
                      BOOST_CHECK_CLOSE( rr, 1.81, 0.001 );
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
 
         BOOST_CHECK_EQUAL( cut_num, dataRows );
         switch (dataRows) {
-            case 1 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node3" );
+            case 6 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node3" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(45) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(33) );
                      BOOST_CHECK_CLOSE( expected, 22.5, 0.001 );
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
                      BOOST_CHECK_CLOSE( ar, 0.052, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 5.09544, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.008, 0.0001 ); break;
-            case 2 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf9" );
+            case 9 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf9" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(16) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(14) );
                      BOOST_CHECK_CLOSE( expected, 8.00, 0.001 );
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
                      BOOST_CHECK_CLOSE( ar, 0.03, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 5.062032, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.01, 0.0001 ); break;
-            case 8  :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node2" );
+            case 2  :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node2" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(30) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(17) );
                      BOOST_CHECK_CLOSE( expected, 15.0, 0.001 );
@@ -217,7 +217,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
                      BOOST_CHECK_CLOSE( ar, 0.01, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 0.267462, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.956, 0.0001 ); break;
-            case 9  :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf5" );
+            case 4  :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf5" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(7) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(4) );
                      BOOST_CHECK_CLOSE( expected, 3.5, 0.001 );
@@ -287,7 +287,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
 
         BOOST_CHECK_EQUAL( cut_num, dataRows );
         switch (dataRows) {
-            case 1 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node3" );
+            case 3 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node3" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(45) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(33) );
                      BOOST_CHECK_CLOSE( expected, 25.78, 0.001 );
@@ -296,7 +296,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
                      BOOST_CHECK_CLOSE( ar, 0.068, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 4.55287, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.031, 0.0001 ); break;
-            case 2 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf9" );
+            case 6 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf9" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(16) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(14) );
                      BOOST_CHECK_CLOSE( expected, 9.17, 0.001 );
@@ -305,7 +305,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
                      BOOST_CHECK_CLOSE( ar, 0.029, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 4.062552, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.076, 0.0001 ); break;
-            case 5 :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf4" );
+            case 1 :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf4" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(8) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(6) );
                      BOOST_CHECK_CLOSE( expected, 4.58, 0.001 );
@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
                      BOOST_CHECK_CLOSE( ar, 0.0077, 0.00001 );
                      BOOST_CHECK_CLOSE( llr, 0.591424, 0.00001 );
                      BOOST_CHECK_CLOSE( p_value, 0.937, 0.0001 ); break;
-            case 6 :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf8" );
+            case 5 :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf8" );
                      BOOST_CHECK_EQUAL( observed, static_cast<unsigned int>(13) );
                      BOOST_CHECK_EQUAL( cases, static_cast<unsigned int>(9) );
                      BOOST_CHECK_CLOSE( expected, 7.45, 0.001 );
@@ -394,7 +394,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
 
         BOOST_CHECK_EQUAL( cut_num, dataRows );
         switch (dataRows) {
-            case 1 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node3" );
+            case 9 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node3" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(46) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(4) );
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(5) );
@@ -405,7 +405,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
                       BOOST_CHECK_CLOSE( ar, 0.095, 0.00001 );
                       BOOST_CHECK_CLOSE( llr, 25.562266, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.001, 0.0001 ); break;
-            case 2 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Root" );
+            case 1 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Root" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(97) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(2) );
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(7) );
@@ -416,7 +416,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
                       BOOST_CHECK_CLOSE( ar, 0.2, 0.00001 );
                       BOOST_CHECK_CLOSE( llr, 23.972955, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.001, 0.0001 ); break;
-            case 12 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf2" );
+            case 3  : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf2" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(5) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(6) );
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(7) );
@@ -427,7 +427,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
                       BOOST_CHECK_CLOSE( ar, 0.0088, 0.00001 );
                       BOOST_CHECK_CLOSE( llr, 2.13538, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.998, 0.0001 ); break;
-            case 13 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf7" );
+            case 7  : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf7" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(11) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(6) );
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(7) );
@@ -516,7 +516,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
                       BOOST_CHECK_CLOSE( ar, 0.21, 0.001 );
                       BOOST_CHECK_CLOSE( teststat, 24.422872, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.001, 0.0001 ); break;
-            case 2 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node3" );
+            case 9 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node3" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(46) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(4) );
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(5) );
@@ -527,7 +527,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
                       BOOST_CHECK_CLOSE( ar, 0.093, 0.001 );
                       BOOST_CHECK_CLOSE( teststat, 19.874551, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.001, 0.0001 ); break;
-            case 12  :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf2" );
+            case 3   :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf2" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(5) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(7) );
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(8) );
@@ -538,7 +538,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
                       BOOST_CHECK_CLOSE( ar, 0.009, 0.001 );
                       BOOST_CHECK_CLOSE( teststat, 2.015681, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.97, 0.0001 ); break;
-            case 13  :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf7" );
+            case 7   :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf7" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(11) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(6) );
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(7) );
@@ -614,7 +614,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
 
         BOOST_CHECK_EQUAL( cut_num, dataRows );
         switch (dataRows) {
-            case 1 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node3" );
+            case 6 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node3" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(46) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(4) );
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(5) );
@@ -625,7 +625,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
                       BOOST_CHECK_CLOSE( excess, 20.5, 0.001 );
                       BOOST_CHECK_CLOSE( teststat, 4.796446, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.021, 0.0001 ); break;
-            case 2 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf5" );
+            case 3 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf5" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(7) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(2) );
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(3) );
@@ -636,7 +636,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
                       BOOST_CHECK_CLOSE( ar, 0.018, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 3.038383, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.363, 0.0001 ); break;
-            case 9 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf3" );
+            case 1 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf3" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(4) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(12) );
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(17) );
@@ -647,7 +647,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
                       BOOST_CHECK_CLOSE( ar, 0.0087, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 1.433396, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.997, 0.0001 ); break;
-            case 10 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node2" );
+            case 2  : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node2" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(30) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(1) );
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(3) );
@@ -724,7 +724,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
 
         BOOST_CHECK_EQUAL( cut_num, dataRows );
         switch (dataRows) {
-            case 1 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf5" );
+            case 2 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf5" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(7) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(8) );
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(11) );
@@ -735,7 +735,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
                       BOOST_CHECK_CLOSE( ar, 0.009, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 2.312096, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.384, 0.0001 ); break;
-            case 2 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf11" );
+            case 6 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf11" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(7) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(14) );
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(17) );
@@ -746,7 +746,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
                       BOOST_CHECK_CLOSE( ar, 0.0089, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 2.12392, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.504, 0.0001 ); break;
-            case 8  : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf3" );
+            case 1  : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf3" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(4) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(11) );
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(12) );
@@ -757,7 +757,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
                       BOOST_CHECK_CLOSE( ar, 0.0044, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 1.029356, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.981, 0.0001 ); break;
-            case 9  : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf7" );
+            case 4  : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf7" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(11) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(9) );
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(13) );

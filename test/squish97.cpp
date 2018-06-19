@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE( test_treetime_censored ) {
 
         BOOST_CHECK_EQUAL(cut_num, dataRows);
         switch (dataRows) {
-        case 1: BOOST_CHECK_EQUAL(data.at(std::distance(headers.begin(), itrNodeId)), "Node3");
+        case 9: BOOST_CHECK_EQUAL(data.at(std::distance(headers.begin(), itrNodeId)), "Node3");
             BOOST_CHECK_EQUAL(treelevel, static_cast<unsigned int>(3));
             BOOST_CHECK_EQUAL(nodecases, static_cast<unsigned int>(46));
             BOOST_CHECK_EQUAL(wndstart, static_cast<unsigned int>(4));
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE( test_treetime_censored ) {
             BOOST_CHECK_CLOSE(ar, 0.095, 0.00001);
             BOOST_CHECK_CLOSE(llr, 25.562266, 0.00001);
             BOOST_CHECK_CLOSE(p_value, 0.001, 0.0001); break;
-        case 2: BOOST_CHECK_EQUAL(data.at(std::distance(headers.begin(), itrNodeId)), "Node6");
+        case 8: BOOST_CHECK_EQUAL(data.at(std::distance(headers.begin(), itrNodeId)), "Node6");
             BOOST_CHECK_EQUAL(treelevel, static_cast<unsigned int>(2));
             BOOST_CHECK_EQUAL(nodecases, static_cast<unsigned int>(55));
             BOOST_CHECK_EQUAL(wndstart, static_cast<unsigned int>(4));
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE( test_treetime_censored ) {
             BOOST_CHECK_CLOSE(ar, 0.12, 0.00001);
             BOOST_CHECK_CLOSE(llr, 22.398076, 0.00001);
             BOOST_CHECK_CLOSE(p_value, 0.001, 0.0001); break;
-        case 3: BOOST_CHECK_EQUAL(data.at(std::distance(headers.begin(), itrNodeId)), "Root");
+        case 1: BOOST_CHECK_EQUAL(data.at(std::distance(headers.begin(), itrNodeId)), "Root");
             BOOST_CHECK_EQUAL(treelevel, static_cast<unsigned int>(1));
             BOOST_CHECK_EQUAL(nodecases, static_cast<unsigned int>(98));
             BOOST_CHECK_EQUAL(wndstart, static_cast<unsigned int>(2));
@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE(test_timeonly_censored) {
         }
         getCSVRow(stream, data);
     }
-    if (dataRows != 16) BOOST_FAIL("expecting 16 data rows, got " << dataRows);
+    if (dataRows != 11) BOOST_FAIL("expecting 11 data rows, got " << dataRows);
     stream.close();
 }
 
