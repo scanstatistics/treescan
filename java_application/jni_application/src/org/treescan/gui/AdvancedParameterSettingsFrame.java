@@ -147,35 +147,33 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (Integer.parseInt(_montCarloReplicationsTextField.getText()) == 999);
         bReturn &= (_restrict_evaluated_levels.isSelected() == false);
         bReturn &= _restricted_levels.getText().equals("");
-        
+        // Temporal Window tab
         bReturn &= _percentageTemporalRadioButton.isSelected();
         bReturn &= (Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 50.0);
         bReturn &= (Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()) == 1);
-        bReturn &= (Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()) == 2);        
+        bReturn &= (Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()) == 2);
+        bReturn &= (_apply_risk_window_restriction.isSelected() == true);
+        bReturn &= (Double.parseDouble(_risk_window_percentage.getText()) == 20.0);       
         // Sequential Scan tab
         bReturn &= (_perform_sequential_scan.isSelected() == false);
         bReturn &= _maximum_cases_signal.getText().equals("200");
         bReturn &= _minimum_cases_signal.getText().equals("3");
         bReturn &= _sequential_analysis_file.getText().equals("");
-        
         // Power Evaluations tab
         bReturn &= (_performPowerEvaluations.isSelected() == false);
         bReturn &= (_partOfRegularAnalysis.isSelected() == true);
         bReturn &= _totalPowerCases.getText().equals("600");
         bReturn &= _alternativeHypothesisFilename.getText().equals("");
         bReturn &= _numberPowerReplications.getText().equals("1000");
-        
         // Adjustments tab
         bReturn &= _perform_dayofweek_adjustments.isSelected() == false;
         bReturn &= _apply_time_range_restrictions.isSelected() == false;
-        bReturn &= _time_range_restrictions.getText().equals("");
-        
+        bReturn &= _time_range_restrictions.getText().equals("");        
         return bReturn;
     }
 
     public boolean getDefaultsSetForOutputOptions() {
-        boolean bReturn = true;
-        
+        boolean bReturn = true;        
         bReturn &= _reportLLRResultsAsCsvTable.isSelected() == false;
         bReturn &= _reportCriticalValuesCheckBox.isSelected() == false;
         bReturn &= _chk_rpt_attributable_risk.isSelected() == false;
@@ -314,8 +312,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     private void setDefaultsForInputTab() {
         _cutFileTextField.setText("");
-        _apply_risk_window_restriction.setSelected(false);
-        _risk_window_percentage.setText("50");
     }
 
     /**
@@ -327,11 +323,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _montCarloReplicationsTextField.setText("999");
         _restrict_evaluated_levels.setSelected(false);
         _restricted_levels.setText("");
-        
+        // Temporal Window tab
         _percentageTemporalRadioButton.setSelected(true);
         _maxTemporalClusterSizeTextField.setText("50");
         _maxTemporalClusterSizeUnitsTextField.setText("1");
         _minTemporalClusterSizeUnitsTextField.setText("2");
+        _apply_risk_window_restriction.setSelected(true);
+        _risk_window_percentage.setText("20");        
         // Adjustments tab
         _perform_dayofweek_adjustments.setSelected(false);
         _apply_time_range_restrictions.setSelected(false);
@@ -1043,6 +1041,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _risk_window_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Risk Window"));
 
+        _apply_risk_window_restriction.setSelected(true);
         _apply_risk_window_restriction.setText("Restriction risk windows to");
         _apply_risk_window_restriction.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -1055,6 +1054,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _apply_risk_window_restrictionActionPerformed(evt);
             }
         });
+
+        _risk_window_percentage.setText("20");
 
         _risk_window_percentage.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {

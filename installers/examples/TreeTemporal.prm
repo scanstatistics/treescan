@@ -54,9 +54,9 @@ maximum-window-type=0
 ;minimum temporal size as fixed time length (integer)
 minimum-window-fixed=2
 ;apply risk window restriction - (y/n)
-apply-risk-window-restriction=n
+apply-risk-window-restriction=y
 ;risk window percentage (0 < x <= 100.0)
-risk-window-percentage=50
+risk-window-percentage=20
 
 [Adjustments]
 ;perform day of week adjustments (y/n)

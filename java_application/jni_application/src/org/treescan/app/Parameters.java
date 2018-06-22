@@ -72,8 +72,8 @@ public class Parameters implements Cloneable {
     private int _sequential_min_signal=3;
     private int _sequential_max_signal=200;
     private String _sequential_file="";
-    private boolean _apply_risk_window_restriction=false;
-    private double _risk_window_percentage=50.0;
+    private boolean _apply_risk_window_restriction=true;
+    private double _risk_window_percentage=20.0;
     private boolean _apply_exclusion_ranges=false;
     private String _exclusion_time_ranges="";
     

@@ -345,6 +345,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
     _parameters.setPrintColumnHeaders(true);
     _parameters.setReportAttributableRisk(true);
     _parameters.setAttributableRiskExposed(200);
+    _parameters.setApplyingRiskWindowRestriction(false);
 
     BOOST_REQUIRE_EQUAL( ParametersValidate(_parameters).Validate(_print), true );
 
@@ -456,6 +457,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
     _parameters.setPrintColumnHeaders(true);
     _parameters.setReportAttributableRisk(true);
     _parameters.setAttributableRiskExposed(200);
+    _parameters.setApplyingRiskWindowRestriction(false);
 
     BOOST_REQUIRE_EQUAL( ParametersValidate(_parameters).Validate(_print), true );
 
@@ -565,6 +567,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
     _parameters.setPrintColumnHeaders(true);
     _parameters.setReportAttributableRisk(true);
     _parameters.setAttributableRiskExposed(200);
+    _parameters.setApplyingRiskWindowRestriction(false);
 
     BOOST_REQUIRE_EQUAL( ParametersValidate(_parameters).Validate(_print), true );
 
@@ -675,6 +678,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
     _parameters.setPrintColumnHeaders(true);
     _parameters.setReportAttributableRisk(true);
     _parameters.setAttributableRiskExposed(200);
+    _parameters.setApplyingRiskWindowRestriction(false);
 
     BOOST_REQUIRE_EQUAL( ParametersValidate(_parameters).Validate(_print), true );
 
@@ -791,6 +795,7 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases ) {
     _parameters.setPerformDayOfWeekAdjustment(false);
     _parameters.setReportAttributableRisk(true);
     _parameters.setAttributableRiskExposed(200);
+    _parameters.setApplyingRiskWindowRestriction(false);
 
     BOOST_REQUIRE_EQUAL( ParametersValidate(_parameters).Validate(_print), true );
 
@@ -880,6 +885,7 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases_day_of_week_adjustment
     _parameters.setPerformDayOfWeekAdjustment(true);
     _parameters.setReportAttributableRisk(true);
     _parameters.setAttributableRiskExposed(200);
+    _parameters.setApplyingRiskWindowRestriction(false);
 
     BOOST_REQUIRE_EQUAL( ParametersValidate(_parameters).Validate(_print), true );
 

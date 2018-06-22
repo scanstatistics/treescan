@@ -355,8 +355,8 @@ void Parameters::setAsDefaulted() {
     _sequential_max_signal=200;
     _sequential_file="";
 
-    _apply_risk_window_restriction = false;
-    _risk_window_percentage = 50.0;
+    _apply_risk_window_restriction = true;
+    _risk_window_percentage = 20.0;
 
     _forced_censored_algorithm = false;
 
