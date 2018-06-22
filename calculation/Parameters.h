@@ -21,6 +21,7 @@ class Parameters {
                         MINIMUM_CENSOR_TIME,
                         MINIMUM_CENSOR_PERCENTAGE,
                         RSK_WND_ALT_CENSOR_DENOM,
+                        RSK_WND_CENSOR,
                         /* Analysis */
                         SCAN_TYPE,
                         CONDITIONAL_TYPE,
@@ -230,6 +231,7 @@ class Parameters {
     double                              _risk_window_percentage;
     unsigned int                        _minimum_censor_time;
     unsigned int                        _minimum_censor_percentage;
+    bool                                _apply_risk_window_restriction_censored;
     double                              _risk_window_censor_alt_denominator;
 
     bool                                _forced_censored_algorithm;
@@ -251,6 +253,8 @@ class Parameters {
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
 
+    bool                                isApplyingRiskWindowRestrictionCensored() const { return _apply_risk_window_restriction_censored; }
+    void                                setApplyingRiskWindowRestrictionCensored(bool b) { _apply_risk_window_restriction_censored = b; }
     double                              getRiskWindowAltCensorDenominator() const { return _risk_window_censor_alt_denominator; }
     void                                setRiskWindowAltCensorDenominator(double d) { _risk_window_censor_alt_denominator = d; }
     unsigned int                        getMinimumCensorTime() const { return _minimum_censor_time; }

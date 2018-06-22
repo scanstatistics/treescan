@@ -347,7 +347,7 @@ ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) :
 }
 
 boost::shared_ptr<AbstractWindowLength> ScanRunner::getNewWindowLength() const {
-    if (isCensoredData())
+    if (isCensoredData() && _parameters.isApplyingRiskWindowRestrictionCensored())
         return boost::shared_ptr<AbstractWindowLength>(new CensoredRiskPercentageWindowLength(_parameters, 
                                                                                               static_cast<int>(_parameters.getMinimumWindowLength()) - 1, 
                                                                                               static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1, 

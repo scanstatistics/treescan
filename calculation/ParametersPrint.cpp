@@ -137,6 +137,8 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdvancedInputParameter
         for (Parameters::FileNameContainer_t::const_iterator itr=_parameters.getTreeFileNames().begin()+1; itr != _parameters.getTreeFileNames().end(); ++itr)
             settings.push_back(std::make_pair("Tree File", *itr));
     }
+    if (_parameters.isApplyingRiskWindowRestrictionCensored())
+        settings.push_back(std::make_pair("Applying Risk Window Restriction Due to Censoring", "Yes"));
     return settings;
 }
 

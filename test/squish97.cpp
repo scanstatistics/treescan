@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE(test_timeonly_censored) {
         }
         getCSVRow(stream, data);
     }
-    if (dataRows != 11) BOOST_FAIL("expecting 11 data rows, got " << dataRows);
+    if (dataRows != 16) BOOST_FAIL("expecting 11 data rows, got " << dataRows);
     stream.close();
 }
 

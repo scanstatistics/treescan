@@ -53,6 +53,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::RISK_WINDOW_PERCENTAGE  : return "risk window percentage (0 < x <= 100.0)";
             case Parameters::MINIMUM_CENSOR_TIME     : return "minimum censor time (2 <= x)";
             case Parameters::MINIMUM_CENSOR_PERCENTAGE : return "minimum censor time percentage of study period (0 < x <= 100.0)";
+            case Parameters::RSK_WND_CENSOR          : return "apply risk window restriction due to censoring - (y/n)";
             case Parameters::RSK_WND_ALT_CENSOR_DENOM: return "risk window alternative censor denominator (integer)";
             /* Analysis */
             case Parameters::SCAN_TYPE               : return "scan type (TREEONLY=0, TREETIME=1, TIMEONLY=2)";
@@ -136,6 +137,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::RISK_WINDOW_PERCENTAGE   : return AsString(s, _parameters.getRiskWindowPercentage());
             case Parameters::MINIMUM_CENSOR_TIME      : return AsString(s, _parameters.getMinimumCensorTime());
             case Parameters::MINIMUM_CENSOR_PERCENTAGE: return AsString(s, _parameters.getMinimumCensorPercentage());
+            case Parameters::RSK_WND_CENSOR: return AsString(s, _parameters.isApplyingRiskWindowRestrictionCensored());
             case Parameters::RSK_WND_ALT_CENSOR_DENOM: return AsString(s, _parameters.getRiskWindowAltCensorDenominator());
                 /* Analysis */
             case Parameters::SCAN_TYPE                : return AsString(s, _parameters.getScanType());
@@ -317,6 +319,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::RISK_WINDOW_PERCENTAGE   : _parameters.setRiskWindowPercentage(ReadDouble(value, e)); break;
             case Parameters::MINIMUM_CENSOR_TIME      : _parameters.setMinimumCensorTime(ReadUnsignedInt(value, e)); break;
             case Parameters::MINIMUM_CENSOR_PERCENTAGE: _parameters.setMinimumCensorPercentage(ReadUnsignedInt(value, e)); break;
+            case Parameters::RSK_WND_CENSOR           : _parameters.setApplyingRiskWindowRestrictionCensored(ReadBoolean(value, e)); break;
             case Parameters::RSK_WND_ALT_CENSOR_DENOM: _parameters.setRiskWindowAltCensorDenominator(ReadDouble(value, e)); break;
             /* Analysis */
             case Parameters::SCAN_TYPE                : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::TREEONLY, Parameters::TIMEONLY);

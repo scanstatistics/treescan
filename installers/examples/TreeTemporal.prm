@@ -39,6 +39,8 @@ cut-type=0
 minimum-censor-time=50
 ;minimum censor time percentage of study period (0 < x <= 100.0)
 min-censor-percentage=10
+;apply risk window restriction due to censoring - (y/n)
+risk-window-restriction-censor=n
 ;risk window alternative censor denominator (integer)
 risk-window-alt-censor-denominator=2
 
