@@ -33,6 +33,7 @@ BOOST_AUTO_TEST_CASE( test_treetime_censored ) {
     censore_fixture._parameters.setPrintColumnHeaders(true);
     censore_fixture._parameters.setReportAttributableRisk(true);
     censore_fixture._parameters.setAttributableRiskExposed(200);
+    censore_fixture._parameters.setApplyingRiskWindowRestrictionCensored(false);
 
     run_analysis("test", censore_fixture._results_user_directory, censore_fixture._parameters, censore_fixture._print);
 
@@ -44,7 +45,7 @@ BOOST_AUTO_TEST_CASE( test_treetime_censored ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(13)) BOOST_FAIL("expecting 13 columns, got " << headers.size());
+    if (headers.size() != static_cast<size_t>(14)) BOOST_FAIL("expecting 14 columns, got " << headers.size());
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrTreeLevel = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::P_LEVEL_FLD);
@@ -80,7 +81,7 @@ BOOST_AUTO_TEST_CASE( test_treetime_censored ) {
 
         BOOST_CHECK_EQUAL(cut_num, dataRows);
         switch (dataRows) {
-        case 9: BOOST_CHECK_EQUAL(data.at(std::distance(headers.begin(), itrNodeId)), "Node3");
+        case 1: BOOST_CHECK_EQUAL(data.at(std::distance(headers.begin(), itrNodeId)), "Node3");
             BOOST_CHECK_EQUAL(treelevel, static_cast<unsigned int>(3));
             BOOST_CHECK_EQUAL(nodecases, static_cast<unsigned int>(46));
             BOOST_CHECK_EQUAL(wndstart, static_cast<unsigned int>(4));
@@ -92,7 +93,7 @@ BOOST_AUTO_TEST_CASE( test_treetime_censored ) {
             BOOST_CHECK_CLOSE(ar, 0.095, 0.00001);
             BOOST_CHECK_CLOSE(llr, 25.562266, 0.00001);
             BOOST_CHECK_CLOSE(p_value, 0.001, 0.0001); break;
-        case 8: BOOST_CHECK_EQUAL(data.at(std::distance(headers.begin(), itrNodeId)), "Node6");
+        case 2: BOOST_CHECK_EQUAL(data.at(std::distance(headers.begin(), itrNodeId)), "Node6");
             BOOST_CHECK_EQUAL(treelevel, static_cast<unsigned int>(2));
             BOOST_CHECK_EQUAL(nodecases, static_cast<unsigned int>(55));
             BOOST_CHECK_EQUAL(wndstart, static_cast<unsigned int>(4));
@@ -104,7 +105,7 @@ BOOST_AUTO_TEST_CASE( test_treetime_censored ) {
             BOOST_CHECK_CLOSE(ar, 0.12, 0.00001);
             BOOST_CHECK_CLOSE(llr, 22.398076, 0.00001);
             BOOST_CHECK_CLOSE(p_value, 0.001, 0.0001); break;
-        case 1: BOOST_CHECK_EQUAL(data.at(std::distance(headers.begin(), itrNodeId)), "Root");
+        case 3: BOOST_CHECK_EQUAL(data.at(std::distance(headers.begin(), itrNodeId)), "Root");
             BOOST_CHECK_EQUAL(treelevel, static_cast<unsigned int>(1));
             BOOST_CHECK_EQUAL(nodecases, static_cast<unsigned int>(98));
             BOOST_CHECK_EQUAL(wndstart, static_cast<unsigned int>(2));

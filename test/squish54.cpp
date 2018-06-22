@@ -58,7 +58,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_conditional_poisson, poisson_fix
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
-    double expected [6] = {0.017, 0.089, 0.12, 0.023, 0.02, 0.059};
+    double expected [6] = {0.059, 0.12, 0.089, 0.023, 0.017, 0.02};
     unsigned int dataRows=0, expectedRows=6;
     CSV_Row_t data;
     getCSVRow(stream, data);
@@ -96,7 +96,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_unconditional_bernoulli, bernoul
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
-    double expected [9] = { 0.035, 0.01, 0.01, 0.0025, 0.04, 0.052, 0.013, 0.013, 0.03};
+    double expected [9] = {0.052, 0.03, 0.04, 0.013, 0.01, 0.035, 0.013, 0.01, 0.0025};
     unsigned int dataRows=0, expectedRows=9;
     CSV_Row_t data;
     getCSVRow(stream, data);
@@ -137,9 +137,9 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_unconditional_bernoulli_self_con
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
-    double expected_rr [9] = {1.34, 1.31, 3.0, 1.33, 1.84, 2.75, 3.5, 2.25, 7.0};
-    double expected_ex [9] = {14.0, 4.0, 4.0, 1.0, 16.0, 21.0, 5.0, 5.0, 12.0};
-    double expected_ar [9] = {0.07, 0.02, 0.02, 0.005, 0.08, 0.11, 0.025, 0.025, 0.06};
+    double expected_rr [9] = {2.75, 7.0, 1.84, 3.5, 3.0, 1.34, 2.25, 1.31, 1.33};
+    double expected_ex [9] = {21.0, 12.0, 16.0, 5.0, 4.0, 14.0, 5.0, 4.0, 1.0};
+    double expected_ar [9] = {0.11, 0.06, 0.08, 0.025, 0.02, 0.07, 0.025, 0.02, 0.005};
     unsigned int dataRows=0, expectedRows=9;
     CSV_Row_t data;
     getCSVRow(stream, data);
@@ -181,7 +181,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_conditional_bernoulli, bernoulli
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
-    double expected [6] = {0.0077, 0.046, 0.068, 0.01, 0.009, 0.029};
+    double expected [6] = {0.068, 0.029, 0.046, 0.01, 0.0077, 0.009};
     unsigned int dataRows=0, expectedRows=6;
     CSV_Row_t data;
     getCSVRow(stream, data);
@@ -293,7 +293,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node, t
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
-    double expected [10] = {0.0087, 0.024, 0.018, 0.0087, 0.055, 0.068, 0.019, 0.033, 0.019, 0.019};
+    double expected [10] = {0.068, 0.018, 0.055, 0.033, 0.019, 0.019, 0.019, 0.0087, 0.0087, 0.024};
     unsigned int dataRows=0, expectedRows=10;
     CSV_Row_t data;
     getCSVRow(stream, data);
@@ -331,7 +331,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node_w_
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
-    double expected [9] = {0.0044, 0.009, 0.0085, 0.0071, 0.062, 0.0089, 0.046, 0.018, 0.018 };
+    double expected [9] = {0.009, 0.0089, 0.018, 0.018, 0.046, 0.0085, 0.062, 0.0044, 0.0071};
     unsigned int dataRows=0, expectedRows=9;
     CSV_Row_t data;
     getCSVRow(stream, data);
@@ -369,7 +369,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_nodetim
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
-    double expected [10] = {0.0087, 0.024, 0.018, 0.0087, 0.055, 0.068, 0.019, 0.033, 0.019, 0.019 };
+    double expected [10] = {0.068, 0.018, 0.055, 0.033, 0.019, 0.019, 0.019, 0.0087, 0.0087, 0.024};
     unsigned int dataRows=0, expectedRows=10;
     CSV_Row_t data;
     getCSVRow(stream, data);
@@ -408,7 +408,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_nodetim
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
-    double expected [9] = { 0.0044, 0.009, 0.0085, 0.0071, 0.062, 0.0089, 0.046, 0.018, 0.018 };
+    double expected [9] = {0.009, 0.0089, 0.018, 0.018, 0.046, 0.0085, 0.062, 0.0044, 0.0071};
     unsigned int dataRows=0, expectedRows=9;
     CSV_Row_t data;
     getCSVRow(stream, data);
