@@ -670,10 +670,9 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, int 
         // write node cases
         // skip reporting node cases for time-only scans
         if (parameters.getScanType() != Parameters::TIMEONLY) {
-            if (parameters.isPerformingDayOfWeekAdjustment() && _scanRunner.isCensoredData()) {
+            if (parameters.isPerformingDayOfWeekAdjustment() || _scanRunner.isCensoredData()) {
                 printString(buffer, "%ld", static_cast<int>(thisNode.getBrC()));
-            }
-            else {
+            } else {
                 printString(buffer, "%ld", static_cast<int>(thisCut.getN()));
             }
             outfile << "<td>" << buffer.c_str() << "</td>";
