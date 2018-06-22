@@ -24,7 +24,7 @@
 #include "Toolkit.h"
 
 /* Calculates the attributable risk per person for cut. */
-double CutStructure::getAttributableRisk(const ScanRunner& scanner) {
+double CutStructure::getAttributableRisk(const ScanRunner& scanner) const {
     const Parameters& parameters = scanner.getParameters();
     double C = static_cast<double>(_C);
     double totalC = static_cast<double>(scanner.getTotalC());
@@ -904,52 +904,60 @@ bool ScanRunner::reportableCut(const CutStructure& cut) const {
 bool ScanRunner::reportResults(time_t start, time_t end) {
     ResultsFileWriter resultsWriter(*this);
 
+    // Assign the report order for each cut -- this allows use to sort in different ways during reporting, yet return to the
+    // order reported in the main results file. 
+    unsigned int i = 1;
+    for (CutStructureContainer_t::iterator itr = _Cut.begin(); itr != _Cut.end(); ++itr, ++i)
+        (*itr)->setReportOrder(i);
+
+    // Create the main text output file.
     if (!resultsWriter.writeASCII(start, end))
         return false;
 
     if (_parameters.isGeneratingHtmlResults() || _parameters.isGeneratingTableResults()) {
-        /* If ordering tree organization (https://www.squishlist.com/ims/treescan/100/), first widdle the cut list down to those that we'll be reporting. */
-        bool reportingCuts = !(_parameters.getSequentialScan() && static_cast<unsigned int>(getTotalC()) > _parameters.getSequentialMaximumSignal());
-        reportingCuts &= !(_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() != Parameters::PE_WITH_ANALYSIS);
-        reportingCuts &= (getCuts().size() > 0 && reportableCut(*getCuts()[0]));
+        /* First widdle the cut list down to those that are reportable. */
         CutStructureContainer_t::iterator itr = _Cut.begin();
         for (; itr != _Cut.end(); ++itr) {
             if (!reportableCut(*(*itr))) {
                 break; // Found first cut that was is not reportable. Remove cuts here and after.
             }
         }
-        
+        // Move non-reportable cuts to separate vector. We'll need to reference these trimmed cuts in a different way in the html output.
         if (itr != _Cut.end()) {
-            // Move non-reportable cuts to separate vector.
             CutStructureContainer_t::iterator itrTemp = itr;
             for (; itr != _Cut.end(); ++itr) {
                 _trimmed_cuts.push_back(*itr);
                 *itr = 0;
             }
-            // Erase, not kill, the elements from this vector.
-            _Cut.erase(itrTemp, _Cut.end());
+            _Cut.erase(itrTemp, _Cut.end()); // Erase, not kill, the elements from this vector.
         }
-
         if (_parameters.getScanType() != Parameters::TIMEONLY) {
-            // Sort by ancestry string --- this is the order we want to report in html and csv output files.
+            // Sort by ancestry string and update cuts.
             std::sort(_Cut.begin(), _Cut.end(), CompareCutsByAncestoryString(*this));
-            /* Now anything that iterates over the cuts will use the ancestry ordering -- HTML file and CSV table. */
+            i = 1;
+            for (CutStructureContainer_t::iterator itr = _Cut.begin(); itr != _Cut.end(); ++itr, ++i)
+                (*itr)->setAncestryOrder(i);
+            // Now return to report order.
+            std::sort(_Cut.begin(), _Cut.end(), CompareCutsByReportOrder());
         }
     }
-
+    // write cuts to html file
     if (_parameters.isGeneratingHtmlResults()) {
         if (!resultsWriter.writeHTML(start, end))
             return false;
     }
-
-    // write cuts to supplemental reports file
+    // write cuts to csv file
     if (_parameters.isGeneratingTableResults()) {
-        unsigned int k=0;
         CutsRecordWriter cutsWriter(*this);
-        while (k < getCuts().size()) {
-            cutsWriter.write(k);
-            k++;
-        }
+        bool reportCutCSV = true;
+        if (_parameters.getSequentialScan())
+            // This is a sequential scan and we haven't reached the maximum cases, we will report cuts.
+            reportCutCSV &= !(static_cast<unsigned int>(getTotalC()) > _parameters.getSequentialMaximumSignal());
+        if (_parameters.getPerformPowerEvaluations())
+            // If this is a power evaluation with an analysis, we will report cuts.
+            reportCutCSV &= _parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS;
+        for (CutStructureContainer_t::iterator itr = _Cut.begin(); itr != _Cut.end() && reportCutCSV; ++itr)
+            cutsWriter.write(*(*itr));
     }
     // write power evaluation results to separate file
     if (_parameters.getPerformPowerEvaluations()) {

@@ -31,23 +31,27 @@ private:
     double                  _N;             // Expected number of cases.
     double                  _LogLikelihood; // Loglikelihood value.
     unsigned int            _rank;
+    unsigned int            _report_order;
+    unsigned int            _ancestry_order;
     DataTimeRange::index_t _start_idx;      // temporal start window index
     DataTimeRange::index_t _end_idx;        // temporal end window index
     CutChildContainer_t    _cut_children;   // optional collection of children indexes
 
 public:
-    CutStructure() : _ID(0), _C(0), _N(0), _LogLikelihood(-std::numeric_limits<double>::max()), _rank(1), _start_idx(0), _end_idx(1) {}
+    CutStructure() : _ID(0), _C(0), _N(0), _LogLikelihood(-std::numeric_limits<double>::max()), _rank(1), _start_idx(0), _end_idx(1), _report_order(0), _ancestry_order(0) {}
 
     void                    addCutChild(int cutID, bool clear=false) {if (clear) _cut_children.clear(); _cut_children.push_back(cutID);}
     int                     getC() const {return _C; /* Observed */}
     const CutChildContainer_t & getCutChildren() {return _cut_children;}
-    double                  getAttributableRisk(const ScanRunner& scanner);
+    double                  getAttributableRisk(const ScanRunner& scanner) const;
     std::string           & getAttributableRiskAsString(const ScanRunner& scanner, std::string& s);
     int                     getID() const {return _ID;}
     double                  getLogLikelihood() const {return _LogLikelihood;}
     double                  getN() const {return _N;}
     double                  getExcessCases(const ScanRunner& scanner) const;
     double                  getExpected(const ScanRunner& scanner) const;
+    unsigned int            getAncestryOrder() const { return _ancestry_order; }
+    unsigned int            getReportOrder() const { return _report_order; }
     unsigned int            getRank() const {return _rank;}
     double                  getRelativeRisk(const ScanRunner& scanner) const;
     DataTimeRange::index_t  getStartIdx() const {return _start_idx;}
@@ -55,6 +59,8 @@ public:
     unsigned int            incrementRank() {return ++_rank;}
     void                    setC(int i) {_C = i;}
     void                    setCutChildren(const CutChildContainer_t & c) {_cut_children = c;}
+    void                    setAncestryOrder(unsigned int u) { _ancestry_order = u; }
+    void                    setReportOrder(unsigned int u) { _report_order = u; }
     void                    setID(int i) {_ID = i;}
     void                    setLogLikelihood(double d) {_LogLikelihood = d;}
     void                    setN(double d) {_N = d;}
@@ -268,6 +274,13 @@ class CompareCutsByLoglikelihood {
 public:
     bool operator() (const CutStructure * lhs, const CutStructure * rhs) {
         return lhs->getLogLikelihood() > rhs->getLogLikelihood();
+    }
+};
+
+class CompareCutsByReportOrder {
+public:
+    bool operator() (const CutStructure * lhs, const CutStructure * rhs) {
+        return lhs->getReportOrder() < rhs->getReportOrder();
     }
 };
 

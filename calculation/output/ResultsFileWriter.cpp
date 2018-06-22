@@ -129,7 +129,6 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
             printString(replicas, "%u", parameters.getNumReplicationsRequested());
             printString(format, "%%.%dlf", replicas.size());
 
-            unsigned int k=0;
             outfile.setf(std::ios::fixed);
             outfile.precision(5);
 
@@ -139,8 +138,8 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 if (!_scanRunner.reportableCut(thisCut))
                     break;
                 const NodeStructure& thisNode = *(_scanRunner.getNodes()[thisCut.getID()]);
-                PrintFormat.SetMarginsAsCutSection( k + 1);
-                outfile << k + 1 << ")";
+                PrintFormat.SetMarginsAsCutSection(thisCut.getReportOrder());
+                outfile << thisCut.getReportOrder() << ")";
                 // skip reporting node identifier for time-only scans
                 if (parameters.getScanType() != Parameters::TIMEONLY) {
                     PrintFormat.PrintSectionLabel(outfile, "Node Identifier", false);
@@ -202,7 +201,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getExcessCases(_scanRunner), buffer));
                 if (parameters.getReportAttributableRisk()) {
                     PrintFormat.PrintSectionLabel(outfile, "Attributable Risk", true);
-                    buffer = _scanRunner.getCuts()[k]->getAttributableRiskAsString(_scanRunner, buffer);
+                    buffer = thisCut.getAttributableRiskAsString(_scanRunner, buffer);
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                 }
                 if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||
@@ -220,9 +219,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     printString(buffer, format.c_str(), (double)thisCut.getRank() /(parameters.getNumReplicationsRequested() + 1));
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                 }
-
 				outfile << std::endl;
-                k++;
             }
         }
     }
@@ -394,11 +391,21 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<script src=\"https://www.treescan.org/libs/bootstrap.4.1.1/popper.4.1.1.js\" type=\"text/javascript\"></script>" << std::endl;
     outfile << "<script src=\"https://www.treescan.org/libs/bootstrap.4.1.1/bootstrap.4.1.1.js\" type=\"text/javascript\"></script>" << std::endl;
 
-    /* Determine if we can show the tree visualization. Since we're pruning the tree by minimum p-value of 0.05, we can't possibly have any significant 
-       nodes if the number of replications is less than 19 -- which impies the necessary rank out of 20 is 1 to meet at most 0.05. */
-    bool canShowTreeGraph = parameters.getNumReplicationsRequested() >= 19 && parameters.getScanType() != Parameters::TIMEONLY;
+    /* Determine if we should show the tree visualization. 
+       - Since we're pruning the tree by minimum p-value of 0.05, we can't possibly have any significant nodes if the number of replications
+         is less than 19 -- which impies the necessary rank out of 20 is 1 to meet at most 0.05. 
+       - If this is a sequential scan and we haven't reached the maximum cases, we will report cuts.
+       - If this is a power evaluation with an analysis, we will report cuts.
+       - There needs to be at least one reportable cut.
+       */
+    bool showingTreeGraph = parameters.getNumReplicationsRequested() >= 19 && parameters.getScanType() != Parameters::TIMEONLY;
+    if (parameters.getSequentialScan())
+        showingTreeGraph &= !(static_cast<unsigned int>(_scanRunner.getTotalC()) > parameters.getSequentialMaximumSignal());
+    if (parameters.getPerformPowerEvaluations())
+        showingTreeGraph &= parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS;
+    showingTreeGraph &= (_scanRunner.getCuts().size() > 0 && _scanRunner.reportableCut(*_scanRunner.getCuts()[0]));
 
-    if (canShowTreeGraph) {
+    if (showingTreeGraph) {
         outfile << "<script type=\"text/javascript\" charset=\"utf-8\">" << std::endl;
         outfile << "var chart_config = { chart: { container: \"#treescan-tree-visualization\", levelSeparation: 20, siblingSeparation: 15, subTeeSeparation: 15, rootOrientation: \"WEST\", ";
         outfile << "hideRootNode: true, " << std::endl;
@@ -494,7 +501,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             outfile << "<thead><tr><th>No.</th>";
             // skip reporting node identifier for time-only scans
             if (parameters.getScanType() != Parameters::TIMEONLY) {
-                outfile << "<th>Node Identifier</th><th>Tree Level</th>";
+                outfile << "<th>Node</th><th>Tree Level</th>";
             }
             if (Parameters::isTemporalScanType(parameters.getScanType())) {
                // skip reporting node cases for time-only scans
@@ -520,10 +527,13 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                 // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
                 outfile << "<th>Test Statistic</th>" << std::endl;
             } else {
-                outfile << "<th>Log Likelihood Ratio</th>" << std::endl;
+                outfile << "<th>LLR</th>" << std::endl;
             }
             if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/) {
                 outfile << "<th>P-value</th>";
+            }
+            if (parameters.getScanType() != Parameters::TIMEONLY) {
+                outfile << "<th>Ancestry</th>";
             }
             outfile << "</tr></thead><tbody>" << std::endl;
             std::string format, replicas;
@@ -534,7 +544,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             outfile.precision(5);
             ScanRunner::CutStructureContainer_t::const_iterator itrCuts = _scanRunner.getCuts().begin(), itrCutsEnd = _scanRunner.getCuts().end();
             for (unsigned int k=0; itrCuts != itrCutsEnd; ++itrCuts, ++k)
-                addTableRowForCut(*(*itrCuts), k, calcLogLikelihood, format, outfile);
+                addTableRowForCut(*(*itrCuts), calcLogLikelihood, format, outfile);
             outfile << "</tbody></table></div>" << std::endl;
             outfile << "</div></div>" << std::endl;
 
@@ -542,12 +552,12 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             itrCuts = _scanRunner.getTrimmedCuts().begin();
             itrCutsEnd = _scanRunner.getTrimmedCuts().end();
             for (; itrCuts != itrCutsEnd; ++itrCuts)
-                addTableRowForCut(*(*itrCuts), 0, calcLogLikelihood, format, outfile);
+                addTableRowForCut(*(*itrCuts), calcLogLikelihood, format, outfile);
             outfile << "</table></div>" << std::endl;
         }
     }
 
-    if (canShowTreeGraph) {
+    if (showingTreeGraph) {
         outfile << "<a class=\"btn btn-primary btn-sm\" id=\"show_tree\" data-toggle=\"collapse\" href=\"#collapseExample\" role=\"button\" aria-expanded=\"false\" aria-controls=\"collapseExample\">Tree Visualization</a>" << std::endl;
         outfile << "<div class=\"collapse\" id=\"collapseExample\"><h3>Visualization of Analysis Tree  <span id=\"loading_graph\">... loading <i class=\"fa fa-circle-o-notch fa-spin\"></i></span><span id=\"fail_message\"></span></h3>";
         outfile << "<div class=\"row\">" << std::endl;
@@ -640,11 +650,11 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
 }
 
 /* Write table row for cut. */
-std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, int k, Loglikelihood_t & calcLogLikelihood, const std::string& format, std::ofstream& outfile) {
+std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Loglikelihood_t & calcLogLikelihood, const std::string& format, std::ofstream& outfile) {
     const Parameters& parameters = _scanRunner.getParameters();
     const NodeStructure& thisNode = *(_scanRunner.getNodes()[thisCut.getID()]);
     std::string buffer(thisNode.getIdentifier());
-    outfile << "<tr id=\"tr-" << stripNodeIdForHtml(buffer) << "\"><td>" << k + 1 << "</td>";
+    outfile << "<tr id=\"tr-" << stripNodeIdForHtml(buffer) << "\"><td>" << thisCut.getReportOrder() << "</td>";
     // skip reporting node identifier for time-only scans
     if (parameters.getScanType() != Parameters::TIMEONLY) {
         buffer = thisNode.getIdentifier();
@@ -697,6 +707,9 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, int 
     // write p-value
     if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/) {
         outfile << "<td>" << printString(buffer, format.c_str(), (double)thisCut.getRank() / (parameters.getNumReplicationsRequested() + 1)) << "</td>";
+    }
+    if (parameters.getScanType() != Parameters::TIMEONLY) {
+        outfile << "<td class='exclude-tree'>" << thisCut.getAncestryOrder() << "</td>";
     }
     outfile << "</tr>" << std::endl;
     return outfile;

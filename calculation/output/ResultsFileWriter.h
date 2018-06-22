@@ -19,7 +19,7 @@ class ResultsFileWriter {
   protected:
     const ScanRunner & _scanRunner;
 
-    std::ofstream & addTableRowForCut(CutStructure& thisCut, int k, Loglikelihood_t & calcLogLikelihood, const std::string& format, std::ofstream& outfile);
+    std::ofstream & addTableRowForCut(CutStructure& thisCut, Loglikelihood_t & calcLogLikelihood, const std::string& format, std::ofstream& outfile);
     std::string & truncateNodeId(std::string& val);
     const char * getPvalueClass(double pval, bool childClass);
     const char * getRelativeRiskClass(double rr, bool childClass);

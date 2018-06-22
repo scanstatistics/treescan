@@ -56,6 +56,7 @@ class DataRecordWriter {
     static const char         * TEST_STATISTIC_FIELD;
     static const char         * P_VALUE_FLD;
     static const char         * P_LEVEL_FLD;
+    static const char         * ANCESTRY_ORDER_FLD;
     static const char         * HYPOTHESIS_ALTERNATIVE_NUM_FIELD;
     static const char         * HA_ALPHA05_FIELD;
     static const char         * HA_ALPHA01_FIELD;
@@ -96,6 +97,7 @@ class CSVDataFileWriter {
 };
 
 class ScanRunner; /* forward class declaration */
+class CutStructure; /* forward class declaration */
 class CutsRecordWriter : public DataRecordWriter {
   public:
     static const char         * CUT_FILE_SUFFIX;
@@ -111,7 +113,7 @@ class CutsRecordWriter : public DataRecordWriter {
 
        static std::string & getFilename(const Parameters& parameters, std::string& buffer);
 
-       void                  write(unsigned int cutIndex) const;
+       void                  write(const CutStructure& thisCut) const;
 };
 
 /* Data file writer for the power estimation. */
