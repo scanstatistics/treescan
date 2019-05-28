@@ -57,8 +57,8 @@ int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesP
                 int censor_count=0;
                 for (NodeStructure::CensorDist_t::const_iterator itr=censor_distribution.begin(); itr != censor_distribution.end(); ++itr) {
                     for (NodeStructure::count_t c=0; c < itr->second; ++c) {
-                        // Distribute the censored case within specified censor period.
-                        DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(itr->first - 1), _random_number_generator));
+                        // Distribute the censored case within the censor period -- data time range start to the censor time, inclusively.
+                        DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(itr->first), _random_number_generator));
                         ++(simNode.refIntC_C()[idx]);
                         ++TotalSimC;
                         ++censor_count;

@@ -185,7 +185,7 @@ public class FileSelectionDialog {
                 file = new File(_file_dialog.getDirectory() +  _file_dialog.getFile());                
             }
         } else {
-            int returnVal = _file_chooser.showOpenDialog(_parent);
+            int returnVal = _file_chooser.showSaveDialog(_parent);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 _lastBrowseDirectory = _file_chooser.getCurrentDirectory();
                 file = new File(_file_chooser.getSelectedFile().getAbsolutePath());

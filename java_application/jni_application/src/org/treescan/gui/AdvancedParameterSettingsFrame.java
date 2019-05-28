@@ -7,8 +7,6 @@ import java.awt.Font;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
-import java.util.regex.Pattern;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
@@ -1061,9 +1059,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             public void focusLost(java.awt.event.FocusEvent e) {
                 double dMaxValue =  100.0;
                 while (_risk_window_percentage.getText().length() == 0 ||
-                    Double.parseDouble(_risk_window_percentage.getText()) <= 0 ||
+                    Double.parseDouble(_risk_window_percentage.getText()) < 0 ||
                     Double.parseDouble(_risk_window_percentage.getText()) > dMaxValue) {
-                    if (undo.canUndo()) undo.undo(); else _risk_window_percentage.setText("50");
+                    if (undo.canUndo()) undo.undo(); else _risk_window_percentage.setText("20");
                 }
                 enableSetDefaultsButton();
             }

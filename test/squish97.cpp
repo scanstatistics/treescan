@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE( test_treetime_censored ) {
         }
         getCSVRow(stream, data);
     }
-    if (dataRows != 13) BOOST_FAIL("expecting 13 data rows, got " << dataRows);
+    if (dataRows != 15) BOOST_FAIL("expecting 15 data rows, got " << dataRows);
     stream.close();
 }
 

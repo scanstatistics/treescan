@@ -373,7 +373,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParamete
     if (_parameters.isTemporalScanType(_parameters.getScanType())) {
         settings.push_back(std::make_pair("Apply Risk Window Restriction", (_parameters.isApplyingRiskWindowRestriction() ? "Yes" : "No")));
         if (_parameters.isApplyingRiskWindowRestriction()) {
-            printString(buffer, "Restrict Risk Window to %g%%", _parameters.getRiskWindowPercentage());
+            printString(buffer, "Restrict Risk Window to %g%% of Evaluated Windows", _parameters.getRiskWindowPercentage());
             settings.push_back(std::make_pair("Maximum Temporal Window", buffer));
         }
     }

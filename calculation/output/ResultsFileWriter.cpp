@@ -471,7 +471,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     if (Parameters::isTemporalScanType(parameters.getScanType())) {
         outfile << "<tr><th>Data Time Range:</th><td>" << parameters.getDataTimeRangeSet().toString(buffer).c_str() << "</td></tr>" << std::endl;
     }
-    if (Parameters::isTemporalScanType(parameters.getScanType())) {
+    if (parameters.isApplyingExclusionTimeRanges()) {
         outfile << "<tr><th>Excluded Time Ranges:</th><td>" << parameters.getExclusionTimeRangeSet().toString(buffer).c_str() << "</td></tr>" << std::endl;
     }
     if (parameters.getScanType() != Parameters::TIMEONLY) {

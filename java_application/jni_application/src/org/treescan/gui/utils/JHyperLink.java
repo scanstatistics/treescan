@@ -42,9 +42,9 @@ public class JHyperLink extends JLabel {
             repaint();
         }
         
-        public void mouseClicked(MouseEvent me) {
-            fireActionEvent();
-        }
+        //public void mouseClicked(MouseEvent me) {
+        //    fireActionEvent();
+        //}
         public void mousePressed(MouseEvent me) {
             fireActionEvent();
         }        

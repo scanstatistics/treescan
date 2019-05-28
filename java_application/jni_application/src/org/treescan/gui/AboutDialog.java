@@ -119,7 +119,7 @@ public class AboutDialog extends javax.swing.JDialog {
 
         jLabel1.setText("Martin Kulldorff, Harvard Medical School, Boston and");
 
-        jLabel5.setText("Information Management Services Inc, Silver Spring, Maryland.");
+        jLabel5.setText("Information Management Services Inc, Calverton, Maryland.");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -245,6 +245,7 @@ public class AboutDialog extends javax.swing.JDialog {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea _textAreaSystemInformation;
     private javax.swing.JLabel emailLabel;

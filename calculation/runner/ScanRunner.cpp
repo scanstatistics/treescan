@@ -695,10 +695,19 @@ bool ScanRunner::readCounts(const std::string& filename) {
                     DataTimeRange::index_t positive_range_days = minmax.numDaysInPositiveRange();
                     if (censortime < positive_range_days * (static_cast<double>(_parameters.getMinimumCensorPercentage()) / 100.0)) {
                         _print.Printf("Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
-                            "The censoring time is less than the %d%% of the positive data time range - which is %d days long. This observation will be ignored.",
-                            BasePrint::P_WARNING, dataSource->getCurrentRecordIndex(), _parameters.getMinimumCensorPercentage(), positive_range_days);
+                                      "The censoring time is less than the %d%% of the positive data time range - which is %d days long. This observation will be ignored.",
+                                      BasePrint::P_WARNING, dataSource->getCurrentRecordIndex(), _parameters.getMinimumCensorPercentage(), positive_range_days);
                         continue;
                     }
+                    if (censortime < daysSinceIncidence) {
+                        _print.Printf("Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
+                                      "The censoring time is less than the 'day since incidence' value. This observation will be ignored.",
+                            BasePrint::P_WARNING, dataSource->getCurrentRecordIndex());
+                        continue;
+                    }
+                    // Skip this record now if the number of cases is zero -- otherwise we might falsely indicate that this data set is censoring data.
+                    if (count == 0)
+                        continue;
                     // If the censor time equals the data time range end, then this record isn't really censoring.
                     if (censortime < minmax.getEnd()) {
                         // Now that we know there is censored data, check parameter settings are valid.

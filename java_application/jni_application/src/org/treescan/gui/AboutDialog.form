@@ -200,7 +200,7 @@
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel5">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Information Management Services Inc, Silver Spring, Maryland."/>
+                <Property name="text" type="java.lang.String" value="Information Management Services Inc, Calverton, Maryland."/>
               </Properties>
             </Component>
           </SubComponents>

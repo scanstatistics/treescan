@@ -9,8 +9,8 @@
 #define VERSION_MAJOR   "1"
 #define VERSION_MINOR   "4"
 #define VERSION_RELEASE "0"
-#define VERSION_PHASE "RC 2" /** testing phase name - leave blank for release */
-#define VERSION_DATE    "Not Released"
+#define VERSION_PHASE "" /** testing phase name - leave blank for release */
+#define VERSION_DATE    "June 2018"
 
 #if defined(_MSC_VER)
 #include <Windows.h>
