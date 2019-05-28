@@ -234,7 +234,7 @@ public class XLSImportDataSource implements ImportDataSource {
 
                     }
                     //if this is not a date process as a number
-                    Double number = new Double(cellValue);
+                    Double number = Double.valueOf(cellValue);
                     //if this is an int create the string as such
                     if (number.doubleValue() == number.intValue()) {
                         return (Integer.toString(number.intValue()));

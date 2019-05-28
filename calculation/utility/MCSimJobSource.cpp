@@ -28,7 +28,7 @@ MCSimJobSource::MCSimJobSource(boost::posix_time::ptime CurrentTime, PrintQueue 
 
   grLoglikelihood.reset((AbstractLoglikelihood::getNewLoglikelihood(grRunner.getParameters(), grRunner.getTotalC(), grRunner.getTotalN(), grRunner.isCensoredData())));
   if (grRunner.getParameters().isGeneratingLLRResults())
-    _ratio_writer.reset(new LoglikelihoodRatioWriter(grRunner, _isPowerStep, iteration > 0));
+    _ratio_writer.reset(new LoglikelihoodRatioWriter(grRunner, _isPowerStep, iteration > 0, false));
 }
 
 
@@ -292,8 +292,9 @@ void MCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, para
             if (rResult.dSuccessfulResult.first >= grRunner.getCuts()[k]->getLogLikelihood()) grRunner.getCuts()[k]->incrementRank();
     }
 
-    if (_ratio_writer.get()) _ratio_writer->write(result);
+    if (_ratio_writer.get()) _ratio_writer->write(result, rParam);
     if (!_isPowerStep) grRunner.updateCriticalValuesList(result);
+    if (grRunner.getParameters().isSequentialScanBernoulli()) grRunner.refSequentialStatistic().addSimulationLLR(result, rParam);
     grRunner.getSimulationVariables().add_llr(result);
     grRunner.getSimulationVariables().increment_sim_count();
 

@@ -140,21 +140,23 @@ class LoglikelihoodRatioWriter : public DataRecordWriter {
     protected:
         static const char * LLR_FILE_SUFFIX;
         static const char * LLR_HA_FILE_SUFFIX;
+        static const char * SIMULATION_IDX_FIELD;
         static const char * LOG_LIKL_RATIO_FIELD;
 
         const ScanRunner & _scanner;
         std::ofstream _outfile;
         std::auto_ptr<CSVDataFileWriter> _csvWriter;
+        bool _include_sim_idx;
 
         LoglikelihoodRatioWriter(const ScanRunner& scanRunner);
 
     public:
-        LoglikelihoodRatioWriter(const ScanRunner& scanRunner, bool ispower, bool append);
+        LoglikelihoodRatioWriter(const ScanRunner& scanRunner, bool ispower, bool append, bool includeIdx);
         virtual ~LoglikelihoodRatioWriter();
 
         static std::string & getFilename(const Parameters& parameters, std::string& buffer, bool ispower);
 
-        void write(double llr) const;
+        void write(double llr, unsigned int simulation) const;
 };
 
 /** Sequential Scan - Loglikelihood ratio data file writer. */

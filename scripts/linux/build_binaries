@@ -5,7 +5,7 @@ REQUIRED_ARGS=1 # Script requires 3 argument
 if [ $# -lt "$REQUIRED_ARGS" ]
 then
   echo "Usage: `basename $0` <satscan_src directory> <boost directory> <binaries ouitput directory>])"
-  echo "   example: `basename $0` /prj/treescan/build/treescan /prj/treescan/build/boost/boost_1_61_0 /prj/treescan/build/binaries/linux"
+  echo "   example: `basename $0` /prj/treescan/build/treescan /prj/treescan/build/boost/boost_1_70_0 /prj/treescan/build/binaries/linux"
   exit 1
 fi
 

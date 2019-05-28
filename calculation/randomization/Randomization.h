@@ -80,6 +80,27 @@ class NodesProxy : public AbstractNodesProxy {
         virtual int getID(size_t i) const {return _treeNodes[i]->getID();}
 };
 
+class SequentialNodesProxy : public AbstractNodesProxy {
+protected:
+    const ScanRunner::NodeStructureContainer_t & _treeNodes;
+    const double _event_probability;
+
+public:
+    SequentialNodesProxy(const ScanRunner::NodeStructureContainer_t& treeNodes, double event_probability=0) : _treeNodes(treeNodes), _event_probability(event_probability) {}
+    virtual ~SequentialNodesProxy() {}
+
+    virtual SequentialNodesProxy * clone() { return new SequentialNodesProxy(*this); }
+    virtual size_t  size() const { return _treeNodes.size(); }
+    virtual double  getIntN(size_t i) const { return _treeNodes[i]->getIntN_Seq_New(); }
+    virtual const NodeStructure::ExpectedContainer_t & getIntN_C(size_t i) const { throw prg_error("NodesProxy::getIntN_C(size_t) not implemented.", "getIntN_C(size_t)"); }
+    virtual int     getIntC(size_t i) const { throw prg_error("SequentialNodesProxy::getIntC(size_t) not implemented.", "getIntC(size_t)"); }
+    virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const { throw prg_error("SequentialNodesProxy::getIntC_C(size_t) not implemented.", "getIntC_C(size_t)"); }
+    virtual int     getBrC(size_t i) const { throw prg_error("SequentialNodesProxy::getBrC(size_t) not implemented.", "getBrC(size_t)"); }
+    virtual double  getProbability(size_t i) const { return _event_probability; }
+    virtual int getID(size_t i) const { return _treeNodes[i]->getID(); }
+};
+
+
 class AlternativeExpectedNodesProxy : public NodesProxy {
     protected:
         const RelativeRiskAdjustmentHandler::NodesExpectedContainer_t & _tree_nodes_expected;

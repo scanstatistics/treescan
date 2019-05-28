@@ -189,14 +189,19 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getSequentialScanParamete
     std::string buffer;
     settings.clear();
 
-    if (_parameters.getScanType() == Parameters::TIMEONLY) {
+    if ((_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES) ||
+        (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
         settings.push_back(std::make_pair("Sequential Scan", _parameters.getSequentialScan() ? "Yes" : "No"));
-        if (_parameters.getSequentialScan()) {
+        if (_parameters.isSequentialScanPurelyTemporal() && _parameters.getScanType() == Parameters::TIMEONLY) {
             printString(buffer, "%u", _parameters.getSequentialMinimumSignal());
-            settings.push_back(std::make_pair("Sequnetial Minimum Cases to Signal", buffer));
+            settings.push_back(std::make_pair("Sequential Minimum Cases to Signal", buffer));
             printString(buffer, "%u", _parameters.getSequentialMaximumSignal());
-            settings.push_back(std::make_pair("Sequnetial Maximum Cases to Signal", buffer));
+            settings.push_back(std::make_pair("Sequential Maximum Cases to Signal", buffer));
             settings.push_back(std::make_pair("Sequential File", SequentialScanLoglikelihoodRatioWriter::getFilename(_parameters, buffer)));
+        }
+        if (_parameters.isSequentialScanBernoulli()) {
+            settings.push_back(std::make_pair("Sequential Alpha", printString(buffer, "%lf", _parameters.getSequentialAlpha())));
+            settings.push_back(std::make_pair("Sequential Alpha Spending", printString(buffer, "%lf", _parameters.getSequentialAlphaSpending())));
         }
     }
     return settings;

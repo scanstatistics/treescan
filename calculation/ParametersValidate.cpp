@@ -22,7 +22,7 @@ bool ParametersValidate::checkFileExists(const std::string& filename, const std:
     if (buffer.empty()) {
         PrintDirection.Printf("%s:\nThe %s file could not be opened. No filename was specified.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filetype.c_str());
         return false;
-    } else if (!ValidateFileAccess(buffer, writeCheck)) {
+    } else if (!validateFileAccess(buffer, writeCheck)) {
         PrintDirection.Printf("%s:\nThe %s file '%s' could not be opened for %s. "
                               "Please confirm that the path and/or file name are valid and that you "
                               "have permissions to %s from this directory and file.\n",
@@ -43,6 +43,7 @@ bool ParametersValidate::Validate(BasePrint& printDirection) const {
     bValid &= ValidateAdditionalOutputParameters(printDirection);
     bValid &= ValidateTemporalWindowParameters(printDirection);
     bValid &= ValidateAdjustmentsParameters(printDirection);
+    bValid &= ValidateSequentialScanParameters(printDirection);
     bValid &= ValidatePowerEvaluationParametersParameters(printDirection);
     bValid &= ValidateRandomizationSeed(printDirection);
     return bValid;
@@ -153,7 +154,7 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
         if (_parameters.getCountFileName().empty()) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nNo count file specified.\n", BasePrint::P_PARAMERROR);
-        } else if (!ValidateFileAccess(_parameters.getCountFileName())) {
+        } else if (!validateFileAccess(_parameters.getCountFileName())) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\n"
                                    "The count file '%s' could not be opened for reading. "
@@ -162,7 +163,7 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                                    BasePrint::P_PARAMERROR, _parameters.getCountFileName().c_str());
         }
         if (_parameters.getScanType() != Parameters::TIMEONLY) {
-            if (!_parameters.getCutsFileName().empty() && !ValidateFileAccess(_parameters.getCutsFileName())) {
+            if (!_parameters.getCutsFileName().empty() && !validateFileAccess(_parameters.getCutsFileName())) {
                 bValid = false;
                 PrintDirection.Printf("Invalid Parameter Setting:\n"
                                        "The cut file '%s' could not be opened for reading. "
@@ -241,7 +242,7 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                 bValid = false;
                 PrintDirection.Printf("Invalid Parameter Setting:\nForced censored algorithm is not permitted with day of week adjustment.\n", BasePrint::P_PARAMERROR);
             }
-            if (_parameters.isSequentialScan()) {
+            if (_parameters.getSequentialScan()) {
                 bValid = false;
                 PrintDirection.Printf("Invalid Parameter Setting:\nForced censored algorithm is not permitted with sequential scan.\n", BasePrint::P_PARAMERROR);
             }
@@ -338,7 +339,7 @@ bool ParametersValidate::ValidateOutputParameters(BasePrint & PrintDirection) co
         if (_parameters.getOutputFileName().empty()) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nNo results file specified.\n", BasePrint::P_PARAMERROR);
-        } else if (!ValidateFileAccess(_parameters.getOutputFileName(), true)) {
+        } else if (!validateFileAccess(_parameters.getOutputFileName(), true)) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\n"
                                   "Results file '%s' could not be opened for writing. "
@@ -572,25 +573,10 @@ bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) co
 bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirection) const {
     bool bValid=true;
     if (_parameters.getSequentialScan()) {
-        if (!(_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES)) {
+        if (!((_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES) ||
+              (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL))) {
             bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nSequential scan is only implemented for the time-only scan conditioned on total cases.\n", BasePrint::P_PARAMERROR);
-        }
-        //if (_parameters.getSequentialMaximumSignal() < 2) {
-        //    bValid = false;
-        //    PrintDirection.Printf("Invalid Parameter Setting:\nThe total cases for sequential scan must be 2 or more.\n", BasePrint::P_PARAMERROR);
-        //}
-        if (!(_parameters.getSequentialMinimumSignal() >= 2 && _parameters.getSequentialMinimumSignal() < _parameters.getSequentialMaximumSignal())) {
-            bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, the minimum number of cases to signal must be greater than 1 and less than total ssequential cases.\n", BasePrint::P_PARAMERROR);
-        }
-        if (_parameters.getNumReplicationsRequested() < 999) {
-            bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, the minimum number of replications is 999.\n", BasePrint::P_PARAMERROR);
-        }
-        if (_parameters.getPerformDayOfWeekAdjustment()) {
-            bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan is not implemented for the day of week adjustment.\n", BasePrint::P_PARAMERROR);
+            PrintDirection.Printf("Invalid Parameter Setting:\nSequential scan is only implemented for the time-only scan conditioned on total cases or unconditional Benoulli.\n", BasePrint::P_PARAMERROR);
         }
         if (_parameters.getPerformPowerEvaluations()) {
             bValid = false;
@@ -600,6 +586,35 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan is not implemented with the options to read or write simulation data.\n", BasePrint::P_PARAMERROR);
         }
+        if (_parameters.getNumReplicationsRequested() < 999) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, the minimum number of replications is 999.\n", BasePrint::P_PARAMERROR);
+        }
+        if (_parameters.getPerformDayOfWeekAdjustment()) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan is not implemented for the day of week adjustment.\n", BasePrint::P_PARAMERROR);
+        }
+        if (_parameters.getScanType() == Parameters::TIMEONLY) {
+            //if (_parameters.getSequentialMaximumSignal() < 2) {
+            //    bValid = false;
+            //    PrintDirection.Printf("Invalid Parameter Setting:\nThe total cases for sequential scan must be 2 or more.\n", BasePrint::P_PARAMERROR);
+            //}
+            if (!(_parameters.getSequentialMinimumSignal() >= 2 && _parameters.getSequentialMinimumSignal() < _parameters.getSequentialMaximumSignal())) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, the minimum number of cases to signal must be greater than 1 and less than total sequential cases.\n", BasePrint::P_PARAMERROR);
+            }
+        }
+        if (_parameters.getModelType() == Parameters::BERNOULLI) {
+            if (_parameters.getSequentialAlphaSpending() < 1.0 / static_cast<double>(_parameters.getNumReplicationsRequested() + 1)) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, alpha spending cannot be less than %lf with %u replications.\n", 
+                    BasePrint::P_PARAMERROR, 1.0 / static_cast<double>(_parameters.getNumReplicationsRequested() + 1), _parameters.getNumReplicationsRequested());
+            }
+            if (_parameters.getSequentialAlphaSpending() > _parameters.getSequentialAlpha()) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, alpha spending cannot be greater than alpha.\n", BasePrint::P_PARAMERROR);
+            }
+        }
     }
-    return true;
+    return bValid;
 }

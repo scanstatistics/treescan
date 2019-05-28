@@ -4,6 +4,10 @@
 #include <boost/tokenizer.hpp>
 #include <boost/regex.hpp>
 #include <boost/assign.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+#include <boost/property_tree/json_parser.hpp>
 #include <locale>
 
 #include "ScanRunner.h"
@@ -22,6 +26,7 @@
 #include "BernoulliRandomizer.h"
 #include "TemporalRandomizer.h"
 #include "Toolkit.h"
+#include "ParameterFileAccess.h"
 
 /* Calculates the attributable risk per person for cut. */
 double CutStructure::getAttributableRisk(const ScanRunner& scanner) const {
@@ -327,6 +332,172 @@ double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
     }
 }
 
+
+////////////////////////// SequentialStatistic ///////////////////////////////
+
+SequentialStatistic::SequentialStatistic(const Parameters& parameters, const ScanRunner & scanner) : _parameters(parameters), _scanner(scanner) {
+    std::string buffer1, buffer2;
+    // Expected filenames are derived from output filename.
+    getDerivedFilename(_parameters.getOutputFileName(), "_sequential", ".cas", _counts_filename);
+    getDerivedFilename(_parameters.getOutputFileName(), "_sequential", ".sim", _simulations_filename);
+    GetTemporaryFilename(_write_simulations_filename);
+    GetTemporaryFilename(_write_llr_filename);
+    getDerivedFilename(_parameters.getOutputFileName(), "_sequential", ".xml", _settings_filename);
+    // If case file doesn't exist yet, this is the first look of sequential statistic.
+    _look_idx = validateFileAccess(_counts_filename) == true ? 2 : 1; // store look count in settings?
+    // Get alpha spending for this look via user parameter setting.
+    _alpha_spending = _parameters.getSequentialAlphaSpending();
+    if (!isFirstLook()) {
+        readSettings(_settings_filename);
+        // Read calculate the look index.
+        _look_idx = _alpha_spendings.size() + 1;
+        _alpha_spending += _statistic_parameters.getSequentialAlphaSpending();
+        if (_parameters.getNumReplicationsRequested() != _statistic_parameters.getNumReplicationsRequested())
+            throw resolvable_error("Error: Number of replications requested (%u) does match setting in previous sequential scan (%u).",
+                                   _parameters.getNumReplicationsRequested(), 
+                                   _statistic_parameters.getNumReplicationsRequested());
+        if (_parameters.getProbabilityRatio() != _statistic_parameters.getProbabilityRatio())
+            throw resolvable_error("Error: Event probability requested (%s) does match setting in previous sequential scan (%s).",
+                                    AbtractParameterFileAccess::AsString(buffer1, _parameters.getProbabilityRatio()).c_str(),
+                                    AbtractParameterFileAccess::AsString(buffer1, _statistic_parameters.getProbabilityRatio()).c_str());
+        if (_parameters.getRestrictTreeLevels() != _statistic_parameters.getRestrictTreeLevels())
+            throw resolvable_error("Error: Restricted tree levels (requested=%s) does match setting in previous sequential scan (requested=%s).",
+                                   (_parameters.getRestrictTreeLevels() ? "y" : "n"),
+                                   (_statistic_parameters.getRestrictTreeLevels() ? "y" : "n"));
+        if (_parameters.getRestrictTreeLevels() && _parameters.getRestrictedTreeLevels() != _statistic_parameters.getRestrictedTreeLevels()) {
+            typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), buffer1);
+            typelist_csv_string<unsigned int>(_statistic_parameters.getRestrictedTreeLevels(), buffer2);
+            throw resolvable_error("Error: Restricted tree levels (%s) does match setting in previous sequential scan (%s).", buffer1.c_str(), buffer2.c_str());
+        }
+
+        // Calculate the size of _llr_sims based upon this looks alpha spending.
+        for (boost::dynamic_bitset<>::size_type i = 0; i < _alpha_simulations.size(); ++i) {
+            // Test whether simulation was marked in last look as being within previous alpha spending.
+            if (_alpha_simulations.test(i))
+                // Once a simulation is marked, it remains marked. So add to list with max double as LLR.
+                _llr_sims.push_back(std::make_pair(std::numeric_limits<double>::max(), i + 1));
+        }
+
+    }
+    _alpha_simulations.resize(_parameters.getNumReplicationsRequested());
+    size_t alpha_spending_size = ceil(static_cast<double>(_parameters.getNumReplicationsRequested() + 1) * _alpha_spending);
+    _llr_sims.resize(alpha_spending_size, std::make_pair(0,0));
+    _alpha_spendings.push_back(_parameters.getSequentialAlphaSpending());
+}
+
+bool SequentialStatistic::addSimulationLLR(double llr, unsigned int simIdx) {
+    // Skip current simulation if already marked in previous look.
+    if (_alpha_simulations.test(simIdx - 1))
+        return true;
+
+    llr_sim_t add_llr_sim(llr, simIdx);
+    // Attempt to insert current simulation llr into top ranking while maintaining the alpha spending limit.
+    llr_sim_container_t::iterator itr = std::upper_bound(_llr_sims.begin(), _llr_sims.end(), add_llr_sim, compare_llr_sim_t());
+    if (itr != _llr_sims.end()) {
+        _llr_sims.insert(itr, add_llr_sim);
+        _llr_sims.pop_back();
+        return true;
+    } return false;
+}
+
+void SequentialStatistic::readSettings(const std::string &filename) {
+    using boost::property_tree::ptree;
+    ptree pt;
+    std::string buffer;
+
+    // Read configuration file into tree.
+    read_xml(filename, pt);
+
+    // Read parameters section and store in _statistic_parameters class variable.
+    _statistic_parameters.setNumReplications(static_cast<unsigned int>(pt.get<unsigned int>("parameters.replications", _parameters.getNumReplicationsRequested())));
+    _statistic_parameters.setPowerBaselineProbabilityRatio(Parameters::ratio_t(pt.get<unsigned int>("parameters.event-probability-numerator", _parameters.getProbabilityRatio().first),
+                                                                               pt.get<unsigned int>("parameters.event-probability-denominator", _parameters.getProbabilityRatio().second)));
+    _statistic_parameters.setRestrictTreeLevels(pt.get<bool>("parameters.restrict-tree-levels", false));
+    buffer = pt.get<std::string>("parameters.restricted-tree-levels", "");
+    Parameters::RestrictTreeLevels_t restricted_tree_levels;
+    csv_string_to_typelist<unsigned int>(buffer.c_str(), restricted_tree_levels);
+    _statistic_parameters.setRestrictedTreeLevels(restricted_tree_levels);
+
+    // Read alpha spendings from last looks.
+    buffer = pt.get<std::string>("accumulation.alpha-spending", "0.0");
+    csv_string_to_typelist<double>(buffer.c_str(), _alpha_spendings);
+    _statistic_parameters.setSequentialAlphaSpending(std::accumulate(_alpha_spendings.begin(), _alpha_spendings.end(), 0.0));
+
+    // Read collection of simulation indexes that were in alpha spending from previous looks and store in class variable.
+    std::vector<unsigned int> indexes;
+    buffer = pt.get<std::string>("accumulation.alpha-simulations", "");
+    csv_string_to_typelist<unsigned int>(buffer.c_str(), indexes);
+    _alpha_simulations.resize(_parameters.getNumReplicationsRequested());
+    for (std::vector<unsigned int>::const_iterator itr = indexes.begin(); itr != indexes.end(); ++itr)
+        _alpha_simulations.set(*itr - 1);
+
+    // Read collection of cuts that signalled in previous looks and store in class variable.
+    ptree & cuts = pt.get_child("accumulation.signalled-cuts");
+    for (ptree::iterator it = cuts.begin(); it != cuts.end(); ++it) {
+        ScanRunner::Index_t index = _scanner.getNodeIndex(it->first);
+        if (!index.first)
+            throw resolvable_error("Unknown node identifier in sequential configuration file: '%s'", it->first.c_str());
+        _cuts_signaled.insert(std::make_pair(index.second, it->second.get_value<unsigned int>()));
+    }
+}
+
+void SequentialStatistic::writeSettings(const std::string &filename) {
+    using boost::property_tree::ptree;
+    using boost::property_tree::xml_writer_settings;
+    ptree pt;
+    std::string buffer;
+
+    // Write parameter settings.
+    pt.put("parameters.replications", _parameters.getNumReplicationsRequested());
+    pt.put("parameters.event-probability-numerator", _parameters.getProbabilityRatio().first);
+    pt.put("parameters.event-probability-denominator", _parameters.getProbabilityRatio().second);
+    pt.put("parameters.restrict-tree-levels", _parameters.getRestrictTreeLevels());
+    typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), buffer);
+    pt.put("parameters.restricted-tree-levels", buffer);
+
+    // Write alpha spending for all looks.
+    typelist_csv_string<double>(_alpha_spendings, buffer);
+    pt.put("accumulation.alpha-spending", buffer);
+
+    // Write simulation indexes that were in alpha spending for this and previous looks.
+    std::vector<unsigned int> indexes;
+    for (size_t t = 0; t < _alpha_simulations.size(); ++t) if (_alpha_simulations.test(t)) indexes.push_back(t + 1);
+    typelist_csv_string<unsigned int>(indexes, buffer);
+    pt.put("accumulation.alpha-simulations", buffer);
+
+    // Write collection of cuts that signalled in this and previous looks.
+    ptree signalled_cuts_node;
+    for (signalled_cuts_container_t::iterator itr=_cuts_signaled.begin(); itr != _cuts_signaled.end(); ++itr) {
+        buffer = _scanner.getNodes().at(itr->first)->getIdentifier().c_str();
+        signalled_cuts_node.put(buffer, itr->second);
+    }
+    pt.add_child("accumulation.signalled-cuts", signalled_cuts_node);
+
+    // Write to xml file.
+    write_xml(filename, pt, std::locale()); 
+}
+
+void SequentialStatistic::write(const std::string &casefilename) {
+    _alpha_simulations.reset();
+    for (llr_sim_container_t::iterator itr = _llr_sims.begin(); itr != _llr_sims.end(); ++itr) {
+        if (itr->second == 0)
+            break;
+        _alpha_simulations.set(itr->second - 1);
+    }
+
+    writeSettings(_settings_filename);
+    // add case file to case accumulation.
+    std::ifstream latest_cases(casefilename.c_str(), std::ios_base::binary);
+    std::ofstream accumulated_cases(_counts_filename.c_str(), std::ios_base::app | std::ios_base::binary);
+    accumulated_cases << latest_cases.rdbuf();
+    // Overwrite simulations file.
+    std::ifstream latest_simulations(_write_simulations_filename.c_str(), std::ios_base::binary);
+    std::ofstream accumulated_simulations(_simulations_filename.c_str(), std::ios_base::trunc | std::ios_base::binary);
+    accumulated_simulations << latest_simulations.rdbuf();
+}
+
+////////////////////////// ScanRunner ////////////////////////////////////////
+
 /** class constructor */
 ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : 
     _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0),_has_multi_parent_nodes(false), _censored_data(false), _num_censored_cases(0), _avg_censor_time(0), _num_cases_excluded(0) {
@@ -566,7 +737,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
 }
 
 /* Reads count and population data from passed file. The file format is: <node identifier>, <count>, <population> */
-bool ScanRunner::readCounts(const std::string& filename) {
+bool ScanRunner::readCounts(const std::string& filename, bool sequence_new_data) {
 	// We won't actually read the counts file in this situation but define the total from user specificied value.
 	if (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES && 
 		_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES) {
@@ -635,6 +806,8 @@ bool ScanRunner::readCounts(const std::string& filename) {
                 continue;
             }
             node->refIntN_C().front() += count + controls;
+            if (sequence_new_data)
+                node->refIntN_C_Seq_New().front() += count + controls;
         } else if (Parameters::isTemporalScanType(_parameters.getScanType())) {
             if  (!string_to_numeric_type<int>(dataSource->getValueAt(expectedColumns - 1).c_str(), daysSinceIncidence)) {
                 readSuccess = false;
@@ -713,7 +886,7 @@ bool ScanRunner::readCounts(const std::string& filename) {
                         // Now that we know there is censored data, check parameter settings are valid.
                         if (_parameters.isPerformingDayOfWeekAdjustment())
                             throw resolvable_error("Error: The day of week adjustment is not implemented for censored data.");
-                        if (_parameters.isSequentialScan())
+                        if (_parameters.getSequentialScan())
                             throw resolvable_error("Error: The sequential scan is not implemented for censored data.");
                         if (_parameters.getPerformPowerEvaluations())
                             throw resolvable_error("Error: The power evaluations option is not implemented for censored data.");
@@ -959,7 +1132,7 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
     if (_parameters.isGeneratingTableResults()) {
         CutsRecordWriter cutsWriter(*this);
         bool reportCutCSV = true;
-        if (_parameters.getSequentialScan())
+        if (_parameters.isSequentialScanPurelyTemporal())
             // This is a sequential scan and we haven't reached the maximum cases, we will report cuts.
             reportCutCSV &= !(static_cast<unsigned int>(getTotalC()) > _parameters.getSequentialMaximumSignal());
         if (_parameters.getPerformPowerEvaluations())
@@ -991,15 +1164,24 @@ bool ScanRunner::run() {
         throw resolvable_error("\nProblem encountered when reading the data from the cut file.");
     if (_print.GetIsCanceled()) return false;
 
-    if (!readCounts(_parameters.getCountFileName()))
+    // create SequentialStatistic object if Bernoulli sequential
+    if (_parameters.isSequentialScanBernoulli())
+        _sequential_statistic.reset(new SequentialStatistic(_parameters, *this));
+
+    if (!readCounts(_parameters.getCountFileName(), true))
         throw resolvable_error("\nProblem encountered when reading the data from the case file.");
     if (_print.GetIsCanceled()) return false;
+    if (_parameters.isSequentialScanBernoulli() && !_sequential_statistic->isFirstLook()) {
+        if (!readCounts(_sequential_statistic->getCountDataFilename(), false))
+            throw resolvable_error("\nProblem encountered when reading the sequential data from the case file.");
+        if (_print.GetIsCanceled()) return false;
+    }
 
-     if (!setupTree())
-        throw resolvable_error("\nProblem encountered when setting up tree.");
+    if (!setupTree())
+       throw resolvable_error("\nProblem encountered when setting up tree.");
     if (_print.GetIsCanceled()) return false;
 
-    if (_parameters.getSequentialScan() && static_cast<unsigned int>(_TotalC) > _parameters.getSequentialMaximumSignal()) {
+    if (_parameters.isSequentialScanPurelyTemporal() && static_cast<unsigned int>(_TotalC) > _parameters.getSequentialMaximumSignal()) {
         // The sequential scan reached target number of cases. Don't continue analysis - instead report such in results file.
         _parameters.setReportCriticalValues(false);
         time(&gEndTime); //get end time
@@ -1037,7 +1219,7 @@ bool ScanRunner::run() {
                     remove(_parameters.getOutputSimulationsFilename().c_str());
                     randomizer->setWriting(_parameters.getOutputSimulationsFilename());
                 }
-                if (_parameters.getSequentialScan()) {
+                if (_parameters.isSequentialScanPurelyTemporal()) {
                     if (!runsequentialsimulations(_parameters.getNumReplicationsRequested())) return false;
                 } else if (!runsimulations(randomizer, _parameters.getNumReplicationsRequested(), false)) return false;
             }
@@ -1053,6 +1235,10 @@ bool ScanRunner::run() {
 
     time(&gEndTime); //get end time
     if (!reportResults(gStartTime, gEndTime)) return false;
+
+    // create SequentialStatistic object if Bernoulli sequential
+    if (_parameters.isSequentialScanBernoulli())
+        _sequential_statistic->write(_parameters.getCountFileName());
 
     return true;
 }
@@ -1225,7 +1411,7 @@ bool ScanRunner::runsequentialsimulations(unsigned int num_relica) {
         boost::shared_ptr<SequentialFileDataSource> source;
         boost::shared_ptr<SequentialScanLoglikelihoodRatioWriter> sequential_writer;
         std::string buffer;
-        if (ValidateFileAccess(SequentialScanLoglikelihoodRatioWriter::getFilename(_parameters, buffer), false)) {
+        if (validateFileAccess(SequentialScanLoglikelihoodRatioWriter::getFilename(_parameters, buffer), false)) {
             source.reset(new SequentialFileDataSource(buffer, _parameters));
             source->gotoFirstRecord();
             // If reading sequential LLR values from file data source, limit to one thread to simply reading file.
@@ -1920,7 +2106,7 @@ bool ScanRunner::setupTree() {
     }
 
     // If executing sequential scan and the number of cases in counts file is less than user specified total seqnential cases.
-    if (_parameters.getSequentialScan() && static_cast<unsigned int>(_TotalC) > _parameters.getSequentialMaximumSignal()) {
+    if (_parameters.isSequentialScanPurelyTemporal() && static_cast<unsigned int>(_TotalC) > _parameters.getSequentialMaximumSignal()) {
         /* abort this analysis -- return true so that returned to function won't think that an error occurred. */
 
         //_print.Printf("Error: For the sequential scan, the number of cases in the count file must be less than or equal to the total sequential cases.\n"

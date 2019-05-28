@@ -84,8 +84,10 @@ void IniParameterSpecification::setup(Parameters::CreationVersion version) {
         Build_1_2_x_ParameterList();
     else if (version.iMajor == 1 && version.iMinor == 3)
         Build_1_3_x_ParameterList();
-    else
+    else if (version.iMajor == 1 && version.iMinor == 4)
         Build_1_4_x_ParameterList();
+    else
+        Build_1_5_x_ParameterList();
 }
 
 /* Returns ini version setting or default. */
@@ -203,6 +205,17 @@ void IniParameterSpecification::Build_1_4_x_ParameterList() {
     _parameter_info[Parameters::RSK_WND_ALT_CENSOR_DENOM] = ParamInfo(Parameters::RSK_WND_ALT_CENSOR_DENOM, "risk-window-alt-censor-denominator", 8, _advanced_input_section);
 
     assert(_parameter_info.size() == 58);
+}
+
+/** Version 1.5 parameter specifications. */
+void IniParameterSpecification::Build_1_5_x_ParameterList() {
+    Build_1_4_x_ParameterList();
+
+    _parameter_info[Parameters::SEQUENTIAL_ALPHA] = ParamInfo(Parameters::SEQUENTIAL_ALPHA, "sequential-alpha", 5, _sequential_scan_section);
+    _parameter_info[Parameters::SEQUENTIAL_ALPHA_SPENDING] = ParamInfo(Parameters::SEQUENTIAL_ALPHA_SPENDING, "sequential-alpha", 6, _sequential_scan_section);
+    _parameter_info[Parameters::SEQUENTIAL_SIGNAL_CUTOFF] = ParamInfo(Parameters::SEQUENTIAL_SIGNAL_CUTOFF, "sequential-signal-cutoff", 7, _sequential_scan_section);
+
+    assert(_parameter_info.size() == 61);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

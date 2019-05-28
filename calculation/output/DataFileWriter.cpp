@@ -438,6 +438,7 @@ void PowerEstimationRecordWriter::write() const {
 
 const char * LoglikelihoodRatioWriter::LLR_FILE_SUFFIX       = "_llr";
 const char * LoglikelihoodRatioWriter::LLR_HA_FILE_SUFFIX    = "_llr_ha";
+const char * LoglikelihoodRatioWriter::SIMULATION_IDX_FIELD  = "SIMIDX";
 const char * LoglikelihoodRatioWriter::LOG_LIKL_RATIO_FIELD  = "LLR";
 
 LoglikelihoodRatioWriter::LoglikelihoodRatioWriter(const ScanRunner& scanRunner) : _scanner(scanRunner) {
@@ -451,11 +452,14 @@ LoglikelihoodRatioWriter::LoglikelihoodRatioWriter(const ScanRunner& scanRunner)
   }
 }
 
-LoglikelihoodRatioWriter::LoglikelihoodRatioWriter(const ScanRunner& scanRunner, bool ispower, bool append) : _scanner(scanRunner) {
+LoglikelihoodRatioWriter::LoglikelihoodRatioWriter(const ScanRunner& scanRunner, bool ispower, bool append, bool includeIdx) : 
+    _scanner(scanRunner), _include_sim_idx(includeIdx){
   unsigned short uwOffset=0;
   std::string buffer;
   try {
-    CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
+      if (_include_sim_idx)
+          CreateField(_dataFieldDefinitions, SIMULATION_IDX_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+      CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
 
     _outfile.open(getFilename(_scanner.getParameters(), buffer, ispower).c_str(), append ? std::ofstream::app : std::ofstream::trunc);
     if (!_outfile.is_open())
@@ -477,11 +481,13 @@ std::string& LoglikelihoodRatioWriter::getFilename(const Parameters& parameters,
   return getDerivedFilename(parameters.getOutputFileName(), ispower ? LoglikelihoodRatioWriter::LLR_HA_FILE_SUFFIX : LoglikelihoodRatioWriter::LLR_FILE_SUFFIX, CSVDataFileWriter::CSV_FILE_EXT, buffer);
 }
 
-void LoglikelihoodRatioWriter::write(double llr) const {
+void LoglikelihoodRatioWriter::write(double llr, unsigned int simulation) const {
     std::string  buffer;
     RecordBuffer Record(_dataFieldDefinitions);
 
     try {
+        if (_include_sim_idx)
+            Record.GetFieldValue(SIMULATION_IDX_FIELD).AsUnsignedLong() = simulation;
         Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = llr;
         _csvWriter->writeRecord(Record);
     } catch (prg_exception& x) {
@@ -567,5 +573,5 @@ std::string & SequentialScanLoglikelihoodRatioWriter::getSequentialParametersStr
 
 void SequentialScanLoglikelihoodRatioWriter::write(double llr, boost::mutex& mutex) const {
     boost::mutex::scoped_lock lock(mutex);
-    LoglikelihoodRatioWriter::write(llr);
+    LoglikelihoodRatioWriter::write(llr, 0);
 }

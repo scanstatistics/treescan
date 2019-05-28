@@ -11,8 +11,18 @@ using boost::uniform_01;
 //////////////////// UnconditionalBernoulliRandomizer //////////////////////////
 
 /* constructor */
-UnconditionalBernoulliRandomizer::UnconditionalBernoulliRandomizer(int TotalC, int TotalControls, const Parameters& parameters, bool multiparents, long lInitialSeed)
-                    :AbstractDenominatorDataRandomizer(parameters, multiparents, lInitialSeed), _total_C(TotalC), _total_Controls(TotalControls) {}
+UnconditionalBernoulliRandomizer::UnconditionalBernoulliRandomizer(const ScanRunner& scanner, long lInitialSeed)
+                    :AbstractDenominatorDataRandomizer(scanner.getParameters(), scanner.getMultiParentNodesExist(), lInitialSeed), 
+                    _scanner(scanner), _total_C(scanner.getTotalC()), _total_Controls(scanner.getTotalControls()) {
+
+    // TODO -- evetually replace this?
+    if (scanner.getParameters().isSequentialScanBernoulli()) {
+        if (!scanner.getSequentialStatistic().isFirstLook())
+            _read_filename = _scanner.getSequentialStatistic().getSimulationDataFilename();
+        _write_filename = _scanner.getSequentialStatistic().getWriteSimulationDataFilename();
+    }
+
+}
 
 /** Distributes cases into simulation case array. Caller is responsible for ensuring that
     passed array pointers are allocated and dimensions match that of passed tract and locations variables. */

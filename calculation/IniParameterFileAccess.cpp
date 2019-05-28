@@ -326,6 +326,9 @@ void IniParameterFileAccess::WriteSequentialScanSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, Parameters::SEQUENTIAL_MAX_SIGNAL, GetParameterString(Parameters::SEQUENTIAL_MAX_SIGNAL, s).c_str(), GetParameterComment(Parameters::SEQUENTIAL_MAX_SIGNAL));
         WriteIniParameter(WriteFile, Parameters::SEQUENTIAL_MIN_SIGNAL, GetParameterString(Parameters::SEQUENTIAL_MIN_SIGNAL, s).c_str(), GetParameterComment(Parameters::SEQUENTIAL_MIN_SIGNAL));
         WriteIniParameter(WriteFile, Parameters::SEQUENTIAL_FILE, GetParameterString(Parameters::SEQUENTIAL_FILE, s).c_str(), GetParameterComment(Parameters::SEQUENTIAL_FILE));
+        WriteIniParameter(WriteFile, Parameters::SEQUENTIAL_ALPHA, GetParameterString(Parameters::SEQUENTIAL_ALPHA, s).c_str(), GetParameterComment(Parameters::SEQUENTIAL_ALPHA));
+        WriteIniParameter(WriteFile, Parameters::SEQUENTIAL_ALPHA_SPENDING, GetParameterString(Parameters::SEQUENTIAL_ALPHA_SPENDING, s).c_str(), GetParameterComment(Parameters::SEQUENTIAL_ALPHA_SPENDING));
+        WriteIniParameter(WriteFile, Parameters::SEQUENTIAL_SIGNAL_CUTOFF, GetParameterString(Parameters::SEQUENTIAL_SIGNAL_CUTOFF, s).c_str(), GetParameterComment(Parameters::SEQUENTIAL_SIGNAL_CUTOFF));
     } catch (prg_exception& x) {
         x.addTrace("WriteSequentialScanSettings()","IniParameterFileAccess");
         throw;

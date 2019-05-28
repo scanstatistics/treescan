@@ -47,7 +47,7 @@ class AbtractParameterFileAccess {
      std::string               & AsString(std::string& ref, double d) const {printString(ref, "%g", d); return ref;}
      std::string               & AsString(std::string& ref, bool b) const {printString(ref, "%s", (b ? (_write_boolean_as_digit ? "1" : "y") : (_write_boolean_as_digit ? "0" : "n"))); return ref;}
      std::string               & AsString(std::string& ref, const Parameters::CreationVersion& v) const {printString(ref, "%d.%d.%d", v.iMajor, v.iMinor, v.iRelease); return ref;}
-     std::string               & AsString(std::string& ref, const Parameters::ratio_t& r) const {printString(ref, "%d/%d", r.first, r.second); return ref;}
+     static std::string        & AsString(std::string& ref, const Parameters::ratio_t& r) {printString(ref, "%d/%d", r.first, r.second); return ref;}
      const char                * GetParameterComment(Parameters::ParameterType e) const;
      std::string               & GetParameterString(Parameters::ParameterType e, std::string& s) const;
 

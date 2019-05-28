@@ -55,11 +55,15 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
 
 /** Overrides settigs  */
 bool ParameterProgramOptions::setParameterOverrides(const po::variables_map& vm) {
-    std::string buffer;
-    for (Parameters::ParameterType eType=Parameters::TREE_FILE; eType <= _parameters.giNumParameters; eType = Parameters::ParameterType(eType + 1)) {
-        if (vm.count(getOption(eType)))
-            SetParameter(eType, vm[getOption(eType)].as<std::string>(), gPrintDirection);
+    IniParameterSpecification::ParameterInfoCollection_t parameter_collection;
+    _specifications.getParameterInfoCollection(parameter_collection);
+    IniParameterSpecification::ParameterInfoCollection_t::iterator itr = parameter_collection.begin(), end = parameter_collection.end();
+    for (; itr != end; ++itr) {
+        if (vm.count(itr->_label))
+            SetParameter(itr->_type, vm[itr->_label].as<std::string>(), gPrintDirection);
     }
+
+    std::string buffer;
     /* manually scan for multiple tree file parameters */
     for (size_t t=0; t < ADDITIONAL_TREEFILES; ++t) {
         printString(buffer, "%s%d", getOption(Parameters::TREE_FILE), t+2);

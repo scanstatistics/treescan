@@ -42,7 +42,7 @@ double                          getNumCombinations(size_t total, size_t choose);
 unsigned int                    GetNumSystemProcessors();
 void                            ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection);
 boost::posix_time::ptime        GetCurrentTime_HighResolution();
-bool                            ValidateFileAccess(const std::string& filename, bool bWriteEnable=false);
+bool                            validateFileAccess(const std::string& filename, bool bWriteEnable=false);
 std::string                   & trimString(std::string &source, const char * t=" ");
 std::string                   & lowerString(std::string &source); 
 std::string                   & printString(std::string& s, const char * format, ...);
@@ -51,6 +51,7 @@ std::string                   & getValueAsString(double value, std::string& s, u
 std::string                   & getRoundAsString(double value, std::string& s, unsigned int precision, bool localize=false);
 std::string                   & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath);
 std::string                   & GetUserTemporaryDirectory(std::string& s);
+std::string                   & GetTemporaryFilename(std::string& s);
 bool                            getlinePortable(std::ifstream& readstream, std::string& line);
 std::string                   & htmlencode(std::string& data);
 template <typename T>           bool string_to_numeric_type(const char * s, T& t, bool test_finite=true) {

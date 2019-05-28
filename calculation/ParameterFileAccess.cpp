@@ -72,6 +72,9 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::MINIMUM_WINDOW_FIXED    : return "minimum temporal size as fixed time length (integer)";
             case Parameters::SEQUENTIAL_MIN_SIGNAL   : return "sequential scan - minimum cases to signal (integer)";
             case Parameters::SEQUENTIAL_FILE         : return "sequential scan filename";
+            case Parameters::SEQUENTIAL_ALPHA        : return "sequential alpha";
+            case Parameters::SEQUENTIAL_ALPHA_SPENDING: return "sequential alpha spending";
+            case Parameters::SEQUENTIAL_SIGNAL_CUTOFF: return "sequential signal cutoff";                
             /* Advanced Analysis - Adjustments */
             case Parameters::DAYOFWEEK_ADJUSTMENT    : return "perform day of week adjustments (y/n)";
             case Parameters::APPLY_EXCLUSION_RANGES  : return "apply exclusion time ranges (y/n)";
@@ -147,6 +150,11 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::EVENT_PROBABILITY        : return AsString(s, _parameters.getProbabilityRatio());
             case Parameters::SEQUENTIAL_SCAN          : return AsString(s, _parameters.getSequentialScan());
             case Parameters::SEQUENTIAL_MAX_SIGNAL    : return AsString(s, _parameters.getSequentialMaximumSignal());
+            case Parameters::SEQUENTIAL_MIN_SIGNAL    : return AsString(s, _parameters.getSequentialMinimumSignal());
+            case Parameters::SEQUENTIAL_FILE          : s = _parameters.getSequentialFilename(); return s;
+            case Parameters::SEQUENTIAL_ALPHA         : return AsString(s, _parameters.getSequentialAlpha());
+            case Parameters::SEQUENTIAL_ALPHA_SPENDING: return AsString(s, _parameters.getSequentialAlphaSpending());
+            case Parameters::SEQUENTIAL_SIGNAL_CUTOFF: return AsString(s, _parameters.getSequentialSignalCutoff());
             case Parameters::START_DATA_TIME_RANGE    : return _parameters.getTemporalStartRange().toString(s);
             case Parameters::END_DATA_TIME_RANGE      : return _parameters.getTemporalEndRange().toString(s);
             /* Advanced Analysis - Temporal Window */
@@ -154,8 +162,6 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::MAXIMUM_WINDOW_FIXED     : return AsString(s, _parameters.getMaximumWindowLength());
             case Parameters::MAXIMUM_WINDOW_TYPE      : return AsString(s, _parameters.getMaximumWindowType());
             case Parameters::MINIMUM_WINDOW_FIXED     : return AsString(s, _parameters.getMinimumWindowLength());
-            case Parameters::SEQUENTIAL_MIN_SIGNAL    : return AsString(s, _parameters.getSequentialMinimumSignal());
-            case Parameters::SEQUENTIAL_FILE          : s = _parameters.getSequentialFilename(); return s;
             /* Advanced Analysis - Adjustments */
             case Parameters::DAYOFWEEK_ADJUSTMENT     : return AsString(s, _parameters.getPerformDayOfWeekAdjustment());
             case Parameters::APPLY_EXCLUSION_RANGES   : return AsString(s, _parameters.isApplyingExclusionTimeRanges());
@@ -332,6 +338,11 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::EVENT_PROBABILITY        : _parameters.setProbabilityRatio(ReadRatio(value)); break;
             case Parameters::SEQUENTIAL_SCAN          : _parameters.setSequentialScan(ReadBoolean(value, e)); break;
             case Parameters::SEQUENTIAL_MAX_SIGNAL    : _parameters.setSequentialMaximumSignal(ReadUnsignedInt(value, e)); break;
+            case Parameters::SEQUENTIAL_MIN_SIGNAL    : _parameters.setSequentialMinimumSignal(ReadUnsignedInt(value, e)); break;
+            case Parameters::SEQUENTIAL_FILE          : _parameters.setSequentialFilename(value.c_str(), true); break;
+            case Parameters::SEQUENTIAL_ALPHA         : _parameters.setSequentialAlpha(ReadDouble(value, e)); break;
+            case Parameters::SEQUENTIAL_ALPHA_SPENDING: _parameters.setSequentialAlphaSpending(ReadDouble(value, e)); break;
+            case Parameters::SEQUENTIAL_SIGNAL_CUTOFF: _parameters.setSequentialSignalCutoff(ReadDouble(value, e)); break;
             case Parameters::START_DATA_TIME_RANGE    : _parameters.setTemporalStartRange(DataTimeRange(value)); break;
             case Parameters::END_DATA_TIME_RANGE      : _parameters.setTemporalEndRange(DataTimeRange(value)); break;
             /* Advanced Analysis - Temporal Window */
@@ -340,8 +351,6 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::MAXIMUM_WINDOW_TYPE      : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::PERCENTAGE_WINDOW, Parameters::FIXED_LENGTH);
                                                         _parameters.setMaximumWindowType((Parameters::MaximumWindowType)iValue); break;
             case Parameters::MINIMUM_WINDOW_FIXED     : _parameters.setMinimumWindowLength(ReadUnsignedInt(value, e)); break;
-            case Parameters::SEQUENTIAL_MIN_SIGNAL    : _parameters.setSequentialMinimumSignal(ReadUnsignedInt(value, e)); break;
-            case Parameters::SEQUENTIAL_FILE          : _parameters.setSequentialFilename(value.c_str(), true); break;
             /* Advanced Analysis - Adjustments */
             case Parameters::DAYOFWEEK_ADJUSTMENT     : _parameters.setPerformDayOfWeekAdjustment(ReadBoolean(value, e)); break;
             case Parameters::APPLY_EXCLUSION_RANGES   : _parameters.setApplyingExclusionTimeRanges(ReadBoolean(value, e)); break;

@@ -32,6 +32,9 @@ class Parameters {
                         SEQUENTIAL_MIN_SIGNAL,
                         SEQUENTIAL_MAX_SIGNAL,
                         SEQUENTIAL_FILE,
+                        SEQUENTIAL_ALPHA,
+                        SEQUENTIAL_ALPHA_SPENDING,
+                        SEQUENTIAL_SIGNAL_CUTOFF,
                         START_DATA_TIME_RANGE,
                         END_DATA_TIME_RANGE,
                         /* Advanced Analysis - Temporal Window */
@@ -226,6 +229,9 @@ class Parameters {
     unsigned int                        _sequential_min_signal;
     unsigned int                        _sequential_max_signal;
     std::string                         _sequential_file;
+    double                              _sequential_alpha;
+    double                              _sequential_alpha_spending;
+    double                              _sequential_signal_cutoff;
     double                              _power_z;
     bool                                _apply_risk_window_restriction;
     double                              _risk_window_percentage;
@@ -325,6 +331,9 @@ class Parameters {
     unsigned int                        getSequentialMinimumSignal() const {return _sequential_min_signal;}
     unsigned int                        getSequentialMaximumSignal() const {return _sequential_max_signal;}
     const std::string                 & getSequentialFilename() const {return _sequential_file;}
+    double                              getSequentialAlpha() const { return _sequential_alpha; }
+    double                              getSequentialSignalCutoff() const { return _sequential_signal_cutoff; }
+    double                              getSequentialAlphaSpending() const { return _sequential_alpha_spending; }
     const std::string                 & getSourceFileName() const {return _parametersSourceFileName;}
     const DataTimeRange               & getTemporalEndRange() const {return _temporalEndRange;}
     const DataTimeRange               & getTemporalStartRange() const {return _temporalStartRange;}
@@ -338,7 +347,8 @@ class Parameters {
     bool                                isPrintColumnHeaders() const {return _printColumnHeaders;}
     bool                                isRandomlyGeneratingSeed() const {return _randomlyGenerateSeed;}
     bool                                isReadingSimulationData() const {return _read_simulations;}
-    bool                                isSequentialScan() const {return _sequential_scan && _scan_type == Parameters::TIMEONLY;}
+    bool                                isSequentialScanPurelyTemporal() const;
+    bool                                isSequentialScanBernoulli() const;
     static bool                         isSpatialScanType(ScanType e) {return e == Parameters::TREEONLY || e == Parameters::TREETIME;}
     static bool                         isTemporalScanType(ScanType e) {return e == Parameters::TIMEONLY || e == Parameters::TREETIME;}
     bool                                isWritingSimulationData() const {return _write_simulations;}
@@ -393,6 +403,9 @@ class Parameters {
     void                                setSequentialMinimumSignal(unsigned int i) {_sequential_min_signal = i;}
     void                                setSequentialMaximumSignal(unsigned int i) {_sequential_max_signal = i;}
     void                                setSequentialFilename(const char * s, bool bCorrectForRelativePath=false);
+    void                                setSequentialAlpha(double d) { _sequential_alpha = d; }
+    void                                setSequentialAlphaSpending(double d) { _sequential_alpha_spending = d; }
+    void                                setSequentialSignalCutoff(double d) { _sequential_signal_cutoff = d; }
 
     void                                setSourceFileName(const char * sParametersSourceFileName);
     void                                setTemporalEndRange(const DataTimeRange& range) {_temporalEndRange = range;}

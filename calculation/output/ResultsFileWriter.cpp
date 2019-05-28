@@ -118,7 +118,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         }
     }
 
-    if (parameters.getSequentialScan() && static_cast<unsigned int>(_scanRunner.getTotalC()) > parameters.getSequentialMaximumSignal()) {
+    if (parameters.isSequentialScanPurelyTemporal() && static_cast<unsigned int>(_scanRunner.getTotalC()) > parameters.getSequentialMaximumSignal()) {
         outfile << "Note: The sequential scan reached or exceeded the specified maximum cases." << std::endl << "      The sequential analysis is over." << std::endl;
     } else if (!parameters.getPerformPowerEvaluations() || (parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         if (_scanRunner.getCuts().size() == 0 || !_scanRunner.reportableCut(*_scanRunner.getCuts()[0])) {
@@ -216,8 +216,11 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                 if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/) {
                     PrintFormat.PrintSectionLabel(outfile, "P-value", true);
-                    printString(buffer, format.c_str(), (double)thisCut.getRank() /(parameters.getNumReplicationsRequested() + 1));
+                    double p_value = (double)thisCut.getRank() / (parameters.getNumReplicationsRequested() + 1);
+                    printString(buffer, format.c_str(), p_value);
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                    if (parameters.isSequentialScanBernoulli() && p_value <= parameters.getSequentialSignalCutoff())
+                        const_cast<ScanRunner&>(_scanRunner).refSequentialStatistic().setCutSignaled(static_cast<size_t>(thisCut.getID()));
                 }
 				outfile << std::endl;
             }
@@ -318,12 +321,12 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buff
                 default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", parameters.getConditionalType());
             } break;
         case Parameters::TIMEONLY : 
-            buffer = parameters.getSequentialScan() ? "Time Only Sequential Scan" : "Time Only Scan";
+            buffer = parameters.isSequentialScanPurelyTemporal() ? "Time Only Sequential Scan" : "Time Only Scan";
             switch (parameters.getConditionalType()) {
                 case Parameters::TOTALCASES : buffer += " with Conditional Uniform Model"; break;
                 default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", parameters.getConditionalType());
             } break;
-            if (parameters.getSequentialScan()) {
+            if (parameters.isSequentialScanPurelyTemporal()) {
                 std::string temp;
                 buffer += printString(temp, ", %d out of %u cases observed.", _scanRunner.getTotalC(), parameters.getSequentialMaximumSignal());
             }
@@ -399,7 +402,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
        - There needs to be at least one reportable cut.
        */
     bool showingTreeGraph = parameters.getNumReplicationsRequested() >= 19 && parameters.getScanType() != Parameters::TIMEONLY;
-    if (parameters.getSequentialScan())
+    if (parameters.isSequentialScanPurelyTemporal())
         showingTreeGraph &= !(static_cast<unsigned int>(_scanRunner.getTotalC()) > parameters.getSequentialMaximumSignal());
     if (parameters.getPerformPowerEvaluations())
         showingTreeGraph &= parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS;
@@ -490,7 +493,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "</tbody></table></div>" << std::endl;
 
     outfile << "<div class=\"hr\"></div>" << std::endl;
-    if (parameters.getSequentialScan() && static_cast<unsigned int>(_scanRunner.getTotalC()) > parameters.getSequentialMaximumSignal()) {
+    if (parameters.isSequentialScanPurelyTemporal() && static_cast<unsigned int>(_scanRunner.getTotalC()) > parameters.getSequentialMaximumSignal()) {
         outfile << "<div class=\"warning\">Note: The sequential scan reached or exceeded the specified maximum cases. The sequential analysis is over.</div><div class=\"hr\"></div>";
     } else if (!parameters.getPerformPowerEvaluations() || (parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         outfile << "<div id=\"cuts\">" << std::endl;

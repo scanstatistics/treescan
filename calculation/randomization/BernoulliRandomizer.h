@@ -8,13 +8,14 @@
 /** Unconditional Bernoulli randomizer for null hypothesis. */
 class UnconditionalBernoulliRandomizer : public AbstractDenominatorDataRandomizer {
     protected:
-        int             _total_C;
-        int             _total_Controls;
+        int                 _total_C;
+        int                 _total_Controls;
+        const ScanRunner  & _scanner;
 
         virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
 
     public:
-        UnconditionalBernoulliRandomizer(int TotalC, int TotalControls, const Parameters& parameters, bool multiparents, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+        UnconditionalBernoulliRandomizer(const ScanRunner& scanner, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
         virtual ~UnconditionalBernoulliRandomizer() {}
 
         virtual UnconditionalBernoulliRandomizer * clone() const {return new UnconditionalBernoulliRandomizer(*this);}

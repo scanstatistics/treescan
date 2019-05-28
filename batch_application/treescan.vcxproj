@@ -90,7 +90,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_61_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -109,7 +109,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_61_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -127,7 +127,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level2</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_61_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -158,7 +158,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_61_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -179,27 +179,27 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\boost\boost_1_61_0\libs\filesystem\src\codecvt_error_category.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\filesystem\src\operations.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\filesystem\src\path.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\filesystem\src\path_traits.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\filesystem\src\portability.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\filesystem\src\unique_path.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\filesystem\src\utf8_codecvt_facet.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\filesystem\src\windows_file_codecvt.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\system\src\error_code.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\cmdline.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\config_file.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\convert.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\options_description.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\parsers.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\positional_options.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\split.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\utf8_codecvt_facet.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\value_semantic.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\variables_map.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\program_options\src\winmain.cpp" />
-    <ClCompile Include="..\boost\boost_1_61_0\libs\thread\src\win32\thread.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\codecvt_error_category.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\operations.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\path.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\path_traits.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\portability.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\unique_path.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\utf8_codecvt_facet.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\windows_file_codecvt.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\system\src\error_code.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\program_options\src\cmdline.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\program_options\src\config_file.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\program_options\src\convert.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\program_options\src\options_description.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\program_options\src\parsers.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\program_options\src\positional_options.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\program_options\src\split.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\program_options\src\utf8_codecvt_facet.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\program_options\src\value_semantic.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\program_options\src\variables_map.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\program_options\src\winmain.cpp" />
+    <ClCompile Include="..\boost\boost_1_70_0\libs\thread\src\win32\thread.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\CriticalValues.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\Loglikelihood.cpp" />
     <ClCompile Include="..\calculation\output\DataFileWriter.cpp" />

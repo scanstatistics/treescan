@@ -93,7 +93,7 @@ void ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, in
 }
 
 /** Returns indication of whether file exists and is readable/writable. */
-bool ValidateFileAccess(const std::string& filename, bool bWriteEnable) {
+bool validateFileAccess(const std::string& filename, bool bWriteEnable) {
   FILE        * fp=0;
   bool          bReturn=true;
 
@@ -232,6 +232,13 @@ std::string & GetUserDocumentsDirectory(std::string& s, const std::string& defau
 
 std::string & GetUserTemporaryDirectory(std::string& s) {
     s = boost::filesystem::temp_directory_path().string();
+    return s;
+}
+
+std::string & GetTemporaryFilename(std::string& s) {
+    GetUserTemporaryDirectory(s);
+    s += boost::filesystem::path::preferred_separator;
+    s += boost::filesystem::unique_path().string();
     return s;
 }
 

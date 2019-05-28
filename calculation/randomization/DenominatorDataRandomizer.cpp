@@ -9,8 +9,18 @@
 int AbstractDenominatorDataRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes) {
     int TotalSimC;
     if (_read_data) {
+        std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
         boost::mutex::scoped_lock lock(mutex);
         TotalSimC = read(_read_filename, iSimulation, treeNodes, treeSimNodes);
+    } else if (_parameters.isSequentialScanBernoulli()) {
+        TotalSimC = randomize(iSimulation, SequentialNodesProxy(treeNodes, _parameters.getProbability()), treeSimNodes);
+        // Now read stored data set
+        if (_read_filename.size()) {
+            boost::mutex::scoped_lock readlock(mutex);
+            TotalSimC += read(_read_filename, iSimulation, treeNodes, treeSimNodes);
+        }
+        boost::mutex::scoped_lock writelock(mutex);
+        write(_write_filename, treeSimNodes);
     } else { // else standard randomization
         TotalSimC = randomize(iSimulation, NodesProxy(treeNodes, _parameters.getProbability()), treeSimNodes);
     }
@@ -46,7 +56,7 @@ int AbstractDenominatorDataRandomizer::read(const std::string& filename, unsigne
                 throw resolvable_error("Error: Simulated data file does not contain enough data for simulation %d. Expecting %d datum but could only read %d.\n", simulation, checkNodes, i);
             throw resolvable_error("Error: Simulated data file appears to contain invalid data in simulation %d. Datum could not be read as integer for %d element.\n", simulation, i+1);
         }
-        treeSimNodes[i].refIntC() = count;
+        treeSimNodes[i].refIntC() += count;
         treeSimNodes[i].refBrC() = 0;
         total_sim += count;
     }

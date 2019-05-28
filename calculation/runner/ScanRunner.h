@@ -84,7 +84,9 @@ private:
     int                     _ID;                // The node ID.
     CountContainer_t        _IntC_C;            // Number of true and simulated cases internal to the node, respectively.
     CountContainer_t        _BrC_C;             // Number of true and simulated cases in the node and all decendants (children, grandchildren etc.)
-    ExpectedContainer_t     _IntN_C, _BrN_C;    // Expected number of cases internal to the node, and with all decendants respectively.
+    ExpectedContainer_t     _IntN_C;            // Expected number of cases internal to the node.
+    ExpectedContainer_t     _IntN_C_Seq_New;    // Expected number cases in new sequential data set.
+    ExpectedContainer_t     _BrN_C;             // Expected number of cases internal to the node and with all decendants.
     RelationContainer_t     _Child;             // List of node IDs of the children and parents
     RelationContainer_t     _Parent;
     Parameters::CutType     _cut_type;
@@ -106,6 +108,10 @@ private:
             (parameters.getConditionalType() == Parameters::NODE && parameters.isPerformingDayOfWeekAdjustment())) {
             _IntN_C.resize(container_size);
             _BrN_C.resize(container_size);
+        }
+        if (parameters.isSequentialScanBernoulli()) {
+            // Also initialize structures used to store existing data from previous sequential scans.
+            _IntN_C_Seq_New.resize(container_size);
         }
     }
 
@@ -171,6 +177,7 @@ public:
 	unsigned int                  getLevel() const {return _level;}
     count_t                       getMinCensoredBr() const { return _min_censored_Br; }
     double                        getIntN() const {return _IntN_C.front();}
+    double                        getIntN_Seq_New() const { return _IntN_C_Seq_New.front(); }
     const ExpectedContainer_t   & getIntN_C() const {return _IntN_C;}
     double                        getBrN() const {return _BrN_C.front();}
     const ExpectedContainer_t   & getBrN_C() const {return _BrN_C;}
@@ -182,7 +189,13 @@ public:
                                         _IntN_C.resize(_IntC_C.size(), 0);
                                     }
                                     return _IntN_C;
-                                  }
+                                 }
+    ExpectedContainer_t         & refIntN_C_Seq_New() {
+                                    if (_IntN_C_Seq_New.size() == 0) {
+                                        _IntN_C_Seq_New.resize(_IntC_C.size(), 0);
+                                    }
+                                    return _IntN_C_Seq_New;
+                                 }
     CountContainer_t            & refIntC_C() {return _IntC_C;}
     CountContainer_t            & refBrC_C() {return _BrC_C;}
     ExpectedContainer_t         & refBrN_C() {
@@ -299,6 +312,59 @@ struct TreeStatistics {
 class AbstractRandomizer;
 class RelativeRiskAdjustmentHandler;
 
+typedef std::pair<double, unsigned int> llr_sim_t;
+
+class compare_llr_sim_t {
+public:
+    bool operator() (const llr_sim_t &lhs, const llr_sim_t &rhs) {
+        return lhs.first > rhs.first;
+    }
+};
+
+class SequentialStatistic {
+    public:
+        typedef std::vector<double>                     alpha_spending_container_t;
+        typedef std::deque<llr_sim_t>                   llr_sim_container_t;
+        typedef std::map<unsigned int, unsigned int>    signalled_cuts_container_t;
+
+    protected:
+        const Parameters          & _parameters;
+        const ScanRunner          & _scanner;
+        Parameters                  _statistic_parameters;
+        unsigned int                _look_idx;
+        double                      _alpha_spending;
+        alpha_spending_container_t  _alpha_spendings;
+        std::string                 _counts_filename;
+        std::string                 _simulations_filename;
+        std::string                 _write_simulations_filename;
+        std::string                 _write_llr_filename;
+        std::string                 _settings_filename;
+        boost::dynamic_bitset<>     _alpha_simulations;
+        signalled_cuts_container_t  _cuts_signaled;
+        llr_sim_container_t         _llr_sims;
+
+        void                        readSettings(const std::string &filename);
+        void                        writeSettings(const std::string &filename);
+
+    public:
+        SequentialStatistic(const Parameters& parameters, const ScanRunner & scanner);
+
+        bool                        addSimulationLLR(double llr, unsigned int simIdx);
+        double                      getAlphaSpending() const { return _alpha_spending; }
+        bool                        isFirstLook() const { return _look_idx == 1; }
+        const std::string         & getCountDataFilename() const { return _counts_filename; }
+        const std::string         & getSimulationDataFilename() const { return _simulations_filename; }
+        const std::string         & getWriteSimulationDataFilename() const { return _write_simulations_filename; }
+        void                        setCutSignaled(size_t cutIdx) {
+            if (_cuts_signaled.find(cutIdx) == _cuts_signaled.end())
+                _cuts_signaled[cutIdx] = _look_idx; 
+        }
+        bool                        testCutSignaled(size_t cutIdx) {
+            return _cuts_signaled.find(cutIdx) != _cuts_signaled.end();
+        }
+        void                        write(const std::string &casefilename);
+};
+
 class ScanRunner {
 public:
     typedef ptr_vector<NodeStructure>                           NodeStructureContainer_t;
@@ -311,36 +377,37 @@ public:
     typedef std::vector<unsigned int>                           TimeIntervalContainer_t;
     typedef std::vector<TimeIntervalContainer_t>                DayOfWeekIndexes_t;
     typedef boost::shared_ptr<TreeStatistics>                   TreeStatistics_t;
+    typedef boost::shared_ptr<SequentialStatistic>              SequentialStatistic_t;
 
 protected:
-    BasePrint                 & _print;
-    NodeStructureContainer_t    _Nodes;
-    NodeStructure::RelationContainer_t _rootNodes;
-    CutStructureContainer_t     _Cut;
-    CutStructureContainer_t     _trimmed_cuts;
-    int                         _TotalC;
-    int                         _TotalControls;
-    double                      _TotalN;
-    SimulationVariables         _simVars;
-    Parameters                  _parameters;
-    DataTimeRange::index_t      _zero_translation_additive;
-    boost::dynamic_bitset<>     _caselessWindows;
-    std::auto_ptr<CriticalValues> _critical_values;
-    PowerEstimationContainer_t  _power_estimations;
-    DayOfWeekIndexes_t          _day_of_week_indexes;
-    mutable TreeStatistics_t    _tree_statistics;
-    bool                        _has_multi_parent_nodes;
-    bool                        _censored_data;
-    NodeStructure::count_t       _num_censored_cases;
-    DataTimeRange::index_t      _avg_censor_time;
-    NodeStructure::count_t      _num_cases_excluded;
+    BasePrint                         & _print;
+    NodeStructureContainer_t            _Nodes;
+    NodeStructure::RelationContainer_t  _rootNodes;
+    CutStructureContainer_t             _Cut;
+    CutStructureContainer_t             _trimmed_cuts;
+    int                                 _TotalC;
+    int                                 _TotalControls;
+    double                              _TotalN;
+    SimulationVariables                 _simVars;
+    Parameters                          _parameters;
+    DataTimeRange::index_t              _zero_translation_additive;
+    boost::dynamic_bitset<>             _caselessWindows;
+    std::auto_ptr<CriticalValues>       _critical_values;
+    PowerEstimationContainer_t          _power_estimations;
+    DayOfWeekIndexes_t                  _day_of_week_indexes;
+    mutable TreeStatistics_t            _tree_statistics;
+    bool                                _has_multi_parent_nodes;
+    bool                                _censored_data;
+    NodeStructure::count_t              _num_censored_cases;
+    DataTimeRange::index_t              _avg_censor_time;
+    NodeStructure::count_t              _num_cases_excluded;
+    mutable SequentialStatistic_t       _sequential_statistic;
 
     unsigned int                addCN_C(const NodeStructure& sourceNode, NodeStructure& destinationNode, boost::dynamic_bitset<>& ancestor_nodes);
     size_t                      calculateCutsCount() const;
 
-    Index_t                     getNodeIndex(const std::string& identifier) const;
     bool                        readRelativeRisksAdjustments(const std::string& filename, RiskAdjustmentsContainer_t& rrAdjustments, bool consolidate);
-    bool                        readCounts(const std::string& filename);
+    bool                        readCounts(const std::string& filename, bool sequence_new_data);
     bool                        readCuts(const std::string& filename);
     bool                        readTree(const std::string& filename, unsigned int treeOrdinal);
     bool                        reportResults(time_t start, time_t end);
@@ -359,6 +426,7 @@ protected:
 public:
     ScanRunner(const Parameters& parameters, BasePrint& print);
 
+    Index_t                            getNodeIndex(const std::string& identifier) const;
     bool                               isCensoredData() const { return _censored_data; }
     DataTimeRange::index_t             getAvgCensorTime() const { return _avg_censor_time; }
     NodeStructure::count_t             getNumCensoredCases() const { return _num_censored_cases; }
@@ -374,6 +442,8 @@ public:
     const Parameters                 & getParameters() const {return _parameters;}
     const PowerEstimationContainer_t & getPowerEstimations() const {return _power_estimations;}
     BasePrint                        & getPrint() {return _print;}
+    SequentialStatistic              & refSequentialStatistic() { return *_sequential_statistic; }
+    const SequentialStatistic        & getSequentialStatistic() const { return *_sequential_statistic; }
     SimulationVariables              & getSimulationVariables() {return _simVars;}
     int                                getTotalC() const {return _TotalC;}
     int                                getTotalControls() const {return _TotalControls;}
