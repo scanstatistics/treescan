@@ -38,7 +38,7 @@
               <Component id="_closeButton" min="-2" pref="105" max="-2" attributes="1"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="jTabbedPane1" alignment="0" pref="559" max="32767" attributes="0"/>
+          <Component id="jTabbedPane1" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -85,7 +85,7 @@
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
-                              <Component id="_cutFileTextField" pref="551" max="32767" attributes="1"/>
+                              <Component id="_cutFileTextField" pref="503" max="32767" attributes="1"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_cutFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -104,7 +104,7 @@
                           <Component id="_cutFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="_cutFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="274" max="32767" attributes="0"/>
+                      <EmptySpace pref="268" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -165,7 +165,7 @@
                       <Component id="_minTemporalOptionsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_risk_window_group" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="88" max="32767" attributes="0"/>
+                      <EmptySpace pref="82" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -205,7 +205,7 @@
                                   <Component id="_maxTemporalTimeUnitsLabel" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="279" max="32767" attributes="0"/>
+                          <EmptySpace pref="231" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -318,7 +318,7 @@
                           <Component id="_minTemporalClusterSizeUnitsTextField" min="-2" pref="45" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_minTemporalTimeUnitsLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="440" max="32767" attributes="0"/>
+                          <EmptySpace pref="392" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -373,7 +373,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_risk_window_percentage" min="-2" pref="70" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_risk_window_percentage_label" pref="325" max="32767" attributes="0"/>
+                          <Component id="_risk_window_percentage_label" pref="277" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -453,7 +453,7 @@
                       <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="209" max="32767" attributes="0"/>
+                      <EmptySpace pref="203" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -480,7 +480,7 @@
                           <Component id="_labelMonteCarloReplications" min="-2" max="-2" attributes="1"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_montCarloReplicationsTextField" min="-2" pref="58" max="-2" attributes="0"/>
-                          <EmptySpace pref="219" max="32767" attributes="0"/>
+                          <EmptySpace pref="171" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -620,7 +620,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_totalPowerCases" min="-2" pref="78" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_powerEvaluationWithSpecifiedCasesLabel" pref="305" max="32767" attributes="0"/>
+                                  <Component id="_powerEvaluationWithSpecifiedCasesLabel" pref="257" max="32767" attributes="0"/>
                               </Group>
                               <Component id="_alternativeHypothesisFilenameLabel" alignment="0" max="32767" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
@@ -645,7 +645,7 @@
                                           <Component id="_numberPowerReplications" min="-2" pref="58" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace min="0" pref="231" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="183" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -685,7 +685,7 @@
                               <Component id="_alternativeHypothesisFilename" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_alternativeHypothesisFilenameButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="107" max="32767" attributes="0"/>
+                          <EmptySpace pref="101" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -842,7 +842,7 @@
                       <Component id="_log_likelihood_ratios_group" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_report_critical_values_group" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="120" max="32767" attributes="0"/>
+                      <EmptySpace pref="114" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -866,7 +866,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_reportLLRResultsAsCsvTable" pref="558" max="32767" attributes="0"/>
+                          <Component id="_reportLLRResultsAsCsvTable" pref="510" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -910,7 +910,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_reportCriticalValuesCheckBox" pref="550" max="32767" attributes="0"/>
+                          <Component id="_reportCriticalValuesCheckBox" pref="502" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -966,7 +966,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_attributable_risk_exposed" min="-2" pref="70" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_chk_attributable_risk_extra" pref="291" max="32767" attributes="0"/>
+                          <Component id="_chk_attributable_risk_extra" pref="243" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1065,7 +1065,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_apply_time_range_restrictions" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_time_range_restrictions" pref="413" max="32767" attributes="0"/>
+                          <Component id="_time_range_restrictions" pref="365" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1106,7 +1106,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="_perform_dayofweek_adjustments" alignment="1" pref="582" max="32767" attributes="0"/>
+                      <Component id="_perform_dayofweek_adjustments" alignment="1" pref="534" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
@@ -1131,8 +1131,8 @@
         <Container class="javax.swing.JPanel" name="_sequential_analysis_tab">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="Sequential Analysis">
-                <Property name="tabTitle" type="java.lang.String" value="Sequential Analysis"/>
+              <JTabbedPaneConstraints tabName="Sequential">
+                <Property name="tabTitle" type="java.lang.String" value="Sequential"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -1175,37 +1175,10 @@
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" attributes="0">
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="_perform_sequential_scan" alignment="0" max="32767" attributes="0"/>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
-                                          <Component id="_sequential_analysis_file" max="32767" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_sequential_analysis_file_browse" min="-2" pref="25" max="-2" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="_sequential_analysis_file_label" max="32767" attributes="0"/>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                              <Component id="_maximum_cases_signal_label" pref="144" max="32767" attributes="0"/>
-                                              <Component id="_minimum_cases_signal_label" max="32767" attributes="0"/>
-                                          </Group>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="_minimum_cases_signal" min="-2" pref="71" max="-2" attributes="0"/>
-                                              <Component id="_maximum_cases_signal" alignment="0" min="-2" pref="80" max="-2" attributes="0"/>
-                                          </Group>
-                                          <EmptySpace min="0" pref="305" max="32767" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                              </Group>
+                              <Component id="_perform_sequential_scan" max="32767" attributes="0"/>
+                              <Component id="_panel_sequential_analysis" alignment="0" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -1216,23 +1189,8 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="_perform_sequential_scan" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="_maximum_cases_signal_label" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_maximum_cases_signal" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="_minimum_cases_signal_label" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_minimum_cases_signal" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="_sequential_analysis_file_label" min="-2" max="-2" attributes="0"/>
+                          <Component id="_panel_sequential_analysis" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="_sequential_analysis_file" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_sequential_analysis_file_browse" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="0" pref="157" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1246,53 +1204,203 @@
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_perform_sequential_scan.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSequentialAnalysisGroup();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
-                <Component class="javax.swing.JLabel" name="_maximum_cases_signal_label">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Maximum Cases to Signal"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_maximum_cases_signal">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="200"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maximum_cases_signal.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_maximum_cases_signal.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _maximum_cases_signal.setText(&quot;200&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_maximum_cases_signal.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_maximum_cases_signal, e, 10);&#xa;    }&#xa;});&#xa;_maximum_cases_signal.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JLabel" name="_minimum_cases_signal_label">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Minimum Cases to Signal"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_minimum_cases_signal">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="3"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_minimum_cases_signal.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_minimum_cases_signal.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _minimum_cases_signal.setText(&quot;200&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_minimum_cases_signal.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_minimum_cases_signal, e, 10);&#xa;    }&#xa;});&#xa;_minimum_cases_signal.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JLabel" name="_sequential_analysis_file_label">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Sequential Analysis File:" noResource="true"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_sequential_analysis_file">
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_sequential_analysis_file.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JButton" name="_sequential_analysis_file_browse">
-                  <Properties>
-                    <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                      <Image iconType="3" name="/document_add_small.png"/>
-                    </Property>
-                    <Property name="toolTipText" type="java.lang.String" value="Open file wizard for sequential analysis file ..." noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_sequential_analysis_file_browse.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        List&lt;InputFileFilter&gt; filters = new ArrayList&lt;InputFileFilter&gt;();&#xa;        filters.add(new InputFileFilter(&quot;csv&quot;,&quot;Sequential Scan Files (*.csv)&quot;));&#xa;        FileSelectionDialog select = new FileSelectionDialog(TreeScanApplication.getInstance(), &quot;Select Sequential Scan File&quot;, filters, TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_saveas();&#xa;        if (file != null) {&#xa;            TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            String filename = file.getAbsolutePath();&#xa;            if (new File(filename).getName().lastIndexOf(&apos;.&apos;) == -1){&#xa;                filename = filename + &quot;.csv&quot;;&#xa;            } &#xa;            _sequential_analysis_file.setText(filename);  &#xa;        }&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
+                <Container class="javax.swing.JPanel" name="_panel_sequential_analysis">
+
+                  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignCardLayout"/>
+                  <SubComponents>
+                    <Container class="javax.swing.JPanel" name="_panel_sequential_analysis_time_only">
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
+                          <CardConstraints cardName="sequential-timeonly"/>
+                        </Constraint>
+                      </Constraints>
+
+                      <Layout>
+                        <DimensionLayout dim="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_sequential_analysis_file" max="32767" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_sequential_analysis_file_browse" min="-2" pref="25" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="_maximum_cases_signal_label" max="32767" attributes="0"/>
+                                              <Component id="_minimum_cases_signal_label" min="-2" pref="144" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="_maximum_cases_signal" pref="80" max="32767" attributes="0"/>
+                                              <Component id="_minimum_cases_signal" max="32767" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace min="0" pref="264" max="32767" attributes="0"/>
+                                      </Group>
+                                      <Component id="_sequential_analysis_file_label" alignment="0" max="32767" attributes="0"/>
+                                  </Group>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                        <DimensionLayout dim="1">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_maximum_cases_signal_label" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_maximum_cases_signal" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_minimum_cases_signal_label" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_minimum_cases_signal" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="_sequential_analysis_file_label" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_sequential_analysis_file" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_sequential_analysis_file_browse" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                      </Layout>
+                      <SubComponents>
+                        <Component class="javax.swing.JLabel" name="_maximum_cases_signal_label">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Maximum Cases to Signal"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_maximum_cases_signal">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="200"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maximum_cases_signal.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_maximum_cases_signal.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _maximum_cases_signal.setText(&quot;200&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_maximum_cases_signal.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_maximum_cases_signal, e, 10);&#xa;    }&#xa;});&#xa;_maximum_cases_signal.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="_minimum_cases_signal_label">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Minimum Cases to Signal"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_minimum_cases_signal">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="3"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_minimum_cases_signal.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_minimum_cases_signal.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _minimum_cases_signal.setText(&quot;200&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_minimum_cases_signal.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_minimum_cases_signal, e, 10);&#xa;    }&#xa;});&#xa;_minimum_cases_signal.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="_sequential_analysis_file_label">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Sequential Analysis File:" noResource="true"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_sequential_analysis_file">
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_sequential_analysis_file.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JButton" name="_sequential_analysis_file_browse">
+                          <Properties>
+                            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                              <Image iconType="3" name="/document_add_small.png"/>
+                            </Property>
+                            <Property name="toolTipText" type="java.lang.String" value="Open file wizard for sequential analysis file ..." noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_sequential_analysis_file_browse.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        List&lt;InputFileFilter&gt; filters = new ArrayList&lt;InputFileFilter&gt;();&#xa;        filters.add(new InputFileFilter(&quot;csv&quot;,&quot;Sequential Scan Files (*.csv)&quot;));&#xa;        FileSelectionDialog select = new FileSelectionDialog(TreeScanApplication.getInstance(), &quot;Select Sequential Scan File&quot;, filters, TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_saveas();&#xa;        if (file != null) {&#xa;            TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            String filename = file.getAbsolutePath();&#xa;            if (new File(filename).getName().lastIndexOf(&apos;.&apos;) == -1){&#xa;                filename = filename + &quot;.csv&quot;;&#xa;            } &#xa;            _sequential_analysis_file.setText(filename);  &#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                    <Container class="javax.swing.JPanel" name="_panel_sequential_analysis_tree_only">
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
+                          <CardConstraints cardName="sequential-treeonly"/>
+                        </Constraint>
+                      </Constraints>
+
+                      <Layout>
+                        <DimensionLayout dim="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="_sequential_alpha_spending_label" pref="139" max="32767" attributes="0"/>
+                                      <Component id="_sequential_alpha_label" max="32767" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_sequentual_alpha_overall" min="-2" pref="91" max="-2" attributes="0"/>
+                                      <Group type="102" attributes="0">
+                                          <Component id="_sequential_alpha_spending" min="-2" pref="91" max="-2" attributes="0"/>
+                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                          <Component id="_alpha_spent_to_date_label" min="-2" pref="238" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                        <DimensionLayout dim="1">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_sequential_alpha_label" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_sequentual_alpha_overall" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_sequential_alpha_spending_label" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_sequential_alpha_spending" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_alpha_spent_to_date_label" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace min="0" pref="201" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                      </Layout>
+                      <SubComponents>
+                        <Component class="javax.swing.JLabel" name="_sequential_alpha_label">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Alpha Overall"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_sequentual_alpha_overall">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="0.05"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_sequentual_alpha_overall.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_sequentual_alpha_overall.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _sequentual_alpha_overall.setText(&quot;0.05&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_sequentual_alpha_overall.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_sequentual_alpha_overall, e, 10);&#xa;    }&#xa;});&#xa;_sequentual_alpha_overall.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="_sequential_alpha_spending_label">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Alpha Spend Current Look"/>
+                            <Property name="toolTipText" type="java.lang.String" value=""/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_sequential_alpha_spending">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="0.01"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_sequential_alpha_spending.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_sequential_alpha_spending.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _sequential_alpha_spending.setText(&quot;0.01&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_sequential_alpha_spending.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_sequential_alpha_spending, e, 10);&#xa;    }&#xa;});&#xa;_sequential_alpha_spending.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="_alpha_spent_to_date_label">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="(Alpha Spent to Date)"/>
+                          </Properties>
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                  </SubComponents>
+                </Container>
               </SubComponents>
             </Container>
           </SubComponents>

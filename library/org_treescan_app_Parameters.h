@@ -23,6 +23,14 @@ JNIEXPORT jboolean JNICALL Java_org_treescan_app_Parameters_Read
 JNIEXPORT void JNICALL Java_org_treescan_app_Parameters_Write
   (JNIEnv *, jobject, jstring);
 
+/*
+ * Class:     org_treescan_app_Parameters
+ * Method:    getAlphaSpentToDate
+ * Signature: (Ljava/lang/String;)D
+ */
+JNIEXPORT jdouble JNICALL Java_org_treescan_app_Parameters_getAlphaSpentToDate
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

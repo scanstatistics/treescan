@@ -99,15 +99,7 @@ extern "C" {
 #define org_treescan_gui_ParameterSettingsFrame_FOCUS_TRAVERSAL_KEYS_FORWARD_SET 26L
 #undef org_treescan_gui_ParameterSettingsFrame_FOCUS_TRAVERSAL_KEYS_BACKWARD_SET
 #define org_treescan_gui_ParameterSettingsFrame_FOCUS_TRAVERSAL_KEYS_BACKWARD_SET 27L
-/*
- * Class:     org_treescan_gui_ParameterSettingsFrame
- * Method:    CalculateNumberOfTimeIntervals
- * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)D
- */
-JNIEXPORT jdouble JNICALL Java_org_treescan_gui_ParameterSettingsFrame_CalculateNumberOfTimeIntervals
-  (JNIEnv *, jobject, jstring, jstring, jstring, jstring, jstring, jstring, jint);
-
 #ifdef __cplusplus
 }
 #endif
-#endif
+#œ¬	Ø

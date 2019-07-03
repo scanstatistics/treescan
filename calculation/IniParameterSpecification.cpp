@@ -211,11 +211,10 @@ void IniParameterSpecification::Build_1_4_x_ParameterList() {
 void IniParameterSpecification::Build_1_5_x_ParameterList() {
     Build_1_4_x_ParameterList();
 
-    _parameter_info[Parameters::SEQUENTIAL_ALPHA] = ParamInfo(Parameters::SEQUENTIAL_ALPHA, "sequential-alpha", 5, _sequential_scan_section);
-    _parameter_info[Parameters::SEQUENTIAL_ALPHA_SPENDING] = ParamInfo(Parameters::SEQUENTIAL_ALPHA_SPENDING, "sequential-alpha", 6, _sequential_scan_section);
-    _parameter_info[Parameters::SEQUENTIAL_SIGNAL_CUTOFF] = ParamInfo(Parameters::SEQUENTIAL_SIGNAL_CUTOFF, "sequential-signal-cutoff", 7, _sequential_scan_section);
+    _parameter_info[Parameters::SEQUENTIAL_ALPHA_OVERALL] = ParamInfo(Parameters::SEQUENTIAL_ALPHA_OVERALL, "sequential-alpha-overall", 5, _sequential_scan_section);
+    _parameter_info[Parameters::SEQUENTIAL_ALPHA_SPENDING] = ParamInfo(Parameters::SEQUENTIAL_ALPHA_SPENDING, "sequential-alpha-spending", 6, _sequential_scan_section);
 
-    assert(_parameter_info.size() == 61);
+    assert(_parameter_info.size() == 60);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

@@ -41,12 +41,12 @@ class AbtractParameterFileAccess {
      Parameters::CreationVersion ReadVersion(const std::string& sValue) const;
      Parameters::ratio_t         ReadRatio(const std::string& sValue) const;
 
-     std::string               & AsString(std::string& ref, int i) const {printString(ref, "%d", i); return ref;}
-     std::string               & AsString(std::string& ref, unsigned int i) const {printString(ref, "%u", i); return ref;}
-     std::string               & AsString(std::string& ref, float f) const {printString(ref, "%g", f); return ref;}
-     std::string               & AsString(std::string& ref, double d) const {printString(ref, "%g", d); return ref;}
+     static std::string        & AsString(std::string& ref, int i) {printString(ref, "%d", i); return ref;}
+     static std::string        & AsString(std::string& ref, unsigned int i) {printString(ref, "%u", i); return ref;}
+     static std::string        & AsString(std::string& ref, float f) {printString(ref, "%g", f); return ref;}
+     static std::string        & AsString(std::string& ref, double d) {printString(ref, "%g", d); return ref;}
      std::string               & AsString(std::string& ref, bool b) const {printString(ref, "%s", (b ? (_write_boolean_as_digit ? "1" : "y") : (_write_boolean_as_digit ? "0" : "n"))); return ref;}
-     std::string               & AsString(std::string& ref, const Parameters::CreationVersion& v) const {printString(ref, "%d.%d.%d", v.iMajor, v.iMinor, v.iRelease); return ref;}
+     static std::string        & AsString(std::string& ref, const Parameters::CreationVersion& v) {printString(ref, "%d.%d.%d", v.iMajor, v.iMinor, v.iRelease); return ref;}
      static std::string        & AsString(std::string& ref, const Parameters::ratio_t& r) {printString(ref, "%d/%d", r.first, r.second); return ref;}
      const char                * GetParameterComment(Parameters::ParameterType e) const;
      std::string               & GetParameterString(Parameters::ParameterType e, std::string& s) const;

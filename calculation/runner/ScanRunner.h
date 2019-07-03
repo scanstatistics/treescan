@@ -19,6 +19,7 @@
 #include <list>
 #include <numeric>
 #include <iomanip>
+#include <algorithm>
 
 class ScanRunner;
 class CutStructure {
@@ -141,10 +142,10 @@ public:
     }
 
     void                          calcMinCensored() {
-        _min_censored_Br = _IntC_C.size() - 1;
-        for (int i=0; i < _IntC_Censored.size(); ++i) {
+        _min_censored_Br = static_cast<int>(_IntC_C.size() - 1);
+        for (size_t i=0; i < _IntC_Censored.size(); ++i) {
             if (_IntC_Censored[i]) {
-                _min_censored_Br = i;
+                _min_censored_Br = static_cast<int>(i);
                 break;
             }
         }
@@ -327,6 +328,11 @@ class SequentialStatistic {
         typedef std::deque<llr_sim_t>                   llr_sim_container_t;
         typedef std::map<unsigned int, unsigned int>    signalled_cuts_container_t;
 
+        static const char         * _file_suffix;
+        static const char         * _accumulated_case_ext;
+        static const char         * _accumulated_sim_ext;
+        static const char         * _settings_ext;
+
     protected:
         const Parameters          & _parameters;
         const ScanRunner          & _scanner;
@@ -342,25 +348,42 @@ class SequentialStatistic {
         boost::dynamic_bitset<>     _alpha_simulations;
         signalled_cuts_container_t  _cuts_signaled;
         llr_sim_container_t         _llr_sims;
+        std::string                 _tree_hash;
 
+        std::string               & getTreeHash(std::string& treehash) const;
         void                        readSettings(const std::string &filename);
         void                        writeSettings(const std::string &filename);
 
     public:
         SequentialStatistic(const Parameters& parameters, const ScanRunner & scanner);
 
+        static double               getAlphaSpentToDate(const std::string &filename);
+
         bool                        addSimulationLLR(double llr, unsigned int simIdx);
         double                      getAlphaSpending() const { return _alpha_spending; }
+        unsigned int                getLook() const { return _look_idx; }
         bool                        isFirstLook() const { return _look_idx == 1; }
+        bool                        isMarkedSimulation(unsigned int simIdx) const { return _alpha_simulations.test(simIdx - 1); }
         const std::string         & getCountDataFilename() const { return _counts_filename; }
         const std::string         & getSimulationDataFilename() const { return _simulations_filename; }
         const std::string         & getWriteSimulationDataFilename() const { return _write_simulations_filename; }
         void                        setCutSignaled(size_t cutIdx) {
-            if (_cuts_signaled.find(cutIdx) == _cuts_signaled.end())
-                _cuts_signaled[cutIdx] = _look_idx; 
+            if (_cuts_signaled.find(static_cast<unsigned int>(cutIdx)) == _cuts_signaled.end())
+                _cuts_signaled[static_cast<unsigned int>(cutIdx)] = _look_idx;
         }
-        bool                        testCutSignaled(size_t cutIdx) {
-            return _cuts_signaled.find(cutIdx) != _cuts_signaled.end();
+        unsigned int                testCutSignaled(size_t cutIdx) const {
+            signalled_cuts_container_t::const_iterator itr = _cuts_signaled.find(static_cast<unsigned int>(cutIdx));
+            return itr != _cuts_signaled.end() ? itr->second : 0;
+        }
+        bool                        testRankSignalling(unsigned int rank) const {
+            size_t max_rank_to_signal = static_cast<unsigned int>(ceil(static_cast<double>(_parameters.getNumReplicationsRequested() + 1) * _alpha_spending));
+            return rank <= max_rank_to_signal;
+        }
+        bool                        testSignallingLLR(double llr) const {
+            return llr >= _llr_sims.back().first;
+            //llr_sim_t add_llr_sim(llr, 0/*not applicable*/);
+            //llr_sim_container_t::const_iterator itr=std::upper_bound(_llr_sims.begin(), _llr_sims.end(), add_llr_sim, compare_llr_sim_t());
+            //return itr != _llr_sims.end();
         }
         void                        write(const std::string &casefilename);
 };

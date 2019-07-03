@@ -80,7 +80,7 @@ int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void* lpReserved
 #endif
 
 /** Run execution function given passed parameter file and base print. */
-void _runAnalysis(const Parameters& parameters, BasePrint& Console) {
+bool _runAnalysis(const Parameters& parameters, BasePrint& Console) {
   std::string           sMessage;
 
   Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
@@ -92,7 +92,7 @@ void _runAnalysis(const Parameters& parameters, BasePrint& Console) {
 
   //create analysis runner object and execute analysis
   ScanRunner runner(parameters, Console);
-  runner.run();
+  return runner.run();
 }
 
 ///////////////////////////////// JNI Shared Library Methods ///////////////////////////////////////////
@@ -122,45 +122,45 @@ JNIEXPORT jstring JNICALL Java_org_treescan_app_AppConstants_getVersionId(JNIEnv
 }
 
 JNIEXPORT jint JNICALL Java_org_treescan_app_CalculationThread_RunAnalysis(JNIEnv *pEnv, jobject JCalculationThread, jobject JParameters) {
-  try {
-    Parameters           Parameters;
-    JNIPrintWindow        Console(*pEnv, JCalculationThread, false);
-     
+    bool success = false;
     try {
-      ParametersUtility::copyJParametersToCParameters(*pEnv, JParameters, Parameters);
-      _runAnalysis(Parameters, Console);
-    } catch (resolvable_error & x) {
-      Console.Printf("%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
-      return 1;
+        Parameters           Parameters;
+        JNIPrintWindow       jniWindow(*pEnv, JCalculationThread, false);
+     
+        try {
+            ParametersUtility::copyJParametersToCParameters(*pEnv, JParameters, Parameters);
+            success = _runAnalysis(Parameters, jniWindow);
+        } catch (resolvable_error & x) {
+            jniWindow.Printf("%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+            return 1;
+        } catch (jni_error&) {
+            // Let the Java exception to be handled in the caller of JNI function.
+            // It is preferable to report the error through the JNIPrintWindow
+            // object but once a java error exists, our options are limited.
+            return 1; 
+        } catch (prg_exception & x) {
+            jniWindow.Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+            jniWindow.RecordCallpath(x.trace());
+            return 1;
+        } catch (std::bad_alloc&) {
+            jniWindow.Printf("\nTreeScan is unable to perform analysis due to insuffient memory.\n"
+                             "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
+                             "\nEnd of Warnings and Errors", BasePrint::P_ERROR);
+            return 1;
+        } catch (std::exception& x) {
+            jniWindow.Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+            return 1;
+        }  
     } catch (jni_error&) {
-      // Let the Java exception to be handled in the caller of JNI function.
-      // It is preferable to report the error through the JNIPrintWindow
-      // object but once a java error exists, our options are limited.
-      return 1; 
-    } catch (prg_exception & x) {
-      Console.Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
-      Console.RecordCallpath(x.trace());
-      return 1;
-    } catch (std::bad_alloc&) {
-      Console.Printf("\nTreeScan is unable to perform analysis due to insuffient memory.\n"
-                     "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
-                     "\nEnd of Warnings and Errors", BasePrint::P_ERROR);
-      return 1;
-    } catch (std::exception& x) {
-      Console.Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
-      return 1;
-    }  
-  } catch (jni_error&) {
-    // Let the Java exception to be handled in the caller of JNI function.
-    // It is preferable to report the error through the JNIPrintWindow
-    // object but once a java error exists, our options are limited.
-    return 1; 
-  } catch (...) {
-    jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
-    return 1;
-  } 
-
-  return 0;
+        // Let the Java exception to be handled in the caller of JNI function.
+        // It is preferable to report the error through the JNIPrintWindow
+        // object but once a java error exists, our options are limited.
+        return 1; 
+    } catch (...) {
+        jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
+        return 1;
+    } 
+    return success ? 0 : 1;
 }
 
 ///////////////////////////////// C Shared Library Methods ///////////////////////////////////////////
@@ -177,12 +177,13 @@ JNIEXPORT jint JNICALL Java_org_treescan_app_CalculationThread_RunAnalysis(JNIEn
 int DLL_EXP C_RunAnalysis(const char * filename, C_Callback* call_back) {
   Parameters            parameters;
   C_PrintCallback       Console(call_back, false);
+  bool success = false;
      
   try {
     //TODO: ParameterAccessCoordinator reader(Parameters);
     //reader.Read(filename, Console);
     parameters.read(filename, Parameters::XML);
-    _runAnalysis(parameters, Console);
+    success = _runAnalysis(parameters, Console);
   } catch (resolvable_error & x) {
     Console.Printf("%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
     return 1;
@@ -202,7 +203,7 @@ int DLL_EXP C_RunAnalysis(const char * filename, C_Callback* call_back) {
     return 1;
   }
   
-  return 0;
+  return success ? 0 : 1;
 }
 
 ///////////////////////////////// Python Shared Library Methods ///////////////////////////////////////////
@@ -214,12 +215,13 @@ int DLL_EXP PY_RunAnalysis(const char * filename, PY_Callback* call_back) {
   //return 978;
   Parameters           parameters;
   PY_PrintCallback       Console(call_back, false);
+  bool success = false;
      
   try {
     //TODO: ParameterAccessCoordinator reader(Parameters);
     //reader.Read(filename, Console);
     parameters.read(filename, Parameters::XML);
-    _runAnalysis(parameters, Console);
+    success = _runAnalysis(parameters, Console);
   } catch (resolvable_error & x) {
     Console.Printf("%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
     return 1;
@@ -239,7 +241,7 @@ int DLL_EXP PY_RunAnalysis(const char * filename, PY_Callback* call_back) {
     return 1;
   }
   
-  return 0;
+  return success ? 0 : 1;
 }
 #endif
 
@@ -249,12 +251,13 @@ int DLL_EXP PY_RunAnalysis(const char * filename, PY_Callback* call_back) {
 int DLL_EXP VB_RunAnalysis(const char * filename, long cbAddress) {
   Parameters        parameters;
   VB_PrintCallback  Console(cbAddress, false);
+  bool success = false;
      
   try {
     // TODO ParameterAccessCoordinator reader(Parameters);
     //reader.Read(filename, Console);
     parameters.read(filename, Parameters::XML);
-    _runAnalysis(parameters, Console);
+    success = _runAnalysis(parameters, Console);
   } catch (resolvable_error & x) {
     Console.Printf("%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
     return 1;
@@ -273,7 +276,7 @@ int DLL_EXP VB_RunAnalysis(const char * filename, long cbAddress) {
     Console.Printf("\nUnknown Program Error Encountered\n\nEnd of Warnings and Errors", BasePrint::P_ERROR);
     return 1;
   }  
-  return 0;
+  return success ? 0 : 1;
 }
 #endif
 //******************************************************************************

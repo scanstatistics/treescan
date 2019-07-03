@@ -3,14 +3,14 @@
 #define __TREESCAN_H
 //*****************************************************************************
 /** Current version information. */
-#define VERSION_ID      "6"  /** incremental version identifier - this value must
+#define VERSION_ID      "7"  /** incremental version identifier - this value must
                                   be incremented for each released version in order
                                   for update feature to function correctly */
 #define VERSION_MAJOR   "1"
-#define VERSION_MINOR   "4"
+#define VERSION_MINOR   "5"
 #define VERSION_RELEASE "0"
-#define VERSION_PHASE "" /** testing phase name - leave blank for release */
-#define VERSION_DATE    "June 2018"
+#define VERSION_PHASE "Alpha 1" /** testing phase name - leave blank for release */
+#define VERSION_DATE    "Not Released"
 
 #if defined(_MSC_VER)
 #include <Windows.h>
@@ -50,6 +50,8 @@
 #define macro_equal(x,y,tolerance) (std::fabs(x - y) < tolerance)
 /** determines whether number x is less than number y given some tolerance */
 #define macro_less_than(x,y,tolerance) (!macro_equal(x,y,tolerance) && x < y)
+/** determines whether number x is less than number y given some tolerance */
+#define macro_less_than_or_equal(x,y,tolerance) (macro_less_than(x,y,tolerance) || macro_equal(x,y,tolerance))
 /* DateSource types */
 enum SourceType {CSV=0, EXCEL}; // TODO -- add EXCEL
 /* data source fields map container typedef */

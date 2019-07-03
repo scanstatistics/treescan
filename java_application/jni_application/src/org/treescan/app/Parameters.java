@@ -6,6 +6,8 @@ import org.treescan.importer.InputSourceSettings;
 public class Parameters implements Cloneable {	
     public native boolean Read(String filename);  
     public native void Write(String filename);
+    static public native double getAlphaSpentToDate(String filename);
+
     public enum ResultsFormat {TEXT};
     public enum ModelType {POISSON, BERNOULLI, UNIFORM, MODEL_NOT_APPLICABLE};
     public enum ScanType {TREEONLY, TREETIME, TIMEONLY};
@@ -76,6 +78,8 @@ public class Parameters implements Cloneable {
     private double _risk_window_percentage=20.0;
     private boolean _apply_exclusion_ranges=false;
     private String _exclusion_time_ranges="";
+    private double _sequential_alpha_overall = 0.05;
+    private double _sequential_alpha_spending = 0.01;
     
     private ArrayList<InputSourceSettings>     _input_sources;
     
@@ -135,6 +139,8 @@ public class Parameters implements Cloneable {
           if (_sequential_min_signal != rhs._sequential_min_signal) return false;
           if (_sequential_max_signal != rhs._sequential_max_signal) return false;
           if (!_sequential_file.equals(rhs._sequential_file)) return false;
+          if (_sequential_alpha_spending != rhs._sequential_alpha_spending) return false;
+          if (_sequential_alpha_overall != rhs._sequential_alpha_overall) return false;
           
     	  if (!_treefilenames.equals(rhs._treefilenames)) return false;
     	  if (!_countfilename.equals(rhs._countfilename)) return false;
@@ -173,8 +179,7 @@ public class Parameters implements Cloneable {
     public boolean isApplyingExclusionTimeRanges() {return _apply_exclusion_ranges;}
     public void setApplyingExclusionTimeRanges(boolean b) {_apply_exclusion_ranges = b;}
     public final String getExclusionTimeRangeSet() {return _exclusion_time_ranges;}
-    public void setExclusionTimeRangeSet(final String s) {_exclusion_time_ranges = s;}
-    
+    public void setExclusionTimeRangeSet(final String s) {_exclusion_time_ranges = s;}    
     
     public boolean isApplyingRiskWindowRestriction() { return _apply_risk_window_restriction; }
     public void setApplyingRiskWindowRestriction(boolean b) { _apply_risk_window_restriction = b; }
@@ -187,6 +192,11 @@ public class Parameters implements Cloneable {
 	
     public boolean getSequentialScan() {return _sequential_scan;}
     public void setSequentialScan(boolean b) {_sequential_scan = b;}
+    
+    public double getSequentialAlphaOverall() {return _sequential_alpha_overall;}
+    public void setSequentialAlphaOverall(double d) {_sequential_alpha_overall = d;}
+    public double getSequentialAlphaSpending() {return _sequential_alpha_spending;}
+    public void setSequentialAlphaSpending(double d) {_sequential_alpha_spending = d;}
     
     public int getSequentialMinimumSignal() {return _sequential_min_signal;}
     public void setSequentialMinimumSignal(int i) {_sequential_min_signal = i;}

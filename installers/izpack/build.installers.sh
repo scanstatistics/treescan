@@ -2,10 +2,10 @@
 
 ############ Script Defines #######################################################################
 build="/prj/treescan/build"
-installer_version="/prj/treescan/installers/v.1.4.x"
+installer_version="/prj/treescan/installers/v.1.5.x"
 
-launch4j=$build/packages/launch4j/launch4j-3.0.1
-IzPack=$build/packages/IzPack/IzPack5.0.8
+launch4j=$build/packages/launch4j/launch4j-3.12
+IzPack=$build/packages/IzPack/IzPack5.1.3
 
 ############ Windows ##############################################################################
 # Build Windows TreeScan executable from java jar file ... TreeScan.jar -> TreeScan.exe.
@@ -17,40 +17,40 @@ echo "Run the Windows batch file 'signGuiApp.bat' now to sign TreeScan.exe. Hit 
 read dummy
 
 # Build the IzPack Java installer for Windows.
-$IzPack/bin/compile $build/treescan/installers/izpack/windows/install_windows.xml -b $installer_version -o $installer_version/install-1_4_windows.jar -k standard
+$IzPack/bin/compile $build/treescan/installers/izpack/windows/install_windows.xml -b $installer_version -o $installer_version/install-1_5_windows.jar -k standard
 
 # Build Windows installer executable from Java jar file. This is needed for:
 #  - UAC (User Account Control)
 #  - we wanted a message to user when Java not installed
 $launch4j/launch4j $build/treescan/installers/izpack/windows/launch4j_install.xml
-rm $installer_version/install-1_4_windows.jar
+# rm $installer_version/install-1_5_windows.jar
 
 # prompt user to sign the exe file created by launch4j
 echo
-echo "Run the Windows batch file 'signWindowsInstaller.bat' now to sign install-1_4_windows.exe. Hit <enter> once done ..."
+echo "Run the Windows batch file 'signWindowsInstaller.bat' now to sign install-1_5_windows.exe. Hit <enter> once done ..."
 read dummy
 
 # Build Windows command-line only archive
-rm -f $installer_version/treescan.1.4_windows.zip
-zip $installer_version/treescan.1.4_windows.zip -j $build/treescan/batch_application/Win32/Release/treescan32.exe
-zip $installer_version/treescan.1.4_windows.zip -j $build/treescan/batch_application/x64/Release/treescan64.exe
+rm -f $installer_version/treescan.1.5_windows.zip
+zip $installer_version/treescan.1.5_windows.zip -j $build/treescan/batch_application/Win32/Release/treescan32.exe
+zip $installer_version/treescan.1.5_windows.zip -j $build/treescan/batch_application/x64/Release/treescan64.exe
 cd $build/treescan/installers
-zip $installer_version/treescan.1.4_windows.zip documents/*
-zip $installer_version/treescan.1.4_windows.zip examples/*
+zip $installer_version/treescan.1.5_windows.zip documents/*
+zip $installer_version/treescan.1.5_windows.zip examples/*
 
 ############ Linux ################################################################################
 # Build the IzPack Java installer for Linux.
-$IzPack/bin/compile $build/treescan/installers/izpack/linux/install_linux.xml -b $installer_version -o $installer_version/install-1_4_linux.jar -k standard
-chmod a+x $installer_version/install-1_4_linux.jar
+$IzPack/bin/compile $build/treescan/installers/izpack/linux/install_linux.xml -b $installer_version -o $installer_version/install-1_5_linux.jar -k standard
+chmod a+x $installer_version/install-1_5_linux.jar
 
 # Build batch binaries archive for Linux.
-rm -f $installer_version/treescan.1.4_linux.tar.bz2
+rm -f $installer_version/treescan.1.5_linux.tar.bz2
 cd $build/binaries/linux
-tar -cf $installer_version/treescan.1.4_linux.tar treescan*
+tar -cf $installer_version/treescan.1.5_linux.tar treescan*
 cd $build/treescan/installers
-tar -rf $installer_version/treescan.1.4_linux.tar documents/*
-tar -rf $installer_version/treescan.1.4_linux.tar examples/*
-bzip2 -f $installer_version/treescan.1.4_linux.tar
+tar -rf $installer_version/treescan.1.5_linux.tar documents/*
+tar -rf $installer_version/treescan.1.5_linux.tar examples/*
+bzip2 -f $installer_version/treescan.1.5_linux.tar
 
 ############ Mac OS X #############################################################################
 # Build TreeScan Mac OS X Application Bundle Directory
@@ -68,12 +68,12 @@ echo "2) Hit <enter> once done ..."
 read dummy
 
 # Build the IzPack Java installer for Mac OS X.
-$IzPack/bin/compile $build/treescan/installers/izpack/mac/install_mac.xml -b $installer_version -o $installer_version/install-1_4_mac.jar -k standard
+$IzPack/bin/compile $build/treescan/installers/izpack/mac/install_mac.xml -b $installer_version -o $installer_version/install-1_5_mac.jar -k standard
 
 # Build Mac OS X Application Bundle from IzPack Java Installer
-rm -rf $installer_version/install-1_4_mac.zip
+rm -rf $installer_version/install-1_5_mac.zip
 rm -rf $build/treescan/installers/izpack/mac/Install.app
-python $build/treescan/installers/izpack/mac/izpack2app/izpack2app.py $installer_version/install-1_4_mac.jar $build/treescan/installers/izpack/mac/Install.app
+python $build/treescan/installers/izpack/mac/izpack2app/izpack2app.py $installer_version/install-1_5_mac.jar $build/treescan/installers/izpack/mac/Install.app
 
 # prompt user to sign the Install.app on Mac with Developer ID certificated installed (Squish https://www.squishlist.com/ims/satscan/66329/)
 echo
@@ -82,19 +82,19 @@ echo "2) Hit <enter> once done ..."
 read dummy
 
 cd $build/treescan/installers/izpack/mac
-zip $installer_version/install-1_4_mac.zip -r ./Install.app/*
-rm $installer_version/install-1_4_mac.jar
+zip $installer_version/install-1_5_mac.zip -r ./Install.app/*
+rm $installer_version/install-1_5_mac.jar
 rm -rf $build/treescan/installers/izpack/mac/Install.app
-chmod a+x $installer_version/install-1_4_mac.zip
+chmod a+x $installer_version/install-1_5_mac.zip
 
 # Build batch binaries archive for Mac OS X.
-rm -f $installer_version/treescan.1.4_mac.tar.bz2
+rm -f $installer_version/treescan.1.5_mac.tar.bz2
 cd $build/binaries/mac
-tar -cf $installer_version/treescan.1.4_mac.tar treescan
+tar -cf $installer_version/treescan.1.5_mac.tar treescan
 cd $build/treescan/installers
-tar -rf $installer_version/treescan.1.4_mac.tar documents/*
-tar -rf $installer_version/treescan.1.4_mac.tar examples/*
-bzip2 -f $installer_version/treescan.1.4_mac.tar
+tar -rf $installer_version/treescan.1.5_mac.tar documents/*
+tar -rf $installer_version/treescan.1.5_mac.tar examples/*
+bzip2 -f $installer_version/treescan.1.5_mac.tar
 
 #rm -rf $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app
 

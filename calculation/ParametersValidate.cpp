@@ -610,9 +610,9 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
                 PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, alpha spending cannot be less than %lf with %u replications.\n", 
                     BasePrint::P_PARAMERROR, 1.0 / static_cast<double>(_parameters.getNumReplicationsRequested() + 1), _parameters.getNumReplicationsRequested());
             }
-            if (_parameters.getSequentialAlphaSpending() > _parameters.getSequentialAlpha()) {
+            if (_parameters.getSequentialAlphaSpending() > _parameters.getSequentialAlphaOverall()) {
                 bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, alpha spending cannot be greater than alpha.\n", BasePrint::P_PARAMERROR);
+                PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, alpha spending cannot be greater than alpha overall.\n", BasePrint::P_PARAMERROR);
             }
         }
     }

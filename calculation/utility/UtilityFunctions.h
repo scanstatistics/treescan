@@ -7,6 +7,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 #include<boost/tokenizer.hpp>
+#include <boost/uuid/detail/md5.hpp>
+#include <boost/algorithm/hex.hpp>
 
 using namespace TreeScan;
 
@@ -93,9 +95,12 @@ template <typename T>           bool typelist_csv_string(const std::vector<T>& l
 										if (list.empty()) {
 											s = "";
 										} else {
-											buffer << boost::lexical_cast<std::string>(*(list.begin()));
-											for (typename std::vector<T>::const_iterator itr=list.begin() + 1; itr != list.end(); ++itr)
-												buffer << "," << boost::lexical_cast<std::string>(*itr);
+                                            buffer << *(list.begin());
+                                            //buffer << boost::lexical_cast<std::string>(*(list.begin()));
+                                            for (typename std::vector<T>::const_iterator itr = list.begin() + 1; itr != list.end(); ++itr) {
+                                                buffer << "," << *itr;
+                                                //buffer << "," << boost::lexical_cast<std::string>(*itr);
+                                            }
 											s = buffer.str();
 										}
                                     } catch (boost::bad_lexical_cast&) {
@@ -121,5 +126,8 @@ void writePadRight(const std::string& text, _OutTy& destintation, size_t width, 
     destintation << text.c_str();
     std::fill_n(std::ostream_iterator<char>(destintation), width - text.size(), ' ');
 }
+
+using boost::uuids::detail::md5;
+std::string toString(const md5::digest_type &digest);
 //******************************************************************************
 #endif

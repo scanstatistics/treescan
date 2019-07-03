@@ -55,8 +55,12 @@ void ParametersPrint::PrintHTML(std::ostream& out) const {
     WriteSettingsContainerHTML(getOutputParameters(settings), "Output", out);
     //print 'Temporal Window' tab settings
     WriteSettingsContainerHTML(getTemporalWindowParameters(settings), "Temporal Window", out);
+    // print 'Adjustments' tab settings
+    WriteSettingsContainerHTML(getAdjustmentsParameters(settings), "Adjustments", out);
     //print 'Inference' tab settings
     WriteSettingsContainerHTML(getInferenceParameters(settings), "Inference", out);
+    //print 'Sequential Analysis' tab settings
+    WriteSettingsContainerHTML(getSequentialScanParameters(settings), "Sequential Analysis", out);
     //print 'Power Evaluations' tab settings
     WriteSettingsContainerHTML(getPowerEvaluationsParameters(settings), "Power Evaluations", out);
     //print 'Advanced Input' tab settings
@@ -191,7 +195,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getSequentialScanParamete
 
     if ((_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES) ||
         (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
-        settings.push_back(std::make_pair("Sequential Scan", _parameters.getSequentialScan() ? "Yes" : "No"));
+        settings.push_back(std::make_pair("Perform Sequential Analysis", _parameters.getSequentialScan() ? "Yes" : "No"));
         if (_parameters.isSequentialScanPurelyTemporal() && _parameters.getScanType() == Parameters::TIMEONLY) {
             printString(buffer, "%u", _parameters.getSequentialMinimumSignal());
             settings.push_back(std::make_pair("Sequential Minimum Cases to Signal", buffer));
@@ -200,8 +204,10 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getSequentialScanParamete
             settings.push_back(std::make_pair("Sequential File", SequentialScanLoglikelihoodRatioWriter::getFilename(_parameters, buffer)));
         }
         if (_parameters.isSequentialScanBernoulli()) {
-            settings.push_back(std::make_pair("Sequential Alpha", printString(buffer, "%lf", _parameters.getSequentialAlpha())));
-            settings.push_back(std::make_pair("Sequential Alpha Spending", printString(buffer, "%lf", _parameters.getSequentialAlphaSpending())));
+            printString(buffer, "%g", _parameters.getSequentialAlphaOverall());
+            settings.push_back(std::make_pair("Alpha Overall", buffer));
+            printString(buffer, "%g", _parameters.getSequentialAlphaSpending());
+            settings.push_back(std::make_pair("Alpha Spend Current Look", buffer));
         }
     }
     return settings;

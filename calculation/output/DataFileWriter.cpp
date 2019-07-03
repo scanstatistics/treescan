@@ -227,6 +227,7 @@ const char * DataRecordWriter::TEST_STATISTIC_FIELD                      = "Test
 const char * DataRecordWriter::P_VALUE_FLD                               = "P-value";
 const char * DataRecordWriter::P_LEVEL_FLD                               = "Tree Level";
 const char * DataRecordWriter::ANCESTRY_ORDER_FLD                        = "Ancestry Order";
+const char * DataRecordWriter::SIGNALLED_FLD                             = "Signalled";
 const size_t DataRecordWriter::DEFAULT_LOC_FIELD_SIZE                    = 30;
 const size_t DataRecordWriter::MAX_LOC_FIELD_SIZE                        = 254;
 
@@ -289,10 +290,14 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
         CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
     }
 
-    printString(buffer, "%u", params.getNumReplicationsRequested());
-    CreateField(_dataFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, static_cast<unsigned short>(buffer.size()));
+    if (!params.isSequentialScanBernoulli()) {
+        printString(buffer, "%u", params.getNumReplicationsRequested());
+        CreateField(_dataFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, static_cast<unsigned short>(buffer.size()));
+    }
     if (params.getScanType() != Parameters::TIMEONLY)
         CreateField(_dataFieldDefinitions, ANCESTRY_ORDER_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+    if (params.isSequentialScanBernoulli())
+        CreateField(_dataFieldDefinitions, SIGNALLED_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
 
     _outfile.open(getFilename(params, buffer).c_str(), std::ofstream::trunc);
     if (!_outfile.is_open())
@@ -311,7 +316,11 @@ CutsRecordWriter::~CutsRecordWriter() {
 }
 
 std::string& CutsRecordWriter::getFilename(const Parameters& parameters, std::string& buffer) {
-    return getDerivedFilename(parameters.getOutputFileName(), CutsRecordWriter::CUT_FILE_SUFFIX, CSVDataFileWriter::CSV_FILE_EXT, buffer);
+    std::stringstream suffix;
+    suffix << CutsRecordWriter::CUT_FILE_SUFFIX;
+    if (parameters.isSequentialScanBernoulli())
+        suffix << "_look" << parameters.getCurrentLook();
+    return getDerivedFilename(parameters.getOutputFileName(), suffix.str().c_str(), CSVDataFileWriter::CSV_FILE_EXT, buffer);
 }
 
 void CutsRecordWriter::write(const CutStructure& thisCut) const {
@@ -366,11 +375,16 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
         } else {
             Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood());
         }
-        if (_scanner.getParameters().getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/) {
+        if (params.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/ && !params.isSequentialScanBernoulli()) {
             Record.GetFieldValue(P_VALUE_FLD).AsDouble() =  static_cast<double>(thisCut.getRank()) /(_scanner.getParameters().getNumReplicationsRequested() + 1);
         }
         if (params.getScanType() != Parameters::TIMEONLY)
             Record.GetFieldValue(ANCESTRY_ORDER_FLD).AsDouble() = thisCut.getAncestryOrder();
+        if (params.isSequentialScanBernoulli()) {
+            unsigned int signalInLook = _scanner.getSequentialStatistic().testCutSignaled(static_cast<size_t>(thisCut.getID()));
+            if (signalInLook != 0)
+                Record.GetFieldValue(SIGNALLED_FLD).AsDouble() = signalInLook;
+        }
         _csvWriter->writeRecord(Record);
     } catch (prg_exception& x) {
         x.addTrace("write()","CutsRecordWriter");

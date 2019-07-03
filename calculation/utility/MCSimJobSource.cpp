@@ -286,23 +286,28 @@ void MCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, para
     }
 
     //update ratios, significance, etc.
-    double result = grLoglikelihood->LogLikelihoodRatio(rResult.dSuccessfulResult.first);
-    if (!_isPowerStep) {
-        for (unsigned int k=0; k < grRunner.getCuts().size(); k++)
-            if (rResult.dSuccessfulResult.first >= grRunner.getCuts()[k]->getLogLikelihood()) grRunner.getCuts()[k]->incrementRank();
+    double llr_result = grLoglikelihood->LogLikelihoodRatio(rResult.dSuccessfulResult.first);
+
+    if (!_isPowerStep && !grRunner.getParameters().isSequentialScanBernoulli()) {
+        ScanRunner::CutStructureContainer_t::const_iterator itr=grRunner.getCuts().begin(), itrEnd=grRunner.getCuts().end();
+        for (; itr != itrEnd; ++itr) {
+            if (rResult.dSuccessfulResult.first >= (*itr)->getLogLikelihood()) {
+                (*itr)->incrementRank();
+            }
+        }
     }
 
-    if (_ratio_writer.get()) _ratio_writer->write(result, rParam);
-    if (!_isPowerStep) grRunner.updateCriticalValuesList(result);
-    if (grRunner.getParameters().isSequentialScanBernoulli()) grRunner.refSequentialStatistic().addSimulationLLR(result, rParam);
-    grRunner.getSimulationVariables().add_llr(result);
+    if (_ratio_writer.get()) _ratio_writer->write(llr_result, rParam);
+    if (!_isPowerStep) grRunner.updateCriticalValuesList(llr_result);
+    if (grRunner.getParameters().isSequentialScanBernoulli()) grRunner.refSequentialStatistic().addSimulationLLR(llr_result, rParam);
+    grRunner.getSimulationVariables().add_llr(llr_result);
     grRunner.getSimulationVariables().increment_sim_count();
 
     ++guiJobsReported;
 
     //if appropriate, estimate time required to complete all jobs and report it.
     unsigned int uiJobsProcessedCount = (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) + guiUnregisteredJobLowerBound; //this one hasn't been reset in gbsUnregisteredJobs yet.
-    grPrintDirection.Printf(gszReplicationFormatString, BasePrint::P_STDOUT, guiJobsReported, guiJobCount, result);
+    grPrintDirection.Printf(gszReplicationFormatString, BasePrint::P_STDOUT, guiJobsReported, guiJobCount, llr_result);
     if (uiJobsProcessedCount==10) {
       ::ReportTimeEstimate(gConstructionTime, guiJobCount, rParam, &grPrintDirection);
       TreeScan::Timestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now

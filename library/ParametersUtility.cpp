@@ -5,6 +5,7 @@
 #include "ParametersUtility.h"
 #include "ParameterFileAccess.h"
 #include "JNIException.h"
+#include "ScanRunner.h"
 #include <iostream>
 
 /** Reads parameters from file 'filename' in C++ code and sets class members of Java JParameters class. */
@@ -61,6 +62,29 @@ JNIEXPORT void JNICALL Java_org_treescan_app_Parameters_Write(JNIEnv * pEnv, job
     jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
     return;
   }
+}
+
+JNIEXPORT jdouble JNICALL Java_org_treescan_app_Parameters_getAlphaSpentToDate(JNIEnv * pEnv, jclass JParameters , jstring filename) {
+    jboolean iscopy;
+
+    try {
+        const char *sParameterFilename = pEnv->GetStringUTFChars(filename, &iscopy);
+        std::string buffer(sParameterFilename);
+        if (iscopy == JNI_TRUE)
+            pEnv->ReleaseStringUTFChars(filename, sParameterFilename);
+        return SequentialStatistic::getAlphaSpentToDate(buffer);
+    }
+    catch (jni_error&) {
+        return -1.0; // let the Java exception to be handled in the caller of JNI function
+    }
+    catch (std::exception& x) {
+        jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
+        return -1.0;
+    }
+    catch (...) {
+        jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
+        return -1.0;
+    }
 }
 
 /** Returns ordinal of enumeration gotten from 'sFunctionName' called. */
@@ -349,6 +373,14 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
 
   mid = _getMethodId_Checked(Env, clazz, "setSequentialMaximumSignal", "(I)V");
   Env.CallVoidMethod(jParameters, mid, (jint)parameters.getSequentialMaximumSignal());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setSequentialAlphaOverall", "(D)V");
+  Env.CallVoidMethod(jParameters, mid, (jdouble)parameters.getSequentialAlphaOverall());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setSequentialAlphaSpending", "(D)V");
+  Env.CallVoidMethod(jParameters, mid, (jdouble)parameters.getSequentialAlphaSpending());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setSequentialFilename", "(Ljava/lang/String;)V");
@@ -663,6 +695,14 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   parameters.setSequentialScan(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "getSequentialAlphaOverall", "()D");
+  parameters.setSequentialAlphaOverall(static_cast<double>(Env.CallDoubleMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getSequentialAlphaSpending", "()D");
+  parameters.setSequentialAlphaSpending(static_cast<double>(Env.CallDoubleMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "getSequentialMinimumSignal", "()I");
   parameters.setSequentialMinimumSignal(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
@@ -694,7 +734,6 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  printf("sFilename = %s\n", sFilename);
   parameters.setExclusionTimeRangeSet(DataTimeRangeSet(std::string(sFilename)));
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 

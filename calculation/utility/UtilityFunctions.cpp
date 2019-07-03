@@ -320,3 +320,10 @@ std::string& htmlencode(std::string& data) {
     data.swap(buffer);
     return data;
 }
+
+std::string toString(const md5::digest_type &digest) {
+    const char * charDigest = reinterpret_cast<const char *>(&digest);
+    std::string result;
+    boost::algorithm::hex(charDigest, charDigest + sizeof(md5::digest_type), std::back_inserter(result));
+    return result;
+}

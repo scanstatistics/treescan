@@ -1,6 +1,5 @@
 
 #include <numeric>
-#include <algorithm>
 #include <boost/tokenizer.hpp>
 #include <boost/regex.hpp>
 #include <boost/assign.hpp>
@@ -335,22 +334,47 @@ double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
 
 ////////////////////////// SequentialStatistic ///////////////////////////////
 
+const char * SequentialStatistic::_file_suffix = "_sequential";
+const char * SequentialStatistic::_accumulated_case_ext = ".cas";
+const char * SequentialStatistic::_accumulated_sim_ext = ".sim";
+const char * SequentialStatistic::_settings_ext = ".xml";
+
+double SequentialStatistic::getAlphaSpentToDate(const std::string &output_filename) {
+    std::string filename, buffer;
+    getDerivedFilename(output_filename, _file_suffix, _settings_ext, filename);
+
+    using boost::property_tree::ptree;
+    ptree pt;
+
+    if (!validateFileAccess(filename))
+        return -1.0;
+
+    read_xml(filename, pt);
+
+    // Read alpha spendings from last looks.
+    buffer = pt.get<std::string>("accumulation.alpha-spending", "0.0");
+    std::vector<double> spending;
+    csv_string_to_typelist<double>(buffer.c_str(), spending);
+    return std::accumulate(spending.begin(), spending.end(), 0.0);
+}
+
 SequentialStatistic::SequentialStatistic(const Parameters& parameters, const ScanRunner & scanner) : _parameters(parameters), _scanner(scanner) {
     std::string buffer1, buffer2;
     // Expected filenames are derived from output filename.
-    getDerivedFilename(_parameters.getOutputFileName(), "_sequential", ".cas", _counts_filename);
-    getDerivedFilename(_parameters.getOutputFileName(), "_sequential", ".sim", _simulations_filename);
+    getDerivedFilename(_parameters.getOutputFileName(), _file_suffix, _accumulated_case_ext, _counts_filename);
+    getDerivedFilename(_parameters.getOutputFileName(), _file_suffix, _accumulated_sim_ext, _simulations_filename);
     GetTemporaryFilename(_write_simulations_filename);
     GetTemporaryFilename(_write_llr_filename);
-    getDerivedFilename(_parameters.getOutputFileName(), "_sequential", ".xml", _settings_filename);
+    getDerivedFilename(_parameters.getOutputFileName(), _file_suffix, _settings_ext, _settings_filename);
     // If case file doesn't exist yet, this is the first look of sequential statistic.
     _look_idx = validateFileAccess(_counts_filename) == true ? 2 : 1; // store look count in settings?
+    parameters.setCurrentLook(_look_idx);
     // Get alpha spending for this look via user parameter setting.
     _alpha_spending = _parameters.getSequentialAlphaSpending();
     if (!isFirstLook()) {
         readSettings(_settings_filename);
+        parameters.setCurrentLook(_look_idx);
         // Read calculate the look index.
-        _look_idx = _alpha_spendings.size() + 1;
         _alpha_spending += _statistic_parameters.getSequentialAlphaSpending();
         if (_parameters.getNumReplicationsRequested() != _statistic_parameters.getNumReplicationsRequested())
             throw resolvable_error("Error: Number of replications requested (%u) does match setting in previous sequential scan (%u).",
@@ -369,6 +393,12 @@ SequentialStatistic::SequentialStatistic(const Parameters& parameters, const Sca
             typelist_csv_string<unsigned int>(_statistic_parameters.getRestrictedTreeLevels(), buffer2);
             throw resolvable_error("Error: Restricted tree levels (%s) does match setting in previous sequential scan (%s).", buffer1.c_str(), buffer2.c_str());
         }
+        if (_parameters.getSequentialAlphaOverall() != _statistic_parameters.getSequentialAlphaOverall())
+            throw resolvable_error("Error: Alpha overall specified for sequential analysis (%s) does match setting in previous alpha overall (%s).",
+                AbtractParameterFileAccess::AsString(buffer1, _parameters.getSequentialAlphaOverall()).c_str(),
+                AbtractParameterFileAccess::AsString(buffer1, _statistic_parameters.getSequentialAlphaOverall()).c_str());
+        if (getTreeHash(buffer1) != _tree_hash)
+            throw resolvable_error("Error: The tree file and/or cut file are not the same as prior sequential scan(s). The tree structure must remain the same for each look.");
 
         // Calculate the size of _llr_sims based upon this looks alpha spending.
         for (boost::dynamic_bitset<>::size_type i = 0; i < _alpha_simulations.size(); ++i) {
@@ -377,27 +407,51 @@ SequentialStatistic::SequentialStatistic(const Parameters& parameters, const Sca
                 // Once a simulation is marked, it remains marked. So add to list with max double as LLR.
                 _llr_sims.push_back(std::make_pair(std::numeric_limits<double>::max(), i + 1));
         }
-
     }
     _alpha_simulations.resize(_parameters.getNumReplicationsRequested());
-    size_t alpha_spending_size = ceil(static_cast<double>(_parameters.getNumReplicationsRequested() + 1) * _alpha_spending);
+    size_t alpha_spending_size = static_cast<size_t>(ceil(static_cast<double>(_parameters.getNumReplicationsRequested() + 1) * _alpha_spending));
     _llr_sims.resize(alpha_spending_size, std::make_pair(0,0));
     _alpha_spendings.push_back(_parameters.getSequentialAlphaSpending());
 }
 
 bool SequentialStatistic::addSimulationLLR(double llr, unsigned int simIdx) {
-    // Skip current simulation if already marked in previous look.
-    if (_alpha_simulations.test(simIdx - 1))
+    // Skip this simulation if already marked in previous look. This llr is already in _llr_sims but assigned as max double.
+    if (isMarkedSimulation(simIdx))
         return true;
 
-    llr_sim_t add_llr_sim(llr, simIdx);
     // Attempt to insert current simulation llr into top ranking while maintaining the alpha spending limit.
+    llr_sim_t add_llr_sim(llr, simIdx);
     llr_sim_container_t::iterator itr = std::upper_bound(_llr_sims.begin(), _llr_sims.end(), add_llr_sim, compare_llr_sim_t());
     if (itr != _llr_sims.end()) {
         _llr_sims.insert(itr, add_llr_sim);
         _llr_sims.pop_back();
         return true;
     } return false;
+}
+
+/* Creates a hash of the structure -- does not include data. */
+std::string & SequentialStatistic::getTreeHash(std::string& treehash) const {
+    md5 hash;
+    md5::digest_type digest;
+    std::stringstream identifiers;
+    std::string buffer;
+
+    ScanRunner::NodeStructureContainer_t::const_iterator itr = _scanner.getNodes().begin(), itrend = _scanner.getNodes().end();
+    for (; itr != itrend; ++itr) {
+        identifiers.str("");
+        const NodeStructure& node = *(*itr);
+        identifiers << "n:" <<node.getIdentifier() << ":c" << node.getCutType();
+        for (size_t i = 0; i < node.getChildren().size(); ++i) {
+            const NodeStructure& child = *(node.getChildren()[i]);
+            identifiers << "n:" << child.getIdentifier() << ":c" << child.getCutType();
+        }
+        buffer = identifiers.str();
+        lowerString(buffer);
+        hash.process_bytes(buffer.data(), buffer.size());
+    }
+    hash.get_digest(digest);    
+    treehash = toString(digest);
+    return treehash;
 }
 
 void SequentialStatistic::readSettings(const std::string &filename) {
@@ -417,11 +471,16 @@ void SequentialStatistic::readSettings(const std::string &filename) {
     Parameters::RestrictTreeLevels_t restricted_tree_levels;
     csv_string_to_typelist<unsigned int>(buffer.c_str(), restricted_tree_levels);
     _statistic_parameters.setRestrictedTreeLevels(restricted_tree_levels);
+    _statistic_parameters.setSequentialAlphaOverall(static_cast<double>(pt.get<double>("parameters.sequential-alpha-overall", _parameters.getSequentialAlphaOverall())));
+    _tree_hash = pt.get<std::string>("parameters.tree-hash", "");
 
     // Read alpha spendings from last looks.
     buffer = pt.get<std::string>("accumulation.alpha-spending", "0.0");
     csv_string_to_typelist<double>(buffer.c_str(), _alpha_spendings);
     _statistic_parameters.setSequentialAlphaSpending(std::accumulate(_alpha_spendings.begin(), _alpha_spendings.end(), 0.0));
+
+    // better determination of look iteration through alpha spending collection
+    _look_idx = _alpha_spendings.size() + 1;
 
     // Read collection of simulation indexes that were in alpha spending from previous looks and store in class variable.
     std::vector<unsigned int> indexes;
@@ -443,9 +502,10 @@ void SequentialStatistic::readSettings(const std::string &filename) {
 
 void SequentialStatistic::writeSettings(const std::string &filename) {
     using boost::property_tree::ptree;
-    using boost::property_tree::xml_writer_settings;
+    //using boost::property_tree::xml_writer_settings;
     ptree pt;
     std::string buffer;
+    std::stringstream streambuffer;
 
     // Write parameter settings.
     pt.put("parameters.replications", _parameters.getNumReplicationsRequested());
@@ -454,6 +514,10 @@ void SequentialStatistic::writeSettings(const std::string &filename) {
     pt.put("parameters.restrict-tree-levels", _parameters.getRestrictTreeLevels());
     typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), buffer);
     pt.put("parameters.restricted-tree-levels", buffer);
+    streambuffer << _parameters.getSequentialAlphaOverall();
+    pt.put("parameters.sequential-alpha-overall", streambuffer.str().c_str());
+    if (_tree_hash.size() == 0) getTreeHash(_tree_hash);
+    pt.put("parameters.tree-hash", _tree_hash);
 
     // Write alpha spending for all looks.
     typelist_csv_string<double>(_alpha_spendings, buffer);
@@ -474,12 +538,12 @@ void SequentialStatistic::writeSettings(const std::string &filename) {
     pt.add_child("accumulation.signalled-cuts", signalled_cuts_node);
 
     // Write to xml file.
-    write_xml(filename, pt, std::locale()); 
+    write_xml(filename, pt, std::locale(), boost::property_tree::xml_parser::xml_writer_settings<boost::property_tree::ptree::key_type>('\t', 1));
 }
 
 void SequentialStatistic::write(const std::string &casefilename) {
     _alpha_simulations.reset();
-    for (llr_sim_container_t::iterator itr = _llr_sims.begin(); itr != _llr_sims.end(); ++itr) {
+    for (llr_sim_container_t::iterator itr=_llr_sims.begin(); itr != _llr_sims.end(); ++itr) {
         if (itr->second == 0)
             break;
         _alpha_simulations.set(itr->second - 1);
@@ -852,7 +916,7 @@ bool ScanRunner::readCounts(const std::string& filename, bool sequence_new_data)
                             BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
                         continue;
                     }
-                    if (censortime < _parameters.getMinimumCensorTime()) {
+                    if (censortime < static_cast<int>(_parameters.getMinimumCensorTime())) {
                         _print.Printf("Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
                             "The censoring time is less than user specified minimum of %u. This observation will be ignored.",
                             BasePrint::P_WARNING, dataSource->getCurrentRecordIndex(), _parameters.getMinimumCensorTime());
@@ -1079,7 +1143,9 @@ bool ScanRunner::reportableCut(const CutStructure& cut) const {
     return /* Does the top cut rank among replications? */
            (_parameters.getNumReplicationsRequested() > 0 && cut.getRank() < _parameters.getNumReplicationsRequested() + 1) ||
            /* If not performing replications, is the cut's observed greater than expected? (we're only scanning for high rates) */
-           (_parameters.getNumReplicationsRequested() == 0 && static_cast<double>(cut.getC()) > cut.getExpected(*this));
+           (_parameters.getNumReplicationsRequested() == 0 && static_cast<double>(cut.getC()) > cut.getExpected(*this)) ||
+           /* If Bernoulli sequential scan -- a cut reported in previous look is always reportable. */
+           (_parameters.isSequentialScanBernoulli() && getSequentialStatistic().testCutSignaled(static_cast<size_t>(cut.getID())) != 0);
 }
 
 /* REPORT RESULTS */
@@ -1165,8 +1231,18 @@ bool ScanRunner::run() {
     if (_print.GetIsCanceled()) return false;
 
     // create SequentialStatistic object if Bernoulli sequential
-    if (_parameters.isSequentialScanBernoulli())
+    if (_parameters.isSequentialScanBernoulli()) {
         _sequential_statistic.reset(new SequentialStatistic(_parameters, *this));
+        if (macro_less_than(_parameters.getSequentialAlphaOverall(), _sequential_statistic->getAlphaSpending(), DBL_CMP_TOLERANCE)) {
+            std::stringstream buffer;
+            buffer << "The alpha spending for sequential scan reached the specified alpha overall and the analysis is over.\n";
+            double remaining = _parameters.getSequentialAlphaOverall() - (_sequential_statistic->getAlphaSpending() - _parameters.getSequentialAlphaSpending());
+            if (macro_less_than(0.0, remaining, DBL_CMP_TOLERANCE))
+                buffer << "The overall alpha has " << remaining << " remaining to be spent.\n";
+            _print.Printf(buffer.str().c_str(), BasePrint::P_STDOUT);
+            return false;
+        }
+    }
 
     if (!readCounts(_parameters.getCountFileName(), true))
         throw resolvable_error("\nProblem encountered when reading the data from the case file.");
@@ -2041,7 +2117,9 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, 
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN, endIdx - startIdx + 1);
     else
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN);
-    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) return 0;
+    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD && !(_parameters.isSequentialScanBernoulli() && getSequentialStatistic().testCutSignaled(static_cast<int>(node_index)) != 0))
+        // Exclude this cut if log likelihood is unset -- unless we're sequential scannig and this cut has signalled in prior looks.
+        return 0;
 
     std::auto_ptr<CutStructure> cut(new CutStructure());
     cut->setLogLikelihood(loglikelihood);

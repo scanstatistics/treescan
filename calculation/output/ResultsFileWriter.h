@@ -23,6 +23,7 @@ class ResultsFileWriter {
     std::string & truncateNodeId(std::string& val);
     const char * getPvalueClass(double pval, bool childClass);
     const char * getRelativeRiskClass(double rr, bool childClass);
+    const char * getSignalClass(double pval, bool childClass);
     std::string & stripNodeIdForHtml(std::string & s);
     NodeSet_t writeJsTreeNode(std::stringstream & outfile, const NodeStructure& node, const std::map<int, const CutStructure*>& cutMap, int collapseAtLevel);
 

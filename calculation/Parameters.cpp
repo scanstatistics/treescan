@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 61;
+const int Parameters::giNumParameters = 60;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -78,9 +78,8 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_sequential_min_signal != rhs._sequential_min_signal) return false;
   if (_sequential_max_signal != rhs._sequential_max_signal) return false;
   if (_sequential_file != rhs._sequential_file) return false;
-  if (_sequential_alpha != rhs._sequential_alpha) return false;
+  if (_sequential_alpha_overall != rhs._sequential_alpha_overall) return false;
   if (_sequential_alpha_spending != rhs._sequential_alpha_spending) return false;
-  if (_sequential_signal_cutoff != rhs._sequential_signal_cutoff) return false;
   if (_power_z != rhs._power_z) return false;
   if (_apply_risk_window_restriction != rhs._apply_risk_window_restriction) return false;
   if (_risk_window_percentage != rhs._risk_window_percentage) return false;
@@ -193,9 +192,8 @@ void Parameters::copy(const Parameters &rhs) {
     _sequential_min_signal = rhs._sequential_min_signal;
     _sequential_max_signal = rhs._sequential_max_signal;
     _sequential_file = rhs._sequential_file;
-    _sequential_alpha = rhs._sequential_alpha;
+    _sequential_alpha_overall = rhs._sequential_alpha_overall;
     _sequential_alpha_spending = rhs._sequential_alpha_spending;
-    _sequential_signal_cutoff = rhs._sequential_signal_cutoff;
 
     _forced_censored_algorithm = rhs._forced_censored_algorithm;
 
@@ -368,9 +366,8 @@ void Parameters::setAsDefaulted() {
     _sequential_min_signal=3;
     _sequential_max_signal=200;
     _sequential_file="";
-    _sequential_alpha = 0.05;
+    _sequential_alpha_overall = 0.05;
     _sequential_alpha_spending = 0.01;
-    _sequential_signal_cutoff = 0.05;
 
     _apply_risk_window_restriction = true;
     _risk_window_percentage = 20.0;
@@ -465,16 +462,15 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _randomizationSeed = pt.get<unsigned int>("parameters.analysis.advanced.inference.seed", static_cast<unsigned int>(RandomNumberGenerator::glDefaultSeed));
     _randomlyGenerateSeed = pt.get<bool>("parameters.analysis.advanced.inference.generate-seed", false);
     _restrict_tree_levels = pt.get<bool>("parameters.analysis.advanced.inference.restrict-tree-levels", false);
-	buffer = pt.get<std::string>("parameters.analysis.advanced.inference.restricted-tree-levels", false);
+	buffer = pt.get<std::string>("parameters.analysis.advanced.inference.restricted-tree-levels", "");
 	csv_string_to_typelist<unsigned int>(buffer.c_str(), _restricted_tree_levels);
     // Advanced Analysis - Inference
     _sequential_scan = pt.get<bool>("parameters.analysis.advanced.sequential-scan.sequential-scan", false);
     _sequential_max_signal = pt.get<unsigned int>("parameters.analysis.advanced.sequential-scan.sequential-maximum-signal", 200);
     _sequential_min_signal = pt.get<unsigned int>("parameters.analysis.advanced.sequential-scan.squential-minimum-signal", 3);
     setSequentialFilename(pt.get<std::string>("parameters.analysis.advanced.sequential-scan.sequential-filename", "").c_str(), true);
-    _sequential_alpha = pt.get<double>("parameters.analysis.advanced.sequential-scan.sequential-alpha", 0.05);
+    _sequential_alpha_overall = pt.get<double>("parameters.analysis.advanced.sequential-scan.sequential-alpha-overall", 0.05);
     _sequential_alpha_spending = pt.get<double>("parameters.analysis.advanced.sequential-scan.sequential-alpha-spending", 0.01);
-    _sequential_signal_cutoff = pt.get<double>("parameters.analysis.advanced.sequential-scan.sequential-signal-cutoff", 0.05);
     // Power Evaluations
     _perform_power_evaluations = pt.get<bool>("parameters.analysis.advanced.power-evaluations.perform-power-evaluations", false);
     _power_evaluation_type = static_cast<PowerEvaluationType>(pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.power-evaluation-type", PE_WITH_ANALYSIS));
@@ -551,9 +547,8 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.analysis.advanced.sequential-scan.sequential-maximum-signal", _sequential_max_signal);
     pt.put("parameters.analysis.advanced.sequential-scan.squential-minimum-signal", _sequential_min_signal);
     pt.put("parameters.analysis.advanced.sequential-scan.sequential-filename", _sequential_file);
-    pt.put("parameters.analysis.advanced.sequential-scan.sequential-alpha", _sequential_alpha);
+    pt.put("parameters.analysis.advanced.sequential-scan.sequential-alpha-overall", _sequential_alpha_overall);
     pt.put("parameters.analysis.advanced.sequential-scan.sequential-alpha-spending", _sequential_alpha_spending);
-    pt.put("parameters.analysis.advanced.sequential-scan.sequential-signal-cutoff", _sequential_signal_cutoff);
     // Input
     pt.put("parameters.input.tree-file", _treeFileNames.front());
     pt.put("parameters.input.count-file", _countFileName);

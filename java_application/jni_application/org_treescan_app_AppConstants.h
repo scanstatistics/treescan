@@ -7,18 +7,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#undef org_treescan_app_AppConstants_MIN_YEAR
-#define org_treescan_app_AppConstants_MIN_YEAR 1753L
-#undef org_treescan_app_AppConstants_MAX_YEAR
-#define org_treescan_app_AppConstants_MAX_YEAR 9999L
-#undef org_treescan_app_AppConstants_MIN_GENERIC
-#define org_treescan_app_AppConstants_MIN_GENERIC -219145L
-#undef org_treescan_app_AppConstants_MAX_GENERIC
-#define org_treescan_app_AppConstants_MAX_GENERIC 2921938L
 #undef org_treescan_app_AppConstants_VERSION_MAJOR
-#define org_treescan_app_AppConstants_VERSION_MAJOR 9L
+#define org_treescan_app_AppConstants_VERSION_MAJOR 1L
 #undef org_treescan_app_AppConstants_VERSION_MINOR
-#define org_treescan_app_AppConstants_VERSION_MINOR 2L
+#define org_treescan_app_AppConstants_VERSION_MINOR 5L
 #undef org_treescan_app_AppConstants_VERSION_RELEASE
 #define org_treescan_app_AppConstants_VERSION_RELEASE 0L
 /*
@@ -72,4 +64,5 @@ JNIEXPORT jstring JNICALL Java_org_treescan_app_AppConstants_getVersionId
 #ifdef __cplusplus
 }
 #endif
-#endif
+ndif
+#e

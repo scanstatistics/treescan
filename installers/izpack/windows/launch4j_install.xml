@@ -1,8 +1,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>/prj/treescan/installers/v.1.4.x/install-1_4_windows.jar</jar>
-  <outfile>/prj/treescan/installers/v.1.4.x/install-1_4_windows.exe</outfile>
+  <jar>/prj/treescan/installers/v.1.5.x/install-1_5_windows.jar</jar>
+  <outfile>/prj/treescan/installers/v.1.5.x/install-1_5_windows.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir></chdir>
@@ -14,22 +14,19 @@
   <manifest></manifest>
   <icon>/prj/treescan/build/treescan/installers/resources/TreeScan.ico</icon>
   <jre>
-    <path></path>
-    <minVersion>1.6.0_01</minVersion>
-    <maxVersion></maxVersion>
-    <jdkPreference>preferJre</jdkPreference>
+    <minVersion>1.8.0_1</minVersion>
   </jre>
   <versionInfo>
-    <fileVersion>1.4.0.0</fileVersion>
-    <txtFileVersion>Version 1.4.0</txtFileVersion>
+    <fileVersion>1.5.0.0</fileVersion>
+    <txtFileVersion>Version 1.5.0</txtFileVersion>
     <fileDescription>TreeScan - Software for the Tree Scan Statistic</fileDescription>
-    <copyright>Copyright</copyright>
-    <productVersion>1.4.0.0</productVersion>
-    <txtProductVersion>Version 1.4.0</txtProductVersion>
+    <copyright>TreeScan</copyright>
+    <productVersion>1.5.0.0</productVersion>
+    <txtProductVersion>Version 1.5.0</txtProductVersion>
     <productName>TreeScan</productName>
-    <companyName>TreeScanscan.org</companyName>
-    <internalName>install-1_4</internalName>
-    <originalFilename>install-1_4.exe</originalFilename>
+    <companyName>TreeScan.org</companyName>
+    <internalName>install-1_5_windows</internalName>
+    <originalFilename>install-1_5_windows.exe</originalFilename>
   </versionInfo>
   <messages>
     <startupErr>An error occurred while starting the application.</startupErr>
