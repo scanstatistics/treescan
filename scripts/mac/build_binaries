@@ -11,7 +11,7 @@ fi
 
 (
 cpp_compiler="/usr/bin/g++"
-osx_min_version="-mmacosx-version-min=10.6"
+osx_min_version="-mmacosx-version-min=10.9"
 binaries="$3"
 treescan_src="$1"
 boost_src="$2"
@@ -22,28 +22,13 @@ rm -f $binaries/*
 
 # Intel command-line binaries
 
-echo building TreeScan for 32-bit system - i386
-./makescript.mac.sh $binaries/treescan_i386_32bit $treescan_src $boost_src -m32 -O3 $cpp_compiler "-arch i386" $osx_min_version $processors
-
 echo building TreeScan for 64-bit system - x86_64
-./makescript.mac.sh $binaries/treescan_x86_64_64bit $treescan_src $boost_src -m64 -O3 $cpp_compiler "-arch x86_64" $osx_min_version $processors
-
-# Create universal binary - only interested in Intel architectures
-echo creating universal binary for 32-bit and 64-bit systems
-lipo -create $binaries/treescan_i386_32bit $binaries/treescan_x86_64_64bit -output $binaries/treescan
-
+./makescript.mac.sh $binaries/treescan $treescan_src $boost_src -m64 -O3 $cpp_compiler "-arch x86_64" $osx_min_version $processors
 
 # Intel JNI libraries
 
-echo building TreeScan shared object for 32-bit system - i386
-./makescript.so.mac.sh $binaries/libtreescan_i386_32bit.jnilib $treescan_src $boost_src -m32 -O3 $cpp_compiler "-arch i386" $osx_min_version $processors
-
 echo building TreeScan shared object for 64-bit system - x86_64
-./makescript.so.mac.sh $binaries/libtreescan_x86_64_64bit.jnilib $treescan_src $boost_src -m64 -O3 $cpp_compiler "-arch x86_64" $osx_min_version $processors
-
-# Create universal binary - only interested in Intel architectures
-echo creating universal shared object binary for 32-bit and 64-bit systems
-lipo -create $binaries/libtreescan_i386_32bit.jnilib $binaries/libtreescan_x86_64_64bit.jnilib -output $binaries/libtreescan.jnilib
+./makescript.so.mac.sh $binaries/libtreescan.jnilib $treescan_src $boost_src -m64 -O3 $cpp_compiler "-arch x86_64" $osx_min_version $processors
 
 # codesign binaries
 security unlock-keychain $HOME/Library/Keychains/login.keychain

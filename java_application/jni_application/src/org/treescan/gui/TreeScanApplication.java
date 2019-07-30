@@ -113,7 +113,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         softwareUpdateAvailable.setVisible(false);
         setLocationRelativeTo(null);
         _updateCheck = new UpdateCheckDialog(this);
-        
+
         // Define the paths to application jar file and installed user guide.
         if (SystemUtils.IS_OS_MAC) {
             /* The 'user.dir' property is different on Mac. We're defining the 'java.library.path' in the Info.plist file to be
@@ -122,17 +122,17 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             // The jar is in the folder referenced by "java.library.path".
             _application = java_lib_path + File.separator + "TreeTScan.jar";
             // The user guide is on the directory above the application root.
-            _user_guide = java_lib_path.substring(0, java_lib_path.substring(0, java_lib_path.lastIndexOf(".app")).lastIndexOf(File.separator)) + File.separator + "userguide.pdf";            
-            /* Java 9 removed underlying interface for the MacOSApplication class. Skip this class for Java 9+ until we move beyond Java 8. 
+            _user_guide = java_lib_path.substring(0, java_lib_path.substring(0, java_lib_path.lastIndexOf(".app")).lastIndexOf(File.separator)) + File.separator + "userguide.pdf";
+            /* Java 9 removed underlying interface for the MacOSApplication class. Skip this class for Java 9+ until we move beyond Java 8.
                This implementation isn't ideal but don't see a way to support both at the same time. */
             if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9) == false) {
                 _mac_os_app = new MacOSApplication();
             }
         } else {
             _application = SystemUtils.getUserDir().getAbsolutePath() + File.separator  + "TreeTScan.jar";
-            _user_guide = SystemUtils.getUserDir().getAbsolutePath() + File.separator + "userguide.pdf";            
-        }        
-        
+            _user_guide = SystemUtils.getUserDir().getAbsolutePath() + File.separator + "userguide.pdf";
+        }
+
     }
 
     public static TreeScanApplication getInstance() {
@@ -151,12 +151,12 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         } else {
           // other platforms require checking to determine whether VM is 32 or 64 bit
           // in order to load appropriate JNI library
-        
+
           boolean is64BitVM;
           String bits = null;
           String vm_name = null;
           String os_arch = null;
-                
+
           try { // first try to get VM type from 'sun.arch.data.model' property
             bits = System.getProperty("sun.arch.data.model");
           } catch (Throwable t) {System.out.println("'sun.arch.data.model' property not avaiable");}
@@ -167,31 +167,31 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             // since OS arch could be 64-bit but VM 32-bit
             os_arch = System.getProperty("os.arch");
           } catch (Throwable t) {System.out.println("'os.arch' property not avaiable");}
-        
+
           if (bits != null) {
             is64BitVM = (bits.indexOf("64") >= 0);
             System.out.println("'sun.arch.data.model' property indicating VM data model is " + (is64BitVM ? "64" : "32") + "-bit");
           } else if (vm_name != null) {
-            is64BitVM = vm_name.indexOf("64") >= 0; 
+            is64BitVM = vm_name.indexOf("64") >= 0;
             System.out.println("'java.vm.name' property indicating VM data model is " + (is64BitVM ? "64" : "32") + "-bit");
           } else if (os_arch != null) {
-            is64BitVM = os_arch.indexOf("64") >= 0; 
+            is64BitVM = os_arch.indexOf("64") >= 0;
             System.out.println("'os.arch' property indicating VM data model is " + (is64BitVM ? "64" : "32") + "-bit");
           } else {
-            is64BitVM = false; 
+            is64BitVM = false;
             System.out.println("Assuming VM data model is 32-bit.");
           }
 
-          // educated guess has been determined 
+          // educated guess has been determined
           String firstTryLibrary = is64BitVM ? "treescan64" : "treescan32";
           String secondTryLibrary = is64BitVM ? "treescan32" : "treescan64";
           try {
             System.out.println("Loading " + firstTryLibrary);
             System.loadLibrary(firstTryLibrary);
-          } catch (Throwable t) { // last-ditch effort                
+          } catch (Throwable t) { // last-ditch effort
             System.out.println("Loading " + secondTryLibrary);
             System.loadLibrary(secondTryLibrary);
-          } 
+          }
         }
     }
 
@@ -258,17 +258,28 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         WaitCursor waitCursor = new WaitCursor(TreeScanApplication.this);
 
         try {
-            ParameterSettingsFrame frame = new ParameterSettingsFrame(getRootPane(), sFilename);
-            frame.addInternalFrameListener(this);
-            frame.setVisible(true);
-            desktopPane.add(frame);
-            try {
-                frame.setSelected(true);
-            } catch (java.beans.PropertyVetoException e) {
+            Parameters parameters = new Parameters();
+            if (sFilename.length() > 0) {
+                parameters.Read(sFilename);
             }
+            openSessionWindow(parameters, false);
         } finally {
             waitCursor.restore();
         }
+    }
+
+    public void openSessionWindow(Parameters parameters, boolean forceFull) {
+        AbstractParameterSettingsFrame frame=null;
+        if (!forceFull && parameters.isSequentialScanBernoulli() && Parameters.getAlphaSpentToDate(parameters.getOutputFileName()) != 0.0)
+            frame = new ParameterSettingsSequentialScanFrame(getRootPane(), parameters);
+        else
+            frame = new ParameterSettingsFrame(getRootPane(), parameters);
+        frame.addInternalFrameListener(this);
+        frame.setVisible(true);
+        desktopPane.add(frame);
+        try {
+            frame.setSelected(true);
+        } catch (java.beans.PropertyVetoException e) {}
     }
 
     /**
@@ -293,8 +304,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     }
 
     /**
-     * Create a new ParameterSettingsFrame internal frame, loading control
-     * settings from file.
+     * Creates file selection dialog which always user to browse for parameter file and ultimately open in settings window.
      */
     private void openParameterSessionWindow() {
         //Create a file chooser
@@ -304,14 +314,13 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         FileSelectionDialog select = new FileSelectionDialog(this, "Select Settings File", filters, lastBrowseDirectory);
         File file = select.browse_load(true);
         if (file != null) {
-            openNewParameterSessionWindow(file.getAbsolutePath());   
+            openNewParameterSessionWindow(file.getAbsolutePath());
             lastBrowseDirectory = select.getDirectory();
         }
     }
 
     /**
-     * Save session action; calls ParameterSettingsFrame::WriteSession to
-     * write settings to file.
+     * Save session action; calls ParameterSettingsFrame::WriteSession to write settings to file.
      */
     public class SaveSessionAction extends AbstractAction {
 
@@ -324,8 +333,8 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                if (_focusedInternalFrame != null && _focusedInternalFrame instanceof ParameterSettingsFrame) {
-                    ((ParameterSettingsFrame) _focusedInternalFrame).WriteSession("");
+                if (_focusedInternalFrame != null && _focusedInternalFrame instanceof AbstractParameterSettingsFrame) {
+                    ((AbstractParameterSettingsFrame) _focusedInternalFrame).WriteSession("");
                 }
             } catch (Throwable t) {
                 new ExceptionDialog(TreeScanApplication.this, t).setVisible(true);
@@ -334,8 +343,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     }
 
     /**
-     * Save As session action; calls ParameterSettingsFrame::WriteSession to
-     * write settings to specified file.
+     * Save As session action; calls AbstractParameterSettingsFrame::SaveAs to write settings to specified file.
      */
     public class SaveSessionAsAction extends AbstractAction {
 
@@ -348,8 +356,8 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                if (_focusedInternalFrame != null && _focusedInternalFrame instanceof ParameterSettingsFrame) {
-                    ((ParameterSettingsFrame) _focusedInternalFrame).SaveAs();
+                if (_focusedInternalFrame != null && _focusedInternalFrame instanceof AbstractParameterSettingsFrame) {
+                    ((AbstractParameterSettingsFrame) _focusedInternalFrame).SaveAs();
                 }
             } catch (Throwable t) {
                 new ExceptionDialog(TreeScanApplication.this, t).setVisible(true);
@@ -370,7 +378,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (_focusedInternalFrame != null && _focusedInternalFrame instanceof ParameterSettingsFrame) {
+            if (_focusedInternalFrame != null && _focusedInternalFrame instanceof AbstractParameterSettingsFrame) {
                 try {
                     _focusedInternalFrame.setClosed(true);
                 } catch (PropertyVetoException e1) {
@@ -400,7 +408,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             }
         }
     }
-    
+
     /**
      * Print results action; attempts to print results from run window.
      */
@@ -469,9 +477,9 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
      * Executes analysis from focused session window.
      */
     protected void executeAnalysis() {
-        if (_focusedInternalFrame != null && _focusedInternalFrame instanceof ParameterSettingsFrame) {
-            if (((ParameterSettingsFrame) _focusedInternalFrame).CheckSettings()) {
-                Parameters parameters = ((ParameterSettingsFrame) _focusedInternalFrame).getParameterSettings();
+        if (_focusedInternalFrame != null && _focusedInternalFrame instanceof AbstractParameterSettingsFrame) {
+            if (((AbstractParameterSettingsFrame) _focusedInternalFrame).CheckSettings()) {
+                Parameters parameters = ((AbstractParameterSettingsFrame) _focusedInternalFrame).getParameterSettings();
                 if (OutputFileRegister.getInstance().isRegistered(parameters.getOutputFileName())) {
                     JOptionPane.showMessageDialog(TreeScanApplication.this, "The results file for this analysis is currently being written.\n" +
                             "Please specify another filename or wait for analysis to complete.", "Note", JOptionPane.INFORMATION_MESSAGE);
@@ -505,8 +513,8 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                if (_focusedInternalFrame instanceof ParameterSettingsFrame) {
-                    ((ParameterSettingsFrame) _focusedInternalFrame).showExecOptionsDialog(TreeScanApplication.this);
+                if (_focusedInternalFrame instanceof AbstractParameterSettingsFrame) {
+                    ((AbstractParameterSettingsFrame) _focusedInternalFrame).showExecOptionsDialog(TreeScanApplication.this);
                 }
             } catch (Throwable t) {
                 new ExceptionDialog(TreeScanApplication.this, t).setVisible(true);
@@ -594,8 +602,8 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         } catch (Throwable t) {
             new ExceptionDialog(TreeScanApplication.this, t).setVisible(true);
         }
-    }    
-    
+    }
+
     /**
      * Check version action; checks whether a new version of TreeScan is available.
      */
@@ -626,7 +634,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             showUpdateDialog();
         }
     }
-    
+
     /**
      * returns whether there are actively running analyses
      */
@@ -702,12 +710,12 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
      * not close, otherwise true. */
     private boolean CloseParameterSettingsWindows() {
         for (int i = allOpenFrames.size() - 1; i >= 0; i--) {
-            if (allOpenFrames.get(i) instanceof ParameterSettingsFrame) {
-                if (!((ParameterSettingsFrame) allOpenFrames.get(i)).QueryWindowCanClose()) {
+            if (allOpenFrames.get(i) instanceof AbstractParameterSettingsFrame) {
+                if (!((AbstractParameterSettingsFrame) allOpenFrames.get(i)).queryWindowCanClose()) {
                     return false;
                 } else {
                     try {
-                        ((ParameterSettingsFrame) allOpenFrames.get(i)).setClosed(true);
+                        ((AbstractParameterSettingsFrame) allOpenFrames.get(i)).setClosed(true);
                     } catch (PropertyVetoException ex) {
                         Logger.getLogger(TreeScanApplication.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -1049,7 +1057,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
                     new ExceptionDialog(null, e).setVisible(true);
                     return;
                 }
-                TreeScanApplication.setRunArgs(args);                
+                TreeScanApplication.setRunArgs(args);
                 new TreeScanApplication().setVisible(true);
             }
         });
@@ -1115,14 +1123,14 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
                 // Get java path from System
                 StringBuilder java_path = new StringBuilder();
                 java_path.append(System.getProperty("java.home")).append(System.getProperty("file.separator")).append("bin").append(System.getProperty("file.separator")).append("java");
-                
+
                 if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
                     //JOptionPane.showMessageDialog(null, "Calling Elevator " + System.getProperty("os.name"), "Note", JOptionPane.WARNING_MESSAGE);
                     StringBuilder args = new StringBuilder();
                     args.append("-jar ").append(UpdateCheckDialog._updaterFilename.getName()).append(" ");
                     args.append(UpdateCheckDialog._updateArchiveName.getName()).append(" \"").append(_application).append("\" ").append(getRelaunchArgs());
-                    Elevator.executeAsAdministrator(java_path.toString(), args.toString(), UpdateCheckDialog.getDownloadTempDirectory().toString());                    
-                } else {                
+                    Elevator.executeAsAdministrator(java_path.toString(), args.toString(), UpdateCheckDialog.getDownloadTempDirectory().toString());
+                } else {
                     //JOptionPane.showMessageDialog(null, "Calling getRuntime " + System.getProperty("os.name"), "Note", JOptionPane.WARNING_MESSAGE);
                     String[] commandline = new String[]{java_path.toString(),
                         "-jar",
@@ -1141,7 +1149,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
                 Logger.getLogger(TreeScanApplication.class.getName()).log(Level.SEVERE, null, ex);
                 UpdateCheckDialog._runUpdateOnTerminate = false;
                 return;
-            }            
+            }
         }
         //saving window dimensions
         Preferences _prefs = Preferences.userNodeForPackage(TreeScanApplication.class);
@@ -1193,7 +1201,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     @Override
     public void internalFrameClosed(InternalFrameEvent e) {
         allOpenFrames.remove(e.getInternalFrame());
-        if (e.getInternalFrame() instanceof ParameterSettingsFrame) {
+        if (e.getInternalFrame() instanceof AbstractParameterSettingsFrame) {
             refreshOpenList();
         }
     }
@@ -1213,7 +1221,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     @Override
     public void internalFrameActivated(InternalFrameEvent e) {
         _focusedInternalFrame = e.getInternalFrame();
-        enableActions((_focusedInternalFrame instanceof ParameterSettingsFrame), (_focusedInternalFrame instanceof AnalysisRunInternalFrame));
+        enableActions((_focusedInternalFrame instanceof AbstractParameterSettingsFrame), (_focusedInternalFrame instanceof AnalysisRunInternalFrame));
     }
 
     /**

@@ -3,8 +3,8 @@ package org.treescan.app;
 import java.util.ArrayList;
 import org.treescan.importer.InputSourceSettings;
 
-public class Parameters implements Cloneable {	
-    public native boolean Read(String filename);  
+public class Parameters implements Cloneable {
+    public native boolean Read(String filename);
     public native void Write(String filename);
     static public native double getAlphaSpentToDate(String filename);
 
@@ -13,7 +13,7 @@ public class Parameters implements Cloneable {
     public enum ScanType {TREEONLY, TREETIME, TIMEONLY};
     public enum ConditionalType {UNCONDITIONAL, TOTALCASES, NODE, NODEANDTIME};
     public enum MaximumWindowType {PERCENTAGE_WINDOW, FIXED_LENGTH};
-    public enum PowerEvaluationType {PE_WITH_ANALYSIS, PE_ONLY_CASEFILE,PE_ONLY_SPECIFIED_CASES};    
+    public enum PowerEvaluationType {PE_WITH_ANALYSIS, PE_ONLY_CASEFILE,PE_ONLY_SPECIFIED_CASES};
     public class CreationVersion {
     	public int _major;
     	public int _minor;
@@ -24,7 +24,7 @@ public class Parameters implements Cloneable {
             _minor = minor;
             _release = release;
         }
-    }        
+    }
     private CreationVersion _creationversion = new CreationVersion(1,1,0);
     private String _sourcefilename="";
     private ArrayList<String> _treefilenames;
@@ -69,7 +69,7 @@ public class Parameters implements Cloneable {
     private int _power_baseline_probability_ratio_numerator=1;
     private int _power_baseline_probability_ratio_denominator=2;
     private boolean _restrict_tree_levels=false;
-    private String _restricted_tree_levels = "";	
+    private String _restricted_tree_levels = "";
     private boolean _sequential_scan=false;
     private int _sequential_min_signal=3;
     private int _sequential_max_signal=200;
@@ -80,19 +80,19 @@ public class Parameters implements Cloneable {
     private String _exclusion_time_ranges="";
     private double _sequential_alpha_overall = 0.05;
     private double _sequential_alpha_spending = 0.01;
-    
+
     private ArrayList<InputSourceSettings>     _input_sources;
-    
+
     public Parameters() {
     	super();
         _input_sources = new ArrayList<InputSourceSettings>();
         _treefilenames = new ArrayList<String>();
-        _treefilenames.add("");        
+        _treefilenames.add("");
     }
     @Override
-    public Object clone() { 
+    public Object clone() {
       try {
-    	  Parameters newObject = (Parameters)super.clone(); 
+    	  Parameters newObject = (Parameters)super.clone();
     	  newObject._sourcefilename = new String(_sourcefilename);
           newObject._treefilenames = new ArrayList<String>(_treefilenames);
     	  newObject._cutsfilename = new String(_cutsfilename);
@@ -106,14 +106,14 @@ public class Parameters implements Cloneable {
             newObject._input_sources.add(iss.clone());
           }
           newObject._restricted_tree_levels = new String(_restricted_tree_levels);
-    	  return newObject; 
+    	  return newObject;
       } catch (CloneNotSupportedException e) {
         throw new InternalError("clone() failed!");
       }
-    }   
+    }
     @Override
     public boolean equals(Object _rhs) {
-    	  Parameters rhs = (Parameters)_rhs;    	  
+    	  Parameters rhs = (Parameters)_rhs;
    	  if (_scanType != rhs._scanType) return false;
           if (_conditionalType != rhs._conditionalType) return false;
           if (_modelType != rhs._modelType) return false;
@@ -131,7 +131,7 @@ public class Parameters implements Cloneable {
           if (_dayofweek_adjustment != rhs._dayofweek_adjustment) return false;
     	  if (_replications != rhs._replications) return false;
           if (_perform_power_evaluations != rhs._perform_power_evaluations) return false;
-          if (_power_evaluation_type != rhs._power_evaluation_type) return false;          
+          if (_power_evaluation_type != rhs._power_evaluation_type) return false;
           if (_power_evaluation_totalcases != rhs._power_evaluation_totalcases) return false;
           if (_power_replica != rhs._power_replica) return false;
           if (!_power_alt_hypothesis_filename.equals(rhs._power_alt_hypothesis_filename)) return false;
@@ -141,7 +141,7 @@ public class Parameters implements Cloneable {
           if (!_sequential_file.equals(rhs._sequential_file)) return false;
           if (_sequential_alpha_spending != rhs._sequential_alpha_spending) return false;
           if (_sequential_alpha_overall != rhs._sequential_alpha_overall) return false;
-          
+
     	  if (!_treefilenames.equals(rhs._treefilenames)) return false;
     	  if (!_countfilename.equals(rhs._countfilename)) return false;
    	  if (_data_time_range_start != rhs._data_time_range_start) return false;
@@ -149,7 +149,7 @@ public class Parameters implements Cloneable {
           if (!_cutsfilename.equals(rhs._cutsfilename)) return false;
     	  if (_apply_risk_window_restriction != rhs._apply_risk_window_restriction) return false;
     	  if (_risk_window_percentage != rhs._risk_window_percentage) return false;
-          
+
     	  if (!_outputfilename.equals(rhs._outputfilename)) return false;
     	  if (_generateHtmlResults != rhs._generateHtmlResults) return false;
     	  if (_generateTableResults != rhs._generateTableResults) return false;
@@ -157,7 +157,7 @@ public class Parameters implements Cloneable {
           if (_attributable_risk_exposed != rhs._attributable_risk_exposed) return false;
           if (_generate_llr_results != rhs._generate_llr_results) return false;
           if (_report_critical_values != rhs._report_critical_values) return false;
-          
+
           if (_resultsFormat != rhs._resultsFormat) return false;
     	  if (!_sourcefilename.equals(rhs._sourcefilename)) return false;
           if (!_input_sources.equals(rhs._input_sources)) return false;
@@ -167,54 +167,60 @@ public class Parameters implements Cloneable {
     	  if (_printColumnHeaders != rhs._printColumnHeaders) return false;
 
           if (_power_baseline_probability_ratio_numerator != rhs._power_baseline_probability_ratio_numerator) return false;
-          if (_power_baseline_probability_ratio_denominator != rhs._power_baseline_probability_ratio_denominator) return false;          
+          if (_power_baseline_probability_ratio_denominator != rhs._power_baseline_probability_ratio_denominator) return false;
           if (_restrict_tree_levels != rhs._restrict_tree_levels) return false;
           if (!_restricted_tree_levels.equals(rhs._restricted_tree_levels)) return false;
           if (_apply_exclusion_ranges != rhs._apply_exclusion_ranges) return false;
           if (!_exclusion_time_ranges.equals(rhs._exclusion_time_ranges)) return false;
-          
+
           return true;
+    }
+
+    public boolean isSequentialScanBernoulli() {
+        return _sequential_scan &&
+               _modelType == Parameters.ModelType.BERNOULLI &&
+               _conditionalType == Parameters.ConditionalType.UNCONDITIONAL;
     }
 
     public boolean isApplyingExclusionTimeRanges() {return _apply_exclusion_ranges;}
     public void setApplyingExclusionTimeRanges(boolean b) {_apply_exclusion_ranges = b;}
     public final String getExclusionTimeRangeSet() {return _exclusion_time_ranges;}
-    public void setExclusionTimeRangeSet(final String s) {_exclusion_time_ranges = s;}    
-    
+    public void setExclusionTimeRangeSet(final String s) {_exclusion_time_ranges = s;}
+
     public boolean isApplyingRiskWindowRestriction() { return _apply_risk_window_restriction; }
     public void setApplyingRiskWindowRestriction(boolean b) { _apply_risk_window_restriction = b; }
     public double getRiskWindowPercentage() { return _risk_window_percentage; }
-    public void setRiskWindowPercentage(double d) { _risk_window_percentage = d; }    
+    public void setRiskWindowPercentage(double d) { _risk_window_percentage = d; }
     public boolean getRestrictTreeLevels() {return _restrict_tree_levels;}
     public void setRestrictTreeLevels(boolean b) {_restrict_tree_levels = b;}
     public final String getRestrictedTreeLevels() {return _restricted_tree_levels;}
     public void setRestrictedTreeLevels(final String s) {_restricted_tree_levels = s;}
-	
+
     public boolean getSequentialScan() {return _sequential_scan;}
     public void setSequentialScan(boolean b) {_sequential_scan = b;}
-    
+
     public double getSequentialAlphaOverall() {return _sequential_alpha_overall;}
     public void setSequentialAlphaOverall(double d) {_sequential_alpha_overall = d;}
     public double getSequentialAlphaSpending() {return _sequential_alpha_spending;}
     public void setSequentialAlphaSpending(double d) {_sequential_alpha_spending = d;}
-    
+
     public int getSequentialMinimumSignal() {return _sequential_min_signal;}
     public void setSequentialMinimumSignal(int i) {_sequential_min_signal = i;}
     public int getSequentialMaximumSignal() {return _sequential_max_signal;}
     public void setSequentialMaximumSignal(int i) {_sequential_max_signal = i;}
     public String getSequentialFilename() {return _sequential_file;}
-    public void setSequentialFilename(String s) {_sequential_file = s;}    
-    
+    public void setSequentialFilename(String s) {_sequential_file = s;}
+
     public void addInputSourceSettings(InputSourceSettings iss) {_input_sources.add(iss);}
     public void clearInputSourceSettings() {_input_sources.clear();}
     public ArrayList<InputSourceSettings> getInputSourceSettings() {return _input_sources;}
-    
+
     public boolean getSelfControlDesign() {return _self_control_design;}
     public void setSelfControlDesign(boolean b) {_self_control_design = b;}
     public boolean getReportAttributableRisk() {return _report_attributable_risk;}
     public int getAttributableRiskExposed() {return _attributable_risk_exposed;}
     public void setReportAttributableRisk(boolean b) {_report_attributable_risk = b;}
-    public void setAttributableRiskExposed(int i) {_attributable_risk_exposed = i;}        
+    public void setAttributableRiskExposed(int i) {_attributable_risk_exposed = i;}
     public boolean getPerformDayOfWeekAdjustment() {return _dayofweek_adjustment;}
     public void setPerformDayOfWeekAdjustment(boolean b) {_dayofweek_adjustment = b;}
     public boolean getReportCriticalValues() {return _report_critical_values;}
@@ -229,7 +235,7 @@ public class Parameters implements Cloneable {
     public void setPowerEvaluationReplications(int i) {_power_replica = i;}
     public String getPowerEvaluationAltHypothesisFilename() {return _power_alt_hypothesis_filename;}
     public void setPowerEvaluationAltHypothesisFilename(String s) {_power_alt_hypothesis_filename = s;}
-    
+
     public double getMaximumWindowPercentage() {return _maximum_window_percentage;}
     public void setMaximumWindowPercentage(double d) {_maximum_window_percentage = d;}
     public int getMaximumWindowLength() {return _maximum_window_length;}
@@ -237,25 +243,25 @@ public class Parameters implements Cloneable {
     public MaximumWindowType getMaximumWindowType() {return _maximum_window_type;}
     public void setMaximumWindowType(MaximumWindowType e) {_maximum_window_type = e;}
     public void setMaximumWindowType(int ord) {try {_maximum_window_type = MaximumWindowType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, MaximumWindowType.values());}}
-    public int getMinimumWindowLength() {return _minimum_window_length;}    
-    public void setMinimumWindowLength(int u) {_minimum_window_length = u;}     
-    
+    public int getMinimumWindowLength() {return _minimum_window_length;}
+    public void setMinimumWindowLength(int u) {_minimum_window_length = u;}
+
     public int getDataTimeRangeBegin() {return _data_time_range_start;}
     public void setDataTimeRangeBegin(int i) { _data_time_range_start = i;}
     public int getDataTimeRangeClose() {return _data_time_range_end;}
     public void setDataTimeRangeClose(int i) {_data_time_range_end = i;}
-    
+
     public int getTemporalStartRangeBegin() {return _temporal_start_range_begin;}
     public void setTemporalStartRangeBegin(int i) {_temporal_start_range_begin = i;}
     public int getTemporalStartRangeClose() {return _temporal_start_range_close;}
     public void setTemporalStartRangeClose(int i) {_temporal_start_range_close = i;}
-    
+
     public int getTemporalEndRangeBegin() {return _temporal_end_range_begin;}
     public void setTemporalEndRangeBegin(int i) {_temporal_end_range_begin = i;}
-    
+
     public int getTemporalEndRangeClose() {return _temporal_end_range_close;}
     public void setTemporalEndRangeClose(int i) {_temporal_end_range_close = i;}
-    
+
     public final CreationVersion getCreationVersion() {return _creationversion;}
     public void setCreationVersion(final CreationVersion v) {_creationversion = v;}
     public int getNumRequestedParallelProcesses() {return _numprocesses;}
@@ -264,7 +270,7 @@ public class Parameters implements Cloneable {
     public void setNumReplications(int i) {_replications = i;}
     public final String getSourceFileName() {return _sourcefilename;}
     public void setSourceFileName(final String s) {_sourcefilename = s;}
-    
+
     public final String getTreeFileName(int idx/*=1*/) {
         return _treefilenames.get(idx - 1);
     }
@@ -273,7 +279,7 @@ public class Parameters implements Cloneable {
         while (idx > _treefilenames.size())
             _treefilenames.add("");
         _treefilenames.set(idx - 1, filename);
-    }    
+    }
     public final String getCutsFileName() {return _cutsfilename;}
     public void setCutsFileName(final String s) {_cutsfilename = s;}
     public final String getCountFileName() {return _countfilename;}
@@ -313,9 +319,9 @@ public class Parameters implements Cloneable {
     public void setConditionalType(int ord) {try { _conditionalType = ConditionalType.values()[ord]; } catch (ArrayIndexOutOfBoundsException e) { ThrowEnumException(ord, ConditionalType.values()); } }
     public final boolean isGeneratingLLRResults() {return _generate_llr_results;}
     public void setGeneratingLLRResults(boolean b) {_generate_llr_results=b;}
-    
+
     public int getPowerBaselineProbabilityRatioNumerator() {return _power_baseline_probability_ratio_numerator;}
     public void setPowerBaselineProbabilityRatioNumerator(int i) {_power_baseline_probability_ratio_numerator = i;}
     public int getPowerBaselineProbabilityRatioDenominator() {return _power_baseline_probability_ratio_denominator;}
-    public void setPowerBaselineProbabilityRatioDenominator(int i) {_power_baseline_probability_ratio_denominator = i;}    
+    public void setPowerBaselineProbabilityRatioDenominator(int i) {_power_baseline_probability_ratio_denominator = i;}
 }

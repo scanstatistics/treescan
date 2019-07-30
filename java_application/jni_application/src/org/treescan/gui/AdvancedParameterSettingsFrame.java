@@ -922,7 +922,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
                 // invoke the FileSelectionDialog to guide user through process of selecting the source file.
                 FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_cutFileTextField, inputSourceSettings, _settings_window);
+                selectionDialog.browse_inputsource(_cutFileTextField, inputSourceSettings, _settings_window, false);
             }
         });
 
@@ -1412,7 +1412,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
                 // invoke the FileSelectionDialog to guide user through process of selecting the source file.
                 FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_alternativeHypothesisFilename, inputSourceSettings, _settings_window);
+                selectionDialog.browse_inputsource(_alternativeHypothesisFilename, inputSourceSettings, _settings_window, false);
             }
         });
 

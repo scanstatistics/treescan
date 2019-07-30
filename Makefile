@@ -35,7 +35,7 @@ L_DLFLAGS   := -shared $(COMPILATION) -Wl,-soname,$(LINUX_LIBRARY).x.x -o $(LINU
 S_DLFLAGS   := -shared $(COMPILATION) -z text -o $(SOLARIS_LIBRARY).x.x.0
 
 # Mac OS X flags
-M_LFLAGS      := $(COMPILATION) -sectcreate __TEXT __info_plist $(INFOPLIST_FILE) -Wl,-dynamic -lstdc++ -lm
+M_LFLAGS      := $(COMPILATION) -stdlib=libc++ -sectcreate __TEXT __info_plist $(INFOPLIST_FILE) -Wl,-dynamic -lm
 M_DLFLAGS     := -shared -sectcreate __TEXT __info_plist $(INFOPLIST_FILE) $(COMPILATION) -install_name $(MAC_LIBRARY)
 
 SRC         := $(RUNNER)/ScanRunner.cpp \
@@ -129,7 +129,7 @@ $(SOLARIS_LIBRARY) : $(OBJS) $(LIB_OBJS)
 	$(CC) $(S_DLFLAGS) $(OBJS) $(LIB_OBJS) -lm -lrt -lpthread
 
 $(MAC_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(M_DLFLAGS) $(OBJS) $(LIB_OBJS) -lstdc++ -lm -o $@
+	$(CC) $(M_DLFLAGS) $(OBJS) $(LIB_OBJS) -stdlib=libc++ -lm -o $@
 %.o : %.cpp
 	$(CC) $(CFLAGS) $< -o $@
 

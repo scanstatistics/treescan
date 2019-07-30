@@ -1,110 +1,49 @@
 package org.treescan.gui;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JRootPane;
-import javax.swing.event.InternalFrameEvent;
-import javax.swing.event.InternalFrameListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
-import javax.swing.undo.UndoManager;
 import org.treescan.app.AdvFeaturesExpection;
 import org.treescan.utils.FileAccess;
-import org.treescan.app.ParameterHistory;
 import org.treescan.app.Parameters;
-import org.treescan.app.UnknownEnumException;
 import org.treescan.gui.utils.FileSelectionDialog;
 import org.treescan.gui.utils.InputFileFilter;
 import org.treescan.gui.utils.Utils;
-import org.treescan.importer.ImportDataSource;
 import org.treescan.importer.InputSourceSettings;
-import org.treescan.importer.CSVImportDataSource;
-import org.treescan.importer.XLSImportDataSource;
 
 /**
  * Parameter settings window.
  *
  * @author Hostovic
  */
-public class ParameterSettingsFrame extends javax.swing.JInternalFrame implements InternalFrameListener {
+public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
 
-    private Parameters _parameters = new Parameters();
-    private Parameters _initialParameters = new Parameters();
-    private boolean gbPromptOnExist = true;
-    private final UndoManager undo = new UndoManager();
-    private final JRootPane _rootPane;
     final static String STUDY_COMPLETE = "study_complete";
     final static String STUDY_GENERIC = "study_generic";
-    private AdvancedParameterSettingsFrame _advancedParametersSetting = null;
-    Map _input_source_map = new HashMap();
-    
+    private AdvancedParameterSettingsFrame _advancedParametersSetting;
+
     /**
      * Creates new form ParameterSettingsFrame
+     * @param rootPane
+     * @param parameters
      */
-    public ParameterSettingsFrame(final JRootPane rootPane, final String sParameterFilename) {
+    public ParameterSettingsFrame(final JRootPane rootPane, Parameters parameters) {
+        super(rootPane, parameters);
+        enableSettingsForStatisticModelCombination();
+        enableAdvancedButtons();
+    }
+
+    @Override
+    protected void initFrameComponents() {
         initComponents();
-        setFrameIcon(new ImageIcon(getClass().getResource("/TreeScan.png")));
-        _rootPane = rootPane;
-        addInternalFrameListener(this);
-        setUp(sParameterFilename);
-    }
-
-    /**
-     * launches 'save as' dialog to permit user saving current settings to
-     * parameter file
-     */
-    public boolean SaveAs() {
-        boolean bSaved = true;
-        List<InputFileFilter> filters = new ArrayList<InputFileFilter>();
-        filters.add(new InputFileFilter("prm", "Settings Files (*.prm)"));
-        FileSelectionDialog select = new FileSelectionDialog(org.treescan.gui.TreeScanApplication.getInstance(), "Select Parameters File", filters, org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory);
-        File file = select.browse_saveas();
-        if (file != null) {
-            org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
-            String filename = file.getAbsolutePath();
-            if (new File(filename).getName().lastIndexOf('.') == -1){
-                filename = filename + ".prm";
-            } 
-            WriteSession(filename);
-            setTitle(filename);
-        } else {
-            bSaved = false;
-        }
-        return bSaved;
-    }
-
-    /**
-     * Writes the session information to disk
-     */
-    public boolean WriteSession(String sParameterFilename) {
-        String sFilename = sParameterFilename;
-        boolean bSaved = true;
-
-        if (sFilename.equals("")) {
-            sFilename = _parameters.getSourceFileName();
-        }
-        if (sFilename == null || sFilename.equals("")) {
-            bSaved = SaveAs();
-        } else {
-            if (!FileAccess.ValidateFileAccess(sFilename, true)) {
-                JOptionPane.showInternalMessageDialog(this, "Unable to save session parameters.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to write\nto this directory and file.");
-            } else {
-                saveParameterSettings(_parameters);
-                _parameters.setSourceFileName(sFilename);
-                _parameters.Write(sFilename);
-                _initialParameters = (Parameters) _parameters.clone();
-            }
-        }
-        return bSaved;
     }
 
     /**
@@ -114,23 +53,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         return _advancedParametersSetting;
     }
 
-    /** Return the ImportDataSource object -- based upon the source file type. */
-    public int getNumImportSourceColumns(InputSourceSettings iss, String filename) {
-        try {
-            ImportDataSource source=null;
-            switch (iss.getSourceDataFileType()) {
-                case Excel97_2003 : 
-                case Excel : source = new XLSImportDataSource(new File(filename), false); break;
-                case CSV :
-                default : source = new CSVImportDataSource(new File(filename), iss.getFirstRowHeader(), '\n', iss.getDelimiter().charAt(0), iss.getGroup().charAt(0), iss.getSkiplines());
-            }
-            int num_columns = source.getColumnNames().length;
-            source.close();
-            return num_columns;
-        } catch (Exception e) {}
-        return 0;
-    }     
-    
     /**
      * enables correct advanced settings button on Analysis and Output tabs
      */
@@ -171,9 +93,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
     /**
      * Determines whether window can be closed by comparing parameter settings
-     * contained in window verse intial parameter settings.
+     * contained in window verse initial parameter settings.
      */
-    public boolean QueryWindowCanClose() {
+    public boolean queryWindowCanClose() {
         boolean bReturn = true;
 
         saveParameterSettings(_parameters);
@@ -197,81 +119,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         return bReturn;
     }
 
-    /**
-     * Resets parameters that are not present in interface to default value.
-     * Hidden features are to be used only in command line version at this time.
-     */
-    private void defaultHiddenParameters() {
-        //TODO
-    }
-
-    /**
-     * Reads parameter settings from file and loads frames controls.
-     */
-    private void setUp(final String sParameterFileName) {
-        if (sParameterFileName.length() > 0) {
-            _parameters.Read(sParameterFileName);
-        }
-        //catch (ZdException &x) {
-        //  x.SetLevel(ZdException::Notify);
-        //  x.SetErrorMessage((const char*)"SaTScan is unable to read parameters from file \"%s\".\n", sParameterFileName);
-        //  throw;
-        //}
-        defaultHiddenParameters();
-        setupInterface(_parameters);
-        enableSettingsForStatisticModelCombination();
-        enableAdvancedButtons();
-
-        //Save orginal parameter settings to compare against when window closes but
-        //first save what the interface has produced for the settings read from file.
-        saveParameterSettings(_parameters);
-        _initialParameters = (Parameters) _parameters.clone();
-    }
-
-    /* Validates the source data file against restrictions on source and InputSourceSettings settings. */
-    public String validateInputSourceDataFile(String filepath, String mapKey, String verbosename) {
-        // First exclude file types that are not readable - namely, Excel97_2003;
-        String extension = FileAccess.getExtension(new File(filepath));
-        extension = extension == null ? "" : extension.toLowerCase();
-        if (extension.equals("xls") || extension.equals("xlsx")) {
-            return "Excel files (.xls and  xlsx extensions) can only be read directly by TreeScan.\nYou must import this " + verbosename + " file.";
-        }        
-        boolean iss_exists = _input_source_map.containsKey(mapKey);
-        if (iss_exists) {
-            InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(mapKey);
-            // Verify that the input source settings's source data file type matches extension.
-            boolean correct_filetype=true;
-            InputSourceSettings.SourceDataFileType extensionType=FileSourceWizard.getSourceFileType(filepath);
-            switch (inputSourceSettings.getSourceDataFileType()) {
-                case CSV : correct_filetype = !(extension.equals("xls") || extension.equals("xlsx")); break;
-                case Excel97_2003 :
-                case Excel :  correct_filetype = extension.equals("xls") || extension.equals("xlsx"); break;
-                default:    throw new UnknownEnumException(inputSourceSettings.getSourceDataFileType());
-            }
-            if (!correct_filetype) {
-                return "The import feature must be performed again on the " + verbosename + " file.\nThe current import settings indicate a " + inputSourceSettings.getSourceDataFileType().toString() + " file but the specified file is a " + extensionType.toString() + " file.";
-            }
-            // Verify that the mappings align with the data source available options.
-            // Safely get the number of columns in datasource, if mapping references column index greater than # columns, then display error.
-            if (inputSourceSettings.isSet()) {
-                int num_cols = getNumImportSourceColumns(inputSourceSettings, filepath);
-                int max = 0;
-                for (String stdIdx : inputSourceSettings.getFieldMaps()) {
-                    if (!stdIdx.isEmpty()) {
-                        max = Math.max(Integer.parseInt(stdIdx), max);
-                    }
-                }
-                if (max > num_cols) {
-                    return "The import feature must be performed again on the " + verbosename + " file.\nThe current import settings conflict with the file structure.";
-                }                    
-            }
-        }
-        return null;
-    }    
-    
     /*
      * Verifies that input settings are valid in the context of all parameter settings.
-     */   
+     */
     private void CheckInputSettings() {
         //validate the tree file
         if (!_timeonlyScanType.isSelected()) {
@@ -282,7 +132,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             String validationString = validateInputSourceDataFile(_treelFileTextField.getText(), InputSourceSettings.InputFileType.Tree.toString() + "1", "tree");
             if (validationString != null) throw new SettingsException(validationString, (Component) _treelFileTextField);
         }
-        
+
         //validate the case file
         if (_countFileTextField.getText().length() == 0) {
             throw new SettingsException("Please specify a count file.", (Component) _countFileTextField);
@@ -326,7 +176,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
     /*
      * Verifies that analysis settings are valid in the context of all parameter settings.
-     */   
+     */
     private void CheckAnalysisSettings() {
         if (_BernoulliButton.isSelected()) {
             int eventProbNumerator = Integer.parseInt(_eventProbabiltyNumerator.getText().trim());
@@ -348,13 +198,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
             if (temporalEndWindowEnd < temporalStartWindowBegin) {
                 throw new SettingsException("The temporal window end time range is invalid.\nThe end windows end time must be greater than or equal to start windows start time.", (Component) _temporalEndWindowBegin);
-            }            
+            }
         }
     }
 
     /*
      * Verifies that output settings are valid in the context of all parameter settings.
-     */   
+     */
     private void CheckOutputSettings() {
         if (_outputFileTextField.getText().length() == 0) {
             throw new SettingsException("Please specify a results file.", (Component) _outputFileTextField);
@@ -367,34 +217,34 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
     /*
      * Verifies that settings are valid in the context of all other parameter settings.
-     */       
+     */
     public boolean CheckSettings() {
         try {
             CheckAnalysisSettings();
             CheckInputSettings();
             CheckOutputSettings();
-            
+
             if (_treetimeScanType.isSelected() || _timeonlyScanType.isSelected()) {
                 // inter-checks between data time range and temporal windows range
                 int datarange_start = Integer.parseInt(_dataTimeRangeBegin.getText().trim());
                 int datarange_end = Integer.parseInt(_dataTimeRangeEnd.getText().trim());
 
                 int temporalstart_start = Integer.parseInt(_temporalStartWindowBegin.getText().trim());
-                int temporalstart_end = Integer.parseInt(_temporalStartWindowEnd.getText().trim());           
+                int temporalstart_end = Integer.parseInt(_temporalStartWindowEnd.getText().trim());
                 // Does the temporal start range reside within data range?
                 if (!(datarange_start <= temporalstart_start && temporalstart_end <= datarange_end)) {
-                    throw new SettingsException("The temporal window start range is not within the data time range.", (Component) _temporalStartWindowBegin);            
+                    throw new SettingsException("The temporal window start range is not within the data time range.", (Component) _temporalStartWindowBegin);
                 }
                 int temporalend_start = Integer.parseInt(_temporalEndWindowBegin.getText().trim());
                 int temporalend_end = Integer.parseInt(_temporalEndWindowEnd.getText().trim());
                 // Does the temporal end range reside within data range?
                 if (!(datarange_start <= temporalend_start && temporalend_end <= datarange_end)) {
-                    throw new SettingsException("The temporal window end range is not within the data time range.", (Component) _temporalEndWindowBegin);            
+                    throw new SettingsException("The temporal window end range is not within the data time range.", (Component) _temporalEndWindowBegin);
                 }
                 // Does the temporal window end range happen before start range.
                 if (temporalend_end < temporalstart_start) {
-                    throw new SettingsException("The temporal window end range completely preceeds the start range.", (Component) _temporalEndWindowBegin);            
-                }                        
+                    throw new SettingsException("The temporal window end range completely preceeds the start range.", (Component) _temporalEndWindowBegin);
+                }
             }
         } catch (SettingsException e) {
             focusWindow();
@@ -417,7 +267,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     /**
      * setup interface from parameter settings
      */
-    private void setupInterface(final Parameters parameters) {
+    @Override
+    protected void setupInterface(final Parameters parameters) {
         _advancedParametersSetting = new AdvancedParameterSettingsFrame(_rootPane, this/*, parameters*/);
         title = parameters.getSourceFileName();
         if (title == null || title.length() == 0) {
@@ -443,7 +294,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _outputFileTextField.setCaretPosition(0);
         _reportResultsAsHTML.setSelected(parameters.isGeneratingHtmlResults());
         _reportResultsAsCsvTable.setSelected(parameters.isGeneratingTableResults());
-        
+
         _input_source_map.clear();
         for (int i=0; i < parameters.getInputSourceSettings().size(); ++i) {
             InputSourceSettings iss = parameters.getInputSourceSettings().get(i);
@@ -461,7 +312,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     public void setControlsForAnalysisOptions(Parameters.ScanType s, Parameters.ConditionalType c, Parameters.ModelType m) {
         _treeOnlyScanType.setSelected(s == Parameters.ScanType.TREEONLY);
         _treetimeScanType.setSelected(s == Parameters.ScanType.TREETIME);
-        _timeonlyScanType.setSelected(s == Parameters.ScanType.TIMEONLY);        
+        _timeonlyScanType.setSelected(s == Parameters.ScanType.TIMEONLY);
         _unconditionalButton.setSelected(c == Parameters.ConditionalType.UNCONDITIONAL);
         _conditionalTotalCasesButton.setSelected(c == Parameters.ConditionalType.TOTALCASES);
         _conditionalBranchCasesButton.setSelected(c == Parameters.ConditionalType.NODE);
@@ -470,11 +321,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _BernoulliButton.setSelected(m == Parameters.ModelType.BERNOULLI);
         _uniformButton.setSelected(m == Parameters.ModelType.UNIFORM);
     }
-    
+
     /**
-     * sets CParameters class with settings in form
+     * sets Parameters class with settings in form
      */
-    private void saveParameterSettings(Parameters parameters) {
+    protected void saveParameterSettings(Parameters parameters) {
         setTitle(parameters.getSourceFileName());
         parameters.setTreeFileName(_treelFileTextField.getText(), 1);
         parameters.setCountFileName(_countFileTextField.getText());
@@ -486,7 +337,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         } else if (_treetimeScanType.isSelected()) {
             parameters.setScanType(Parameters.ScanType.TREETIME.ordinal());
         } else if (_timeonlyScanType.isSelected()) {
-            parameters.setScanType(Parameters.ScanType.TIMEONLY.ordinal());            
+            parameters.setScanType(Parameters.ScanType.TIMEONLY.ordinal());
         }
         if (_unconditionalButton.isSelected()) {
             parameters.setConditionalType(Parameters.ConditionalType.UNCONDITIONAL.ordinal());
@@ -517,7 +368,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         parameters.setGeneratingHtmlResults(_reportResultsAsHTML.isSelected());
         parameters.setGeneratingTableResults(_reportResultsAsCsvTable.isSelected());
         getAdvancedParameterInternalFrame().saveParameterSettings(parameters);
-        
+
         parameters.clearInputSourceSettings();
         Iterator it = _input_source_map.entrySet().iterator();
         while (it.hasNext()) {
@@ -526,12 +377,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             if (iss.isSet()) {
                 parameters.addInputSourceSettings((InputSourceSettings)pairs.getValue());
             }
-        }        
-    }
-
-    public final Parameters getParameterSettings() {
-        saveParameterSettings(_parameters);
-        return _parameters;
+        }
     }
 
     public Parameters.ScanType getScanType() {
@@ -552,27 +398,23 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         } else if (_conditionalBranchCasesButton.isSelected()) {
             return Parameters.ConditionalType.NODE;
         } else if (_conditionalNodeTimeButton.isSelected()) {
-            return Parameters.ConditionalType.NODEANDTIME;            
+            return Parameters.ConditionalType.NODEANDTIME;
         }
         return null;
     }
-    
+
     public Parameters.ModelType getModelType() {
         if (_PoissonButton.isSelected() && _PoissonButton.isEnabled())
             return Parameters.ModelType.POISSON;
         if (_BernoulliButton.isSelected() && _BernoulliButton.isEnabled())
             return Parameters.ModelType.BERNOULLI;
         if (_uniformButton.isSelected() && _uniformButton.isEnabled())
-            return Parameters.ModelType.UNIFORM;        
+            return Parameters.ModelType.UNIFORM;
         return null;
     }
-    
+
     public boolean getSelfControlDesign() {
        return _self_control_design.isEnabled() && _self_control_design.isSelected();
-    }
-    
-    public void showExecOptionsDialog(java.awt.Frame parent) {
-        new ExecutionOptionsDialog(parent, _parameters).setVisible(true);
     }
 
     private void enableSettingsForStatisticModelCombination() {
@@ -601,7 +443,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         // the tree file is not used with the time only scan
         _treeFileLabel.setEnabled(!timeOnly);
         _treelFileTextField.setEnabled(!timeOnly);
-        _treeFileImportButton.setEnabled(!timeOnly);        
+        _treeFileImportButton.setEnabled(!timeOnly);
         // event probability inputs only available for unconditional Bernoulli
         boolean enabled = _BernoulliButton.isEnabled() && _BernoulliButton.isSelected() && _unconditionalButton.isSelected();
         _eventProbabilityLabel.setEnabled(enabled);
@@ -623,7 +465,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _advancedParametersSetting.enableTemporalOptionsGroup(treeAndTime || timeOnly);
         _advancedParametersSetting.enableAdjustmentsOptions();
         _advancedParametersSetting.enablePowerEvaluationsGroup();
-        _advancedParametersSetting.enableRestrictedLevelsGroup();		
+        _advancedParametersSetting.enableRestrictedLevelsGroup();
         _advancedParametersSetting.enableSequentialAnalysisGroup();
         _advancedParametersSetting.enableAdditionalOutputOptions();
         _advancedParametersSetting.enableTimeRangeExclusionsGroup();
@@ -1156,7 +998,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
                 // invoke the FileSelectionDialog to guide user through process of selecting the source file.
                 FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_treelFileTextField, inputSourceSettings, ParameterSettingsFrame.this);
+                selectionDialog.browse_inputsource(_treelFileTextField, inputSourceSettings, ParameterSettingsFrame.this, true);
             }
         });
 
@@ -1173,7 +1015,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
                 // invoke the FileSelectionDialog to guide user through process of selecting the source file.
                 FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_countFileTextField, inputSourceSettings, ParameterSettingsFrame.this);
+                selectionDialog.browse_inputsource(_countFileTextField, inputSourceSettings, ParameterSettingsFrame.this, true);
             }
         });
 
@@ -1467,84 +1309,4 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.ButtonGroup treeModelButtonGroup;
     // End of variables declaration//GEN-END:variables
 
-    @Override
-    public void internalFrameOpened(InternalFrameEvent e) {
-    }
-
-    @Override
-    public void internalFrameClosing(InternalFrameEvent e) {
-        if ((gbPromptOnExist ? (QueryWindowCanClose() ? true : false) : true) == true) {
-            ParameterHistory.getInstance().AddParameterToHistory(_parameters.getSourceFileName());
-            dispose();
-        }
-    }
-
-    @Override
-    public void internalFrameClosed(InternalFrameEvent e) {
-    }
-
-    public void internalFrameIconified(InternalFrameEvent e) {
-    }
-
-    public void internalFrameDeiconified(InternalFrameEvent e) {
-    }
-
-    public void internalFrameActivated(InternalFrameEvent e) {
-    }
-
-    public void internalFrameDeactivated(InternalFrameEvent e) {
-    }
-    /* Exception class that notes the Component that caused the exceptional situation. */
-
-    public class SettingsException extends RuntimeException {
-
-        private static final long serialVersionUID = 1L;
-        public final Component focusComponent;
-
-        public SettingsException(Component focusComponent) {
-            super();
-            this.focusComponent = focusComponent;
-        }
-
-        public SettingsException(String arg0, Component focusComponent) {
-            super(arg0);
-            this.focusComponent = focusComponent;
-        }
-
-        public SettingsException(String arg0, Throwable arg1, Component focusComponent) {
-            super(arg0, arg1);
-            this.focusComponent = focusComponent;
-        }
-
-        public SettingsException(Throwable arg0, Component focusComponent) {
-            super(arg0);
-            this.focusComponent = focusComponent;
-        }
-
-        /**
-         * recursively searches Container objects contained in 'rootComponent'
-         * for for 'searchComponent'.
-         */
-        boolean isContainedComponent(Component rootComponent, Component searchComponent) {
-            if (rootComponent == searchComponent) {
-                return true;
-            }
-            try {
-                if (Class.forName("java.awt.Container").isInstance(rootComponent)) {
-                    Container rootContainer = (Container) rootComponent;
-                    for (int j = 0; j < rootContainer.getComponentCount(); ++j) {
-                        if (isContainedComponent(rootContainer.getComponent(j), searchComponent)) {
-                            return true;
-                        }
-                    }
-                }
-            } catch (ClassNotFoundException e) {
-            }
-            return false;
-        }
-
-        public void setControlFocus() {
-            focusComponent.requestFocus();
-        }
-    }
 }
