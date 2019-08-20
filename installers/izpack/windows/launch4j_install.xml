@@ -31,7 +31,7 @@
   <messages>
     <startupErr>An error occurred while starting the application.</startupErr>
     <bundledJreErr>This application was configured to use a bundled Java Runtime Environment but the runtime is missing or corrupted.</bundledJreErr>
-    <jreVersionErr>This application requires a Java Runtime Environment. Please install Java 1.6 or higher. Min: </jreVersionErr>
+    <jreVersionErr>This application requires a Java Runtime Environment. Please install Java 1.8 or higher. Min: </jreVersionErr>
     <launcherErr>The registry refers to a nonexistent Java Runtime Environment installation or the runtime is corrupted.</launcherErr>
     <instanceAlreadyExistsMsg>An application instance is already running.</instanceAlreadyExistsMsg>
   </messages>

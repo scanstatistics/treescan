@@ -347,7 +347,7 @@ double SequentialStatistic::getAlphaSpentToDate(const std::string &output_filena
     ptree pt;
 
     if (!validateFileAccess(filename))
-        return -1.0;
+        return 0.0;
 
     read_xml(filename, pt);
 

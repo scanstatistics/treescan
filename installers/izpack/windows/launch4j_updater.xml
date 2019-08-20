@@ -14,10 +14,7 @@
   <manifest>launch4j_updater.manifest</manifest>
   <icon>/prj/treescan/build/treescan/installers/resources/TreeScan.ico</icon>
   <jre>
-    <path></path>
-    <minVersion>1.6.0_01</minVersion>
-    <maxVersion></maxVersion>
-    <jdkPreference>preferJre</jdkPreference>
+    <minVersion>1.8.0_01</minVersion>
   </jre>
   <versionInfo>
     <fileVersion>1.1.0</fileVersion>
@@ -34,7 +31,7 @@
   <messages>
     <startupErr>An error occurred while starting the application.</startupErr>
     <bundledJreErr>This application was configured to use a bundled Java Runtime Environment but the runtime is missing or corrupted.</bundledJreErr>
-    <jreVersionErr>This application requires a Java Runtime Environment. Please install Java 1.6 or higher. Min: </jreVersionErr>
+    <jreVersionErr>This application requires a Java Runtime Environment. Please install Java 1.8 or higher. Min: </jreVersionErr>
     <launcherErr>The registry refers to a nonexistent Java Runtime Environment installation or the runtime is corrupted.</launcherErr>
     <instanceAlreadyExistsMsg>An application instance is already running.</instanceAlreadyExistsMsg>
   </messages>
