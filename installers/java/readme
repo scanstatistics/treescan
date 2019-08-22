@@ -1,0 +1,13 @@
+
+###################################
+Analyze module dependencies
+###################################
+C:\jdk\jdk-11.0.4+11-32bit\bin
+>jdeps.exe --list-deps -cp C:\Users\hostovic\projects\treescan.development\treescan_trunk\java_application\jni_application\dist\lib\*.jar C:\Users\hostovic\projects\treescan.development\treescan_trunk\java_application\jni_application\dist\TreeScan.jar
+
+
+###################################
+Create the Runtime Images
+###################################
+C:\jdk\jdk-11.0.4+11-32bit\bin\jlink.exe --module-path C:\jdk\jdk-11.0.4+11-32bit\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.javadoc,java.net.http,jdk.crypto.ec --output C:\Users\hostovic\projects\treescan.development\treescan_trunk\installers\java\win32-jre
+C:\jdk\jdk-11.0.4+11-64bit\bin\jlink.exe --module-path C:\jdk\jdk-11.0.4+11-64bit\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.javadoc,java.net.http,jdk.crypto.ec --output C:\Users\hostovic\projects\treescan.development\treescan_trunk\installers\java\win64-jre

@@ -17,7 +17,7 @@
   <manifest></manifest>
   <icon>/prj/treescan/build/treescan/installers/resources/TreeScan.ico</icon>
   <jre>
-    <minVersion>1.8.0_01</minVersion>
+    <path>jre</path>
   </jre>
   <versionInfo>
     <fileVersion>1.2.0.0</fileVersion>

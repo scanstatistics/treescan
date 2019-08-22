@@ -11,23 +11,9 @@ IzPack=$build/packages/IzPack/IzPack5.1.3
 # Build Windows TreeScan executable from java jar file ... TreeScan.jar -> TreeScan.exe.
 $launch4j/launch4j $build/treescan/installers/izpack/windows/launch4j_app.xml
 
-# prompt user to sign the exe file created by launch4j
+# prompt user to build gui exe and codesign it, then build installer and codesign that file as well.
 echo
-echo "Run the Windows batch file 'signGuiApp.bat' now to sign TreeScan.exe. Hit <enter> once done ..."
-read dummy
-
-# Build the IzPack Java installer for Windows.
-$IzPack/bin/compile $build/treescan/installers/izpack/windows/install_windows.xml -b $installer_version -o $installer_version/install-1_5_windows.jar -k standard
-
-# Build Windows installer executable from Java jar file. This is needed for:
-#  - UAC (User Account Control)
-#  - we wanted a message to user when Java not installed
-$launch4j/launch4j $build/treescan/installers/izpack/windows/launch4j_install.xml
-# rm $installer_version/install-1_5_windows.jar
-
-# prompt user to sign the exe file created by launch4j
-echo
-echo "Run the Windows batch file 'signWindowsInstaller.bat' now to sign install-1_5_windows.exe. Hit <enter> once done ..."
+echo "Run the Windows batch file ' buildWindowsInstaller.bat' now to build and sign TreeScan.exe, then build/sign installer. Hit <enter> once done ..."
 read dummy
 
 # Build Windows command-line only archive
@@ -112,6 +98,9 @@ zip $installer_version/update_data_windows.zip -j $build/treescan/java_applicati
 zip $installer_version/update_data_windows.zip -j $build/treescan/java_application/jni_application/dist/TreeScan.exe
 cd $build/treescan/java_application/jni_application/dist
 zip $installer_version/update_data_windows.zip -r lib
+cd $build/treescan/installers/java
+zip $installer_version/update_data_windows.zip -r win32-jre
+zip $installer_version/update_data_windows.zip -r win64-jre
 cd $build/treescan/installers
 zip $installer_version/update_data_windows.zip -r examples
 
