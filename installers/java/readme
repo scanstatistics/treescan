@@ -9,5 +9,5 @@ C:\jdk\jdk-11.0.4+11-32bit\bin
 ###################################
 Create the Runtime Images
 ###################################
-C:\jdk\jdk-11.0.4+11-32bit\bin\jlink.exe --module-path C:\jdk\jdk-11.0.4+11-32bit\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.javadoc,java.net.http,jdk.crypto.ec --output C:\Users\hostovic\projects\treescan.development\treescan_trunk\installers\java\win32-jre
-C:\jdk\jdk-11.0.4+11-64bit\bin\jlink.exe --module-path C:\jdk\jdk-11.0.4+11-64bit\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.javadoc,java.net.http,jdk.crypto.ec --output C:\Users\hostovic\projects\treescan.development\treescan_trunk\installers\java\win64-jre
+C:\jdk\jdk-11.0.4+11-32bit\bin\jlink.exe --module-path C:\jdk\jdk-11.0.4+11-32bit\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.javadoc,java.net.http,jdk.crypto.ec --output C:\Users\hostovic\projects\treescan.development\treescan_trunk\installers\java\win32-jre --strip-debug --compress 2 --no-header-files --no-man-pages
+C:\jdk\jdk-11.0.4+11-64bit\bin\jlink.exe --module-path C:\jdk\jdk-11.0.4+11-64bit\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.javadoc,java.net.http,jdk.crypto.ec --output C:\Users\hostovic\projects\treescan.development\treescan_trunk\installers\java\win64-jre --strip-debug --compress 2 --no-header-files --no-man-pages
