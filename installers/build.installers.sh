@@ -46,6 +46,15 @@ python $build/treescan/installers/izpack/mac/treescan2app/treescan2app.py $build
 cp $build/binaries/mac/libtreescan.jnilib $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/Java/libtreescan.jnilib
 # copy additional Java libraries into app directory
 cp $build/treescan/java_application/jni_application/dist/lib/* $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/Java/lib/
+# copy jre into app directory
+# http://www.balthisar.com/blog/bundle_the_jre/
+#mkdir $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/PlugIns
+#mkdir $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/PlugIns/Java.runtime
+#mkdir $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/PlugIns/Java.runtime/Contents/
+#mkdir $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/PlugIns/Java.runtime/Contents/Home
+#mkdir $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/PlugIns/Java.runtime/Contents/MacOS
+#cp $build/treescan/installers/java/mac-jre $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/PlugIns/Java.runtime/Contents/Home
+
 
 # prompt user to sign the SaTScan.app on Mac with Developer ID certificated installed (Squish https://www.squishlist.com/ims/satscan/66329/)
 echo
