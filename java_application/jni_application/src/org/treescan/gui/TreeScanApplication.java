@@ -270,7 +270,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
 
     public void openSessionWindow(Parameters parameters, boolean forceFull) {
         AbstractParameterSettingsFrame frame=null;
-        if (!forceFull && parameters.isSequentialScanBernoulli() && Parameters.getAlphaSpentToDate(parameters.getOutputFileName()) != 0.0)
+        if (!forceFull && ParameterSettingsSequentialScanFrame.shouldShowWindow(parameters))
             frame = new ParameterSettingsSequentialScanFrame(getRootPane(), parameters);
         else
             frame = new ParameterSettingsFrame(getRootPane(), parameters);

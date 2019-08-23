@@ -28,7 +28,7 @@ JNIEXPORT void JNICALL Java_org_treescan_app_Parameters_Write
  * Method:    getAlphaSpentToDate
  * Signature: (Ljava/lang/String;)D
  */
-JNIEXPORT jdouble JNICALL Java_org_treescan_app_Parameters_getAlphaSpentToDate
+JNIEXPORT jstring JNICALL Java_org_treescan_app_Parameters_getAlphaSpentToDateString
   (JNIEnv *, jclass, jstring);
 
 #ifdef __cplusplus

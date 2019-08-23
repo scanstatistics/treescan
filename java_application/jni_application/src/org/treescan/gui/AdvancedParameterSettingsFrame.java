@@ -1893,7 +1893,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         });
         _sequentual_alpha_overall.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_sequentual_alpha_overall, e, 10);
+                Utils.validatePostiveFloatKeyTyped(_sequentual_alpha_overall, e, 10);
             }
         });
         _sequentual_alpha_overall.getDocument().addUndoableEditListener(new UndoableEditListener() {
@@ -1915,7 +1915,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         });
         _sequential_alpha_spending.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_sequential_alpha_spending, e, 10);
+                Utils.validatePostiveFloatKeyTyped(_sequential_alpha_spending, e, 10);
             }
         });
         _sequential_alpha_spending.getDocument().addUndoableEditListener(new UndoableEditListener() {

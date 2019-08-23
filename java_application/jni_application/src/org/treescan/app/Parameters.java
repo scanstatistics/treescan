@@ -6,7 +6,11 @@ import org.treescan.importer.InputSourceSettings;
 public class Parameters implements Cloneable {
     public native boolean Read(String filename);
     public native void Write(String filename);
-    static public native double getAlphaSpentToDate(String filename);
+    static public native String getAlphaSpentToDateString(String filename);
+    static public double getAlphaSpentToDate(String filename) {
+        String spent = Parameters.getAlphaSpentToDateString(filename);
+        return Double.parseDouble(spent);
+    }    
 
     public enum ResultsFormat {TEXT};
     public enum ModelType {POISSON, BERNOULLI, UNIFORM, MODEL_NOT_APPLICABLE};

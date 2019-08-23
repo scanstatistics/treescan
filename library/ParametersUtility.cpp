@@ -64,7 +64,7 @@ JNIEXPORT void JNICALL Java_org_treescan_app_Parameters_Write(JNIEnv * pEnv, job
   }
 }
 
-JNIEXPORT jdouble JNICALL Java_org_treescan_app_Parameters_getAlphaSpentToDate(JNIEnv * pEnv, jclass JParameters , jstring filename) {
+JNIEXPORT jstring JNICALL Java_org_treescan_app_Parameters_getAlphaSpentToDateString(JNIEnv * pEnv, jclass JParameters , jstring filename) {
     jboolean iscopy;
 
     try {
@@ -72,18 +72,20 @@ JNIEXPORT jdouble JNICALL Java_org_treescan_app_Parameters_getAlphaSpentToDate(J
         std::string buffer(sParameterFilename);
         if (iscopy == JNI_TRUE)
             pEnv->ReleaseStringUTFChars(filename, sParameterFilename);
-        return SequentialStatistic::getAlphaSpentToDate(buffer);
+        std::stringstream stringbuffer;
+        stringbuffer << SequentialStatistic::getAlphaSpentToDate(buffer);
+        return pEnv->NewStringUTF(stringbuffer.str().c_str());
     }
     catch (jni_error&) {
-        return -1.0; // let the Java exception to be handled in the caller of JNI function
+        return pEnv->NewStringUTF("-1.0"); // let the Java exception to be handled in the caller of JNI function
     }
     catch (std::exception& x) {
         jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
-        return -1.0;
+        return pEnv->NewStringUTF("-1.0");
     }
     catch (...) {
         jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
-        return -1.0;
+        return pEnv->NewStringUTF("-1.0");
     }
 }
 

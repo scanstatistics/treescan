@@ -51,10 +51,15 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     std::string buffer = ctime(&start);
     outfile << std::endl << "Program run on: " << buffer << std::endl;
     PrintFormat.PrintNonRightMarginedDataString(outfile, getAnalysisSuccinctStatement(buffer), false);
-
     PrintFormat.SetMarginsAsSummarySection();
     PrintFormat.PrintSectionSeparatorString(outfile);
     outfile << std::endl << "SUMMARY OF DATA" << std::endl << std::endl;
+    if (parameters.isSequentialScanBernoulli()) {
+        PrintFormat.PrintSectionLabel(outfile, "Look", false);
+        std::stringstream stringbuffer;
+        stringbuffer << _scanRunner.getSequentialStatistic().getLook();
+        PrintFormat.PrintAlignedMarginsDataString(outfile, stringbuffer.str().c_str());
+    }
     if (!parameters.getPerformPowerEvaluations() || 
         !(parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_ONLY_CASEFILE && parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
         PrintFormat.PrintSectionLabel(outfile, "Total Cases", false);
@@ -109,7 +114,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         const SequentialStatistic & sequentialStatistic = _scanRunner.getSequentialStatistic();
 
         std::stringstream stringbuffer;
-        stringbuffer << "Alpha Spend To Date (Look " << sequentialStatistic.getLook() << ")";
+        stringbuffer << "Alpha Spent To Date";
         PrintFormat.PrintSectionLabel(outfile, stringbuffer.str().c_str(), false);
 
         stringbuffer.str("");
@@ -407,7 +412,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<head>" << std::endl;
     outfile << "<link rel=\"stylesheet\" href=\"https://www.treescan.org/libs/bootstrap.4.1.1/bootstrap.4.1.1.css\">" << std::endl;
     outfile << "<link rel=\"stylesheet\" href=\"https://www.treescan.org/libs/datatables.1.10.16/css/jquery.dataTables.min.css\">" << std::endl;
-    outfile << "<link rel=\"stylesheet\" href=\"https://www.treescan.org/html-results/treescan-results.1.0.css\">" << std::endl;
+    outfile << "<link rel=\"stylesheet\" href=\"https://www.treescan.org/html-results/treescan-results.1.1.css\">" << std::endl;
     outfile << "<link rel=\"stylesheet\" href=\"http://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css\">" << std::endl;
     outfile << "</head>" << std::endl;
     if (parameters.getScanType() != Parameters::TIMEONLY) {
@@ -470,7 +475,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << " }" << std::endl;
         outfile << "};</script>" << std::endl;
     }
-    outfile << "<script src=\"https://www87.imsweb.com/html-results/treescan-results.1.0.js\" type=\"text/javascript\"></script>" << std::endl;
+    outfile << "<script src=\"https://www.treescan.org/html-results/treescan-results.1.1.js\" type=\"text/javascript\"></script>" << std::endl;
     outfile << "<body>" << std::endl;
     buffer = AppToolkit::getToolkit().GetWebSite();
     outfile << "<table width=\"100%\" border=\"0\" cellpadding=\"2\" cellspacing=\"0\" bgcolor=\"#F8FAFA\" style=\"border-collapse: collapse;\">";
@@ -481,6 +486,9 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<div class=\"hr\"></div><div class=\"program-info\">" << std::endl;
     outfile << getAnalysisSuccinctStatement(buffer);
     outfile << "<table style=\"text-align: left;\"><tbody>" << std::endl;
+    if (parameters.isSequentialScanBernoulli()) {
+        outfile << "<tr><th>Look</th><td>" << _scanRunner.getSequentialStatistic().getLook() << "</td></tr>" << std::endl;
+    }
     if (!parameters.getPerformPowerEvaluations() || 
         !(parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_ONLY_CASEFILE && parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
         outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
@@ -519,7 +527,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     }
     if (parameters.isSequentialScanBernoulli()) {
         const SequentialStatistic & sequentialStatistic = _scanRunner.getSequentialStatistic();
-        outfile << "<tr><th>Alpha Spend To Date (Look " << sequentialStatistic.getLook() << ")</th>";
+        outfile << "<tr><th>Alpha Spent To Date:</th>";
         outfile << "<td>" << sequentialStatistic.getAlphaSpending() << " (" << parameters.getSequentialAlphaOverall() << " alpha overall)</td></tr>" << std::endl;
     }
     outfile << "</tbody></table></div>" << std::endl;
