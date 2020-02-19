@@ -48,6 +48,10 @@ public class FileSelectionDialog {
                 filters = FileSourceWizard.getInputFilters();
                 filters.add(new InputFileFilter("cas", "Count Files (*.cas)"));
                 break;
+            case Controls :
+                filters = FileSourceWizard.getInputFilters();
+                filters.add(new InputFileFilter("ctl", "Control Files (*.ctl)"));
+                break;
             case Cut :
                 filters = FileSourceWizard.getInputFilters();
                 filters.add(new InputFileFilter("cut", "Cut Files (*.cut)"));
@@ -80,6 +84,7 @@ public class FileSelectionDialog {
         switch (fileType) {
             case Tree : return "Tree";
             case Counts: return "Count";
+            case Controls: return "Control";
             case Cut: return "Cut";
             case Power_Evaluations: return "Alternative Hypothesis";
             default: throw new UnknownEnumException(fileType);

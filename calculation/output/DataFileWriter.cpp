@@ -207,11 +207,13 @@ void CSVDataFileWriter::writeRecord(const RecordBuffer& Record) {
 
 const char * DataRecordWriter::CUT_NUM_FIELD                             = "Cut No.";
 const char * DataRecordWriter::NODE_ID_FIELD                             = "Node Identifier";
+const char * DataRecordWriter::NODE_OBSERVATIONS_FIELD                   = "Node Observations";
 const char * DataRecordWriter::NODE_CASES_FIELD                          = "Node Cases";
 const char * DataRecordWriter::START_WINDOW_FIELD                        = "Time Window Start";
 const char * DataRecordWriter::END_WINDOW_FIELD                          = "Time Window End";
 const char * DataRecordWriter::OBSERVATIONS_FIELD                        = "Observations";
 
+const char * DataRecordWriter::WNDW_OBSERVED_FIELD                       = "Observations in Window";
 const char * DataRecordWriter::WNDW_CASES_FIELD                          = "Cases in Window";
 const char * DataRecordWriter::CASES_FIELD                               = "Cases";
 const char * DataRecordWriter::OBSERVED_CASES_FIELD                      = "Observed Cases";
@@ -252,7 +254,12 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
 		CreateField(_dataFieldDefinitions, P_LEVEL_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
 	}
     switch (params.getModelType()) {
-        case Parameters::BERNOULLI :
+		case Parameters::BERNOULLI_TIME:
+			if (params.getScanType() != Parameters::TIMEONLY) {
+				CreateField(_dataFieldDefinitions, NODE_OBSERVATIONS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+				CreateField(_dataFieldDefinitions, NODE_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+			}
+		case Parameters::BERNOULLI_TREE:
             CreateField(_dataFieldDefinitions, OBSERVATIONS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
             CreateField(_dataFieldDefinitions, CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
             CreateField(_dataFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
@@ -336,7 +343,12 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
 			Record.GetFieldValue(P_LEVEL_FLD).AsDouble() = static_cast<int>(_scanner.getNodes()[thisCut.getID()]->getLevel());
 		}
         switch (params.getModelType()) {
-            case Parameters::BERNOULLI :
+		    case Parameters::BERNOULLI_TIME:
+				if (params.getScanType() != Parameters::TIMEONLY) {
+					Record.GetFieldValue(NODE_OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(_scanner.getNodes()[thisCut.getID()]->getBrN());
+					Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getNodes()[thisCut.getID()]->getBrC());
+				}
+            case Parameters::BERNOULLI_TREE:
                 Record.GetFieldValue(OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(thisCut.getN());
                 Record.GetFieldValue(CASES_FIELD).AsDouble() = static_cast<int>(thisCut.getC());
                 Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = thisCut.getExpected(_scanner);
@@ -517,6 +529,7 @@ const char * SequentialScanLoglikelihoodRatioWriter::SEQUENTIAL_FILE_SUFFIX     
 SequentialScanLoglikelihoodRatioWriter::SequentialScanLoglikelihoodRatioWriter(const ScanRunner& scanRunner) : LoglikelihoodRatioWriter(scanRunner) {
     std::string buffer;
     try {
+		_include_sim_idx = false;
         _outfile.open(getFilename(_scanner.getParameters(), buffer).c_str(), std::ofstream::trunc);
         if (!_outfile.is_open())
             throw resolvable_error("Unable to open/create file %s.", buffer.c_str());

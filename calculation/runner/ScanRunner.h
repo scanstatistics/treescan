@@ -103,8 +103,9 @@ private:
         _IntC_C.resize(container_size);
         _BrC_C.resize(container_size);
         if (parameters.getModelType() == Parameters::POISSON ||
-            parameters.getModelType() == Parameters::BERNOULLI ||
-            (parameters.getConditionalType() == Parameters::NODEANDTIME) ||
+            parameters.getModelType() == Parameters::BERNOULLI_TREE ||
+			parameters.getModelType() == Parameters::BERNOULLI_TIME ||
+			(parameters.getConditionalType() == Parameters::NODEANDTIME) ||
             (parameters.getScanType() == Parameters::TIMEONLY && parameters.isPerformingDayOfWeekAdjustment()) ||
             (parameters.getConditionalType() == Parameters::NODE && parameters.isPerformingDayOfWeekAdjustment())) {
             _IntN_C.resize(container_size);
@@ -330,6 +331,7 @@ class SequentialStatistic {
 
         static const char         * _file_suffix;
         static const char         * _accumulated_case_ext;
+		static const char         * _accumulated_control_ext;
         static const char         * _accumulated_sim_ext;
         static const char         * _settings_ext;
 
@@ -341,7 +343,8 @@ class SequentialStatistic {
         double                      _alpha_spending;
         alpha_spending_container_t  _alpha_spendings;
         std::string                 _counts_filename;
-        std::string                 _simulations_filename;
+		std::string                 _controls_filename;
+		std::string                 _simulations_filename;
         std::string                 _write_simulations_filename;
         std::string                 _write_llr_filename;
         std::string                 _settings_filename;
@@ -365,7 +368,8 @@ class SequentialStatistic {
         bool                        isFirstLook() const { return _look_idx == 1; }
         bool                        isMarkedSimulation(unsigned int simIdx) const { return _alpha_simulations.test(simIdx - 1); }
         const std::string         & getCountDataFilename() const { return _counts_filename; }
-        const std::string         & getSimulationDataFilename() const { return _simulations_filename; }
+		const std::string         & getControlDataFilename() const { return _controls_filename; }
+		const std::string         & getSimulationDataFilename() const { return _simulations_filename; }
         const std::string         & getWriteSimulationDataFilename() const { return _write_simulations_filename; }
         void                        setCutSignaled(size_t cutIdx) {
             if (_cuts_signaled.find(static_cast<unsigned int>(cutIdx)) == _cuts_signaled.end())
@@ -385,7 +389,7 @@ class SequentialStatistic {
             //llr_sim_container_t::const_iterator itr=std::upper_bound(_llr_sims.begin(), _llr_sims.end(), add_llr_sim, compare_llr_sim_t());
             //return itr != _llr_sims.end();
         }
-        void                        write(const std::string &casefilename);
+        void                        write(const std::string &casefilename, const std::string &controlfilename);
 };
 
 class ScanRunner {
@@ -431,7 +435,8 @@ protected:
 
     bool                        readRelativeRisksAdjustments(const std::string& filename, RiskAdjustmentsContainer_t& rrAdjustments, bool consolidate);
     bool                        readCounts(const std::string& filename, bool sequence_new_data);
-    bool                        readCuts(const std::string& filename);
+	bool                        readControls(const std::string& filename, bool sequence_new_data);
+	bool                        readCuts(const std::string& filename);
     bool                        readTree(const std::string& filename, unsigned int treeOrdinal);
     bool                        reportResults(time_t start, time_t end);
     bool                        runPowerEvaluations();
@@ -439,10 +444,11 @@ protected:
     bool                        runsequentialsimulations(unsigned int num_relica);
     bool                        scanTree();
     bool                        scanTreeTemporalConditionNode();
+	//bool                        scanTreeBernoulliTime();
     bool                        scanTreeTemporalConditionNodeCensored();
     bool                        scanTreeTemporalConditionNodeTime();
     bool                        setupTree();
-    CutStructure *              calculateCut(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx=0, DataTimeRange::index_t endIdx=1);
+    CutStructure *              calculateCut(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx=0, DataTimeRange::index_t endIdx=1, int BrC_All=0, double BrN_All=0.0);
     CutStructure *              calculateCut(size_t node_index, int C, double N, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdxa, DataTimeRange::index_t endIdx);
     CutStructure *              updateCut(std::auto_ptr<CutStructure>& cut);
 

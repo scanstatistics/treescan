@@ -12,7 +12,8 @@ class Parameters {
     enum ParameterType {/* Input */
                         TREE_FILE=1,
                         COUNT_FILE,
-                        DATA_TIME_RANGES,
+						CONTROL_FILE,
+						DATA_TIME_RANGES,
                         /* Advanced Input */
                         CUT_FILE,
                         CUT_TYPE,
@@ -97,7 +98,7 @@ class Parameters {
     };
     enum ResultsFormat {TEXT=0};
     enum ParametersFormat {XML=0, JSON};
-    enum ModelType {POISSON=0, BERNOULLI, UNIFORM, MODEL_NOT_APPLICABLE};
+    enum ModelType {POISSON=0, BERNOULLI_TREE, UNIFORM, MODEL_NOT_APPLICABLE, BERNOULLI_TIME};
     enum CutType {SIMPLE=0, PAIRS, TRIPLETS, ORDINAL, COMBINATORIAL};
     enum ScanType {TREEONLY=0, TREETIME, TIMEONLY};
     enum ConditionalType {UNCONDITIONAL=0, TOTALCASES, NODE, NODEANDTIME};
@@ -182,7 +183,8 @@ class Parameters {
 
     std::string                         _cutsFileName;
     std::string                         _countFileName;
-    DataTimeRangeSet                    _dataTimeRangeSet;
+	std::string                         _controlFileName;
+	DataTimeRangeSet                    _dataTimeRangeSet;
     DataTimeRange                       _temporalStartRange;
     DataTimeRange                       _temporalEndRange;
     std::string                         _outputFileName;
@@ -281,7 +283,8 @@ class Parameters {
     void                                defineInputSource(ParameterType e, InputSource source, unsigned int idx=1) {_input_sources[std::make_pair(e,idx)] = source;}
     ConditionalType                     getConditionalType() const {return _conditional_type;}
     const std::string                 & getCountFileName() const {return _countFileName;}
-    const CreationVersion             & getCreationVersion() const {return _creationVersion;}
+	const std::string                 & getControlFileName() const { return _controlFileName; }
+	const CreationVersion             & getCreationVersion() const {return _creationVersion;}
     double                              getCriticalValue05() const {return _critical_value_05;}
     double                              getCriticalValue01() const {return _critical_value_01;}
     double                              getCriticalValue001() const {return _critical_value_001;}
@@ -357,7 +360,8 @@ class Parameters {
     void                                setAsDefaulted();
     void                                setConditionalType(ConditionalType e) {_conditional_type = e;}
     void                                setCountFileName(const char * sCountFileName, bool bCorrectForRelativePath=false);
-    void                                setCriticalValue05(double d) {_critical_value_05 = d;}
+	void                                setControlFileName(const char * sControlFileName, bool bCorrectForRelativePath = false);
+	void                                setCriticalValue05(double d) {_critical_value_05 = d;}
     void                                setCriticalValue01(double d) {_critical_value_01 = d;}
     void                                setCriticalValue001(double d) {_critical_value_001 = d;}
     void                                setCriticalValuesType(CriticalValuesType e) {_critical_values_type = e;}

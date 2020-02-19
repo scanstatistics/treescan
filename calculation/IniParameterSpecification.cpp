@@ -214,7 +214,9 @@ void IniParameterSpecification::Build_1_5_x_ParameterList() {
     _parameter_info[Parameters::SEQUENTIAL_ALPHA_OVERALL] = ParamInfo(Parameters::SEQUENTIAL_ALPHA_OVERALL, "sequential-alpha-overall", 5, _sequential_scan_section);
     _parameter_info[Parameters::SEQUENTIAL_ALPHA_SPENDING] = ParamInfo(Parameters::SEQUENTIAL_ALPHA_SPENDING, "sequential-alpha-spending", 6, _sequential_scan_section);
 
-    assert(_parameter_info.size() == 60);
+	_parameter_info[Parameters::CONTROL_FILE] = ParamInfo(Parameters::CONTROL_FILE, "control-filename", 4, _input_section);
+
+    assert(_parameter_info.size() == 61);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

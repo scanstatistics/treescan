@@ -83,6 +83,8 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(Settin
     if (_parameters.getScanType() != Parameters::TIMEONLY)
         settings.push_back(std::make_pair("Tree File",_parameters.getTreeFileNames().front()));
     settings.push_back(std::make_pair("Count File",_parameters.getCountFileName()));
+	if ((_parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getModelType() == Parameters::BERNOULLI_TIME) && !_parameters.getControlFileName().empty())
+		settings.push_back(std::make_pair("Control File", _parameters.getControlFileName()));
     if (Parameters::isTemporalScanType(_parameters.getScanType()))
         settings.push_back(std::make_pair("Data Time Range",_parameters.getDataTimeRangeSet().toString(buffer)));
     return settings;
@@ -168,15 +170,16 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
     }
     switch (_parameters.getModelType()) {
         case Parameters::POISSON : settings.push_back(std::make_pair("Probability Model - Tree","Poisson")); break;
-        case Parameters::BERNOULLI : settings.push_back(std::make_pair("Probability Model - Tree","Bernoulli")); break;
+        case Parameters::BERNOULLI_TREE: settings.push_back(std::make_pair("Probability Model - Tree","Bernoulli")); break;
         case Parameters::UNIFORM :
             if (_parameters.getConditionalType() == Parameters::NODE)
                 settings.push_back(std::make_pair("Probability Model - Time","Uniform"));
             break;
+		case Parameters::BERNOULLI_TIME: settings.push_back(std::make_pair("Probability Model - Time", "Beroulli"));
         case Parameters::MODEL_NOT_APPLICABLE: break;
         default: throw prg_error("Unknown model type (%d).", "getAnalysisParameters()", _parameters.getModelType());
     }
-    if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
+    if (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
         settings.push_back(std::make_pair("Self-Control Design",_parameters.getSelfControlDesign() ? "Yes" : "No"));
         printString(buffer, "%u/%u", _parameters.getProbabilityRatio().first, _parameters.getProbabilityRatio().second);
         settings.push_back(std::make_pair("Case Probability",buffer));
@@ -194,7 +197,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getSequentialScanParamete
     settings.clear();
 
     if ((_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES) ||
-        (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
+        (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
         settings.push_back(std::make_pair("Perform Sequential Analysis", _parameters.getSequentialScan() ? "Yes" : "No"));
         if (_parameters.isSequentialScanPurelyTemporal() && _parameters.getScanType() == Parameters::TIMEONLY) {
             printString(buffer, "%u", _parameters.getSequentialMinimumSignal());
@@ -260,7 +263,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getOutputParameters(Setti
 ParametersPrint::SettingContainer_t & ParametersPrint::getPowerEvaluationsParameters(SettingContainer_t & settings) const {
     std::string buffer, buffer2;
     settings.clear();
-    if (_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI ||
+    if (_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI_TREE ||
         (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES) ||
         (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE)) {
         settings.push_back(std::make_pair("Perform Power Evaluations", (_parameters.getPerformPowerEvaluations() ? "Yes" : "No")));
@@ -301,7 +304,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getPowerEvaluationsParame
         if (_parameters.isGeneratingLLRResults()) {
             settings.push_back(std::make_pair("Simulated Log Likelihood Ratios (HA)", LoglikelihoodRatioWriter::getFilename(_parameters, buffer, true)));
         }
-        if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES) {
+        if (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::TOTALCASES) {
             printString(buffer, "%u/%u", _parameters.getPowerBaselineProbabilityRatio().first, _parameters.getPowerBaselineProbabilityRatio().second);
             settings.push_back(std::make_pair("Baseline Probability",buffer));
             if (_parameters.getPowerZ() != 0.001) {
@@ -350,7 +353,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getRunOptionsParameters(S
 /** Prints 'System' parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getSystemParameters(SettingContainer_t & settings) const {
     const Parameters::CreationVersion & IniVersion = _parameters.getCreationVersion();
-    Parameters::CreationVersion Current = {atoi(VERSION_MAJOR), atoi(VERSION_MINOR), atoi(VERSION_RELEASE)};  
+    Parameters::CreationVersion Current = {static_cast<unsigned int>(atoi(VERSION_MAJOR)), static_cast<unsigned int>(atoi(VERSION_MINOR)), static_cast<unsigned int>(atoi(VERSION_RELEASE))};
     std::string buffer;
     settings.clear();
     if (IniVersion.iMajor != Current.iMajor ||
@@ -366,7 +369,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getSystemParameters(Setti
 ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParameters(SettingContainer_t & settings) const {
     std::string buffer;
     settings.clear();
-    if (_parameters.getScanType() == Parameters::TREETIME) {
+	if (_parameters.isTemporalScanType(_parameters.getScanType())) {
         switch (_parameters.getMaximumWindowType()) {
             case Parameters::PERCENTAGE_WINDOW :
                 printString(buffer, "%g%% of Data Time Range", _parameters.getMaximumWindowPercentage());

@@ -120,6 +120,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getCountFileName().c_str()));
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setControlFileName", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getControlFileName().c_str()));
+  jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "setCutsFileName", "(Ljava/lang/String;)V");
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getCutsFileName().c_str()));
   jni_error::_detectError(Env);
@@ -301,9 +305,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
       switch (key.first) {
         case Parameters::TREE_FILE : Env.CallVoidMethod(issobject, mid, (jint)0); break;
         case Parameters::COUNT_FILE : Env.CallVoidMethod(issobject, mid, (jint)1); break;
-        case Parameters::CUT_FILE : Env.CallVoidMethod(issobject, mid, (jint)2); break;
+		case Parameters::CUT_FILE : Env.CallVoidMethod(issobject, mid, (jint)2); break;
         case Parameters::POWER_EVALUATIONS_FILE : Env.CallVoidMethod(issobject, mid, (jint)3); break;
-        default : throw prg_error("Unknown parameter type for translation: %d", "copyCParametersToJParameters()", key.first);
+		case Parameters::CONTROL_FILE: Env.CallVoidMethod(issobject, mid, (jint)4); break;
+		default : throw prg_error("Unknown parameter type for translation: %d", "copyCParametersToJParameters()", key.first);
       }
 
       mid = _getMethodId_Checked(Env, issclazz, "setIndex", "(I)V");
@@ -431,6 +436,13 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   jni_error::_detectError(Env);
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
   parameters.setCountFileName(sFilename);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+  mid = _getMethodId_Checked(Env, clazz, "getControlFileName", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  parameters.setControlFileName(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   mid = _getMethodId_Checked(Env, clazz, "getCutsFileName", "()Ljava/lang/String;");
@@ -662,9 +674,10 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
       switch (filetype) {
         case 0/*Tree*/         : type = Parameters::TREE_FILE; break;
         case 1/*Count*/        : type = Parameters::COUNT_FILE; break;
-        case 2/*Cuts*/         : type = Parameters::CUT_FILE; break;
+		case 2/*Cuts*/         : type = Parameters::CUT_FILE; break;
         case 3/*Powers Evals*/ : type = Parameters::POWER_EVALUATIONS_FILE; break;
-        default : throw prg_error("Unknown filetype for translation: %d", "copyJParametersToCParameters()", filetype);
+		case 4/*Control*/: type = Parameters::CONTROL_FILE; break;
+		default : throw prg_error("Unknown filetype for translation: %d", "copyJParametersToCParameters()", filetype);
       }
       parameters.defineInputSource(type, inputsource, idx);
   }

@@ -95,6 +95,50 @@ int AbstractConditionalBernoulliRandomizer::_randomize(int cases, int controls, 
     return TotalSimC;
 }
 
+//////////////////// BernoulliTimeRandomizer ////////////////////////////
+
+/* constructor */
+BernoulliTimeRandomizer::BernoulliTimeRandomizer(int TotalC, int TotalControls, const Parameters& parameters, bool multiparents, long lInitialSeed)
+	:AbstractConditionalBernoulliRandomizer(TotalC, TotalControls, parameters, multiparents, lInitialSeed) {}
+
+/** Distributes cases into simulation case array, where individuals are initially dichotomized into cases and
+controls then each randomly assigned to be a case or a control. Caller is responsible for ensuring that
+passed array pointers are allocated and dimensions match that of passed tract and locations variables. */
+int BernoulliTimeRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
+	//reset seed of random number generator
+	setSeed(iSimulation);
+	// reset simData
+	std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
+
+	int TotalSimC = 0;
+	for (size_t i = 0; i < treeNodes.size(); ++i) {
+		SimulationNode& simNode = treeSimNodes[treeNodes.getID(i)];
+		std::vector<int> randCounts;
+		int node_cases = treeNodes.getIntC(i), node_controls = static_cast<int>(treeNodes.getIntN(i));
+		TotalSimC += node_cases;
+		int nCumCounts = node_cases < node_controls ? node_cases : node_controls;
+		MakeDataB(nCumCounts, node_cases + node_controls, randCounts);
+		int nCumMeasure = node_cases + node_controls - 1;
+		int intervals = static_cast<int>(simNode.refIntC_C().size());
+		for (int idx = intervals-1; idx >= 0; --idx) {
+			if (idx == intervals - 1) {
+				nCumMeasure -= treeNodes.getIntC_C(i)[idx] + static_cast<int>(treeNodes.getIntN_C(i)[idx]);
+			} else {
+				nCumMeasure -= (treeNodes.getIntC_C(i)[idx] - treeNodes.getIntC_C(i)[idx + 1]) + static_cast<int>(treeNodes.getIntN_C(i)[idx] - treeNodes.getIntN_C(i)[idx + 1]);
+			}
+			while (nCumCounts > 0 && randCounts[nCumCounts - 1] > nCumMeasure) {
+				simNode.refIntC_C()[idx]++;
+				--nCumCounts;
+			}
+		}
+		simNode.setCumulative();
+		//now reverse everything if Controls < Cases
+		if (node_cases >= node_controls)
+			for (int idx = 0; idx < intervals; ++idx)
+				simNode.refIntC_C()[idx] = (treeNodes.getIntC_C(i)[idx] + static_cast<int>(treeNodes.getIntN_C(i)[idx])) - simNode.refIntC_C()[idx];
+	}
+	return TotalSimC;
+}
 
 //////////////////// ConditionalBernoulliRandomizer ////////////////////////////
 

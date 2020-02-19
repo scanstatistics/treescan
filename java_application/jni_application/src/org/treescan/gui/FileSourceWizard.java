@@ -133,9 +133,14 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
     /** Checks that required input variables are mapped to a field of the source file. */
     private boolean checkForRequiredVariables() {
-        StringBuilder message = new StringBuilder();
-        ArrayList<ImportVariable> missing = new ArrayList<ImportVariable>();
         VariableMappingTableModel model = (VariableMappingTableModel) _mapping_table.getModel();
+        if (model.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(this, "TreeScan Variable(s) selected.", "Note", JOptionPane.WARNING_MESSAGE);
+            return true;            
+        }
+        
+        StringBuilder message = new StringBuilder();
+        ArrayList<ImportVariable> missing = new ArrayList<>();
         for (ImportVariable variable : _import_variables) {
             if (variable.getIsRequiredField() &&
                 model.isShowing(variable.getVariableName()) &&
@@ -169,52 +174,69 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     /** Configures the combo-box which changes what variables are displayed. */
     private void configureDisplayVariablesComboBox() {
         _displayVariablesComboBox.removeAllItems();
-        _displayVariablesComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Tree Only Unconditional Poisson",
-                                                                                               "Tree Only Conditional Poisson",
-                                                                                               "Tree Only Unconditional Bernoulli",
-                                                                                               "Tree Only Conditional Bernoulli",
-                                                                                               "Tree-Time Conditioned on Node",
-                                                                                               "Tree-Time Conditioned on Node-Time",
-                                                                                               "Time-Only"}));
-        _displayVariablesLabel.setEnabled(_display_variables_editable && _input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Counts);
-        _displayVariablesComboBox.setEnabled(_display_variables_editable && _input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Counts);
+        _displayVariablesComboBox.setModel(new javax.swing.DefaultComboBoxModel(
+                new String[] { "Tree Only Unconditional Poisson",
+                               "Tree Only Conditional Poisson",
+                               "Tree Only Unconditional Bernoulli",
+                               "Tree Only Conditional Bernoulli",
+                               "Tree-Time Conditioned on Node",
+                               "Tree-Time Conditioned on Node-Time",
+                               "Time-Only",
+                               "Tree-Time Bernoulli",
+                               "Time-Only Bernoulli"
+                }
+        ));
+        _displayVariablesLabel.setEnabled(_display_variables_editable && 
+                                          (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Counts || 
+                                           _input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Controls));
+        _displayVariablesComboBox.setEnabled(_display_variables_editable && 
+                                             (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Counts || 
+                                             _input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Controls));
         if (_startingscantype == Parameters.ScanType.TREEONLY && _startingconditionaltype == Parameters.ConditionalType.UNCONDITIONAL) {
-            _displayVariablesComboBox.setSelectedIndex(_startingmodeltype == Parameters.ModelType.BERNOULLI ? 2 : 0);
+            _displayVariablesComboBox.setSelectedIndex(_startingmodeltype == Parameters.ModelType.BERNOULLI_TREE ? 2 : 0);
         } else if (_startingscantype == Parameters.ScanType.TREEONLY && _startingconditionaltype == Parameters.ConditionalType.TOTALCASES) {
-            _displayVariablesComboBox.setSelectedIndex(_startingmodeltype == Parameters.ModelType.BERNOULLI ? 3 : 1);
+            _displayVariablesComboBox.setSelectedIndex(_startingmodeltype == Parameters.ModelType.BERNOULLI_TREE ? 3 : 1);
         } else if (_startingscantype == Parameters.ScanType.TREETIME) {
-            _displayVariablesComboBox.setSelectedIndex(_startingconditionaltype == Parameters.ConditionalType.NODE ? 4 : 5);
+            if (_startingmodeltype == Parameters.ModelType.BERNOULLI_TIME)
+                _displayVariablesComboBox.setSelectedIndex(7);
+            else
+                _displayVariablesComboBox.setSelectedIndex(_startingconditionaltype == Parameters.ConditionalType.NODE ? 4 : 5);
         } else if (_startingscantype == Parameters.ScanType.TIMEONLY) {
-            _displayVariablesComboBox.setSelectedIndex(6);
+            _displayVariablesComboBox.setSelectedIndex(_startingmodeltype == Parameters.ModelType.BERNOULLI_TIME ? 8 : 6);
         }
     }
 
     /**
      * Returns the Parameters.ScanType given the selection in the display variables combination box.
-     * Relevant for InputSourceSettings.InputFileType.Counts only.
+     * Relevant for InputSourceSettings.InputFileType.Counts and InputFileType.Controls.
      * @return Parameters.ScanType
     */
     public Parameters.ScanType getScanType() {
         if (_displayVariablesComboBox.getSelectedIndex() < 4)
             return Parameters.ScanType.TREEONLY;
-        else if (_displayVariablesComboBox.getSelectedIndex() == 4 || _displayVariablesComboBox.getSelectedIndex() == 5)
+        else if (_displayVariablesComboBox.getSelectedIndex() == 4 || 
+                 _displayVariablesComboBox.getSelectedIndex() == 5 ||
+                 _displayVariablesComboBox.getSelectedIndex() == 7)
             return Parameters.ScanType.TREETIME;
-        else if (_displayVariablesComboBox.getSelectedIndex() == 6)
+        else if (_displayVariablesComboBox.getSelectedIndex() == 6 || _displayVariablesComboBox.getSelectedIndex() == 8)
             return Parameters.ScanType.TIMEONLY;
         return Parameters.ScanType.TREEONLY; // default
     }
 
     /**
      * Returns the Parameters.ConditionalType given the selection in the display variables combination box.
-     * Relevant for InputSourceSettings.InputFileType.Counts only.
+     * Relevant for InputSourceSettings.InputFileType.Counts and InputFileType.Controls.
      * @return Parameters.ConditionalType
     */
     public Parameters.ConditionalType getConditionalType() {
         if (_displayVariablesComboBox.getSelectedIndex() == 0 || _displayVariablesComboBox.getSelectedIndex() == 2)
             return Parameters.ConditionalType.UNCONDITIONAL;
-        else if (_displayVariablesComboBox.getSelectedIndex() == 1 || _displayVariablesComboBox.getSelectedIndex() == 3 || _displayVariablesComboBox.getSelectedIndex() == 6)
+        else if (_displayVariablesComboBox.getSelectedIndex() == 1 || 
+                 _displayVariablesComboBox.getSelectedIndex() == 3 || 
+                 _displayVariablesComboBox.getSelectedIndex() == 6 || 
+                 _displayVariablesComboBox.getSelectedIndex() == 8)
             return Parameters.ConditionalType.TOTALCASES;
-        else if (_displayVariablesComboBox.getSelectedIndex() == 4)
+        else if (_displayVariablesComboBox.getSelectedIndex() == 4 || _displayVariablesComboBox.getSelectedIndex() == 7)
             return Parameters.ConditionalType.NODE;
         else if (_displayVariablesComboBox.getSelectedIndex() == 5)
             return Parameters.ConditionalType.NODEANDTIME;
@@ -223,14 +245,16 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
     /**
      * Returns the Parameters.ModelType given the selection in the display variables combination box.
-     * Relevant for InputSourceSettings.InputFileType.Counts only.
+     * Relevant for InputSourceSettings.InputFileType.Counts and InputFileType.Controls.
      * @return Parameters.ModelType
     */
     public Parameters.ModelType getModelType() {
         if (_displayVariablesComboBox.getSelectedIndex() == 0 || _displayVariablesComboBox.getSelectedIndex() == 1)
             return Parameters.ModelType.POISSON;
         else if (_displayVariablesComboBox.getSelectedIndex() == 2 || _displayVariablesComboBox.getSelectedIndex() == 3)
-            return Parameters.ModelType.BERNOULLI;
+            return Parameters.ModelType.BERNOULLI_TREE;
+        else if (_displayVariablesComboBox.getSelectedIndex() == 7 || _displayVariablesComboBox.getSelectedIndex() == 8)
+            return Parameters.ModelType.BERNOULLI_TIME;
         else if (_displayVariablesComboBox.getSelectedIndex() == 4 || _displayVariablesComboBox.getSelectedIndex() == 6)
             return Parameters.ModelType.UNIFORM;
         else if (_displayVariablesComboBox.getSelectedIndex() == 5)
@@ -243,6 +267,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         switch (_input_source_settings.getInputFileType()) {
             case Tree: setTreeFileVariables(); break;
             case Counts: setCountsFileVariables(); break;
+            case Controls: setControlFileVariables(); break;
             case Cut: setCutFileVariables(); break;
             case Power_Evaluations : setPowerEvaluationsFileVariables(); break;
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
@@ -313,9 +338,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     }
 
     /** Returns whether settings windows needs to refresh controls settings based upon selection in wizard.
-        This method is only relevant for InputSourceSettings.InputFileType.Counts. */
+        This method is only relevant for InputSourceSettings.InputFileType.Counts and InputFileType.Controls. */
     public boolean needsSettingsRefresh() {
-        return _input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Counts && _refresh_related_settings;
+        return (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Counts || 
+                _input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Controls)
+                && _refresh_related_settings;
     }
 
     /** Builds html which details the fields expected in the input file. */
@@ -347,7 +374,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 if (_startingscantype == Parameters.ScanType.TREEONLY) {
                     builder.append(" using the tree-only scan and ");
                     builder.append((_startingconditionaltype == Parameters.ConditionalType.UNCONDITIONAL ? "unconditional" : "conditional"));
-                    builder.append((_startingmodeltype == Parameters.ModelType.BERNOULLI ? " Bernoulli" : " Poisson"));
+                    builder.append((_startingmodeltype == Parameters.ModelType.BERNOULLI_TREE ? " Bernoulli" : " Poisson"));
                 } else if (_startingscantype == Parameters.ScanType.TREETIME) {
                     builder.append(" using the tree-time scan, conditioned on the ");
                     builder.append(_startingconditionaltype == Parameters.ConditionalType.NODE ? "node" : "node and time");
@@ -357,9 +384,13 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
                 if (_startingmodeltype == Parameters.ModelType.POISSON)
                     builder.append("&lt;Node ID&gt;&#44;  &lt;Number of Cases&gt;&#44;  &lt;Population&gt;");
-                else if (_startingmodeltype == Parameters.ModelType.BERNOULLI)
-                    builder.append("&lt;Node ID&gt;&#44;  &lt;Number of Cases&gt;&#44;  &lt;Number of Controls&gt;");
-                else if (_startingmodeltype == null || _startingmodeltype == Parameters.ModelType.MODEL_NOT_APPLICABLE || _startingmodeltype == Parameters.ModelType.UNIFORM) {
+                else if (_startingmodeltype == Parameters.ModelType.BERNOULLI_TREE)
+                    builder.append("&lt;Node ID&gt;&#44;  &lt;Number of Cases&gt;");
+                else if (_startingmodeltype == Parameters.ModelType.BERNOULLI_TIME) {
+                    if (_startingscantype != Parameters.ScanType.TIMEONLY)
+                        builder.append("&lt;Node ID&gt;&#44;  ");
+                    builder.append("&lt;Number of Cases&gt;&#44; &lt;Days Since Event&gt;");
+                } else if (_startingmodeltype == null || _startingmodeltype == Parameters.ModelType.MODEL_NOT_APPLICABLE || _startingmodeltype == Parameters.ModelType.UNIFORM) {
                     if (_startingscantype != Parameters.ScanType.TIMEONLY)
                         builder.append("&lt;Node ID&gt;&#44;  ");
                     builder.append("&lt;Number of Cases&gt;&#44;  &lt;Days Since Event&gt;");
@@ -367,6 +398,24 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                         builder.append("&#44; &lt;Censor Time&gt;(optional)");
                 }
                 else throw new UnknownEnumException(_startingmodeltype);
+                break;
+            case Controls:
+                if (_startingscantype == Parameters.ScanType.TREEONLY) {
+                    builder.append(" using the tree-only scan and ");
+                    builder.append((_startingconditionaltype == Parameters.ConditionalType.UNCONDITIONAL ? "unconditional" : "conditional") + " Bernoulli");
+                } else if (_startingscantype == Parameters.ScanType.TREETIME) {
+                    builder.append(" using the tree-time scan and conditional Bernoulli");
+                } else if (_startingscantype == Parameters.ScanType.TIMEONLY) {
+                    builder.append(" using the time-only scan and conditional Bernoulli");
+                } else throw new UnknownEnumException(_startingscantype);
+                builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
+                if (_startingmodeltype == Parameters.ModelType.BERNOULLI_TREE)
+                    builder.append("&lt;Node ID&gt;&#44;  &lt;Number of Controls&gt;");
+                else if (_startingmodeltype == Parameters.ModelType.BERNOULLI_TIME) {
+                    if (_startingscantype != Parameters.ScanType.TIMEONLY)
+                        builder.append("&lt;Node ID&gt;&#44;  ");
+                    builder.append("&lt;Number of Controls&gt;&#44;  &lt;Days Since Event&gt;");
+                } else throw new UnknownEnumException(_startingmodeltype);
                 break;
             case Cut:
                 builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
@@ -421,6 +470,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         switch (_input_source_settings.getInputFileType()) {
             case Tree: return "Tree File";
             case Counts: return "Count File";
+            case Controls: return "Control File";
             case Cut: return "Cuts File";
             case Power_Evaluations: return "Alternative Hypothesis File";
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
@@ -583,6 +633,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         switch (fileType) {
             case Tree:
             case Counts:
+            case Controls:
             case Cut:
             case Power_Evaluations: return true;
             default: throw new UnknownEnumException(fileType);
@@ -854,11 +905,19 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _import_variables.add(new ImportVariable("Node ID", 0, true, null, null));
         _import_variables.add(new ImportVariable("Cases", 1, true, null, null));
         _import_variables.add(new ImportVariable("Population", 2, true, null, null));
-        _import_variables.add(new ImportVariable("Controls", 2, true, null, null));
+        //_import_variables.add(new ImportVariable("Controls", 2, false, null, null));
         _import_variables.add(new ImportVariable("Days Since Event", 2, true, null, null));
         _import_variables.add(new ImportVariable("Censored Time", 3, false, null, null));
     }
 
+    /** Setup field descriptors for control file. */
+    private void setControlFileVariables() {
+        _import_variables.clear();
+        _import_variables.add(new ImportVariable("Node ID", 0, true, null, null));
+        _import_variables.add(new ImportVariable("Controls", 1, true, null, null));
+        _import_variables.add(new ImportVariable("Days Since Event", 2, true, null, null));
+    }    
+    
     /** Setup field descriptors for power evaluations file. */
     private void setPowerEvaluationsFileVariables() {
         _import_variables.clear();
@@ -885,19 +944,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         // update variable to source field mappings
         _input_source_settings.getFieldMaps().clear();
         for (ImportVariable variable: _import_variables) {
-            if (variable.getShowing()) {
-                if (variable.isMappedToSourceField() || variable.hasDefault()) {
-                    _input_source_settings.getFieldMaps().add(Integer.toString(variable.getSourceFieldIndex()));
-                } else {
-                    _input_source_settings.getFieldMaps().add("");
-                }
+            if (variable.getShowing() && variable.isMappedToSourceField()) {
+                _input_source_settings.getFieldMaps().add(Integer.toString(variable.getSourceFieldIndex()));
             }
         }
-        // remove any mappings that are blank -- from end to first none blank
-        for (int i=_input_source_settings.getFieldMaps().size() - 1; i >= 0; --i) {
-            if (!_input_source_settings.getFieldMaps().get(i).isEmpty()) break;
-            else _input_source_settings.getFieldMaps().remove(i);
-        }
+        //_input_source_settings.getFieldMaps().removeAll(Collections.singleton(""));
     }
 
     /** Assigns the field name choices in the drop-down menu of the variable mapping table. */
@@ -931,7 +982,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     variable.setShowing(false);
                 }
                 // Node ID variable
-                _import_variables.get(0).setShowing(_displayVariablesComboBox.getSelectedIndex() != 6/* Time-Only*/);
+                _import_variables.get(0).setShowing(!(_displayVariablesComboBox.getSelectedIndex() == 6/* Time-Only*/ || _displayVariablesComboBox.getSelectedIndex() == 8/* Time-Only, Bernoulli */));
                 model.setShowing(_import_variables.get(0));
                 // Cases
                 _import_variables.get(1).setShowing(true);
@@ -940,20 +991,38 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 _import_variables.get(2).setShowing(_displayVariablesComboBox.getSelectedIndex() == 0 /* Tree Only, Unconditional Poisson */ ||
                                                     _displayVariablesComboBox.getSelectedIndex() == 1 /* Tree Only, Conditional Poisson */);
                 model.setShowing(_import_variables.get(2));
-                // Controls
-                _import_variables.get(3).setShowing(_displayVariablesComboBox.getSelectedIndex() == 2 /* Tree Only, Unconditional Bernoulli */ ||
-                                                    _displayVariablesComboBox.getSelectedIndex() == 3 /* Tree Only, Conditional Bernoulli */);
-                model.setShowing(_import_variables.get(3));
                 // Days Since Event
-                _import_variables.get(4).setShowing(_displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */ ||
+                _import_variables.get(3).setShowing(_displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */ ||
                                                     _displayVariablesComboBox.getSelectedIndex() == 5 /* Tree-time, Condition Node-Time */ ||
+                                                    _displayVariablesComboBox.getSelectedIndex() == 7 /* Tree-time, Bernoulli */ ||
+                                                    _displayVariablesComboBox.getSelectedIndex() == 8 /* Time-Only, Bernoulli */);
+                model.setShowing(_import_variables.get(3));
+                // Censor Time
+                _import_variables.get(4).setShowing(_displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */ ||
                                                     _displayVariablesComboBox.getSelectedIndex() == 6 /* Time-Only */);
                 model.setShowing(_import_variables.get(4));
-                // Days Since Event
-                _import_variables.get(5).setShowing(_displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */ ||
-                                                    _displayVariablesComboBox.getSelectedIndex() == 6 /* Time-Only */);
-                model.setShowing(_import_variables.get(5));
                 break;
+            case Controls:
+                model.hideAll();
+                for (ImportVariable variable : _import_variables) {
+                    variable.setShowing(false);
+                }
+                // Node ID variable
+                _import_variables.get(0).setShowing(_displayVariablesComboBox.getSelectedIndex() == 2 /* Tree-Only, Unconditional Bernoulli */ ||
+                                                    _displayVariablesComboBox.getSelectedIndex() == 3 /* Tree-Only, Conditional Bernoulli */ ||
+                                                    _displayVariablesComboBox.getSelectedIndex() == 7 /* Tree-time, Bernoulli */);
+                model.setShowing(_import_variables.get(0));
+                // Controls
+                _import_variables.get(1).setShowing(_displayVariablesComboBox.getSelectedIndex() == 2 /* Tree-Only, Unconditional Bernoulli */ ||
+                                                    _displayVariablesComboBox.getSelectedIndex() == 3 /* Tree-Only, Conditional Bernoulli */ ||
+                                                    _displayVariablesComboBox.getSelectedIndex() == 7 /* Tree-time, Bernoulli */ ||
+                                                    _displayVariablesComboBox.getSelectedIndex() == 8 /* Time-Only, Bernoulli */);
+                model.setShowing(_import_variables.get(1));
+                // Days Since Event
+                _import_variables.get(2).setShowing(_displayVariablesComboBox.getSelectedIndex() == 7 /* Tree-time, Bernoulli */ ||
+                                                    _displayVariablesComboBox.getSelectedIndex() == 8 /* Time-Only, Bernoulli */);
+                model.setShowing(_import_variables.get(2));
+                break;                
             case Power_Evaluations:
                 for (ImportVariable variable : _import_variables) {
                     variable.setShowing(true);
@@ -997,6 +1066,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         switch (filetype) {
             case Tree: defaultName = "Tree"; extension =  ".tre"; break;
             case Counts: defaultName = "Counts"; extension =  ".cas"; break;
+            case Controls: defaultName = "Controls"; extension =  ".ctl"; break;
             case Cut: defaultName = "cut"; extension =  ".cut";  break;
             case Power_Evaluations: defaultName = "AlternativeHypothesis"; extension =  ".ha";  break;
             default: throw new UnknownEnumException(filetype);
@@ -1534,9 +1604,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     .addComponent(_changeSaveDirectoryButton))
                 .addGap(18, 18, 18)
                 .addComponent(_save_import_settings, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(234, 234, 234)
+                .addGap(18, 18, 18)
                 .addComponent(_progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addGap(227, 227, 227))
         );
 
         _main_content_panel.add(_outputSettingsPanel, "output-settings");

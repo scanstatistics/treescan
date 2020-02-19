@@ -72,7 +72,7 @@ class NodesProxy : public AbstractNodesProxy {
         virtual NodesProxy * clone() {return new NodesProxy(*this);}
         virtual size_t  size() const {return _treeNodes.size();}
         virtual double  getIntN(size_t i) const {return _treeNodes[i]->getIntN();}
-        virtual const NodeStructure::ExpectedContainer_t & getIntN_C(size_t i) const {throw prg_error("NodesProxy::getIntN_C(size_t) not implemented.","getIntN_C(size_t)");}
+        virtual const NodeStructure::ExpectedContainer_t & getIntN_C(size_t i) const {return _treeNodes[i]->getIntN_C();}
         virtual int     getIntC(size_t i) const {return _treeNodes[i]->getIntC();}
         virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const {return _treeNodes[i]->getIntC_C();}
         virtual int     getBrC(size_t i) const {return _treeNodes[i]->getBrC();}

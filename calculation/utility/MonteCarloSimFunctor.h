@@ -61,7 +61,7 @@ class MinimumMeasureList : public AbstractMeasureList {
         }
         virtual void initialize() {
             list_container_t& measure = (*_min_measure);
-            if (_scanRunner.getParameters().getModelType() == Parameters::BERNOULLI) {
+            if (_scanRunner.getParameters().getModelType() == Parameters::BERNOULLI_TREE) {
                 double totalC = static_cast<double>(_scanRunner.getTotalC());
                 double totalN = _scanRunner.getTotalN();
                 for (list_container_t::size_type i=0; i < _min_measure->size(); ++i)
@@ -79,7 +79,7 @@ class MinimumMeasureList : public AbstractMeasureList {
             list_container_t::size_type i = 2;
 
             list_container_t& measure = (*_min_measure);
-            if (_scanRunner.getParameters().getModelType() == Parameters::BERNOULLI) {
+            if (_scanRunner.getParameters().getModelType() == Parameters::BERNOULLI_TREE) {
                 double total_measure(_scanRunner.getTotalN()), risk(static_cast<double>(_scanRunner.getTotalC())/_scanRunner.getTotalN());
                 /* Calculating the LLR for less than half the cases can use a trick where the calculation is performed only if the excess exceeds any previous excess. */
                 for (; i < iHalfListSize; ++i) {
@@ -135,7 +135,8 @@ private:
 	bool isEvaluated(const NodeStructure& node, const SimulationNode& simNode) const;
     successful_result_type scanTree(param_type const & param);
     successful_result_type scanTreeTemporalConditionNode(param_type const & param);
-    successful_result_type scanTreeTemporalConditionNodeCensored(param_type const & param);
+	//successful_result_type scanTreeBernoulliTime(param_type const & param);
+	successful_result_type scanTreeTemporalConditionNodeCensored(param_type const & param);
     successful_result_type scanTreeTemporalConditionNodeTime(param_type const & param);
 
 public:

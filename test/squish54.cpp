@@ -139,7 +139,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_unconditional_bernoulli_self_con
     // check the expected values for this analysis
     double expected_rr [9] = {2.75, 7.0, 1.84, 3.5, 3.0, 1.34, 2.25, 1.31, 1.33};
     double expected_ex [9] = {21.0, 12.0, 16.0, 5.0, 4.0, 14.0, 5.0, 4.0, 1.0};
-    double expected_ar [9] = {0.11, 0.06, 0.08, 0.025, 0.02, 0.07, 0.025, 0.02, 0.005};
+    double expected_ar [9] = {0.10, 0.06, 0.08, 0.025, 0.02, 0.07, 0.025, 0.02, 0.005};
     unsigned int dataRows=0, expectedRows=9;
     CSV_Row_t data;
     getCSVRow(stream, data);

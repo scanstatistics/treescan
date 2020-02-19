@@ -81,7 +81,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_sequential_alpha_spending" min="-2" pref="91" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="_alpha_spent_to_date_label" pref="316" max="32767" attributes="0"/>
+                          <Component id="_alpha_spent_to_date_label" max="32767" attributes="0"/>
                       </Group>
                       <Component id="_sequential_alpha_label" max="32767" attributes="0"/>
                   </Group>
@@ -156,9 +156,23 @@
                           <Component id="_countFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="_countFileLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="0" pref="518" max="32767" attributes="0"/>
+                      <Group type="102" alignment="1" attributes="0">
+                          <Component id="_controlFileLabel" pref="581" max="32767" attributes="0"/>
+                          <EmptySpace min="31" pref="31" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <Component id="_countFileLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              </Group>
+                              <Group type="102" attributes="0">
+                                  <Component id="_controlFileTextField" max="32767" attributes="1"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_controlFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -167,12 +181,22 @@
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <Component id="_countFileLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="_countFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="_countFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="1" attributes="0">
+                      <Component id="_controlFileImportButton" min="-2" max="-2" attributes="0"/>
+                      <Group type="102" attributes="0">
+                          <Component id="_countFileLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_countFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="_countFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="_controlFileLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
+                          <Component id="_controlFileTextField" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -194,6 +218,25 @@
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_countFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Counts.toString() + &quot;1&quot;;&#xa;        if (!_input_source_map.containsKey(key)) {&#xa;          _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Counts));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_countFileTextField, inputSourceSettings, ParameterSettingsSequentialScanFrame.this, false);&#xa;    }&#xa;});"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JLabel" name="_controlFileLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Control File:" noResource="true"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="_controlFileTextField">
+        </Component>
+        <Component class="javax.swing.JButton" name="_controlFileImportButton">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/document_add_small.png"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" value="Import count file ..." noResource="true"/>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Controls.toString() + &quot;1&quot;;&#xa;        if (!_input_source_map.containsKey(key)) {&#xa;          _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Controls));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, ParameterSettingsSequentialScanFrame.this, true);&#xa;    }&#xa;});"/>
+            <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="ParameterSettingsFrame__controlFileImportButton"/>
           </AuxValues>
         </Component>
       </SubComponents>

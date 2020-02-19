@@ -72,9 +72,11 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
         _sequential_alpha_label.setText("Alpha Overall = " + parameters.getSequentialAlphaOverall());
         setAlphSpentingToDateLabel(parameters);
 
-        // Since this is a follow-up analysis, the user will need to specify a new count file.
+        // Since this is a follow-up analysis, the user will need to specify a new count and control file.
         //_countFileTextField.setText(parameters.getCountFileName());
         //_countFileTextField.setCaretPosition(0);
+        //_controlFileTextField.setText(parameters.getControlFileName());
+        //_controlFileTextField.setCaretPosition(0);
 
         _input_source_map.clear();
         for (int i=0; i < parameters.getInputSourceSettings().size(); ++i) {
@@ -93,6 +95,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
         parameters.setSequentialAlphaSpending(Double.parseDouble(_sequential_alpha_spending.getText()));
 
         parameters.setCountFileName(_countFileTextField.getText());
+        parameters.setControlFileName(_controlFileTextField.getText());
 
         // TODO -- clear only count file source setting!
         parameters.clearInputSourceSettings();
@@ -126,6 +129,10 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
                 throw new SettingsException("Please specify a count file.", (Component) _countFileTextField);
             if (!FileAccess.ValidateFileAccess(_countFileTextField.getText(), false))
                 throw new SettingsException("The count file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", (Component) _countFileTextField);
+            if (_controlFileTextField.getText().length() == 0)
+                throw new SettingsException("Please specify a control file.", (Component) _controlFileTextField);
+            if (!FileAccess.ValidateFileAccess(_controlFileTextField.getText(), false))
+                throw new SettingsException("The control file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", (Component) _controlFileTextField);
             /* Check output settings */
         } catch (SettingsException e) {
             focusWindow();
@@ -145,7 +152,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
     }
 
     public Parameters.ModelType getModelType() {
-        return Parameters.ModelType.BERNOULLI;
+        return Parameters.ModelType.BERNOULLI_TREE;
     }
 
     @Override
@@ -171,6 +178,9 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
         _countFileLabel = new javax.swing.JLabel();
         _countFileTextField = new javax.swing.JTextField();
         _countFileImportButton = new javax.swing.JButton();
+        _controlFileLabel = new javax.swing.JLabel();
+        _controlFileTextField = new javax.swing.JTextField();
+        _controlFileImportButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         _re_launch_full = new JHyperLink("Reopen in full settings window.");
         jLabel2 = new javax.swing.JLabel();
@@ -219,7 +229,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_sequential_alpha_spending, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(_alpha_spent_to_date_label, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE))
+                        .addComponent(_alpha_spent_to_date_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(_sequential_alpha_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -254,6 +264,23 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
             }
         });
 
+        _controlFileLabel.setText("Control File:"); // NOI18N
+
+        _controlFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
+        _controlFileImportButton.setToolTipText("Import count file ..."); // NOI18N
+        _controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                String key = InputSourceSettings.InputFileType.Controls.toString() + "1";
+                if (!_input_source_map.containsKey(key)) {
+                    _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Controls));
+                }
+                InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
+                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);
+                selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, ParameterSettingsSequentialScanFrame.this, true);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -266,18 +293,36 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_countFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                        .addComponent(_controlFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE)
+                        .addGap(31, 31, 31))
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(_countFileLabel)
-                        .addGap(0, 518, Short.MAX_VALUE))))
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addComponent(_countFileLabel)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addComponent(_controlFileTextField)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_controlFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap())))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addComponent(_countFileLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_countFileImportButton)
-                    .addComponent(_countFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(_controlFileImportButton)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(_countFileLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(_countFileImportButton)
+                            .addComponent(_countFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(_controlFileLabel)
+                        .addGap(9, 9, 9)
+                        .addComponent(_controlFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
@@ -336,6 +381,9 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel _alpha_spent_to_date_label;
+    private javax.swing.JButton _controlFileImportButton;
+    private javax.swing.JLabel _controlFileLabel;
+    private javax.swing.JTextField _controlFileTextField;
     private javax.swing.JButton _countFileImportButton;
     private javax.swing.JLabel _countFileLabel;
     private javax.swing.JTextField _countFileTextField;

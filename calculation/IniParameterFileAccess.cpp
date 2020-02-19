@@ -146,6 +146,12 @@ void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) 
             if (ReadInputSourceSection(SourceFile, section, key, source))
                 _parameters.defineInputSource(Parameters::COUNT_FILE, source);
         }
+		// control file
+		if (GetSpecifications().GetParameterIniInfo(Parameters::CONTROL_FILE, &section, &key)) {
+			Parameters::InputSource source;
+			if (ReadInputSourceSection(SourceFile, section, key, source))
+				_parameters.defineInputSource(Parameters::CONTROL_FILE, source);
+		}
         // cut file
         if (GetSpecifications().GetParameterIniInfo(Parameters::CUT_FILE, &section, &key)) {
             Parameters::InputSource source;
@@ -293,6 +299,10 @@ void IniParameterFileAccess::WriteInputSettings(IniFile& WriteFile) {
         GetParameterString(Parameters::COUNT_FILE, s);
         WriteIniParameter(WriteFile, Parameters::COUNT_FILE, s.c_str(), GetParameterComment(Parameters::COUNT_FILE));
         if (s.size()) WriteInputSource(WriteFile, Parameters::COUNT_FILE, _parameters.getInputSource(Parameters::COUNT_FILE));
+
+		GetParameterString(Parameters::CONTROL_FILE, s);
+		WriteIniParameter(WriteFile, Parameters::CONTROL_FILE, s.c_str(), GetParameterComment(Parameters::CONTROL_FILE));
+		if (s.size()) WriteInputSource(WriteFile, Parameters::CONTROL_FILE, _parameters.getInputSource(Parameters::CONTROL_FILE));
 
         WriteIniParameter(WriteFile, Parameters::DATA_TIME_RANGES, GetParameterString(Parameters::DATA_TIME_RANGES, s).c_str(), GetParameterComment(Parameters::DATA_TIME_RANGES));
     } catch (prg_exception& x) {

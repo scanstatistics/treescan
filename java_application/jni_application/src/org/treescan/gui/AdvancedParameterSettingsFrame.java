@@ -482,7 +482,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 Parameters.ModelType modelType = _settings_window.getModelType();
                 Parameters.ConditionalType conditonalType = _settings_window.getConditionalType();
                 if (!((modelType == Parameters.ModelType.POISSON ||
-                       modelType == Parameters.ModelType.BERNOULLI ||
+                       modelType == Parameters.ModelType.BERNOULLI_TREE ||
                        _settings_window.getScanType() == Parameters.ScanType.TIMEONLY) && conditonalType == Parameters.ConditionalType.TOTALCASES)) {
                     throw new AdvFeaturesExpection("The power evaluation option to define total cases is only permitted with the conditional Poisson model, Bernoulli model or time-only scan.\n", FocusedTabSet.ANALYSIS, (Component) _totalPowerCases);
                 }
@@ -508,7 +508,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The alternative hypothesis file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
             }
-            if (_settings_window.getModelType() == Parameters.ModelType.BERNOULLI && _settings_window.getConditionalType() == Parameters.ConditionalType.TOTALCASES) {
+            if (_settings_window.getModelType() == Parameters.ModelType.BERNOULLI_TREE && _settings_window.getConditionalType() == Parameters.ConditionalType.TOTALCASES) {
                 int eventProbNumerator = Integer.parseInt(_eventProbabiltyNumerator.getText().trim());
                 int eventProbDenominator = Integer.parseInt(_eventProbabiltyDenominator.getText().trim());
                 if (eventProbNumerator == 0 || eventProbDenominator == 0 || eventProbNumerator >= eventProbDenominator) {
@@ -519,7 +519,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (_perform_sequential_scan.isEnabled() &&
                 _perform_sequential_scan.isSelected() &&
                 _settings_window.getScanType() == Parameters.ScanType.TREEONLY &&
-                _settings_window.getModelType() == Parameters.ModelType.BERNOULLI &&
+                _settings_window.getModelType() == Parameters.ModelType.BERNOULLI_TREE &&
                 _settings_window.getConditionalType() == Parameters.ConditionalType.UNCONDITIONAL) {
                throw new AdvFeaturesExpection("The power evaluation is not implemented for the sequential scan with unconditional Bernoulli model.", FocusedTabSet.ANALYSIS,(Component) _performPowerEvaluations);
             }
@@ -719,7 +719,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         Parameters.ModelType eModelType = _settings_window.getModelType();
         Parameters.ConditionalType eConditionType = _settings_window.getConditionalType();
 
-        boolean bEnableGroup = (scanType == Parameters.ScanType.TREEONLY && (eModelType == Parameters.ModelType.POISSON || eModelType == Parameters.ModelType.BERNOULLI)) ||
+        boolean bEnableGroup = (scanType == Parameters.ScanType.TREEONLY && (eModelType == Parameters.ModelType.POISSON || eModelType == Parameters.ModelType.BERNOULLI_TREE)) ||
                                (((scanType == Parameters.ScanType.TIMEONLY && eConditionType == Parameters.ConditionalType.TOTALCASES) ||
                                 (scanType == Parameters.ScanType.TREETIME && eConditionType == Parameters.ConditionalType.NODE)) &&
                                 _perform_dayofweek_adjustments.isSelected() == false
@@ -735,7 +735,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             default:
         }
         _powerEvaluationWithSpecifiedCases.setEnabled(bEnableGroup && _performPowerEvaluations.isSelected() &&
-                                                      (eModelType == Parameters.ModelType.POISSON || eModelType == Parameters.ModelType.BERNOULLI || scanType == Parameters.ScanType.TIMEONLY) &&
+                                                      (eModelType == Parameters.ModelType.POISSON || eModelType == Parameters.ModelType.BERNOULLI_TREE || scanType == Parameters.ScanType.TIMEONLY) &&
                                                       _settings_window.getConditionalType() == Parameters.ConditionalType.TOTALCASES);
         if (_powerEvaluationsGroup.isEnabled() && _powerEvaluationWithSpecifiedCases.isSelected() && !_powerEvaluationWithSpecifiedCases.isEnabled())
             _powerEvaluationWithCaseFile.setSelected(true);
@@ -747,7 +747,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _numberPowerReplicationsLabel.setEnabled(bEnableGroup && _performPowerEvaluations.isSelected());
         _numberPowerReplications.setEnabled(bEnableGroup && _performPowerEvaluations.isSelected());
 
-        boolean enableEvent = eModelType == Parameters.ModelType.BERNOULLI && _settings_window.getConditionalType() == Parameters.ConditionalType.TOTALCASES;
+        boolean enableEvent = eModelType == Parameters.ModelType.BERNOULLI_TREE && _settings_window.getConditionalType() == Parameters.ConditionalType.TOTALCASES;
         _eventProbabilityLabel.setEnabled(_performPowerEvaluations.isSelected() && enableEvent);
         _eventProbabiltyNumerator.setEnabled(_performPowerEvaluations.isSelected() && enableEvent);
         _eventProbabilityLabel2.setEnabled(_performPowerEvaluations.isSelected() && enableEvent);
@@ -775,7 +775,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         //boolean bEnableGroup = true; scanType == Parameters.ScanType.TIMEONLY;
         boolean bEnableGroup = scanType == Parameters.ScanType.TREEONLY &&
-                               modelType == Parameters.ModelType.BERNOULLI &&
+                               modelType == Parameters.ModelType.BERNOULLI_TREE &&
                                conditionType == Parameters.ConditionalType.UNCONDITIONAL &&
                                !_settings_window.getSelfControlDesign();
         _sequential_analysis_group.setEnabled(bEnableGroup);

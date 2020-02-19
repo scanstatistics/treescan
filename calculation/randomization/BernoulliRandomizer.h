@@ -48,6 +48,18 @@ class ConditionalBernoulliRandomizer : public AbstractConditionalBernoulliRandom
         virtual ConditionalBernoulliRandomizer * clone() const {return new ConditionalBernoulliRandomizer(*this);}
 };
 
+/** Randomizer for Bernoulli Time model. */
+class BernoulliTimeRandomizer : public AbstractConditionalBernoulliRandomizer {
+protected:
+	virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
+
+public:
+	BernoulliTimeRandomizer(int TotalC, int TotalControls, const Parameters& parameters, bool multiparents, long lInitialSeed = RandomNumberGenerator::glDefaultSeed);
+	virtual ~BernoulliTimeRandomizer() {}
+
+	virtual BernoulliTimeRandomizer * clone() const { return new BernoulliTimeRandomizer(*this); }
+};
+
 /** conditional Bernoulli randomizer for alternative hypothesis. */
 class ConditionalBernoulliAlternativeHypothesisRandomizer : public AbstractConditionalBernoulliRandomizer {
     protected:

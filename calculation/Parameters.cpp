@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 60;
+const int Parameters::giNumParameters = 61;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -27,6 +27,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
 
   if (_cutsFileName != rhs._cutsFileName) return false;  
   if (_countFileName != rhs._countFileName) return false;
+  if (_controlFileName != rhs._controlFileName) return false;
   if (_dataTimeRangeSet.getDataTimeRangeSets() != rhs._dataTimeRangeSet.getDataTimeRangeSets()) return false;
   if (_temporalStartRange != rhs._temporalStartRange) return false;
   if (_temporalEndRange != rhs._temporalEndRange) return false;
@@ -130,7 +131,8 @@ void Parameters::assignMissingPath(std::string & sInputFilename, bool bCheckWrit
 void Parameters::copy(const Parameters &rhs) {
     _treeFileNames = rhs._treeFileNames;
     _countFileName = rhs._countFileName;
-    _dataTimeRangeSet = rhs._dataTimeRangeSet;
+	_controlFileName = rhs._controlFileName;
+	_dataTimeRangeSet = rhs._dataTimeRangeSet;
     _cutsFileName = rhs._cutsFileName;
 
     _scan_type = rhs._scan_type;
@@ -263,7 +265,7 @@ bool Parameters::isSequentialScanPurelyTemporal() const {
 }
 
 bool Parameters::isSequentialScanBernoulli() const{
-    return _sequential_scan && _modelType == Parameters::BERNOULLI && _conditional_type == Parameters::UNCONDITIONAL;
+    return _sequential_scan && _modelType == Parameters::BERNOULLI_TREE && _conditional_type == Parameters::UNCONDITIONAL;
 }
 
 /** Sets counts data file name.
@@ -272,6 +274,14 @@ bool Parameters::isSequentialScanBernoulli() const{
 void Parameters::setCountFileName(const char * sCountFileName, bool bCorrectForRelativePath) {
   _countFileName = sCountFileName;
   if (bCorrectForRelativePath) assignMissingPath(_countFileName);
+}
+
+/** Sets control data file name.
+If bCorrectForRelativePath is true, an attempt is made to modify filename
+to path relative to executable. This is only attempted if current file does not exist. */
+void Parameters::setControlFileName(const char * sControlFileName, bool bCorrectForRelativePath) {
+	_controlFileName = sControlFileName;
+	if (bCorrectForRelativePath) assignMissingPath(_controlFileName);
 }
 
 /** Sets cuts data file name.
@@ -304,7 +314,8 @@ void Parameters::setAsDefaulted() {
     _treeFileNames.front() = "";
 
     _countFileName = "";
-    _dataTimeRangeSet = DataTimeRangeSet();
+	_controlFileName = "";
+	_dataTimeRangeSet = DataTimeRangeSet();
     _cutsFileName = "";
 
     _scan_type = TREEONLY;
@@ -487,7 +498,8 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     // Input
     setTreeFileName(pt.get<std::string>("parameters.input.tree-filename", "").c_str(), true);
     setCountFileName(pt.get<std::string>("parameters.input.count-filename", "").c_str(), true);
-    _dataTimeRangeSet.assign(pt.get<std::string>("parameters.input.data-time-range", "0,0"));
+	setControlFileName(pt.get<std::string>("parameters.input.control-filename", "").c_str(), true);
+	_dataTimeRangeSet.assign(pt.get<std::string>("parameters.input.data-time-range", "0,0"));
     // Advanced Input
     setCutsFileName(pt.get<std::string>("parameters.input.advanced.input.cuts-filename", "").c_str(), true);
     _cut_type = static_cast<CutType>(pt.get<unsigned int>("parameters.input.advanced.input.cuts-type", SIMPLE));
@@ -552,7 +564,8 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     // Input
     pt.put("parameters.input.tree-file", _treeFileNames.front());
     pt.put("parameters.input.count-file", _countFileName);
-    pt.put("parameters.input.data-time-range", _dataTimeRangeSet.toString(buffer));
+	pt.put("parameters.input.control-file", _controlFileName);
+	pt.put("parameters.input.data-time-range", _dataTimeRangeSet.toString(buffer));
     // Advanced Input
     pt.put("parameters.input.advanced.input.cuts-file", _cutsFileName);
     pt.put("parameters.input-advanced.input.cuts-type", static_cast<unsigned int>(_cut_type));

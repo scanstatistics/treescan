@@ -162,6 +162,25 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                                    "have permissions to read from this directory and file.\n",
                                    BasePrint::P_PARAMERROR, _parameters.getCountFileName().c_str());
         }
+
+		if (_parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+			if (_parameters.getControlFileName().empty()) {
+				if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+					bValid = false;
+					PrintDirection.Printf("Invalid Parameter Setting:\nNo control file specified.\n", BasePrint::P_PARAMERROR);
+				} else if (!_parameters.isSequentialScanBernoulli())
+					/* The Bernoulli tree model in versions prior to 1.5 did not have control file, so allow file to be optional in order to facilitate backwards compatability.*/
+					PrintDirection.Printf("Notice:\nNo control file specified for tree-only Bernoulli scan, control data assumed to be in count file.\n", BasePrint::P_NOTICE);
+			} else if (!validateFileAccess(_parameters.getControlFileName())) {
+				bValid = false;
+				PrintDirection.Printf("Invalid Parameter Setting:\n"
+					"The control file '%s' could not be opened for reading. "
+					"Please confirm that the path and/or file name are valid and that you "
+					"have permissions to read from this directory and file.\n",
+					BasePrint::P_PARAMERROR, _parameters.getControlFileName().c_str());
+			}
+		}
+
         if (_parameters.getScanType() != Parameters::TIMEONLY) {
             if (!_parameters.getCutsFileName().empty() && !validateFileAccess(_parameters.getCutsFileName())) {
                 bValid = false;
@@ -280,7 +299,7 @@ bool ParametersValidate::ValidateAnalysisParameters(BasePrint& PrintDirection) c
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree Only' can either be unconditioned or conditioned on the total cases.\n", BasePrint::P_PARAMERROR);
                 }
-                if (!(_parameters.getModelType() == Parameters::BERNOULLI || _parameters.getModelType() == Parameters::POISSON)) {
+                if (!(_parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getModelType() == Parameters::POISSON)) {
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree Only' is not implemented for selected model.\n", BasePrint::P_PARAMERROR);
                 }
@@ -294,13 +313,16 @@ bool ParametersValidate::ValidateAnalysisParameters(BasePrint& PrintDirection) c
                 if (bValid && _parameters.getConditionalType() == Parameters::NODEANDTIME) {
                     const_cast<Parameters&>(_parameters).setModelType(Parameters::MODEL_NOT_APPLICABLE);
                 }
-                if (!(_parameters.getModelType() == Parameters::UNIFORM || _parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE)) {
+                if (!(_parameters.getModelType() == Parameters::UNIFORM || 
+					  _parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE ||
+					  _parameters.getModelType() == Parameters::BERNOULLI_TIME)) {
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree and Time' is not implemented for the selected model type.\n", BasePrint::P_PARAMERROR);
                 }
-                if (_parameters.getConditionalType() == Parameters::NODE && _parameters.getModelType() != Parameters::UNIFORM) {
+                if (_parameters.getConditionalType() == Parameters::NODE && 
+					!(_parameters.getModelType() == Parameters::UNIFORM || _parameters.getModelType() == Parameters::BERNOULLI_TIME)) {
                     bValid = false;
-                    PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree and Time' conditioned on the node requires the uniform model to be selected as model type.\n", BasePrint::P_PARAMERROR);
+                    PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree and Time' conditioned on the node requires the Uniform or Bernoulli Time model to be selected as model type.\n", BasePrint::P_PARAMERROR);
                 }
                 break;
             case Parameters::TIMEONLY:
@@ -308,18 +330,18 @@ bool ParametersValidate::ValidateAnalysisParameters(BasePrint& PrintDirection) c
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Time Only' can be conditioned on the total cases only.\n", BasePrint::P_PARAMERROR);
                 }
-                if (_parameters.getModelType() != Parameters::UNIFORM) {
+                if (!(_parameters.getModelType() == Parameters::UNIFORM || _parameters.getModelType() == Parameters::BERNOULLI_TIME)) {
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Time Only' is not implemented for the selected model type.\n", BasePrint::P_PARAMERROR);
                 }
                 break;
             default: throw prg_error("Unknown scan type (%d).", "ValidateAnalysisParameters()", _parameters.getScanType());
         }
-        if (_parameters.getSelfControlDesign() && !(_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
+        if (_parameters.getSelfControlDesign() && !(_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nSelf control design is implemented for the unconditional Bernoulli model only.\n", BasePrint::P_PARAMERROR);
         }
-        if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL &&
+        if (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL &&
             (_parameters.getProbabilityRatio().first == 0 || _parameters.getProbabilityRatio().second == 0 || _parameters.getProbabilityRatio().first >= _parameters.getProbabilityRatio().second)) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nCase probabilty must be between zero and one.\n", BasePrint::P_PARAMERROR);
@@ -378,7 +400,7 @@ bool ParametersValidate::ValidatePowerEvaluationParametersParameters(BasePrint &
 
     bool bValid=true;
     if (!(_parameters.getModelType() == Parameters::POISSON ||
-          _parameters.getModelType() == Parameters::BERNOULLI ||
+          _parameters.getModelType() == Parameters::BERNOULLI_TREE ||
           (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES) ||
           (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE)
          )) {
@@ -428,11 +450,11 @@ bool ParametersValidate::ValidatePowerEvaluationParametersParameters(BasePrint &
         bValid = false;
     }
     if (_parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES &&
-        !((_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI || _parameters.getScanType() == Parameters::TIMEONLY) && _parameters.getConditionalType() == Parameters::TOTALCASES)) {
+        !((_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getScanType() == Parameters::TIMEONLY) && _parameters.getConditionalType() == Parameters::TOTALCASES)) {
         PrintDirection.Printf("%s:\nThe power evaluation option to define total cases is only permitted with the conditional Poisson model or conditional Bernoulli model or time only scan.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         bValid = false;
     }
-    if (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES) {
+    if (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::TOTALCASES) {
         if (_parameters.getPowerBaselineProbabilityRatio().first == 0 || _parameters.getPowerBaselineProbabilityRatio().second == 0 || _parameters.getPowerBaselineProbabilityRatio().first >= _parameters.getPowerBaselineProbabilityRatio().second) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation baseline probabilty must be between zero and one.\n", BasePrint::P_PARAMERROR);
@@ -448,24 +470,28 @@ bool ParametersValidate::ValidatePowerEvaluationParametersParameters(BasePrint &
 /** Validates temporal window settings. */
 bool ParametersValidate::ValidateTemporalWindowParameters(BasePrint & PrintDirection) const {
     bool bValid=true;
-    if (_parameters.getModelType() == Parameters::UNIFORM) {
+    if (Parameters::isTemporalScanType(_parameters.getScanType())) {
         switch (_parameters.getMaximumWindowType()) {
             case Parameters::PERCENTAGE_WINDOW: {
-                if (_parameters.getMaximumWindowPercentage() <= 0 || _parameters.getMaximumWindowPercentage() > 50.0) {
-                    bValid = false;
-                    PrintDirection.Printf("Invalid Parameter Setting:\nThe percent of the maximum window must be greater than zero and less than or equal to 50.\n", BasePrint::P_PARAMERROR);
+				if (_parameters.getMaximumWindowPercentage() <= 0) {
+					bValid = false;
+					PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum temporal size must be greater than zero.\n", BasePrint::P_PARAMERROR);
+				} else if (_parameters.getMaximumWindowPercentage() > 50.0) {
+                    PrintDirection.Printf("Parameter Setting Warning:\nThe maximum temporal size is greater than 50 percent of data time range.\n", BasePrint::P_WARNING);
                 }
                 unsigned int max_length = static_cast<unsigned int>(std::floor(static_cast<double>(_parameters.getDataTimeRangeSet().getMinMax().numDaysInRange()) * _parameters.getMaximumWindowPercentage()/100.0));
                 if (_parameters.getMinimumWindowLength() <= 0 || _parameters.getMinimumWindowLength() > max_length) {
                     bValid = false;
-                    PrintDirection.Printf("Invalid Parameter Setting:\nThe minimum window length must be greater than zero and no greater than the specified maximum window length.\nWith a specifed maximum as %g%%, the maximum window length is %u.\n", BasePrint::P_PARAMERROR, _parameters.getMaximumWindowPercentage(), max_length);
+                    PrintDirection.Printf("Invalid Parameter Setting:\nThe minimum temporal window length must be greater than zero and no greater than the specified maximum temporal window length.\nWith a specifed maximum as %g%%, the maximum window length is %u.\n", BasePrint::P_PARAMERROR, _parameters.getMaximumWindowPercentage(), max_length);
                 }
             } break;
             case Parameters::FIXED_LENGTH: {
                 unsigned int max_length = static_cast<unsigned int>(std::floor(static_cast<double>(_parameters.getDataTimeRangeSet().getMinMax().numDaysInRange()) * 0.5));
-                if (_parameters.getMaximumWindowLength() <= 0 || _parameters.getMaximumWindowLength() > max_length) {
-                    bValid = false;
-                    PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum window length must be greater than zero and no greater than 50%% of data time range (%u time units).\n", BasePrint::P_PARAMERROR, max_length);
+				if (_parameters.getMaximumWindowLength() <= 0) {
+					bValid = false;
+					PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum temporal window length must be greater than zero.\n", BasePrint::P_PARAMERROR);
+				} else if (_parameters.getMaximumWindowLength() > max_length) {
+					PrintDirection.Printf("Parameter Setting Warning:\nThe maximum temporal window length is greater than 50 percent of data time range (%u time units).\n", BasePrint::P_WARNING, max_length);
                 }
                 if (_parameters.getMinimumWindowLength() <= 0 || _parameters.getMinimumWindowLength() > _parameters.getMaximumWindowLength()) {
                     bValid = false;
@@ -574,7 +600,7 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
     bool bValid=true;
     if (_parameters.getSequentialScan()) {
         if (!((_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES) ||
-              (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL))) {
+              (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL))) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nSequential scan is only implemented for the time-only scan conditioned on total cases or unconditional Benoulli.\n", BasePrint::P_PARAMERROR);
         }
@@ -604,7 +630,7 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
                 PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, the minimum number of cases to signal must be greater than 1 and less than total sequential cases.\n", BasePrint::P_PARAMERROR);
             }
         }
-        if (_parameters.getModelType() == Parameters::BERNOULLI) {
+        if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
             if (_parameters.getSequentialAlphaSpending() < 1.0 / static_cast<double>(_parameters.getNumReplicationsRequested() + 1)) {
                 bValid = false;
                 PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, alpha spending cannot be less than %lf with %u replications.\n", 

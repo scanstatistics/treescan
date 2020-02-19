@@ -45,7 +45,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             /* Input */
             case Parameters::TREE_FILE               : return "tree structure filename";
             case Parameters::COUNT_FILE              : return "count data filename";
-            case Parameters::DATA_TIME_RANGES        : return "data time ranges: [integer,integer]";
+			case Parameters::CONTROL_FILE            : return "control data filename";
+			case Parameters::DATA_TIME_RANGES        : return "data time ranges: [integer,integer]";
             /* Advanced Input */
             case Parameters::CUT_FILE                : return "cuts filename";
             case Parameters::CUT_TYPE                : return "default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)";
@@ -58,7 +59,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             /* Analysis */
             case Parameters::SCAN_TYPE               : return "scan type (TREEONLY=0, TREETIME=1, TIMEONLY=2)";
             case Parameters::CONDITIONAL_TYPE        : return "conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)";
-            case Parameters::MODEL_TYPE              : return "probability model type (POISSON=0, BERNOULLI=1, UNIFORM=2, Not-Applicable=3)";
+            case Parameters::MODEL_TYPE              : return "probability model type (POISSON=0, BERNOULLI_TREE=1, UNIFORM=2, Not-Applicable=3)";
             case Parameters::SELF_CONTROL_DESIGN     : return "self control design - unconditional Bernoulli only (y/n)";
             case Parameters::EVENT_PROBABILITY       : return "case probability (integer/integer)";
             case Parameters::SEQUENTIAL_SCAN         : return "perform sequential scan - time-only scan (y/n)";
@@ -131,7 +132,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             /* Input */
             case Parameters::TREE_FILE                : s = _parameters.getTreeFileNames().front(); return s;
             case Parameters::COUNT_FILE               : s = _parameters.getCountFileName(); return s;
-            case Parameters::DATA_TIME_RANGES         : return _parameters.getDataTimeRangeSet().toString(s);
+			case Parameters::CONTROL_FILE             : s = _parameters.getControlFileName(); return s;
+			case Parameters::DATA_TIME_RANGES         : return _parameters.getDataTimeRangeSet().toString(s);
             /* Advanced Input */
             case Parameters::CUT_FILE                 : s = _parameters.getCutsFileName(); return s;
             case Parameters::CUT_TYPE                 : return AsString(s, _parameters.getCutType());
@@ -314,6 +316,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             /* Input */
             case Parameters::TREE_FILE                : _parameters.setTreeFileName(value.c_str(), true); break;
             case Parameters::COUNT_FILE               : _parameters.setCountFileName(value.c_str(), true); break;
+			case Parameters::CONTROL_FILE             : _parameters.setControlFileName(value.c_str(), true); break;
             case Parameters::DATA_TIME_RANGES         : _parameters.setDataTimeRangeSet(DataTimeRangeSet(value)); break;
             /* Advanced Input */
             case Parameters::CUT_FILE                 : _parameters.setCutsFileName(value.c_str(), true); break;
@@ -330,7 +333,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
                                                         _parameters.setScanType((Parameters::ScanType)iValue); break;
             case Parameters::CONDITIONAL_TYPE         : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::UNCONDITIONAL, Parameters::NODEANDTIME);
                                                         _parameters.setConditionalType((Parameters::ConditionalType)iValue); break;
-            case Parameters::MODEL_TYPE               : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::POISSON, Parameters::MODEL_NOT_APPLICABLE);
+			case Parameters::MODEL_TYPE               : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::POISSON, Parameters::BERNOULLI_TIME);
                                                         _parameters.setModelType((Parameters::ModelType)iValue); break;
             case Parameters::SELF_CONTROL_DESIGN      : _parameters.setSelfControlDesign(ReadBoolean(value, e)); break;
             case Parameters::EVENT_PROBABILITY        : _parameters.setProbabilityRatio(ReadRatio(value)); break;

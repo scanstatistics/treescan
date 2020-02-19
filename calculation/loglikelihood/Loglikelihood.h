@@ -14,9 +14,9 @@ public:
         throw prg_error("LogLikelihood(int,int) not implemented.", "LogLikelihood()");
     }
     virtual double LogLikelihood(int c, double n, int bc, double bn) const {
-        throw prg_error("LogLikelihood(int,int,int,int) not implemented.", "LogLikelihood()");
+        throw prg_error("LogLikelihood(int,double,int,double) not implemented.", "LogLikelihood()");
     }    
-    virtual double LogLikelihood(int c, double n, size_t windowLength) const {
+	virtual double LogLikelihood(int c, double n, size_t windowLength) const {
         throw prg_error("LogLikelihood(int,int,size_t) not implemented.", "LogLikelihood()");
     }
     virtual double LogLikelihoodRatio(double logLikelihood) const = 0;
@@ -142,6 +142,39 @@ public:
         return logLikelihood;
     }
 };
+
+class BernoulliTimeLoglikelihood : public AbstractLoglikelihood {
+public:
+	BernoulliTimeLoglikelihood() : AbstractLoglikelihood() {}
+	virtual ~BernoulliTimeLoglikelihood() {}
+
+	/* Calculates the conditional Bernoulli loglikelihood. */
+	virtual double LogLikelihood(int c, double n, int C, double N) const {
+		/* c = cases in the window for the branch under consideration */
+		/* n = cases and controls in the window for the branch under consideration */
+		/* C = total cases for the branch under consideration, inside and outside the window */
+		/* N = total cases and controls for the branch under consideration, inside and outside the window */
+		if (c / n > C / N) {
+			double nLL_A = 0.0, nLL_B = 0.0, nLL_C = 0.0, nLL_D = 0.0;
+			if (c != 0)
+				nLL_A = c * log(c / n);
+			if (c != n)
+				nLL_B = (n - c) * log(1 - (c / n));
+			if (C - c != 0)
+				nLL_C = (C - c) * log((C - c) / (N - n));
+			if (C - c != N - n)
+				nLL_D = ((N - n) - (C - c)) * log(1 - ((C - c) / (N - n)));
+			return (nLL_A + nLL_B + nLL_C + nLL_D) - (C * log(C / N) + (N - C) * log((N - C) / N))/* under null */;
+		}
+		return UNSET_LOGLIKELIHOOD;
+	}
+
+	virtual double  LogLikelihoodRatio(double logLikelihood) const {
+		if (logLikelihood == UNSET_LOGLIKELIHOOD) return 0.0;
+		return logLikelihood;
+	}
+};
+
 
 class TemporalLoglikelihood : public AbstractLoglikelihood {
 protected:

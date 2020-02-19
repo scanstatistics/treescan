@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE( test_get_newloglikelihood_treeonly_scan_bernoulli_model ) 
 
     parameters.setScanType(Parameters::TREEONLY);
     parameters.setConditionalType(Parameters::UNCONDITIONAL);
-    parameters.setModelType(Parameters::BERNOULLI);
+    parameters.setModelType(Parameters::BERNOULLI_TREE);
 
     BOOST_CHECK( dynamic_cast<UnconditionalBernoulliLogLoglikelihood*>(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false)) != 0 );
 
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE( test_get_newloglikelihood_treetime_scan ) {
     // tree-time scan, conditioned on node, poisson/bernoulli/not-applicable models
     parameters.setModelType(Parameters::POISSON);
     BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false), prg_error);
-    parameters.setModelType(Parameters::BERNOULLI);
+    parameters.setModelType(Parameters::BERNOULLI_TREE);
     BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false), prg_error);
     parameters.setModelType(Parameters::MODEL_NOT_APPLICABLE);
     BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false), prg_error);
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE( test_get_newloglikelihood_timeonly_scan ) {
     // time-only scan, conditioned on node, poisson/bernoulli/not-applicable models
     parameters.setModelType(Parameters::POISSON);
     BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false), prg_error);
-    parameters.setModelType(Parameters::BERNOULLI);
+    parameters.setModelType(Parameters::BERNOULLI_TREE);
     BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false), prg_error);
     parameters.setModelType(Parameters::MODEL_NOT_APPLICABLE);
     BOOST_REQUIRE_THROW(AbstractLoglikelihood::getNewLoglikelihood(parameters, 100, 100.0, false), prg_error);

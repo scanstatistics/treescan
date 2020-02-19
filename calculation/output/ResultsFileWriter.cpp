@@ -79,7 +79,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         PrintFormat.PrintSectionLabel(outfile, "Total Expected", false);
         PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getTotalN(), buffer, 1));
     }
-    if (parameters.getModelType() == Parameters::BERNOULLI) {
+    if (parameters.getModelType() == Parameters::BERNOULLI_TREE || parameters.getModelType() == Parameters::BERNOULLI_TIME) {
         PrintFormat.PrintSectionLabel(outfile, "Total Observations", false);
         PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", static_cast<int>(_scanRunner.getTotalN())));
     }
@@ -202,7 +202,25 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     printString(buffer, "%ld to %ld", thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(), thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive());
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     PrintFormat.PrintSectionLabel(outfile, "Cases in Window", true);
-                } else if (parameters.getModelType() == Parameters::BERNOULLI) {
+				} else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+					// skip reporting node cases/observations for time-only scans
+					if (parameters.getScanType() != Parameters::TIMEONLY) {
+						PrintFormat.PrintSectionLabel(outfile, "Node Observations", true);
+						printString(buffer, "%ld", static_cast<int>(thisNode.getBrN()));
+						PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+						PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
+					    printString(buffer, "%ld", static_cast<int>(thisNode.getBrC()));
+						PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+					}
+					PrintFormat.PrintSectionLabel(outfile, "Time Window", parameters.getScanType() != Parameters::TIMEONLY);
+					printString(buffer, "%ld to %ld", thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(), thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive());
+					PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+					PrintFormat.PrintSectionLabel(outfile, "Observations in Window", true);
+					printString(buffer, "%ld", static_cast<int>(thisCut.getN()));
+					PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+					PrintFormat.PrintSectionLabel(outfile, "Cases in Window", true);
+
+                } else if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
                     PrintFormat.PrintSectionLabel(outfile, "Observations", true);
                     printString(buffer, "%ld", static_cast<int>(thisCut.getN()));
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
@@ -335,7 +353,7 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buff
             }
             switch (parameters.getModelType()) {
                 case Parameters::POISSON : buffer += " Poisson Model"; break;
-                case Parameters::BERNOULLI : buffer += " Bernoulli Model";
+                case Parameters::BERNOULLI_TREE: buffer += " Bernoulli Model";
                     if (_scanRunner.getParameters().getSelfControlDesign())
                         buffer += " (self-control design)";
                     break;
@@ -346,14 +364,24 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buff
         case Parameters::TREETIME : 
             buffer = "Tree Temporal Scan";
             switch (parameters.getConditionalType()) {
-                case Parameters::NODE : buffer += " with Conditional Uniform Model"; break;
+                case Parameters::NODE : 
+					if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
+						buffer += " with Conditional Bernoulli Model";
+					else
+						buffer += " with Conditional Uniform Model"; 
+					break;
                 case Parameters::NODEANDTIME : buffer += " Conditioned on Node and Time"; break;
                 default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", parameters.getConditionalType());
             } break;
         case Parameters::TIMEONLY : 
             buffer = parameters.isSequentialScanPurelyTemporal() ? "Time Only Sequential Scan" : "Time Only Scan";
             switch (parameters.getConditionalType()) {
-                case Parameters::TOTALCASES : buffer += " with Conditional Uniform Model"; break;
+                case Parameters::TOTALCASES : 
+					if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
+						buffer += " with Conditional Bernoulli Model";
+					else
+						buffer += " with Conditional Uniform Model"; 
+					break;
                 default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", parameters.getConditionalType());
             } break;
             if (parameters.isSequentialScanPurelyTemporal()) {
@@ -503,7 +531,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     if (parameters.getModelType() == Parameters::POISSON) {
         outfile << "<tr><th>Total Expected:</th><td>" << getValueAsString(_scanRunner.getTotalN(), buffer, 1).c_str() << "</td></tr>" << std::endl;
     }
-    if (parameters.getModelType() == Parameters::BERNOULLI) {
+    if (parameters.getModelType() == Parameters::BERNOULLI_TREE || parameters.getModelType() == Parameters::BERNOULLI_TIME) {
         outfile << "<tr><th>Total Observations:</th><td>" << static_cast<int>(_scanRunner.getTotalN()) << "</td></tr>" << std::endl;
     }
     if (Parameters::isTemporalScanType(parameters.getScanType())) {
@@ -553,11 +581,15 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             if (Parameters::isTemporalScanType(parameters.getScanType())) {
                // skip reporting node cases for time-only scans
                 if (parameters.getScanType() != Parameters::TIMEONLY) {
+					if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
+						outfile << "<th>Node Observations</th>";
                     outfile << "<th>Node Cases</th>";
                 }
                 outfile << "<th>Time Window</th>";
+				if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
+					outfile << "<th>Observations in Window</th>";
                 outfile << "<th>Cases in Window</th>";
-            } else if (parameters.getModelType() == Parameters::BERNOULLI) {
+			} else if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
                 outfile << "<th>Observations</th>";
                 outfile << "<th>Cases</th>";
             } else if (parameters.getModelType() == Parameters::POISSON) {
@@ -756,8 +788,19 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         }
         // write time window
         outfile << "<td>" << (thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
-    }
-    else if (parameters.getModelType() == Parameters::BERNOULLI) {
+	} else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+		// write node cases
+		// skip reporting node cases/boservations for time-only scans
+		if (parameters.getScanType() != Parameters::TIMEONLY) {
+			printString(buffer, "%ld", static_cast<int>(thisNode.getBrN()));
+			outfile << "<td>" << buffer.c_str() << "</td>";
+			printString(buffer, "%ld", static_cast<int>(thisNode.getBrC()));
+			outfile << "<td>" << buffer.c_str() << "</td>";
+		}
+		// write time window
+		outfile << "<td>" << (thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
+		outfile << "<td>" << static_cast<int>(thisCut.getN()) << "</td>";
+	} else if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
         // write number of observations
         outfile << "<td>" << static_cast<int>(thisCut.getN()) << "</td>";
     }
@@ -895,7 +938,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
         }
         if (significantChildNodes > 0 || significantBranches > 0) {
             // There exist significant child nodes and/or significant descendents, so we're including at least some children of this node.
-            if (node.getLevel() >= collapseAtLevel) childrenstream << ", collapsed : true ";
+            if (static_cast<int>(node.getLevel()) >= collapseAtLevel) childrenstream << ", collapsed : true ";
             childrenstream << ", children: [" << std::endl;
             if (significantChildNodes > 0) {
                 // Rule 1 - Include child node if it or one off it's siblings are significant. This means we're including all children if we're including one.

@@ -1,0 +1,42 @@
+### OSX ###
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Basics
+*.obj
+
+# Logs
+logs
+*.log
+
+# Libraries
+boost
+jdk
+
+Debug
+library/Debug
+library/Win32/
+library/x64/
+library/libtreescan.vcxproj.user
+
+.vs/
+
+test/Win32/
+
+batch_application/Win32/
+batch_application/x64/
+batch_application/treescan.vcxproj.user
+
+java_application/jni_application/build
+java_application/jni_application/dist
+treescan.VC.db
+*.opendb
+
+test/test.vcxproj.user
+installers/examples/*.txt
+test/test-log.txt
+test/test-results.xml
+test/test-sets/multiple-trees/poisson.txt
+test/test-sets/squish97/TreeTemporal-censordata.txt
+test/test-sets/squish97/TreeTemporal-timeonly-censordata.txt

@@ -17,7 +17,7 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
                         default: throw prg_error("Unknown conditional type (%d).", "getNewLoglikelihood()", parameters.getConditionalType());
                     }
                 } break;
-                case Parameters::BERNOULLI: {
+                case Parameters::BERNOULLI_TREE: {
                     switch (parameters.getConditionalType()) {
                         case Parameters::UNCONDITIONAL : return new UnconditionalBernoulliLogLoglikelihood(parameters.getProbability());
                         case Parameters::TOTALCASES : return new BernoulliLoglikelihood(TotalC, TotalN);
@@ -42,7 +42,7 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
             switch (parameters.getModelType()) {
                 case Parameters::UNIFORM :
                     if (parameters.isPerformingDayOfWeekAdjustment()) {
-                        /* TODO: Martin said to stud this log-likelihood for now. He needs to work through the correct function. */
+                        /* TODO: Martin said to stub this log-likelihood for now. He needs to work through the correct function. */
                         return new PoissonLoglikelihood(TotalC, TotalN);
                     }
                     if (censored_data) {
@@ -57,7 +57,9 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
                         default: throw prg_error("Unknown conditional type (%d).", "getNewLoglikelihood()", parameters.getConditionalType());
                     }
                     break;
-                default: throw prg_error("Unknown model type (%d).", "getNewLoglikelihood()", parameters.getModelType());
+				case Parameters::BERNOULLI_TIME:
+					return  new BernoulliTimeLoglikelihood();
+				default: throw prg_error("Unknown model type (%d).", "getNewLoglikelihood()", parameters.getModelType());
             }
         } break;
         default : throw prg_error("Unknown scan type (%d).", "getNewLoglikelihood()", parameters.getScanType());

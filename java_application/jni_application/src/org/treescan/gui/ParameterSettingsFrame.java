@@ -134,13 +134,19 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         }
 
         //validate the case file
-        if (_countFileTextField.getText().length() == 0) {
+        if (_countFileTextField.getText().length() == 0)
             throw new SettingsException("Please specify a count file.", (Component) _countFileTextField);
-        }
-        if (!FileAccess.ValidateFileAccess(_countFileTextField.getText(), false)) {
+        if (!FileAccess.ValidateFileAccess(_countFileTextField.getText(), false))
             throw new SettingsException("The count file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", (Component) _countFileTextField);
+        
+        //validate the control file
+        if ((getModelType() == Parameters.ModelType.BERNOULLI_TIME || getModelType() == Parameters.ModelType.BERNOULLI_TREE)) {
+            if (_controlFileTextField.getText().length() == 0)
+                throw new SettingsException("Please specify a control file.", (Component) _controlFileTextField);
+            if(!FileAccess.ValidateFileAccess(_controlFileTextField.getText(), false))
+                throw new SettingsException("The control file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", (Component) _countFileTextField);
         }
-
+        
         if (_treetimeScanType.isSelected() || _timeonlyScanType.isSelected()) {
             if (Integer.parseInt(_dataTimeRangeBegin.getText().trim()) >= Integer.parseInt(_dataTimeRangeEnd.getText().trim())) {
                 throw new SettingsException("The data time range start must be before the data time range end.", (Component) _temporalEndWindowBegin);
@@ -282,6 +288,8 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             _countFileTextField.setText(parameters.getCountFileName());
             _countFileTextField.setCaretPosition(0);
         }
+        _controlFileTextField.setText(parameters.getControlFileName());
+        _controlFileTextField.setCaretPosition(0);
         _dataTimeRangeBegin.setText(Integer.toString(parameters.getDataTimeRangeBegin()));
         _dataTimeRangeEnd.setText(Integer.toString(parameters.getDataTimeRangeClose()));
 
@@ -323,8 +331,9 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _conditionalBranchCasesButton.setSelected(c == Parameters.ConditionalType.NODE);
         _conditionalNodeTimeButton.setSelected(c == Parameters.ConditionalType.NODEANDTIME);
         _PoissonButton.setSelected(m == Parameters.ModelType.POISSON);
-        _BernoulliButton.setSelected(m == Parameters.ModelType.BERNOULLI);
+        _BernoulliButton.setSelected(m == Parameters.ModelType.BERNOULLI_TREE);
         _uniformButton.setSelected(m == Parameters.ModelType.UNIFORM);
+        _bernoulliTimeButton.setSelected(m == Parameters.ModelType.BERNOULLI_TIME);
     }
 
     /**
@@ -334,6 +343,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         setTitle(parameters.getSourceFileName());
         parameters.setTreeFileName(_treelFileTextField.getText(), 1);
         parameters.setCountFileName(_countFileTextField.getText());
+        parameters.setControlFileName(_controlFileTextField.getText());
         parameters.setDataTimeRangeBegin(Integer.parseInt(_dataTimeRangeBegin.getText()));
         parameters.setDataTimeRangeClose(Integer.parseInt(_dataTimeRangeEnd.getText()));
 
@@ -356,9 +366,11 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         if (_PoissonButton.isEnabled() && _PoissonButton.isSelected()) {
             parameters.setModelType(Parameters.ModelType.POISSON.ordinal());
         } else if (_BernoulliButton.isEnabled() && _BernoulliButton.isSelected()) {
-            parameters.setModelType(Parameters.ModelType.BERNOULLI.ordinal());
+            parameters.setModelType(Parameters.ModelType.BERNOULLI_TREE.ordinal());
         } else if (_uniformButton.isEnabled() && _uniformButton.isSelected()) {
             parameters.setModelType(Parameters.ModelType.UNIFORM.ordinal());
+        } else if (_bernoulliTimeButton.isEnabled() && _bernoulliTimeButton.isSelected()) {
+            parameters.setModelType(Parameters.ModelType.BERNOULLI_TIME.ordinal());
         }
         parameters.setSelfControlDesign(_self_control_design.isEnabled() && _self_control_design.isSelected());
         parameters.setProbabilityRatioNumerator(Integer.parseInt(_eventProbabiltyNumerator.getText()));
@@ -412,9 +424,11 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         if (_PoissonButton.isSelected() && _PoissonButton.isEnabled())
             return Parameters.ModelType.POISSON;
         if (_BernoulliButton.isSelected() && _BernoulliButton.isEnabled())
-            return Parameters.ModelType.BERNOULLI;
+            return Parameters.ModelType.BERNOULLI_TREE;
         if (_uniformButton.isSelected() && _uniformButton.isEnabled())
             return Parameters.ModelType.UNIFORM;
+        if (_bernoulliTimeButton.isSelected() && _bernoulliTimeButton.isEnabled())
+            return Parameters.ModelType.BERNOULLI_TIME;
         return null;
     }
 
@@ -445,6 +459,9 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _BernoulliButton.setEnabled(treeOnly);
         // uniform is only available with tree-time and conditional on branch or time-only
         _uniformButton.setEnabled((treeAndTime && _conditionalBranchCasesButton.isSelected()) || timeOnly);
+        
+        _bernoulliTimeButton.setEnabled((treeAndTime && _conditionalBranchCasesButton.isSelected()) || timeOnly);
+        
         // the tree file is not used with the time only scan
         _treeFileLabel.setEnabled(!timeOnly);
         _treelFileTextField.setEnabled(!timeOnly);
@@ -480,6 +497,11 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _dataTimeRangeBegin.setEnabled(_data_time_range_group.isEnabled());
         _data_time_range_end_label.setEnabled(_data_time_range_group.isEnabled());
         _dataTimeRangeEnd.setEnabled(_data_time_range_group.isEnabled());
+        
+        boolean enableControlFile = (_BernoulliButton.isEnabled() && _BernoulliButton.isSelected()) || (_bernoulliTimeButton.isEnabled() && _bernoulliTimeButton.isSelected());
+        _controlFileLabel.setEnabled(enableControlFile);
+        _controlFileTextField.setEnabled(enableControlFile);
+        _controlFileImportButton.setEnabled(enableControlFile);
     }
 
     /**
@@ -524,6 +546,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _timeonlyScanType = new javax.swing.JRadioButton();
         _probabilityModelPanel1 = new javax.swing.JPanel();
         _uniformButton = new javax.swing.JRadioButton();
+        _bernoulliTimeButton = new javax.swing.JRadioButton();
         _advancedAnalysisButton = new javax.swing.JButton();
         _inputTab = new javax.swing.JPanel();
         _treelFileTextField = new javax.swing.JTextField();
@@ -538,6 +561,9 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _data_time_range_end_label = new javax.swing.JLabel();
         _dataTimeRangeEnd = new javax.swing.JTextField();
         _advancedInputButton = new javax.swing.JButton();
+        _controlFileLabel = new javax.swing.JLabel();
+        _controlFileTextField = new javax.swing.JTextField();
+        _controlFileImportButton = new javax.swing.JButton();
         _outputTab = new javax.swing.JPanel();
         _reportResultsAsHTML = new javax.swing.JCheckBox();
         _outputFileTextField = new javax.swing.JTextField();
@@ -917,13 +943,27 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _probabilityModelPanel1.setPreferredSize(new java.awt.Dimension(200, 108));
 
         timtModelButtonGoup.add(_uniformButton);
-        _uniformButton.setSelected(true);
         _uniformButton.setText("Uniform");
-        _PoissonButton.addItemListener(new java.awt.event.ItemListener() {
+        _uniformButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
                     enableSettingsForStatisticModelCombination();
                 }
+            }
+        });
+
+        timtModelButtonGoup.add(_bernoulliTimeButton);
+        _bernoulliTimeButton.setText("Bernoulli");
+        _bernoulliTimeButton.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    enableSettingsForStatisticModelCombination();
+                }
+            }
+        });
+        _bernoulliTimeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                _bernoulliTimeButtonActionPerformed(evt);
             }
         });
 
@@ -933,13 +973,17 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             _probabilityModelPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_probabilityModelPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_uniformButton, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
+                .addGroup(_probabilityModelPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_uniformButton, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
+                    .addComponent(_bernoulliTimeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _probabilityModelPanel1Layout.setVerticalGroup(
             _probabilityModelPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_probabilityModelPanel1Layout.createSequentialGroup()
                 .addComponent(_uniformButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_bernoulliTimeButton)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
@@ -983,7 +1027,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                     .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_temporalWindowGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 41, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -1100,6 +1144,23 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             }
         });
 
+        _controlFileLabel.setText("Control File:"); // NOI18N
+
+        _controlFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
+        _controlFileImportButton.setToolTipText("Import count file ..."); // NOI18N
+        _controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                String key = InputSourceSettings.InputFileType.Controls.toString() + "1";
+                if (!_input_source_map.containsKey(key)) {
+                    _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Controls));
+                }
+                InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
+                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);
+                selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, ParameterSettingsFrame.this, true);
+            }
+        });
+
         javax.swing.GroupLayout _inputTabLayout = new javax.swing.GroupLayout(_inputTab);
         _inputTab.setLayout(_inputTabLayout);
         _inputTabLayout.setHorizontalGroup(
@@ -1108,22 +1169,26 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addContainerGap()
                 .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_data_time_range_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(_inputTabLayout.createSequentialGroup()
-                        .addComponent(_countFileLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(_advancedInputButton))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
-                        .addComponent(_countFileTextField)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_countFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
                         .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(_treeFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(_treelFileTextField))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_treeFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(_treeFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
+                        .addComponent(_controlFileTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_controlFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
+                        .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(_controlFileLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_countFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_countFileTextField))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_countFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         _inputTabLayout.setVerticalGroup(
@@ -1141,9 +1206,15 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_countFileImportButton)
                     .addComponent(_countFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_controlFileLabel)
+                .addGap(9, 9, 9)
+                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_controlFileImportButton)
+                    .addComponent(_controlFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_data_time_range_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 218, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 143, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -1229,7 +1300,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addComponent(_reportResultsAsHTML)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportResultsAsCsvTable)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 277, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 247, Short.MAX_VALUE)
                 .addComponent(_advancedOutputButton)
                 .addContainerGap())
         );
@@ -1249,12 +1320,17 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void _bernoulliTimeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__bernoulliTimeButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event__bernoulliTimeButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton _BernoulliButton;
     private javax.swing.JRadioButton _PoissonButton;
@@ -1262,9 +1338,13 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
     private javax.swing.JButton _advancedInputButton;
     private javax.swing.JButton _advancedOutputButton;
     private javax.swing.JPanel _analysisTab;
+    private javax.swing.JRadioButton _bernoulliTimeButton;
     private javax.swing.JRadioButton _conditionalBranchCasesButton;
     private javax.swing.JRadioButton _conditionalNodeTimeButton;
     private javax.swing.JRadioButton _conditionalTotalCasesButton;
+    private javax.swing.JButton _controlFileImportButton;
+    private javax.swing.JLabel _controlFileLabel;
+    private javax.swing.JTextField _controlFileTextField;
     private javax.swing.JButton _countFileImportButton;
     private javax.swing.JLabel _countFileLabel;
     private javax.swing.JTextField _countFileTextField;

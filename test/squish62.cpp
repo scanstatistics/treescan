@@ -20,11 +20,12 @@ BOOST_FIXTURE_TEST_CASE( test_sequential_file_output, time_only_fixture ) {
 
     std::string results_user_directory;
     std::stringstream filename1, filename2;
-    filename1 << GetUserTemporaryDirectory(results_user_directory).c_str() << "\\test-scan-out-1.csv";
+    filename1 << GetUserTemporaryDirectory(results_user_directory).c_str() << "\\test_sequential.csv";
     filename2 << results_user_directory.c_str() << "\\test-scan-out-2.csv";
 
     // Run analysis, generating sequential scan file.
-    _parameters.setSequentialFilename(filename1.str().c_str());
+    //_parameters.setSequentialFilename(filename1.str().c_str());
+	remove(filename1.str().c_str());
     BOOST_REQUIRE_EQUAL( ParametersValidate(_parameters).Validate(_print), true ); 
     run_analysis("test", results_user_directory, _parameters, _print);
 
@@ -61,10 +62,11 @@ BOOST_FIXTURE_TEST_CASE( test_select_parameters_cannot_change, time_only_fixture
 
     std::string results_user_directory;
     std::stringstream filename;
-    filename << GetUserTemporaryDirectory(results_user_directory).c_str() << "\\test-scan-out-1.csv";
+    filename << GetUserTemporaryDirectory(results_user_directory).c_str() << "\\test_sequential.csv";
 
     // Run analysis, generating sequential scan file.
-    _parameters.setSequentialFilename(filename.str().c_str());
+    //_parameters.setSequentialFilename(filename.str().c_str());
+	remove(filename.str().c_str());
     BOOST_REQUIRE_EQUAL( ParametersValidate(_parameters).Validate(_print), true ); 
     run_analysis("test", results_user_directory, _parameters, _print);
 
@@ -134,8 +136,8 @@ BOOST_FIXTURE_TEST_CASE( test_select_parameters_cannot_change, time_only_fixture
     test = _parameters;
     BOOST_CHECK(parameter_types[10] ==  Parameters::REPLICATIONS);
     test.setNumReplications(9);
-    BOOST_REQUIRE_EQUAL( ParametersValidate(test).Validate(_print), true );
-    BOOST_CHECK_THROW( run_analysis("test", results_user_directory, test, _print), resolvable_error );
+    BOOST_REQUIRE_EQUAL( ParametersValidate(test).Validate(_print), false );
+    //BOOST_CHECK_THROW( run_analysis("test", results_user_directory, test, _print), resolvable_error );
 
     // maximum cases to signal
     test = _parameters;

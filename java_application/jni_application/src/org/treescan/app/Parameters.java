@@ -13,7 +13,7 @@ public class Parameters implements Cloneable {
     }    
 
     public enum ResultsFormat {TEXT};
-    public enum ModelType {POISSON, BERNOULLI, UNIFORM, MODEL_NOT_APPLICABLE};
+    public enum ModelType {POISSON, BERNOULLI_TREE, UNIFORM, MODEL_NOT_APPLICABLE, BERNOULLI_TIME};
     public enum ScanType {TREEONLY, TREETIME, TIMEONLY};
     public enum ConditionalType {UNCONDITIONAL, TOTALCASES, NODE, NODEANDTIME};
     public enum MaximumWindowType {PERCENTAGE_WINDOW, FIXED_LENGTH};
@@ -34,6 +34,7 @@ public class Parameters implements Cloneable {
     private ArrayList<String> _treefilenames;
     private String _cutsfilename="";
     private String _countfilename="";
+    private String _controlfilename="";
     private String _outputfilename="";
     private ResultsFormat _resultsFormat=ResultsFormat.TEXT;
     private int _numprocesses=0;
@@ -101,6 +102,7 @@ public class Parameters implements Cloneable {
           newObject._treefilenames = new ArrayList<String>(_treefilenames);
     	  newObject._cutsfilename = new String(_cutsfilename);
     	  newObject._countfilename = new String(_countfilename);
+    	  newObject._controlfilename = new String(_controlfilename);
     	  newObject._outputfilename = new String(_outputfilename);
     	  newObject._power_alt_hypothesis_filename = new String(_power_alt_hypothesis_filename);
           newObject._sequential_file = new String(_sequential_file);
@@ -148,6 +150,7 @@ public class Parameters implements Cloneable {
 
     	  if (!_treefilenames.equals(rhs._treefilenames)) return false;
     	  if (!_countfilename.equals(rhs._countfilename)) return false;
+    	  if (!_controlfilename.equals(rhs._controlfilename)) return false;
    	  if (_data_time_range_start != rhs._data_time_range_start) return false;
    	  if (_data_time_range_end != rhs._data_time_range_end) return false;
           if (!_cutsfilename.equals(rhs._cutsfilename)) return false;
@@ -182,7 +185,7 @@ public class Parameters implements Cloneable {
 
     public boolean isSequentialScanBernoulli() {
         return _sequential_scan &&
-               _modelType == Parameters.ModelType.BERNOULLI &&
+               _modelType == Parameters.ModelType.BERNOULLI_TREE &&
                _conditionalType == Parameters.ConditionalType.UNCONDITIONAL;
     }
 
@@ -288,6 +291,8 @@ public class Parameters implements Cloneable {
     public void setCutsFileName(final String s) {_cutsfilename = s;}
     public final String getCountFileName() {return _countfilename;}
     public void setCountFileName(final String s) {_countfilename = s;}
+    public final String getControlFileName() {return _controlfilename;}
+    public void setControlFileName(final String s) {_controlfilename = s;}
     public final String getOutputFileName() {return _outputfilename; }
     public void setOutputFileName(final String s) {_outputfilename = s;}
     public int getRandomizationSeed() {return _randomizationSeed;}

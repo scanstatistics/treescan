@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import javax.swing.JProgressBar;
 import org.apache.commons.lang3.StringUtils;
 
@@ -57,36 +59,43 @@ public class FileImporter {
      * @throws SecurityException 
      */
     public void importFile() throws IOException, SecurityException {
-        /* Create temporary collection of import variables which are imported to from data source.
-           Also allocation record buffer which will store field values until record is written to file. */
-        ArrayList<String> record = new ArrayList<String>();
-        ArrayList<ImportVariable> mappedVariables = new ArrayList<ImportVariable>();
+        // create record template which is all import variables
+        ArrayList<String> record_template = new ArrayList<>(); 
+        // create sub-set collection of ImportVariable which were selected as import columns
+        ArrayList<ImportVariable> mappedVariables = new ArrayList<>();
         for (ImportVariable variable: _importVariables) {
+            record_template.add(null);
             if (variable.isMappedToSourceField() || variable.hasDefault()) {
                 mappedVariables.add(variable);
-                record.add(new String());
             }
         }
-        /* initialize progress */
-        _progress.setMaximum(_dataSource.getNumRecords());
+        _progress.setMaximum(_dataSource.getNumRecords()); // initialize progress
         int iRow=0;
         String value;
-        Object[] values = _dataSource.readRow();
-        /* Open file writer - overwrite contents. */
-        FileWriter writer = new FileWriter(_destinationFile);
+        Object[] values = _dataSource.readRow(); // read first row of data
+        FileWriter writer = new FileWriter(_destinationFile); // open file writer - overwriting contents
         BufferedWriter buffer = new BufferedWriter(writer);
         /* Start processing and writing records. Stop when data source is exhausted or cancel flag is tripped. */
         while (values != null && !_cancelled) {
+            ArrayList<String> record = (ArrayList<String>)record_template.clone();
+            // for each mapped variable, set value in cooresponding spot of record.
             for (ImportVariable variable: mappedVariables) {
-                /* get the zero based column index from mapping variables */
-                int iColumn = variable.getSourceFieldIndex() - 1;
-                /* If the source column index is greater than number of values in data source record, default to empty string. */
-                value = StringUtils.trimToEmpty(iColumn + 1 > values.length ? "" :(String)values[iColumn]);
-                /* Add value to record buffer -- taken grouping character into account. */
+                int iColumn = variable.getSourceFieldIndex(); // source field index is 1 based
+                if (iColumn > values.length)
+                    /* If the source column index is greater than number of values in data source record, set to empty string or default. */
+                    value = variable.hasDefault() ? variable.getDefault() : "";
+                else
+                    value = (String)values[iColumn - 1];
+                value = StringUtils.trimToEmpty(value);
                 record.set(variable.getVariableIndex(), StringUtils.contains(value, _delimiter) ? _groupmarker + value + _groupmarker : value);
             }
-            buffer.write(StringUtils.join(record.toArray(), _delimiter));
-            buffer.newLine();
+            // Remove columns from record which did not receive an import value. 
+            record.removeAll(Collections.singleton(null));
+            // Add record values to write buffer - skipping those with all empty strings.
+            if (Collections.frequency(Arrays.asList(record.toArray()), "") != record.size()) {
+                buffer.write(StringUtils.join(record.toArray(), _delimiter));
+                buffer.newLine();
+            }
             values = _dataSource.readRow();
             _progress.setValue(++iRow);
         }

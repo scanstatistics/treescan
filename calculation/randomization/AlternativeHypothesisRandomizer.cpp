@@ -34,9 +34,9 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
             }
         }
         _nodes_proxy.reset(new AlternativeExpectedNodesProxy(treeNodes, _nodes_IntN_C));
-    } else if  (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
+    } else if  (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
         _nodes_proxy.reset(new AlternativeProbabilityNodesProxy(treeNodes, _alternative_adjustments, _parameters.getProbability()));
-    } else if  (_parameters.getModelType() == Parameters::BERNOULLI && _parameters.getConditionalType() == Parameters::TOTALCASES) {
+    } else if  (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::TOTALCASES) {
         /* We won't actually use this NodesProxy instance. The ConditionalBernoulliAlternativeHypothesisRandomizer class will
            contain two different instances of NodesProxy - one for alternative hypothesis nodes, the other for the null hypothesis nodes. */
         _nodes_proxy.reset(new NodesProxy(treeNodes));
