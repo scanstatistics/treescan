@@ -40,3 +40,6 @@ test/test-results.xml
 test/test-sets/multiple-trees/poisson.txt
 test/test-sets/squish97/TreeTemporal-censordata.txt
 test/test-sets/squish97/TreeTemporal-timeonly-censordata.txt
+/java_application/updater_application/nbproject/private/
+/java_application/updater_application/dist/
+/java_application/updater_application/build/
