@@ -45,7 +45,7 @@ python $build/treescan/installers/izpack/mac/treescan2app/treescan2app.py $build
 # copy jni libraries into app directory
 cp $build/binaries/mac/libtreescan.jnilib $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/Java/libtreescan.jnilib
 # copy additional Java libraries into app directory
-cp $build/treescan/java_application/jni_application/dist/lib/* $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/Java/lib/
+cp -r $build/treescan/java_application/jni_application/dist/lib $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/Java
 # copy jre into app directory
 # http://www.balthisar.com/blog/bundle_the_jre/
 #mkdir $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/PlugIns
