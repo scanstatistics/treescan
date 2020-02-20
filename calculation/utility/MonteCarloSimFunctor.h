@@ -135,7 +135,6 @@ private:
 	bool isEvaluated(const NodeStructure& node, const SimulationNode& simNode) const;
     successful_result_type scanTree(param_type const & param);
     successful_result_type scanTreeTemporalConditionNode(param_type const & param);
-	//successful_result_type scanTreeBernoulliTime(param_type const & param);
 	successful_result_type scanTreeTemporalConditionNodeCensored(param_type const & param);
     successful_result_type scanTreeTemporalConditionNodeTime(param_type const & param);
 

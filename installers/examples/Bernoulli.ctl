@@ -1,0 +1,12 @@
+Leaf1,2
+Leaf2,3
+Leaf3,4
+Leaf4,2
+Leaf5,3
+Leaf6,2
+Leaf7,6
+Leaf8,4
+Leaf9,2
+Leaf10,2
+Leaf11,4
+Leaf12,7

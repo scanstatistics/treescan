@@ -1,7 +1,7 @@
 [Analysis]
 ;scan type (TREEONLY=0, TREETIME=1, TIMEONLY=2)
 scan-type=0
-;probability model type (POISSON=0, BERNOULLI=1, UNIFORM=2, Not-Applicable=3)
+;probability model type (POISSON=0, BERNOULLI_TREE=1, UNIFORM=2, Not-Applicable=3)
 probability-model=1
 ;conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)
 conditional-type=1
@@ -19,6 +19,8 @@ window-end-range=[0,0]
 tree-filename=tree.tre
 ;count data filename
 count-filename=Bernoulli.cas
+;control data filename
+control-filename=Bernoulli.ctl
 ;data time ranges: [integer,integer]
 data-time-range=[0,0]
 
@@ -54,7 +56,7 @@ maximum-window-type=0
 ;minimum temporal size as fixed time length (integer)
 minimum-window-fixed=2
 ;apply risk window restriction - (y/n)
-apply-risk-window-restriction=y
+apply-risk-window-restriction=n
 ;risk window percentage (0 < x <= 100.0)
 risk-window-percentage=20
 
@@ -87,6 +89,10 @@ sequential-maximum-signal=200
 sequential-minimum-signal=3
 ;sequential scan filename
 sequential-filename=
+;sequential alpha overall
+sequential-alpha-overall=0.05
+;sequential alpha spending
+sequential-alpha-spending=0.01
 
 [Power Evaluations]
 ;perform power evaluations (y/n)
@@ -138,5 +144,5 @@ parallel-processes=0
 
 [System]
 ;parameters version - do not modify
-parameters-version=1.4.0
+parameters-version=1.5.0
 

@@ -444,7 +444,6 @@ protected:
     bool                        runsequentialsimulations(unsigned int num_relica);
     bool                        scanTree();
     bool                        scanTreeTemporalConditionNode();
-	//bool                        scanTreeBernoulliTime();
     bool                        scanTreeTemporalConditionNodeCensored();
     bool                        scanTreeTemporalConditionNodeTime();
     bool                        setupTree();

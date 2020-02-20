@@ -1,7 +1,7 @@
 [Analysis]
 ;scan type (TREEONLY=0, TREETIME=1, TIMEONLY=2)
 scan-type=1
-;probability model type (POISSON=0, BERNOULLI=1, UNIFORM=2, Not-Applicable=3)
+;probability model type (POISSON=0, BERNOULLI_TREE=1, UNIFORM=2, Not-Applicable=3)
 probability-model=2
 ;conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)
 conditional-type=3
@@ -19,6 +19,8 @@ window-end-range=[1,21]
 tree-filename=tree.tre
 ;count data filename
 count-filename=TreeTemporal.cas
+;control data filename
+control-filename=
 ;data time ranges: [integer,integer]
 data-time-range=[1,28]
 
@@ -87,6 +89,10 @@ sequential-maximum-signal=200
 sequential-minimum-signal=3
 ;sequential scan filename
 sequential-filename=
+;sequential alpha overall
+sequential-alpha-overall=0.05
+;sequential alpha spending
+sequential-alpha-spending=0.01
 
 [Power Evaluations]
 ;perform power evaluations (y/n)
@@ -138,5 +144,5 @@ parallel-processes=0
 
 [System]
 ;parameters version - do not modify
-parameters-version=1.4.0
+parameters-version=1.5.0
 
