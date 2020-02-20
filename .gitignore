@@ -5,6 +5,7 @@
 
 # Basics
 *.obj
+*.o
 
 # Logs
 logs
