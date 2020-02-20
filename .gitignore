@@ -6,6 +6,8 @@
 # Basics
 *.obj
 *.o
+build.stderr
+build.stdout
 
 # Logs
 logs
@@ -33,6 +35,8 @@ java_application/jni_application/build
 java_application/jni_application/dist
 treescan.VC.db
 *.opendb
+
+installers/izpack/mac/treescan2app/TreeScan.app
 
 test/test.vcxproj.user
 installers/examples/*.txt
