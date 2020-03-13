@@ -1474,11 +1474,13 @@ bool ScanRunner::run() {
         _sequential_statistic.reset(new SequentialStatistic(_parameters, *this));
         if (macro_less_than(_parameters.getSequentialAlphaOverall(), _sequential_statistic->getAlphaSpending(), DBL_CMP_TOLERANCE)) {
             std::stringstream buffer;
-            buffer << "The alpha spending for sequential scan reached the specified alpha overall and the analysis is over.\n";
             double remaining = _parameters.getSequentialAlphaOverall() - (_sequential_statistic->getAlphaSpending() - _parameters.getSequentialAlphaSpending());
-            if (macro_less_than(0.0, remaining, DBL_CMP_TOLERANCE))
-                buffer << "The overall alpha has " << remaining << " remaining to be spent.\n";
-            _print.Printf(buffer.str().c_str(), BasePrint::P_STDOUT);
+			if (macro_less_than(0.0, remaining, DBL_CMP_TOLERANCE)) {
+				buffer << "\nThe overall alpha has only " << remaining << " remaining to be spent but user settings are requesting " << _parameters.getSequentialAlphaSpending() << " in current look.";
+				throw resolvable_error(buffer.str().c_str());
+			}
+			buffer << "The alpha spending for sequential scan reached the specified alpha overall and the analysis is over.\n";
+			_print.Printf(buffer.str().c_str(), BasePrint::P_STDOUT);
             return false;
         }
     }

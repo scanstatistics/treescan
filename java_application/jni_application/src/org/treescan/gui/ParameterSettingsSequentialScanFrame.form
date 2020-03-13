@@ -31,8 +31,11 @@
                   <Component id="jPanel3" alignment="0" max="32767" attributes="0"/>
                   <Component id="jPanel2" alignment="0" max="32767" attributes="0"/>
                   <Component id="jLabel1" alignment="0" max="32767" attributes="0"/>
-                  <Component id="_re_launch_full" alignment="0" max="32767" attributes="0"/>
                   <Component id="jLabel2" alignment="0" max="32767" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="_advancedOutputButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -49,9 +52,9 @@
               <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="_re_launch_full" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
+              <Component id="_advancedOutputButton" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -249,21 +252,18 @@
         <Property name="text" type="java.lang.String" value="Sequential  Analysis Window"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="_re_launch_full">
-      <Properties>
-        <Property name="horizontalAlignment" type="int" value="2"/>
-        <Property name="text" type="java.lang.String" value="Reopen in full settings window."/>
-        <Property name="verticalAlignment" type="int" value="1"/>
-      </Properties>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JHyperLink(&quot;Reopen in full settings window.&quot;);"/>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="((JHyperLink)_re_launch_full).addActionListener( new ActionListener() {&#xa;    public void actionPerformed( ActionEvent e ) {&#xa;        //if (queryWindowCanClose()) {&#xa;            _reopen_full_window = true;&#xa;            try {&#xa;                ParameterSettingsSequentialScanFrame.this.setClosed(true);&#xa;            } catch (PropertyVetoException ex) {&#xa;                Logger.getLogger(TreeScanApplication.class.getName()).log(Level.SEVERE, null, ex);&#xa;            }&#xa;        //}        &#xa;    }&#xa;});"/>
-      </AuxValues>
-    </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
       <Properties>
         <Property name="text" type="java.lang.String" value="Analysis: Tree only, Unconditional, Bernoulli model"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="_advancedOutputButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Advanced &gt;&gt;" noResource="true"/>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_advancedOutputButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        getAdvancedParameterInternalFrame().setVisibleWindow(true);&#xa;        getAdvancedParameterInternalFrame().requestFocus();&#xa;    }&#xa;});"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

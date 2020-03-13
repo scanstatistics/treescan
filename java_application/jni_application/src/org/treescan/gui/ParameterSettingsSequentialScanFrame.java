@@ -1,21 +1,16 @@
 package org.treescan.gui;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyVetoException;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JRootPane;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
+import org.treescan.app.AdvFeaturesExpectionSequential;
 import org.treescan.app.Parameters;
 import org.treescan.gui.utils.FileSelectionDialog;
-import org.treescan.gui.utils.JHyperLink;
 import org.treescan.gui.utils.Utils;
 import org.treescan.importer.InputSourceSettings;
 import org.treescan.utils.FileAccess;
@@ -26,6 +21,7 @@ import org.treescan.utils.FileAccess;
  */
 public class ParameterSettingsSequentialScanFrame extends AbstractParameterSettingsFrame {
     private boolean _reopen_full_window = false;
+    private AdvancedParameterSettingsSequentialFrame _advancedParametersSetting;
 
     /**
      * Creates new form ParameterSettingsSequentialScanFrame
@@ -61,9 +57,11 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
         _sequential_alpha_spending.setText(Double.toString(parameters.getSequentialAlphaSpending()));
     }
 
-    /** setup interface from parameter settings */
+    /** setup interface from parameter settings
+     * @param parameters */
     @Override
     protected void setupInterface(final Parameters parameters) {
+        _advancedParametersSetting = new AdvancedParameterSettingsSequentialFrame(_rootPane, this/*, parameters*/);
         title = parameters.getSourceFileName();
         if (title == null || title.length() == 0) {
             title = "New Session";
@@ -84,6 +82,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
             if (iss.getInputFileType() != InputSourceSettings.InputFileType.Counts)
                 _input_source_map.put(iss.getInputFileType().toString() + iss.getIndex(), iss);
         }
+        _advancedParametersSetting.setupInterface(parameters);
     }
 
     /**
@@ -108,8 +107,28 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
                 parameters.addInputSourceSettings((InputSourceSettings)pairs.getValue());
             }
         }
+        getAdvancedParameterInternalFrame().saveParameterSettings(parameters);
     }
 
+    /**
+     * Returns reference to associated advanced parameters frame.
+     */
+    private AdvancedParameterSettingsSequentialFrame getAdvancedParameterInternalFrame() {
+        return _advancedParametersSetting;
+    }    
+    
+    /**
+     * enables correct advanced settings button on Analysis and Output tabs
+     */
+    public void enableAdvancedButtons() {
+        // Output tab Advanced button
+        if (!getAdvancedParameterInternalFrame().getDefaultsSetForOutputOptions()) {
+            _advancedOutputButton.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 11));
+        } else {
+            _advancedOutputButton.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 11));
+        }
+    }    
+    
     /* Returns indication as to whether this trimmed down version should be shown instead of the full setting window. */
     static boolean shouldShowWindow(Parameters parameters) {
         boolean shouldShow = true;
@@ -123,6 +142,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
         return shouldShow && Parameters.getAlphaSpentToDate(parameters.getOutputFileName()) != 0.0;
     }
 
+    @Override
     public boolean CheckSettings() {
         try {
             if (_countFileTextField.getText().length() == 0)
@@ -140,17 +160,29 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
             e.setControlFocus();
             return false;
         }
+        try {
+            getAdvancedParameterInternalFrame().CheckSettings();
+        } catch (AdvFeaturesExpectionSequential e) {
+            focusWindow();
+            JOptionPane.showInternalMessageDialog(this, e.getMessage());
+            getAdvancedParameterInternalFrame().setVisible(e.focusComponent);
+            enableAdvancedButtons();
+            return false;
+        }        
         return true;
     }
 
+    @Override
     public Parameters.ScanType getScanType() {
         return Parameters.ScanType.TREEONLY;
     }
 
+    @Override
     public Parameters.ConditionalType getConditionalType() {
         return Parameters.ConditionalType.UNCONDITIONAL;
     }
 
+    @Override
     public Parameters.ModelType getModelType() {
         return Parameters.ModelType.BERNOULLI_TREE;
     }
@@ -182,8 +214,8 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
         _controlFileTextField = new javax.swing.JTextField();
         _controlFileImportButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
-        _re_launch_full = new JHyperLink("Reopen in full settings window.");
         jLabel2 = new javax.swing.JLabel();
+        _advancedOutputButton = new javax.swing.JButton();
 
         setClosable(true);
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -328,23 +360,15 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jLabel1.setText("Sequential  Analysis Window");
 
-        _re_launch_full.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        _re_launch_full.setText("Reopen in full settings window.");
-        _re_launch_full.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        ((JHyperLink)_re_launch_full).addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e ) {
-                //if (queryWindowCanClose()) {
-                    _reopen_full_window = true;
-                    try {
-                        ParameterSettingsSequentialScanFrame.this.setClosed(true);
-                    } catch (PropertyVetoException ex) {
-                        Logger.getLogger(TreeScanApplication.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    //}
+        jLabel2.setText("Analysis: Tree only, Unconditional, Bernoulli model");
+
+        _advancedOutputButton.setText("Advanced >>"); // NOI18N
+        _advancedOutputButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                getAdvancedParameterInternalFrame().setVisibleWindow(true);
+                getAdvancedParameterInternalFrame().requestFocus();
             }
         });
-
-        jLabel2.setText("Analysis: Tree only, Unconditional, Bernoulli model");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -356,8 +380,10 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_re_launch_full, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(_advancedOutputButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -371,15 +397,16 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_re_launch_full)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(_advancedOutputButton)
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton _advancedOutputButton;
     private javax.swing.JLabel _alpha_spent_to_date_label;
     private javax.swing.JButton _controlFileImportButton;
     private javax.swing.JLabel _controlFileLabel;
@@ -387,7 +414,6 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
     private javax.swing.JButton _countFileImportButton;
     private javax.swing.JLabel _countFileLabel;
     private javax.swing.JTextField _countFileTextField;
-    private javax.swing.JLabel _re_launch_full;
     private javax.swing.JLabel _sequential_alpha_label;
     private javax.swing.JTextField _sequential_alpha_spending;
     private javax.swing.JLabel _sequential_alpha_spending_label;
