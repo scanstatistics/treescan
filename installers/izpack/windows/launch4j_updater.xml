@@ -1,8 +1,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>/prj/treescan/installers/v.1.5.x/update_app.jar</jar>
-  <outfile>/prj/treescan/installers/v.1.5.x/update_app.exe</outfile>
+  <jar>/prj/treescan/installers/v.2.0.x/update_app.jar</jar>
+  <outfile>/prj/treescan/installers/v.2.0.x/update_app.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir></chdir>

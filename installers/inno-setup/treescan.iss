@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "TreeScan"
-#define MyAppVersion "1.5"
+#define MyAppVersion "2.0"
 #define MyAppPublisher "Information Management Services, Ins."
 #define MyAppURL "https://www.treescan.org/"
 #define MyAppExeName "TreeScan.exe"
@@ -24,8 +24,8 @@ LicenseFile=U:\eula\LicenseAgreement.rtf
 InfoBeforeFile=U:\build\treescan\installers\inno-setup\before-install.rtf
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputDir=U:\installers\v.1.5.x
-OutputBaseFilename=install-1_5_windows
+OutputDir=U:\installers\v.2.0.x
+OutputBaseFilename=install-2_0_windows
 SetupIconFile=U:\build\treescan\installers\resources\TreeScan.ico
 Compression=lzma
 SolidCompression=yes

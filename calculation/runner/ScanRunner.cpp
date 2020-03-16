@@ -848,7 +848,7 @@ bool ScanRunner::readCounts(const std::string& filename, bool sequence_new_data)
 	DataTimeRange::index_t censortimetotal = 0;
 	std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::COUNT_FILE)));
 
-	/* In TreeScan version 1.5, we switched to a separate control data file and removed the control column from counts file.
+	/* In TreeScan version 2.0, we switched to a separate control data file and removed the control column from counts file.
 	   But to keep backwards compatibility, expect controls in count file if user has not specified a control file with a 
 	   tree-only scan (not including sequential). */
 	bool bernoulliExpectingControl = _parameters.getControlFileName().empty();

@@ -19,7 +19,7 @@
     -->
     <info>
         <appname>TreeScan</appname>
-        <appversion>1.5</appversion>
+        <appversion>2.0</appversion>
         <appsubpath>TreeScan</appsubpath>
         <authors>
             <author name="Martin Kulldorff together with IMS Inc." email="kulldorff@treescan.org"/>

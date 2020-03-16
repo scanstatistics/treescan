@@ -169,7 +169,7 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
 					bValid = false;
 					PrintDirection.Printf("Invalid Parameter Setting:\nNo control file specified.\n", BasePrint::P_PARAMERROR);
 				} else if (!_parameters.isSequentialScanBernoulli())
-					/* The Bernoulli tree model in versions prior to 1.5 did not have control file, so allow file to be optional in order to facilitate backwards compatability.*/
+					/* The Bernoulli tree model in versions prior to 2.0 did not have control file, so allow file to be optional in order to facilitate backwards compatability.*/
 					PrintDirection.Printf("Notice:\nNo control file specified for tree-only Bernoulli scan, control data assumed to be in count file.\n", BasePrint::P_NOTICE);
 			} else if (!validateFileAccess(_parameters.getControlFileName())) {
 				bValid = false;

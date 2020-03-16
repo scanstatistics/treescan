@@ -14,8 +14,8 @@ import java.util.Properties;
 public final class AppConstants {
 
     private final static String APP_TITLE = "TreeScan";
-    public static final int VERSION_MAJOR = 1;
-    public static final int VERSION_MINOR = 5;
+    public static final int VERSION_MAJOR = 2;
+    public static final int VERSION_MINOR = 0;
     public static final int VERSION_RELEASE = 0;
 
     public static final String getSoftwareTitle() {

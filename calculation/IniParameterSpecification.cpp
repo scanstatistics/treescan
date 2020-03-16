@@ -87,7 +87,7 @@ void IniParameterSpecification::setup(Parameters::CreationVersion version) {
     else if (version.iMajor == 1 && version.iMinor == 4)
         Build_1_4_x_ParameterList();
     else
-        Build_1_5_x_ParameterList();
+		Build_2_0_x_ParameterList();
 }
 
 /* Returns ini version setting or default. */
@@ -207,8 +207,8 @@ void IniParameterSpecification::Build_1_4_x_ParameterList() {
     assert(_parameter_info.size() == 58);
 }
 
-/** Version 1.5 parameter specifications. */
-void IniParameterSpecification::Build_1_5_x_ParameterList() {
+/** Version 2.0 parameter specifications. */
+void IniParameterSpecification::Build_2_0_x_ParameterList() {
     Build_1_4_x_ParameterList();
 
     _parameter_info[Parameters::SEQUENTIAL_ALPHA_OVERALL] = ParamInfo(Parameters::SEQUENTIAL_ALPHA_OVERALL, "sequential-alpha-overall", 5, _sequential_scan_section);

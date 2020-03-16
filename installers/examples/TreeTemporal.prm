@@ -144,5 +144,5 @@ parallel-processes=0
 
 [System]
 ;parameters version - do not modify
-parameters-version=1.5.0
+parameters-version=2.0.0
 

@@ -2,7 +2,7 @@
 
 ############ Script Defines #######################################################################
 build="/prj/treescan/build"
-installer_version="/prj/treescan/installers/v.1.5.x"
+installer_version="/prj/treescan/installers/v.2.0.x"
 
 launch4j=$build/packages/launch4j/launch4j-3.12
 IzPack=$build/packages/IzPack/IzPack5.1.3

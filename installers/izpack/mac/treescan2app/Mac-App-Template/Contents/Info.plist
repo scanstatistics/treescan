@@ -23,7 +23,7 @@
       <key>CFBundleSignature</key>
       <string>????</string>
       <key>CFBundleVersion</key>
-      <string>1.5.0</string>
+      <string>2.0.0</string>
       <key>NSHumanReadableCopyright</key>
       <string>TreeScan is a trademark of Martin Kulldorff. The TreeScan software was developed by Martin Kulldorff.</string>
       <key>JVMMainClassName</key>
