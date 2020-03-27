@@ -657,15 +657,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      * enables or disables the advanced inputs group controls.
      */
-    public void enableAdvancedInputsSettings(boolean enableCutFile, boolean enableRiskWindowGroup) {
+    public void enableAdvancedInputsSettings(boolean enableCutFile) {
         _cutFileLabel.setEnabled(enableCutFile);
         _cutFileTextField.setEnabled(enableCutFile);
         _cutFileImportButton.setEnabled(enableCutFile);
-
-        _risk_window_group.setEnabled(enableRiskWindowGroup);
-        _apply_risk_window_restriction.setEnabled(enableRiskWindowGroup);
-        _risk_window_percentage.setEnabled(enableRiskWindowGroup && _apply_risk_window_restriction.isSelected());
-        _risk_window_percentage_label.setEnabled(enableRiskWindowGroup);
     }
 
     /**
@@ -680,8 +675,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _maxTemporalClusterSizeUnitsTextField.setEnabled(bEnable && _timeTemporalRadioButton.isSelected());
         _maxTemporalTimeUnitsLabel.setEnabled(bEnable);
         _minTemporalOptionsGroup.setEnabled(bEnable);
+        _minTemporalTimeLabel.setEnabled(bEnable);
         _minTemporalClusterSizeUnitsTextField.setEnabled(bEnable);
         _minTemporalTimeUnitsLabel.setEnabled(bEnable);
+        _apply_risk_window_restriction.setEnabled(bEnable);
+        _risk_window_percentage.setEnabled(bEnable && _apply_risk_window_restriction.isSelected());
+        _risk_window_percentage_label.setEnabled(bEnable);
     }
 
     /** enables options of the Adjustments tab */
@@ -842,7 +841,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _minTemporalOptionsGroup = new javax.swing.JPanel();
         _minTemporalClusterSizeUnitsTextField = new javax.swing.JTextField();
         _minTemporalTimeUnitsLabel = new javax.swing.JLabel();
-        _risk_window_group = new javax.swing.JPanel();
+        _minTemporalTimeLabel = new javax.swing.JLabel();
         _apply_risk_window_restriction = new javax.swing.JCheckBox();
         _risk_window_percentage = new javax.swing.JTextField();
         _risk_window_percentage_label = new javax.swing.JLabel();
@@ -1071,7 +1070,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _minTemporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Minimum Temporal Size"));
+        _minTemporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Minimum Temporal Window"));
 
         _minTemporalClusterSizeUnitsTextField.setText("1"); // NOI18N
         _minTemporalClusterSizeUnitsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -1095,31 +1094,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _minTemporalTimeUnitsLabel.setText("data time units"); // NOI18N
 
-        javax.swing.GroupLayout _minTemporalOptionsGroupLayout = new javax.swing.GroupLayout(_minTemporalOptionsGroup);
-        _minTemporalOptionsGroup.setLayout(_minTemporalOptionsGroupLayout);
-        _minTemporalOptionsGroupLayout.setHorizontalGroup(
-            _minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_minTemporalOptionsGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_minTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_minTemporalTimeUnitsLabel)
-                .addContainerGap(392, Short.MAX_VALUE))
-        );
-        _minTemporalOptionsGroupLayout.setVerticalGroup(
-            _minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _minTemporalOptionsGroupLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(_minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_minTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_minTemporalTimeUnitsLabel))
-                .addContainerGap())
-        );
-
-        _risk_window_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Risk Window"));
+        _minTemporalTimeLabel.setText("Minimum temporal size is ");
 
         _apply_risk_window_restriction.setSelected(true);
-        _apply_risk_window_restriction.setText("Restriction risk windows to");
+        _apply_risk_window_restriction.setText("Ensure that temporal window length is at least ");
         _apply_risk_window_restriction.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 _risk_window_percentage.setEnabled(e.getStateChange() == java.awt.event.ItemEvent.SELECTED);
@@ -1160,31 +1138,45 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _risk_window_percentage_label.setText(" percent of evaluated windows.");
+        _risk_window_percentage_label.setText("percent of the between time zero and the end of the temporal window");
 
-        javax.swing.GroupLayout _risk_window_groupLayout = new javax.swing.GroupLayout(_risk_window_group);
-        _risk_window_group.setLayout(_risk_window_groupLayout);
-        _risk_window_groupLayout.setHorizontalGroup(
-            _risk_window_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_risk_window_groupLayout.createSequentialGroup()
+        javax.swing.GroupLayout _minTemporalOptionsGroupLayout = new javax.swing.GroupLayout(_minTemporalOptionsGroup);
+        _minTemporalOptionsGroup.setLayout(_minTemporalOptionsGroupLayout);
+        _minTemporalOptionsGroupLayout.setHorizontalGroup(
+            _minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_minTemporalOptionsGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_apply_risk_window_restriction)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_risk_window_percentage, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_risk_window_percentage_label, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+                .addGroup(_minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_minTemporalOptionsGroupLayout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(_risk_window_percentage, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_risk_window_percentage_label, javax.swing.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE))
+                    .addGroup(_minTemporalOptionsGroupLayout.createSequentialGroup()
+                        .addComponent(_minTemporalTimeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_minTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_minTemporalTimeUnitsLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(_apply_risk_window_restriction, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
-        _risk_window_groupLayout.setVerticalGroup(
-            _risk_window_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_risk_window_groupLayout.createSequentialGroup()
+        _minTemporalOptionsGroupLayout.setVerticalGroup(
+            _minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_minTemporalOptionsGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_risk_window_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(_risk_window_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(_risk_window_percentage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(_risk_window_percentage_label))
-                    .addComponent(_apply_risk_window_restriction))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(_minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_minTemporalTimeLabel)
+                    .addComponent(_minTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_minTemporalTimeUnitsLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_apply_risk_window_restriction)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_risk_window_percentage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_risk_window_percentage_label))
+                .addContainerGap(19, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout _advanced_temporal_window_tabLayout = new javax.swing.GroupLayout(_advanced_temporal_window_tab);
@@ -1195,8 +1187,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addGroup(_advanced_temporal_window_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_risk_window_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _advanced_temporal_window_tabLayout.setVerticalGroup(
@@ -1206,9 +1197,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_risk_window_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(82, Short.MAX_VALUE))
+                .addContainerGap(91, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _advanced_temporal_window_tab);
@@ -2080,6 +2069,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _maximum_cases_signal_label;
     private javax.swing.JTextField _minTemporalClusterSizeUnitsTextField;
     private javax.swing.JPanel _minTemporalOptionsGroup;
+    private javax.swing.JLabel _minTemporalTimeLabel;
     private javax.swing.JLabel _minTemporalTimeUnitsLabel;
     private javax.swing.JTextField _minimum_cases_signal;
     private javax.swing.JLabel _minimum_cases_signal_label;
@@ -2105,7 +2095,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _report_critical_values_group;
     private javax.swing.JCheckBox _restrict_evaluated_levels;
     private javax.swing.JTextField _restricted_levels;
-    private javax.swing.JPanel _risk_window_group;
     private javax.swing.JTextField _risk_window_percentage;
     private javax.swing.JLabel _risk_window_percentage_label;
     private javax.swing.JLabel _sequential_alpha_label;

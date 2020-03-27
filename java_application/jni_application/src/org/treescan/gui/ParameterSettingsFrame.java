@@ -483,7 +483,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _temporalEndWindowBegin.setEnabled(_temporalWindowGroup.isEnabled());
         _temporalEndWindowToLabel.setEnabled(_temporalWindowGroup.isEnabled());
         _temporalEndWindowEnd.setEnabled(_temporalWindowGroup.isEnabled());
-        _advancedParametersSetting.enableAdvancedInputsSettings(!timeOnly, treeAndTime || timeOnly);
+        _advancedParametersSetting.enableAdvancedInputsSettings(!timeOnly);
         _advancedParametersSetting.enableTemporalOptionsGroup(treeAndTime || timeOnly);
         _advancedParametersSetting.enableAdjustmentsOptions();
         _advancedParametersSetting.enablePowerEvaluationsGroup();
