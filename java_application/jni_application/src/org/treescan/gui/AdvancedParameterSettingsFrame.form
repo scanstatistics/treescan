@@ -320,8 +320,8 @@
                                   <Component id="_risk_window_percentage_label" pref="407" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" attributes="0">
-                                  <Component id="_minTemporalTimeLabel" min="-2" pref="121" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_minTemporalTimeLabel" min="-2" pref="130" max="-2" attributes="0"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Component id="_minTemporalClusterSizeUnitsTextField" min="-2" pref="45" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_minTemporalTimeUnitsLabel" min="-2" max="-2" attributes="0"/>
