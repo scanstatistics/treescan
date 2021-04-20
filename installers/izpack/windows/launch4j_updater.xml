@@ -14,15 +14,18 @@
   <manifest>launch4j_updater.manifest</manifest>
   <icon>/prj/treescan/build/treescan/installers/resources/TreeScan.ico</icon>
   <jre>
+    <path></path>
     <minVersion>1.8.0_01</minVersion>
+    <maxVersion></maxVersion>
+    <jdkPreference>preferJre</jdkPreference>
   </jre>
   <versionInfo>
-    <fileVersion>1.1.0</fileVersion>
-    <txtFileVersion>Version 1.1.0</txtFileVersion>
+    <fileVersion>2.0.0</fileVersion>
+    <txtFileVersion>Version 2.0.0</txtFileVersion>
     <fileDescription>TreeScan - Software for the Tree Scan Statistic</fileDescription>
     <copyright>Copyright</copyright>
-    <productVersion>1.1.0</productVersion>
-    <txtProductVersion>Version 1.1.0</txtProductVersion>
+    <productVersion>2.0.0</productVersion>
+    <txtProductVersion>Version 2.0.0</txtProductVersion>
     <productName>TreeScan update_app</productName>
     <companyName>TreeScan.org</companyName>
     <internalName>TreeScan update_app</internalName>

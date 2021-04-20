@@ -12,8 +12,9 @@ class Parameters {
     enum ParameterType {/* Input */
                         TREE_FILE=1,
                         COUNT_FILE,
-						CONTROL_FILE,
-						DATA_TIME_RANGES,
+                        CONTROL_FILE,
+                        DATE_PRECISION,
+                        DATA_TIME_RANGES,
                         /* Advanced Input */
                         CUT_FILE,
                         CUT_TYPE,
@@ -35,6 +36,8 @@ class Parameters {
                         SEQUENTIAL_FILE,
                         SEQUENTIAL_ALPHA_OVERALL,
                         SEQUENTIAL_ALPHA_SPENDING,
+                        PROSPECTIVE_ANALYSIS,
+                        RESTRICTED_TIME_RANGE,
                         START_DATA_TIME_RANGE,
                         END_DATA_TIME_RANGE,
                         /* Advanced Analysis - Temporal Window */
@@ -50,8 +53,8 @@ class Parameters {
                         REPLICATIONS,
                         RANDOMIZATION_SEED,
                         RANDOMLY_GENERATE_SEED,
-						RESTRICT_TREE_LEVELS,
-						RESTRICTED_TREE_LEVELS,
+                        RESTRICT_TREE_LEVELS,
+                        RESTRICTED_TREE_LEVELS,
                         /* Output */
                         RESULTS_FILE,
                         RESULTS_HTML,
@@ -78,10 +81,20 @@ class Parameters {
                         INPUT_SIM_FILE,
                         WRITE_SIMULATIONS,
                         OUTPUT_SIM_FILE,
+                        PROSPECTIVE_FREQ_TYPE,          /* frequency of prospective analysis type */
+                        PROSPECTIVE_FREQ,                /* frequency of prospective analysis type */
                         /* Run Options */
                         PARALLEL_PROCESSES,
                         /* System */
                         CREATION_VERSION
+    };
+    /** frequency of prospective analyses */
+    enum ProspectiveFrequency {
+        DAILY=0,
+        WEEKLY,
+        MONTHLY,
+        QUARTERLY,
+        YEARLY
     };
     /** power evaluation method */
     enum PowerEvaluationType
@@ -183,8 +196,10 @@ class Parameters {
 
     std::string                         _cutsFileName;
     std::string                         _countFileName;
-	std::string                         _controlFileName;
-	DataTimeRangeSet                    _dataTimeRangeSet;
+    std::string                         _controlFileName;
+    DataTimeRange::DatePrecisionType    _date_precision_type;
+    DataTimeRangeSet                    _dataTimeRangeSet;
+    bool                                _restrict_temporal_windows;
     DataTimeRange                       _temporalStartRange;
     DataTimeRange                       _temporalEndRange;
     std::string                         _outputFileName;
@@ -224,8 +239,8 @@ class Parameters {
     bool                                _report_attributable_risk;
     unsigned int                        _attributable_risk_exposed;
     bool                                _self_control_design;
-	bool                                _restrict_tree_levels;
-	RestrictTreeLevels_t                _restricted_tree_levels;
+    bool                                _restrict_tree_levels;
+    RestrictTreeLevels_t                _restricted_tree_levels;
     bool                                _sequential_scan;
     unsigned int                        _sequential_min_signal;
     unsigned int                        _sequential_max_signal;
@@ -245,6 +260,10 @@ class Parameters {
     bool                                _apply_exclusion_ranges;
     DataTimeRangeSet                    _exclusion_time_ranges;
 
+    ProspectiveFrequency                _prospective_frequency_type;
+    unsigned int                        _prospective_frequency;
+    bool                                _prospective_analysis;
+
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
     const char                        * getRelativeToParameterName(const FileName& fParameterName, const std::string& sFilename, std::string& sValue) const;
@@ -259,6 +278,18 @@ class Parameters {
     Parameters                        & operator=(const Parameters &rhs)  {if (this != &rhs) copy(rhs); return (*this);}
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
+
+    bool                                getRestrictTemporalWindows() const { return _restrict_temporal_windows; }
+    void                                setRestrictTemporalWindows(bool b) { _restrict_temporal_windows = b; }
+
+    bool                                getIsProspectiveAnalysis() const { return _prospective_analysis; }
+    void                                setIsProspectiveAnalysis(bool b) { _prospective_analysis = b; }
+    DataTimeRange::DatePrecisionType    getDatePrecisionType() const { return _date_precision_type; }
+    void                                setDatePrecisionType(DataTimeRange::DatePrecisionType e) { _date_precision_type = e; }
+    ProspectiveFrequency                getProspectiveFrequencyType() const { return _prospective_frequency_type; }
+    void                                setProspectiveFrequencyType(ProspectiveFrequency e) { _prospective_frequency = e; }
+    unsigned int                        getProspectiveFrequency() const { return _prospective_frequency; }
+    void                                setProspectiveFrequency(unsigned int i) { _prospective_frequency = i; }
 
     void                                setCurrentLook(unsigned int u) const { _look_index = u; }
     unsigned int                        getCurrentLook() const { return _look_index; }
@@ -283,8 +314,8 @@ class Parameters {
     void                                defineInputSource(ParameterType e, InputSource source, unsigned int idx=1) {_input_sources[std::make_pair(e,idx)] = source;}
     ConditionalType                     getConditionalType() const {return _conditional_type;}
     const std::string                 & getCountFileName() const {return _countFileName;}
-	const std::string                 & getControlFileName() const { return _controlFileName; }
-	const CreationVersion             & getCreationVersion() const {return _creationVersion;}
+    const std::string                 & getControlFileName() const { return _controlFileName; }
+    const CreationVersion             & getCreationVersion() const {return _creationVersion;}
     double                              getCriticalValue05() const {return _critical_value_05;}
     double                              getCriticalValue01() const {return _critical_value_01;}
     double                              getCriticalValue001() const {return _critical_value_001;}
@@ -325,8 +356,8 @@ class Parameters {
     ratio_t                             getProbabilityRatio() const {return _probablility_ratio;}
     long                                getRandomizationSeed() const {return _randomizationSeed;}
     bool                                getReportAttributableRisk() const {return _report_attributable_risk;}
-	bool                                getRestrictTreeLevels() const {return _restrict_tree_levels;}
-	const RestrictTreeLevels_t        & getRestrictedTreeLevels() const {return _restricted_tree_levels;}
+    bool                                getRestrictTreeLevels() const {return _restrict_tree_levels;}
+    const RestrictTreeLevels_t        & getRestrictedTreeLevels() const {return _restricted_tree_levels;}
     unsigned int                        getAttributableRiskExposed() const {return _attributable_risk_exposed;}
     bool                                getReportCriticalValues() const {return _report_critical_values;}
     ResultsFormat                       getResultsFormat() const {return _resultsFormat;}
@@ -341,9 +372,7 @@ class Parameters {
     const std::string                 & getSourceFileName() const {return _parametersSourceFileName;}
     const DataTimeRange               & getTemporalEndRange() const {return _temporalEndRange;}
     const DataTimeRange               & getTemporalStartRange() const {return _temporalStartRange;}
-
     const FileNameContainer_t         & getTreeFileNames() const {return _treeFileNames;}
-
     bool                                isGeneratingHtmlResults() const {return _generateHtmlResults;}
     bool                                isGeneratingLLRResults() const {return _generate_llr_results;}
     bool                                isGeneratingTableResults() const {return _generateTableResults;}
@@ -360,8 +389,8 @@ class Parameters {
     void                                setAsDefaulted();
     void                                setConditionalType(ConditionalType e) {_conditional_type = e;}
     void                                setCountFileName(const char * sCountFileName, bool bCorrectForRelativePath=false);
-	void                                setControlFileName(const char * sControlFileName, bool bCorrectForRelativePath = false);
-	void                                setCriticalValue05(double d) {_critical_value_05 = d;}
+    void                                setControlFileName(const char * sControlFileName, bool bCorrectForRelativePath = false);
+    void                                setCriticalValue05(double d) {_critical_value_05 = d;}
     void                                setCriticalValue01(double d) {_critical_value_01 = d;}
     void                                setCriticalValue001(double d) {_critical_value_001 = d;}
     void                                setCriticalValuesType(CriticalValuesType e) {_critical_values_type = e;}

@@ -1,8 +1,10 @@
 package org.treescan.gui;
 
+import java.awt.CardLayout;
 import java.awt.Component;
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -14,6 +16,8 @@ import javax.swing.event.UndoableEditListener;
 import org.treescan.app.AdvFeaturesExpection;
 import org.treescan.utils.FileAccess;
 import org.treescan.app.Parameters;
+import org.treescan.app.UnknownEnumException;
+import org.treescan.gui.utils.DateComponentsGroup;
 import org.treescan.gui.utils.FileSelectionDialog;
 import org.treescan.gui.utils.InputFileFilter;
 import org.treescan.gui.utils.Utils;
@@ -28,6 +32,9 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
 
     final static String STUDY_COMPLETE = "study_complete";
     final static String STUDY_GENERIC = "study_generic";
+    private DateComponentsGroup _startDateComponentsGroup;
+    private DateComponentsGroup _endDateComponentsGroup;
+    //private final UndoManager undo = new UndoManager();    
     private AdvancedParameterSettingsFrame _advancedParametersSetting;
 
     /**
@@ -46,16 +53,12 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         initComponents();
     }
 
-    /**
-     * Returns reference to associated advanced parameters frame.
-     */
+    /* Returns reference to associated advanced parameters frame. */
     private AdvancedParameterSettingsFrame getAdvancedParameterInternalFrame() {
         return _advancedParametersSetting;
     }
 
-    /**
-     * enables correct advanced settings button on Analysis and Output tabs
-     */
+    /* enables correct advanced settings button on Analysis and Output tabs */
     public void enableAdvancedButtons() {
         // Input tab Advanced button
         if (!getAdvancedParameterInternalFrame().getDefaultsSetForInputOptions()) {
@@ -77,9 +80,147 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         }
     }
 
-    /**
-     * If necessary, removes from from iconized state and brings to front.
-     */
+    /* sets precision of times type control for DatePrecisionType */
+    public void setPrecisionOfTimesControl(Parameters.DatePrecisionType eDatePrecisionType) {
+        switch (eDatePrecisionType) {
+            case YEAR:
+                _timePrecisionYear.setSelected(true);
+                break;
+            case MONTH:
+                _timePrecisionMonth.setSelected(true);
+                break;
+            case DAY:
+                _timePrecisionDay.setSelected(true);
+                break;
+            case GENERIC : 
+                _timePrecisionGeneric.setSelected(true);    
+                break;
+            case NONE:                
+            default:
+                _timePrecisionNone.setSelected(true);
+        }
+    }    
+    
+    /* returns precision of time type for precision control index */
+    public Parameters.DatePrecisionType getPrecisionOfTimesControlType() {
+        Parameters.DatePrecisionType eReturn = null;
+        if (_timePrecisionNone.isSelected() == true) {
+            eReturn = Parameters.DatePrecisionType.NONE;
+        } else if (_timePrecisionYear.isSelected() == true) {
+            eReturn = Parameters.DatePrecisionType.YEAR;
+        } else if (_timePrecisionMonth.isSelected() == true) {
+            eReturn = Parameters.DatePrecisionType.MONTH;
+        } else if (_timePrecisionDay.isSelected() == true) {
+            eReturn = Parameters.DatePrecisionType.DAY;
+        } else if (_timePrecisionGeneric.isSelected() == true) {
+            eReturn = Parameters.DatePrecisionType.GENERIC;
+        } else {
+            throw new RuntimeException("Unable to determine precision of times type.");
+        }
+        return eReturn;
+    }    
+    
+    private void onCountTimePrecisionChange() {
+        Parameters.DatePrecisionType eDatePrecisionType = getPrecisionOfTimesControlType();
+
+        _treeOnlyScanType.setEnabled(eDatePrecisionType == Parameters.DatePrecisionType.NONE);
+        _treetimeScanType.setEnabled(eDatePrecisionType != Parameters.DatePrecisionType.NONE);
+        _timeonlyScanType.setEnabled(eDatePrecisionType != Parameters.DatePrecisionType.NONE);
+        if ((!_timeonlyScanType.isEnabled() && _timeonlyScanType.isSelected()) || (!_treetimeScanType.isEnabled() && _treetimeScanType.isSelected()))
+            _treeOnlyScanType.setSelected(true);
+        else if (!_treeOnlyScanType.isEnabled() && _treeOnlyScanType.isSelected())
+            _treetimeScanType.setSelected(true); 
+        
+        //enableSettingsForStatisticModelCombination();
+        
+        enableDatesByTimePrecisionUnits();
+    }    
+    
+    /* enabled study period and prospective date precision based on time interval unit */
+    private void enableDatesByTimePrecisionUnits() {
+        CardLayout cl = (CardLayout)(_studyPeriodGroup.getLayout());
+        switch (getPrecisionOfTimesControlType()) {
+            case NONE:
+                enableStudyPeriodDates(false, false, false);
+                enableStudyPeriodGeneric(false, false);
+                break;
+            case DAY:
+                enableStudyPeriodDates(true, true, true);
+                cl.show(_studyPeriodGroup, STUDY_COMPLETE);
+                break;
+            case YEAR:
+                enableStudyPeriodDates(true, false, false);
+                cl.show(_studyPeriodGroup, STUDY_COMPLETE);
+                break;
+            case MONTH:
+                enableStudyPeriodDates(true, true, false);
+                cl.show(_studyPeriodGroup, STUDY_COMPLETE);
+                break;
+            case GENERIC:
+                cl.show(_studyPeriodGroup, STUDY_GENERIC);
+                enableStudyPeriodGeneric(true, true);
+                break;
+            default:
+                throw new UnknownEnumException(getPrecisionOfTimesControlType());
+        }
+        getAdvancedParameterInternalFrame().enableDatesByTimePrecisionUnits();
+    }    
+
+    /* enables or disables the study period group for generic date/day controls */
+    private void enableStudyPeriodGeneric(boolean enableStart, boolean enableEnd) {
+        _studyPeriodStartDateGenericTextField.setEnabled(enableStart);
+        _studyPeriodEndDateGenericTextField.setEnabled(enableEnd);        
+    }    
+    /* enables or disables the study period group controls */
+    private void enableStudyPeriodDates(boolean enableYear, boolean enableMonth, boolean enableDay) {
+        //enable study period year controls
+        _studyPeriodStartDateYearTextField.setEnabled(enableYear);
+        _studyPeriodEndDateYearTextField.setEnabled(enableYear);
+        
+        // Start date month and day values.
+        if (_studyPeriodStartDateMonthTextField.isEnabled() && !enableMonth) {
+            // Start date month is going from enabled to disabled. Save month as January.
+            _startDateComponentsGroup.setMonth(1);
+        } else if (!_studyPeriodStartDateMonthTextField.isEnabled() && enableMonth) {
+            // Start date month is going from disabled to enabled. Restore from sticky value.
+            _startDateComponentsGroup.restoreMonth();
+        }
+        if (_studyPeriodStartDateDayTextField.isEnabled() && !enableDay) {
+            // Start date day is going from enabled to disabled. Save as first day of month.
+            _startDateComponentsGroup.setDay(1);
+        } else if (!_studyPeriodStartDateDayTextField.isEnabled() && enableDay) {
+            // Start date day is going from disabled to enabled. Restore from sticky value.
+            _startDateComponentsGroup.restoreDay();
+        }
+
+        // End date month and day values.
+        if (_studyPeriodEndDateMonthTextField.isEnabled() && !enableMonth) {
+            // End date month is going from enabled to disabled. Save to month as December.
+            _endDateComponentsGroup.setMonth(12);
+        } else if (!_studyPeriodEndDateMonthTextField.isEnabled() && enableMonth) {
+            // Start date month is going from disabled to enabled. Restore from sticky value.
+            _endDateComponentsGroup.restoreMonth();
+        }
+        if (_studyPeriodEndDateDayTextField.isEnabled() && !enableDay) {
+            // End date day is going from enabled to disabled. Save as last day of month.
+            _endDateComponentsGroup.setDay(31);
+        } else if (!_studyPeriodEndDateDayTextField.isEnabled() && enableDay) {
+            // End date day is going from disabled to enabled. Restore from sticky value.
+            _endDateComponentsGroup.restoreDay();
+        } else if (!enableDay) {
+            // End date is continuing to be disabled, make sure that day is last day of month.
+            _endDateComponentsGroup.setDay(31);
+        }
+        
+        //enable study period month controls
+        _studyPeriodStartDateMonthTextField.setEnabled(enableMonth);
+        _studyPeriodEndDateMonthTextField.setEnabled(enableMonth);
+        //enable study period day controls
+        _studyPeriodStartDateDayTextField.setEnabled(enableDay);
+        _studyPeriodEndDateDayTextField.setEnabled(enableDay);
+    }    
+    
+    /* If necessary, removes from from iconized state and brings to front. */
     public void focusWindow() {
         if (this.isIcon()) {
             try {
@@ -91,10 +232,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         toFront();
     }
 
-    /**
-     * Determines whether window can be closed by comparing parameter settings
-     * contained in window verse initial parameter settings.
-     */
+    /* Determines whether window can be closed by comparing parameter settings contained in window verse initial parameter settings. */
     public boolean queryWindowCanClose() {
         boolean bReturn = true;
 
@@ -119,9 +257,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         return bReturn;
     }
 
-    /*
-     * Verifies that input settings are valid in the context of all parameter settings.
-     */
+    /* Verifies that input settings are valid in the context of all parameter settings. */
     private void CheckInputSettings() {
         //validate the tree file
         if (!_timeonlyScanType.isSelected()) {
@@ -147,70 +283,34 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 throw new SettingsException("The control file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", (Component) _countFileTextField);
         }
         
-        if (_treetimeScanType.isSelected() || _timeonlyScanType.isSelected()) {
-            if (Integer.parseInt(_dataTimeRangeBegin.getText().trim()) >= Integer.parseInt(_dataTimeRangeEnd.getText().trim())) {
-                throw new SettingsException("The data time range start must be before the data time range end.", (Component) _temporalEndWindowBegin);
+        if (Utils.selected(_treetimeScanType) || Utils.selected(_timeonlyScanType)) {
+            LocalDate startDate = getDataTimeRangeStartDate(), endDate = getDataTimeRangeEndDate();             
+            if (endDate.isBefore(startDate) || endDate.isEqual(startDate)) {
+                throw new SettingsException(
+                    "The data time range start must be before the data time range end.",
+                    (Component)(getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.GENERIC ? _studyPeriodStartDateGenericTextField : _studyPeriodStartDateYearTextField)
+                );
             }
-        }
+        }        
     }
 
     /* Returns the number of time units in the specified data time range. */
     public int getNumUnitsInRange() {
-        int start = Integer.parseInt(_dataTimeRangeBegin.getText().trim());
-        int end = Integer.parseInt(_dataTimeRangeEnd.getText().trim());
-        return start >= end ? 0 : end - start + 1;
+        return Utils.getUnitsBetween(getPrecisionOfTimesControlType(), getDataTimeRangeStartDate(), getDataTimeRangeEndDate());
     }
 
-    /* Returns the number of time units in the specified temporal window. */
-    public int getNumUnitsInTemporalWindow() {
-        int start = Integer.parseInt(_temporalStartWindowBegin.getText().trim());
-        int end = Integer.parseInt(_temporalEndWindowEnd.getText().trim());
-        return start > end ? 0 : end - start + 1;
-    }
-
-    /* Returns the number of time units in the shortest period of specified temporal window. */
-    public int getNumUnitsInShortestTemporalWindow() {
-        int start_end = Integer.parseInt(_temporalStartWindowEnd.getText().trim());
-        int end_start = Integer.parseInt(_temporalEndWindowBegin.getText().trim());
-        // if the end of the start range overlaps the end range, the minimum is one unit.
-        if (start_end >= end_start) {
-            return 1;
-        }
-        int end_end = Integer.parseInt(_temporalEndWindowEnd.getText().trim());
-        return start_end > end_end ? 0 : end_end - start_end + 1;
-    }
-
-    /*
-     * Verifies that analysis settings are valid in the context of all parameter settings.
-     */
+    /* Verifies that analysis settings are valid in the context of all parameter settings. */
     private void CheckAnalysisSettings() {
-        if (_BernoulliButton.isSelected()) {
+        if (Utils.selected(_BernoulliButton)) {
             int eventProbNumerator = Integer.parseInt(_eventProbabiltyNumerator.getText().trim());
             int eventProbDenominator = Integer.parseInt(_eventProbabiltyDenominator.getText().trim());
             if (eventProbNumerator == 0 || eventProbDenominator == 0 || eventProbNumerator >= eventProbDenominator) {
                 throw new SettingsException("Please specify an event probabilty that is between zero and one.", (Component) _eventProbabiltyNumerator);
             }
         }
-        if (_treetimeScanType.isSelected() || _timeonlyScanType.isSelected()) {
-            int temporalStartWindowBegin = Integer.parseInt(_temporalStartWindowBegin.getText().trim());
-            int temporalStartWindowEnd = Integer.parseInt(_temporalStartWindowEnd.getText().trim());
-            if (temporalStartWindowBegin > temporalStartWindowEnd) {
-                throw new SettingsException("The temporal window start time range is invalid.\nThe start time must be less than or equal to end time.", (Component) _temporalStartWindowBegin);
-            }
-            int temporalEndWindowBegin = Integer.parseInt(_temporalEndWindowBegin.getText().trim());
-            int temporalEndWindowEnd = Integer.parseInt(_temporalEndWindowEnd.getText().trim());
-            if (temporalEndWindowBegin > temporalEndWindowEnd) {
-                throw new SettingsException("The temporal window end time range is invalid.\nThe start time must be less than or equal to end time.", (Component) _temporalEndWindowBegin);
-            }
-            if (temporalEndWindowEnd < temporalStartWindowBegin) {
-                throw new SettingsException("The temporal window end time range is invalid.\nThe end windows end time must be greater than or equal to start windows start time.", (Component) _temporalEndWindowBegin);
-            }
-        }
     }
 
-    /*
-     * Verifies that output settings are valid in the context of all parameter settings.
-     */
+    /* Verifies that output settings are valid in the context of all parameter settings. */
     private void CheckOutputSettings() {
         if (_outputFileTextField.getText().length() == 0) {
             throw new SettingsException("Please specify a results file.", (Component) _outputFileTextField);
@@ -221,37 +321,12 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         }
     }
 
-    /*
-     * Verifies that settings are valid in the context of all other parameter settings.
-     */
+    /* Verifies that settings are valid in the context of all other parameter settings. */
     public boolean CheckSettings() {
         try {
             CheckAnalysisSettings();
             CheckInputSettings();
             CheckOutputSettings();
-
-            if (_treetimeScanType.isSelected() || _timeonlyScanType.isSelected()) {
-                // inter-checks between data time range and temporal windows range
-                int datarange_start = Integer.parseInt(_dataTimeRangeBegin.getText().trim());
-                int datarange_end = Integer.parseInt(_dataTimeRangeEnd.getText().trim());
-
-                int temporalstart_start = Integer.parseInt(_temporalStartWindowBegin.getText().trim());
-                int temporalstart_end = Integer.parseInt(_temporalStartWindowEnd.getText().trim());
-                // Does the temporal start range reside within data range?
-                if (!(datarange_start <= temporalstart_start && temporalstart_end <= datarange_end)) {
-                    throw new SettingsException("The temporal window start range is not within the data time range.", (Component) _temporalStartWindowBegin);
-                }
-                int temporalend_start = Integer.parseInt(_temporalEndWindowBegin.getText().trim());
-                int temporalend_end = Integer.parseInt(_temporalEndWindowEnd.getText().trim());
-                // Does the temporal end range reside within data range?
-                if (!(datarange_start <= temporalend_start && temporalend_end <= datarange_end)) {
-                    throw new SettingsException("The temporal window end range is not within the data time range.", (Component) _temporalEndWindowBegin);
-                }
-                // Does the temporal window end range happen before start range.
-                if (temporalend_end < temporalstart_start) {
-                    throw new SettingsException("The temporal window end range completely preceeds the start range.", (Component) _temporalEndWindowBegin);
-                }
-            }
         } catch (SettingsException e) {
             focusWindow();
             JOptionPane.showInternalMessageDialog(this, e.getMessage());
@@ -270,16 +345,20 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         return true;
     }
 
-    /**
-     * setup interface from parameter settings
-     */
+    /* setup interface from parameter settings */
     @Override
     protected void setupInterface(final Parameters parameters) {
+        _startDateComponentsGroup = new DateComponentsGroup(undo,_studyPeriodStartDateYearTextField,_studyPeriodStartDateMonthTextField,_studyPeriodStartDateDayTextField, 2000, 1, 1, false);
+        _endDateComponentsGroup = new DateComponentsGroup(undo,_studyPeriodEndDateYearTextField,_studyPeriodEndDateMonthTextField,_studyPeriodEndDateDayTextField, 2000, 1, 1, true);        
+
         _advancedParametersSetting = new AdvancedParameterSettingsFrame(_rootPane, this/*, parameters*/);
         title = parameters.getSourceFileName();
         if (title == null || title.length() == 0) {
             title = "New Session";
         }
+        
+        setPrecisionOfTimesControl(parameters.getPrecisionOfTimesType());
+        
         _treelFileTextField.setText(parameters.getTreeFileNames().get(0));
         _treelFileTextField.setCaretPosition(0);
         // Since this is a follow-up sequentail analysis, the user will need to specify a new count file.
@@ -290,17 +369,20 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         }
         _controlFileTextField.setText(parameters.getControlFileName());
         _controlFileTextField.setCaretPosition(0);
-        _dataTimeRangeBegin.setText(Integer.toString(parameters.getDataTimeRangeBegin()));
-        _dataTimeRangeEnd.setText(Integer.toString(parameters.getDataTimeRangeClose()));
+        
+        
+        if (parameters.getPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
+            Utils.parseDateStringToControl(parameters.getDataTimeRangeBegin(), _studyPeriodStartDateGenericTextField);
+            Utils.parseDateStringToControl(parameters.getDataTimeRangeClose(), _studyPeriodEndDateGenericTextField);
+        } else {
+            Utils.parseDateStringToControls(parameters.getDataTimeRangeBegin(), _studyPeriodStartDateYearTextField, _studyPeriodStartDateMonthTextField, _studyPeriodStartDateDayTextField, false);
+            Utils.parseDateStringToControls(parameters.getDataTimeRangeClose(), _studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateDayTextField, true);
+        }
 
         setControlsForAnalysisOptions(parameters.getScanType(), parameters.getConditionalType(), parameters.getModelType());
         _self_control_design.setSelected(parameters.getSelfControlDesign());
         _eventProbabiltyNumerator.setText(Integer.toString(parameters.getProbabilityRatioNumerator()));
         _eventProbabiltyDenominator.setText(Integer.toString(parameters.getProbabilityRatioDenominator()));
-        _temporalStartWindowBegin.setText(Integer.toString(parameters.getTemporalStartRangeBegin()));
-        _temporalStartWindowEnd.setText(Integer.toString(parameters.getTemporalStartRangeClose()));
-        _temporalEndWindowBegin.setText(Integer.toString(parameters.getTemporalEndRangeBegin()));
-        _temporalEndWindowEnd.setText(Integer.toString(parameters.getTemporalEndRangeClose()));
 
         _outputFileTextField.setText(parameters.getOutputFileName());
         _outputFileTextField.setCaretPosition(0);
@@ -314,14 +396,10 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 _input_source_map.put(iss.getInputFileType().toString() + iss.getIndex(), iss);
         }
         _advancedParametersSetting.setupInterface(parameters);
+        onCountTimePrecisionChange();
     }
 
-    /**
-     * Sets the settings on Analysis tab for Parameters.ScanType, Parameters.ConditionalType and Parameters.ModelType.
-     * @param s - Parameters.ScanType
-     * @param c - Parameters.ConditionalType
-     * @param m - Parameters.ModelType
-     */
+    /* Sets the settings on Analysis tab for Parameters.ScanType, Parameters.ConditionalType and Parameters.ModelType. */
     public void setControlsForAnalysisOptions(Parameters.ScanType s, Parameters.ConditionalType c, Parameters.ModelType m) {
         _treeOnlyScanType.setSelected(s == Parameters.ScanType.TREEONLY);
         _treetimeScanType.setSelected(s == Parameters.ScanType.TREETIME);
@@ -336,17 +414,27 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _bernoulliTimeButton.setSelected(m == Parameters.ModelType.BERNOULLI_TIME);
     }
 
-    /**
-     * sets Parameters class with settings in form
-     */
+    /* sets Parameters class with settings in form */
     protected void saveParameterSettings(Parameters parameters) {
         setTitle(parameters.getSourceFileName());
+        parameters.setPrecisionOfTimesType(getPrecisionOfTimesControlType().ordinal());        
         parameters.setTreeFileName(_treelFileTextField.getText(), 1);
         parameters.setCountFileName(_countFileTextField.getText());
         parameters.setControlFileName(_controlFileTextField.getText());
-        parameters.setDataTimeRangeBegin(Integer.parseInt(_dataTimeRangeBegin.getText()));
-        parameters.setDataTimeRangeClose(Integer.parseInt(_dataTimeRangeEnd.getText()));
-
+        if (parameters.getPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
+            parameters.setDataTimeRangeBegin(_studyPeriodStartDateGenericTextField.getText());
+            parameters.setDataTimeRangeClose(_studyPeriodEndDateGenericTextField.getText());
+        } else if (!parameters.getPrecisionOfTimesType().equals(Parameters.DatePrecisionType.NONE)) {
+            parameters.setDataTimeRangeBegin(
+                _studyPeriodStartDateYearTextField.getText() + "/" + _studyPeriodStartDateMonthTextField.getText() + "/" + _studyPeriodStartDateDayTextField.getText()
+            );
+            parameters.setDataTimeRangeClose(
+                _studyPeriodEndDateYearTextField.getText() + "/" + _studyPeriodEndDateMonthTextField.getText() + "/" + _studyPeriodEndDateDayTextField.getText()
+            );
+        } else {
+            parameters.setDataTimeRangeBegin("0");
+            parameters.setDataTimeRangeClose("0");
+        }
         if (_treeOnlyScanType.isSelected()) {
             parameters.setScanType(Parameters.ScanType.TREEONLY.ordinal());
         } else if (_treetimeScanType.isSelected()) {
@@ -375,17 +463,10 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         parameters.setSelfControlDesign(_self_control_design.isEnabled() && _self_control_design.isSelected());
         parameters.setProbabilityRatioNumerator(Integer.parseInt(_eventProbabiltyNumerator.getText()));
         parameters.setProbabilityRatioDenominator(Integer.parseInt(_eventProbabiltyDenominator.getText()));
-
-        parameters.setTemporalStartRangeBegin(Integer.parseInt(_temporalStartWindowBegin.getText()));
-        parameters.setTemporalStartRangeClose(Integer.parseInt(_temporalStartWindowEnd.getText()));
-        parameters.setTemporalEndRangeBegin(Integer.parseInt(_temporalEndWindowBegin.getText()));
-        parameters.setTemporalEndRangeClose(Integer.parseInt(_temporalEndWindowEnd.getText()));
-
         parameters.setOutputFileName(_outputFileTextField.getText());
         parameters.setGeneratingHtmlResults(_reportResultsAsHTML.isSelected());
         parameters.setGeneratingTableResults(_reportResultsAsCsvTable.isSelected());
         getAdvancedParameterInternalFrame().saveParameterSettings(parameters);
-
         parameters.clearInputSourceSettings();
         Iterator it = _input_source_map.entrySet().iterator();
         while (it.hasNext()) {
@@ -441,6 +522,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         boolean treeAndTime = _treetimeScanType.isSelected();
         boolean timeOnly = _timeonlyScanType.isSelected();
 
+        enableDatesByTimePrecisionUnits();        
         // conditional on branch is only available with tree-time
         _unconditionalButton.setEnabled(treeOnly);
         _conditionalTotalCasesButton.setEnabled(treeOnly || timeOnly);
@@ -458,52 +540,51 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _PoissonButton.setEnabled(treeOnly);
         _BernoulliButton.setEnabled(treeOnly);
         // uniform is only available with tree-time and conditional on branch or time-only
-        _uniformButton.setEnabled((treeAndTime && _conditionalBranchCasesButton.isSelected()) || timeOnly);
-        
-        _bernoulliTimeButton.setEnabled((treeAndTime && _conditionalBranchCasesButton.isSelected()) || timeOnly);
-        
+        _uniformButton.setEnabled((treeAndTime && _conditionalBranchCasesButton.isSelected()) || timeOnly);        
+        _bernoulliTimeButton.setEnabled((treeAndTime && _conditionalBranchCasesButton.isSelected()) || timeOnly);        
         // the tree file is not used with the time only scan
         _treeFileLabel.setEnabled(!timeOnly);
         _treelFileTextField.setEnabled(!timeOnly);
         _treeFileImportButton.setEnabled(!timeOnly);
         // event probability inputs only available for unconditional Bernoulli
-        boolean enabled = _BernoulliButton.isEnabled() && _BernoulliButton.isSelected() && _unconditionalButton.isSelected();
+        boolean enabled = Utils.selected(_BernoulliButton) && Utils.selected(_unconditionalButton);
         _eventProbabilityLabel.setEnabled(enabled);
         _eventProbabilityLabel2.setEnabled(enabled);
         _eventProbabiltyNumerator.setEnabled(enabled);
         _eventProbabiltyDenominator.setEnabled(enabled);
         _self_control_design.setEnabled(enabled);
-        // temporal window inputs only available for tree-time or time-only
-        _temporalWindowGroup.setEnabled(treeAndTime || timeOnly);
-        _temporalStartWindowLabel.setEnabled(_temporalWindowGroup.isEnabled());
-        _temporalStartWindowBegin.setEnabled(_temporalWindowGroup.isEnabled());
-        _temporalStartWindowToLabel.setEnabled(_temporalWindowGroup.isEnabled());
-        _temporalStartWindowEnd.setEnabled(_temporalWindowGroup.isEnabled());
-        _temporalEndWindowLabel.setEnabled(_temporalWindowGroup.isEnabled());
-        _temporalEndWindowBegin.setEnabled(_temporalWindowGroup.isEnabled());
-        _temporalEndWindowToLabel.setEnabled(_temporalWindowGroup.isEnabled());
-        _temporalEndWindowEnd.setEnabled(_temporalWindowGroup.isEnabled());
         _advancedParametersSetting.enableAdvancedInputsSettings(!timeOnly);
-        _advancedParametersSetting.enableTemporalOptionsGroup(treeAndTime || timeOnly);
+        _advancedParametersSetting.enableTemporalOptionGroups(treeAndTime || timeOnly);
         _advancedParametersSetting.enableAdjustmentsOptions();
         _advancedParametersSetting.enablePowerEvaluationsGroup();
         _advancedParametersSetting.enableRestrictedLevelsGroup();
         _advancedParametersSetting.enableSequentialAnalysisGroup();
         _advancedParametersSetting.enableAdditionalOutputOptions();
         _advancedParametersSetting.enableTimeRangeExclusionsGroup();
-        // data time range group
-        _data_time_range_group.setEnabled(treeAndTime || timeOnly);
-        _data_time_range_start_label.setEnabled(_data_time_range_group.isEnabled());
-        _dataTimeRangeBegin.setEnabled(_data_time_range_group.isEnabled());
-        _data_time_range_end_label.setEnabled(_data_time_range_group.isEnabled());
-        _dataTimeRangeEnd.setEnabled(_data_time_range_group.isEnabled());
-        
-        boolean enableControlFile = (_BernoulliButton.isEnabled() && _BernoulliButton.isSelected()) || (_bernoulliTimeButton.isEnabled() && _bernoulliTimeButton.isSelected());
-        _controlFileLabel.setEnabled(enableControlFile);
-        _controlFileTextField.setEnabled(enableControlFile);
-        _controlFileImportButton.setEnabled(enableControlFile);
     }
 
+    /* Returns the data time range start date as LocalDate. */
+    public LocalDate getDataTimeRangeStartDate()  {
+        return Utils.getLocalDate(
+            getPrecisionOfTimesControlType(),
+            _studyPeriodStartDateYearTextField.getText(),
+            _studyPeriodStartDateMonthTextField.getText(),
+            _studyPeriodStartDateDayTextField.getText(),
+            _studyPeriodStartDateGenericTextField.getText()
+        );
+    }
+    
+    /* Returns the data time range end date as LocalDate. */
+    public LocalDate getDataTimeRangeEndDate() {
+        return Utils.getLocalDate(
+            getPrecisionOfTimesControlType(),
+            _studyPeriodEndDateYearTextField.getText(),
+            _studyPeriodEndDateMonthTextField.getText(),
+            _studyPeriodEndDateDayTextField.getText(),
+            _studyPeriodEndDateGenericTextField.getText()
+        );
+    }   
+   
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -516,7 +597,48 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         conditionalButtonGroup = new javax.swing.ButtonGroup();
         scanButtonGroup = new javax.swing.ButtonGroup();
         timtModelButtonGoup = new javax.swing.ButtonGroup();
+        _timePrecisionButtonGroup = new javax.swing.ButtonGroup();
         jTabbedPane1 = new javax.swing.JTabbedPane();
+        _inputTab = new javax.swing.JPanel();
+        _treelFileTextField = new javax.swing.JTextField();
+        _treeFileLabel = new javax.swing.JLabel();
+        _treeFileImportButton = new javax.swing.JButton();
+        _countFileLabel = new javax.swing.JLabel();
+        _countFileTextField = new javax.swing.JTextField();
+        _countFileImportButton = new javax.swing.JButton();
+        _advancedInputButton = new javax.swing.JButton();
+        _controlFileLabel = new javax.swing.JLabel();
+        _controlFileTextField = new javax.swing.JTextField();
+        _controlFileImportButton = new javax.swing.JButton();
+        _timePrecisionGroup = new javax.swing.JPanel();
+        _timePrecisionNone = new javax.swing.JRadioButton();
+        _timePrecisionYear = new javax.swing.JRadioButton();
+        _timePrecisionMonth = new javax.swing.JRadioButton();
+        _timePrecisionDay = new javax.swing.JRadioButton();
+        _timePrecisionGeneric = new javax.swing.JRadioButton();
+        _studyPeriodGroup = new javax.swing.JPanel();
+        _studyPeriodComplete = new javax.swing.JPanel();
+        _startDateLabel = new javax.swing.JLabel();
+        _startDateYearLabel = new javax.swing.JLabel();
+        _studyPeriodStartDateYearTextField = new javax.swing.JTextField();
+        _studyPeriodStartDateMonthTextField = new javax.swing.JTextField();
+        _startDateMonthLabel = new javax.swing.JLabel();
+        _startDateDayLabel = new javax.swing.JLabel();
+        _studyPeriodStartDateDayTextField = new javax.swing.JTextField();
+        _endDateLabel = new javax.swing.JLabel();
+        _studyPeriodEndDateYearTextField = new javax.swing.JTextField();
+        _endDateYearLabel = new javax.swing.JLabel();
+        _endDateMonthLabel = new javax.swing.JLabel();
+        _studyPeriodEndDateMonthTextField = new javax.swing.JTextField();
+        _studyPeriodEndDateDayTextField = new javax.swing.JTextField();
+        _endDateDayLabel = new javax.swing.JLabel();
+        _studyPeriodGeneric = new javax.swing.JPanel();
+        _startRangeDateLabel = new javax.swing.JLabel();
+        _startRangeYearLabel = new javax.swing.JLabel();
+        _studyPeriodStartDateGenericTextField = new javax.swing.JTextField();
+        _endRangeLabel = new javax.swing.JLabel();
+        _studyPeriodEndDateGenericTextField = new javax.swing.JTextField();
+        _endRangeYearLabel = new javax.swing.JLabel();
         _analysisTab = new javax.swing.JPanel();
         _probabilityModelPanel = new javax.swing.JPanel();
         _PoissonButton = new javax.swing.JRadioButton();
@@ -531,15 +653,6 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _unconditionalButton = new javax.swing.JRadioButton();
         _conditionalBranchCasesButton = new javax.swing.JRadioButton();
         _conditionalNodeTimeButton = new javax.swing.JRadioButton();
-        _temporalWindowGroup = new javax.swing.JPanel();
-        _temporalStartWindowLabel = new javax.swing.JLabel();
-        _temporalStartWindowBegin = new javax.swing.JTextField();
-        _temporalStartWindowToLabel = new javax.swing.JLabel();
-        _temporalStartWindowEnd = new javax.swing.JTextField();
-        _temporalEndWindowLabel = new javax.swing.JLabel();
-        _temporalEndWindowBegin = new javax.swing.JTextField();
-        _temporalEndWindowToLabel = new javax.swing.JLabel();
-        _temporalEndWindowEnd = new javax.swing.JTextField();
         _scanStatisticPanel1 = new javax.swing.JPanel();
         _treetimeScanType = new javax.swing.JRadioButton();
         _treeOnlyScanType = new javax.swing.JRadioButton();
@@ -548,22 +661,6 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _uniformButton = new javax.swing.JRadioButton();
         _bernoulliTimeButton = new javax.swing.JRadioButton();
         _advancedAnalysisButton = new javax.swing.JButton();
-        _inputTab = new javax.swing.JPanel();
-        _treelFileTextField = new javax.swing.JTextField();
-        _treeFileLabel = new javax.swing.JLabel();
-        _treeFileImportButton = new javax.swing.JButton();
-        _countFileLabel = new javax.swing.JLabel();
-        _countFileTextField = new javax.swing.JTextField();
-        _countFileImportButton = new javax.swing.JButton();
-        _data_time_range_group = new javax.swing.JPanel();
-        _data_time_range_start_label = new javax.swing.JLabel();
-        _dataTimeRangeBegin = new javax.swing.JTextField();
-        _data_time_range_end_label = new javax.swing.JLabel();
-        _dataTimeRangeEnd = new javax.swing.JTextField();
-        _advancedInputButton = new javax.swing.JButton();
-        _controlFileLabel = new javax.swing.JLabel();
-        _controlFileTextField = new javax.swing.JTextField();
-        _controlFileImportButton = new javax.swing.JButton();
         _outputTab = new javax.swing.JPanel();
         _reportResultsAsHTML = new javax.swing.JCheckBox();
         _outputFileTextField = new javax.swing.JTextField();
@@ -573,10 +670,440 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _reportResultsAsCsvTable = new javax.swing.JCheckBox();
         _advancedOutputButton = new javax.swing.JButton();
 
+        _timePrecisionButtonGroup.add(_timePrecisionNone);
+        _timePrecisionButtonGroup.add(_timePrecisionYear);
+        _timePrecisionButtonGroup.add(_timePrecisionMonth);
+        _timePrecisionButtonGroup.add(_timePrecisionDay);
+
         setClosable(true);
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setIconifiable(true);
         setResizable(true);
+
+        _treeFileLabel.setText("Tree File (not used for Time Only scan):"); // NOI18N
+
+        _treeFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
+        _treeFileImportButton.setToolTipText("Import tree file ..."); // NOI18N
+        _treeFileImportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                String key = InputSourceSettings.InputFileType.Tree.toString() + "1";
+                if (!_input_source_map.containsKey(key)) {
+                    _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Tree));
+                }
+                InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
+                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);
+                selectionDialog.browse_inputsource(_treelFileTextField, inputSourceSettings, ParameterSettingsFrame.this, true);
+            }
+        });
+
+        _countFileLabel.setText("Count File:"); // NOI18N
+
+        _countFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
+        _countFileImportButton.setToolTipText("Import count file ..."); // NOI18N
+        _countFileImportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                String key = InputSourceSettings.InputFileType.Counts.toString() + "1";
+                if (!_input_source_map.containsKey(key)) {
+                    _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Counts));
+                }
+                InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
+                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);
+                selectionDialog.browse_inputsource(_countFileTextField, inputSourceSettings, ParameterSettingsFrame.this, true);
+            }
+        });
+
+        _advancedInputButton.setText("Advanced >>"); // NOI18N
+        _advancedInputButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.INPUT);
+                getAdvancedParameterInternalFrame().requestFocus();
+            }
+        });
+
+        _controlFileLabel.setText("Control File (Bernoulli Only):"); // NOI18N
+
+        _controlFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
+        _controlFileImportButton.setToolTipText("Import count file ..."); // NOI18N
+        _controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                String key = InputSourceSettings.InputFileType.Controls.toString() + "1";
+                if (!_input_source_map.containsKey(key)) {
+                    _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Controls));
+                }
+                InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
+                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);
+                selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, ParameterSettingsFrame.this, true);
+            }
+        });
+
+        _timePrecisionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Time Precision"));
+
+        _timePrecisionButtonGroup.add(_timePrecisionNone);
+        _timePrecisionNone.setSelected(true);
+        _timePrecisionNone.setText("None"); // NOI18N
+        _timePrecisionNone.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _timePrecisionNone.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _timePrecisionNone.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
+                onCountTimePrecisionChange();
+            }
+        });
+
+        _timePrecisionButtonGroup.add(_timePrecisionYear);
+        _timePrecisionYear.setText("Year"); // NOI18N
+        _timePrecisionYear.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _timePrecisionYear.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _timePrecisionYear.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
+                onCountTimePrecisionChange();
+            }
+        });
+
+        _timePrecisionButtonGroup.add(_timePrecisionMonth);
+        _timePrecisionMonth.setText("Month"); // NOI18N
+        _timePrecisionMonth.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _timePrecisionMonth.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _timePrecisionMonth.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
+                onCountTimePrecisionChange();
+            }
+        });
+
+        _timePrecisionButtonGroup.add(_timePrecisionDay);
+        _timePrecisionDay.setText("Day"); // NOI18N
+        _timePrecisionDay.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _timePrecisionDay.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _timePrecisionDay.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
+                onCountTimePrecisionChange();
+            }
+        });
+
+        _timePrecisionButtonGroup.add(_timePrecisionGeneric);
+        _timePrecisionGeneric.setText("Generic"); // NOI18N
+        _timePrecisionGeneric.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _timePrecisionGeneric.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _timePrecisionGeneric.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
+                onCountTimePrecisionChange();
+            }
+        });
+
+        javax.swing.GroupLayout _timePrecisionGroupLayout = new javax.swing.GroupLayout(_timePrecisionGroup);
+        _timePrecisionGroup.setLayout(_timePrecisionGroupLayout);
+        _timePrecisionGroupLayout.setHorizontalGroup(
+            _timePrecisionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_timePrecisionGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_timePrecisionNone, javax.swing.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
+                .addGap(32, 32, 32)
+                .addComponent(_timePrecisionGeneric, javax.swing.GroupLayout.DEFAULT_SIZE, 88, Short.MAX_VALUE)
+                .addGap(28, 28, 28)
+                .addComponent(_timePrecisionYear, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
+                .addGap(60, 60, 60)
+                .addComponent(_timePrecisionMonth, javax.swing.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)
+                .addGap(28, 28, 28)
+                .addComponent(_timePrecisionDay, javax.swing.GroupLayout.DEFAULT_SIZE, 68, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _timePrecisionGroupLayout.setVerticalGroup(
+            _timePrecisionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_timePrecisionGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_timePrecisionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_timePrecisionNone)
+                    .addComponent(_timePrecisionYear)
+                    .addComponent(_timePrecisionMonth)
+                    .addComponent(_timePrecisionDay)
+                    .addComponent(_timePrecisionGeneric))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        _studyPeriodGroup.setLayout(new java.awt.CardLayout());
+
+        _studyPeriodComplete.setBorder(javax.swing.BorderFactory.createTitledBorder("Data Time Range"));
+
+        _startDateLabel.setText("Start Date:"); // NOI18N
+
+        _startDateYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
+        _startDateYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _startDateYearLabel.setText("Year"); // NOI18N
+
+        _studyPeriodStartDateYearTextField.setText("2000"); // NOI18N
+
+        _studyPeriodStartDateMonthTextField.setText("01"); // NOI18N
+
+        _startDateMonthLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
+        _startDateMonthLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _startDateMonthLabel.setText("Month"); // NOI18N
+
+        _startDateDayLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
+        _startDateDayLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _startDateDayLabel.setText("Day"); // NOI18N
+
+        _studyPeriodStartDateDayTextField.setText("01"); // NOI18N
+
+        _endDateLabel.setText("End Date:"); // NOI18N
+
+        _studyPeriodEndDateYearTextField.setText("2000"); // NOI18N
+        _studyPeriodEndDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                _advancedParametersSetting.enableDates();
+            }
+        });
+
+        _endDateYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
+        _endDateYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _endDateYearLabel.setText("Year"); // NOI18N
+
+        _endDateMonthLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
+        _endDateMonthLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _endDateMonthLabel.setText("Month"); // NOI18N
+
+        _studyPeriodEndDateMonthTextField.setText("12"); // NOI18N
+        _studyPeriodEndDateMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                _advancedParametersSetting.enableDates();
+            }
+        });
+
+        _studyPeriodEndDateDayTextField.setText("31"); // NOI18N
+        _studyPeriodEndDateDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                _advancedParametersSetting.enableDates();
+            }
+        });
+
+        _endDateDayLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
+        _endDateDayLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _endDateDayLabel.setText("Day"); // NOI18N
+
+        javax.swing.GroupLayout _studyPeriodCompleteLayout = new javax.swing.GroupLayout(_studyPeriodComplete);
+        _studyPeriodComplete.setLayout(_studyPeriodCompleteLayout);
+        _studyPeriodCompleteLayout.setHorizontalGroup(
+            _studyPeriodCompleteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_studyPeriodCompleteLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_startDateLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_studyPeriodCompleteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(_startDateYearLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_studyPeriodStartDateYearTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_studyPeriodCompleteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_startDateMonthLabel)
+                    .addComponent(_studyPeriodStartDateMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_studyPeriodCompleteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_startDateDayLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_studyPeriodStartDateDayTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(50, 50, 50)
+                .addComponent(_endDateLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_studyPeriodCompleteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(_endDateYearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_studyPeriodEndDateYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_studyPeriodCompleteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_endDateMonthLabel)
+                    .addComponent(_studyPeriodEndDateMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_studyPeriodCompleteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_endDateDayLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_studyPeriodEndDateDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(162, Short.MAX_VALUE))
+        );
+        _studyPeriodCompleteLayout.setVerticalGroup(
+            _studyPeriodCompleteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_studyPeriodCompleteLayout.createSequentialGroup()
+                .addGroup(_studyPeriodCompleteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_startDateYearLabel)
+                    .addComponent(_startDateMonthLabel)
+                    .addComponent(_endDateMonthLabel)
+                    .addComponent(_endDateDayLabel)
+                    .addComponent(_startDateDayLabel)
+                    .addComponent(_endDateYearLabel))
+                .addGap(0, 0, 0)
+                .addGroup(_studyPeriodCompleteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_studyPeriodStartDateYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_studyPeriodStartDateMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_studyPeriodStartDateDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_endDateLabel)
+                    .addComponent(_studyPeriodEndDateYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_studyPeriodEndDateMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_startDateLabel)
+                    .addComponent(_studyPeriodEndDateDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        _studyPeriodGroup.add(_studyPeriodComplete, "study_complete");
+
+        _studyPeriodGeneric.setBorder(javax.swing.BorderFactory.createTitledBorder("Data Time Range"));
+
+        _startRangeDateLabel.setText("Range Start"); // NOI18N
+
+        _startRangeYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
+        _startRangeYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _startRangeYearLabel.setText("Generic Unit"); // NOI18N
+
+        _studyPeriodStartDateGenericTextField.setText("0"); // NOI18N
+        _studyPeriodStartDateGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                if (undo != null ) undo.addEdit(evt.getEdit());
+            }
+        });
+        _studyPeriodStartDateGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validateNumericKeyTyped(_studyPeriodStartDateGenericTextField, e, 10);
+            }
+        });
+        _studyPeriodStartDateGenericTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (ParameterSettingsFrame.this.getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.GENERIC) {
+                    Utils.validateGenericDateField(_studyPeriodStartDateGenericTextField, undo);
+                }
+            }
+        });
+
+        _endRangeLabel.setText("Range End"); // NOI18N
+
+        _studyPeriodEndDateGenericTextField.setText("31"); // NOI18N
+        _studyPeriodEndDateGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                if (undo != null ) undo.addEdit(evt.getEdit());
+            }
+        });
+        _studyPeriodEndDateGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validateNumericKeyTyped(_studyPeriodEndDateGenericTextField, e, 10);
+            }
+        });
+        _studyPeriodEndDateGenericTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (ParameterSettingsFrame.this.getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.GENERIC) {
+                    Utils.validateGenericDateField(_studyPeriodEndDateGenericTextField, undo);
+                    _advancedParametersSetting.enableDates();
+                }
+            }
+        });
+
+        _endRangeYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
+        _endRangeYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _endRangeYearLabel.setText("Generic Unit"); // NOI18N
+
+        javax.swing.GroupLayout _studyPeriodGenericLayout = new javax.swing.GroupLayout(_studyPeriodGeneric);
+        _studyPeriodGeneric.setLayout(_studyPeriodGenericLayout);
+        _studyPeriodGenericLayout.setHorizontalGroup(
+            _studyPeriodGenericLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_studyPeriodGenericLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_startRangeDateLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_studyPeriodGenericLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_startRangeYearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_studyPeriodStartDateGenericTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE))
+                .addGap(85, 85, 85)
+                .addComponent(_endRangeLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_studyPeriodGenericLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_endRangeYearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_studyPeriodEndDateGenericTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE))
+                .addContainerGap(196, Short.MAX_VALUE))
+        );
+        _studyPeriodGenericLayout.setVerticalGroup(
+            _studyPeriodGenericLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_studyPeriodGenericLayout.createSequentialGroup()
+                .addGroup(_studyPeriodGenericLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_startRangeYearLabel)
+                    .addComponent(_endRangeYearLabel))
+                .addGap(0, 0, 0)
+                .addGroup(_studyPeriodGenericLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_studyPeriodStartDateGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_endRangeLabel)
+                    .addComponent(_studyPeriodEndDateGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_startRangeDateLabel))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        _studyPeriodGroup.add(_studyPeriodGeneric, "study_generic");
+
+        javax.swing.GroupLayout _inputTabLayout = new javax.swing.GroupLayout(_inputTab);
+        _inputTab.setLayout(_inputTabLayout);
+        _inputTabLayout.setHorizontalGroup(
+            _inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_inputTabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_timePrecisionGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(_advancedInputButton))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
+                        .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(_treeFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_treelFileTextField))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_treeFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
+                        .addComponent(_controlFileTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_controlFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
+                        .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(_controlFileLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_countFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_countFileTextField))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_countFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+            .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_inputTabLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(_studyPeriodGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addContainerGap()))
+        );
+        _inputTabLayout.setVerticalGroup(
+            _inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_inputTabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_treeFileLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_treelFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_treeFileImportButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_countFileLabel)
+                .addGap(9, 9, 9)
+                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_countFileImportButton)
+                    .addComponent(_countFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_controlFileLabel)
+                .addGap(9, 9, 9)
+                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_controlFileImportButton)
+                    .addComponent(_controlFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_timePrecisionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 116, Short.MAX_VALUE)
+                .addComponent(_advancedInputButton)
+                .addContainerGap())
+            .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_inputTabLayout.createSequentialGroup()
+                    .addGap(240, 240, 240)
+                    .addComponent(_studyPeriodGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(83, Short.MAX_VALUE)))
+        );
+
+        jTabbedPane1.addTab("Input", _inputTab);
 
         _probabilityModelPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Probability Model - Tree"));
         _probabilityModelPanel.setPreferredSize(new java.awt.Dimension(100, 108));
@@ -739,13 +1266,13 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             _scanStatisticPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_scanStatisticPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_unconditionalButton, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
+                .addComponent(_unconditionalButton, javax.swing.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_conditionalTotalCasesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
+                .addComponent(_conditionalTotalCasesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_conditionalBranchCasesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
+                .addComponent(_conditionalBranchCasesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_conditionalNodeTimeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
+                .addComponent(_conditionalNodeTimeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
                 .addContainerGap())
         );
         _scanStatisticPanelLayout.setVerticalGroup(
@@ -756,130 +1283,6 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                     .addComponent(_conditionalTotalCasesButton)
                     .addComponent(_conditionalBranchCasesButton)
                     .addComponent(_conditionalNodeTimeButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        _temporalWindowGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Window"));
-
-        _temporalStartWindowLabel.setText("Start Time in Range");
-
-        _temporalStartWindowBegin.setText("0");
-        _temporalStartWindowBegin.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_temporalStartWindowBegin.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _temporalStartWindowBegin.setText("0");
-            }
-        });
-        _temporalStartWindowBegin.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validateNumericKeyTyped(_temporalStartWindowBegin, e, 10);
-            }
-        });
-        _temporalStartWindowBegin.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        _temporalStartWindowToLabel.setText("to");
-
-        _temporalStartWindowEnd.setText("100");
-        _temporalStartWindowEnd.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_temporalStartWindowEnd.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _temporalStartWindowEnd.setText("100");
-            }
-        });
-        _temporalStartWindowEnd.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validateNumericKeyTyped(_temporalStartWindowEnd, e, 10);
-            }
-        });
-        _temporalStartWindowEnd.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        _temporalEndWindowLabel.setText("End Time in Range");
-
-        _temporalEndWindowBegin.setText("0");
-        _temporalEndWindowBegin.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_temporalEndWindowBegin.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _temporalEndWindowBegin.setText("0");
-            }
-        });
-        _temporalEndWindowBegin.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validateNumericKeyTyped(_temporalEndWindowBegin, e, 10);
-            }
-        });
-        _temporalEndWindowBegin.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        _temporalEndWindowToLabel.setText("to");
-
-        _temporalEndWindowEnd.setText("100");
-        _temporalEndWindowEnd.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_temporalEndWindowEnd.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _temporalEndWindowEnd.setText("100");
-            }
-        });
-        _temporalEndWindowEnd.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validateNumericKeyTyped(_temporalEndWindowEnd, e, 10);
-            }
-        });
-        _temporalEndWindowEnd.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        javax.swing.GroupLayout _temporalWindowGroupLayout = new javax.swing.GroupLayout(_temporalWindowGroup);
-        _temporalWindowGroup.setLayout(_temporalWindowGroupLayout);
-        _temporalWindowGroupLayout.setHorizontalGroup(
-            _temporalWindowGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_temporalWindowGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_temporalWindowGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_temporalEndWindowLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_temporalStartWindowLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_temporalWindowGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_temporalWindowGroupLayout.createSequentialGroup()
-                        .addComponent(_temporalStartWindowBegin, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(_temporalStartWindowToLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_temporalStartWindowEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(_temporalWindowGroupLayout.createSequentialGroup()
-                        .addComponent(_temporalEndWindowBegin, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(_temporalEndWindowToLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_temporalEndWindowEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        _temporalWindowGroupLayout.setVerticalGroup(
-            _temporalWindowGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_temporalWindowGroupLayout.createSequentialGroup()
-                .addGroup(_temporalWindowGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_temporalStartWindowLabel)
-                    .addComponent(_temporalStartWindowBegin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_temporalStartWindowToLabel)
-                    .addComponent(_temporalStartWindowEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(_temporalWindowGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_temporalEndWindowLabel)
-                    .addComponent(_temporalEndWindowBegin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_temporalEndWindowToLabel)
-                    .addComponent(_temporalEndWindowEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -961,11 +1364,6 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 }
             }
         });
-        _bernoulliTimeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _bernoulliTimeButtonActionPerformed(evt);
-            }
-        });
 
         javax.swing.GroupLayout _probabilityModelPanel1Layout = new javax.swing.GroupLayout(_probabilityModelPanel1);
         _probabilityModelPanel1.setLayout(_probabilityModelPanel1Layout);
@@ -974,8 +1372,8 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             .addGroup(_probabilityModelPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_probabilityModelPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_uniformButton, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
-                    .addComponent(_bernoulliTimeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE))
+                    .addComponent(_uniformButton, javax.swing.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
+                    .addComponent(_bernoulliTimeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _probabilityModelPanel1Layout.setVerticalGroup(
@@ -1004,11 +1402,10 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_scanStatisticPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_scanStatisticPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_temporalWindowGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(_analysisTabLayout.createSequentialGroup()
-                        .addComponent(_probabilityModelPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+                        .addComponent(_probabilityModelPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE))
+                        .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _analysisTabLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(_advancedAnalysisButton)))
@@ -1025,201 +1422,12 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(_probabilityModelPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE)
                     .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_temporalWindowGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 41, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 119, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
 
         jTabbedPane1.addTab("Analysis", _analysisTab);
-
-        _treeFileLabel.setText("Tree File (not used for Time Only scan):"); // NOI18N
-
-        _treeFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
-        _treeFileImportButton.setToolTipText("Import tree file ..."); // NOI18N
-        _treeFileImportButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                String key = InputSourceSettings.InputFileType.Tree.toString() + "1";
-                if (!_input_source_map.containsKey(key)) {
-                    _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Tree));
-                }
-                InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
-                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
-                FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_treelFileTextField, inputSourceSettings, ParameterSettingsFrame.this, true);
-            }
-        });
-
-        _countFileLabel.setText("Count File:"); // NOI18N
-
-        _countFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
-        _countFileImportButton.setToolTipText("Import count file ..."); // NOI18N
-        _countFileImportButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                String key = InputSourceSettings.InputFileType.Counts.toString() + "1";
-                if (!_input_source_map.containsKey(key)) {
-                    _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Counts));
-                }
-                InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
-                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
-                FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_countFileTextField, inputSourceSettings, ParameterSettingsFrame.this, true);
-            }
-        });
-
-        _data_time_range_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Data Time Range"));
-
-        _data_time_range_start_label.setText("Range Start");
-
-        _dataTimeRangeBegin.setText("0");
-        _dataTimeRangeBegin.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_dataTimeRangeBegin.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _dataTimeRangeBegin.setText("0");
-            }
-        });
-        _dataTimeRangeBegin.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validateNumericKeyTyped(_dataTimeRangeBegin, e, 10);
-            }
-        });
-        _dataTimeRangeBegin.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        _data_time_range_end_label.setText("Range End");
-
-        _dataTimeRangeEnd.setText("100");
-        _dataTimeRangeEnd.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_dataTimeRangeEnd.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _dataTimeRangeEnd.setText("100");
-            }
-        });
-        _dataTimeRangeEnd.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validateNumericKeyTyped(_dataTimeRangeEnd, e, 10);
-            }
-        });
-        _dataTimeRangeEnd.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        javax.swing.GroupLayout _data_time_range_groupLayout = new javax.swing.GroupLayout(_data_time_range_group);
-        _data_time_range_group.setLayout(_data_time_range_groupLayout);
-        _data_time_range_groupLayout.setHorizontalGroup(
-            _data_time_range_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _data_time_range_groupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_data_time_range_start_label)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_dataTimeRangeBegin, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(_data_time_range_end_label)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_dataTimeRangeEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(195, Short.MAX_VALUE))
-        );
-        _data_time_range_groupLayout.setVerticalGroup(
-            _data_time_range_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_data_time_range_groupLayout.createSequentialGroup()
-                .addGroup(_data_time_range_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_dataTimeRangeBegin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_dataTimeRangeEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_data_time_range_start_label)
-                    .addComponent(_data_time_range_end_label))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        _advancedInputButton.setText("Advanced >>"); // NOI18N
-        _advancedInputButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.INPUT);
-                getAdvancedParameterInternalFrame().requestFocus();
-            }
-        });
-
-        _controlFileLabel.setText("Control File:"); // NOI18N
-
-        _controlFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
-        _controlFileImportButton.setToolTipText("Import count file ..."); // NOI18N
-        _controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                String key = InputSourceSettings.InputFileType.Controls.toString() + "1";
-                if (!_input_source_map.containsKey(key)) {
-                    _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Controls));
-                }
-                InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);
-                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
-                FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);
-                selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, ParameterSettingsFrame.this, true);
-            }
-        });
-
-        javax.swing.GroupLayout _inputTabLayout = new javax.swing.GroupLayout(_inputTab);
-        _inputTab.setLayout(_inputTabLayout);
-        _inputTabLayout.setHorizontalGroup(
-            _inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_inputTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_data_time_range_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(_advancedInputButton))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
-                        .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(_treeFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(_treelFileTextField))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_treeFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
-                        .addComponent(_controlFileTextField)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_controlFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _inputTabLayout.createSequentialGroup()
-                        .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(_controlFileLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(_countFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(_countFileTextField))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_countFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
-        );
-        _inputTabLayout.setVerticalGroup(
-            _inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_inputTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_treeFileLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_treelFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_treeFileImportButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_countFileLabel)
-                .addGap(9, 9, 9)
-                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_countFileImportButton)
-                    .addComponent(_countFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_controlFileLabel)
-                .addGap(9, 9, 9)
-                .addGroup(_inputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_controlFileImportButton)
-                    .addComponent(_controlFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_data_time_range_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 143, Short.MAX_VALUE)
-                .addComponent(_advancedInputButton)
-                .addContainerGap())
-        );
-
-        jTabbedPane1.addTab("Input", _inputTab);
 
         _reportResultsAsHTML.setText("Report Results as HTML");
 
@@ -1271,7 +1479,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addContainerGap()
                 .addGroup(_outputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(_outputTabLayout.createSequentialGroup()
-                        .addComponent(_outputFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 495, Short.MAX_VALUE)
+                        .addComponent(_outputFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 561, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_resultsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(_outputTabLayout.createSequentialGroup()
@@ -1300,7 +1508,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addComponent(_reportResultsAsHTML)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportResultsAsCsvTable)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 247, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 227, Short.MAX_VALUE)
                 .addComponent(_advancedOutputButton)
                 .addContainerGap())
         );
@@ -1320,16 +1528,12 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void _bernoulliTimeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__bernoulliTimeButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event__bernoulliTimeButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton _BernoulliButton;
@@ -1348,11 +1552,12 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
     private javax.swing.JButton _countFileImportButton;
     private javax.swing.JLabel _countFileLabel;
     private javax.swing.JTextField _countFileTextField;
-    private javax.swing.JTextField _dataTimeRangeBegin;
-    private javax.swing.JTextField _dataTimeRangeEnd;
-    private javax.swing.JLabel _data_time_range_end_label;
-    private javax.swing.JPanel _data_time_range_group;
-    private javax.swing.JLabel _data_time_range_start_label;
+    private javax.swing.JLabel _endDateDayLabel;
+    private javax.swing.JLabel _endDateLabel;
+    private javax.swing.JLabel _endDateMonthLabel;
+    private javax.swing.JLabel _endDateYearLabel;
+    private javax.swing.JLabel _endRangeLabel;
+    private javax.swing.JLabel _endRangeYearLabel;
     private javax.swing.JLabel _eventProbabilityLabel;
     private javax.swing.JLabel _eventProbabilityLabel2;
     private javax.swing.JTextField _eventProbabiltyDenominator;
@@ -1370,15 +1575,30 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
     private javax.swing.JPanel _scanStatisticPanel;
     private javax.swing.JPanel _scanStatisticPanel1;
     private javax.swing.JCheckBox _self_control_design;
-    private javax.swing.JTextField _temporalEndWindowBegin;
-    private javax.swing.JTextField _temporalEndWindowEnd;
-    private javax.swing.JLabel _temporalEndWindowLabel;
-    private javax.swing.JLabel _temporalEndWindowToLabel;
-    private javax.swing.JTextField _temporalStartWindowBegin;
-    private javax.swing.JTextField _temporalStartWindowEnd;
-    private javax.swing.JLabel _temporalStartWindowLabel;
-    private javax.swing.JLabel _temporalStartWindowToLabel;
-    private javax.swing.JPanel _temporalWindowGroup;
+    private javax.swing.JLabel _startDateDayLabel;
+    private javax.swing.JLabel _startDateLabel;
+    private javax.swing.JLabel _startDateMonthLabel;
+    private javax.swing.JLabel _startDateYearLabel;
+    private javax.swing.JLabel _startRangeDateLabel;
+    private javax.swing.JLabel _startRangeYearLabel;
+    private javax.swing.JPanel _studyPeriodComplete;
+    public javax.swing.JTextField _studyPeriodEndDateDayTextField;
+    public javax.swing.JTextField _studyPeriodEndDateGenericTextField;
+    public javax.swing.JTextField _studyPeriodEndDateMonthTextField;
+    public javax.swing.JTextField _studyPeriodEndDateYearTextField;
+    private javax.swing.JPanel _studyPeriodGeneric;
+    private javax.swing.JPanel _studyPeriodGroup;
+    private javax.swing.JTextField _studyPeriodStartDateDayTextField;
+    private javax.swing.JTextField _studyPeriodStartDateGenericTextField;
+    private javax.swing.JTextField _studyPeriodStartDateMonthTextField;
+    private javax.swing.JTextField _studyPeriodStartDateYearTextField;
+    private javax.swing.ButtonGroup _timePrecisionButtonGroup;
+    private javax.swing.JRadioButton _timePrecisionDay;
+    private javax.swing.JRadioButton _timePrecisionGeneric;
+    private javax.swing.JPanel _timePrecisionGroup;
+    private javax.swing.JRadioButton _timePrecisionMonth;
+    private javax.swing.JRadioButton _timePrecisionNone;
+    private javax.swing.JRadioButton _timePrecisionYear;
     private javax.swing.JRadioButton _timeonlyScanType;
     private javax.swing.JButton _treeFileImportButton;
     private javax.swing.JLabel _treeFileLabel;

@@ -37,8 +37,13 @@ bool ParametersValidate::checkFileExists(const std::string& filename, const std:
     with other parameters are correct. Errors are sent to print direction and*/
 bool ParametersValidate::Validate(BasePrint& printDirection) const {
     bool bValid=true;
-    bValid &= ValidateAnalysisParameters(printDirection);
+
+    if (Parameters::isTemporalScanType(_parameters.getScanType()) && _parameters.getIsProspectiveAnalysis()) {
+        const_cast<Parameters&>(_parameters).setRestrictTemporalWindows(false);
+    }
+
     bValid &= ValidateInputParameters(printDirection);
+    bValid &= ValidateAnalysisParameters(printDirection);
     bValid &= ValidateOutputParameters(printDirection);
     bValid &= ValidateAdditionalOutputParameters(printDirection);
     bValid &= ValidateTemporalWindowParameters(printDirection);
@@ -46,6 +51,7 @@ bool ParametersValidate::Validate(BasePrint& printDirection) const {
     bValid &= ValidateSequentialScanParameters(printDirection);
     bValid &= ValidatePowerEvaluationParametersParameters(printDirection);
     bValid &= ValidateRandomizationSeed(printDirection);
+    const_cast<Parameters&>(_parameters).setProspectiveFrequency(std::max(_parameters.getProspectiveFrequency(), 1u));
     return bValid;
 }
 
@@ -82,15 +88,23 @@ bool ParametersValidate::ValidateAdjustmentsParameters(BasePrint & PrintDirectio
             // Validate that the exclusion time ranges are within the user defined data time range.
             if (!data_time_range.encloses(*itrOuter)) {
                 bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nThe exclusion time range '%s' is not with the data time range '%s'.\n",
-                                       BasePrint::P_PARAMERROR, itrOuter->toString(buffer).c_str(), data_time_range.toString(buffer2).c_str());
+                PrintDirection.Printf(
+                    "Invalid Parameter Setting:\nThe exclusion time range '%s' is not with the data time range '%s'.\n",
+                    BasePrint::P_PARAMERROR, 
+                    itrOuter->toString(buffer, _parameters.getDatePrecisionType()).c_str(),
+                    data_time_range.toString(buffer2, _parameters.getDatePrecisionType()).c_str()
+                );
             }
             // Validate that the current exclusion range does not overlap with other exclusion ranges.
             for (DataTimeRangeSet::rangeset_t::const_iterator itrInner=itrOuter+1; itrInner != exclusionSets.end(); ++itrInner) {
                 if (itrOuter->overlaps(*itrInner)) {
                     bValid = false;
-                    PrintDirection.Printf("Invalid Parameter Setting:\nThe data time range '%s' overlaps with other range '%s'.\n",
-                        BasePrint::P_PARAMERROR, itrOuter->toString(buffer).c_str(), itrInner->toString(buffer2).c_str());
+                    PrintDirection.Printf(
+                        "Invalid Parameter Setting:\nThe data time range '%s' overlaps with other range '%s'.\n",
+                        BasePrint::P_PARAMERROR, 
+                        itrOuter->toString(buffer, _parameters.getDatePrecisionType()).c_str(),
+                        itrInner->toString(buffer2, _parameters.getDatePrecisionType()).c_str()
+                    );
                 }
             }
         }
@@ -163,23 +177,23 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                                    BasePrint::P_PARAMERROR, _parameters.getCountFileName().c_str());
         }
 
-		if (_parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-			if (_parameters.getControlFileName().empty()) {
-				if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-					bValid = false;
-					PrintDirection.Printf("Invalid Parameter Setting:\nNo control file specified.\n", BasePrint::P_PARAMERROR);
-				} else if (!_parameters.isSequentialScanBernoulli())
-					/* The Bernoulli tree model in versions prior to 2.0 did not have control file, so allow file to be optional in order to facilitate backwards compatability.*/
-					PrintDirection.Printf("Notice:\nNo control file specified for tree-only Bernoulli scan, control data assumed to be in count file.\n", BasePrint::P_NOTICE);
-			} else if (!validateFileAccess(_parameters.getControlFileName())) {
-				bValid = false;
-				PrintDirection.Printf("Invalid Parameter Setting:\n"
-					"The control file '%s' could not be opened for reading. "
-					"Please confirm that the path and/or file name are valid and that you "
-					"have permissions to read from this directory and file.\n",
-					BasePrint::P_PARAMERROR, _parameters.getControlFileName().c_str());
-			}
-		}
+        if (_parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+            if (_parameters.getControlFileName().empty()) {
+                if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+                    bValid = false;
+                    PrintDirection.Printf("Invalid Parameter Setting:\nNo control file specified.\n", BasePrint::P_PARAMERROR);
+                } else if (!_parameters.isSequentialScanBernoulli())
+                    /* The Bernoulli tree model in versions prior to 2.0 did not have control file, so allow file to be optional in order to facilitate backwards compatability.*/
+                    PrintDirection.Printf("Notice:\nNo control file specified for tree-only Bernoulli scan, control data assumed to be in count file.\n", BasePrint::P_NOTICE);
+            } else if (!validateFileAccess(_parameters.getControlFileName())) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\n"
+                    "The control file '%s' could not be opened for reading. "
+                    "Please confirm that the path and/or file name are valid and that you "
+                    "have permissions to read from this directory and file.\n",
+                    BasePrint::P_PARAMERROR, _parameters.getControlFileName().c_str());
+            }
+        }
 
         if (_parameters.getScanType() != Parameters::TIMEONLY) {
             if (!_parameters.getCutsFileName().empty() && !validateFileAccess(_parameters.getCutsFileName())) {
@@ -219,31 +233,46 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                 for (DataTimeRangeSet::rangeset_t::const_iterator itrInner=itrOuter+1; itrInner != rangeSets.end(); ++itrInner) {
                     if (itrOuter->overlaps(*itrInner)) {
                         bValid = false;
-                        PrintDirection.Printf("Invalid Parameter Setting:\nThe data time range '%s' overlaps with other range '%s'.\n",
-                                               BasePrint::P_PARAMERROR, itrOuter->toString(buffer).c_str(), itrInner->toString(buffer2).c_str());
+                        PrintDirection.Printf(
+                            "Invalid Parameter Setting:\nThe data time range '%s' overlaps with other range '%s'.\n", BasePrint::P_PARAMERROR, 
+                            itrOuter->toString(buffer, _parameters.getDatePrecisionType()).c_str(),
+                            itrInner->toString(buffer2, _parameters.getDatePrecisionType()).c_str()
+                        );
                     }
                 }
             }
-            if (!startWindowInRange) {
-                bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nThe start time window range '%s' is not within the data time range.\n",
-                                      BasePrint::P_PARAMERROR, startRange.toString(buffer).c_str());
-            }
-            if (!endWindowInRange) {
-                bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nThe end time window range '%s' is not within the defined data time range.\n",
-                                      BasePrint::P_PARAMERROR, endRange.toString(buffer).c_str());
-            }
-            if (endRange.getEnd() < startRange.getStart()) {
-                bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\n"
-                                      "The temporal window end time range '%s' completely precedes the start time range '%s'.\n",
-                                      BasePrint::P_PARAMERROR, endRange.toString(buffer2).c_str(), startRange.toString(buffer).c_str());
-            }
-            if (bValid && endRange.getStart() < startRange.getStart()) {
-                PrintDirection.Printf("Warning:\n"
-                                      "The temporal window end time range '%s' partially precedes the start time range '%s'; not all intervals will be evaluated.\n",
-                                      BasePrint::P_PARAMERROR, endRange.toString(buffer2).c_str(), startRange.toString(buffer).c_str());
+            if (_parameters.getRestrictTemporalWindows()) {
+                if (!startWindowInRange) {
+                    bValid = false;
+                    PrintDirection.Printf(
+                        "Invalid Parameter Setting:\nThe start time window range '%s' is not within the data time range.\n", BasePrint::P_PARAMERROR,
+                        startRange.toString(buffer, _parameters.getDatePrecisionType()).c_str()
+                    );
+                }
+                if (!endWindowInRange) {
+                    bValid = false;
+                    PrintDirection.Printf(
+                        "Invalid Parameter Setting:\nThe end time window range '%s' is not within the defined data time range.\n", BasePrint::P_PARAMERROR,
+                        endRange.toString(buffer, _parameters.getDatePrecisionType()).c_str()
+                    );
+                }
+                if (endRange.getEnd() < startRange.getStart()) {
+                    bValid = false;
+                    PrintDirection.Printf(
+                        "Invalid Parameter Setting:\nThe temporal window end time range '%s' completely precedes the start time range '%s'.\n",
+                        BasePrint::P_PARAMERROR, 
+                        endRange.toString(buffer2, _parameters.getDatePrecisionType()).c_str(),
+                        startRange.toString(buffer, _parameters.getDatePrecisionType()).c_str()
+                    );
+                }
+                if (bValid && endRange.getStart() < startRange.getStart()) {
+                    PrintDirection.Printf(
+                        "Warning:\nThe temporal window end time range '%s' partially precedes the start time range '%s'; not all intervals will be evaluated.\n",
+                        BasePrint::P_PARAMERROR, 
+                        endRange.toString(buffer2, _parameters.getDatePrecisionType()).c_str(),
+                        startRange.toString(buffer, _parameters.getDatePrecisionType()).c_str()
+                    );
+                }
             }
         }
         if (_parameters.isTemporalScanType(_parameters.getScanType()) && _parameters.isApplyingRiskWindowRestriction()) {
@@ -314,13 +343,13 @@ bool ParametersValidate::ValidateAnalysisParameters(BasePrint& PrintDirection) c
                     const_cast<Parameters&>(_parameters).setModelType(Parameters::MODEL_NOT_APPLICABLE);
                 }
                 if (!(_parameters.getModelType() == Parameters::UNIFORM || 
-					  _parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE ||
-					  _parameters.getModelType() == Parameters::BERNOULLI_TIME)) {
+                    _parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE ||
+                    _parameters.getModelType() == Parameters::BERNOULLI_TIME)) {
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree and Time' is not implemented for the selected model type.\n", BasePrint::P_PARAMERROR);
                 }
                 if (_parameters.getConditionalType() == Parameters::NODE && 
-					!(_parameters.getModelType() == Parameters::UNIFORM || _parameters.getModelType() == Parameters::BERNOULLI_TIME)) {
+                    !(_parameters.getModelType() == Parameters::UNIFORM || _parameters.getModelType() == Parameters::BERNOULLI_TIME)) {
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree and Time' conditioned on the node requires the Uniform or Bernoulli Time model to be selected as model type.\n", BasePrint::P_PARAMERROR);
                 }
@@ -473,10 +502,10 @@ bool ParametersValidate::ValidateTemporalWindowParameters(BasePrint & PrintDirec
     if (Parameters::isTemporalScanType(_parameters.getScanType())) {
         switch (_parameters.getMaximumWindowType()) {
             case Parameters::PERCENTAGE_WINDOW: {
-				if (_parameters.getMaximumWindowPercentage() <= 0) {
-					bValid = false;
-					PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum temporal size must be greater than zero.\n", BasePrint::P_PARAMERROR);
-				} else if (_parameters.getMaximumWindowPercentage() > 50.0) {
+                if (_parameters.getMaximumWindowPercentage() <= 0) {
+                    bValid = false;
+                    PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum temporal size must be greater than zero.\n", BasePrint::P_PARAMERROR);
+                } else if (_parameters.getMaximumWindowPercentage() > 50.0) {
                     PrintDirection.Printf("Parameter Setting Warning:\nThe maximum temporal size is greater than 50 percent of data time range.\n", BasePrint::P_WARNING);
                 }
                 unsigned int max_length = static_cast<unsigned int>(std::floor(static_cast<double>(_parameters.getDataTimeRangeSet().getMinMax().numDaysInRange()) * _parameters.getMaximumWindowPercentage()/100.0));
@@ -487,11 +516,11 @@ bool ParametersValidate::ValidateTemporalWindowParameters(BasePrint & PrintDirec
             } break;
             case Parameters::FIXED_LENGTH: {
                 unsigned int max_length = static_cast<unsigned int>(std::floor(static_cast<double>(_parameters.getDataTimeRangeSet().getMinMax().numDaysInRange()) * 0.5));
-				if (_parameters.getMaximumWindowLength() <= 0) {
-					bValid = false;
-					PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum temporal window length must be greater than zero.\n", BasePrint::P_PARAMERROR);
-				} else if (_parameters.getMaximumWindowLength() > max_length) {
-					PrintDirection.Printf("Parameter Setting Warning:\nThe maximum temporal window length is greater than 50 percent of data time range (%u time units).\n", BasePrint::P_WARNING, max_length);
+                if (_parameters.getMaximumWindowLength() <= 0) {
+                    bValid = false;
+                    PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum temporal window length must be greater than zero.\n", BasePrint::P_PARAMERROR);
+                } else if (_parameters.getMaximumWindowLength() > max_length) {
+                    PrintDirection.Printf("Parameter Setting Warning:\nThe maximum temporal window length is greater than 50 percent of data time range (%u time units).\n", BasePrint::P_WARNING, max_length);
                 }
                 if (_parameters.getMinimumWindowLength() <= 0 || _parameters.getMinimumWindowLength() > _parameters.getMaximumWindowLength()) {
                     bValid = false;
@@ -501,12 +530,21 @@ bool ParametersValidate::ValidateTemporalWindowParameters(BasePrint & PrintDirec
             default: throw prg_error("Unknown maximum window type (%d).", "getTemporalWindowParameters()", _parameters.getMaximumWindowType());
         }
 
+        const DataTimeRange * pStart, * pEnd;
+        if (_parameters.getRestrictTemporalWindows()) {
+            pStart = &_parameters.getTemporalStartRange();
+            pEnd = &_parameters.getTemporalEndRange();
+        } else {
+            pStart = &_parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
+            pEnd = &_parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
+        }
+
         // check whether any cuts will be evaluated given the specified maximum temporal window size and temporal window ranges
         int unitsInShortestWindow;
-        if (_parameters.getTemporalStartRange().getEnd() >= _parameters.getTemporalEndRange().getStart()) {
+        if (pStart->getEnd() >= pEnd->getStart()) {
             unitsInShortestWindow = 1;
         } else {
-            unitsInShortestWindow = _parameters.getTemporalEndRange().getEnd() - _parameters.getTemporalStartRange().getEnd() + 1;
+            unitsInShortestWindow = pEnd->getEnd() - pStart->getEnd() + 1;
         }
         if (static_cast<DataTimeRange::index_t>(_parameters.getMaximumWindowInTimeUnits()) < unitsInShortestWindow) {
             bValid = false;
@@ -515,7 +553,7 @@ bool ParametersValidate::ValidateTemporalWindowParameters(BasePrint & PrintDirec
         }
 
         // check whether any cuts will be evaluated given the specified minimum temporal window size and temporal window ranges
-        DataTimeRange::index_t unitsInTemporalWindow = _parameters.getTemporalEndRange().getEnd() - _parameters.getTemporalStartRange().getStart() + 1;
+        DataTimeRange::index_t unitsInTemporalWindow = pEnd->getEnd() - pStart->getStart() + 1;
         if (static_cast<DataTimeRange::index_t>(_parameters.getMinimumWindowLength()) > unitsInTemporalWindow) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nNo cuts will be evaluated since the minimum window size is %u yet the maximum number of time units in temporal window is %d.\n", 

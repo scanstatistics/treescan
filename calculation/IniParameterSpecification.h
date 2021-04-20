@@ -55,6 +55,7 @@ class IniParameterSpecification {
     SectionInfo                 _adjustments_section;
     SectionInfo                 _inference_section;
     SectionInfo                 _sequential_scan_section;
+    SectionInfo                 _miscellaneous_analysis_section;
     SectionInfo                 _power_evaluations_section;
     SectionInfo                 _additional_output_section;
     SectionInfo                 _power_simulations_section;
@@ -67,6 +68,7 @@ class IniParameterSpecification {
     static const char * TemporalWindow;
     static const char * Adjustments;
     static const char * Inference;
+    static const char * MiscellaneousAnalysis;
     static const char * Output;
     static const char * AdditionalOutput;
     static const char * PowerEvaluations;

@@ -131,12 +131,12 @@ double CutStructure::getExcessCases(const ScanRunner& scanner) const {
                         double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
                         if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getExcessCases()", parameters.getModelType(), T, W);
                         return C - W * (_N - C)/(T - W);
-					} if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-						/* TODO -- is this correct or should it be in terms of node only? */
+                    } if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+                        /* TODO -- is this correct or should it be in terms of node only? */
 
-						if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", parameters.getModelType(), scanner.getTotalN(), _N);
-						return C - _N * (totalC - C) / (scanner.getTotalN() - _N);
-					}
+                        if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", parameters.getModelType(), scanner.getTotalN(), _N);
+                        return C - _N * (totalC - C) / (scanner.getTotalN() - _N);
+                    }
                     throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getExcessCases()", parameters.getModelType());
                 case Parameters::NODEANDTIME : {
                     /* c = cases in detected cluster
@@ -206,10 +206,10 @@ double CutStructure::getExpected(const ScanRunner& scanner) const {
                             double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
                             return _N * W / T;
                         }
-					} else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-						/* TODO -- is this correct or should it be in terms of node only? */
-						return static_cast<double>(scanner.getTotalC()) / scanner.getTotalN() * _N;
-					}
+                    } else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+                        /* TODO -- is this correct or should it be in terms of node only? */
+                        return static_cast<double>(scanner.getTotalC()) / scanner.getTotalN() * _N;
+                    }
                     throw prg_error("Cannot determine expected cases: tree-time, total-cases, model (%d).", "getExpected()", parameters.getModelType());
                 case Parameters::NODEANDTIME :
                     if (parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE) 
@@ -235,10 +235,10 @@ double CutStructure::getExpected(const ScanRunner& scanner) const {
                             double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
                             return _N * W / T;
                         }
-					} else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-						/* TODO -- is this correct or should it be in terms of node only? */
-						return static_cast<double>(scanner.getTotalC()) / scanner.getTotalN() * _N;
-					}
+                    } else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+                        /* TODO -- is this correct or should it be in terms of node only? */
+                        return static_cast<double>(scanner.getTotalC()) / scanner.getTotalN() * _N;
+                    }
                     throw prg_error("Cannot determine expected cases: tree-time, total-cases, model (%d).", "getExpected()", parameters.getModelType());
                 default: throw prg_error("Cannot determine expected cases: tree-time, condition type (%d).", "getExpected()", parameters.getConditionalType());
             }
@@ -313,16 +313,16 @@ double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
                         double CC = _N - static_cast<double>(_C);
                         relative_risk = CC ? (static_cast<double>(_C) / W ) / ( CC / (T - W) ) : 0.0;
                         return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
-					} else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-						/* TODO -- is this correct or should it be in terms of node only? */
+                    } else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+                        /* TODO -- is this correct or should it be in terms of node only? */
 
-						//when all cases are inside cluster, relative risk goes to infinity
-						if (totalC == static_cast<double>(_C)) return -1;
+                        //when all cases are inside cluster, relative risk goes to infinity
+                        if (totalC == static_cast<double>(_C)) return -1;
 
-						if (_N && totalC - _N && ((totalC - _C) / (totalC - _N)))
-							return (_C / _N) / ((totalC - _C) / (totalC - _N));
-						return 0;
-					}
+                        if (_N && totalC - _N && ((totalC - _C) / (totalC - _N)))
+                            return (_C / _N) / ((totalC - _C) / (totalC - _N));
+                        return 0;
+                    }
                     throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getRelativeRisk()", parameters.getModelType());
                 case Parameters::NODEANDTIME : {
                     /* c = cases in detected cluster
@@ -384,8 +384,8 @@ SequentialStatistic::SequentialStatistic(const Parameters& parameters, const Sca
     std::string buffer1, buffer2;
     // Expected filenames are derived from output filename.
     getDerivedFilename(_parameters.getOutputFileName(), _file_suffix, _accumulated_case_ext, _counts_filename);
-	getDerivedFilename(_parameters.getOutputFileName(), _file_suffix, _accumulated_control_ext, _controls_filename);
-	getDerivedFilename(_parameters.getOutputFileName(), _file_suffix, _accumulated_sim_ext, _simulations_filename);
+    getDerivedFilename(_parameters.getOutputFileName(), _file_suffix, _accumulated_control_ext, _controls_filename);
+    getDerivedFilename(_parameters.getOutputFileName(), _file_suffix, _accumulated_sim_ext, _simulations_filename);
     GetTemporaryFilename(_write_simulations_filename);
     GetTemporaryFilename(_write_llr_filename);
     getDerivedFilename(_parameters.getOutputFileName(), _file_suffix, _settings_ext, _settings_filename);
@@ -577,14 +577,14 @@ void SequentialStatistic::write(const std::string &casefilename, const std::stri
     std::ifstream latest_cases(casefilename.c_str(), std::ios_base::binary);
     std::ofstream accumulated_cases(_counts_filename.c_str(), std::ios_base::app | std::ios_base::binary);
     accumulated_cases << latest_cases.rdbuf();
-	// add control file to control accumulation.
-	std::ifstream latest_controls(controlfilename.c_str(), std::ios_base::binary);
-	std::ofstream accumulated_controls(_controls_filename.c_str(), std::ios_base::app | std::ios_base::binary);
-	accumulated_controls << latest_controls.rdbuf();
-	// Overwrite simulations file.
-	std::ifstream latest_simulations(_write_simulations_filename.c_str(), std::ios_base::binary);
-	std::ofstream accumulated_simulations(_simulations_filename.c_str(), std::ios_base::trunc | std::ios_base::binary);
-	accumulated_simulations << latest_simulations.rdbuf();
+    // add control file to control accumulation.
+    std::ifstream latest_controls(controlfilename.c_str(), std::ios_base::binary);
+    std::ofstream accumulated_controls(_controls_filename.c_str(), std::ios_base::app | std::ios_base::binary);
+    accumulated_controls << latest_controls.rdbuf();
+    // Overwrite simulations file.
+    std::ifstream latest_simulations(_write_simulations_filename.c_str(), std::ios_base::binary);
+    std::ofstream accumulated_simulations(_simulations_filename.c_str(), std::ios_base::trunc | std::ios_base::binary);
+    accumulated_simulations << latest_simulations.rdbuf();
 }
 
 ////////////////////////// ScanRunner ////////////////////////////////////////
@@ -674,7 +674,7 @@ const TreeStatistics& ScanRunner::getTreeStatistics() const {
         else
             ++_tree_statistics->_num_parent;
         if (node.getParents().empty()) ++_tree_statistics->_num_root;
-		unsigned int level = node.getLevel();
+        unsigned int level = node.getLevel();
         if (_tree_statistics->_nodes_per_level.find(level) == _tree_statistics->_nodes_per_level.end())
             _tree_statistics->_nodes_per_level.insert(std::make_pair(level, static_cast<unsigned int>(1)));
         else
@@ -685,30 +685,31 @@ const TreeStatistics& ScanRunner::getTreeStatistics() const {
 
 /* Returns true if NodeStructure is evaluated in scanning processing. */
 bool ScanRunner::isEvaluated(const NodeStructure& node) const {
-	// If node does not have cases in branch, it is not evaluated.
-	if (node.getBrC() <= 1) return false;
-	if (_parameters.getScanType() != Parameters::TIMEONLY && _parameters.getRestrictTreeLevels())
-		return std::find(_parameters.getRestrictedTreeLevels().begin(), _parameters.getRestrictedTreeLevels().end(), node.getLevel()) == _parameters.getRestrictedTreeLevels().end();
-	return true;
+    // If node does not have cases in branch, it is not evaluated.
+    if (node.getBrC() <= 1) return false;
+    if (_parameters.getScanType() != Parameters::TIMEONLY && _parameters.getRestrictTreeLevels())
+        return std::find(_parameters.getRestrictedTreeLevels().begin(), _parameters.getRestrictedTreeLevels().end(), node.getLevel()) == _parameters.getRestrictedTreeLevels().end();
+    return true;
 }
 
 /** Read the relative risks file
     -- unlike other input files of system, records read from relative risks
        file are applied directly to the measure structure, just post calculation
        of measure and prior to temporal adjustments and making cumulative. */
-bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskAdjustmentsContainer_t& rrAdjustments, bool consolidate) {
+bool ScanRunner::readRelativeRisksAdjustments(const std::string& srcfilename, RiskAdjustmentsContainer_t& rrAdjustments, bool consolidate) {
     _print.Printf("Reading alternative hypothesis file ...\n", BasePrint::P_STDOUT);
 
     bool bValid=true, bEmpty=true;
     ScanRunner::Index_t nodeIndex;
     const long nodeIdIdx=0, 
-		uAdjustmentIndex = _parameters.getScanType() != Parameters::TIMEONLY ? 1 : 0, 
-		startidx = _parameters.getScanType() != Parameters::TIMEONLY ? 2 : 1, 
-		endidx = _parameters.getScanType() != Parameters::TIMEONLY ? 3 : 2;
+        uAdjustmentIndex = _parameters.getScanType() != Parameters::TIMEONLY ? 1 : 0, 
+        startidx = _parameters.getScanType() != Parameters::TIMEONLY ? 2 : 1, 
+        endidx = _parameters.getScanType() != Parameters::TIMEONLY ? 3 : 2;
     boost::dynamic_bitset<> nodeSet;
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::POWER_EVALUATIONS_FILE)));
+    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(srcfilename, _parameters.getInputSource(Parameters::POWER_EVALUATIONS_FILE)));
     bool testMultipleNodeRecords(_parameters.getModelType() == Parameters::BERNOULLI_TREE);
-	std::string nodeId("all");
+    std::string nodeId("all"), filename("alternative hypothesis");
+    std::string time_columnname(_parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC ? "day since incidence" : "occurance date");
 
     // if unconditional/conditional Bernoulli, limit this file to a single entry for each node
     if (testMultipleNodeRecords)
@@ -730,17 +731,17 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
         }
         bEmpty=false;
         //read node identifier
-		if (_parameters.getScanType() != Parameters::TIMEONLY) {
-			nodeId = dataSource->getValueAt(nodeIdIdx);
-			if (lowerString(nodeId) != "all") {
-				nodeIndex = getNodeIndex(dataSource->getValueAt(nodeIdIdx));
-				if (!nodeIndex.first) {
-					bValid = false;
-					_print.Printf("Error: Record %ld in alternative hypothesis file references unknown node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
-					continue;
-				}
-			}
-		}
+        if (_parameters.getScanType() != Parameters::TIMEONLY) {
+            nodeId = dataSource->getValueAt(nodeIdIdx);
+            if (lowerString(nodeId) != "all") {
+                nodeIndex = getNodeIndex(dataSource->getValueAt(nodeIdIdx));
+                if (!nodeIndex.first) {
+                    bValid = false;
+                    _print.Printf("Error: Record %ld in alternative hypothesis file references unknown node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
+                    continue;
+                }
+            }
+        }
         //read alternative hypothesis value
         double alternative_hypothesis;
         if (dataSource->getValueAt(uAdjustmentIndex).size() < 1) {
@@ -771,16 +772,24 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
         }
         DataTimeRange::index_t start=0, end=0;
         if (_parameters.getScanType() == Parameters::TIMEONLY || _parameters.getScanType() == Parameters::TREETIME) {
-            if (!string_to_numeric_type<DataTimeRange::index_t>(dataSource->getValueAt(startidx).c_str(), start) || _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(start).first == false) {
+            if (!readDateColumn(*dataSource, startidx, start, filename, time_columnname)) {
                 bValid = false;
-                _print.Printf("Error: Record %ld in alternative hypothesis file references an invalid start range index for node '%s'.\n"
-                              "Value must be an integer within the defined data time range.", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
                 continue;
             }
-            if (!string_to_numeric_type<DataTimeRange::index_t>(dataSource->getValueAt(endidx).c_str(), end) || _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(end).first == false) {
+            if (_parameters.getDataTimeRangeSet().getDataTimeRangeIndex(start).first == false) {
+                bValid = false;
+                _print.Printf("Error: Record %ld in alternative hypothesis file references an invalid start range index for node '%s'.\n"
+                              "Value must be within the defined data time range.", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
+                continue;
+            }
+            if (!readDateColumn(*dataSource, endidx, end, filename, time_columnname)) {
+                bValid = false;
+                continue;
+            }
+            if (_parameters.getDataTimeRangeSet().getDataTimeRangeIndex(end).first == false) {
                 bValid = false;
                 _print.Printf("Error: Record %ld in alternative hypothesis file references an invalid end range index for node '%s'.\n"
-                              "Value must be an integer within the defined data time range.", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
+                              "Value must be within the defined data time range.", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
                 continue;
             }
             // translate index to zero index
@@ -828,163 +837,153 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& filename, RiskA
 }
 
 /* Reads count, control and population data from passed file. */
-bool ScanRunner::readCounts(const std::string& filename, bool sequence_new_data) {
-	/* Special Case: We won't actually read the counts file in this situation but define the total from user specificied value. */
-	if (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES && 
-		_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES) {
-		_Nodes.front()->refIntC_C().front() = _parameters.getPowerEvaluationTotalCases();
-		return true;
-	}
+bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_data) {
+    /* Special Case: We won't actually read the counts file in this situation but define the total from user specificied value. */
+    if (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES && 
+        _parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES) {
+        _Nodes.front()->refIntC_C().front() = _parameters.getPowerEvaluationTotalCases();
+        return true;
+    }
 
-	if (!sequence_new_data)
-		_print.Printf("Reading count data from prior analyses ...\n", BasePrint::P_STDOUT);
-	else
-		_print.Printf("Reading count file ...\n", BasePrint::P_STDOUT);
+    if (!sequence_new_data)
+        _print.Printf("Reading count data from prior analyses ...\n", BasePrint::P_STDOUT);
+    else
+        _print.Printf("Reading count file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
-	double population = 0;
-	int count = 0, controls = 0, daysSinceIncidence = 0, censortime = 0;
-	long identifierIdx = _parameters.getScanType() == Parameters::TIMEONLY ? -1 : 0;
-	long countIdx = _parameters.getScanType() == Parameters::TIMEONLY ? 0 : 1;
-	DataTimeRange::index_t censortimetotal = 0;
-	std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::COUNT_FILE)));
+    double population = 0;
+    int count = 0, controls = 0, daysSinceIncidence = 0, censortime = 0;
+    long identifierIdx = _parameters.getScanType() == Parameters::TIMEONLY ? -1 : 0;
+    long countIdx = _parameters.getScanType() == Parameters::TIMEONLY ? 0 : 1;
+    DataTimeRange::index_t censortimetotal = 0;
+    std::string filename("count"), time_columnname(_parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC ? "day since incidence" : "occurance date");
+    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(srcfilename, _parameters.getInputSource(Parameters::COUNT_FILE)));
 
-	/* In TreeScan version 2.0, we switched to a separate control data file and removed the control column from counts file.
-	   But to keep backwards compatibility, expect controls in count file if user has not specified a control file with a 
-	   tree-only scan (not including sequential). */
-	bool bernoulliExpectingControl = _parameters.getControlFileName().empty();
+    /* In TreeScan version 2.0, we switched to a separate control data file and removed the control column from counts file.
+       But to keep backwards compatibility, expect controls in count file if user has not specified a control file with a 
+       tree-only scan (not including sequential). */
+    bool bernoulliExpectingControl = _parameters.getControlFileName().empty();
 
-	// Determine number of expected columns based on user settings.
-	std::string col_id("<identifier>"), col_count("<count>"), col_pop("<population>"), col_controls("<controls>"), col_time("<time>");
-	std::vector<std::string> expectedColumns;
-	if (_parameters.getModelType() == Parameters::POISSON)
-		expectedColumns = boost::assign::list_of (col_id) (col_count) (col_pop);
-	else if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
-		expectedColumns = boost::assign::list_of (col_id) (col_count);
-		if (bernoulliExpectingControl) expectedColumns.push_back(col_controls);
-	} else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-		if (_parameters.getScanType() == Parameters::TREETIME) expectedColumns = boost::assign::list_of (col_id) (col_count) (col_time);
-		else expectedColumns = boost::assign::list_of (col_count) (col_time);
-	} else {
-		if (_parameters.getScanType() != Parameters::TIMEONLY) expectedColumns = boost::assign::list_of (col_id) (col_count) (col_time);
-		else expectedColumns = boost::assign::list_of (col_count) (col_time);
-	}
+    // Determine number of expected columns based on user settings.
+    std::string col_id("<identifier>"), col_count("<count>"), col_pop("<population>"), col_controls("<controls>"), col_time("<time>");
+    std::vector<std::string> expectedColumns;
+    if (_parameters.getModelType() == Parameters::POISSON)
+        expectedColumns = boost::assign::list_of (col_id) (col_count) (col_pop);
+    else if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
+        expectedColumns = boost::assign::list_of (col_id) (col_count);
+        if (bernoulliExpectingControl) expectedColumns.push_back(col_controls);
+    } else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+        if (_parameters.getScanType() == Parameters::TREETIME) expectedColumns = boost::assign::list_of (col_id) (col_count) (col_time);
+        else expectedColumns = boost::assign::list_of (col_count) (col_time);
+    } else {
+        if (_parameters.getScanType() != Parameters::TIMEONLY) expectedColumns = boost::assign::list_of (col_id) (col_count) (col_time);
+        else expectedColumns = boost::assign::list_of (col_count) (col_time);
+    }
 
-	/* Iinitialize bitset which is used to track data time range days with cases (or controls). */
+    /* Iinitialize bitset which is used to track data time range days with cases (or controls). */
     _caselessWindows.resize(Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() : 1);
-	/* Read records of control file, verifying the expected columns and data type then adding to data structures. */
+    /* Read records of control file, verifying the expected columns and data type then adding to data structures. */
     while (dataSource->readRecord()) {
         // Note: The uniform model has an optional column - censor time.
         if (!(dataSource->getNumValues() == expectedColumns.size() || 
-			(_parameters.getModelType() == Parameters::UNIFORM && dataSource->getNumValues() == (expectedColumns.size() + 1)))) {
+            (_parameters.getModelType() == Parameters::UNIFORM && dataSource->getNumValues() == (expectedColumns.size() + 1)))) {
             readSuccess = false;
-			std::string buffer;
-			typelist_csv_string<std::string>(expectedColumns, buffer);
-			_print.Printf(
-				"Error: Record %ld in count file %s. Expecting %s%s but found %ld value%s.\n",
-				BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(),
-				(static_cast<int>(dataSource->getNumValues()) > expectedColumns.size()) ? "has extra data" : "is missing data",
-				buffer.c_str(),
+            std::string buffer;
+            typelist_csv_string<std::string>(expectedColumns, buffer);
+            _print.Printf(
+                "Error: Record %ld in count file %s. Expecting %s%s but found %ld value%s.\n",
+                BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(),
+                (static_cast<int>(dataSource->getNumValues()) > expectedColumns.size()) ? "has extra data" : "is missing data",
+                buffer.c_str(),
                 (_parameters.getModelType() == Parameters::UNIFORM ? ", <censor time>" : ""),
                 dataSource->getNumValues(), 
-				(dataSource->getNumValues() == 1 ? "" : "s")
-			);
+                (dataSource->getNumValues() == 1 ? "" : "s")
+            );
             continue;
         }
-		/* Read and verifiy identifier column - if not time-only scan type. */
+        /* Read and verifiy identifier column - if not time-only scan type. */
         ScanRunner::Index_t index(true, 0);
         if (_parameters.getScanType() != Parameters::TIMEONLY) {
             index = getNodeIndex(dataSource->getValueAt(identifierIdx));
             if (!index.first) {
                 readSuccess = false;
                 _print.Printf(
-					"Error: Record %ld in count file references unknown node (%s).\n", 
-					BasePrint::P_READERROR, 
-					dataSource->getCurrentRecordIndex(), 
-					dataSource->getValueAt(identifierIdx).c_str()
-				);
+                    "Error: Record %ld in count file references unknown node (%s).\n", 
+                    BasePrint::P_READERROR, 
+                    dataSource->getCurrentRecordIndex(), 
+                    dataSource->getValueAt(identifierIdx).c_str()
+                );
                 continue;
             }
         }
-		/* Read and verify number of cases column. */
+        /* Read and verify number of cases column. */
         if  (!string_to_numeric_type<int>(dataSource->getValueAt(countIdx).c_str(), count) || count < 0) {
             readSuccess = false;
             _print.Printf(
-				"Error: Record %ld in count file references an invalid number of cases.\n"
+                "Error: Record %ld in count file references an invalid number of cases.\n"
                 "       The number of cases must be an integer value greater than or equal to zero.\n", 
-				BasePrint::P_READERROR, 
-				dataSource->getCurrentRecordIndex()
-			);
+                BasePrint::P_READERROR, 
+                dataSource->getCurrentRecordIndex()
+            );
             continue;
         }
         // Now read model specific columns from data source.
-		NodeStructure * node = _Nodes[index.second];
-		if (_parameters.getModelType() == Parameters::POISSON) {
+        NodeStructure * node = _Nodes[index.second];
+        if (_parameters.getModelType() == Parameters::POISSON) {
             node->refIntC_C().front() += count;
             if  (!string_to_numeric_type<double>(dataSource->getValueAt(expectedColumns.size() - 1).c_str(), population) || population < 0) {
                 readSuccess = false;
                 _print.Printf(
-					"Error: Record %ld in count file references an invalid population.\n"
+                    "Error: Record %ld in count file references an invalid population.\n"
                     "       The population must be a numeric value greater than or equal to zero.\n", 
-					BasePrint::P_READERROR, 
-					dataSource->getCurrentRecordIndex()
-				);
+                    BasePrint::P_READERROR, 
+                    dataSource->getCurrentRecordIndex()
+                );
                 continue;
             }
             node->refIntN_C().front() += population;
         } else if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
-			node->refIntC_C().front() += count;
-			node->refIntN_C().front() += count;
-			if (sequence_new_data) node->refIntN_C_Seq_New().front() += count;
-			/* Skip to the next record in data source if not expecting controls column in this file. */
-			if (!bernoulliExpectingControl)	continue;
-			/* Otherwise read and verify data from controls column. */
+            node->refIntC_C().front() += count;
+            node->refIntN_C().front() += count;
+            if (sequence_new_data) node->refIntN_C_Seq_New().front() += count;
+            /* Skip to the next record in data source if not expecting controls column in this file. */
+            if (!bernoulliExpectingControl)	continue;
+            /* Otherwise read and verify data from controls column. */
             if  (!string_to_numeric_type<int>(dataSource->getValueAt(expectedColumns.size() - 1).c_str(), controls) || controls < 0) {
                 readSuccess = false;
                 _print.Printf(
-					"Error: Record %ld in count file references an invalid number of controls.\n"
+                    "Error: Record %ld in count file references an invalid number of controls.\n"
                     "       The controls must be an integer value greater than or equal to zero.\n", 
-					BasePrint::P_READERROR, 
-					dataSource->getCurrentRecordIndex()
-				);
+                    BasePrint::P_READERROR, 
+                    dataSource->getCurrentRecordIndex()
+                );
                 continue;
             }
             node->refIntN_C().front() += controls;
-		} else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-			/* First read and verify the days since incidance column - we might not be reading controls from this file. */
-			if (!string_to_numeric_type<int>(dataSource->getValueAt(expectedColumns.size() - 1).c_str(), daysSinceIncidence)) {
-				readSuccess = false;
-				_print.Printf(
-					"Error: Record %ld in count file references an invalid 'day since incidence' value.\n"
-					"       The 'day since incidence' variable must be an integer.\n", 
-					BasePrint::P_READERROR, 
-					dataSource->getCurrentRecordIndex()
-				);
-				continue;
-			}
-			DataTimeRangeSet::rangeset_index_t rangeIdx = _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
-			if (rangeIdx.first == false) {
-				readSuccess = false;
-				_print.Printf(
-					"Error: Record %ld in count file references an invalid 'day since incidence' value.\n"
-					"       The specified value is not within any of the data time ranges you have defined.",
-					BasePrint::P_READERROR, 
-					dataSource->getCurrentRecordIndex()
-				);
-				continue;
-			}
-			node->refIntC_C()[daysSinceIncidence + _zero_translation_additive] += count;
-			node->refIntN_C()[daysSinceIncidence + _zero_translation_additive] += count;
-			if (count) _caselessWindows.set(daysSinceIncidence + _zero_translation_additive);
-		} else if (Parameters::isTemporalScanType(_parameters.getScanType())) {
-			/* Other temporal scan type. */
-            if  (!string_to_numeric_type<int>(dataSource->getValueAt(expectedColumns.size() - 1).c_str(), daysSinceIncidence)) {
+        } else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+            /* First read and verify the days since incidance column - we might not be reading controls from this file. */
+            if (!readDateColumn(*dataSource, expectedColumns.size() - 1, daysSinceIncidence, filename, time_columnname)) {
+                readSuccess = false;
+                continue;
+            }
+            DataTimeRangeSet::rangeset_index_t rangeIdx = _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
+            if (rangeIdx.first == false) {
                 readSuccess = false;
                 _print.Printf(
-					"Error: Record %ld in count file references an invalid 'day since incidence' value.\n"
-                    "       The 'day since incidence' variable must be an integer.\n", 
-					BasePrint::P_READERROR, 
-					dataSource->getCurrentRecordIndex()
-				);
+                    "Error: Record %ld in count file references an invalid '%s' value.\n"
+                    "       The specified value is not within any of the data time ranges you have defined.",
+                    BasePrint::P_READERROR, 
+                    dataSource->getCurrentRecordIndex(),
+                    time_columnname.c_str()
+                );
+                continue;
+            }
+            node->refIntC_C()[daysSinceIncidence + _zero_translation_additive] += count;
+            node->refIntN_C()[daysSinceIncidence + _zero_translation_additive] += count;
+            if (count) _caselessWindows.set(daysSinceIncidence + _zero_translation_additive);
+        } else if (Parameters::isTemporalScanType(_parameters.getScanType())) {
+            /* Other temporal scan type. */
+            if (!readDateColumn(*dataSource, expectedColumns.size() - 1, daysSinceIncidence, filename, time_columnname)) {
+                readSuccess = false;
                 continue;
             }
             // check that the 'daysSinceIncidence' is within a defined data time range
@@ -992,14 +991,15 @@ bool ScanRunner::readCounts(const std::string& filename, bool sequence_new_data)
             if (rangeIdx.first == false) {
                 readSuccess = false;
                 _print.Printf(
-					"Error: Record %ld in count file references an invalid 'day since incidence' value.\n"
+                    "Error: Record %ld in count file references an invalid '%s' value.\n"
                     "       The specified value is not within any of the data time ranges you have defined.",
                     BasePrint::P_READERROR, 
-					dataSource->getCurrentRecordIndex()
-				);
+                    dataSource->getCurrentRecordIndex(),
+                    time_columnname.c_str()
+                );
                 continue;
             }
-			// If applying exclusion time range and this event is in one of the exclusion ranges, skip this record (TreeTime conditioned on Node/Time only).
+            // If applying exclusion time range and this event is in one of the exclusion ranges, skip this record (TreeTime conditioned on Node/Time only).
             if (_parameters.isApplyingExclusionTimeRanges()) {
                 DataTimeRangeSet::rangeset_index_t rangeIdxExclusion = _parameters.getExclusionTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
                 if (rangeIdxExclusion.first == true) {
@@ -1011,66 +1011,60 @@ bool ScanRunner::readCounts(const std::string& filename, bool sequence_new_data)
             if (_parameters.getModelType() == Parameters::UNIFORM) {
                 // If this column is missing or blank, just ignore the column in this record.
                 if ((dataSource->getNumValues() == expectedColumns.size() + 1) && dataSource->getValueAt(expectedColumns.size()).size() != 0) {
-                    if (!string_to_numeric_type<int>(dataSource->getValueAt(expectedColumns.size()).c_str(), censortime)) {
+                    if (!readDateColumn(*dataSource, expectedColumns.size(), censortime, filename, "censoring time")) {
                         readSuccess = false;
-                        _print.Printf(
-							"Error: Record %ld in count file references an invalid 'censoring time' value.\n"
-                            "       The 'censor time' variable must be an integer.\n", 
-							BasePrint::P_READERROR, 
-							dataSource->getCurrentRecordIndex()
-						);
                         continue;
                     }
                     DataTimeRangeSet::rangeset_index_t rangeIdx = _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(censortime);
                     if (rangeIdx.first == false) {
                         readSuccess = false;
                         _print.Printf(
-							"Error: Record %ld in count file references an invalid 'censoring time' value.\n"
+                            "Error: Record %ld in count file references an invalid 'censoring time' value.\n"
                             "       The specified value is not within any of the data time ranges you have defined.",
                             BasePrint::P_READERROR, 
-							dataSource->getCurrentRecordIndex()
-						);
+                            dataSource->getCurrentRecordIndex()
+                        );
                         continue;
                     }
                     if (censortime < static_cast<int>(_parameters.getMinimumCensorTime())) {
                         _print.Printf(
-							"Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
+                            "Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
                             "         The censoring time is less than user specified minimum of %u. This observation will be ignored.",
                             BasePrint::P_WARNING, 
-							dataSource->getCurrentRecordIndex(), 
-							_parameters.getMinimumCensorTime()
-						);
+                            dataSource->getCurrentRecordIndex(), 
+                            _parameters.getMinimumCensorTime()
+                        );
                         continue;
                     }
                     DataTimeRange minmax = _parameters.getDataTimeRangeSet().getMinMax();
                     if (censortime == minmax.getStart()) {
                         _print.Printf(
-							"Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
+                            "Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
                             "         The censoring time is not allowed to equal the data time range start. This observation will be ignored.",
                             BasePrint::P_WARNING, 
-							dataSource->getCurrentRecordIndex()
-						);
+                            dataSource->getCurrentRecordIndex()
+                        );
                         continue;
                     }
                     DataTimeRange::index_t positive_range_days = minmax.numDaysInPositiveRange();
                     if (censortime < positive_range_days * (static_cast<double>(_parameters.getMinimumCensorPercentage()) / 100.0)) {
                         _print.Printf(
-							"Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
-                            "         The censoring time is less than the %d%% of the positive data time range - which is %d days long. This observation will be ignored.",
+                            "Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
+                            "         The censoring time is less than the %d%% of the positive data time range - which is %d units long. This observation will be ignored.",
                             BasePrint::P_WARNING, 
-							dataSource->getCurrentRecordIndex(), 
-							_parameters.getMinimumCensorPercentage(), 
-							positive_range_days
-						);
+                            dataSource->getCurrentRecordIndex(), 
+                            _parameters.getMinimumCensorPercentage(), 
+                            positive_range_days
+                        );
                         continue;
                     }
                     if (censortime < daysSinceIncidence) {
                         _print.Printf(
-							"Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
+                            "Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
                             "         The censoring time is less than the 'day since incidence' value. This observation will be ignored.",
                             BasePrint::P_WARNING, 
-							dataSource->getCurrentRecordIndex()
-						);
+                            dataSource->getCurrentRecordIndex()
+                        );
                         continue;
                     }
                     // Skip this record now if the number of cases is zero -- otherwise we might falsely indicate that this data set is censoring data.
@@ -1106,125 +1100,153 @@ bool ScanRunner::readCounts(const std::string& filename, bool sequence_new_data)
     }
 
     /* Report to user if any days in the data time range do not contains cases (or controls). */
-    if (Parameters::isTemporalScanType(_parameters.getScanType()) && !((_parameters.getModelType() == Parameters::BERNOULLI_TIME) && bernoulliExpectingControl == false)) {
-		_caselessWindows.flip(); // flip so that windows without cases are on instead of off
-		if (_caselessWindows.count() > 0) {
-			std::string buffer;
-			_print.Printf(
-				"Warning: The following days in the data time range do not have cases%s: %s\n",
-				BasePrint::P_WARNING,
-				(_parameters.getModelType() == Parameters::BERNOULLI_TIME ? " or controls" : ""),
-				getCaselessWindowsAsString(buffer).c_str()
-			);
-		}
+    if (readSuccess && Parameters::isTemporalScanType(_parameters.getScanType()) && !((_parameters.getModelType() == Parameters::BERNOULLI_TIME) && bernoulliExpectingControl == false)) {
+        _caselessWindows.flip(); // flip so that windows without cases are on instead of off
+        if (_caselessWindows.count() > 0) {
+            std::string buffer;
+            _print.Printf(
+                "Warning: The following %s in the data time range do not have cases%s: %s\n",
+                BasePrint::P_WARNING,
+                (_parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC ? "days" : "dates"),
+                (_parameters.getModelType() == Parameters::BERNOULLI_TIME ? " or controls" : ""),
+                getCaselessWindowsAsString(buffer).c_str()
+            );
+        }
     }
 
-	/* Now that all case data has been read, calculate the average censor time for censored data. */
+    /* Now that all case data has been read, calculate the average censor time for censored data. */
     if (_censored_data) _avg_censor_time = censortimetotal / std::max(1, _num_censored_cases);
 
     return readSuccess;
 }
 
-/* Reads control data from passed file for Bernoulli models. 
-    We currently have two ways for control data to be read from data files. Earlier versions of TreeScan had the case and control data is the
-	count file only. With the addition of the Bernoulli Time model, it became apparent breaking cases and controls into two files made more sense.
-	To keep backward compatability, we're maintaining both options. */
-bool ScanRunner::readControls(const std::string& filename, bool sequence_new_data) {
-	if (!sequence_new_data)
-		_print.Printf("Reading control data from prior analyses ...\n", BasePrint::P_STDOUT);
-	else
-		_print.Printf("Reading control file ...\n", BasePrint::P_STDOUT);
-	bool readSuccess = true;
-	std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::CONTROL_FILE)));
-	int controls = 0, daysSinceIncidence = 0, expectedColumns = (_parameters.getScanType() == Parameters::TREETIME ? 3 : 2);
-	long identifierIdx = _parameters.getScanType() == Parameters::TIMEONLY ? -1 : 0;
-	long controlIdx = _parameters.getScanType() == Parameters::TIMEONLY ? 0 : 1;
-	/* Read records of control file, verifying the expected columns and data type then adding to data structures. */
-	while (dataSource->readRecord()) {
-		if (!(dataSource->getNumValues() == expectedColumns)) {
-			readSuccess = false;
-			_print.Printf(
-				"Error: Record %ld in control file %s. Expecting %s<controls>%s but found %ld value%s.\n",
-				BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(),
-				(static_cast<int>(dataSource->getNumValues()) > expectedColumns) ? "has extra data" : "is missing data",
-				(_parameters.getScanType() == Parameters::TIMEONLY ? "" : "<identifier>, "),
-				(Parameters::isTemporalScanType(_parameters.getScanType()) ? ", <time>" : ""),
-				dataSource->getNumValues(), 
-				(dataSource->getNumValues() == 1 ? "" : "s")
-			);
-			continue;
-		}
-		ScanRunner::Index_t index(true, 0);
-		if (_parameters.getScanType() != Parameters::TIMEONLY) {
-			index = getNodeIndex(dataSource->getValueAt(identifierIdx));
-			if (!index.first) {
-				readSuccess = false;
-				_print.Printf(
-					"Error: Record %ld in count file references unknown node (%s).\n", 
-					BasePrint::P_READERROR, 
-					dataSource->getCurrentRecordIndex(), 
-					dataSource->getValueAt(identifierIdx).c_str()
-				);
-				continue;
-			}
-		}
-		if (!string_to_numeric_type<int>(dataSource->getValueAt(controlIdx).c_str(), controls) || controls < 0) {
-			readSuccess = false;
-			_print.Printf(
-				"Error: Record %ld in control file references an invalid number of controls.\n"
-				"       The controls must be an integer value greater than or equal to zero.\n",
-				BasePrint::P_READERROR,
-				dataSource->getCurrentRecordIndex()
-			);
-			continue;
-		}
-		/* Now read remainder of data as expected for specific Bernoulli model type.*/
-		NodeStructure * node = _Nodes[index.second];
-		if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
-			node->refIntN_C().front() += controls;
-			if (sequence_new_data) node->refIntN_C_Seq_New().front() += controls;
-		} else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-			if (!string_to_numeric_type<int>(dataSource->getValueAt(controlIdx + 1).c_str(), daysSinceIncidence)) {
-				readSuccess = false;
-				_print.Printf(
-					"Error: Record %ld in control file references an invalid 'day since incidence' value.\n"
-					"       The 'day since incidence' variable must be an integer.\n", 
-					BasePrint::P_READERROR, 
-					dataSource->getCurrentRecordIndex()
-				);
-				continue;
-			}
-			/* Check that the 'daysSinceIncidence' is within a defined data time range. */
-			DataTimeRangeSet::rangeset_index_t rangeIdx = _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
-			if (rangeIdx.first == false) {
-				readSuccess = false;
-				_print.Printf(
-					"Error: Record %ld in control file references an invalid 'day since incidence' value.\n"
-					"The specified value is not within any of the data time ranges you have defined.",
-					BasePrint::P_READERROR, 
-					dataSource->getCurrentRecordIndex()
-				);
-				continue;
-			}
-			node->refIntN_C()[daysSinceIncidence + _zero_translation_additive] += controls;
-			if (controls) _caselessWindows.set(daysSinceIncidence + _zero_translation_additive);
-		} else throw prg_error("Unknown condition encountered: scan (%d), model (%d).", "readControls()", _parameters.getScanType(), _parameters.getModelType());
-	}
+/* Reads input column from source based on user date precision. */
+bool ScanRunner::readDateColumn(DataSource& source, size_t columnIdx, int& dateIdx, const std::string& file_name, const std::string& column_name) const {
+    if (_parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::NONE)
+        throw prg_error("readDateColumn() should nor be called with date precision of NONE.", "readControls()");
 
-	/* Report to user if any days in the data time range do not contains cases or controls. */
-	_caselessWindows.flip(); // flip so that windows without cases/controls are on instead of off
-	if (Parameters::isTemporalScanType(_parameters.getScanType()) && _caselessWindows.count() > 0) {
-		std::string buffer;
-		_print.Printf(
-			"Warning: The following days in the data time range do not have cases or controls: %s\n",
-			BasePrint::P_WARNING, 
-			getCaselessWindowsAsString(buffer).c_str()
-		);
-	}
-
-	return readSuccess;
+    DateStringParser::ParserStatus eStatus = DateStringParser(_parameters.getDatePrecisionType()).Parse(
+        source.getValueAt(columnIdx).c_str(), dateIdx, _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart()
+    );
+    switch (eStatus) {
+        case  DateStringParser::OUT_OF_RANGE:
+            _print.Printf(
+                "Error: Record %ld in %s file references an invalid '%s' value.\n       The variable precedes Data Time Range start date.\n",
+                BasePrint::P_READERROR, source.getCurrentRecordIndex(), file_name.c_str(), column_name.c_str()
+            ); return false;
+        case  DateStringParser::LESSER_PRECISION:
+            _print.Printf(
+                "Error: Record %ld in %s file references an invalid '%s' value.\n       The variable must match precision matching 'Time Precision' setting.\n",
+                BasePrint::P_READERROR, source.getCurrentRecordIndex(), file_name.c_str(), column_name.c_str()
+            ); return false;
+        case  DateStringParser::INVALID_DATE:
+            _print.Printf(
+                "Error: Record %ld in %s file references an invalid '%s' value.\n       The variable must be %s.\n",
+                BasePrint::P_READERROR, source.getCurrentRecordIndex(), file_name.c_str(), column_name.c_str(),
+                _parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC ? "an integer" : "a date"
+            ); return false;
+        case DateStringParser::VALID_DATE:
+        default: break;
+    }
+    return true;
 }
 
+/* Reads control data from passed file for Bernoulli models. 
+    We currently have two ways for control data to be read from data files. Earlier versions of TreeScan had the case and control data is the
+    count file only. With the addition of the Bernoulli Time model, it became apparent breaking cases and controls into two files made more sense.
+    To keep backward compatability, we're maintaining both options. */
+bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_data) {
+    if (!sequence_new_data)
+        _print.Printf("Reading control data from prior analyses ...\n", BasePrint::P_STDOUT);
+    else
+        _print.Printf("Reading control file ...\n", BasePrint::P_STDOUT);
+    bool readSuccess = true;
+    std::string filename("control"), time_columnname(_parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC ? "day since incidence" : "occurance date");
+    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(srcfilename, _parameters.getInputSource(Parameters::CONTROL_FILE)));
+    int controls = 0, daysSinceIncidence = 0, expectedColumns = (_parameters.getScanType() == Parameters::TREETIME ? 3 : 2);
+    long identifierIdx = _parameters.getScanType() == Parameters::TIMEONLY ? -1 : 0;
+    long controlIdx = _parameters.getScanType() == Parameters::TIMEONLY ? 0 : 1;
+    /* Read records of control file, verifying the expected columns and data type then adding to data structures. */
+    while (dataSource->readRecord()) {
+        if (!(dataSource->getNumValues() == expectedColumns)) {
+            readSuccess = false;
+            _print.Printf(
+                "Error: Record %ld in control file %s. Expecting %s<controls>%s but found %ld value%s.\n",
+                BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(),
+                (static_cast<int>(dataSource->getNumValues()) > expectedColumns) ? "has extra data" : "is missing data",
+                (_parameters.getScanType() == Parameters::TIMEONLY ? "" : "<identifier>, "),
+                (Parameters::isTemporalScanType(_parameters.getScanType()) ? ", <time>" : ""),
+                dataSource->getNumValues(), 
+                (dataSource->getNumValues() == 1 ? "" : "s")
+            );
+            continue;
+        }
+        ScanRunner::Index_t index(true, 0);
+        if (_parameters.getScanType() != Parameters::TIMEONLY) {
+            index = getNodeIndex(dataSource->getValueAt(identifierIdx));
+            if (!index.first) {
+                readSuccess = false;
+                _print.Printf(
+                    "Error: Record %ld in control file references unknown node (%s).\n", 
+                    BasePrint::P_READERROR, 
+                    dataSource->getCurrentRecordIndex(), 
+                    dataSource->getValueAt(identifierIdx).c_str()
+                );
+                continue;
+            }
+        }
+        if (!string_to_numeric_type<int>(dataSource->getValueAt(controlIdx).c_str(), controls) || controls < 0) {
+            readSuccess = false;
+            _print.Printf(
+                "Error: Record %ld in control file references an invalid number of controls.\n"
+                "       The controls must be an integer value greater than or equal to zero.\n",
+                BasePrint::P_READERROR,
+                dataSource->getCurrentRecordIndex()
+            );
+            continue;
+        }
+        /* Now read remainder of data as expected for specific Bernoulli model type.*/
+        NodeStructure * node = _Nodes[index.second];
+        if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
+            node->refIntN_C().front() += controls;
+            if (sequence_new_data) node->refIntN_C_Seq_New().front() += controls;
+        } else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+            if (!readDateColumn(*dataSource, controlIdx + 1, daysSinceIncidence, filename, time_columnname)) {
+                readSuccess = false;
+                continue;
+            }
+            /* Check that the 'daysSinceIncidence' is within a defined data time range. */
+            DataTimeRangeSet::rangeset_index_t rangeIdx = _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
+            if (rangeIdx.first == false) {
+                readSuccess = false;
+                _print.Printf(
+                    "Error: Record %ld in control file references an invalid '%s' value.\n"
+                    "The specified value is not within any of the data time ranges you have defined.",
+                    BasePrint::P_READERROR, 
+                    dataSource->getCurrentRecordIndex(),
+                    time_columnname.c_str()
+                );
+                continue;
+            }
+            node->refIntN_C()[daysSinceIncidence + _zero_translation_additive] += controls;
+            if (controls) _caselessWindows.set(daysSinceIncidence + _zero_translation_additive);
+        } else throw prg_error("Unknown condition encountered: scan (%d), model (%d).", "readControls()", _parameters.getScanType(), _parameters.getModelType());
+    }
+
+    /* Report to user if any days in the data time range do not contains cases or controls. */
+    _caselessWindows.flip(); // flip so that windows without cases/controls are on instead of off
+    if (Parameters::isTemporalScanType(_parameters.getScanType()) && _caselessWindows.count() > 0) {
+        std::string buffer;
+        _print.Printf(
+            "Warning: The following %s in the data time range do not have cases or controls: %s\n",
+            BasePrint::P_WARNING, 
+            (_parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC ? "days" : "dates"),
+            getCaselessWindowsAsString(buffer).c_str()
+        );
+    }
+
+    return readSuccess;
+}
 
 /** Creates string detailing indexes and range of indexes which do not have cases. */
 std::string & ScanRunner::getCaselessWindowsAsString(std::string& s) const {
@@ -1240,9 +1262,23 @@ std::string & ScanRunner::getCaselessWindowsAsString(std::string& s) const {
         if (p == boost::dynamic_bitset<>::npos || p > pE + 1) {
             // print range if at end of bit set or gap in range found
             if (pS == pE) {
-                buffer << (static_cast<int>(pS) - getZeroTranslationAdditive());
+                if (_parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC)
+                    buffer << (static_cast<int>(pS) - getZeroTranslationAdditive());
+                else
+                    buffer << _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().rangeIdxToGregorianString(
+                        static_cast<int>(pS) - getZeroTranslationAdditive(), _parameters.getDatePrecisionType()
+                    );
             } else {
-                buffer << (static_cast<int>(pS) - getZeroTranslationAdditive()) << " to " << (static_cast<int>(pE) - getZeroTranslationAdditive());
+                if (_parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC)
+                    buffer << (static_cast<int>(pS) - getZeroTranslationAdditive()) << " to " << (static_cast<int>(pE) - getZeroTranslationAdditive());
+                else {
+                    std::pair<std::string, std::string> rangeDates = _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().rangeToGregorianStrings(
+                        static_cast<int>(pS) - getZeroTranslationAdditive(),
+                        static_cast<int>(pE) - getZeroTranslationAdditive(),
+                        _parameters.getDatePrecisionType()
+                    );
+                    buffer << rangeDates.first << " to " << rangeDates.second;
+                }
             }
             if (p != boost::dynamic_bitset<>::npos) {
                 buffer << ", ";
@@ -1387,6 +1423,28 @@ bool ScanRunner::reportableCut(const CutStructure& cut) const {
            (_parameters.isSequentialScanBernoulli() && getSequentialStatistic().testCutSignaled(static_cast<size_t>(cut.getID())) != 0);
 }
 
+ScanRunner::RecurrenceInterval_t ScanRunner::getRecurrenceInterval(const CutStructure& cut) const {
+    //if (!parameters.GetIsProspectiveAnalysis())
+    //   throw prg_error("GetRecurrenceInterval() called for non-prospective analysis.", "GetRecurrenceInterval()");
+
+    //if (!reportableCut(cut))
+    //    throw prg_error("Recurrence Interval cannot be obtained for this cut.", "getRecurrenceInterval()");
+
+    size_t daysInDataTimeRange = Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
+    double p_value = (double)cut.getRank() / (_parameters.getNumReplicationsRequested() + 1);
+    // Determine the number of units in occurrence per user selection.
+    double dUnitsInOccurrence = std::max(static_cast<double>(_parameters.getProspectiveFrequency()) / p_value, 1.0);
+    // Now calculate recurrance interval as years and days based on frequency.
+    switch (_parameters.getProspectiveFrequencyType()) {
+        case Parameters::ProspectiveFrequency::YEARLY: return std::make_pair(dUnitsInOccurrence, std::max(dUnitsInOccurrence * AVERAGE_DAYS_IN_YEAR, 1.0));
+        case Parameters::ProspectiveFrequency::QUARTERLY: std::make_pair(dUnitsInOccurrence / 4.0, std::max((dUnitsInOccurrence / 4.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
+        case Parameters::ProspectiveFrequency::MONTHLY: return std::make_pair(dUnitsInOccurrence / 12.0, std::max((dUnitsInOccurrence / 12.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
+        case Parameters::ProspectiveFrequency::WEEKLY:  return std::make_pair(dUnitsInOccurrence / 52.0, std::max((dUnitsInOccurrence / 52.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
+        case Parameters::ProspectiveFrequency::DAILY: return std::make_pair(dUnitsInOccurrence / AVERAGE_DAYS_IN_YEAR, std::max(dUnitsInOccurrence, 1.0));
+        default: throw prg_error("Invalid enum '%d' for prospective analysis frequency type.", "getRecurrenceInterval()", _parameters.getProspectiveFrequencyType());
+    }
+}
+
 /* REPORT RESULTS */
 bool ScanRunner::reportResults(time_t start, time_t end) {
     ResultsFileWriter resultsWriter(*this);
@@ -1475,12 +1533,12 @@ bool ScanRunner::run() {
         if (macro_less_than(_parameters.getSequentialAlphaOverall(), _sequential_statistic->getAlphaSpending(), DBL_CMP_TOLERANCE)) {
             std::stringstream buffer;
             double remaining = _parameters.getSequentialAlphaOverall() - (_sequential_statistic->getAlphaSpending() - _parameters.getSequentialAlphaSpending());
-			if (macro_less_than(0.0, remaining, DBL_CMP_TOLERANCE)) {
-				buffer << "\nThe overall alpha has only " << remaining << " remaining to be spent but user settings are requesting " << _parameters.getSequentialAlphaSpending() << " in current look.";
-				throw resolvable_error(buffer.str().c_str());
-			}
-			buffer << "The alpha spending for sequential scan reached the specified alpha overall and the analysis is over.\n";
-			_print.Printf(buffer.str().c_str(), BasePrint::P_STDOUT);
+            if (macro_less_than(0.0, remaining, DBL_CMP_TOLERANCE)) {
+                buffer << "\nThe overall alpha has only " << remaining << " remaining to be spent but user settings are requesting " << _parameters.getSequentialAlphaSpending() << " in current look.";
+                throw resolvable_error(buffer.str().c_str());
+            }
+            buffer << "The alpha spending for sequential scan reached the specified alpha overall and the analysis is over.\n";
+            _print.Printf(buffer.str().c_str(), BasePrint::P_STDOUT);
             return false;
         }
     }
@@ -1489,16 +1547,16 @@ bool ScanRunner::run() {
         throw resolvable_error("\nProblem encountered when reading the data from the case file.");
     if (_print.GetIsCanceled()) return false;
 
-	if (!_parameters.getControlFileName().empty() && (_parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getModelType() == Parameters::BERNOULLI_TIME))
-		if (!readControls(_parameters.getControlFileName(), true))
-			throw resolvable_error("\nProblem encountered when reading the data from the control file.");
+    if (!_parameters.getControlFileName().empty() && (_parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getModelType() == Parameters::BERNOULLI_TIME))
+        if (!readControls(_parameters.getControlFileName(), true))
+            throw resolvable_error("\nProblem encountered when reading the data from the control file.");
 
     if (_parameters.isSequentialScanBernoulli() && !_sequential_statistic->isFirstLook()) {
         if (!readCounts(_sequential_statistic->getCountDataFilename(), false))
             throw resolvable_error("\nProblem encountered when reading the sequential case data file.");
-		if (!readControls(_sequential_statistic->getControlDataFilename(), false))
-			throw resolvable_error("\nProblem encountered when reading the sequential control data file.");
-		if (_print.GetIsCanceled()) return false;
+        if (!readControls(_sequential_statistic->getControlDataFilename(), false))
+            throw resolvable_error("\nProblem encountered when reading the sequential control data file.");
+        if (_print.GetIsCanceled()) return false;
     }
 
     if (!setupTree())
@@ -1525,13 +1583,13 @@ bool ScanRunner::run() {
             (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.isPerformingDayOfWeekAdjustment()) ||
             (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE && _parameters.isPerformingDayOfWeekAdjustment()))
             scan_success = scanTreeTemporalConditionNodeTime();
-		else if (_parameters.getModelType() == Parameters::UNIFORM) {
-			if (_censored_data)
-				scan_success = scanTreeTemporalConditionNodeCensored();
-			else
-				scan_success = scanTreeTemporalConditionNode();
-		} else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME)
-			scan_success = scanTreeTemporalConditionNodeCensored();
+        else if (_parameters.getModelType() == Parameters::UNIFORM) {
+            if (_censored_data)
+                scan_success = scanTreeTemporalConditionNodeCensored();
+            else
+                scan_success = scanTreeTemporalConditionNode();
+        } else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME)
+            scan_success = scanTreeTemporalConditionNodeCensored();
         else
             scan_success = scanTree();
 
@@ -1912,10 +1970,8 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
 
     // Define the start and end windows with the zero index offset already incorporated.
-    DataTimeRange startWindow(_parameters.getTemporalStartRange().getStart() + _zero_translation_additive,
-                              _parameters.getTemporalStartRange().getEnd() + _zero_translation_additive),
-                  endWindow(_parameters.getTemporalEndRange().getStart() + _zero_translation_additive,
-                            _parameters.getTemporalEndRange().getEnd() + _zero_translation_additive);
+    DataTimeRange startWindow(temporalStartRange().getStart() + _zero_translation_additive, temporalStartRange().getEnd() + _zero_translation_additive),
+                  endWindow(temporalEndRange().getStart() + _zero_translation_additive, temporalEndRange().getEnd() + _zero_translation_additive);
     // Define the minimum and maximum window lengths.
     boost::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
@@ -2056,10 +2112,8 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
 
     // Define the start and end windows with the zero index offset already incorporated.
-    DataTimeRange startWindow(_parameters.getTemporalStartRange().getStart() + _zero_translation_additive,
-        _parameters.getTemporalStartRange().getEnd() + _zero_translation_additive),
-        endWindow(_parameters.getTemporalEndRange().getStart() + _zero_translation_additive,
-            _parameters.getTemporalEndRange().getEnd() + _zero_translation_additive);
+    DataTimeRange startWindow(temporalStartRange().getStart() + _zero_translation_additive, temporalStartRange().getEnd() + _zero_translation_additive),
+                  endWindow(temporalEndRange().getStart() + _zero_translation_additive, temporalEndRange().getEnd() + _zero_translation_additive);
     // Define the minimum and maximum window lengths.
     boost::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
@@ -2219,10 +2273,10 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
 
     // Define the start and end windows with the zero index offset already incorporated.
-    DataTimeRange startWindow(_parameters.getTemporalStartRange().getStart() + _zero_translation_additive,
-                              _parameters.getTemporalStartRange().getEnd() + _zero_translation_additive),
-                  endWindow(_parameters.getTemporalEndRange().getStart() + _zero_translation_additive,
-                            _parameters.getTemporalEndRange().getEnd() + _zero_translation_additive);
+    DataTimeRange startWindow(temporalStartRange().getStart() + _zero_translation_additive,
+                              temporalStartRange().getEnd() + _zero_translation_additive),
+                  endWindow(temporalEndRange().getStart() + _zero_translation_additive,
+                            temporalEndRange().getEnd() + _zero_translation_additive);
     // Define the minimum and maximum window lengths.
     boost::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
@@ -2367,8 +2421,8 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, 
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN);
     else if (_parameters.getModelType() == Parameters::UNIFORM)
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN, endIdx - startIdx + 1);
-	else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME)
-		loglikelihood = logCalculator->LogLikelihood(BrC, BrN, BrC_All, BrN_All);
+    else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME)
+        loglikelihood = logCalculator->LogLikelihood(BrC, BrN, BrC_All, BrN_All);
     else
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN);
     if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD && !(_parameters.isSequentialScanBernoulli() && getSequentialStatistic().testCutSignaled(static_cast<int>(node_index)) != 0))
@@ -2548,10 +2602,10 @@ bool ScanRunner::setupTree() {
         _TotalN = std::accumulate((*itr)->refIntN_C().begin(), (*itr)->refIntN_C().end(), _TotalN);
     }
 
-	if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-		_TotalControls = static_cast<int>(_TotalN) - _TotalC;
-	} else if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
-		// controls are read with population for Bernoulli -- so calculate total controls now
+    if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+        _TotalControls = static_cast<int>(_TotalN) - _TotalC;
+    } else if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
+        // controls are read with population for Bernoulli -- so calculate total controls now
         if (_parameters.getPerformPowerEvaluations() && _parameters.getConditionalType() == Parameters::TOTALCASES &&_parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES) {
             // check that the user specifed number of power cases is not greater than the total population (cases + controls)
             if (static_cast<double>(_parameters.getPowerEvaluationTotalCases()) > _TotalN) {
@@ -2610,7 +2664,7 @@ bool ScanRunner::setupTree() {
     }
 
     // Now we can set the data structures of NodeStructure to cumulative -- only relevant for temporal model since other models have one element arrays.
-	// We can now set each nodes calculated level in tree structure.
+    // We can now set each nodes calculated level in tree structure.
     std::for_each(_Nodes.begin(), _Nodes.end(), std::mem_fun(&NodeStructure::assignLevel));
     for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
         (*itr)->setCumulative();

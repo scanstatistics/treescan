@@ -51,6 +51,17 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
             ReadIniParameter(SourceFile, eType);
         ReadAdditionalTreeFileNameSettings(SourceFile);
         ReadInputSourceSettings(SourceFile);
+
+        /* In version 2.0.x we moved the temporal window settings to the advanced tab and added an option to toggle this window restriction - default off.
+           To keep the behavior of the prior versions, we need to toggle this feature on. */
+        if (_parameters.getCreationVersion().iMajor < 2) {
+            if (Parameters::isTemporalScanType(_parameters.getScanType())) {
+                _parameters.setRestrictTemporalWindows(true);
+                _parameters.setDatePrecisionType(DataTimeRange::DatePrecisionType::GENERIC);
+            } else {
+                _parameters.setDatePrecisionType(DataTimeRange::DatePrecisionType::NONE);
+            }
+        }
     } catch (prg_exception& x) {
         x.addTrace("Read()","IniParameterFileAccess");
         throw;
@@ -146,12 +157,12 @@ void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) 
             if (ReadInputSourceSection(SourceFile, section, key, source))
                 _parameters.defineInputSource(Parameters::COUNT_FILE, source);
         }
-		// control file
-		if (GetSpecifications().GetParameterIniInfo(Parameters::CONTROL_FILE, &section, &key)) {
-			Parameters::InputSource source;
-			if (ReadInputSourceSection(SourceFile, section, key, source))
-				_parameters.defineInputSource(Parameters::CONTROL_FILE, source);
-		}
+        // control file
+        if (GetSpecifications().GetParameterIniInfo(Parameters::CONTROL_FILE, &section, &key)) {
+            Parameters::InputSource source;
+            if (ReadInputSourceSection(SourceFile, section, key, source))
+                _parameters.defineInputSource(Parameters::CONTROL_FILE, source);
+        }
         // cut file
         if (GetSpecifications().GetParameterIniInfo(Parameters::CUT_FILE, &section, &key)) {
             Parameters::InputSource source;
@@ -263,6 +274,7 @@ void IniParameterFileAccess::writeSections(IniFile& ini, const IniParameterSpeci
         WriteAdvancedAnalysisInferenceSettings(ini);
         WriteSequentialScanSettings(ini);
         WritePowerEvaluationsSettings(ini);
+        WriteAdvancedAnalysisMiscellaneousSettings(ini);
         WriteAdvancedOutputSettings(ini);
         WritePowerSimulationsSettings(ini);
         WriteRunOptionSettings(ini);
@@ -300,10 +312,11 @@ void IniParameterFileAccess::WriteInputSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, Parameters::COUNT_FILE, s.c_str(), GetParameterComment(Parameters::COUNT_FILE));
         if (s.size()) WriteInputSource(WriteFile, Parameters::COUNT_FILE, _parameters.getInputSource(Parameters::COUNT_FILE));
 
-		GetParameterString(Parameters::CONTROL_FILE, s);
-		WriteIniParameter(WriteFile, Parameters::CONTROL_FILE, s.c_str(), GetParameterComment(Parameters::CONTROL_FILE));
-		if (s.size()) WriteInputSource(WriteFile, Parameters::CONTROL_FILE, _parameters.getInputSource(Parameters::CONTROL_FILE));
+        GetParameterString(Parameters::CONTROL_FILE, s);
+        WriteIniParameter(WriteFile, Parameters::CONTROL_FILE, s.c_str(), GetParameterComment(Parameters::CONTROL_FILE));
+        if (s.size()) WriteInputSource(WriteFile, Parameters::CONTROL_FILE, _parameters.getInputSource(Parameters::CONTROL_FILE));
 
+        WriteIniParameter(WriteFile, Parameters::DATE_PRECISION, GetParameterString(Parameters::DATE_PRECISION, s).c_str(), GetParameterComment(Parameters::DATE_PRECISION));
         WriteIniParameter(WriteFile, Parameters::DATA_TIME_RANGES, GetParameterString(Parameters::DATA_TIME_RANGES, s).c_str(), GetParameterComment(Parameters::DATA_TIME_RANGES));
     } catch (prg_exception& x) {
         x.addTrace("WriteInputSettings()","IniParameterFileAccess");
@@ -320,8 +333,6 @@ void IniParameterFileAccess::WriteAnalysisSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, Parameters::CONDITIONAL_TYPE, GetParameterString(Parameters::CONDITIONAL_TYPE, s).c_str(), GetParameterComment(Parameters::CONDITIONAL_TYPE));
         WriteIniParameter(WriteFile, Parameters::SELF_CONTROL_DESIGN, GetParameterString(Parameters::SELF_CONTROL_DESIGN, s).c_str(), GetParameterComment(Parameters::SELF_CONTROL_DESIGN));
         WriteIniParameter(WriteFile, Parameters::EVENT_PROBABILITY, GetParameterString(Parameters::EVENT_PROBABILITY, s).c_str(), GetParameterComment(Parameters::EVENT_PROBABILITY));
-        WriteIniParameter(WriteFile, Parameters::START_DATA_TIME_RANGE, GetParameterString(Parameters::START_DATA_TIME_RANGE, s).c_str(), GetParameterComment(Parameters::START_DATA_TIME_RANGE));
-        WriteIniParameter(WriteFile, Parameters::END_DATA_TIME_RANGE, GetParameterString(Parameters::END_DATA_TIME_RANGE, s).c_str(), GetParameterComment(Parameters::END_DATA_TIME_RANGE));
     } catch (prg_exception& x) {
         x.addTrace("WriteAnalysisSettings()","IniParameterFileAccess");
         throw;
@@ -401,6 +412,10 @@ void IniParameterFileAccess::WriteAdvancedAnalysisTemporalWindowSettings(IniFile
         WriteIniParameter(WriteFile, Parameters::MINIMUM_WINDOW_FIXED, GetParameterString(Parameters::MINIMUM_WINDOW_FIXED, s).c_str(), GetParameterComment(Parameters::MINIMUM_WINDOW_FIXED));
         WriteIniParameter(WriteFile, Parameters::APPLY_RISK_WINDOW_RESTRICTION, GetParameterString(Parameters::APPLY_RISK_WINDOW_RESTRICTION, s).c_str(), GetParameterComment(Parameters::APPLY_RISK_WINDOW_RESTRICTION));
         WriteIniParameter(WriteFile, Parameters::RISK_WINDOW_PERCENTAGE, GetParameterString(Parameters::RISK_WINDOW_PERCENTAGE, s).c_str(), GetParameterComment(Parameters::RISK_WINDOW_PERCENTAGE));
+        WriteIniParameter(WriteFile, Parameters::PROSPECTIVE_ANALYSIS, GetParameterString(Parameters::PROSPECTIVE_ANALYSIS, s).c_str(), GetParameterComment(Parameters::PROSPECTIVE_ANALYSIS));
+        WriteIniParameter(WriteFile, Parameters::RESTRICTED_TIME_RANGE, GetParameterString(Parameters::RESTRICTED_TIME_RANGE, s).c_str(), GetParameterComment(Parameters::RESTRICTED_TIME_RANGE));
+        WriteIniParameter(WriteFile, Parameters::START_DATA_TIME_RANGE, GetParameterString(Parameters::START_DATA_TIME_RANGE, s).c_str(), GetParameterComment(Parameters::START_DATA_TIME_RANGE));
+        WriteIniParameter(WriteFile, Parameters::END_DATA_TIME_RANGE, GetParameterString(Parameters::END_DATA_TIME_RANGE, s).c_str(), GetParameterComment(Parameters::END_DATA_TIME_RANGE));
     } catch (prg_exception& x) {
         x.addTrace("WriteAdvancedAnalysisTemporalWindowSettings()","IniParameterFileAccess");
         throw;
@@ -431,6 +446,18 @@ void IniParameterFileAccess::WriteAdvancedAnalysisInferenceSettings(IniFile& Wri
         WriteIniParameter(WriteFile, Parameters::RANDOMLY_GENERATE_SEED, GetParameterString(Parameters::RANDOMLY_GENERATE_SEED, s).c_str(), GetParameterComment(Parameters::RANDOMLY_GENERATE_SEED));
     } catch (prg_exception& x) {
         x.addTrace("WriteAdvancedAnalysisInferenceSettings()","IniParameterFileAccess");
+        throw;
+    }
+}
+
+/** Writes parameter settings grouped under 'Advanced Analysis - Miscellaneous'. */
+void IniParameterFileAccess::WriteAdvancedAnalysisMiscellaneousSettings(IniFile& WriteFile) {
+    std::string s;
+    try {
+        WriteIniParameter(WriteFile, Parameters::PROSPECTIVE_FREQ_TYPE, GetParameterString(Parameters::PROSPECTIVE_FREQ_TYPE, s).c_str(), GetParameterComment(Parameters::PROSPECTIVE_FREQ_TYPE));
+        WriteIniParameter(WriteFile, Parameters::PROSPECTIVE_FREQ, GetParameterString(Parameters::PROSPECTIVE_FREQ, s).c_str(), GetParameterComment(Parameters::PROSPECTIVE_FREQ));
+    } catch (prg_exception& x) {
+        x.addTrace("WriteAdvancedAnalysisMiscellaneousSettings()", "IniParameterFileAccess");
         throw;
     }
 }

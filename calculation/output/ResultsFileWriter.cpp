@@ -85,11 +85,11 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     }
     if (Parameters::isTemporalScanType(parameters.getScanType())) {
         PrintFormat.PrintSectionLabel(outfile, "Data Time Range", false);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, parameters.getDataTimeRangeSet().toString(buffer));
+        PrintFormat.PrintAlignedMarginsDataString(outfile, parameters.getDataTimeRangeSet().toString(buffer, parameters.getDatePrecisionType()));
     }
     if (parameters.isApplyingExclusionTimeRanges()) {
         PrintFormat.PrintSectionLabel(outfile, "Excluded Time Ranges", false);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, parameters.getExclusionTimeRangeSet().toString(buffer));
+        PrintFormat.PrintAlignedMarginsDataString(outfile, parameters.getExclusionTimeRangeSet().toString(buffer, parameters.getDatePrecisionType()));
     }
     if (parameters.getScanType() != Parameters::TIMEONLY) {
         const TreeStatistics& treestats =  _scanRunner.getTreeStatistics();
@@ -128,7 +128,9 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         std::string buffer;
         _scanRunner.getCaselessWindowsAsString(buffer);
         if (buffer.size()) {
-            outfile << "Warning: The following days in the data time range do not have cases:" << std::endl;
+            outfile << "Warning: The following " 
+                    << (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC ? "days" : "dates" )
+                    << " in the data time range do not have cases:" << std::endl;
             PrintFormat.PrintNonRightMarginedDataString(outfile, buffer, false);
             PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
         }
@@ -174,9 +176,9 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     }
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer.c_str());
 
-					PrintFormat.PrintSectionLabel(outfile, "Tree Level", true);
-					printString(buffer, "%ld", thisNode.getLevel());
-					PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                    PrintFormat.PrintSectionLabel(outfile, "Tree Level", true);
+                    printString(buffer, "%ld", thisNode.getLevel());
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                 }
 
                 if (parameters.getConditionalType() == Parameters::NODEANDTIME) {
@@ -184,7 +186,18 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     printString(buffer, "%ld", static_cast<int>(thisNode.getBrC()));
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     PrintFormat.PrintSectionLabel(outfile, "Time Window", true);
-                    printString(buffer, "%ld to %ld", thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(), thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive());
+                    if (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC)
+                        printString(buffer, "%ld to %ld", 
+                            thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(), thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()
+                        );
+                    else {
+                        std::pair<std::string, std::string> rangeDates = parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().rangeToGregorianStrings(
+                            thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(),
+                            thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive(),
+                            parameters.getDatePrecisionType()
+                        );
+                        printString(buffer, "%s to %s", rangeDates.first.c_str(), rangeDates.second.c_str());
+                    }
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     PrintFormat.PrintSectionLabel(outfile, "Cases in Window", true);
                 } else if (parameters.getModelType() == Parameters::UNIFORM) {
@@ -199,27 +212,48 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                         PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     }
                     PrintFormat.PrintSectionLabel(outfile, "Time Window", parameters.getScanType() != Parameters::TIMEONLY);
-                    printString(buffer, "%ld to %ld", thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(), thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive());
+                    if (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC)
+                        printString(buffer, "%ld to %ld",
+                            thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(), thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()
+                        );
+                    else {
+                        std::pair<std::string, std::string> rangeDates = parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().rangeToGregorianStrings(
+                            thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(),
+                            thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive(),
+                            parameters.getDatePrecisionType()
+                        );
+                        printString(buffer, "%s to %s", rangeDates.first.c_str(), rangeDates.second.c_str());
+                    }
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     PrintFormat.PrintSectionLabel(outfile, "Cases in Window", true);
-				} else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-					// skip reporting node cases/observations for time-only scans
-					if (parameters.getScanType() != Parameters::TIMEONLY) {
-						PrintFormat.PrintSectionLabel(outfile, "Node Observations", true);
-						printString(buffer, "%ld", static_cast<int>(thisNode.getBrN()));
-						PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-						PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
-					    printString(buffer, "%ld", static_cast<int>(thisNode.getBrC()));
-						PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-					}
-					PrintFormat.PrintSectionLabel(outfile, "Time Window", parameters.getScanType() != Parameters::TIMEONLY);
-					printString(buffer, "%ld to %ld", thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(), thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive());
-					PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-					PrintFormat.PrintSectionLabel(outfile, "Observations in Window", true);
-					printString(buffer, "%ld", static_cast<int>(thisCut.getN()));
-					PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-					PrintFormat.PrintSectionLabel(outfile, "Cases in Window", true);
-
+                } else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+                    // skip reporting node cases/observations for time-only scans
+                    if (parameters.getScanType() != Parameters::TIMEONLY) {
+                        PrintFormat.PrintSectionLabel(outfile, "Node Observations", true);
+                        printString(buffer, "%ld", static_cast<int>(thisNode.getBrN()));
+                        PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                        PrintFormat.PrintSectionLabel(outfile, "Node Cases", true);
+                        printString(buffer, "%ld", static_cast<int>(thisNode.getBrC()));
+                        PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                    }
+                    PrintFormat.PrintSectionLabel(outfile, "Time Window", parameters.getScanType() != Parameters::TIMEONLY);
+                    if (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC)
+                        printString(buffer, "%ld to %ld",
+                            thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(), thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()
+                        );
+                    else {
+                        std::pair<std::string, std::string> rangeDates = parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().rangeToGregorianStrings(
+                            thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(),
+                            thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive(),
+                            parameters.getDatePrecisionType()
+                        );
+                        printString(buffer, "%s to %s", rangeDates.first.c_str(), rangeDates.second.c_str());
+                    }
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                    PrintFormat.PrintSectionLabel(outfile, "Observations in Window", true);
+                    printString(buffer, "%ld", static_cast<int>(thisCut.getN()));
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                    PrintFormat.PrintSectionLabel(outfile, "Cases in Window", true);
                 } else if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
                     PrintFormat.PrintSectionLabel(outfile, "Observations", true);
                     printString(buffer, "%ld", static_cast<int>(thisCut.getN()));
@@ -256,6 +290,17 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     double p_value = (double)thisCut.getRank() / (parameters.getNumReplicationsRequested() + 1);
                     printString(buffer, format.c_str(), p_value);
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                    if (parameters.getIsProspectiveAnalysis()) {
+                        PrintFormat.PrintSectionLabel(outfile, "Recurrence Interval", true);
+                        ScanRunner::RecurrenceInterval_t ri = _scanRunner.getRecurrenceInterval(thisCut);
+                        if (ri.first < 1.0)
+                            printString(buffer, "%.0lf %s%s", ri.second, "day", (ri.second < 1.5 ? "" : "s"));
+                        else if (ri.first <= 10.0)
+                            printString(buffer, "%.1lf %s%s", ri.first, "year", (ri.first < 1.05 ? "" : "s"));
+                        else
+                            printString(buffer, "%.0lf %s", ri.first, "years");
+                        PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                    }
                 }
                 if (parameters.isSequentialScanBernoulli()) {
                     PrintFormat.PrintSectionLabel(outfile, "Signalled", true);
@@ -269,8 +314,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                         PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "No"));
                     }
                 }
-
-				outfile << std::endl;
+                outfile << std::endl;
             }
         }
     }
@@ -535,10 +579,12 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "<tr><th>Total Observations:</th><td>" << static_cast<int>(_scanRunner.getTotalN()) << "</td></tr>" << std::endl;
     }
     if (Parameters::isTemporalScanType(parameters.getScanType())) {
-        outfile << "<tr><th>Data Time Range:</th><td>" << parameters.getDataTimeRangeSet().toString(buffer).c_str() << "</td></tr>" << std::endl;
+        outfile << "<tr><th>Data Time Range:</th><td>" 
+                << parameters.getDataTimeRangeSet().toString(buffer, parameters.getDatePrecisionType()).c_str() << "</td></tr>" << std::endl;
     }
     if (parameters.isApplyingExclusionTimeRanges()) {
-        outfile << "<tr><th>Excluded Time Ranges:</th><td>" << parameters.getExclusionTimeRangeSet().toString(buffer).c_str() << "</td></tr>" << std::endl;
+        outfile << "<tr><th>Excluded Time Ranges:</th><td>" 
+                << parameters.getExclusionTimeRangeSet().toString(buffer, parameters.getDatePrecisionType()).c_str() << "</td></tr>" << std::endl;
     }
     if (parameters.getScanType() != Parameters::TIMEONLY) {
         const TreeStatistics& treestats =  _scanRunner.getTreeStatistics();
@@ -581,15 +627,15 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             if (Parameters::isTemporalScanType(parameters.getScanType())) {
                // skip reporting node cases for time-only scans
                 if (parameters.getScanType() != Parameters::TIMEONLY) {
-					if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
-						outfile << "<th>Node Observations</th>";
+                    if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
+                        outfile << "<th>Node Observations</th>";
                     outfile << "<th>Node Cases</th>";
                 }
                 outfile << "<th>Time Window</th>";
-				if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
-					outfile << "<th>Observations in Window</th>";
+                if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
+                    outfile << "<th>Observations in Window</th>";
                 outfile << "<th>Cases in Window</th>";
-			} else if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
+            } else if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
                 outfile << "<th>Observations</th>";
                 outfile << "<th>Cases</th>";
             } else if (parameters.getModelType() == Parameters::POISSON) {
@@ -610,6 +656,8 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             }
             if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/ && !parameters.isSequentialScanBernoulli()) {
                 outfile << "<th>P-value</th>";
+                if (parameters.getIsProspectiveAnalysis())
+                    outfile << "<th>Recurrence Interval</th>";
             }
             if (parameters.getScanType() != Parameters::TIMEONLY) {
                 outfile << "<th>Ancestry</th>";
@@ -684,7 +732,9 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         std::string buffer;
         _scanRunner.getCaselessWindowsAsString(buffer);
         if (buffer.size()) {
-            outfile << "<div class=\"warning\">Warning: The following days in the data time range do not have cases: " << buffer.c_str() << "</div><div class=\"hr\"></div>";
+            outfile << "<div class=\"warning\">Warning: The following "
+                    << (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC ? "days" : "dates")
+                    <<" in the data time range do not have cases: " << buffer.c_str() << "</div><div class=\"hr\"></div>";
         }
     }
 
@@ -773,7 +823,17 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         // write node cases and time window
         printString(buffer, "%ld", static_cast<int>(thisNode.getBrC()));
         outfile << "<td>" << buffer.c_str() << "</td>";
-        outfile << "<td>" << (thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
+        int startIdx = (thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive());
+        if (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC)
+            outfile << "<td data-order=" << startIdx << ">" << startIdx << " to " << (thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
+        else {
+            std::pair<std::string, std::string> rangeDates = parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().rangeToGregorianStrings(
+                thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(),
+                thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive(),
+                parameters.getDatePrecisionType()
+            );
+            outfile << "<td data-order=" << startIdx << ">" << rangeDates.first << " to " << rangeDates.second << "</td>";
+        }
     }
     else if (parameters.getModelType() == Parameters::UNIFORM) {
         // write node cases
@@ -788,19 +848,20 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         }
         // write time window
         outfile << "<td>" << (thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
-	} else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-		// write node cases
-		// skip reporting node cases/boservations for time-only scans
-		if (parameters.getScanType() != Parameters::TIMEONLY) {
-			printString(buffer, "%ld", static_cast<int>(thisNode.getBrN()));
-			outfile << "<td>" << buffer.c_str() << "</td>";
-			printString(buffer, "%ld", static_cast<int>(thisNode.getBrC()));
-			outfile << "<td>" << buffer.c_str() << "</td>";
-		}
-		// write time window
-		outfile << "<td>" << (thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
-		outfile << "<td>" << static_cast<int>(thisCut.getN()) << "</td>";
-	} else if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
+    } else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+        // write node cases
+        // skip reporting node cases/boservations for time-only scans
+        if (parameters.getScanType() != Parameters::TIMEONLY) {
+            printString(buffer, "%ld", static_cast<int>(thisNode.getBrN()));
+            outfile << "<td>" << buffer.c_str() << "</td>";
+            printString(buffer, "%ld", static_cast<int>(thisNode.getBrC()));
+            outfile << "<td>" << buffer.c_str() << "</td>";
+        }
+        // write time window
+        int startIdx = (thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive());
+        outfile << "<td data-order=" << startIdx << ">" << startIdx << " to " << (thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
+        outfile << "<td>" << static_cast<int>(thisCut.getN()) << "</td>";
+    } else if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
         // write number of observations
         outfile << "<td>" << static_cast<int>(thisCut.getN()) << "</td>";
     }
@@ -817,6 +878,16 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
     // write p-value
     if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/ && !parameters.isSequentialScanBernoulli()) {
         outfile << "<td>" << printString(buffer, format.c_str(), (double)thisCut.getRank() / (parameters.getNumReplicationsRequested() + 1)) << "</td>";
+        if (parameters.getIsProspectiveAnalysis()) {
+                ScanRunner::RecurrenceInterval_t ri = _scanRunner.getRecurrenceInterval(thisCut);
+                if (ri.first < 1.0)
+                    printString(buffer, "%.0lf %s%s", ri.second, "day", (ri.second < 1.5 ? "" : "s"));
+                else if (ri.first <= 10.0)
+                    printString(buffer, "%.1lf %s%s", ri.first, "year", (ri.first < 1.05 ? "" : "s"));
+                else
+                    printString(buffer, "%.0lf %s", ri.first, "years");
+                outfile << "<td data-order=" << static_cast<unsigned int>(ri.second) << ">" << buffer << "</td>";
+        }
     }
     if (parameters.getScanType() != Parameters::TIMEONLY) {
         outfile << "<td class='exclude-tree'>" << thisCut.getAncestryOrder() << "</td>";

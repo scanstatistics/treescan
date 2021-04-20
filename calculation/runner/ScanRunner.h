@@ -104,8 +104,8 @@ private:
         _BrC_C.resize(container_size);
         if (parameters.getModelType() == Parameters::POISSON ||
             parameters.getModelType() == Parameters::BERNOULLI_TREE ||
-			parameters.getModelType() == Parameters::BERNOULLI_TIME ||
-			(parameters.getConditionalType() == Parameters::NODEANDTIME) ||
+            parameters.getModelType() == Parameters::BERNOULLI_TIME ||
+            (parameters.getConditionalType() == Parameters::NODEANDTIME) ||
             (parameters.getScanType() == Parameters::TIMEONLY && parameters.isPerformingDayOfWeekAdjustment()) ||
             (parameters.getConditionalType() == Parameters::NODE && parameters.isPerformingDayOfWeekAdjustment())) {
             _IntN_C.resize(container_size);
@@ -117,22 +117,22 @@ private:
         }
     }
 
-	/* Obtain the level of this node - giving consideration for multiple trees and potential for multiple parents.
-	   If multiple parents, use the shortest distance (https://www.squishlist.com/ims/treescan/29/). */
+    /* Obtain the level of this node - giving consideration for multiple trees and potential for multiple parents.
+       If multiple parents, use the shortest distance (https://www.squishlist.com/ims/treescan/29/). */
     static unsigned int getLevel(const NodeStructure& node) {
-		/* If level already calculated, just return that level. */
-		if (node.getLevel()) 
-			return node.getLevel();
+        /* If level already calculated, just return that level. */
+        if (node.getLevel()) 
+            return node.getLevel();
 
-		/* If node doesn't have parents, then level is one. */
-		if (node.getParents().empty()) return 1;
+        /* If node doesn't have parents, then level is one. */
+        if (node.getParents().empty()) return 1;
 
-		unsigned int parent_level=std::numeric_limits<unsigned int>::max();
-		for (NodeStructure::RelationContainer_t::const_iterator itr=node.getParents().begin(); itr != node.getParents().end(); ++itr) {
-			parent_level = std::min(parent_level, getLevel(*(*itr)));
-		}
-		return parent_level + 1;
-	}
+        unsigned int parent_level=std::numeric_limits<unsigned int>::max();
+        for (NodeStructure::RelationContainer_t::const_iterator itr=node.getParents().begin(); itr != node.getParents().end(); ++itr) {
+            parent_level = std::min(parent_level, getLevel(*(*itr)));
+        }
+        return parent_level + 1;
+    }
 
 public:
     NodeStructure(const std::string& identifier) 
@@ -176,7 +176,7 @@ public:
     int                           getBrC() const {return _BrC_C.front();}
     const CountContainer_t      & getBrC_C() const {return _BrC_C;}
     int                           getNChildren() const {return static_cast<int>(_Child.size());}
-	unsigned int                  getLevel() const {return _level;}
+    unsigned int                  getLevel() const {return _level;}
     count_t                       getMinCensoredBr() const { return _min_censored_Br; }
     double                        getIntN() const {return _IntN_C.front();}
     double                        getIntN_Seq_New() const { return _IntN_C_Seq_New.front(); }
@@ -227,11 +227,11 @@ public:
         if (parent.refChildren().end() == std::find(parent.refChildren().begin(), parent.refChildren().end(), this))
             parent.refChildren().push_back(this);
     }
-	unsigned int assignLevel() {
-		/* Warning - this method could cause infinite loop if check for circular dependency is not first performed. */
-		_level = getLevel(*this);
+    unsigned int assignLevel() {
+        /* Warning - this method could cause infinite loop if check for circular dependency is not first performed. */
+        _level = getLevel(*this);
         return _level;
-	}
+    }
     void setAncestors(boost::dynamic_bitset<>& ancestor_nodes) {
         /* convert ON bits in set to indexes stored in _ancestors container */
         _ancestors.clear();
@@ -331,7 +331,7 @@ class SequentialStatistic {
 
         static const char         * _file_suffix;
         static const char         * _accumulated_case_ext;
-		static const char         * _accumulated_control_ext;
+        static const char         * _accumulated_control_ext;
         static const char         * _accumulated_sim_ext;
         static const char         * _settings_ext;
 
@@ -343,8 +343,8 @@ class SequentialStatistic {
         double                      _alpha_spending;
         alpha_spending_container_t  _alpha_spendings;
         std::string                 _counts_filename;
-		std::string                 _controls_filename;
-		std::string                 _simulations_filename;
+        std::string                 _controls_filename;
+        std::string                 _simulations_filename;
         std::string                 _write_simulations_filename;
         std::string                 _write_llr_filename;
         std::string                 _settings_filename;
@@ -368,8 +368,8 @@ class SequentialStatistic {
         bool                        isFirstLook() const { return _look_idx == 1; }
         bool                        isMarkedSimulation(unsigned int simIdx) const { return _alpha_simulations.test(simIdx - 1); }
         const std::string         & getCountDataFilename() const { return _counts_filename; }
-		const std::string         & getControlDataFilename() const { return _controls_filename; }
-		const std::string         & getSimulationDataFilename() const { return _simulations_filename; }
+        const std::string         & getControlDataFilename() const { return _controls_filename; }
+        const std::string         & getSimulationDataFilename() const { return _simulations_filename; }
         const std::string         & getWriteSimulationDataFilename() const { return _write_simulations_filename; }
         void                        setCutSignaled(size_t cutIdx) {
             if (_cuts_signaled.find(static_cast<unsigned int>(cutIdx)) == _cuts_signaled.end())
@@ -392,6 +392,8 @@ class SequentialStatistic {
         void                        write(const std::string &casefilename, const std::string &controlfilename);
 };
 
+class DataSource;
+
 class ScanRunner {
 public:
     typedef ptr_vector<NodeStructure>                           NodeStructureContainer_t;
@@ -405,6 +407,7 @@ public:
     typedef std::vector<TimeIntervalContainer_t>                DayOfWeekIndexes_t;
     typedef boost::shared_ptr<TreeStatistics>                   TreeStatistics_t;
     typedef boost::shared_ptr<SequentialStatistic>              SequentialStatistic_t;
+    typedef std::pair<double, double>                           RecurrenceInterval_t;
 
 protected:
     BasePrint                         & _print;
@@ -433,10 +436,11 @@ protected:
     unsigned int                addCN_C(const NodeStructure& sourceNode, NodeStructure& destinationNode, boost::dynamic_bitset<>& ancestor_nodes);
     size_t                      calculateCutsCount() const;
 
-    bool                        readRelativeRisksAdjustments(const std::string& filename, RiskAdjustmentsContainer_t& rrAdjustments, bool consolidate);
-    bool                        readCounts(const std::string& filename, bool sequence_new_data);
-	bool                        readControls(const std::string& filename, bool sequence_new_data);
-	bool                        readCuts(const std::string& filename);
+    bool                        readRelativeRisksAdjustments(const std::string& srcfilename, RiskAdjustmentsContainer_t& rrAdjustments, bool consolidate);
+    bool                        readCounts(const std::string& srcfilename, bool sequence_new_data);
+    bool                        readControls(const std::string& srcfilename, bool sequence_new_data);
+    bool                        readCuts(const std::string& filename);
+    bool                        readDateColumn(DataSource& source, size_t columnIdx, int& dateIdx, const std::string& file_name, const std::string& column_name) const;
     bool                        readTree(const std::string& filename, unsigned int treeOrdinal);
     bool                        reportResults(time_t start, time_t end);
     bool                        runPowerEvaluations();
@@ -478,10 +482,25 @@ public:
     double                             getTotalN() const {return _TotalN;}
     const TreeStatistics             & getTreeStatistics() const;
     DataTimeRange::index_t             getZeroTranslationAdditive() const {return _zero_translation_additive;}
-	bool                               isEvaluated(const NodeStructure& node) const;
+    bool                               isEvaluated(const NodeStructure& node) const;
     bool                               reportableCut(const CutStructure& cut) const;
+    RecurrenceInterval_t               getRecurrenceInterval(const CutStructure& cut) const;
     bool                               run();
     void                               updateCriticalValuesList(double llr) {if (_critical_values.get()) _critical_values->add(llr);}
+    DataTimeRange                      temporalStartRange() const {
+        // If restricting temporal windows, returns user specified temporal time range, otherwise the overall data time range.
+        return _parameters.getRestrictTemporalWindows() ? _parameters.getTemporalStartRange() : _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
+    }
+    DataTimeRange                       temporalEndRange() const {
+        // If restricting temporal windows, returns user specified temporal time range, otherwise the overall data time range.
+        if (_parameters.getIsProspectiveAnalysis())
+            return DataTimeRange(
+                _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getEnd(),
+                _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getEnd(),
+                _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart()
+            );
+        return _parameters.getRestrictTemporalWindows() ? _parameters.getTemporalEndRange() : _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
+    }
 
     boost::shared_ptr<AbstractWindowLength> getNewWindowLength() const;
 };

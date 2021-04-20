@@ -6,6 +6,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
 import java.io.File;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ImageIcon;
@@ -18,6 +19,7 @@ import javax.swing.undo.UndoManager;
 import org.treescan.app.AdvFeaturesExpection;
 import org.treescan.app.Parameters;
 import org.treescan.app.UnknownEnumException;
+import org.treescan.gui.utils.DateComponentsGroup;
 import org.treescan.gui.utils.FileSelectionDialog;
 import org.treescan.gui.utils.InputFileFilter;
 import org.treescan.gui.utils.TextPrompt;
@@ -33,9 +35,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private final UndoManager undo = new UndoManager();
     private final ParameterSettingsFrame _settings_window;
     private FocusedTabSet _focusedTabSet = FocusedTabSet.INPUT;
-    private final String _sequential_timeonly_cardname = "sequential-timeonly";
     private final String _sequential_treeonly_cardname = "sequential-treeonly";
-
+    private DateComponentsGroup _temporalStartRangeStartDateComponentsGroup;
+    private DateComponentsGroup _temporalStartRangeEndDateComponentsGroup;
+    private DateComponentsGroup _temporalEndRangeStartDateComponentsGroup;
+    private DateComponentsGroup _temporalEndRangeEndDateComponentsGroup;
+    final static String TEMPORAL_WINDOW_COMPLETE = "temporal_window_complete";
+    final static String TEMPORAL_WINDOW_GENERIC = "temporal_window_generic";    
+    
     /**
      * Creates new form ParameterSettingsFrame
      */
@@ -56,6 +63,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _glass.addMouseMotionListener(adapter);
         // Add modal internal frame to glass pane
         _glass.add(this);
+        _temporalStartRangeStartDateComponentsGroup = new DateComponentsGroup(undo, _startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, 2000, 1, 1, false);
+        _temporalStartRangeEndDateComponentsGroup = new DateComponentsGroup(undo, _startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, 2000, 12, 31, true);
+        _temporalEndRangeStartDateComponentsGroup = new DateComponentsGroup(undo, _endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, 2000, 1, 1, false);
+        _temporalEndRangeEndDateComponentsGroup = new DateComponentsGroup(undo, _endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, 2000, 12, 31, true);        
         //setupInterface(parameters);
     }
 
@@ -154,15 +165,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()) == 2);
         bReturn &= (_apply_risk_window_restriction.isSelected() == true);
         bReturn &= (Double.parseDouble(_risk_window_percentage.getText()) == 20.0);
+        bReturn &= (_prospective_evaluation.isSelected() == false);
+        bReturn &= (_restrictTemporalRangeCheckBox.isSelected() == false);
         // Sequential Scan tab
         bReturn &= (_perform_sequential_scan.isSelected() == false);
         bReturn &= _maximum_cases_signal.getText().equals("200");
         bReturn &= _minimum_cases_signal.getText().equals("3");
         bReturn &= _sequential_analysis_file.getText().equals("");
-
         bReturn &= _sequentual_alpha_overall.getText().equals("0.05");
         bReturn &= _sequential_alpha_spending.getText().equals("0.01");
-
         // Power Evaluations tab
         bReturn &= (_performPowerEvaluations.isSelected() == false);
         bReturn &= (_partOfRegularAnalysis.isSelected() == true);
@@ -263,6 +274,29 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setMaximumWindowType(_percentageTemporalRadioButton.isSelected() ? Parameters.MaximumWindowType.PERCENTAGE_WINDOW : Parameters.MaximumWindowType.FIXED_LENGTH);
         parameters.setMinimumWindowLength(Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()));
 
+        parameters.setRestrictTemporalWindows(Utils.selected(_restrictTemporalRangeCheckBox));
+        if (Utils.selected(_restrictTemporalRangeCheckBox) && parameters.getPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
+            parameters.setStartRangeStartDate(_startRangeStartGenericTextField.getText());
+            parameters.setStartRangeEndDate(_startRangeEndGenericTextField.getText());
+            parameters.setEndRangeStartDate(_endRangeStartGenericTextField.getText());
+            parameters.setEndRangeEndDate(_endRangeEndGenericTextField.getText());
+        } else if (Utils.selected(_restrictTemporalRangeCheckBox) && !parameters.getPrecisionOfTimesType().equals(Parameters.DatePrecisionType.NONE)) {
+            String sString = _startRangeStartYearTextField.getText() + "/" + _startRangeStartMonthTextField.getText() + "/" + _startRangeStartDayTextField.getText();
+            parameters.setStartRangeStartDate(sString);
+            sString = _startRangeEndYearTextField.getText() + "/" + _startRangeEndMonthTextField.getText() + "/" + _startRangeEndDayTextField.getText();
+            parameters.setStartRangeEndDate(sString);
+            sString = _endRangeStartYearTextField.getText() + "/" + _endRangeStartMonthTextField.getText() + "/" + _endRangeStartDayTextField.getText();
+            parameters.setEndRangeStartDate(sString);
+            sString = _endRangeEndYearTextField.getText() + "/" + _endRangeEndMonthTextField.getText() + "/" + _endRangeEndDayTextField.getText();
+            parameters.setEndRangeEndDate(sString);
+        }  else {
+            parameters.setStartRangeStartDate("0");
+            parameters.setStartRangeEndDate("0");
+            parameters.setEndRangeStartDate("0");
+            parameters.setEndRangeEndDate("0");    
+        }      
+        parameters.setIsProspectiveAnalysis(Utils.selected(_prospective_evaluation));
+                
         // Adjustments tab
         parameters.setPerformDayOfWeekAdjustment(_perform_dayofweek_adjustments.isEnabled() && _perform_dayofweek_adjustments.isSelected());
         parameters.setApplyingExclusionTimeRanges(_apply_time_range_restrictions.isEnabled() && _apply_time_range_restrictions.isSelected());
@@ -336,6 +370,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _minTemporalClusterSizeUnitsTextField.setText("2");
         _apply_risk_window_restriction.setSelected(true);
         _risk_window_percentage.setText("20");
+        _prospective_evaluation.setSelected(false);
+        _restrictTemporalRangeCheckBox.setSelected(false);
         // Adjustments tab
         _perform_dayofweek_adjustments.setSelected(false);
         _apply_time_range_restrictions.setSelected(false);
@@ -373,7 +409,20 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _maxTemporalClusterSizeTextField.setText(Double.toString(parameters.getMaximumWindowPercentage()));
         _maxTemporalClusterSizeUnitsTextField.setText(Integer.toString(parameters.getMaximumWindowLength()));
         _minTemporalClusterSizeUnitsTextField.setText(Integer.toString(parameters.getMinimumWindowLength()));
-
+        _prospective_evaluation.setSelected(parameters.getIsProspectiveAnalysis());
+        _restrictTemporalRangeCheckBox.setSelected(parameters.getRestrictTemporalWindows());
+        if (parameters.getPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
+            Utils.parseDateStringToControl(parameters.getStartRangeStartDate(), _startRangeStartGenericTextField);
+            Utils.parseDateStringToControl(parameters.getStartRangeEndDate(), _startRangeEndGenericTextField);
+            Utils.parseDateStringToControl(parameters.getEndRangeStartDate(), _endRangeStartGenericTextField);
+            Utils.parseDateStringToControl(parameters.getEndRangeEndDate(), _endRangeEndGenericTextField);
+        } else {
+            Utils.parseDateStringToControls(parameters.getStartRangeStartDate(), _startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, false);
+            Utils.parseDateStringToControls(parameters.getStartRangeEndDate(), _startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, false);
+            Utils.parseDateStringToControls(parameters.getEndRangeStartDate(), _endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, true);
+            Utils.parseDateStringToControls(parameters.getEndRangeEndDate(), _endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, true);
+        }        
+        
         // Adjustments tab
         _perform_dayofweek_adjustments.setSelected(parameters.getPerformDayOfWeekAdjustment());
         _apply_time_range_restrictions.setSelected(parameters.isApplyingExclusionTimeRanges());
@@ -411,6 +460,120 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableSequentialAnalysisGroup();
     }
 
+    /* enabled study period date precision based on time interval unit */
+    public void enableDatesByTimePrecisionUnits() {
+        CardLayout cl_flexible = (CardLayout) (_temporal_window_cards.getLayout());
+        switch (_settings_window.getPrecisionOfTimesControlType()) {
+            case NONE:
+            case DAY:
+                enableDates();
+                cl_flexible.show(_temporal_window_cards, TEMPORAL_WINDOW_COMPLETE);
+                break;
+            case YEAR:
+                enableDates();
+                cl_flexible.show(_temporal_window_cards, TEMPORAL_WINDOW_COMPLETE);
+                break;
+            case MONTH:
+                enableDates();
+                cl_flexible.show(_temporal_window_cards, TEMPORAL_WINDOW_COMPLETE);
+                break;
+            case GENERIC:
+                enableDates();
+                cl_flexible.show(_temporal_window_cards, TEMPORAL_WINDOW_GENERIC);
+                break;
+            default:
+                throw new UnknownEnumException(_settings_window.getPrecisionOfTimesControlType());
+        }
+    }
+
+    /* Enables dates of flexible temporal window group. */
+    public void enableDates() {
+        _temporalWindowDefinitionGroup.setEnabled(
+            _settings_window.getScanType() != Parameters.ScanType.TREEONLY && !Utils.selected(_prospective_evaluation)
+        );
+        _restrictTemporalRangeCheckBox.setEnabled(_temporalWindowDefinitionGroup.isEnabled());
+        boolean restrictedWindow = Utils.selected(_restrictTemporalRangeCheckBox);
+        boolean enableYears = true, enableMonths = true, enableDays = true;
+        switch (_settings_window.getPrecisionOfTimesControlType()) {
+            case NONE:
+                enableYears = enableMonths = enableDays = false;
+                break;
+            case DAY:
+                enableYears = enableMonths = enableDays = restrictedWindow;
+                break;
+            case YEAR:
+                enableYears = restrictedWindow;
+                enableMonths = enableDays = false;
+                break;
+            case MONTH:
+                enableYears = enableMonths = restrictedWindow;
+                enableDays = false;
+                break;
+        }
+
+        //enable generic ranges
+        _startRangeStartGenericTextField.setEnabled(restrictedWindow);
+        _startRangeEndGenericTextField.setEnabled(restrictedWindow);
+        _endRangeStartGenericTextField.setEnabled(restrictedWindow);
+        _endRangeEndGenericTextField.setEnabled(restrictedWindow);
+        _startGenericWindowRangeLabel.setEnabled(restrictedWindow);
+        _startGenericRangeToLabel.setEnabled(restrictedWindow);
+        _endGenericWindowRangeLabel.setEnabled(restrictedWindow);
+        _endGenericRangeToLabel.setEnabled(restrictedWindow);
+                
+        //enable start range dates
+        _startWindowRangeLabel.setEnabled(restrictedWindow);        
+        _startRangeToLabel.setEnabled(restrictedWindow);
+        _endWindowRangeLabel.setEnabled(restrictedWindow);
+        _endRangeToLabel.setEnabled(restrictedWindow);
+                
+        _startRangeStartYearTextField.setEnabled(enableYears);
+        _startRangeStartMonthTextField.setEnabled(enableMonths);
+        if (!_startRangeStartMonthTextField.isEnabled() && restrictedWindow) {
+            _temporalStartRangeStartDateComponentsGroup.setMonth(1);
+        }
+        _startRangeStartDayTextField.setEnabled(enableDays);
+        if (!_startRangeStartDayTextField.isEnabled() && restrictedWindow) {
+            _temporalStartRangeStartDateComponentsGroup.setDay(1);
+        }
+        _startRangeEndYearTextField.setEnabled(enableYears);
+        _startRangeEndMonthTextField.setEnabled(enableMonths);
+        if (!_startRangeEndMonthTextField.isEnabled() && restrictedWindow) {
+            _temporalStartRangeEndDateComponentsGroup.setMonth(12);
+        }
+        _startRangeEndDayTextField.setEnabled(enableDays);
+        if (!_startRangeEndDayTextField.isEnabled() && restrictedWindow) {
+            _temporalStartRangeEndDateComponentsGroup.setDay(31);
+        }
+        // to be cautious, validate the groups 
+        _temporalStartRangeStartDateComponentsGroup.validateGroup();
+        _temporalStartRangeEndDateComponentsGroup.validateGroup();
+
+        // enable end range dates
+        _endRangeStartYearTextField.setEnabled(enableYears);
+        _endRangeStartMonthTextField.setEnabled(enableMonths);
+        if (!_endRangeStartMonthTextField.isEnabled() && restrictedWindow) {
+            _temporalEndRangeStartDateComponentsGroup.setMonth(1);
+        }
+        _endRangeStartDayTextField.setEnabled(enableDays);
+        if (!_endRangeStartDayTextField.isEnabled() && restrictedWindow) {
+            _temporalEndRangeStartDateComponentsGroup.setDay(1);            
+        }
+        _endRangeEndYearTextField.setEnabled(enableYears);
+        _endRangeEndMonthTextField.setEnabled(enableMonths);
+        if (!_endRangeEndMonthTextField.isEnabled() && restrictedWindow) {
+            _temporalEndRangeEndDateComponentsGroup.setMonth(12);
+        }
+        _endRangeEndDayTextField.setEnabled(enableDays);
+        if (!_endRangeEndDayTextField.isEnabled() && restrictedWindow) {
+            _temporalEndRangeEndDateComponentsGroup.setMonth(31);            
+        }
+        // to be cautious, validate the groups 
+        _temporalEndRangeStartDateComponentsGroup.validateGroup();
+        _temporalEndRangeEndDateComponentsGroup.validateGroup();
+    }
+    
+    
     /**
      * Sets default values for Output related tab and respective controls pulled
      * these default values from the CParameter class
@@ -422,98 +585,110 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _attributable_risk_exposed.setText("");
     }
 
-    /*
-     * Verifies that settings are valid in the context of all other parameter settings.
-     */
+    /* Verifies that settings are valid in the context of all other parameter settings. */
     public void CheckSettings() {
-        CheckInputSettings();
         CheckInferenceSettings();
+        CheckTemporalWindowSettings();
         CheckTemporalWindowSize();
         CheckAdjustmentSettings();
         CheckSequentialAnalysisSettings();
         CheckPowerEvaluationSettings();
+        CheckInputSettings();
         CheckAdditionalOutputOptions();
     }
-
-    /*
-     * Verifies that sequential scan settings are valid in the context of all parameter settings.
-     */
+    
+    /* Verifies that sequential scan settings are valid in the context of all parameter settings. */
     private void CheckSequentialAnalysisSettings() {
         if (_perform_sequential_scan.isEnabled() && _perform_sequential_scan.isSelected()) {
             Parameters.ScanType scanType = _settings_window.getScanType();
-            Parameters.ModelType modelType = _settings_window.getModelType();
-            Parameters.ConditionalType conditionType = _settings_window.getConditionalType();
-
             if (scanType == Parameters.ScanType.TIMEONLY) {
                 int minimum_cases_to_signal = Integer.parseInt(_minimum_cases_signal.getText());
-                if (minimum_cases_to_signal < 3) {
-                    throw new AdvFeaturesExpection("The minimum number of cases to signal must be 3 or greater.\n", FocusedTabSet.ANALYSIS, (Component) _minimum_cases_signal);
-                }
+                if (minimum_cases_to_signal < 3)
+                    throw new AdvFeaturesExpection("The minimum number of cases to signal must be 3 or greater.\n", 
+                        FocusedTabSet.ANALYSIS, (Component) _minimum_cases_signal
+                    );
                 int maximum_cases_to_signal = Integer.parseInt(_maximum_cases_signal.getText());
-                if (minimum_cases_to_signal > maximum_cases_to_signal) {
-                    throw new AdvFeaturesExpection("The minimum number of cases to signal must be than the maximum to signal.\n", FocusedTabSet.ANALYSIS, (Component) _minimum_cases_signal);
-                }
-                if (_sequential_analysis_file.getText().length() == 0) {
-                    throw new AdvFeaturesExpection("Please specify a sequential analysis filename.", FocusedTabSet.ANALYSIS, (Component) _sequential_analysis_file);
-                }
+                if (minimum_cases_to_signal > maximum_cases_to_signal)
+                    throw new AdvFeaturesExpection("The minimum number of cases to signal must be than the maximum to signal.\n", 
+                        FocusedTabSet.ANALYSIS, (Component) _minimum_cases_signal
+                    );
+                if (_sequential_analysis_file.getText().length() == 0)
+                    throw new AdvFeaturesExpection("Please specify a sequential analysis filename.", 
+                        FocusedTabSet.ANALYSIS, (Component) _sequential_analysis_file
+                    );
             } else {
                 double alpha = Double.parseDouble(_sequentual_alpha_overall.getText());
                 double alpha_spending = Double.parseDouble(_sequential_alpha_spending.getText());
-                if (alpha_spending > alpha) {
-                    throw new AdvFeaturesExpection("For sequential scan, alpha spending cannot be greater than alpha.", FocusedTabSet.ANALYSIS, (Component) _sequential_analysis_file);
-                }
+                if (alpha_spending > alpha)
+                    throw new AdvFeaturesExpection("For sequential scan, alpha spending cannot be greater than alpha.", 
+                        FocusedTabSet.ANALYSIS, (Component) _sequential_analysis_file
+                    );
                 double test = 1.0 / (Double.parseDouble(_montCarloReplicationsTextField.getText()) + 1.0);
-                if (alpha_spending < test) {
-                    throw new AdvFeaturesExpection("For sequential scan, alpha spending cannot be less than " + Double.toString(test) + " with " + _montCarloReplicationsTextField.getText() + " replications.", FocusedTabSet.ANALYSIS, (Component) _sequential_analysis_file);
-                }
+                if (alpha_spending < test)
+                    throw new AdvFeaturesExpection(
+                        "For sequential scan, alpha spending cannot be less than " + Double.toString(test) + 
+                        " with " + _montCarloReplicationsTextField.getText() + " replications.", 
+                        FocusedTabSet.ANALYSIS, (Component) _sequential_analysis_file
+                    );
             }
         }
     }
 
-    /*
-     * Verifies that power evaluation settings are valid in the context of all parameter settings.
-     */
+    /* Verifies that power evaluation settings are valid in the context of all parameter settings. */
     private void CheckPowerEvaluationSettings() {
         if (_performPowerEvaluations.isEnabled() && _performPowerEvaluations.isSelected()) {
             if (_powerEvaluationWithSpecifiedCases.isSelected()) {
-                if (Integer.parseInt(_totalPowerCases.getText()) < 2) {
-                    throw new AdvFeaturesExpection("The number of power evaluation cases must be two or more.\n", FocusedTabSet.ANALYSIS, (Component) _totalPowerCases);
-                }
+                if (Integer.parseInt(_totalPowerCases.getText()) < 2)
+                    throw new AdvFeaturesExpection("The number of power evaluation cases must be two or more.\n", 
+                        FocusedTabSet.ANALYSIS, (Component) _totalPowerCases
+                    );
                 Parameters.ModelType modelType = _settings_window.getModelType();
                 Parameters.ConditionalType conditonalType = _settings_window.getConditionalType();
                 if (!((modelType == Parameters.ModelType.POISSON ||
                        modelType == Parameters.ModelType.BERNOULLI_TREE ||
                        _settings_window.getScanType() == Parameters.ScanType.TIMEONLY) && conditonalType == Parameters.ConditionalType.TOTALCASES)) {
-                    throw new AdvFeaturesExpection("The power evaluation option to define total cases is only permitted with the conditional Poisson model, Bernoulli model or time-only scan.\n", FocusedTabSet.ANALYSIS, (Component) _totalPowerCases);
+                    throw new AdvFeaturesExpection(
+                        "The power evaluation option to define total cases is only permitted with the conditional Poisson model, Bernoulli model or time-only scan.\n", 
+                        FocusedTabSet.ANALYSIS, (Component) _totalPowerCases
+                    );
                 }
             }
             int replica = Integer.parseInt(_montCarloReplicationsTextField.getText());
             int replicaPE = Integer.parseInt(_numberPowerReplications.getText());
-            if (replica < 999) {
-                throw new AdvFeaturesExpection("The minimum number of standard replications in the power evaluation is 999.\n", FocusedTabSet.ANALYSIS, (Component) _montCarloReplicationsTextField);
-            }
-            if (replicaPE < 100) {
-                throw new AdvFeaturesExpection("The minimum number of power replications in the power evaluation is 100.\n", FocusedTabSet.ANALYSIS, (Component) _numberPowerReplications);
-            }
-            if (replicaPE % 100 != 0) {
-                throw new AdvFeaturesExpection("The number of power replications in the power evaluation must be a multiple of 100.\n", FocusedTabSet.ANALYSIS, (Component) _numberPowerReplications);
-            }
-            if (replicaPE > replica + 1) {
-                throw new AdvFeaturesExpection("The number of standard replications must be at most one less than the number of power replications.\n", FocusedTabSet.ANALYSIS, (Component) _montCarloReplicationsTextField);
-            }
-            if (_alternativeHypothesisFilename.getText().length() == 0) {
-                throw new AdvFeaturesExpection("Please specify an alternative hypothesis  filename.", FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
-            }
+            if (replica < 999)
+                throw new AdvFeaturesExpection("The minimum number of standard replications in the power evaluation is 999.\n", 
+                    FocusedTabSet.ANALYSIS, (Component) _montCarloReplicationsTextField
+                );
+            if (replicaPE < 100)
+                throw new AdvFeaturesExpection("The minimum number of power replications in the power evaluation is 100.\n", 
+                    FocusedTabSet.ANALYSIS, (Component) _numberPowerReplications
+                );
+            if (replicaPE % 100 != 0)
+                throw new AdvFeaturesExpection("The number of power replications in the power evaluation must be a multiple of 100.\n", 
+                    FocusedTabSet.ANALYSIS, (Component) _numberPowerReplications
+                );
+            if (replicaPE > replica + 1)
+                throw new AdvFeaturesExpection("The number of standard replications must be at most one less than the number of power replications.\n", 
+                    FocusedTabSet.ANALYSIS, (Component) _montCarloReplicationsTextField
+                );
+            if (_alternativeHypothesisFilename.getText().length() == 0)
+                throw new AdvFeaturesExpection("Please specify an alternative hypothesis  filename.", 
+                    FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename
+                );
             if (!FileAccess.ValidateFileAccess(_alternativeHypothesisFilename.getText(), false)) {
-                throw new AdvFeaturesExpection("The alternative hypothesis file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
-                        FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
+                throw new AdvFeaturesExpection(
+                    "The alternative hypothesis file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" +
+                    "and that you have permissions to read from this directory\nand file.",
+                    FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename
+                );
             }
             if (_settings_window.getModelType() == Parameters.ModelType.BERNOULLI_TREE && _settings_window.getConditionalType() == Parameters.ConditionalType.TOTALCASES) {
                 int eventProbNumerator = Integer.parseInt(_eventProbabiltyNumerator.getText().trim());
                 int eventProbDenominator = Integer.parseInt(_eventProbabiltyDenominator.getText().trim());
-                if (eventProbNumerator == 0 || eventProbDenominator == 0 || eventProbNumerator >= eventProbDenominator) {
-                    throw new AdvFeaturesExpection("Please specify an event probabilty that is between zero and one.", FocusedTabSet.ANALYSIS,(Component) _eventProbabiltyNumerator);
-                }
+                if (eventProbNumerator == 0 || eventProbDenominator == 0 || eventProbNumerator >= eventProbDenominator)
+                    throw new AdvFeaturesExpection("Please specify an event probabilty that is between zero and one.",
+                        FocusedTabSet.ANALYSIS,(Component) _eventProbabiltyNumerator
+                    );
             }
             // Power evaluation not implemented for sequential Bernoulli model
             if (_perform_sequential_scan.isEnabled() &&
@@ -521,105 +696,119 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _settings_window.getScanType() == Parameters.ScanType.TREEONLY &&
                 _settings_window.getModelType() == Parameters.ModelType.BERNOULLI_TREE &&
                 _settings_window.getConditionalType() == Parameters.ConditionalType.UNCONDITIONAL) {
-               throw new AdvFeaturesExpection("The power evaluation is not implemented for the sequential scan with unconditional Bernoulli model.", FocusedTabSet.ANALYSIS,(Component) _performPowerEvaluations);
+               throw new AdvFeaturesExpection("The power evaluation is not implemented for the sequential scan with unconditional Bernoulli model.", 
+                    FocusedTabSet.ANALYSIS,(Component) _performPowerEvaluations
+               );
             }
         }
     }
 
-    /*
-     * Verifies that input settings are valid in the context of all parameter settings.
-     */
+    /* Verifies that input settings are valid in the context of all parameter settings. */
     private void CheckInputSettings() {
         //validate the cuts file
-        if (_settings_window.getScanType() !=  Parameters.ScanType.TIMEONLY && _cutFileTextField.getText().length() > 0 && !FileAccess.ValidateFileAccess(_cutFileTextField.getText(), false)) {
+        if (_settings_window.getScanType() !=  Parameters.ScanType.TIMEONLY && _cutFileTextField.getText().length() > 0 && !FileAccess.ValidateFileAccess(_cutFileTextField.getText(), false))
             throw new AdvFeaturesExpection("The cuts file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", FocusedTabSet.INPUT, (Component) _cutFileTextField);
-        }
     }
 
-    /*
-     * Verifies that temporal window settings are valid in the context of all parameter settings.
-     */
+    /* Verifies that temporal window settings are valid in the context of all parameter settings. */
     private void CheckTemporalWindowSize() {
-        String sErrorMessage;
+        if (!_maxTemporalOptionsGroup.isEnabled()) return; // skip if group is disabled.
         double maximumUnitsTemporalSize = 0;
-
-        //check whether we are specifiying temporal information
-        if (!_maxTemporalOptionsGroup.isEnabled()) {
-            return;
-        }
-
-        if (_percentageTemporalRadioButton.isSelected()) {
-            if (_maxTemporalClusterSizeTextField.getText().length() == 0 || Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 0) {
+        if (Utils.selected(_percentageTemporalRadioButton)) {
+            if (_maxTemporalClusterSizeTextField.getText().length() == 0 || Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 0)
                 throw new AdvFeaturesExpection("Please specify a maximum temporal size.", FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeTextField);
-            }
-            //check maximum temporal size does not exceed maximum value of 50%
-            if (Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) > 50.0) {
-                sErrorMessage = "For the maximum temporal size, as a percent of the data time range, is 50 percent.";
-                throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeTextField);
-            }
-            //check that the maximum temporal size of the data time range is at least one time unit
+            // check maximum temporal size does not exceed maximum value of 50%
+            if (Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) > 50.0)
+                throw new AdvFeaturesExpection(
+                    "For the maximum temporal size, as a percent of the data time range, is 50 percent.", 
+                    FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeTextField
+                );
+            // check that the maximum temporal size of the data time range is at least one time unit
             int unitsInDataTimeRange = _settings_window.getNumUnitsInRange();
             maximumUnitsTemporalSize = Math.floor((double)unitsInDataTimeRange * Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) / 100.0);
-            if (maximumUnitsTemporalSize < 1) {
-                sErrorMessage = "A maximum temporal cluster size as " + _maxTemporalClusterSizeTextField.getText() + "% of a " + unitsInDataTimeRange + " unit data time range\n" + "results in a maximum temporal size that is less than one time unit.\n";
-                throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeTextField);
-            }
-        } else if (_timeTemporalRadioButton.isSelected()) {
-            if (_maxTemporalClusterSizeUnitsTextField.getText().length() == 0 || Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()) == 0) {
+            if (maximumUnitsTemporalSize < 1)
+                throw new AdvFeaturesExpection(
+                    "A maximum temporal cluster size as " + _maxTemporalClusterSizeTextField.getText() + "% of a " + unitsInDataTimeRange + " unit data time range\n" + "results in a maximum temporal size that is less than one time unit.\n", 
+                    FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeTextField
+                );
+        } else if (Utils.selected(_timeTemporalRadioButton)) {
+            if (_maxTemporalClusterSizeUnitsTextField.getText().length() == 0 || Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText()) == 0)
                 throw new AdvFeaturesExpection("Please specify a maximum temporal size.", FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeUnitsTextField);
-            }
             int unitsInDataTimeRange = _settings_window.getNumUnitsInRange();
             maximumUnitsTemporalSize = Math.floor((double)unitsInDataTimeRange * (50.0) / 100.0);
-            if (Double.parseDouble(_maxTemporalClusterSizeUnitsTextField.getText()) > maximumUnitsTemporalSize) {
-                sErrorMessage = "A maximum temporal size of " + _maxTemporalClusterSizeUnitsTextField.getText() + " time units exceeds 50% of a " + unitsInDataTimeRange + " unit data time range.\n" + "Note that current settings limit the maximum to " + (int)Math.floor(maximumUnitsTemporalSize) + " time units.";
-                throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeUnitsTextField);
-            }
+            if (Double.parseDouble(_maxTemporalClusterSizeUnitsTextField.getText()) > maximumUnitsTemporalSize)
+                throw new AdvFeaturesExpection(
+                    "A maximum temporal size of " + _maxTemporalClusterSizeUnitsTextField.getText() + " time units exceeds 50% of a " + unitsInDataTimeRange +
+                    " unit data time range.\n" + "Note that current settings limit the maximum to " + (int)Math.floor(maximumUnitsTemporalSize) + " time units.",
+                    FocusedTabSet.ANALYSIS, (Component) _maxTemporalClusterSizeUnitsTextField
+                );
             maximumUnitsTemporalSize = Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText());
         }
-
         // validate the minimum temporal cluster size setting
         int minimumUnitsTemporalSize = Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText());
-        if (minimumUnitsTemporalSize < 1) {
-            sErrorMessage = "The minimum temporal size is 1 time unit";
-            throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField);
-        }
+        if (minimumUnitsTemporalSize < 1)
+            throw new AdvFeaturesExpection(
+                "The minimum temporal size is 1 time unit", FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField
+            );
         // compare the maximum temporal cluster size to the minimum temporal cluster size
-        if (minimumUnitsTemporalSize > maximumUnitsTemporalSize) {
-            sErrorMessage = "The minimum temporal size is greater than the maximum temporal cluster size of " + (int)maximumUnitsTemporalSize + " time units.";
-            throw new AdvFeaturesExpection(sErrorMessage, FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField);
-        }
-
-        int shortestTemporalWindow = _settings_window.getNumUnitsInShortestTemporalWindow();
-        // check whether any cuts will be evaluated given the specified maximum temporal window size and temporal window ranges
-        if (maximumUnitsTemporalSize < shortestTemporalWindow) {
-            throw new AdvFeaturesExpection("No cuts will be evaluated since the maximum window size is " + (int)maximumUnitsTemporalSize + " time units\nyet the minimum number of time units in temporal window is " + shortestTemporalWindow + ".",
-                                           FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField);
-        }
-        // check whether any cuts will be evaluated given the specified minimum temporal window size and temporal window ranges
-        int unitsInTemporalWindow = _settings_window.getNumUnitsInTemporalWindow();
-        if (minimumUnitsTemporalSize > unitsInTemporalWindow) {
-            throw new AdvFeaturesExpection("No cuts will be evaluated since the minimum window size is " + minimumUnitsTemporalSize + "\nyet the maximum number of time units in temporal window is " + unitsInTemporalWindow + ".",
-                                           FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField);
+        if (minimumUnitsTemporalSize > maximumUnitsTemporalSize)
+            throw new AdvFeaturesExpection(
+                "The minimum temporal size is greater than the maximum temporal cluster size of " + (int)maximumUnitsTemporalSize + " time units.", 
+                FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField
+            );
+        if (Utils.selected(_restrictTemporalRangeCheckBox)) {
+            int shortestTemporalWindow = getNumUnitsInShortestTemporalWindow();
+            // check whether any cuts will be evaluated given the specified maximum temporal window size and temporal window ranges
+            if (maximumUnitsTemporalSize < shortestTemporalWindow)
+                throw new AdvFeaturesExpection(
+                    "No cuts will be evaluated since the maximum window size is " + (int)maximumUnitsTemporalSize + 
+                    " time units\nyet the minimum number of time units in temporal window is " + shortestTemporalWindow + ".",
+                    FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField
+                );
+            // check whether any cuts will be evaluated given the specified minimum temporal window size and temporal window ranges
+            int unitsInTemporalWindow = getNumUnitsInTemporalWindow();
+            if (minimumUnitsTemporalSize > unitsInTemporalWindow)
+                throw new AdvFeaturesExpection(
+                    "No cuts will be evaluated since the minimum window size is " + minimumUnitsTemporalSize + 
+                    "\nyet the maximum number of time units in temporal window is " + unitsInTemporalWindow + ".",
+                    FocusedTabSet.ANALYSIS, (Component) _minTemporalClusterSizeUnitsTextField
+                );
         }
     }
 
-    /*
-     * Verifies that additional output settings are valid in the context of all parameter settings.
-     */
+    /* Returns the number of time units in the specified temporal window. */
+    public int getNumUnitsInTemporalWindow() {
+        return Utils.getUnitsBetween(
+            _settings_window.getPrecisionOfTimesControlType(), 
+            getTemporalStartRangeBegin(), 
+            getTemporalEndRangeEnd()
+        );
+    }
+
+    /* Returns the number of time units in the shortest period of specified temporal window. */
+    public int getNumUnitsInShortestTemporalWindow() {
+        LocalDate StartRangeEnd = getTemporalStartRangeEnd();
+        LocalDate EndRangeBegin = getTemporalEndRangeBegin();
+        // if the end of the start range overlaps the end range, the minimum is one unit.
+        if (StartRangeEnd.isAfter(EndRangeBegin) || StartRangeEnd.isEqual(EndRangeBegin)) return 1;
+        return Utils.getUnitsBetween(
+            _settings_window.getPrecisionOfTimesControlType(), 
+            StartRangeEnd, 
+            getTemporalEndRangeEnd()
+        );        
+    }    
+    
+    /* Verifies that additional output settings are valid in the context of all parameter settings. */
     private void CheckAdditionalOutputOptions() throws NumberFormatException, AdvFeaturesExpection {
         if (_chk_rpt_attributable_risk.isEnabled() && _chk_rpt_attributable_risk.isSelected()) {
-            if (_attributable_risk_exposed.getText().trim().length() == 0) {
+            if (_attributable_risk_exposed.getText().trim().length() == 0)
                 throw new AdvFeaturesExpection("Please specify a number exposed for the attributable risk.", FocusedTabSet.OUTPUT, (Component)_attributable_risk_exposed);
-            }
-            if (Integer.parseInt(_attributable_risk_exposed.getText().trim()) < 1) {
+            if (Integer.parseInt(_attributable_risk_exposed.getText().trim()) < 1)
                 throw new AdvFeaturesExpection("The number exposed for the attributable risk must be greater than zero.", FocusedTabSet.OUTPUT, (Component) _attributable_risk_exposed);
-            }
         }
     }
 
-    /*
-     * Verifies that inference settings are valid in the context of all parameter settings.
-     */
+    /* Verifies that inference settings are valid in the context of all parameter settings. */
     private void CheckInferenceSettings() {
         int dNumReplications;
         if (_montCarloReplicationsTextField.getText().trim().length() == 0) {
@@ -633,40 +822,120 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (_restricted_levels.getText().trim().length() == 0) {
                 throw new AdvFeaturesExpection("Please specify a comma separated list of integers that represent node levels.", FocusedTabSet.ANALYSIS, (Component)_restricted_levels);
             }
-            List<Integer> list = new ArrayList<Integer>();
             try {
                 for (String field : _restricted_levels.getText().split(","))
-                    list.add(Integer.parseInt(field.trim()));
+                    Integer.parseInt(field.trim());
             } catch (java.lang.NumberFormatException e) {
                 throw new AdvFeaturesExpection("Please specify a comma separated list of integers that represent node levels.", FocusedTabSet.ANALYSIS, (Component)_restricted_levels);
             }
         }
     }
 
-    /** Verifies that adjustment options are valid. */
+    /* Verifies that adjustment options are valid. */
     private void CheckAdjustmentSettings() {
         if (_apply_time_range_restrictions.isEnabled() && _apply_time_range_restrictions.isSelected()) {
             if (_time_range_restrictions.getText().trim().length() == 0)
-                throw new AdvFeaturesExpection("Please specify a semi-colon separated list of ranges (e.g. [2,4];[7,20]).", FocusedTabSet.ANALYSIS, (Component)_time_range_restrictions);
-            if (!_time_range_restrictions.getText().trim().replace(" ", "").matches("^\\[-?\\d+,-?\\d+\\](;\\[-?\\d+,-?\\d+\\])*$"))
-                throw new AdvFeaturesExpection("Not a valid semi-colon separated list of ranges (e.g. [2,4];[7,20]).", FocusedTabSet.ANALYSIS, (Component)_time_range_restrictions);
+                throw new AdvFeaturesExpection(
+                    "Please specify a semi-colon separated list of ranges " + 
+                    (_settings_window.getPrecisionOfTimesControlType().equals(Parameters.DatePrecisionType.GENERIC) ? "(e.g. [2,4];[7,20])." : "(e.g. [2000/1/15,2000/2/15];[2000/10/22,2000/10/24])."), 
+                    FocusedTabSet.ANALYSIS, (Component)_time_range_restrictions
+                );
+            if (_settings_window.getPrecisionOfTimesControlType().equals(Parameters.DatePrecisionType.GENERIC)) {
+                if (!_time_range_restrictions.getText().trim().replace(" ", "").matches("^\\[-?\\d+,-?\\d+\\](;\\[-?\\d+,-?\\d+\\])*$"))
+                    throw new AdvFeaturesExpection("Not a valid semi-colon separated list of ranges (e.g. [2,4];[7,20]).", FocusedTabSet.ANALYSIS, (Component)_time_range_restrictions);
+            } else {
+                if (!_time_range_restrictions.getText().trim().replace(" ", "").matches("^\\[\\d{4}/\\d{1,2}/\\d{1,2},\\d{4}/\\d{1,2}/\\d{1,2}](;\\[\\d{4}/\\d{1,2}/\\d{1,2},\\d{4}/\\d{1,2}/\\d{1,2}])*$"))
+                    throw new AdvFeaturesExpection("Not a valid semi-colon separated list of ranges (e.g. [2000/1/15,2000/2/15];[2000/10/22,2000/10/24]).", FocusedTabSet.ANALYSIS, (Component)_time_range_restrictions);                
+            }
         }
     }
 
-
-    /**
-     * enables or disables the advanced inputs group controls.
-     */
+    /* Enables or disables the advanced inputs group controls. */
     public void enableAdvancedInputsSettings(boolean enableCutFile) {
         _cutFileLabel.setEnabled(enableCutFile);
         _cutFileTextField.setEnabled(enableCutFile);
         _cutFileImportButton.setEnabled(enableCutFile);
     }
 
+    /* Validates scanning window range settings - throws exception. */
+    private void CheckTemporalWindowSettings() {
+        if (Utils.selected(_restrictTemporalRangeCheckBox)) {
+            LocalDate DataRangeStart = _settings_window.getDataTimeRangeStartDate(), DataRangeEnd = _settings_window.getDataTimeRangeEndDate();
+            LocalDate StartRangeBegin = getTemporalStartRangeBegin(), StartRangeEnd = getTemporalStartRangeEnd();
+            LocalDate EndRangeBegin = getTemporalEndRangeBegin(), EndRangeEnd = getTemporalEndRangeEnd();
+            //check that scanning ranges are within study period
+            if (StartRangeBegin.isBefore(DataRangeStart) || StartRangeBegin.isAfter(DataRangeEnd))
+                throw new AdvFeaturesExpection("The temporal window start range does not occur within the data time range.",
+                        FocusedTabSet.ANALYSIS, (Component) _startRangeStartYearTextField
+                );
+            if (StartRangeEnd.isBefore(DataRangeStart) || StartRangeEnd.isAfter(DataRangeEnd))
+                throw new AdvFeaturesExpection("The temporal window start range does not occur within the data time range.",
+                    FocusedTabSet.ANALYSIS, (Component) _startRangeEndYearTextField
+                );
+            if (StartRangeBegin.isAfter(StartRangeEnd))
+                throw new AdvFeaturesExpection("The temporal window start range dates conflict.",
+                    FocusedTabSet.ANALYSIS, (Component) _startRangeStartYearTextField
+                );
+            if (EndRangeBegin.isBefore(DataRangeStart) || EndRangeBegin.isAfter(DataRangeEnd))
+                throw new AdvFeaturesExpection("The temporal window end range does not occur within the data time range.",
+                    FocusedTabSet.ANALYSIS, (Component) _endRangeStartYearTextField
+                );
+            if (EndRangeEnd.isBefore(DataRangeStart) || EndRangeEnd.isAfter(DataRangeEnd))
+                throw new AdvFeaturesExpection("The temporal window end range does not occur within the data time range.",
+                    FocusedTabSet.ANALYSIS, (Component) _endRangeEndYearTextField
+                );
+            if (EndRangeBegin.isAfter(EndRangeEnd))
+                throw new AdvFeaturesExpection("The scanning window end range dates conflict.",
+                    FocusedTabSet.ANALYSIS, (Component) _endRangeStartYearTextField
+                );
+            if (!StartRangeBegin.isBefore(EndRangeEnd))
+                throw new AdvFeaturesExpection("The scanning window start range does not occur before end range.",
+                    FocusedTabSet.ANALYSIS, (Component) _startRangeStartYearTextField
+                );
+        }
+    }
+
+    private LocalDate getTemporalEndRangeEnd() {
+        return Utils.getLocalDate(_settings_window.getPrecisionOfTimesControlType(),
+                _endRangeEndYearTextField.getText(),
+                _endRangeEndMonthTextField.getText(),
+                _endRangeEndDayTextField.getText(),
+                _endRangeEndGenericTextField.getText()
+        );
+    }
+
+    private LocalDate getTemporalEndRangeBegin() {
+        return Utils.getLocalDate(_settings_window.getPrecisionOfTimesControlType(),
+                _endRangeStartYearTextField.getText(),
+                _endRangeStartMonthTextField.getText(),
+                _endRangeStartDayTextField.getText(),
+                _endRangeStartGenericTextField.getText()
+        );
+    }
+
+    private LocalDate getTemporalStartRangeEnd() {
+        return Utils.getLocalDate(_settings_window.getPrecisionOfTimesControlType(),
+                _startRangeEndYearTextField.getText(),
+                _startRangeEndMonthTextField.getText(),
+                _startRangeEndDayTextField.getText(),
+                _startRangeEndGenericTextField.getText()
+        );
+    }
+
+    private LocalDate getTemporalStartRangeBegin() {
+        return Utils.getLocalDate(
+                _settings_window.getPrecisionOfTimesControlType(),
+                _startRangeStartYearTextField.getText(),
+                _startRangeStartMonthTextField.getText(),
+                _startRangeStartDayTextField.getText(),
+                _startRangeStartGenericTextField.getText()
+        );
+    }
+    
     /**
-     * enables or disables the temporal options group control
+     * enables or disables options on the temporal tab
      */
-    public void enableTemporalOptionsGroup(boolean bEnable) {
+    public void enableTemporalOptionGroups(boolean bEnable) {
         _maxTemporalOptionsGroup.setEnabled(bEnable);
         _percentageTemporalRadioButton.setEnabled(bEnable);
         _maxTemporalClusterSizeTextField.setEnabled(bEnable && _percentageTemporalRadioButton.isSelected());
@@ -681,6 +950,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _apply_risk_window_restriction.setEnabled(bEnable);
         _risk_window_percentage.setEnabled(bEnable && _apply_risk_window_restriction.isSelected());
         _risk_window_percentage_label.setEnabled(bEnable);
+        _prospective_evaluation.setEnabled(bEnable);        
+        enableDates();
     }
 
     /** enables options of the Adjustments tab */
@@ -845,6 +1116,36 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _apply_risk_window_restriction = new javax.swing.JCheckBox();
         _risk_window_percentage = new javax.swing.JTextField();
         _risk_window_percentage_label = new javax.swing.JLabel();
+        _temporalWindowDefinitionGroup = new javax.swing.JPanel();
+        _temporal_window_cards = new javax.swing.JPanel();
+        _windowCompletePanel = new javax.swing.JPanel();
+        _startWindowRangeLabel = new javax.swing.JLabel();
+        _startRangeStartYearTextField = new javax.swing.JTextField();
+        _startRangeStartMonthTextField = new javax.swing.JTextField();
+        _startRangeStartDayTextField = new javax.swing.JTextField();
+        _startRangeToLabel = new javax.swing.JLabel();
+        _startRangeEndYearTextField = new javax.swing.JTextField();
+        _startRangeEndMonthTextField = new javax.swing.JTextField();
+        _startRangeEndDayTextField = new javax.swing.JTextField();
+        _endRangeEndDayTextField = new javax.swing.JTextField();
+        _endRangeEndMonthTextField = new javax.swing.JTextField();
+        _endRangeEndYearTextField = new javax.swing.JTextField();
+        _endRangeToLabel = new javax.swing.JLabel();
+        _endRangeStartDayTextField = new javax.swing.JTextField();
+        _endRangeStartMonthTextField = new javax.swing.JTextField();
+        _endRangeStartYearTextField = new javax.swing.JTextField();
+        _endWindowRangeLabel = new javax.swing.JLabel();
+        _windowGenericPanel = new javax.swing.JPanel();
+        _startGenericWindowRangeLabel = new javax.swing.JLabel();
+        _startRangeStartGenericTextField = new javax.swing.JTextField();
+        _startGenericRangeToLabel = new javax.swing.JLabel();
+        _startRangeEndGenericTextField = new javax.swing.JTextField();
+        _endRangeEndGenericTextField = new javax.swing.JTextField();
+        _endGenericRangeToLabel = new javax.swing.JLabel();
+        _endRangeStartGenericTextField = new javax.swing.JTextField();
+        _endGenericWindowRangeLabel = new javax.swing.JLabel();
+        _restrictTemporalRangeCheckBox = new javax.swing.JCheckBox();
+        _prospective_evaluation = new javax.swing.JCheckBox();
         _advanced_inferenece_tab = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         _labelMonteCarloReplications = new javax.swing.JLabel();
@@ -906,7 +1207,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _setDefaultButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(575, 440));
+        setPreferredSize(new java.awt.Dimension(575, 500));
 
         _cutFileLabel.setText("Cut File:"); // NOI18N
 
@@ -950,7 +1251,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_cutFileImportButton)
                     .addComponent(_cutFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(268, Short.MAX_VALUE))
+                .addContainerGap(331, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced Input", _advanced_input_tab);
@@ -965,8 +1266,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _percentageTemporalRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    //cause enabling to be refreshed based upon clicked radio button
-                    enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled());
+                    Parameters.ScanType scanType = _settings_window.getScanType();
+                    enableTemporalOptionGroups(scanType == Parameters.ScanType.TREETIME || scanType == Parameters.ScanType.TIMEONLY);
                     enableSetDefaultsButton();
                 }
             }
@@ -1004,8 +1305,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _timeTemporalRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    //cause enabling to be refreshed based upon clicked radio button
-                    enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled());
+                    Parameters.ScanType scanType = _settings_window.getScanType();
+                    enableTemporalOptionGroups(scanType == Parameters.ScanType.TREETIME || scanType == Parameters.ScanType.TIMEONLY);
                     enableSetDefaultsButton();
                 }
             }
@@ -1052,7 +1353,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_maxTemporalClusterSizeUnitsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_maxTemporalTimeUnitsLabel)))
-                .addContainerGap(231, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         _maxTemporalOptionsGroupLayout.setVerticalGroup(
             _maxTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1151,7 +1452,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addGap(21, 21, 21)
                         .addComponent(_risk_window_percentage, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_risk_window_percentage_label, javax.swing.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE))
+                        .addComponent(_risk_window_percentage_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(_minTemporalOptionsGroupLayout.createSequentialGroup()
                         .addComponent(_minTemporalTimeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -1179,6 +1480,252 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(19, Short.MAX_VALUE))
         );
 
+        _temporalWindowDefinitionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Window"));
+
+        _temporal_window_cards.setLayout(new java.awt.CardLayout());
+
+        _startWindowRangeLabel.setText("Start time in range:"); // NOI18N
+
+        _startRangeStartYearTextField.setText("2000"); // NOI18N
+
+        _startRangeStartMonthTextField.setText("01"); // NOI18N
+
+        _startRangeStartDayTextField.setText("01"); // NOI18N
+
+        _startRangeToLabel.setText("to"); // NOI18N
+
+        _startRangeEndYearTextField.setText("2000"); // NOI18N
+
+        _startRangeEndMonthTextField.setText("01"); // NOI18N
+
+        _startRangeEndDayTextField.setText("01"); // NOI18N
+
+        _endRangeEndDayTextField.setText("31"); // NOI18N
+
+        _endRangeEndMonthTextField.setText("12"); // NOI18N
+
+        _endRangeEndYearTextField.setText("2000"); // NOI18N
+
+        _endRangeToLabel.setText("to"); // NOI18N
+
+        _endRangeStartDayTextField.setText("31"); // NOI18N
+
+        _endRangeStartMonthTextField.setText("12"); // NOI18N
+
+        _endRangeStartYearTextField.setText("2000"); // NOI18N
+
+        _endWindowRangeLabel.setText("End time in range:"); // NOI18N
+
+        javax.swing.GroupLayout _windowCompletePanelLayout = new javax.swing.GroupLayout(_windowCompletePanel);
+        _windowCompletePanel.setLayout(_windowCompletePanelLayout);
+        _windowCompletePanelLayout.setHorizontalGroup(
+            _windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_windowCompletePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_startWindowRangeLabel)
+                    .addComponent(_endWindowRangeLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_windowCompletePanelLayout.createSequentialGroup()
+                        .addComponent(_startRangeStartYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_startRangeStartMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_startRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(_startRangeToLabel)
+                        .addGap(10, 10, 10)
+                        .addComponent(_startRangeEndYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(_windowCompletePanelLayout.createSequentialGroup()
+                        .addComponent(_endRangeStartYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_endRangeStartMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_endRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(_endRangeToLabel)
+                        .addGap(10, 10, 10)
+                        .addComponent(_endRangeEndYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_windowCompletePanelLayout.createSequentialGroup()
+                        .addComponent(_startRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_startRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(_windowCompletePanelLayout.createSequentialGroup()
+                        .addComponent(_endRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(104, Short.MAX_VALUE))
+        );
+        _windowCompletePanelLayout.setVerticalGroup(
+            _windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_windowCompletePanelLayout.createSequentialGroup()
+                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_startWindowRangeLabel)
+                    .addComponent(_startRangeStartYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_startRangeStartMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_startRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_startRangeToLabel)
+                    .addComponent(_startRangeEndYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_startRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_startRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_endWindowRangeLabel)
+                    .addComponent(_endRangeStartYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_endRangeStartMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_endRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_endRangeToLabel)
+                    .addComponent(_endRangeEndYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_endRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 11, Short.MAX_VALUE))
+        );
+
+        _temporal_window_cards.add(_windowCompletePanel, "temporal_window_complete");
+
+        _startGenericWindowRangeLabel.setText("Start time in range:"); // NOI18N
+
+        _startRangeStartGenericTextField.setText("0"); // NOI18N
+        _startRangeStartGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        _startRangeStartGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validateNumericKeyTyped(_startRangeStartGenericTextField, e, 10);
+            }
+        });
+
+        _startGenericRangeToLabel.setText("to"); // NOI18N
+
+        _startRangeEndGenericTextField.setText("31"); // NOI18N
+        _startRangeEndGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        _startRangeEndGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_startRangeEndGenericTextField, e, 10);
+            }
+        });
+
+        _endRangeEndGenericTextField.setText("31"); // NOI18N
+        _endRangeEndGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        _endRangeEndGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_endRangeEndGenericTextField, e, 10);
+            }
+        });
+
+        _endGenericRangeToLabel.setText("to"); // NOI18N
+
+        _endRangeStartGenericTextField.setText("0"); // NOI18N
+        _endRangeStartGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        _endRangeStartGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_endRangeStartGenericTextField, e, 10);
+            }
+        });
+
+        _endGenericWindowRangeLabel.setText("End time in range:"); // NOI18N
+
+        javax.swing.GroupLayout _windowGenericPanelLayout = new javax.swing.GroupLayout(_windowGenericPanel);
+        _windowGenericPanel.setLayout(_windowGenericPanelLayout);
+        _windowGenericPanelLayout.setHorizontalGroup(
+            _windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_windowGenericPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_startGenericWindowRangeLabel)
+                    .addComponent(_endGenericWindowRangeLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_endRangeStartGenericTextField, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(_startRangeStartGenericTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(_windowGenericPanelLayout.createSequentialGroup()
+                        .addComponent(_startGenericRangeToLabel)
+                        .addGap(10, 10, 10)
+                        .addComponent(_startRangeEndGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(_windowGenericPanelLayout.createSequentialGroup()
+                        .addComponent(_endGenericRangeToLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(_endRangeEndGenericTextField)))
+                .addContainerGap(112, Short.MAX_VALUE))
+        );
+        _windowGenericPanelLayout.setVerticalGroup(
+            _windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_windowGenericPanelLayout.createSequentialGroup()
+                .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_startGenericWindowRangeLabel)
+                    .addComponent(_startRangeStartGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_startGenericRangeToLabel)
+                    .addComponent(_startRangeEndGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_endGenericWindowRangeLabel)
+                    .addComponent(_endRangeStartGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_endRangeEndGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_endGenericRangeToLabel))
+                .addGap(0, 11, Short.MAX_VALUE))
+        );
+
+        _temporal_window_cards.add(_windowGenericPanel, "temporal_window_generic");
+
+        _restrictTemporalRangeCheckBox.setText("Include only windows with:");
+        _restrictTemporalRangeCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                Parameters.ScanType scanType = _settings_window.getScanType();
+                enableTemporalOptionGroups(scanType == Parameters.ScanType.TREETIME || scanType == Parameters.ScanType.TIMEONLY);
+                enableSetDefaultsButton();
+            }
+        });
+
+        javax.swing.GroupLayout _temporalWindowDefinitionGroupLayout = new javax.swing.GroupLayout(_temporalWindowDefinitionGroup);
+        _temporalWindowDefinitionGroup.setLayout(_temporalWindowDefinitionGroupLayout);
+        _temporalWindowDefinitionGroupLayout.setHorizontalGroup(
+            _temporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_temporalWindowDefinitionGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_temporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_temporalWindowDefinitionGroupLayout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(_temporal_window_cards, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_restrictTemporalRangeCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        _temporalWindowDefinitionGroupLayout.setVerticalGroup(
+            _temporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_temporalWindowDefinitionGroupLayout.createSequentialGroup()
+                .addComponent(_restrictTemporalRangeCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_temporal_window_cards, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        _prospective_evaluation.setText("Prospective Evaluation");
+        _prospective_evaluation.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                Parameters.ScanType scanType = _settings_window.getScanType();
+                enableTemporalOptionGroups(scanType == Parameters.ScanType.TREETIME || scanType == Parameters.ScanType.TIMEONLY);
+                enableSetDefaultsButton();
+            }
+        });
+
         javax.swing.GroupLayout _advanced_temporal_window_tabLayout = new javax.swing.GroupLayout(_advanced_temporal_window_tab);
         _advanced_temporal_window_tab.setLayout(_advanced_temporal_window_tabLayout);
         _advanced_temporal_window_tabLayout.setHorizontalGroup(
@@ -1186,8 +1733,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advanced_temporal_window_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_advanced_temporal_window_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_prospective_evaluation, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_temporalWindowDefinitionGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _advanced_temporal_window_tabLayout.setVerticalGroup(
@@ -1197,7 +1746,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(91, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_prospective_evaluation)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_temporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab("Temporal Window", _advanced_temporal_window_tab);
@@ -1297,7 +1850,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(203, Short.MAX_VALUE))
+                .addContainerGap(266, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _advanced_inferenece_tab);
@@ -1512,7 +2065,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_alternativeHypothesisFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_alternativeHypothesisFilenameButton))
-                .addContainerGap(101, Short.MAX_VALUE))
+                .addContainerGap(164, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout _advanced_power_evaluation_tabLayout = new javax.swing.GroupLayout(_advanced_power_evaluation_tab);
@@ -1662,7 +2215,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_report_critical_values_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(114, Short.MAX_VALUE))
+                .addContainerGap(177, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
@@ -1944,7 +2497,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_sequential_alpha_spending_label)
                     .addComponent(_sequential_alpha_spending, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_alpha_spent_to_date_label))
-                .addGap(0, 201, Short.MAX_VALUE))
+                .addGap(0, 264, Short.MAX_VALUE))
         );
 
         _panel_sequential_analysis.add(_panel_sequential_analysis_tree_only, "sequential-treeonly");
@@ -2054,6 +2607,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JButton _cutFileImportButton;
     private javax.swing.JLabel _cutFileLabel;
     public javax.swing.JTextField _cutFileTextField;
+    private javax.swing.JLabel _endGenericRangeToLabel;
+    private javax.swing.JLabel _endGenericWindowRangeLabel;
+    private javax.swing.JTextField _endRangeEndDayTextField;
+    private javax.swing.JTextField _endRangeEndGenericTextField;
+    private javax.swing.JTextField _endRangeEndMonthTextField;
+    private javax.swing.JTextField _endRangeEndYearTextField;
+    private javax.swing.JTextField _endRangeStartDayTextField;
+    private javax.swing.JTextField _endRangeStartGenericTextField;
+    private javax.swing.JTextField _endRangeStartMonthTextField;
+    private javax.swing.JTextField _endRangeStartYearTextField;
+    private javax.swing.JLabel _endRangeToLabel;
+    private javax.swing.JLabel _endWindowRangeLabel;
     private javax.swing.JLabel _eventProbabilityLabel;
     private javax.swing.JLabel _eventProbabilityLabel2;
     private javax.swing.JTextField _eventProbabiltyDenominator;
@@ -2090,9 +2655,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _powerEvaluationWithSpecifiedCases;
     private javax.swing.JLabel _powerEvaluationWithSpecifiedCasesLabel;
     private javax.swing.JPanel _powerEvaluationsGroup;
+    private javax.swing.JCheckBox _prospective_evaluation;
     private javax.swing.JCheckBox _reportCriticalValuesCheckBox;
     private javax.swing.JCheckBox _reportLLRResultsAsCsvTable;
     private javax.swing.JPanel _report_critical_values_group;
+    private javax.swing.JCheckBox _restrictTemporalRangeCheckBox;
     private javax.swing.JCheckBox _restrict_evaluated_levels;
     private javax.swing.JTextField _restricted_levels;
     private javax.swing.JTextField _risk_window_percentage;
@@ -2107,9 +2674,25 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _sequential_analysis_tab;
     private javax.swing.JTextField _sequentual_alpha_overall;
     private javax.swing.JButton _setDefaultButton;
+    private javax.swing.JLabel _startGenericRangeToLabel;
+    private javax.swing.JLabel _startGenericWindowRangeLabel;
+    private javax.swing.JTextField _startRangeEndDayTextField;
+    private javax.swing.JTextField _startRangeEndGenericTextField;
+    private javax.swing.JTextField _startRangeEndMonthTextField;
+    private javax.swing.JTextField _startRangeEndYearTextField;
+    private javax.swing.JTextField _startRangeStartDayTextField;
+    private javax.swing.JTextField _startRangeStartGenericTextField;
+    private javax.swing.JTextField _startRangeStartMonthTextField;
+    private javax.swing.JTextField _startRangeStartYearTextField;
+    private javax.swing.JLabel _startRangeToLabel;
+    private javax.swing.JLabel _startWindowRangeLabel;
+    private javax.swing.JPanel _temporalWindowDefinitionGroup;
+    private javax.swing.JPanel _temporal_window_cards;
     private javax.swing.JRadioButton _timeTemporalRadioButton;
     private javax.swing.JTextField _time_range_restrictions;
     private javax.swing.JTextField _totalPowerCases;
+    private javax.swing.JPanel _windowCompletePanel;
+    private javax.swing.JPanel _windowGenericPanel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

@@ -29,6 +29,7 @@ class ParametersPrint {
     SettingContainer_t & getRunOptionsParameters(SettingContainer_t & settings) const;
     SettingContainer_t & getSystemParameters(SettingContainer_t & settings) const;
     SettingContainer_t & getTemporalWindowParameters(SettingContainer_t & settings) const;
+    SettingContainer_t & getMiscellaneousAnalysisParameters(SettingContainer_t & settings) const;
 
     void WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, std::ostream& out) const;
     void WriteSettingsContainerHTML(const SettingContainer_t& settings, const std::string& section, std::ostream& out) const;

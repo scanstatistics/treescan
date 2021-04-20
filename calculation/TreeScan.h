@@ -9,7 +9,7 @@
 #define VERSION_MAJOR   "2"
 #define VERSION_MINOR   "0"
 #define VERSION_RELEASE "0"
-#define VERSION_PHASE "RC 1" /** testing phase name - leave blank for release */
+#define VERSION_PHASE "Beta 3" /** testing phase name - leave blank for release */
 #define VERSION_DATE    "Not Released"
 
 #if defined(_MSC_VER)
@@ -44,6 +44,8 @@
 #include "boost/tuple/tuple.hpp"
 #include <boost/any.hpp>
 
+  /** average days in year */
+#define AVERAGE_DAYS_IN_YEAR 365.25
 /** comparision tolerance for double precision numbers */
 #define DBL_CMP_TOLERANCE 1.0E-9
 /** determines equality between two numbers given some tolerance */

@@ -1,99 +1,60 @@
-#!/bin/sh
+#!/bin/bash
 
 ############ Script Defines #######################################################################
+version="2.0"
+versionf="2_0"
 build="/prj/treescan/build"
-installer_version="/prj/treescan/installers/v.2.0.x"
+installer_version="/prj/treescan/installers/v.${version}.x"
+binaries="/prj/treescan/build/binaries/linux"
 
-launch4j=$build/packages/launch4j/launch4j-3.12
-IzPack=$build/packages/IzPack/IzPack5.1.3
+javajdk="/prj/treescan/installers/install.applications/java/jdk-15.0.2-linux_x64"
+launch4j="/prj/treescan/installers/install.applications/launch4j/launch4j-3.12"
+IzPack="/prj/treescan/installers/install.applications/IzPack/IzPack.5.1.3"
 
-############ Windows ##############################################################################
+#### Windows ##############################################################################
+# Build the Inno Setup installer for Windows. (Note that someday we might replace this process with jpackageInstallerWindows.bat)
+
 # Build Windows TreeScan executable from java jar file ... TreeScan.jar -> TreeScan.exe.
-$launch4j/launch4j $build/treescan/installers/izpack/windows/launch4j_app.xml
+$javajdk/bin/java -jar $launch4j/launch4j.jar $build/treescan/installers/izpack/windows/launch4j_app.xml
 
-# prompt user to build gui exe and codesign it, then build installer and codesign that file as well.
+# Prompt user to codesign TreeScan.exe then build installer and codesign that file as well.
 echo
-echo "Run the Windows batch file ' buildWindowsInstaller.bat' now to build and sign TreeScan.exe, then build/sign installer. Hit <enter> once done ..."
+echo "Run the Windows batch file ' buildWindowsInstaller.bat' now to sign TreeScan.exe then build and sign the Windows installer. Hit <enter> once done ..."
 read dummy
 
-# Build Windows command-line only archive
-rm -f $installer_version/treescan.2.0_windows.zip
-zip $installer_version/treescan.2.0_windows.zip -j $build/treescan/batch_application/Win32/Release/treescan32.exe
-zip $installer_version/treescan.2.0_windows.zip -j $build/treescan/batch_application/x64/Release/treescan64.exe
+# Build Windows command-line only archive. This is an alternative download option that is command-line only (no GUI/Java).
+rm -f $installer_version/treescan.${version}_windows.zip
+zip $installer_version/treescan.${version}_windows.zip -j $build/treescan/batch_application/Win32/Release/treescan32.exe
+zip $installer_version/treescan.${version}_windows.zip -j $build/treescan/batch_application/x64/Release/treescan64.exe
 cd $build/treescan/installers
-zip $installer_version/treescan.2.0_windows.zip documents/*
-zip $installer_version/treescan.2.0_windows.zip examples/*
+zip $installer_version/treescan.${version}_windows.zip -j documents/*
+zip $installer_version/treescan.${version}_windows.zip examples/*
 
-############ Linux ################################################################################
-# Build the IzPack Java installer for Linux.
+#######   ############ Linux ################################################################################
+# Build the IzPack Java installer for Linux. (Note that someday we might replace this process with jpackageInstallerLinux.sh)
+
+# Build Linux installer. 
 $IzPack/bin/compile $build/treescan/installers/izpack/linux/install_linux.xml -b $installer_version -o $installer_version/install-2_0_linux.jar -k standard
 chmod a+x $installer_version/install-2_0_linux.jar
 
 # Build batch binaries archive for Linux.
-rm -f $installer_version/treescan.2.0_linux.tar.bz2
+rm -f $installer_version/treescan.${version}_linux.tar.bgz
 cd $build/binaries/linux
-tar -cf $installer_version/treescan.2.0_linux.tar treescan*
+tar -cf $installer_version/treescan.${version}_linux.tar treescan*
 cd $build/treescan/installers
-tar -rf $installer_version/treescan.2.0_linux.tar documents/*
-tar -rf $installer_version/treescan.2.0_linux.tar examples/*
-bzip2 -f $installer_version/treescan.2.0_linux.tar
-
-############ Mac OS X #############################################################################
-# Build TreeScan Mac OS X Application Bundle Directory
-rm -rf $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app
-python $build/treescan/installers/izpack/mac/treescan2app/treescan2app.py $build/treescan/java_application/jni_application/dist/TreeScan.jar $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app
-# copy jni libraries into app directory
-cp $build/binaries/mac/libtreescan.jnilib $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/Java/libtreescan.jnilib
-# copy additional Java libraries into app directory
-cp -r $build/treescan/java_application/jni_application/dist/lib $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/Java
-# copy jre into app directory
-# http://www.balthisar.com/blog/bundle_the_jre/
-#mkdir $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/PlugIns
-#mkdir $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/PlugIns/Java.runtime
-#mkdir $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/PlugIns/Java.runtime/Contents/
-#mkdir $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/PlugIns/Java.runtime/Contents/Home
-#mkdir $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/PlugIns/Java.runtime/Contents/MacOS
-#cp $build/treescan/installers/java/mac-jre $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app/Contents/PlugIns/Java.runtime/Contents/Home
-
-
-# prompt user to sign the SaTScan.app on Mac with Developer ID certificated installed (Squish https://www.squishlist.com/ims/satscan/66329/)
-echo
-echo "1) Run the script .../treescan/scripts/mac/codesign_remote_appbundle.sh on TreeScan.app from Mac with Developer ID certificated installed."
-echo "2) Hit <enter> once done ..."
-read dummy
-
-# Build the IzPack Java installer for Mac OS X.
-$IzPack/bin/compile $build/treescan/installers/izpack/mac/install_mac.xml -b $installer_version -o $installer_version/install-2_0_mac.jar -k standard
-
-# Build Mac OS X Application Bundle from IzPack Java Installer
-rm -rf $installer_version/install-2_0_mac.zip
-rm -rf $build/treescan/installers/izpack/mac/Install.app
-python $build/treescan/installers/izpack/mac/izpack2app/izpack2app.py $installer_version/install-2_0_mac.jar $build/treescan/installers/izpack/mac/Install.app
-
-# prompt user to sign the Install.app on Mac with Developer ID certificated installed (Squish https://www.squishlist.com/ims/satscan/66329/)
-echo
-echo "1) Run the script .../treescan/scripts/mac/codesign_remote_appbundle.sh on Install.app from Mac with Developer ID certificated installed"
-echo "2) Hit <enter> once done ..."
-read dummy
-
-cd $build/treescan/installers/izpack/mac
-zip $installer_version/install-2_0_mac.zip -r ./Install.app/*
-rm $installer_version/install-2_0_mac.jar
-rm -rf $build/treescan/installers/izpack/mac/Install.app
-chmod a+x $installer_version/install-2_0_mac.zip
-
-# Build batch binaries archive for Mac OS X.
-rm -f $installer_version/treescan.2.0_mac.tar.bz2
-cd $build/binaries/mac
-tar -cf $installer_version/treescan.2.0_mac.tar treescan
-cd $build/treescan/installers
-tar -rf $installer_version/treescan.2.0_mac.tar documents/*
-tar -rf $installer_version/treescan.2.0_mac.tar examples/*
-bzip2 -f $installer_version/treescan.2.0_mac.tar
-
-#rm -rf $build/treescan/installers/izpack/mac/treescan2app/TreeScan.app
+tar -rf $installer_version/treescan.${version}_linux.tar documents/*
+tar -rf $installer_version/treescan.${version}_linux.tar examples/*
+gzip -f $installer_version/treescan.${version}_linux.tar
 
 ############ Java Application Update Archive ######################################################
+# Build update archive files -- relative paths are important; must be the same as installation.
+#
+# Note: With the move to bundling Java into installation (Windows and Mac currently), this process
+#       is not supported currently. The TreeScan application only notifies user of any update and
+#       references the website for download.
+#       The problem with the current update process is:
+#       1) The update application is written in Java. So that application would need redesign.
+#       2) I'm no longer certain how to update Mac dmg currently.
 
 # Windows update archive
 rm -f $installer_version/update_data_windows.zip
@@ -108,8 +69,9 @@ zip $installer_version/update_data_windows.zip -j $build/treescan/java_applicati
 cd $build/treescan/java_application/jni_application/dist
 zip $installer_version/update_data_windows.zip -r lib
 cd $build/treescan/installers/java
-zip $installer_version/update_data_windows.zip -r win32-jre
-zip $installer_version/update_data_windows.zip -r win64-jre
+zip $installer_version/update_data_windows.zip -r jre
+# We can delete the generated Windows Java runtime now.
+rm -rf $build/treescan/installers/java/jre
 cd $build/treescan/installers
 zip $installer_version/update_data_windows.zip -r examples
 
@@ -124,12 +86,16 @@ zip $installer_version/update_data_linux.zip -r lib
 cd $build/treescan/installers
 zip $installer_version/update_data_linux.zip -r examples
 
-# Mac update archive
-rm -f $installer_version/update_data_mac.zip
+### ############ Mac OS X #############################################################################
+### Build TreeScan Mac OS X Application DMG
 
-cd $build/treescan/installers/izpack/mac/treescan2app
-zip $installer_version/update_data_mac.zip -r TreeScan.app
-zip $installer_version/update_data_mac.zip -j $build/binaries/mac/treescan
-zip $installer_version/update_data_mac.zip -j $build/treescan/installers/documents/*
-cd $build/treescan/installers
-zip $installer_version/update_data_mac.zip -r examples
+# Prompt user to execute Mac dmg build process.
+# https://pwvault.imsweb.com/SecretServer/app/#/secret/2734/general
+# Not static IP -- see 'ST-MacPublic' at https://vcenter-vdi.imsweb.com/ui/
+# Should be able to ssh directly to IP and execute local file '/Users/treescan/prj/treescan.development/buildMacDMG.sh'.
+#  #!/bin/bash
+#  #Unlock the keychain
+#  security unlock-keychain $HOME/Library/Keychains/login.keychain
+#  /Users/treescan/prj/treescan.development/treescan/installers/jpackageInstallerMac.sh <- https://pwvault.imsweb.com/SecretServer/app/#/secret/25934/general ->
+# Or login into 'ST-MacPublic' at https://vcenter-vdi.imsweb.com/ui/ and execute 'jpackageInstallerMac.sh'.
+echo "*** Execute Mac dmg build script ... buildMacDMG.sh from Mac shell or login into VM and execute jpackageInstallerMac.sh."

@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
@@ -13,32 +9,57 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
-    <Filter Include="Source Files\calculation">
-      <UniqueIdentifier>{e6d21112-f53b-4820-a209-dbe7562a7694}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\calculation">
       <UniqueIdentifier>{9d26b16d-4911-422d-b146-4a4c20f6734d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\calculation\runner">
       <UniqueIdentifier>{86327226-fa09-40d9-b3f7-5022191b53b5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\calculation\runner">
-      <UniqueIdentifier>{22bec638-d6a7-40d5-af33-eb81476de229}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\batch_application">
-      <UniqueIdentifier>{8e84a003-2fd9-4e96-a31f-cfeaeb213231}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\calculation\print">
       <UniqueIdentifier>{96e69410-3db5-435b-8201-0160002759c1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\calculation\print">
-      <UniqueIdentifier>{4ad6e927-0231-45a4-89e1-46130caa6f36}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\calculation\utility">
       <UniqueIdentifier>{a2861da6-ea67-4485-be8f-49e6d8993427}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\calculation\loglikelihood">
+      <UniqueIdentifier>{dc8c711d-5a10-4098-8f9e-8d30f81049d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\randomization">
+      <UniqueIdentifier>{774b53e7-3a6b-4089-8a54-e4a125e173de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\output">
+      <UniqueIdentifier>{260ad21d-8a31-4cf2-aa59-a805fa3ee69d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\batch_application">
+      <UniqueIdentifier>{77fb2ac1-ea23-4f6b-8a14-44c474fade13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\calculation">
+      <UniqueIdentifier>{e6d21112-f53b-4820-a209-dbe7562a7694}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\runner">
+      <UniqueIdentifier>{22bec638-d6a7-40d5-af33-eb81476de229}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\print">
+      <UniqueIdentifier>{4ad6e927-0231-45a4-89e1-46130caa6f36}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\calculation\utility">
       <UniqueIdentifier>{541f14fa-e20f-426a-b683-7161bb8dd25b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\loglikelihood">
+      <UniqueIdentifier>{c2986de9-5e7d-41d8-822b-92eb2838daf5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\randomization">
+      <UniqueIdentifier>{27045a0c-b44c-4404-909d-42382e805d79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\output">
+      <UniqueIdentifier>{6ef6ed46-9894-479a-b227-daa07546427b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\batch_application">
+      <UniqueIdentifier>{8e84a003-2fd9-4e96-a31f-cfeaeb213231}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\boost">
       <UniqueIdentifier>{2bbd1c0c-0da1-4753-81b8-e54ba1bb5a7a}</UniqueIdentifier>
@@ -46,32 +67,11 @@
     <Filter Include="Source Files\boost\program_options">
       <UniqueIdentifier>{eda9106b-c18b-4b55-8db8-b907d5177789}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\calculation\loglikelihood">
-      <UniqueIdentifier>{dc8c711d-5a10-4098-8f9e-8d30f81049d3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\calculation\loglikelihood">
-      <UniqueIdentifier>{c2986de9-5e7d-41d8-822b-92eb2838daf5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\boost\threads">
       <UniqueIdentifier>{5ac91196-827c-44d6-806d-c90665476da0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\calculation\randomization">
-      <UniqueIdentifier>{774b53e7-3a6b-4089-8a54-e4a125e173de}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\calculation\randomization">
-      <UniqueIdentifier>{27045a0c-b44c-4404-909d-42382e805d79}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\calculation\output">
-      <UniqueIdentifier>{260ad21d-8a31-4cf2-aa59-a805fa3ee69d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\calculation\output">
-      <UniqueIdentifier>{6ef6ed46-9894-479a-b227-daa07546427b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\boost\system">
       <UniqueIdentifier>{f8506184-5527-4d9d-8dcd-dcd5f4e6694a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\batch_application">
-      <UniqueIdentifier>{77fb2ac1-ea23-4f6b-8a14-44c474fade13}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\boost\filesystem">
       <UniqueIdentifier>{bd098d23-e930-46ec-9c38-c9ff96d21536}</UniqueIdentifier>

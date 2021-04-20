@@ -227,6 +227,7 @@ const char * DataRecordWriter::ATTRIBUTABLE_RISK_FIELD                   = "Attr
 const char * DataRecordWriter::LOG_LIKL_RATIO_FIELD                      = "Log Likelihood Ratio";
 const char * DataRecordWriter::TEST_STATISTIC_FIELD                      = "Test Statistic";
 const char * DataRecordWriter::P_VALUE_FLD                               = "P-value";
+const char * DataRecordWriter::RECURR_FLD                                = "Recurrence Interval";
 const char * DataRecordWriter::P_LEVEL_FLD                               = "Tree Level";
 const char * DataRecordWriter::ANCESTRY_ORDER_FLD                        = "Ancestry Order";
 const char * DataRecordWriter::SIGNALLED_FLD                             = "Signalled";
@@ -250,16 +251,16 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
   try {
     CreateField(_dataFieldDefinitions, CUT_NUM_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     CreateField(_dataFieldDefinitions, NODE_ID_FIELD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()), 0, uwOffset, 0);
-	if (params.getScanType() != Parameters::TIMEONLY) {
-		CreateField(_dataFieldDefinitions, P_LEVEL_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-	}
+    if (params.getScanType() != Parameters::TIMEONLY) {
+        CreateField(_dataFieldDefinitions, P_LEVEL_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+    }
     switch (params.getModelType()) {
-		case Parameters::BERNOULLI_TIME:
-			if (params.getScanType() != Parameters::TIMEONLY) {
-				CreateField(_dataFieldDefinitions, NODE_OBSERVATIONS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-				CreateField(_dataFieldDefinitions, NODE_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-			}
-		case Parameters::BERNOULLI_TREE:
+        case Parameters::BERNOULLI_TIME:
+            if (params.getScanType() != Parameters::TIMEONLY) {
+                CreateField(_dataFieldDefinitions, NODE_OBSERVATIONS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+                CreateField(_dataFieldDefinitions, NODE_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+            }
+        case Parameters::BERNOULLI_TREE:
             CreateField(_dataFieldDefinitions, OBSERVATIONS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
             CreateField(_dataFieldDefinitions, CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
             CreateField(_dataFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
@@ -273,8 +274,13 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
         default :
             if (Parameters::isTemporalScanType(params.getScanType())) {
                 CreateField(_dataFieldDefinitions, NODE_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-                CreateField(_dataFieldDefinitions, START_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-                CreateField(_dataFieldDefinitions, END_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+                if (params.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC) {
+                    CreateField(_dataFieldDefinitions, START_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+                    CreateField(_dataFieldDefinitions, END_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+                } else {
+                    CreateField(_dataFieldDefinitions, START_WINDOW_FIELD, FieldValue::ALPHA_FLD, 10, 0, uwOffset, 0);
+                    CreateField(_dataFieldDefinitions, END_WINDOW_FIELD, FieldValue::ALPHA_FLD, 10, 0, uwOffset, 0);
+                }
                 CreateField(_dataFieldDefinitions, WNDW_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
                 CreateField(_dataFieldDefinitions, EXPECTED_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             } else
@@ -300,6 +306,8 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
     if (!params.isSequentialScanBernoulli()) {
         printString(buffer, "%u", params.getNumReplicationsRequested());
         CreateField(_dataFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, static_cast<unsigned short>(buffer.size()));
+        if (params.getIsProspectiveAnalysis())
+            CreateField(_dataFieldDefinitions, RECURR_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     }
     if (params.getScanType() != Parameters::TIMEONLY)
         CreateField(_dataFieldDefinitions, ANCESTRY_ORDER_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
@@ -339,15 +347,15 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
     try {
         Record.GetFieldValue(CUT_NUM_FIELD).AsDouble() = thisCut.getReportOrder();
         Record.GetFieldValue(NODE_ID_FIELD).AsString() = _scanner.getNodes()[thisCut.getID()]->getIdentifier();
-		if (params.getScanType() != Parameters::TIMEONLY) {
-			Record.GetFieldValue(P_LEVEL_FLD).AsDouble() = static_cast<int>(_scanner.getNodes()[thisCut.getID()]->getLevel());
-		}
+        if (params.getScanType() != Parameters::TIMEONLY) {
+            Record.GetFieldValue(P_LEVEL_FLD).AsDouble() = static_cast<int>(_scanner.getNodes()[thisCut.getID()]->getLevel());
+        }
         switch (params.getModelType()) {
-		    case Parameters::BERNOULLI_TIME:
-				if (params.getScanType() != Parameters::TIMEONLY) {
-					Record.GetFieldValue(NODE_OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(_scanner.getNodes()[thisCut.getID()]->getBrN());
-					Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getNodes()[thisCut.getID()]->getBrC());
-				}
+            case Parameters::BERNOULLI_TIME:
+                if (params.getScanType() != Parameters::TIMEONLY) {
+                    Record.GetFieldValue(NODE_OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(_scanner.getNodes()[thisCut.getID()]->getBrN());
+                    Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getNodes()[thisCut.getID()]->getBrC());
+                }
             case Parameters::BERNOULLI_TREE:
                 Record.GetFieldValue(OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(thisCut.getN());
                 Record.GetFieldValue(CASES_FIELD).AsDouble() = static_cast<int>(thisCut.getC());
@@ -366,8 +374,21 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
                     } else {
                         Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(thisCut.getN());
                     }
-                    Record.GetFieldValue(START_WINDOW_FIELD).AsDouble() = thisCut.getStartIdx()  - _scanner.getZeroTranslationAdditive();
-                    Record.GetFieldValue(END_WINDOW_FIELD).AsDouble() = thisCut.getEndIdx() - _scanner.getZeroTranslationAdditive();
+                    if (params.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC) {
+                        Record.GetFieldValue(START_WINDOW_FIELD).AsDouble() = thisCut.getStartIdx()  - _scanner.getZeroTranslationAdditive();
+                        Record.GetFieldValue(END_WINDOW_FIELD).AsDouble() = thisCut.getEndIdx() - _scanner.getZeroTranslationAdditive();
+                    } else {
+                        const DataTimeRange& range = params.getDataTimeRangeSet().getDataTimeRangeSets().front();
+
+                        std::pair<std::string, std::string> rangeDates = range.rangeToGregorianStrings(
+                            thisCut.getStartIdx() - _scanner.getZeroTranslationAdditive(),
+                            thisCut.getEndIdx() - _scanner.getZeroTranslationAdditive(),
+                            params.getDatePrecisionType()
+                        );
+
+                        Record.GetFieldValue(START_WINDOW_FIELD).AsString() = rangeDates.first;
+                        Record.GetFieldValue(END_WINDOW_FIELD).AsString() = rangeDates.second;
+                    }
                     Record.GetFieldValue(WNDW_CASES_FIELD).AsDouble() = static_cast<int>(thisCut.getC());
                     Record.GetFieldValue(EXPECTED_CASES_FIELD).AsDouble() = thisCut.getExpected(_scanner);
                 } else
@@ -389,6 +410,8 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
         }
         if (params.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/ && !params.isSequentialScanBernoulli()) {
             Record.GetFieldValue(P_VALUE_FLD).AsDouble() =  static_cast<double>(thisCut.getRank()) /(_scanner.getParameters().getNumReplicationsRequested() + 1);
+            if (params.getIsProspectiveAnalysis())
+                Record.GetFieldValue(RECURR_FLD).AsDouble() = _scanner.getRecurrenceInterval(thisCut).second;
         }
         if (params.getScanType() != Parameters::TIMEONLY)
             Record.GetFieldValue(ANCESTRY_ORDER_FLD).AsDouble() = thisCut.getAncestryOrder();

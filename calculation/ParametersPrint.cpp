@@ -14,12 +14,14 @@ void ParametersPrint::Print(std::ostream& out) const {
     out << "PARAMETER SETTINGS" << std::endl;
 
     SettingContainer_t settings;
-    // print 'Analysis' tab settings
-    WriteSettingsContainer(getAnalysisParameters(settings), "Analysis", out);
     //print 'Input' tab settings
     WriteSettingsContainer(getInputParameters(settings), "Input", out);
+    // print 'Analysis' tab settings
+    WriteSettingsContainer(getAnalysisParameters(settings), "Analysis", out);
     //print 'Output' tab settings
     WriteSettingsContainer(getOutputParameters(settings), "Output", out);
+    //print 'Advanced Input' tab settings
+    WriteSettingsContainer(getAdvancedInputParameters(settings), "Advanced Input", out);
     //print 'Temporal Window' tab settings
     WriteSettingsContainer(getTemporalWindowParameters(settings), "Temporal Window", out);
     // print 'Adjustments' tab settings
@@ -30,8 +32,8 @@ void ParametersPrint::Print(std::ostream& out) const {
     WriteSettingsContainer(getSequentialScanParameters(settings), "Sequential Analysis", out);
     //print 'Power Evaluations' tab settings
     WriteSettingsContainer(getPowerEvaluationsParameters(settings), "Power Evaluations", out);
-    //print 'Advanced Input' tab settings
-    WriteSettingsContainer(getAdvancedInputParameters(settings), "Advanced Input", out);
+    // print 'Miscellaneous' tab settings
+    WriteSettingsContainer(getMiscellaneousAnalysisParameters(settings), "Miscellaneous", out);
     //print 'Additional Output' tab settings
     WriteSettingsContainer(getAdditionalOutputParameters(settings), "Additional Output", out);
     //print 'Power Simulations' tab settings
@@ -47,12 +49,14 @@ void ParametersPrint::Print(std::ostream& out) const {
 void ParametersPrint::PrintHTML(std::ostream& out) const {
     SettingContainer_t settings;
     out << "<div id=\"parameter-settings\"><h4>Parameter Settings</h4>" << std::endl;
-    // print 'Analysis' tab settings
-    WriteSettingsContainerHTML(getAnalysisParameters(settings), "Analysis", out);
     //print 'Input' tab settings
     WriteSettingsContainerHTML(getInputParameters(settings), "Input", out);
+    // print 'Analysis' tab settings
+    WriteSettingsContainerHTML(getAnalysisParameters(settings), "Analysis", out);
     //print 'Output' tab settings
     WriteSettingsContainerHTML(getOutputParameters(settings), "Output", out);
+    //print 'Advanced Input' tab settings
+    WriteSettingsContainerHTML(getAdvancedInputParameters(settings), "Advanced Input", out);
     //print 'Temporal Window' tab settings
     WriteSettingsContainerHTML(getTemporalWindowParameters(settings), "Temporal Window", out);
     // print 'Adjustments' tab settings
@@ -63,8 +67,8 @@ void ParametersPrint::PrintHTML(std::ostream& out) const {
     WriteSettingsContainerHTML(getSequentialScanParameters(settings), "Sequential Analysis", out);
     //print 'Power Evaluations' tab settings
     WriteSettingsContainerHTML(getPowerEvaluationsParameters(settings), "Power Evaluations", out);
-    //print 'Advanced Input' tab settings
-    WriteSettingsContainerHTML(getAdvancedInputParameters(settings), "Advanced Input", out);
+    // print 'Miscellaneous' tab settings
+    WriteSettingsContainerHTML(getMiscellaneousAnalysisParameters(settings), "Miscellaneous", out);
     //print 'Additional Output' tab settings
     WriteSettingsContainerHTML(getAdditionalOutputParameters(settings), "Additional Output", out);
     //print 'Power Simulations' tab settings
@@ -76,6 +80,39 @@ void ParametersPrint::PrintHTML(std::ostream& out) const {
     out << std::endl << "</div>" << std::endl;
 }
 
+/** Get 'Analysis - Miscellaneous Analysis' tab/section. */
+ParametersPrint::SettingContainer_t & ParametersPrint::getMiscellaneousAnalysisParameters(SettingContainer_t & settings) const {
+    std::string buffer;
+    settings.clear();
+    if (_parameters.getIsProspectiveAnalysis()) {
+        switch (_parameters.getProspectiveFrequencyType()) {
+        case Parameters::ProspectiveFrequency::DAILY:
+            if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Daily (every %u days)", _parameters.getProspectiveFrequency());
+            else buffer = "Daily";
+            break;
+        case Parameters::ProspectiveFrequency::WEEKLY:
+            if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Weekly (every %u weeks)", _parameters.getProspectiveFrequency());
+            else buffer = "Weekly";
+            break;
+        case Parameters::ProspectiveFrequency::MONTHLY:
+            if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Monthly (every %u months)", _parameters.getProspectiveFrequency());
+            else buffer = "Monthly";
+            break;
+        case Parameters::ProspectiveFrequency::QUARTERLY:
+            if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Quarterly (every %u quarters)", _parameters.getProspectiveFrequency());
+            else buffer = "Quarterly";
+            break;
+        case Parameters::ProspectiveFrequency::YEARLY:
+            if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Yearly (every %u years)", _parameters.getProspectiveFrequency());
+            else buffer = "Yearly";
+            break;
+        default: throw prg_error("Unknown prospective frequency type '%d'.\n", "getMiscellaneousAnalysisParameters()", _parameters.getProspectiveFrequencyType());
+        }
+        settings.push_back(std::make_pair("Prospective Analysis Frequency", buffer));
+    }
+    return settings;
+}
+
 /** Prints 'Input' tab parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(SettingContainer_t & settings) const {
     std::string buffer;
@@ -83,10 +120,23 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(Settin
     if (_parameters.getScanType() != Parameters::TIMEONLY)
         settings.push_back(std::make_pair("Tree File",_parameters.getTreeFileNames().front()));
     settings.push_back(std::make_pair("Count File",_parameters.getCountFileName()));
-	if ((_parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getModelType() == Parameters::BERNOULLI_TIME) && !_parameters.getControlFileName().empty())
-		settings.push_back(std::make_pair("Control File", _parameters.getControlFileName()));
+    if ((_parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getModelType() == Parameters::BERNOULLI_TIME) && !_parameters.getControlFileName().empty())
+        settings.push_back(std::make_pair("Control File", _parameters.getControlFileName()));
     if (Parameters::isTemporalScanType(_parameters.getScanType()))
-        settings.push_back(std::make_pair("Data Time Range",_parameters.getDataTimeRangeSet().toString(buffer)));
+        settings.push_back(std::make_pair("Data Time Range", _parameters.getDataTimeRangeSet().toString(buffer, _parameters.getDatePrecisionType())));
+    switch (_parameters.getDatePrecisionType()) {
+        case DataTimeRange::DatePrecisionType::GENERIC:
+            settings.push_back(std::make_pair("Time Precision", "Generic")); break;
+        case DataTimeRange::DatePrecisionType::DAY :
+            settings.push_back(std::make_pair("Time Precision", "Day")); break;
+        case DataTimeRange::DatePrecisionType::MONTH:
+            settings.push_back(std::make_pair("Time Precision", "Month")); break;
+        case DataTimeRange::DatePrecisionType::YEAR:
+            settings.push_back(std::make_pair("Time Precision", "Year")); break;
+        case DataTimeRange::DatePrecisionType::NONE:
+            settings.push_back(std::make_pair("Time Precision", "None")); break;
+        default: throw prg_error("Unknown date precision type '%d'.\n", "getInputParameters()", _parameters.getDatePrecisionType());
+    }
     return settings;
 }
 
@@ -128,7 +178,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(
     if (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) {
         settings.push_back(std::make_pair("Apply Data Time Range Exclusions", (_parameters.isApplyingExclusionTimeRanges() ? "Yes" : "No")));
         if (_parameters.isApplyingExclusionTimeRanges())
-            settings.push_back(std::make_pair("Data Time Range Exclusions", _parameters.getExclusionTimeRangeSet().toString(buffer)));
+            settings.push_back(std::make_pair("Data Time Range Exclusions", _parameters.getExclusionTimeRangeSet().toString(buffer, _parameters.getDatePrecisionType())));
     }
     return settings;
 }
@@ -175,7 +225,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
             if (_parameters.getConditionalType() == Parameters::NODE)
                 settings.push_back(std::make_pair("Probability Model - Time","Uniform"));
             break;
-		case Parameters::BERNOULLI_TIME: settings.push_back(std::make_pair("Probability Model - Time", "Beroulli"));
+        case Parameters::BERNOULLI_TIME: settings.push_back(std::make_pair("Probability Model - Time", "Beroulli"));
         case Parameters::MODEL_NOT_APPLICABLE: break;
         default: throw prg_error("Unknown model type (%d).", "getAnalysisParameters()", _parameters.getModelType());
     }
@@ -183,10 +233,6 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
         settings.push_back(std::make_pair("Self-Control Design",_parameters.getSelfControlDesign() ? "Yes" : "No"));
         printString(buffer, "%u/%u", _parameters.getProbabilityRatio().first, _parameters.getProbabilityRatio().second);
         settings.push_back(std::make_pair("Case Probability",buffer));
-    }
-    if (Parameters::isTemporalScanType(_parameters.getScanType())) {
-        settings.push_back(std::make_pair("Temporal Time Window Start", _parameters.getTemporalStartRange().toString(buffer)));
-        settings.push_back(std::make_pair("Temporal Time Window End", _parameters.getTemporalEndRange().toString(buffer)));
     }
     return settings;
 }
@@ -390,6 +436,13 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParamete
             printString(buffer, "Restrict Risk Window to %g%% of Evaluated Windows", _parameters.getRiskWindowPercentage());
             settings.push_back(std::make_pair("Maximum Temporal Window", buffer));
         }
+        settings.push_back(std::make_pair("Prospective Analysis", (_parameters.getIsProspectiveAnalysis() ? "Yes" : "No")));
+        settings.push_back(std::make_pair("Restrict Temporal Windows", (_parameters.getRestrictTemporalWindows() ? "Yes" : "No")));
+        if (_parameters.getRestrictTemporalWindows()) {
+            settings.push_back(std::make_pair("Temporal Time Window Start", _parameters.getTemporalStartRange().toString(buffer, _parameters.getDatePrecisionType())));
+            settings.push_back(std::make_pair("Temporal Time Window End", _parameters.getTemporalEndRange().toString(buffer, _parameters.getDatePrecisionType())));
+        }
+
     }
     return settings;
 }

@@ -175,10 +175,8 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
     //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
     DataTimeRange::index_t idxAdditive = _scanRunner.getZeroTranslationAdditive();
     // Define the start and end windows with the zero index offset already incorporated.
-    DataTimeRange startWindow(_scanRunner.getParameters().getTemporalStartRange().getStart() + idxAdditive,
-                              _scanRunner.getParameters().getTemporalStartRange().getEnd() + idxAdditive),
-                  endWindow(_scanRunner.getParameters().getTemporalEndRange().getStart() + idxAdditive,
-                              _scanRunner.getParameters().getTemporalEndRange().getEnd() + idxAdditive);
+    DataTimeRange startWindow(_scanRunner.temporalStartRange().getStart() + idxAdditive, _scanRunner.temporalStartRange().getEnd() + idxAdditive),
+                  endWindow(_scanRunner.temporalEndRange().getStart() + idxAdditive, _scanRunner.temporalEndRange().getEnd() + idxAdditive);
     // Define the minimum and maximum window lengths.
     boost::shared_ptr<AbstractWindowLength> window(_scanRunner.getNewWindowLength());
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
@@ -186,7 +184,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
     double simLogLikelihood = -std::numeric_limits<double>::max();
     for (size_t i=0; i < nodes.size(); ++i) {
-		const NodeStructure& thisNode(*(nodes[i]));
+        const NodeStructure& thisNode(*(nodes[i]));
         const SimulationNode& thisSimNode(_treeSimNodes[i]);
         if (isEvaluated(thisNode, thisSimNode)) {
 
@@ -303,10 +301,10 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
     //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
     DataTimeRange::index_t idxAdditive = _scanRunner.getZeroTranslationAdditive();
     // Define the start and end windows with the zero index offset already incorporated.
-    DataTimeRange startWindow(_scanRunner.getParameters().getTemporalStartRange().getStart() + idxAdditive,
-        _scanRunner.getParameters().getTemporalStartRange().getEnd() + idxAdditive),
-        endWindow(_scanRunner.getParameters().getTemporalEndRange().getStart() + idxAdditive,
-            _scanRunner.getParameters().getTemporalEndRange().getEnd() + idxAdditive);
+    DataTimeRange startWindow(_scanRunner.temporalStartRange().getStart() + idxAdditive,
+                              _scanRunner.temporalStartRange().getEnd() + idxAdditive),
+                  endWindow(_scanRunner.temporalEndRange().getStart() + idxAdditive,
+                            _scanRunner.temporalEndRange().getEnd() + idxAdditive);
     // Define the minimum and maximum window lengths.
     boost::shared_ptr<AbstractWindowLength> window(_scanRunner.getNewWindowLength());
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
@@ -449,10 +447,8 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
     //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
     DataTimeRange::index_t idxAdditive = _scanRunner.getZeroTranslationAdditive();
     // Define the start and end windows with the zero index offset already incorporated.
-    DataTimeRange startWindow(_scanRunner.getParameters().getTemporalStartRange().getStart() + idxAdditive,
-                              _scanRunner.getParameters().getTemporalStartRange().getEnd() + idxAdditive),
-                  endWindow(_scanRunner.getParameters().getTemporalEndRange().getStart() + idxAdditive,
-                              _scanRunner.getParameters().getTemporalEndRange().getEnd() + idxAdditive);
+    DataTimeRange startWindow(_scanRunner.temporalStartRange().getStart() + idxAdditive, _scanRunner.temporalStartRange().getEnd() + idxAdditive),
+                  endWindow(_scanRunner.temporalEndRange().getStart() + idxAdditive, _scanRunner.temporalEndRange().getEnd() + idxAdditive);
     // Define the minimum and maximum window lengths.
 
     boost::shared_ptr<AbstractWindowLength> window(_scanRunner.getNewWindowLength());
@@ -590,10 +586,8 @@ SequentialMCSimSuccessiveFunctor::SequentialMCSimSuccessiveFunctor(boost::mutex&
 
     // Define the start and end windows with the zero index offset already incorporated.
     DataTimeRange::index_t idxAdditive = _scanRunner.getZeroTranslationAdditive();
-    _startWindow = DataTimeRange(_scanRunner.getParameters().getTemporalStartRange().getStart() + idxAdditive,
-                                 _scanRunner.getParameters().getTemporalStartRange().getEnd() + idxAdditive),
-    _endWindow = DataTimeRange(_scanRunner.getParameters().getTemporalEndRange().getStart() + idxAdditive,
-                               _scanRunner.getParameters().getTemporalEndRange().getEnd() + idxAdditive);
+    _startWindow = DataTimeRange(_scanRunner.temporalStartRange().getStart() + idxAdditive, _scanRunner.temporalStartRange().getEnd() + idxAdditive),
+    _endWindow = DataTimeRange(_scanRunner.temporalEndRange().getStart() + idxAdditive, _scanRunner.temporalEndRange().getEnd() + idxAdditive);
 
     // Define the minimum and maximum window lengths.
     _window = _scanRunner.getNewWindowLength();

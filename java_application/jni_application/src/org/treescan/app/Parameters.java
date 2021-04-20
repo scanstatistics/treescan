@@ -18,6 +18,7 @@ public class Parameters implements Cloneable {
     public enum ConditionalType {UNCONDITIONAL, TOTALCASES, NODE, NODEANDTIME};
     public enum MaximumWindowType {PERCENTAGE_WINDOW, FIXED_LENGTH};
     public enum PowerEvaluationType {PE_WITH_ANALYSIS, PE_ONLY_CASEFILE,PE_ONLY_SPECIFIED_CASES};
+    public enum DatePrecisionType { NONE, GENERIC, YEAR, MONTH, DAY };
     public class CreationVersion {
     	public int _major;
     	public int _minor;
@@ -50,12 +51,16 @@ public class Parameters implements Cloneable {
     private ConditionalType _conditionalType=ConditionalType.UNCONDITIONAL;
     private int _probability_ratio_numerator=1;
     private int _probability_ratio_denominator=2;
-    private int _data_time_range_start=0;
-    private int _data_time_range_end=0;
-    private int _temporal_start_range_begin=0;
-    private int _temporal_start_range_close=0;
-    private int _temporal_end_range_begin=0;
-    private int _temporal_end_range_close=0;
+
+    private boolean _restrict_temporal_windows = false;
+    private String _data_time_range_sstart = "0";
+    private String _data_time_range_send = "0";
+    
+    private String _temporal_start_range_sbegin = "0";
+    private String _temporal_start_range_sclose = "0";
+    private String _temporal_end_range_sbegin = "0";
+    private String _temporal_end_range_sclose = "0";
+    
     private boolean _generate_llr_results=false;
     private boolean _report_critical_values=false;
     private double _maximum_window_percentage=50.0;
@@ -85,6 +90,8 @@ public class Parameters implements Cloneable {
     private String _exclusion_time_ranges="";
     private double _sequential_alpha_overall = 0.05;
     private double _sequential_alpha_spending = 0.01;
+    private DatePrecisionType _date_precision_type=DatePrecisionType.NONE;
+    private boolean _prospective_analysis = false;
 
     private ArrayList<InputSourceSettings>     _input_sources;
 
@@ -112,6 +119,12 @@ public class Parameters implements Cloneable {
             newObject._input_sources.add(iss.clone());
           }
           newObject._restricted_tree_levels = new String(_restricted_tree_levels);
+   	  newObject._data_time_range_sstart = new String(_data_time_range_sstart);
+   	  newObject._data_time_range_send = new String(_data_time_range_send);
+   	  newObject._temporal_start_range_sbegin = new String(_temporal_start_range_sbegin);
+   	  newObject._temporal_start_range_sclose = new String(_temporal_start_range_sclose);
+   	  newObject._temporal_end_range_sbegin = new String(_temporal_end_range_sbegin);
+   	  newObject._temporal_end_range_sclose = new String(_temporal_end_range_sclose);
     	  return newObject;
       } catch (CloneNotSupportedException e) {
         throw new InternalError("clone() failed!");
@@ -126,10 +139,11 @@ public class Parameters implements Cloneable {
           if (_probability_ratio_numerator != rhs._probability_ratio_numerator) return false;
           if (_probability_ratio_denominator != rhs._probability_ratio_denominator) return false;
           if (_self_control_design != rhs._self_control_design) return false;
-   	  if (_temporal_start_range_begin != rhs._temporal_start_range_begin) return false;
-   	  if (_temporal_start_range_close != rhs._temporal_start_range_close) return false;
-   	  if (_temporal_end_range_begin != rhs._temporal_end_range_begin) return false;
-   	  if (_temporal_end_range_close != rhs._temporal_end_range_close) return false;
+          if (_restrict_temporal_windows != rhs._restrict_temporal_windows) return false;
+          if (!_temporal_start_range_sbegin.equals(rhs._temporal_start_range_sbegin)) return false;
+          if (!_temporal_start_range_sclose.equals(rhs._temporal_start_range_sclose)) return false;
+          if (!_temporal_end_range_sbegin.equals(rhs._temporal_end_range_sbegin)) return false;
+          if (!_temporal_end_range_sclose.equals(rhs._temporal_end_range_sclose)) return false;
           if (_maximum_window_percentage != rhs._maximum_window_percentage) return false;
           if (_maximum_window_length != rhs._maximum_window_length) return false;
           if (_maximum_window_type != rhs._maximum_window_type) return false;
@@ -151,8 +165,8 @@ public class Parameters implements Cloneable {
     	  if (!_treefilenames.equals(rhs._treefilenames)) return false;
     	  if (!_countfilename.equals(rhs._countfilename)) return false;
     	  if (!_controlfilename.equals(rhs._controlfilename)) return false;
-   	  if (_data_time_range_start != rhs._data_time_range_start) return false;
-   	  if (_data_time_range_end != rhs._data_time_range_end) return false;
+          if (!_data_time_range_sstart.equals(rhs._data_time_range_sstart)) return false;
+          if (!_data_time_range_send.equals(rhs._data_time_range_send)) return false;
           if (!_cutsfilename.equals(rhs._cutsfilename)) return false;
     	  if (_apply_risk_window_restriction != rhs._apply_risk_window_restriction) return false;
     	  if (_risk_window_percentage != rhs._risk_window_percentage) return false;
@@ -179,16 +193,28 @@ public class Parameters implements Cloneable {
           if (!_restricted_tree_levels.equals(rhs._restricted_tree_levels)) return false;
           if (_apply_exclusion_ranges != rhs._apply_exclusion_ranges) return false;
           if (!_exclusion_time_ranges.equals(rhs._exclusion_time_ranges)) return false;
+          
+          if (_date_precision_type != rhs._date_precision_type) return false;
+          if (_prospective_analysis != rhs._prospective_analysis) return false;
 
           return true;
     }
 
+    public boolean getRestrictTemporalWindows() { return _restrict_temporal_windows; }
+    public void setRestrictTemporalWindows(boolean b) { _restrict_temporal_windows = b; }
+    public boolean getIsProspectiveAnalysis() { return _prospective_analysis; }
+    public void setIsProspectiveAnalysis(boolean b) { _prospective_analysis = b; }    
+    
     public boolean isSequentialScanBernoulli() {
         return _sequential_scan &&
                _modelType == Parameters.ModelType.BERNOULLI_TREE &&
                _conditionalType == Parameters.ConditionalType.UNCONDITIONAL;
     }
 
+    public DatePrecisionType getPrecisionOfTimesType() {return _date_precision_type;}
+    public void setPrecisionOfTimesType(DatePrecisionType e) { _date_precision_type = e;}
+    public void setPrecisionOfTimesType(int ord) {try {_date_precision_type = DatePrecisionType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, DatePrecisionType.values());}}    
+    
     public boolean isApplyingExclusionTimeRanges() {return _apply_exclusion_ranges;}
     public void setApplyingExclusionTimeRanges(boolean b) {_apply_exclusion_ranges = b;}
     public final String getExclusionTimeRangeSet() {return _exclusion_time_ranges;}
@@ -253,21 +279,19 @@ public class Parameters implements Cloneable {
     public int getMinimumWindowLength() {return _minimum_window_length;}
     public void setMinimumWindowLength(int u) {_minimum_window_length = u;}
 
-    public int getDataTimeRangeBegin() {return _data_time_range_start;}
-    public void setDataTimeRangeBegin(int i) { _data_time_range_start = i;}
-    public int getDataTimeRangeClose() {return _data_time_range_end;}
-    public void setDataTimeRangeClose(int i) {_data_time_range_end = i;}
-
-    public int getTemporalStartRangeBegin() {return _temporal_start_range_begin;}
-    public void setTemporalStartRangeBegin(int i) {_temporal_start_range_begin = i;}
-    public int getTemporalStartRangeClose() {return _temporal_start_range_close;}
-    public void setTemporalStartRangeClose(int i) {_temporal_start_range_close = i;}
-
-    public int getTemporalEndRangeBegin() {return _temporal_end_range_begin;}
-    public void setTemporalEndRangeBegin(int i) {_temporal_end_range_begin = i;}
-
-    public int getTemporalEndRangeClose() {return _temporal_end_range_close;}
-    public void setTemporalEndRangeClose(int i) {_temporal_end_range_close = i;}
+    public String getDataTimeRangeBegin() { return _data_time_range_sstart; }
+    public void setDataTimeRangeBegin(final String text) {_data_time_range_sstart = text;}
+    public String getDataTimeRangeClose() { return _data_time_range_send; }
+    public void setDataTimeRangeClose(final String text) {_data_time_range_send = text;}
+    
+    public final String getStartRangeEndDate() {return _temporal_start_range_sclose;}
+    public void setStartRangeEndDate(final String text) {_temporal_start_range_sclose = text;}
+    public final String getStartRangeStartDate() {return _temporal_start_range_sbegin;}
+    public void setStartRangeStartDate(final String text) {_temporal_start_range_sbegin = text;}    
+    public final String getEndRangeEndDate() {return _temporal_end_range_sclose;}
+    public void setEndRangeEndDate(final String text) {_temporal_end_range_sclose = text;}
+    public final String getEndRangeStartDate() {return _temporal_end_range_sbegin;}   
+    public void setEndRangeStartDate(final String text) {_temporal_end_range_sbegin = text;}       
 
     public final CreationVersion getCreationVersion() {return _creationversion;}
     public void setCreationVersion(final CreationVersion v) {_creationversion = v;}

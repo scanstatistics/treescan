@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 61;
+const int Parameters::giNumParameters = 67;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -21,13 +21,11 @@ Parameters::cut_maps_t Parameters::getCutTypeMap() {
 
 bool  Parameters::operator==(const Parameters& rhs) const {
   if (_replications != rhs._replications) return false;
-
-  
   if (_treeFileNames != rhs._treeFileNames) return false;
-
   if (_cutsFileName != rhs._cutsFileName) return false;  
   if (_countFileName != rhs._countFileName) return false;
   if (_controlFileName != rhs._controlFileName) return false;
+  if (_date_precision_type != rhs._date_precision_type) return false;
   if (_dataTimeRangeSet.getDataTimeRangeSets() != rhs._dataTimeRangeSet.getDataTimeRangeSets()) return false;
   if (_temporalStartRange != rhs._temporalStartRange) return false;
   if (_temporalEndRange != rhs._temporalEndRange) return false;
@@ -91,7 +89,10 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_minimum_censor_percentage != rhs._minimum_censor_percentage) return false;
   if (_risk_window_censor_alt_denominator != rhs._risk_window_censor_alt_denominator) return false;
   if (_apply_risk_window_restriction_censored != rhs._apply_risk_window_restriction_censored) return false;
-
+  if (_prospective_frequency_type != rhs._prospective_frequency_type) return false;
+  if (_prospective_frequency != rhs._prospective_frequency) return false;
+  if (_prospective_analysis != rhs._prospective_analysis) return false;
+  if (_restrict_temporal_windows != rhs._restrict_temporal_windows) return false;
   return true;
 }
 
@@ -131,14 +132,16 @@ void Parameters::assignMissingPath(std::string & sInputFilename, bool bCheckWrit
 void Parameters::copy(const Parameters &rhs) {
     _treeFileNames = rhs._treeFileNames;
     _countFileName = rhs._countFileName;
-	_controlFileName = rhs._controlFileName;
-	_dataTimeRangeSet = rhs._dataTimeRangeSet;
+    _controlFileName = rhs._controlFileName;
+    _date_precision_type = rhs._date_precision_type;
+    _dataTimeRangeSet = rhs._dataTimeRangeSet;
     _cutsFileName = rhs._cutsFileName;
 
     _scan_type = rhs._scan_type;
     _conditional_type = rhs._conditional_type;
     _modelType = rhs._modelType;
     _probablility_ratio = rhs._probablility_ratio;
+    _restrict_temporal_windows = rhs._restrict_temporal_windows;
     _temporalStartRange = rhs._temporalStartRange;
     _temporalEndRange = rhs._temporalEndRange;
     _replications = rhs._replications;
@@ -189,7 +192,7 @@ void Parameters::copy(const Parameters &rhs) {
 
     _restrict_tree_levels = rhs._restrict_tree_levels;
     _restricted_tree_levels = rhs._restricted_tree_levels;
-	
+
     _sequential_scan = rhs._sequential_scan;
     _sequential_min_signal = rhs._sequential_min_signal;
     _sequential_max_signal = rhs._sequential_max_signal;
@@ -209,6 +212,10 @@ void Parameters::copy(const Parameters &rhs) {
     _minimum_censor_percentage = rhs._minimum_censor_percentage;
     _risk_window_censor_alt_denominator = rhs._risk_window_censor_alt_denominator;
     _apply_risk_window_restriction_censored = rhs._apply_risk_window_restriction_censored;
+
+    _prospective_frequency_type = rhs._prospective_frequency_type;
+    _prospective_frequency = rhs._prospective_frequency;
+    _prospective_analysis = rhs._prospective_analysis;
 }
 
 /* Returns the maximum temporal window in data time units. */
@@ -280,8 +287,8 @@ void Parameters::setCountFileName(const char * sCountFileName, bool bCorrectForR
 If bCorrectForRelativePath is true, an attempt is made to modify filename
 to path relative to executable. This is only attempted if current file does not exist. */
 void Parameters::setControlFileName(const char * sControlFileName, bool bCorrectForRelativePath) {
-	_controlFileName = sControlFileName;
-	if (bCorrectForRelativePath) assignMissingPath(_controlFileName);
+    _controlFileName = sControlFileName;
+    if (bCorrectForRelativePath) assignMissingPath(_controlFileName);
 }
 
 /** Sets cuts data file name.
@@ -314,14 +321,16 @@ void Parameters::setAsDefaulted() {
     _treeFileNames.front() = "";
 
     _countFileName = "";
-	_controlFileName = "";
-	_dataTimeRangeSet = DataTimeRangeSet();
+    _controlFileName = "";
+    _date_precision_type = DataTimeRange::DatePrecisionType::GENERIC;
+    _dataTimeRangeSet = DataTimeRangeSet();
     _cutsFileName = "";
 
     _scan_type = TREEONLY;
     _conditional_type = UNCONDITIONAL;
     _modelType = POISSON;
     _probablility_ratio = ratio_t(1,2);
+    _restrict_temporal_windows = false;
     _temporalStartRange = DataTimeRange();
     _temporalEndRange = DataTimeRange();
     _replications = 999;
@@ -371,7 +380,7 @@ void Parameters::setAsDefaulted() {
     _input_sources.clear();
 
     _restrict_tree_levels = false;
-	_restricted_tree_levels.clear();
+    _restricted_tree_levels.clear();
 
     _sequential_scan = false;
     _sequential_min_signal=3;
@@ -392,6 +401,10 @@ void Parameters::setAsDefaulted() {
     _minimum_censor_percentage = 10;
     _risk_window_censor_alt_denominator = 2.0;
     _apply_risk_window_restriction_censored = false;
+
+    _prospective_frequency_type = ProspectiveFrequency::DAILY;
+    _prospective_frequency = 1;
+    _prospective_analysis = false;
 }
 
 /** Sets output data file name.
@@ -441,7 +454,7 @@ void Parameters::setOutputSimulationsFilename(const char * s, bool bCorrectForRe
 void Parameters::read(const std::string &filename, ParametersFormat type) {
     using boost::property_tree::ptree;
     ptree pt;
-	std::string buffer;
+    std::string buffer;
 
     switch (type) {
         case JSON: read_json(filename, pt); break;
@@ -450,6 +463,17 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     }
     setSourceFileName(filename.c_str());
 
+    // Input
+    setTreeFileName(pt.get<std::string>("parameters.input.tree-filename", "").c_str(), true);
+    setCountFileName(pt.get<std::string>("parameters.input.count-filename", "").c_str(), true);
+    setControlFileName(pt.get<std::string>("parameters.input.control-filename", "").c_str(), true);
+    _date_precision_type = static_cast<DataTimeRange::DatePrecisionType>(pt.get<unsigned int>("parameters.analysis.date-precision", DataTimeRange::DatePrecisionType::GENERIC));
+    _dataTimeRangeSet.assign(pt.get<std::string>("parameters.input.data-time-range", "0,0"), _date_precision_type, boost::optional<boost::gregorian::date>());
+    // Advanced Input
+    setCutsFileName(pt.get<std::string>("parameters.input.advanced.input.cuts-filename", "").c_str(), true);
+    _cut_type = static_cast<CutType>(pt.get<unsigned int>("parameters.input.advanced.input.cuts-type", SIMPLE));
+    _apply_risk_window_restriction = pt.get<bool>("parameters.input.advanced.input.apply-risk-window-restriction", false);
+    _risk_window_percentage = pt.get<double>("parameters.input.advanced.input.risk-window-percentage", 50.0);
     // Analysis
     _scan_type = static_cast<ScanType>(pt.get<unsigned int>("parameters.analysis.scan", TREEONLY));
     _conditional_type = static_cast<ConditionalType>(pt.get<unsigned int>("parameters.analysis.conditional", UNCONDITIONAL));
@@ -457,24 +481,26 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _probablility_ratio.first = pt.get<unsigned int>("parameters.analysis.event-probability.numerator", 1);
     _probablility_ratio.second = pt.get<unsigned int>("parameters.analysis.event-probability.denominator", 2);
      _self_control_design = pt.get<bool>("parameters.analysis.self-control-design", false);
-    _temporalStartRange.assign(pt.get<std::string>("parameters.analysis.temporal-window.start-range", "0,0"));
-    _temporalEndRange.assign(pt.get<std::string>("parameters.analysis.temporal-window.end-range", "0,0"));
     // Advanced Analysis - Temporal Window
     _maximum_window_percentage = pt.get<double>("parameters.analysis.advanced.temporal-window.maximum-window-percentage", 50);
     _maximum_window_length = pt.get<unsigned int>("parameters.analysis.advanced.temporal-window.maximum-window-length", 1);
     _maximum_window_type = static_cast<MaximumWindowType>(pt.get<unsigned int>("parameters.analysis.advanced.temporal-window.maximum-window-type", PERCENTAGE_WINDOW));
     _minimum_window_length = pt.get<unsigned int>("parameters.analysis.advanced.temporal-window.minimum-window-length", 2);
+    _prospective_analysis = pt.get<bool>("parameters.analysis.advanced.temporal-window.prospective-analysis", false);
+    _restrict_temporal_windows = pt.get<bool>("parameters.analysis.advanced.temporal-window.restrict-temporal-windows", false);
+    _temporalStartRange.assign(pt.get<std::string>("parameters.analysis.advanced.temporal-window.start-range", "0,0"), _date_precision_type, _dataTimeRangeSet.getDataTimeRangeSets().front().getDateStart());
+    _temporalEndRange.assign(pt.get<std::string>("parameters.analysis.advanced.temporal-window.end-range", "0,0"), _date_precision_type, _dataTimeRangeSet.getDataTimeRangeSets().front().getDateStart());
     // Advanced Analysis - Adjustments Window
     _dayofweek_adjustment = pt.get<bool>("parameters.analysis.advanced.adjustments.perform-day-of-week-adjustments", false);
     _apply_exclusion_ranges = pt.get<bool>("parameters.analysis.advanced.adjustments.apply-exclusion-time-ranges", false);
-    _exclusion_time_ranges.assign(pt.get<std::string>("parameters.analysis.advanced.adjustments.exclusion-time-ranges", "0,0"));
+    _exclusion_time_ranges.assign(pt.get<std::string>("parameters.analysis.advanced.adjustments.exclusion-time-ranges", "0,0"), _date_precision_type, _dataTimeRangeSet.getDataTimeRangeSets().front().getDateStart());
     // Advanced Analysis - Inference
     _replications = pt.get<unsigned int>("parameters.analysis.advanced.inference.replications", 999);
     _randomizationSeed = pt.get<unsigned int>("parameters.analysis.advanced.inference.seed", static_cast<unsigned int>(RandomNumberGenerator::glDefaultSeed));
     _randomlyGenerateSeed = pt.get<bool>("parameters.analysis.advanced.inference.generate-seed", false);
     _restrict_tree_levels = pt.get<bool>("parameters.analysis.advanced.inference.restrict-tree-levels", false);
-	buffer = pt.get<std::string>("parameters.analysis.advanced.inference.restricted-tree-levels", "");
-	csv_string_to_typelist<unsigned int>(buffer.c_str(), _restricted_tree_levels);
+    buffer = pt.get<std::string>("parameters.analysis.advanced.inference.restricted-tree-levels", "");
+    csv_string_to_typelist<unsigned int>(buffer.c_str(), _restricted_tree_levels);
     // Advanced Analysis - Inference
     _sequential_scan = pt.get<bool>("parameters.analysis.advanced.sequential-scan.sequential-scan", false);
     _sequential_max_signal = pt.get<unsigned int>("parameters.analysis.advanced.sequential-scan.sequential-maximum-signal", 200);
@@ -482,7 +508,7 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     setSequentialFilename(pt.get<std::string>("parameters.analysis.advanced.sequential-scan.sequential-filename", "").c_str(), true);
     _sequential_alpha_overall = pt.get<double>("parameters.analysis.advanced.sequential-scan.sequential-alpha-overall", 0.05);
     _sequential_alpha_spending = pt.get<double>("parameters.analysis.advanced.sequential-scan.sequential-alpha-spending", 0.01);
-    // Power Evaluations
+    // Advanced Analysis - Power Evaluations
     _perform_power_evaluations = pt.get<bool>("parameters.analysis.advanced.power-evaluations.perform-power-evaluations", false);
     _power_evaluation_type = static_cast<PowerEvaluationType>(pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.power-evaluation-type", PE_WITH_ANALYSIS));
     _critical_values_type = static_cast<CriticalValuesType>(pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.critical-values-type", CV_MONTECARLO));
@@ -495,16 +521,9 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _power_baseline_probablility_ratio.second = pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.baseline-probability.denominator", 2);
     setPowerEvaluationAltHypothesisFilename(pt.get<std::string>("parameters.analysis.advanced.power-evaluations.alternative-hypothesis-file", "").c_str(), true);
     _power_z = pt.get<double>("parameters.analysis.advanced.power-evaluations.power-z", 0.001);
-    // Input
-    setTreeFileName(pt.get<std::string>("parameters.input.tree-filename", "").c_str(), true);
-    setCountFileName(pt.get<std::string>("parameters.input.count-filename", "").c_str(), true);
-	setControlFileName(pt.get<std::string>("parameters.input.control-filename", "").c_str(), true);
-	_dataTimeRangeSet.assign(pt.get<std::string>("parameters.input.data-time-range", "0,0"));
-    // Advanced Input
-    setCutsFileName(pt.get<std::string>("parameters.input.advanced.input.cuts-filename", "").c_str(), true);
-    _cut_type = static_cast<CutType>(pt.get<unsigned int>("parameters.input.advanced.input.cuts-type", SIMPLE));
-    _apply_risk_window_restriction = pt.get<bool>("parameters.input.advanced.input.apply-risk-window-restriction", false);
-    _risk_window_percentage = pt.get<double>("parameters.input.advanced.input.risk-window-percentage", 50.0);
+    // Advanced Analysis - Miscellaneous
+    _prospective_frequency_type = static_cast<ProspectiveFrequency>(pt.get<unsigned int>("parameters.analysis.advanced.miscellaneous.prospective-frequency-type", DAILY));
+    _prospective_frequency = pt.get<unsigned int>("parameters.analysis.advanced.miscellaneous.prospective-frequency", 1);
     // Output
     setOutputFileName(pt.get<std::string>("parameters.output.results-file", "").c_str(), true);
     _generateHtmlResults = pt.get<bool>("parameters.output.generate-html-results", true);
@@ -529,6 +548,17 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     ptree pt;
     std::string buffer;
 
+    // Input
+    pt.put("parameters.input.tree-file", _treeFileNames.front());
+    pt.put("parameters.input.count-file", _countFileName);
+    pt.put("parameters.input.control-file", _controlFileName);
+    pt.put("parameters.analysis.date-precision", static_cast<unsigned int>(_date_precision_type));
+    pt.put("parameters.input.data-time-range", _dataTimeRangeSet.toString(buffer, _date_precision_type));
+    // Advanced Input
+    pt.put("parameters.input.advanced.input.cuts-file", _cutsFileName);
+    pt.put("parameters.input-advanced.input.cuts-type", static_cast<unsigned int>(_cut_type));
+    pt.put("parameters.input.advanced.input.apply-risk-window-restriction", _apply_risk_window_restriction);
+    pt.put("parameters.input.advanced.input.risk-window-percentage", _risk_window_percentage);
     // Analysis
     pt.put("parameters.analysis.scan", static_cast<unsigned int>(_scan_type));
     pt.put("parameters.analysis.conditional", static_cast<unsigned int>(_conditional_type));
@@ -536,23 +566,25 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.analysis.self-control-design", _self_control_design);
     pt.put("parameters.analysis.event-probability.numerator", _probablility_ratio.first);
     pt.put("parameters.analysis.event-probability.denominator", _probablility_ratio.second);
-    pt.put("parameters.analysis.temporal-window.start-range", _temporalStartRange.toString(buffer));
-    pt.put("parameters.analysis.temporal-window.end-range", _temporalEndRange.toString(buffer));
     // Advanced Analysis - Temporal Window
     pt.put("parameters.analysis.advanced.temporal-window.maximum-window-percentage", _maximum_window_percentage);
     pt.put("parameters.analysis.advanced.temporal-window.maximum-window-length", _maximum_window_length);
     pt.put("parameters.analysis.advanced.temporal-window.maximum-window-type", static_cast<unsigned int>(_maximum_window_type));
     pt.put("parameters.analysis.advanced.temporal-window.minimum-window-length", _minimum_window_length);
+    pt.put("parameters.analysis.advanced.temporal-window.prospective-analysis", _prospective_analysis);
+    pt.put("parameters.analysis.advanced.temporal-window.restrict-temporal-windows", _restrict_temporal_windows);
+    pt.put("parameters.analysis.advanced.temporal-window.start-range", _temporalStartRange.toString(buffer, _date_precision_type));
+    pt.put("parameters.analysis.advanced.temporal-window.end-range", _temporalEndRange.toString(buffer, _date_precision_type));
     // Advanced Analysis - Adjustments
     pt.put("parameters.analysis.advanced.adjustments.perform-day-of-week-adjustments", _dayofweek_adjustment);
     pt.put("parameters.analysis.advanced.adjustments.apply-exclusion-time-ranges", _apply_exclusion_ranges);
-    pt.put("parameters.analysis.advanced.adjustments.exclusion-time-ranges", _exclusion_time_ranges.toString(buffer));
+    pt.put("parameters.analysis.advanced.adjustments.exclusion-time-ranges", _exclusion_time_ranges.toString(buffer, _date_precision_type));
     // Advanced Analysis - Inference
     pt.put("parameters.analysis.advanced.inference.replications", _replications);
     pt.put("parameters.analysis.advanced.inference.seed", _randomizationSeed);
     pt.put("parameters.analysis.advanced.inference.generate-seed", _randomlyGenerateSeed);
     pt.put("parameters.analysis.advanced.inference.restrict-tree-levels", _restrict_tree_levels);
-	typelist_csv_string<unsigned int>(_restricted_tree_levels, buffer);	
+    typelist_csv_string<unsigned int>(_restricted_tree_levels, buffer);	
     pt.put("parameters.analysis.advanced.inference.tree-levels", buffer);
     // Advanced Analysis - Sequential Scan
     pt.put("parameters.analysis.advanced.sequential-scan.sequential-scan", _sequential_scan);
@@ -561,16 +593,9 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.analysis.advanced.sequential-scan.sequential-filename", _sequential_file);
     pt.put("parameters.analysis.advanced.sequential-scan.sequential-alpha-overall", _sequential_alpha_overall);
     pt.put("parameters.analysis.advanced.sequential-scan.sequential-alpha-spending", _sequential_alpha_spending);
-    // Input
-    pt.put("parameters.input.tree-file", _treeFileNames.front());
-    pt.put("parameters.input.count-file", _countFileName);
-	pt.put("parameters.input.control-file", _controlFileName);
-	pt.put("parameters.input.data-time-range", _dataTimeRangeSet.toString(buffer));
-    // Advanced Input
-    pt.put("parameters.input.advanced.input.cuts-file", _cutsFileName);
-    pt.put("parameters.input-advanced.input.cuts-type", static_cast<unsigned int>(_cut_type));
-    pt.put("parameters.input.advanced.input.apply-risk-window-restriction", _apply_risk_window_restriction);
-    pt.put("parameters.input.advanced.input.risk-window-percentage", _risk_window_percentage);
+    // Advanced Analysis - Miscellaneous
+    pt.put("parameters.analysis.advanced.miscellaneous.prospective-frequency-type", static_cast<unsigned int>(_prospective_frequency_type));
+    pt.put("parameters.analysis.advanced.miscellaneous.prospective-frequenc", _prospective_frequency);
     // Output
     pt.put("parameters.output.results-file", _outputFileName);
     pt.put("parameters.output.generate-html-results", _generateHtmlResults);

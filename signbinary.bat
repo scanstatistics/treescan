@@ -1,1 +1,1 @@
-P:\imsadmin\code.sign.cert.ms.auth.verisign\signtool.exe sign /f P:\imsadmin\code.sign.cert.ms.auth.verisign\ims-cross-sign.pfx /p "&4L(JyhyOmwF)$Z" /t http://timestamp.verisign.com/scripts/timstamp.dll /v %1
+P:\imsadmin\code.sign.cert.ms.auth.verisign\signtool.exe sign /f P:\imsadmin\code.sign.cert.ms.auth.verisign\ims-cross-sign.pfx /p "&4L(JyhyOmwF)$Z" /t http://timestamp.digicert.com/ %1

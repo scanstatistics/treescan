@@ -15,6 +15,7 @@ const char * IniParameterSpecification::AdditionalOutput        = "Additional Ou
 const char * IniParameterSpecification::PowerEvaluations        = "Power Evaluations";
 const char * IniParameterSpecification::PowerSimulations        = "Power Simulations";
 const char * IniParameterSpecification::SequentialScan          = "Sequential Scan";
+const char * IniParameterSpecification::MiscellaneousAnalysis   = "Miscellaneous Analysis";
 
 const char * IniParameterSpecification::RunOptions              = "Run Options";
 const char * IniParameterSpecification::System                  = "System";
@@ -73,6 +74,7 @@ void IniParameterSpecification::setup(Parameters::CreationVersion version) {
     _inference_section = SectionInfo(Inference, 700);
     _sequential_scan_section = SectionInfo(SequentialScan, 750);
     _power_evaluations_section = SectionInfo(PowerEvaluations, 800);
+    _miscellaneous_analysis_section = SectionInfo(MiscellaneousAnalysis, 801);
     _additional_output_section = SectionInfo(AdditionalOutput, 900);
     _power_simulations_section = SectionInfo(PowerSimulations, 1000);
     _run_options_section = SectionInfo(RunOptions, 1100);
@@ -87,7 +89,7 @@ void IniParameterSpecification::setup(Parameters::CreationVersion version) {
     else if (version.iMajor == 1 && version.iMinor == 4)
         Build_1_4_x_ParameterList();
     else
-		Build_2_0_x_ParameterList();
+        Build_2_0_x_ParameterList();
 }
 
 /* Returns ini version setting or default. */
@@ -214,9 +216,21 @@ void IniParameterSpecification::Build_2_0_x_ParameterList() {
     _parameter_info[Parameters::SEQUENTIAL_ALPHA_OVERALL] = ParamInfo(Parameters::SEQUENTIAL_ALPHA_OVERALL, "sequential-alpha-overall", 5, _sequential_scan_section);
     _parameter_info[Parameters::SEQUENTIAL_ALPHA_SPENDING] = ParamInfo(Parameters::SEQUENTIAL_ALPHA_SPENDING, "sequential-alpha-spending", 6, _sequential_scan_section);
 
-	_parameter_info[Parameters::CONTROL_FILE] = ParamInfo(Parameters::CONTROL_FILE, "control-filename", 4, _input_section);
+    _parameter_info[Parameters::CONTROL_FILE] = ParamInfo(Parameters::CONTROL_FILE, "control-filename", 4, _input_section);
 
-    assert(_parameter_info.size() == 61);
+    _parameter_info[Parameters::PROSPECTIVE_FREQ_TYPE] = ParamInfo(Parameters::PROSPECTIVE_FREQ_TYPE, "prospective-frequency-type", 1, _miscellaneous_analysis_section);
+    _parameter_info[Parameters::PROSPECTIVE_FREQ] = ParamInfo(Parameters::PROSPECTIVE_FREQ, "prospective-frequency", 2, _miscellaneous_analysis_section);
+
+    _parameter_info[Parameters::PROSPECTIVE_ANALYSIS] = ParamInfo(Parameters::PROSPECTIVE_ANALYSIS, "prospective-analysis", 7, _temporal_window_section);
+
+    _parameter_info[Parameters::DATE_PRECISION] = ParamInfo(Parameters::DATE_PRECISION, "date-precision", 3, _input_section);
+    _parameter_info[Parameters::DATA_TIME_RANGES] = ParamInfo(Parameters::DATA_TIME_RANGES, "data-time-range", 4, _input_section);
+
+    _parameter_info[Parameters::RESTRICTED_TIME_RANGE] = ParamInfo(Parameters::RESTRICTED_TIME_RANGE, "restricted-window-range", 7, _temporal_window_section);
+    _parameter_info[Parameters::START_DATA_TIME_RANGE] = ParamInfo(Parameters::START_DATA_TIME_RANGE, "window-start-range", 8, _temporal_window_section);
+    _parameter_info[Parameters::END_DATA_TIME_RANGE] = ParamInfo(Parameters::END_DATA_TIME_RANGE, "window-end-range", 9, _temporal_window_section);
+
+    assert(_parameter_info.size() == 66);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

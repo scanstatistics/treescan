@@ -33,6 +33,7 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                WriteAdvancedAnalysisTemporalWindowSettings(IniFile& WriteFile);
     void                                WriteAdvancedAnalysisAdjustmentsSettings(IniFile& WriteFile);
     void                                WriteAdvancedAnalysisInferenceSettings(IniFile& WriteFile);
+    void                                WriteAdvancedAnalysisMiscellaneousSettings(IniFile& WriteFile);
     void                                WriteAdvancedOutputSettings(IniFile& WriteFile);
     void                                WriteRunOptionSettings(IniFile& WriteFile);
     void                                WriteSequentialScanSettings(IniFile& WriteFile);

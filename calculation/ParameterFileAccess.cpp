@@ -13,15 +13,9 @@
 
 /** Determines format of parameter file and invokes particular parameter reader class to read parameters from file. */
 bool ParameterAccessCoordinator::read(const std::string& filename, BasePrint& print) {
-    bool  success=false;
-    try {
-        if (access(filename.c_str(), 04) == -1)
-            throw resolvable_error("Unable to open settings file '%s'.\n", filename.c_str());
-        success = IniParameterFileAccess(_parameters, print).Read(filename.c_str());
-    } catch (prg_exception& x) {
-        throw resolvable_error("Unable to read parameters from file '%s'.\n", filename.c_str());
-    }
-    return success;
+    if (access(filename.c_str(), 04) == -1)
+        throw resolvable_error("Unable to open settings file '%s'.\n", filename.c_str());
+    return IniParameterFileAccess(_parameters, print).Read(filename.c_str());
 }
 
 /** Writes parameters to file in most recent format. */
@@ -45,8 +39,9 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             /* Input */
             case Parameters::TREE_FILE               : return "tree structure filename";
             case Parameters::COUNT_FILE              : return "count data filename";
-			case Parameters::CONTROL_FILE            : return "control data filename";
-			case Parameters::DATA_TIME_RANGES        : return "data time ranges: [integer,integer]";
+            case Parameters::CONTROL_FILE            : return "control data filename";
+            case Parameters::DATE_PRECISION          : return "date precision type (NONE=0, GENERIC=1, YEAR=2, MONTH=3, DAY=4)";
+            case Parameters::DATA_TIME_RANGES        : return "data time ranges: [integer,integer]";
             /* Advanced Input */
             case Parameters::CUT_FILE                : return "cuts filename";
             case Parameters::CUT_TYPE                : return "default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)";
@@ -64,6 +59,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::EVENT_PROBABILITY       : return "case probability (integer/integer)";
             case Parameters::SEQUENTIAL_SCAN         : return "perform sequential scan - time-only scan (y/n)";
             case Parameters::SEQUENTIAL_MAX_SIGNAL   : return "sequential scan maximum cases for signal (integer)";
+            case Parameters::RESTRICTED_TIME_RANGE   : return "restrict temporal windows (y/n)";
             case Parameters::START_DATA_TIME_RANGE   : return "start data time range: [integer,integer]";
             case Parameters::END_DATA_TIME_RANGE     : return "end data time range: [integer,integer]";
             /* Advanced Analysis - Temporal Window */
@@ -71,6 +67,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::MAXIMUM_WINDOW_FIXED    : return "maximum temporal size as fixed time length (integer)";
             case Parameters::MAXIMUM_WINDOW_TYPE     : return "maximum temporal size selection (PERCENTAGE_WINDOW=0, FIXED_LENGTH=1)";
             case Parameters::MINIMUM_WINDOW_FIXED    : return "minimum temporal size as fixed time length (integer)";
+            case Parameters::PROSPECTIVE_ANALYSIS    : return "prospective analysis (y/n)";
             case Parameters::SEQUENTIAL_MIN_SIGNAL   : return "sequential scan - minimum cases to signal (integer)";
             case Parameters::SEQUENTIAL_FILE         : return "sequential scan filename";
             case Parameters::SEQUENTIAL_ALPHA_OVERALL: return "sequential alpha overall";
@@ -115,6 +112,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::PARALLEL_PROCESSES      : return "number of parallel processes to execute (0=All Processors, x=At Most X Processors)";
             /* System */
             case Parameters::CREATION_VERSION        : return "parameters version - do not modify";
+            case Parameters::PROSPECTIVE_FREQ_TYPE   : return "frequency of prospective analyses type (0=Daily, 1=Weekly, 2=Monthy, 3=Quarterly, 4=Yearly)";
+            case Parameters::PROSPECTIVE_FREQ        : return "frequency of prospective (integer)";
             default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", e);
         };
     } catch (prg_exception& x) {
@@ -132,8 +131,9 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             /* Input */
             case Parameters::TREE_FILE                : s = _parameters.getTreeFileNames().front(); return s;
             case Parameters::COUNT_FILE               : s = _parameters.getCountFileName(); return s;
-			case Parameters::CONTROL_FILE             : s = _parameters.getControlFileName(); return s;
-			case Parameters::DATA_TIME_RANGES         : return _parameters.getDataTimeRangeSet().toString(s);
+            case Parameters::CONTROL_FILE             : s = _parameters.getControlFileName(); return s;
+            case Parameters::DATE_PRECISION           : return AsString(s, _parameters.getDatePrecisionType());
+            case Parameters::DATA_TIME_RANGES         : return _parameters.getDataTimeRangeSet().toString(s, _parameters.getDatePrecisionType());
             /* Advanced Input */
             case Parameters::CUT_FILE                 : s = _parameters.getCutsFileName(); return s;
             case Parameters::CUT_TYPE                 : return AsString(s, _parameters.getCutType());
@@ -155,24 +155,26 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::SEQUENTIAL_FILE          : s = _parameters.getSequentialFilename(); return s;
             case Parameters::SEQUENTIAL_ALPHA_OVERALL : return AsString(s, _parameters.getSequentialAlphaOverall());
             case Parameters::SEQUENTIAL_ALPHA_SPENDING: return AsString(s, _parameters.getSequentialAlphaSpending());
-            case Parameters::START_DATA_TIME_RANGE    : return _parameters.getTemporalStartRange().toString(s);
-            case Parameters::END_DATA_TIME_RANGE      : return _parameters.getTemporalEndRange().toString(s);
+            case Parameters::RESTRICTED_TIME_RANGE    : return AsString(s, _parameters.getRestrictTemporalWindows());
+            case Parameters::START_DATA_TIME_RANGE    : return _parameters.getTemporalStartRange().toString(s, _parameters.getDatePrecisionType());
+            case Parameters::END_DATA_TIME_RANGE      : return _parameters.getTemporalEndRange().toString(s, _parameters.getDatePrecisionType());
             /* Advanced Analysis - Temporal Window */
             case Parameters::MAXIMUM_WINDOW_PERCENTAGE: return AsString(s, _parameters.getMaximumWindowPercentage());
             case Parameters::MAXIMUM_WINDOW_FIXED     : return AsString(s, _parameters.getMaximumWindowLength());
             case Parameters::MAXIMUM_WINDOW_TYPE      : return AsString(s, _parameters.getMaximumWindowType());
             case Parameters::MINIMUM_WINDOW_FIXED     : return AsString(s, _parameters.getMinimumWindowLength());
+            case Parameters::PROSPECTIVE_ANALYSIS     : return AsString(s, _parameters.getIsProspectiveAnalysis());
             /* Advanced Analysis - Adjustments */
             case Parameters::DAYOFWEEK_ADJUSTMENT     : return AsString(s, _parameters.getPerformDayOfWeekAdjustment());
             case Parameters::APPLY_EXCLUSION_RANGES   : return AsString(s, _parameters.isApplyingExclusionTimeRanges());
-            case Parameters::EXCLUSION_RANGES         : return _parameters.getExclusionTimeRangeSet().toString(s);
+            case Parameters::EXCLUSION_RANGES         : return _parameters.getExclusionTimeRangeSet().toString(s, _parameters.getDatePrecisionType());
             /* Advanced Analysis - Inference */
             case Parameters::REPLICATIONS             : return AsString(s, _parameters.getNumReplicationsRequested());
             case Parameters::RANDOMIZATION_SEED       : return AsString(s, static_cast<unsigned int>(_parameters.getRandomizationSeed()));
             case Parameters::RANDOMLY_GENERATE_SEED   : return AsString(s, _parameters.isRandomlyGeneratingSeed());
-			case Parameters::RESTRICT_TREE_LEVELS     : return AsString(s, _parameters.getRestrictTreeLevels());
-			case Parameters::RESTRICTED_TREE_LEVELS   : typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), s);
-				                                        return s;
+            case Parameters::RESTRICT_TREE_LEVELS     : return AsString(s, _parameters.getRestrictTreeLevels());
+            case Parameters::RESTRICTED_TREE_LEVELS   : typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), s);
+                                                        return s;
             /* Output */
             case Parameters::RESULTS_FILE             : s = _parameters.getOutputFileName(); return s;
             case Parameters::RESULTS_HTML             : return AsString(s, _parameters.isGeneratingHtmlResults());
@@ -203,6 +205,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::PARALLEL_PROCESSES       : return AsString(s, _parameters.getNumRequestedParallelProcesses());
             /* System */
             case Parameters::CREATION_VERSION         : printString(s, "%s.%s.%s", VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE); return s;
+            case Parameters::PROSPECTIVE_FREQ_TYPE: return AsString(s, _parameters.getProspectiveFrequencyType());
+            case Parameters::PROSPECTIVE_FREQ: return AsString(s, _parameters.getProspectiveFrequency());
             default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", e);
         };
     } catch (prg_exception& x) {
@@ -316,8 +320,10 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             /* Input */
             case Parameters::TREE_FILE                : _parameters.setTreeFileName(value.c_str(), true); break;
             case Parameters::COUNT_FILE               : _parameters.setCountFileName(value.c_str(), true); break;
-			case Parameters::CONTROL_FILE             : _parameters.setControlFileName(value.c_str(), true); break;
-            case Parameters::DATA_TIME_RANGES         : _parameters.setDataTimeRangeSet(DataTimeRangeSet(value)); break;
+            case Parameters::CONTROL_FILE             : _parameters.setControlFileName(value.c_str(), true); break;
+            case Parameters::DATE_PRECISION           : iValue = ReadEnumeration(ReadInt(value, e), e, DataTimeRange::DatePrecisionType::NONE, DataTimeRange::DatePrecisionType::DAY);
+                                                        _parameters.setDatePrecisionType((DataTimeRange::DatePrecisionType)iValue); break;
+            case Parameters::DATA_TIME_RANGES         : _parameters.setDataTimeRangeSet(DataTimeRangeSet(value, _parameters.getDatePrecisionType(), boost::optional<boost::gregorian::date>())); break;
             /* Advanced Input */
             case Parameters::CUT_FILE                 : _parameters.setCutsFileName(value.c_str(), true); break;
             case Parameters::CUT_TYPE                 : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::SIMPLE, Parameters::COMBINATORIAL);
@@ -333,7 +339,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
                                                         _parameters.setScanType((Parameters::ScanType)iValue); break;
             case Parameters::CONDITIONAL_TYPE         : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::UNCONDITIONAL, Parameters::NODEANDTIME);
                                                         _parameters.setConditionalType((Parameters::ConditionalType)iValue); break;
-			case Parameters::MODEL_TYPE               : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::POISSON, Parameters::BERNOULLI_TIME);
+            case Parameters::MODEL_TYPE               : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::POISSON, Parameters::BERNOULLI_TIME);
                                                         _parameters.setModelType((Parameters::ModelType)iValue); break;
             case Parameters::SELF_CONTROL_DESIGN      : _parameters.setSelfControlDesign(ReadBoolean(value, e)); break;
             case Parameters::EVENT_PROBABILITY        : _parameters.setProbabilityRatio(ReadRatio(value)); break;
@@ -343,30 +349,38 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::SEQUENTIAL_FILE          : _parameters.setSequentialFilename(value.c_str(), true); break;
             case Parameters::SEQUENTIAL_ALPHA_OVERALL : _parameters.setSequentialAlphaOverall(ReadDouble(value, e)); break;
             case Parameters::SEQUENTIAL_ALPHA_SPENDING: _parameters.setSequentialAlphaSpending(ReadDouble(value, e)); break;
-            case Parameters::START_DATA_TIME_RANGE    : _parameters.setTemporalStartRange(DataTimeRange(value)); break;
-            case Parameters::END_DATA_TIME_RANGE      : _parameters.setTemporalEndRange(DataTimeRange(value)); break;
+            case Parameters::RESTRICTED_TIME_RANGE    : _parameters.setRestrictTemporalWindows(ReadBoolean(value, e)); break;
+            case Parameters::START_DATA_TIME_RANGE    : _parameters.setTemporalStartRange(
+                                                            DataTimeRange(value, _parameters.getDatePrecisionType(), _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart())
+                                                         ); break;
+            case Parameters::END_DATA_TIME_RANGE      : _parameters.setTemporalEndRange(
+                                                            DataTimeRange(value, _parameters.getDatePrecisionType(), _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart())
+                                                        ); break;
             /* Advanced Analysis - Temporal Window */
             case Parameters::MAXIMUM_WINDOW_PERCENTAGE: _parameters.setMaximumWindowPercentage(ReadDouble(value, e)); break;
             case Parameters::MAXIMUM_WINDOW_FIXED     : _parameters.setMaximumWindowLength(ReadUnsignedInt(value, e)); break;
             case Parameters::MAXIMUM_WINDOW_TYPE      : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::PERCENTAGE_WINDOW, Parameters::FIXED_LENGTH);
                                                         _parameters.setMaximumWindowType((Parameters::MaximumWindowType)iValue); break;
             case Parameters::MINIMUM_WINDOW_FIXED     : _parameters.setMinimumWindowLength(ReadUnsignedInt(value, e)); break;
+            case Parameters::PROSPECTIVE_ANALYSIS     : _parameters.setIsProspectiveAnalysis(ReadBoolean(value, e)); break;
             /* Advanced Analysis - Adjustments */
             case Parameters::DAYOFWEEK_ADJUSTMENT     : _parameters.setPerformDayOfWeekAdjustment(ReadBoolean(value, e)); break;
             case Parameters::APPLY_EXCLUSION_RANGES   : _parameters.setApplyingExclusionTimeRanges(ReadBoolean(value, e)); break;
-            case Parameters::EXCLUSION_RANGES         : _parameters.setExclusionTimeRangeSet(DataTimeRangeSet(value)); break;
+            case Parameters::EXCLUSION_RANGES         : _parameters.setExclusionTimeRangeSet(
+                                                            DataTimeRangeSet(value, _parameters.getDatePrecisionType(), _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart())
+                                                        ); break;
             /* Advanced Analysis Inference */
             case Parameters::REPLICATIONS             : _parameters.setNumReplications(ReadUnsignedInt(value, e)); break;
             case Parameters::RANDOMIZATION_SEED       : _parameters.setRandomizationSeed(static_cast<long>(ReadInt(value, e))); break;
             case Parameters::RANDOMLY_GENERATE_SEED   : _parameters.setRandomlyGeneratingSeed(ReadBoolean(value, e)); break;
-			case Parameters::RESTRICT_TREE_LEVELS     : _parameters.setRestrictTreeLevels(ReadBoolean(value, e)); break;
+            case Parameters::RESTRICT_TREE_LEVELS     : _parameters.setRestrictTreeLevels(ReadBoolean(value, e)); break;
             case Parameters::RESTRICTED_TREE_LEVELS   : {
-				                                        std::vector<unsigned int> list;
-				                                        if (!csv_string_to_typelist<unsigned int>(value.c_str(), list))
-														    throw parameter_error("Invalid Parameter Setting:\nFor parameter '%s', unable to read as comma separated list of integers.\n", GetParameterLabel(e), value.c_str());
-														_parameters.setRestrictedTreeLevels(list);
-														}
-														break;
+                                                        std::vector<unsigned int> list;
+                                                        if (!csv_string_to_typelist<unsigned int>(value.c_str(), list))
+                                                            throw parameter_error("Invalid Parameter Setting:\nFor parameter '%s', unable to read as comma separated list of integers.\n", GetParameterLabel(e), value.c_str());
+                                                            _parameters.setRestrictedTreeLevels(list);
+                                                        }
+                                                        break;
             /* Output */
             case Parameters::RESULTS_FILE             : _parameters.setOutputFileName(value.c_str(), true); break;
             case Parameters::RESULTS_HTML             : _parameters.setGeneratingHtmlResults(ReadBoolean(value, e)); break;
@@ -399,6 +413,9 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::PARALLEL_PROCESSES       : _parameters.setNumProcesses(ReadUnsignedInt(value, e)); break;
             /* System */
             case Parameters::CREATION_VERSION         : _parameters.setVersion(ReadVersion(value)); break;
+            case Parameters::PROSPECTIVE_FREQ_TYPE    : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::DAILY, Parameters::YEARLY);
+                                                        _parameters.setProspectiveFrequencyType((Parameters::ProspectiveFrequency)iValue); break;
+            case Parameters::PROSPECTIVE_FREQ         : _parameters.setProspectiveFrequency(ReadUnsignedInt(value, e)); break;
             default : throw parameter_error("Unknown parameter enumeration %d.", e);
         };
     } catch (parameter_error &x) {

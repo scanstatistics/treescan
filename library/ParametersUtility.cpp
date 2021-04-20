@@ -42,6 +42,7 @@ JNIEXPORT jboolean JNICALL Java_org_treescan_app_Parameters_Read(JNIEnv * pEnv, 
   return true;
 }
 
+
 /** Set parameters of C++ object from Java object and writes parameters to file 'filename'. */
 JNIEXPORT void JNICALL Java_org_treescan_app_Parameters_Write(JNIEnv * pEnv, jobject jParameters, jstring) {
   Parameters   parameters;
@@ -146,6 +147,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getSourceFileName().c_str()));
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setIsProspectiveAnalysis", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getIsProspectiveAnalysis());
+  jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "setRandomlyGeneratingSeed", "(Z)V");
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.isRandomlyGeneratingSeed());
   jni_error::_detectError(Env);
@@ -200,31 +205,72 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jint)parameters.getConditionalType());
   jni_error::_detectError(Env);
 
-  if (parameters.getDataTimeRangeSet().getDataTimeRangeSets().size()) {
-    mid = _getMethodId_Checked(Env, clazz, "setDataTimeRangeBegin", "(I)V");
-    Env.CallVoidMethod(jParameters, mid, (jint)parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getStart());
+  mid = _getMethodId_Checked(Env, clazz, "setPrecisionOfTimesType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getDatePrecisionType());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setRestrictTemporalWindows", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getRestrictTemporalWindows());
+  jni_error::_detectError(Env);
+
+  if (Parameters::isTemporalScanType(parameters.getScanType()) && parameters.getDataTimeRangeSet().getDataTimeRangeSets().size()) {
+    std::pair<std::string, std::string> data_time_range;
+    std::stringstream buffer;
+    if (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC) {
+        buffer << parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getStart();
+        data_time_range.first = buffer.str();
+        buffer.str("");
+        buffer << parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getEnd();
+        data_time_range.second = buffer.str();
+    } else {
+        const DataTimeRange& range = parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
+        data_time_range = range.rangeToGregorianStrings(range.getStart(), range.getEnd(), parameters.getDatePrecisionType());
+    }
+    mid = _getMethodId_Checked(Env, clazz, "setDataTimeRangeBegin", "(Ljava/lang/String;)V");
+    Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.first.c_str()));
+    jni_error::_detectError(Env);
+    mid = _getMethodId_Checked(Env, clazz, "setDataTimeRangeClose", "(Ljava/lang/String;)V");
+    Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.second.c_str()));
     jni_error::_detectError(Env);
 
-    mid = _getMethodId_Checked(Env, clazz, "setDataTimeRangeClose", "(I)V");
-    Env.CallVoidMethod(jParameters, mid, (jint)parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getEnd());
-    jni_error::_detectError(Env);
+    if (parameters.getRestrictTemporalWindows()) {
+        if (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC) {
+            buffer.str("");
+            buffer << parameters.getTemporalStartRange().getStart();
+            data_time_range.first = buffer.str();
+            buffer.str("");
+            buffer << parameters.getTemporalStartRange().getEnd();
+            data_time_range.second = buffer.str();
+        } else {
+            const DataTimeRange& range = parameters.getTemporalStartRange();
+            data_time_range = range.rangeToGregorianStrings(range.getStart(), range.getEnd(), parameters.getDatePrecisionType());
+        }
+        mid = _getMethodId_Checked(Env, clazz, "setStartRangeStartDate", "(Ljava/lang/String;)V");
+        Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.first.c_str()));
+        jni_error::_detectError(Env);
+        mid = _getMethodId_Checked(Env, clazz, "setStartRangeEndDate", "(Ljava/lang/String;)V");
+        Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.second.c_str()));
+        jni_error::_detectError(Env);
+
+        if (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC) {
+            buffer.str("");
+            buffer << parameters.getTemporalEndRange().getStart();
+            data_time_range.first = buffer.str();
+            buffer.str("");
+            buffer << parameters.getTemporalEndRange().getEnd();
+            data_time_range.second = buffer.str();
+        } else {
+            const DataTimeRange& range = parameters.getTemporalEndRange();
+            data_time_range = range.rangeToGregorianStrings(range.getStart(), range.getEnd(), parameters.getDatePrecisionType());
+        }
+        mid = _getMethodId_Checked(Env, clazz, "setEndRangeStartDate", "(Ljava/lang/String;)V");
+        Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.first.c_str()));
+        jni_error::_detectError(Env);
+        mid = _getMethodId_Checked(Env, clazz, "setEndRangeEndDate", "(Ljava/lang/String;)V");
+        Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.second.c_str()));
+        jni_error::_detectError(Env);
+    }
   }
-
-  mid = _getMethodId_Checked(Env, clazz, "setTemporalStartRangeBegin", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getTemporalStartRange().getStart());
-  jni_error::_detectError(Env);
-
-  mid = _getMethodId_Checked(Env, clazz, "setTemporalStartRangeClose", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getTemporalStartRange().getEnd());
-  jni_error::_detectError(Env);
-
-  mid = _getMethodId_Checked(Env, clazz, "setTemporalEndRangeBegin", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getTemporalEndRange().getStart());
-  jni_error::_detectError(Env);
-
-  mid = _getMethodId_Checked(Env, clazz, "setTemporalEndRangeClose", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getTemporalEndRange().getEnd());
-  jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setGeneratingLLRResults", "(Z)V");
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.isGeneratingLLRResults());
@@ -305,10 +351,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
       switch (key.first) {
         case Parameters::TREE_FILE : Env.CallVoidMethod(issobject, mid, (jint)0); break;
         case Parameters::COUNT_FILE : Env.CallVoidMethod(issobject, mid, (jint)1); break;
-		case Parameters::CUT_FILE : Env.CallVoidMethod(issobject, mid, (jint)2); break;
+        case Parameters::CUT_FILE : Env.CallVoidMethod(issobject, mid, (jint)2); break;
         case Parameters::POWER_EVALUATIONS_FILE : Env.CallVoidMethod(issobject, mid, (jint)3); break;
-		case Parameters::CONTROL_FILE: Env.CallVoidMethod(issobject, mid, (jint)4); break;
-		default : throw prg_error("Unknown parameter type for translation: %d", "copyCParametersToJParameters()", key.first);
+        case Parameters::CONTROL_FILE: Env.CallVoidMethod(issobject, mid, (jint)4); break;
+        default : throw prg_error("Unknown parameter type for translation: %d", "copyCParametersToJParameters()", key.first);
       }
 
       mid = _getMethodId_Checked(Env, issclazz, "setIndex", "(I)V");
@@ -366,7 +412,7 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   mid = _getMethodId_Checked(Env, clazz, "setRestrictedTreeLevels", "(Ljava/lang/String;)V");
   std::string s;
   if (!typelist_csv_string<unsigned int>(parameters.getRestrictedTreeLevels(), s)) 
-	  throw prg_error("Unable to convert tree levels", "copyCParametersToJParameters()");
+    throw prg_error("Unable to convert tree levels", "copyCParametersToJParameters()");
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(s.c_str()));
   jni_error::_detectError(Env);
 
@@ -406,10 +452,12 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.isApplyingExclusionTimeRanges());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setExclusionTimeRangeSet", "(Ljava/lang/String;)V");
-  parameters.getExclusionTimeRangeSet().toString(s);
-  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(s.c_str()));
-  jni_error::_detectError(Env);
+  if (parameters.isApplyingExclusionTimeRanges()) {
+      mid = _getMethodId_Checked(Env, clazz, "setExclusionTimeRangeSet", "(Ljava/lang/String;)V");
+      parameters.getExclusionTimeRangeSet().toString(s, parameters.getDatePrecisionType());
+      Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(s.c_str()));
+      jni_error::_detectError(Env);
+  }
 
   return jParameters;
 }
@@ -422,6 +470,8 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
 
   //set CParameter class from jParameters object
   jclass clazz = Env.GetObjectClass(jParameters);
+
+  parameters.setDatePrecisionType((DataTimeRange::DatePrecisionType)getEnumTypeOrdinalIndex(Env, jParameters, "getPrecisionOfTimesType", "Lorg/treescan/app/Parameters$DatePrecisionType;"));
 
   jmethodID mid = _getMethodId_Checked(Env, clazz, "getNumRequestedParallelProcesses", "()I");
   parameters.setNumProcesses(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
@@ -506,6 +556,10 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
 
   parameters.setModelType((Parameters::ModelType)getEnumTypeOrdinalIndex(Env, jParameters, "getModelType", "Lorg/treescan/app/Parameters$ModelType;"));
 
+  mid = _getMethodId_Checked(Env, clazz, "getIsProspectiveAnalysis", "()Z");
+  parameters.setIsProspectiveAnalysis(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
   Parameters::ratio_t ratio;
   mid = _getMethodId_Checked(Env, clazz, "getProbabilityRatioNumerator", "()I");
   ratio.first = static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid));
@@ -518,31 +572,66 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   parameters.setScanType((Parameters::ScanType)getEnumTypeOrdinalIndex(Env, jParameters, "getScanType", "Lorg/treescan/app/Parameters$ScanType;"));
   parameters.setConditionalType((Parameters::ConditionalType)getEnumTypeOrdinalIndex(Env, jParameters, "getConditionalType", "Lorg/treescan/app/Parameters$ConditionalType;"));
 
-  mid = _getMethodId_Checked(Env, clazz, "getDataTimeRangeBegin", "()I");
-  int begin = Env.CallIntMethod(jParameters, mid);
+  mid = _getMethodId_Checked(Env, clazz, "getRestrictTemporalWindows", "()Z");
+  parameters.setRestrictTemporalWindows(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
-  mid = _getMethodId_Checked(Env, clazz, "getDataTimeRangeClose", "()I");
-  int close = Env.CallIntMethod(jParameters, mid);
-  jni_error::_detectError(Env);
-  DataTimeRangeSet range_set;
-  range_set.add(DataTimeRange(begin, close));
-  parameters.setDataTimeRangeSet(range_set);
 
-  mid = _getMethodId_Checked(Env, clazz, "getTemporalStartRangeBegin", "()I");
-  begin = Env.CallIntMethod(jParameters, mid);
-  jni_error::_detectError(Env);
-  mid = _getMethodId_Checked(Env, clazz, "getTemporalStartRangeClose", "()I");
-  close = Env.CallIntMethod(jParameters, mid);
-  jni_error::_detectError(Env);
-  parameters.setTemporalStartRange(DataTimeRange(begin, close));
+  if (Parameters::isTemporalScanType(parameters.getScanType())) {
+    std::stringstream buffer;
+    mid = _getMethodId_Checked(Env, clazz, "getDataTimeRangeBegin", "()Ljava/lang/String;");
+    jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+    jni_error::_detectError(Env);
+    sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+    buffer << "[" << sFilename;
+    if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
-  mid = _getMethodId_Checked(Env, clazz, "getTemporalEndRangeBegin", "()I");
-  begin = Env.CallIntMethod(jParameters, mid);
-  jni_error::_detectError(Env);
-  mid = _getMethodId_Checked(Env, clazz, "getTemporalEndRangeClose", "()I");
-  close = Env.CallIntMethod(jParameters, mid);
-  jni_error::_detectError(Env);
-  parameters.setTemporalEndRange(DataTimeRange(begin, close));
+    mid = _getMethodId_Checked(Env, clazz, "getDataTimeRangeClose", "()Ljava/lang/String;");
+    jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+    jni_error::_detectError(Env);
+    sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+    buffer << "," << sFilename << "]";
+    if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+    parameters.setDataTimeRangeSet(DataTimeRangeSet(buffer.str(), parameters.getDatePrecisionType(), boost::optional<boost::gregorian::date>()));
+
+    if (parameters.getRestrictTemporalWindows()) {
+        buffer.str("");
+        mid = _getMethodId_Checked(Env, clazz, "getStartRangeStartDate", "()Ljava/lang/String;");
+        jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+        jni_error::_detectError(Env);
+        sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+        buffer << "[" << sFilename;
+        if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+        mid = _getMethodId_Checked(Env, clazz, "getStartRangeEndDate", "()Ljava/lang/String;");
+        jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+        jni_error::_detectError(Env);
+        sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+        buffer << "," << sFilename << "]";
+        if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+        parameters.setTemporalStartRange(
+            DataTimeRange(buffer.str(), parameters.getDatePrecisionType(), parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart())
+        );
+
+        buffer.str("");
+        mid = _getMethodId_Checked(Env, clazz, "getEndRangeStartDate", "()Ljava/lang/String;");
+        jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+        jni_error::_detectError(Env);
+        sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+        buffer << "[" << sFilename;
+        if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+        mid = _getMethodId_Checked(Env, clazz, "getEndRangeEndDate", "()Ljava/lang/String;");
+        jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+        jni_error::_detectError(Env);
+        sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+        buffer << "," << sFilename << "]";
+        if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+        parameters.setTemporalEndRange(
+            DataTimeRange(buffer.str(), parameters.getDatePrecisionType(), parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart())
+        );
+    } else {
+        parameters.setTemporalStartRange(parameters.getDataTimeRangeSet().getDataTimeRangeSets().front());
+        parameters.setTemporalEndRange(parameters.getDataTimeRangeSet().getDataTimeRangeSets().front());
+    }
+  }
 
   mid = _getMethodId_Checked(Env, clazz, "isGeneratingLLRResults", "()Z");
   parameters.setGeneratingLLRResults(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
@@ -635,7 +724,7 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
         if (!string_to_type<int>(buffer.c_str(), column))
             throw prg_error("Unable to read parameter value '%s' as mapping item.", buffer.c_str());
             // The field mappings will be a collection of integers. The position of element is relative to the input fields order.
-            map.push_back((long)column);
+        map.push_back((long)column);
       }
       inputsource.setFieldsMap(map);
 
@@ -674,10 +763,10 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
       switch (filetype) {
         case 0/*Tree*/         : type = Parameters::TREE_FILE; break;
         case 1/*Count*/        : type = Parameters::COUNT_FILE; break;
-		case 2/*Cuts*/         : type = Parameters::CUT_FILE; break;
+        case 2/*Cuts*/         : type = Parameters::CUT_FILE; break;
         case 3/*Powers Evals*/ : type = Parameters::POWER_EVALUATIONS_FILE; break;
-		case 4/*Control*/: type = Parameters::CONTROL_FILE; break;
-		default : throw prg_error("Unknown filetype for translation: %d", "copyJParametersToCParameters()", filetype);
+        case 4/*Control*/: type = Parameters::CONTROL_FILE; break;
+        default : throw prg_error("Unknown filetype for translation: %d", "copyJParametersToCParameters()", filetype);
       }
       parameters.defineInputSource(type, inputsource, idx);
   }
@@ -700,8 +789,8 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
   Parameters::RestrictTreeLevels_t list;
   if (!csv_string_to_typelist<unsigned int>(sFilename, list)) {
-	  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
-	  throw prg_error("Unable to convert tree levels", "copyJParametersToCParameters()");
+    if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+    throw prg_error("Unable to convert tree levels", "copyJParametersToCParameters()");
   }
   parameters.setRestrictedTreeLevels(list);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
@@ -745,12 +834,16 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   parameters.setApplyingExclusionTimeRanges(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "getExclusionTimeRangeSet", "()Ljava/lang/String;");
-  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
-  jni_error::_detectError(Env);
-  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  parameters.setExclusionTimeRangeSet(DataTimeRangeSet(std::string(sFilename)));
-  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+  if (parameters.isApplyingExclusionTimeRanges()) {
+      mid = _getMethodId_Checked(Env, clazz, "getExclusionTimeRangeSet", "()Ljava/lang/String;");
+      jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+      jni_error::_detectError(Env);
+      sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+      parameters.setExclusionTimeRangeSet(DataTimeRangeSet(
+          std::string(sFilename), parameters.getDatePrecisionType(), parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart()
+      ));
+      if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+  }
 
   return parameters;
 }
