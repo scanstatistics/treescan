@@ -8,7 +8,7 @@ echo "   example: `basename $0` hostovic treescan"
 exit 1
 fi
 
-# Mount nfsf.omni.imsweb.com/prj/treescan onto Mac Mini
+# Mount nfsf.omni.imsweb.com/prj/treescan onto this Mac
 
 echo "mounting treescan"
 mount -t smbfs //OMNI\;$1@oriole-03-int/treescan /Users/$2/prj/treescan.development/treescan.home

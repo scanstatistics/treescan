@@ -11,7 +11,8 @@ fi
 
 (
 cpp_compiler="/usr/bin/g++"
-osx_min_version="-mmacosx-version-min=10.9"
+c_compiler="/usr/bin/gcc"
+osx_min_version="-mmacosx-version-min=10.13"
 binaries="$3"
 treescan_src="$1"
 boost_src="$2"
