@@ -402,7 +402,7 @@ void Parameters::setAsDefaulted() {
     _risk_window_censor_alt_denominator = 2.0;
     _apply_risk_window_restriction_censored = false;
 
-    _prospective_frequency_type = ProspectiveFrequency::DAILY;
+    _prospective_frequency_type = DAILY;
     _prospective_frequency = 1;
     _prospective_analysis = false;
 }
