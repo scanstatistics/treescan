@@ -57,9 +57,9 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
         if (_parameters.getCreationVersion().iMajor < 2) {
             if (Parameters::isTemporalScanType(_parameters.getScanType())) {
                 _parameters.setRestrictTemporalWindows(true);
-                _parameters.setDatePrecisionType(DataTimeRange::DatePrecisionType::GENERIC);
+                _parameters.setDatePrecisionType(DataTimeRange::GENERIC);
             } else {
-                _parameters.setDatePrecisionType(DataTimeRange::DatePrecisionType::NONE);
+                _parameters.setDatePrecisionType(DataTimeRange::NONE);
             }
         }
     } catch (prg_exception& x) {

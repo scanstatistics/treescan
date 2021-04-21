@@ -216,7 +216,7 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   if (Parameters::isTemporalScanType(parameters.getScanType()) && parameters.getDataTimeRangeSet().getDataTimeRangeSets().size()) {
     std::pair<std::string, std::string> data_time_range;
     std::stringstream buffer;
-    if (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC) {
+    if (parameters.getDatePrecisionType() == DataTimeRange::GENERIC) {
         buffer << parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getStart();
         data_time_range.first = buffer.str();
         buffer.str("");
@@ -234,7 +234,7 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
     jni_error::_detectError(Env);
 
     if (parameters.getRestrictTemporalWindows()) {
-        if (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC) {
+        if (parameters.getDatePrecisionType() == DataTimeRange::GENERIC) {
             buffer.str("");
             buffer << parameters.getTemporalStartRange().getStart();
             data_time_range.first = buffer.str();
@@ -252,7 +252,7 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
         Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.second.c_str()));
         jni_error::_detectError(Env);
 
-        if (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC) {
+        if (parameters.getDatePrecisionType() == DataTimeRange::GENERIC) {
             buffer.str("");
             buffer << parameters.getTemporalEndRange().getStart();
             data_time_range.first = buffer.str();

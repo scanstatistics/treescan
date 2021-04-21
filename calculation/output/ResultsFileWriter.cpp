@@ -129,7 +129,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         _scanRunner.getCaselessWindowsAsString(buffer);
         if (buffer.size()) {
             outfile << "Warning: The following " 
-                    << (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC ? "days" : "dates" )
+                    << (parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "days" : "dates" )
                     << " in the data time range do not have cases:" << std::endl;
             PrintFormat.PrintNonRightMarginedDataString(outfile, buffer, false);
             PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
@@ -186,7 +186,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     printString(buffer, "%ld", static_cast<int>(thisNode.getBrC()));
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     PrintFormat.PrintSectionLabel(outfile, "Time Window", true);
-                    if (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC)
+                    if (parameters.getDatePrecisionType() == DataTimeRange::GENERIC)
                         printString(buffer, "%ld to %ld", 
                             thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(), thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()
                         );
@@ -212,7 +212,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                         PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     }
                     PrintFormat.PrintSectionLabel(outfile, "Time Window", parameters.getScanType() != Parameters::TIMEONLY);
-                    if (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC)
+                    if (parameters.getDatePrecisionType() == DataTimeRange::GENERIC)
                         printString(buffer, "%ld to %ld",
                             thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(), thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()
                         );
@@ -237,7 +237,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                         PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     }
                     PrintFormat.PrintSectionLabel(outfile, "Time Window", parameters.getScanType() != Parameters::TIMEONLY);
-                    if (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC)
+                    if (parameters.getDatePrecisionType() == DataTimeRange::GENERIC)
                         printString(buffer, "%ld to %ld",
                             thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(), thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()
                         );
@@ -733,7 +733,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         _scanRunner.getCaselessWindowsAsString(buffer);
         if (buffer.size()) {
             outfile << "<div class=\"warning\">Warning: The following "
-                    << (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC ? "days" : "dates")
+                    << (parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "days" : "dates")
                     <<" in the data time range do not have cases: " << buffer.c_str() << "</div><div class=\"hr\"></div>";
         }
     }
@@ -824,7 +824,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         printString(buffer, "%ld", static_cast<int>(thisNode.getBrC()));
         outfile << "<td>" << buffer.c_str() << "</td>";
         int startIdx = (thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive());
-        if (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC)
+        if (parameters.getDatePrecisionType() == DataTimeRange::GENERIC)
             outfile << "<td data-order=" << startIdx << ">" << startIdx << " to " << (thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
         else {
             std::pair<std::string, std::string> rangeDates = parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().rangeToGregorianStrings(

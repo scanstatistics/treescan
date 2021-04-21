@@ -274,7 +274,7 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
         default :
             if (Parameters::isTemporalScanType(params.getScanType())) {
                 CreateField(_dataFieldDefinitions, NODE_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-                if (params.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC) {
+                if (params.getDatePrecisionType() == DataTimeRange::GENERIC) {
                     CreateField(_dataFieldDefinitions, START_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
                     CreateField(_dataFieldDefinitions, END_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
                 } else {
@@ -374,7 +374,7 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
                     } else {
                         Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(thisCut.getN());
                     }
-                    if (params.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC) {
+                    if (params.getDatePrecisionType() == DataTimeRange::GENERIC) {
                         Record.GetFieldValue(START_WINDOW_FIELD).AsDouble() = thisCut.getStartIdx()  - _scanner.getZeroTranslationAdditive();
                         Record.GetFieldValue(END_WINDOW_FIELD).AsDouble() = thisCut.getEndIdx() - _scanner.getZeroTranslationAdditive();
                     } else {

@@ -86,23 +86,23 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getMiscellaneousAnalysisP
     settings.clear();
     if (_parameters.getIsProspectiveAnalysis()) {
         switch (_parameters.getProspectiveFrequencyType()) {
-        case Parameters::ProspectiveFrequency::DAILY:
+        case Parameters::DAILY:
             if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Daily (every %u days)", _parameters.getProspectiveFrequency());
             else buffer = "Daily";
             break;
-        case Parameters::ProspectiveFrequency::WEEKLY:
+        case Parameters::WEEKLY:
             if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Weekly (every %u weeks)", _parameters.getProspectiveFrequency());
             else buffer = "Weekly";
             break;
-        case Parameters::ProspectiveFrequency::MONTHLY:
+        case Parameters::MONTHLY:
             if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Monthly (every %u months)", _parameters.getProspectiveFrequency());
             else buffer = "Monthly";
             break;
-        case Parameters::ProspectiveFrequency::QUARTERLY:
+        case Parameters::QUARTERLY:
             if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Quarterly (every %u quarters)", _parameters.getProspectiveFrequency());
             else buffer = "Quarterly";
             break;
-        case Parameters::ProspectiveFrequency::YEARLY:
+        case Parameters::YEARLY:
             if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Yearly (every %u years)", _parameters.getProspectiveFrequency());
             else buffer = "Yearly";
             break;
@@ -125,15 +125,15 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(Settin
     if (Parameters::isTemporalScanType(_parameters.getScanType()))
         settings.push_back(std::make_pair("Data Time Range", _parameters.getDataTimeRangeSet().toString(buffer, _parameters.getDatePrecisionType())));
     switch (_parameters.getDatePrecisionType()) {
-        case DataTimeRange::DatePrecisionType::GENERIC:
+        case DataTimeRange::GENERIC:
             settings.push_back(std::make_pair("Time Precision", "Generic")); break;
-        case DataTimeRange::DatePrecisionType::DAY :
+        case DataTimeRange::DAY :
             settings.push_back(std::make_pair("Time Precision", "Day")); break;
-        case DataTimeRange::DatePrecisionType::MONTH:
+        case DataTimeRange::MONTH:
             settings.push_back(std::make_pair("Time Precision", "Month")); break;
-        case DataTimeRange::DatePrecisionType::YEAR:
+        case DataTimeRange::YEAR:
             settings.push_back(std::make_pair("Time Precision", "Year")); break;
-        case DataTimeRange::DatePrecisionType::NONE:
+        case DataTimeRange::NONE:
             settings.push_back(std::make_pair("Time Precision", "None")); break;
         default: throw prg_error("Unknown date precision type '%d'.\n", "getInputParameters()", _parameters.getDatePrecisionType());
     }

@@ -709,7 +709,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& srcfilename, Ri
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(srcfilename, _parameters.getInputSource(Parameters::POWER_EVALUATIONS_FILE)));
     bool testMultipleNodeRecords(_parameters.getModelType() == Parameters::BERNOULLI_TREE);
     std::string nodeId("all"), filename("alternative hypothesis");
-    std::string time_columnname(_parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC ? "day since incidence" : "occurance date");
+    std::string time_columnname(_parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "day since incidence" : "occurance date");
 
     // if unconditional/conditional Bernoulli, limit this file to a single entry for each node
     if (testMultipleNodeRecords)
@@ -855,7 +855,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
     long identifierIdx = _parameters.getScanType() == Parameters::TIMEONLY ? -1 : 0;
     long countIdx = _parameters.getScanType() == Parameters::TIMEONLY ? 0 : 1;
     DataTimeRange::index_t censortimetotal = 0;
-    std::string filename("count"), time_columnname(_parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC ? "day since incidence" : "occurance date");
+    std::string filename("count"), time_columnname(_parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "day since incidence" : "occurance date");
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(srcfilename, _parameters.getInputSource(Parameters::COUNT_FILE)));
 
     /* In TreeScan version 2.0, we switched to a separate control data file and removed the control column from counts file.
@@ -1107,7 +1107,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
             _print.Printf(
                 "Warning: The following %s in the data time range do not have cases%s: %s\n",
                 BasePrint::P_WARNING,
-                (_parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC ? "days" : "dates"),
+                (_parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "days" : "dates"),
                 (_parameters.getModelType() == Parameters::BERNOULLI_TIME ? " or controls" : ""),
                 getCaselessWindowsAsString(buffer).c_str()
             );
@@ -1122,7 +1122,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
 
 /* Reads input column from source based on user date precision. */
 bool ScanRunner::readDateColumn(DataSource& source, size_t columnIdx, int& dateIdx, const std::string& file_name, const std::string& column_name) const {
-    if (_parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::NONE)
+    if (_parameters.getDatePrecisionType() == DataTimeRange::NONE)
         throw prg_error("readDateColumn() should nor be called with date precision of NONE.", "readControls()");
 
     DateStringParser::ParserStatus eStatus = DateStringParser(_parameters.getDatePrecisionType()).Parse(
@@ -1143,7 +1143,7 @@ bool ScanRunner::readDateColumn(DataSource& source, size_t columnIdx, int& dateI
             _print.Printf(
                 "Error: Record %ld in %s file references an invalid '%s' value.\n       The variable must be %s.\n",
                 BasePrint::P_READERROR, source.getCurrentRecordIndex(), file_name.c_str(), column_name.c_str(),
-                _parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC ? "an integer" : "a date"
+                _parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "an integer" : "a date"
             ); return false;
         case DateStringParser::VALID_DATE:
         default: break;
@@ -1161,7 +1161,7 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
     else
         _print.Printf("Reading control file ...\n", BasePrint::P_STDOUT);
     bool readSuccess = true;
-    std::string filename("control"), time_columnname(_parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC ? "day since incidence" : "occurance date");
+    std::string filename("control"), time_columnname(_parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "day since incidence" : "occurance date");
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(srcfilename, _parameters.getInputSource(Parameters::CONTROL_FILE)));
     int controls = 0, daysSinceIncidence = 0, expectedColumns = (_parameters.getScanType() == Parameters::TREETIME ? 3 : 2);
     long identifierIdx = _parameters.getScanType() == Parameters::TIMEONLY ? -1 : 0;
@@ -1240,7 +1240,7 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
         _print.Printf(
             "Warning: The following %s in the data time range do not have cases or controls: %s\n",
             BasePrint::P_WARNING, 
-            (_parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC ? "days" : "dates"),
+            (_parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "days" : "dates"),
             getCaselessWindowsAsString(buffer).c_str()
         );
     }
@@ -1262,14 +1262,14 @@ std::string & ScanRunner::getCaselessWindowsAsString(std::string& s) const {
         if (p == boost::dynamic_bitset<>::npos || p > pE + 1) {
             // print range if at end of bit set or gap in range found
             if (pS == pE) {
-                if (_parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC)
+                if (_parameters.getDatePrecisionType() == DataTimeRange::GENERIC)
                     buffer << (static_cast<int>(pS) - getZeroTranslationAdditive());
                 else
                     buffer << _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().rangeIdxToGregorianString(
                         static_cast<int>(pS) - getZeroTranslationAdditive(), _parameters.getDatePrecisionType()
                     );
             } else {
-                if (_parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::GENERIC)
+                if (_parameters.getDatePrecisionType() == DataTimeRange::GENERIC)
                     buffer << (static_cast<int>(pS) - getZeroTranslationAdditive()) << " to " << (static_cast<int>(pE) - getZeroTranslationAdditive());
                 else {
                     std::pair<std::string, std::string> rangeDates = _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().rangeToGregorianStrings(
@@ -1436,11 +1436,11 @@ ScanRunner::RecurrenceInterval_t ScanRunner::getRecurrenceInterval(const CutStru
     double dUnitsInOccurrence = std::max(static_cast<double>(_parameters.getProspectiveFrequency()) / p_value, 1.0);
     // Now calculate recurrance interval as years and days based on frequency.
     switch (_parameters.getProspectiveFrequencyType()) {
-        case Parameters::ProspectiveFrequency::YEARLY: return std::make_pair(dUnitsInOccurrence, std::max(dUnitsInOccurrence * AVERAGE_DAYS_IN_YEAR, 1.0));
-        case Parameters::ProspectiveFrequency::QUARTERLY: std::make_pair(dUnitsInOccurrence / 4.0, std::max((dUnitsInOccurrence / 4.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
-        case Parameters::ProspectiveFrequency::MONTHLY: return std::make_pair(dUnitsInOccurrence / 12.0, std::max((dUnitsInOccurrence / 12.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
-        case Parameters::ProspectiveFrequency::WEEKLY:  return std::make_pair(dUnitsInOccurrence / 52.0, std::max((dUnitsInOccurrence / 52.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
-        case Parameters::ProspectiveFrequency::DAILY: return std::make_pair(dUnitsInOccurrence / AVERAGE_DAYS_IN_YEAR, std::max(dUnitsInOccurrence, 1.0));
+        case Parameters::YEARLY: return std::make_pair(dUnitsInOccurrence, std::max(dUnitsInOccurrence * AVERAGE_DAYS_IN_YEAR, 1.0));
+        case Parameters::QUARTERLY: std::make_pair(dUnitsInOccurrence / 4.0, std::max((dUnitsInOccurrence / 4.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
+        case Parameters::MONTHLY: return std::make_pair(dUnitsInOccurrence / 12.0, std::max((dUnitsInOccurrence / 12.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
+        case Parameters::WEEKLY:  return std::make_pair(dUnitsInOccurrence / 52.0, std::max((dUnitsInOccurrence / 52.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
+        case Parameters::DAILY: return std::make_pair(dUnitsInOccurrence / AVERAGE_DAYS_IN_YEAR, std::max(dUnitsInOccurrence, 1.0));
         default: throw prg_error("Invalid enum '%d' for prospective analysis frequency type.", "getRecurrenceInterval()", _parameters.getProspectiveFrequencyType());
     }
 }

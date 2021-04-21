@@ -322,7 +322,7 @@ void Parameters::setAsDefaulted() {
 
     _countFileName = "";
     _controlFileName = "";
-    _date_precision_type = DataTimeRange::DatePrecisionType::GENERIC;
+    _date_precision_type = DataTimeRange::GENERIC;
     _dataTimeRangeSet = DataTimeRangeSet();
     _cutsFileName = "";
 
@@ -467,7 +467,7 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     setTreeFileName(pt.get<std::string>("parameters.input.tree-filename", "").c_str(), true);
     setCountFileName(pt.get<std::string>("parameters.input.count-filename", "").c_str(), true);
     setControlFileName(pt.get<std::string>("parameters.input.control-filename", "").c_str(), true);
-    _date_precision_type = static_cast<DataTimeRange::DatePrecisionType>(pt.get<unsigned int>("parameters.analysis.date-precision", DataTimeRange::DatePrecisionType::GENERIC));
+    _date_precision_type = static_cast<DataTimeRange::DatePrecisionType>(pt.get<unsigned int>("parameters.analysis.date-precision", DataTimeRange::GENERIC));
     _dataTimeRangeSet.assign(pt.get<std::string>("parameters.input.data-time-range", "0,0"), _date_precision_type, boost::optional<boost::gregorian::date>());
     // Advanced Input
     setCutsFileName(pt.get<std::string>("parameters.input.advanced.input.cuts-filename", "").c_str(), true);

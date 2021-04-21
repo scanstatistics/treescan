@@ -321,7 +321,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::TREE_FILE                : _parameters.setTreeFileName(value.c_str(), true); break;
             case Parameters::COUNT_FILE               : _parameters.setCountFileName(value.c_str(), true); break;
             case Parameters::CONTROL_FILE             : _parameters.setControlFileName(value.c_str(), true); break;
-            case Parameters::DATE_PRECISION           : iValue = ReadEnumeration(ReadInt(value, e), e, DataTimeRange::DatePrecisionType::NONE, DataTimeRange::DatePrecisionType::DAY);
+            case Parameters::DATE_PRECISION           : iValue = ReadEnumeration(ReadInt(value, e), e, DataTimeRange::NONE, DataTimeRange::DAY);
                                                         _parameters.setDatePrecisionType((DataTimeRange::DatePrecisionType)iValue); break;
             case Parameters::DATA_TIME_RANGES         : _parameters.setDataTimeRangeSet(DataTimeRangeSet(value, _parameters.getDatePrecisionType(), boost::optional<boost::gregorian::date>())); break;
             /* Advanced Input */
