@@ -41,7 +41,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::COUNT_FILE              : return "count data filename";
             case Parameters::CONTROL_FILE            : return "control data filename";
             case Parameters::DATE_PRECISION          : return "date precision type (NONE=0, GENERIC=1, YEAR=2, MONTH=3, DAY=4)";
-            case Parameters::DATA_TIME_RANGES        : return "data time ranges: [integer,integer]";
+            case Parameters::DATA_TIME_RANGES        : return "data time ranges: [integer,integer] or [yyyy/mm/dd,yyyy/mm/dd]";
             /* Advanced Input */
             case Parameters::CUT_FILE                : return "cuts filename";
             case Parameters::CUT_TYPE                : return "default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)";
@@ -60,8 +60,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::SEQUENTIAL_SCAN         : return "perform sequential scan - time-only scan (y/n)";
             case Parameters::SEQUENTIAL_MAX_SIGNAL   : return "sequential scan maximum cases for signal (integer)";
             case Parameters::RESTRICTED_TIME_RANGE   : return "restrict temporal windows (y/n)";
-            case Parameters::START_DATA_TIME_RANGE   : return "start data time range: [integer,integer]";
-            case Parameters::END_DATA_TIME_RANGE     : return "end data time range: [integer,integer]";
+            case Parameters::START_DATA_TIME_RANGE   : return "start data time range: [integer,integer] or [yyyy/mm/dd,yyyy/mm/dd]";
+            case Parameters::END_DATA_TIME_RANGE     : return "end data time range: [integer,integer] or [yyyy/mm/dd,yyyy/mm/dd]";
             /* Advanced Analysis - Temporal Window */
             case Parameters::MAXIMUM_WINDOW_PERCENTAGE : return "maximum temporal size as percentage of data time range (0 < x <= 50.0)";
             case Parameters::MAXIMUM_WINDOW_FIXED    : return "maximum temporal size as fixed time length (integer)";
@@ -75,7 +75,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             /* Advanced Analysis - Adjustments */
             case Parameters::DAYOFWEEK_ADJUSTMENT    : return "perform day of week adjustments (y/n)";
             case Parameters::APPLY_EXCLUSION_RANGES  : return "apply exclusion time ranges (y/n)";
-            case Parameters::EXCLUSION_RANGES: return "exclusion time ranges (semi-colon separated list of ranges: [integer,integer];[integer,integer])";
+            case Parameters::EXCLUSION_RANGES        : return "exclusion time ranges (semi-colon separated list of ranges: [integer,integer];[integer,integer] or [yyyy/mm/dd,yyyy/mm/dd];[yyyy/mm/dd,yyyy/mm/dd])";
                 /* Advanced Analysis - Inference */
             case Parameters::REPLICATIONS            : return "number of simulation replications (0, 9, 999, n999)";
             case Parameters::RANDOMIZATION_SEED      : return "randomization seed (integer)";
@@ -133,7 +133,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::COUNT_FILE               : s = _parameters.getCountFileName(); return s;
             case Parameters::CONTROL_FILE             : s = _parameters.getControlFileName(); return s;
             case Parameters::DATE_PRECISION           : return AsString(s, _parameters.getDatePrecisionType());
-            case Parameters::DATA_TIME_RANGES         : return _parameters.getDataTimeRangeSet().toString(s, _parameters.getDatePrecisionType());
+            case Parameters::DATA_TIME_RANGES         : s =  _parameters.getDataTimeRangeStr(); return s;
             /* Advanced Input */
             case Parameters::CUT_FILE                 : s = _parameters.getCutsFileName(); return s;
             case Parameters::CUT_TYPE                 : return AsString(s, _parameters.getCutType());
@@ -156,8 +156,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::SEQUENTIAL_ALPHA_OVERALL : return AsString(s, _parameters.getSequentialAlphaOverall());
             case Parameters::SEQUENTIAL_ALPHA_SPENDING: return AsString(s, _parameters.getSequentialAlphaSpending());
             case Parameters::RESTRICTED_TIME_RANGE    : return AsString(s, _parameters.getRestrictTemporalWindows());
-            case Parameters::START_DATA_TIME_RANGE    : return _parameters.getTemporalStartRange().toString(s, _parameters.getDatePrecisionType());
-            case Parameters::END_DATA_TIME_RANGE      : return _parameters.getTemporalEndRange().toString(s, _parameters.getDatePrecisionType());
+            case Parameters::START_DATA_TIME_RANGE    : return s = _parameters.getTemporalStartRangeStr(); return s;
+            case Parameters::END_DATA_TIME_RANGE      : return s = _parameters.getTemporalEndRangeStr(); return s;
             /* Advanced Analysis - Temporal Window */
             case Parameters::MAXIMUM_WINDOW_PERCENTAGE: return AsString(s, _parameters.getMaximumWindowPercentage());
             case Parameters::MAXIMUM_WINDOW_FIXED     : return AsString(s, _parameters.getMaximumWindowLength());
@@ -167,7 +167,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             /* Advanced Analysis - Adjustments */
             case Parameters::DAYOFWEEK_ADJUSTMENT     : return AsString(s, _parameters.getPerformDayOfWeekAdjustment());
             case Parameters::APPLY_EXCLUSION_RANGES   : return AsString(s, _parameters.isApplyingExclusionTimeRanges());
-            case Parameters::EXCLUSION_RANGES         : return _parameters.getExclusionTimeRangeSet().toString(s, _parameters.getDatePrecisionType());
+            case Parameters::EXCLUSION_RANGES         : s = _parameters.getExclusionTimeRangeStr(); return s;
             /* Advanced Analysis - Inference */
             case Parameters::REPLICATIONS             : return AsString(s, _parameters.getNumReplicationsRequested());
             case Parameters::RANDOMIZATION_SEED       : return AsString(s, static_cast<unsigned int>(_parameters.getRandomizationSeed()));
@@ -323,7 +323,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::CONTROL_FILE             : _parameters.setControlFileName(value.c_str(), true); break;
             case Parameters::DATE_PRECISION           : iValue = ReadEnumeration(ReadInt(value, e), e, DataTimeRange::NONE, DataTimeRange::DAY);
                                                         _parameters.setDatePrecisionType((DataTimeRange::DatePrecisionType)iValue); break;
-            case Parameters::DATA_TIME_RANGES         : _parameters.setDataTimeRangeSet(DataTimeRangeSet(value, _parameters.getDatePrecisionType(), boost::optional<boost::gregorian::date>())); break;
+            case Parameters::DATA_TIME_RANGES         : _parameters.setDataTimeRangeStr(value.c_str()); break;
             /* Advanced Input */
             case Parameters::CUT_FILE                 : _parameters.setCutsFileName(value.c_str(), true); break;
             case Parameters::CUT_TYPE                 : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::SIMPLE, Parameters::COMBINATORIAL);
@@ -350,12 +350,8 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::SEQUENTIAL_ALPHA_OVERALL : _parameters.setSequentialAlphaOverall(ReadDouble(value, e)); break;
             case Parameters::SEQUENTIAL_ALPHA_SPENDING: _parameters.setSequentialAlphaSpending(ReadDouble(value, e)); break;
             case Parameters::RESTRICTED_TIME_RANGE    : _parameters.setRestrictTemporalWindows(ReadBoolean(value, e)); break;
-            case Parameters::START_DATA_TIME_RANGE    : _parameters.setTemporalStartRange(
-                                                            DataTimeRange(value, _parameters.getDatePrecisionType(), _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart())
-                                                         ); break;
-            case Parameters::END_DATA_TIME_RANGE      : _parameters.setTemporalEndRange(
-                                                            DataTimeRange(value, _parameters.getDatePrecisionType(), _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart())
-                                                        ); break;
+            case Parameters::START_DATA_TIME_RANGE    : _parameters.setTemporalStartRangeStr(value.c_str()); break;
+            case Parameters::END_DATA_TIME_RANGE      : _parameters.setTemporalEndRangeStr(value.c_str()); break;
             /* Advanced Analysis - Temporal Window */
             case Parameters::MAXIMUM_WINDOW_PERCENTAGE: _parameters.setMaximumWindowPercentage(ReadDouble(value, e)); break;
             case Parameters::MAXIMUM_WINDOW_FIXED     : _parameters.setMaximumWindowLength(ReadUnsignedInt(value, e)); break;
@@ -366,9 +362,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             /* Advanced Analysis - Adjustments */
             case Parameters::DAYOFWEEK_ADJUSTMENT     : _parameters.setPerformDayOfWeekAdjustment(ReadBoolean(value, e)); break;
             case Parameters::APPLY_EXCLUSION_RANGES   : _parameters.setApplyingExclusionTimeRanges(ReadBoolean(value, e)); break;
-            case Parameters::EXCLUSION_RANGES         : _parameters.setExclusionTimeRangeSet(
-                                                            DataTimeRangeSet(value, _parameters.getDatePrecisionType(), _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart())
-                                                        ); break;
+            case Parameters::EXCLUSION_RANGES         : _parameters.setExclusionTimeRangeStr(value); break;
             /* Advanced Analysis Inference */
             case Parameters::REPLICATIONS             : _parameters.setNumReplications(ReadUnsignedInt(value, e)); break;
             case Parameters::RANDOMIZATION_SEED       : _parameters.setRandomizationSeed(static_cast<long>(ReadInt(value, e))); break;

@@ -66,12 +66,26 @@ bool ParametersValidate::ValidateAdjustmentsParameters(BasePrint & PrintDirectio
             PrintDirection.Printf("Invalid Parameter Setting:\nThe day of week adjustment is not implemented for the 'Tree Only' scan type.\n", BasePrint::P_PARAMERROR);
         }
     }
-    if (_parameters.isApplyingExclusionTimeRanges()) {
+    if (_parameters.isApplyingExclusionTimeRanges() && _parameters.getDataTimeRangeSet().getDataTimeRangeSets().size() > 0) {
         if (!(_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME)) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nThe option to exclude specific time ranges is only implemented for 'Tree-Time' scans conditioned on both node and time.\n", BasePrint::P_PARAMERROR);
         }
-
+        if (_parameters.getExclusionTimeRangeStr().empty()) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe option to exclude specific time ranges was selected but no exlusions are defined.\n", BasePrint::P_PARAMERROR);
+        }
+        try { // Attempt to parse exclusions string into data time ranges.
+            const_cast<Parameters&>(_parameters).setExclusionTimeRangeSet(
+                DataTimeRangeSet(_parameters.getExclusionTimeRangeStr(), _parameters.getDatePrecisionType(), _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart())
+            );
+        } catch (std::exception& x) {
+            PrintDirection.Printf(
+                "Invalid Parameter Setting:\nUnable to parse exclusion time ranges value '%s' into time ranges.\n", 
+                BasePrint::P_PARAMERROR, _parameters.getExclusionTimeRangeStr().c_str()
+            );
+            return false;
+        }
         const DataTimeRange & data_time_range = _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
         const DataTimeRangeSet::rangeset_t& exclusionSets = _parameters.getExclusionTimeRangeSet().getDataTimeRangeSets();
         if (exclusionSets.size() == 0) {
@@ -205,7 +219,24 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                                        BasePrint::P_PARAMERROR, _parameters.getCutsFileName().c_str());
             }
         }
-        if (_parameters.getModelType() == Parameters::UNIFORM) {
+        if (_parameters.isTemporalScanType(_parameters.getScanType())) {
+            if (_parameters.getDataTimeRangeStr().empty()) {
+                PrintDirection.Printf(
+                    "Invalid Parameter Setting:\nNo data time range was specified for a temporal analysis.\n", BasePrint::P_PARAMERROR
+                );
+                return false;
+            }
+            try { // Attempt to parse data time range string into data time ranges.
+                const_cast<Parameters&>(_parameters).setDataTimeRangeSet(
+                    DataTimeRangeSet(_parameters.getDataTimeRangeStr(), _parameters.getDatePrecisionType(), boost::optional<boost::gregorian::date>())
+                );
+            } catch (std::exception& x) {
+                PrintDirection.Printf(
+                    "Invalid Parameter Setting:\nUnable to parse data time range value '%s' into time ranges.\n",
+                    BasePrint::P_PARAMERROR, _parameters.getDataTimeRangeStr().c_str()
+                );
+                return false;
+            }
             const DataTimeRangeSet::rangeset_t& rangeSets = _parameters.getDataTimeRangeSet().getDataTimeRangeSets();
             if (rangeSets.size() == 0) {
                 bValid = false;
@@ -217,7 +248,8 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                                       "(Multiple ranges are not implemented as of this version.)\n",
                                       BasePrint::P_PARAMERROR, rangeSets.size());
             }
-            const DataTimeRange& startRange = _parameters.getTemporalStartRange();
+
+            /*const DataTimeRange& startRange = _parameters.getTemporalStartRange();
             const DataTimeRange& endRange = _parameters.getTemporalEndRange();
             bool startWindowInRange=false, endWindowInRange=false;
             // validate the data time range indexes do not overlap
@@ -240,37 +272,74 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                         );
                     }
                 }
-            }
-            if (_parameters.getRestrictTemporalWindows()) {
-                if (!startWindowInRange) {
+            }*/
+
+            if (bValid && _parameters.getRestrictTemporalWindows()) {
+                if (_parameters.getTemporalStartRangeStr().empty()) {
+                    PrintDirection.Printf(
+                        "Invalid Parameter Setting:\nNo start range was specified for a temporal analysis.\n", BasePrint::P_PARAMERROR
+                    );
+                    return false;
+                }
+                try { // Attempt to parse start range string into data time range.
+                    const_cast<Parameters&>(_parameters).setTemporalStartRange(
+                        DataTimeRange(_parameters.getTemporalStartRangeStr(), _parameters.getDatePrecisionType(), _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart())
+                    );
+                } catch (std::exception& x) {
+                    PrintDirection.Printf(
+                        "Invalid Parameter Setting:\nUnable to parse start range value '%s' into time range.\n",
+                        BasePrint::P_PARAMERROR, _parameters.getTemporalStartRangeStr().c_str()
+                    );
+                    return false;
+                }
+                if (_parameters.getTemporalEndRangeStr().empty()) {
+                    PrintDirection.Printf(
+                        "Invalid Parameter Setting:\nNo end range was specified for a temporal analysis.\n", BasePrint::P_PARAMERROR
+                    );
+                    return false;
+                }
+                try { // Attempt to parse end range string into data time range.
+                    const_cast<Parameters&>(_parameters).setTemporalEndRange(
+                        DataTimeRange(_parameters.getTemporalEndRangeStr(), _parameters.getDatePrecisionType(), _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart())
+                    );
+                } catch (std::exception& x) {
+                    PrintDirection.Printf(
+                        "Invalid Parameter Setting:\nUnable to parse end range value '%s' into time range.\n",
+                        BasePrint::P_PARAMERROR, _parameters.getTemporalEndRangeStr().c_str()
+                    );
+                    return false;
+                }
+                // Test temporal ranges with data time range.
+                if (!_parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().overlaps(_parameters.getTemporalStartRange())) {
                     bValid = false;
                     PrintDirection.Printf(
                         "Invalid Parameter Setting:\nThe start time window range '%s' is not within the data time range.\n", BasePrint::P_PARAMERROR,
-                        startRange.toString(buffer, _parameters.getDatePrecisionType()).c_str()
+                        _parameters.getTemporalStartRangeStr().c_str()
                     );
                 }
-                if (!endWindowInRange) {
+                if (!_parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().overlaps(_parameters.getTemporalEndRange())) {
                     bValid = false;
                     PrintDirection.Printf(
                         "Invalid Parameter Setting:\nThe end time window range '%s' is not within the defined data time range.\n", BasePrint::P_PARAMERROR,
-                        endRange.toString(buffer, _parameters.getDatePrecisionType()).c_str()
+                        _parameters.getTemporalEndRangeStr().c_str()
                     );
                 }
-                if (endRange.getEnd() < startRange.getStart()) {
+                // Test temporal ranges against each other.
+                if (_parameters.getTemporalEndRange().getEnd() < _parameters.getTemporalStartRange().getStart()) {
                     bValid = false;
                     PrintDirection.Printf(
                         "Invalid Parameter Setting:\nThe temporal window end time range '%s' completely precedes the start time range '%s'.\n",
                         BasePrint::P_PARAMERROR, 
-                        endRange.toString(buffer2, _parameters.getDatePrecisionType()).c_str(),
-                        startRange.toString(buffer, _parameters.getDatePrecisionType()).c_str()
+                        _parameters.getTemporalEndRangeStr().c_str(),
+                        _parameters.getTemporalStartRangeStr().c_str()
                     );
                 }
-                if (bValid && endRange.getStart() < startRange.getStart()) {
+                if (bValid && _parameters.getTemporalEndRange().getStart() < _parameters.getTemporalStartRange().getStart()) {
                     PrintDirection.Printf(
                         "Warning:\nThe temporal window end time range '%s' partially precedes the start time range '%s'; not all intervals will be evaluated.\n",
                         BasePrint::P_PARAMERROR, 
-                        endRange.toString(buffer2, _parameters.getDatePrecisionType()).c_str(),
-                        startRange.toString(buffer, _parameters.getDatePrecisionType()).c_str()
+                        _parameters.getTemporalEndRangeStr().c_str(),
+                        _parameters.getTemporalStartRangeStr().c_str()
                     );
                 }
             }
@@ -499,7 +568,7 @@ bool ParametersValidate::ValidatePowerEvaluationParametersParameters(BasePrint &
 /** Validates temporal window settings. */
 bool ParametersValidate::ValidateTemporalWindowParameters(BasePrint & PrintDirection) const {
     bool bValid=true;
-    if (Parameters::isTemporalScanType(_parameters.getScanType())) {
+    if (Parameters::isTemporalScanType(_parameters.getScanType()) && _parameters.getDataTimeRangeSet().getDataTimeRangeSets().size() > 0) {
         switch (_parameters.getMaximumWindowType()) {
             case Parameters::PERCENTAGE_WINDOW: {
                 if (_parameters.getMaximumWindowPercentage() <= 0) {
@@ -535,6 +604,7 @@ bool ParametersValidate::ValidateTemporalWindowParameters(BasePrint & PrintDirec
             pStart = &_parameters.getTemporalStartRange();
             pEnd = &_parameters.getTemporalEndRange();
         } else {
+            if (_parameters.getDataTimeRangeSet().getDataTimeRangeSets().size() == 0) return bValid;
             pStart = &_parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
             pEnd = &_parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
         }

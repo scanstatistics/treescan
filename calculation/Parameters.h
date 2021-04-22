@@ -198,9 +198,12 @@ class Parameters {
     std::string                         _countFileName;
     std::string                         _controlFileName;
     DataTimeRange::DatePrecisionType    _date_precision_type;
+    std::string                         _data_time_range_str;
     DataTimeRangeSet                    _dataTimeRangeSet;
     bool                                _restrict_temporal_windows;
+    std::string                         _temporal_start_range_str;
     DataTimeRange                       _temporalStartRange;
+    std::string                         _temporal_end_range_str;
     DataTimeRange                       _temporalEndRange;
     std::string                         _outputFileName;
     ResultsFormat                       _resultsFormat;
@@ -258,6 +261,7 @@ class Parameters {
 
     bool                                _forced_censored_algorithm;
     bool                                _apply_exclusion_ranges;
+    std::string                         _exclusion_time_range_str;
     DataTimeRangeSet                    _exclusion_time_ranges;
 
     ProspectiveFrequency                _prospective_frequency_type;
@@ -278,6 +282,16 @@ class Parameters {
     Parameters                        & operator=(const Parameters &rhs)  {if (this != &rhs) copy(rhs); return (*this);}
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
+
+    const std::string                 & getDataTimeRangeStr() const { return _data_time_range_str;}
+    void                                setDataTimeRangeStr(const std::string& s) { _data_time_range_str = s; }
+    const std::string                 & getTemporalStartRangeStr() const { return _temporal_start_range_str; }
+    void                                setTemporalStartRangeStr(const std::string& s) { _temporal_start_range_str = s; }
+    const std::string                 & getTemporalEndRangeStr() const { return _temporal_end_range_str; }
+    void                                setTemporalEndRangeStr(const std::string& s) { _temporal_end_range_str = s; }
+
+    const std::string                 & getExclusionTimeRangeStr() const { return _exclusion_time_range_str; }
+    void                                setExclusionTimeRangeStr(const std::string& s) { _exclusion_time_range_str = s; }
 
     bool                                getRestrictTemporalWindows() const { return _restrict_temporal_windows; }
     void                                setRestrictTemporalWindows(bool b) { _restrict_temporal_windows = b; }

@@ -293,7 +293,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node, t
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
-    double expected [10] = {0.068, 0.018, 0.055, 0.033, 0.019, 0.019, 0.019, 0.0087, 0.0087, 0.024};
+    double expected [10] = {0.068, 0.018, 0.055, 0.033, 0.0093, 0.023, 0.013, 0.024, 0.024, 0.014};
     unsigned int dataRows=0, expectedRows=10;
     CSV_Row_t data;
     getCSVRow(stream, data);
@@ -331,8 +331,8 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node_w_
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
-    double expected [9] = {0.009, 0.0089, 0.018, 0.018, 0.046, 0.0085, 0.062, 0.0044, 0.0071};
-    unsigned int dataRows=0, expectedRows=9;
+    double expected [11] = { 0.014, 0.009, 0.0089, 0.0092, 0.022, 0.018, 0.018, 0.046, 0.062, 0.0044, 0.0042 };
+    unsigned int dataRows=0, expectedRows=11;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
@@ -369,7 +369,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_nodetim
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
-    double expected [10] = {0.068, 0.018, 0.055, 0.033, 0.019, 0.019, 0.019, 0.0087, 0.0087, 0.024};
+    double expected [10] = {0.068, 0.018, 0.055, 0.033, 0.0093, 0.023, 0.013, 0.024, 0.024, 0.014 };
     unsigned int dataRows=0, expectedRows=10;
     CSV_Row_t data;
     getCSVRow(stream, data);
@@ -408,8 +408,8 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_nodetim
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
-    double expected [9] = {0.009, 0.0089, 0.018, 0.018, 0.046, 0.0085, 0.062, 0.0044, 0.0071};
-    unsigned int dataRows=0, expectedRows=9;
+    double expected [11] = { 0.014, 0.009, 0.0089, 0.0092, 0.022, 0.018, 0.018, 0.046, 0.062, 0.0044, 0.0042 };
+    unsigned int dataRows=0, expectedRows=11;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {

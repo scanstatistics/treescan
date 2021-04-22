@@ -123,7 +123,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(Settin
     if ((_parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getModelType() == Parameters::BERNOULLI_TIME) && !_parameters.getControlFileName().empty())
         settings.push_back(std::make_pair("Control File", _parameters.getControlFileName()));
     if (Parameters::isTemporalScanType(_parameters.getScanType()))
-        settings.push_back(std::make_pair("Data Time Range", _parameters.getDataTimeRangeSet().toString(buffer, _parameters.getDatePrecisionType())));
+        settings.push_back(std::make_pair("Data Time Range", _parameters.getDataTimeRangeStr()));
     switch (_parameters.getDatePrecisionType()) {
         case DataTimeRange::GENERIC:
             settings.push_back(std::make_pair("Time Precision", "Generic")); break;
@@ -178,7 +178,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(
     if (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) {
         settings.push_back(std::make_pair("Apply Data Time Range Exclusions", (_parameters.isApplyingExclusionTimeRanges() ? "Yes" : "No")));
         if (_parameters.isApplyingExclusionTimeRanges())
-            settings.push_back(std::make_pair("Data Time Range Exclusions", _parameters.getExclusionTimeRangeSet().toString(buffer, _parameters.getDatePrecisionType())));
+            settings.push_back(std::make_pair("Data Time Range Exclusions", _parameters.getExclusionTimeRangeStr()));
     }
     return settings;
 }
@@ -439,8 +439,8 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParamete
         settings.push_back(std::make_pair("Prospective Analysis", (_parameters.getIsProspectiveAnalysis() ? "Yes" : "No")));
         settings.push_back(std::make_pair("Restrict Temporal Windows", (_parameters.getRestrictTemporalWindows() ? "Yes" : "No")));
         if (_parameters.getRestrictTemporalWindows()) {
-            settings.push_back(std::make_pair("Temporal Time Window Start", _parameters.getTemporalStartRange().toString(buffer, _parameters.getDatePrecisionType())));
-            settings.push_back(std::make_pair("Temporal Time Window End", _parameters.getTemporalEndRange().toString(buffer, _parameters.getDatePrecisionType())));
+            settings.push_back(std::make_pair("Temporal Time Window Start", _parameters.getTemporalStartRangeStr()));
+            settings.push_back(std::make_pair("Temporal Time Window End", _parameters.getTemporalEndRangeStr()));
         }
 
     }

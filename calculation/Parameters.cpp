@@ -26,9 +26,9 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_countFileName != rhs._countFileName) return false;
   if (_controlFileName != rhs._controlFileName) return false;
   if (_date_precision_type != rhs._date_precision_type) return false;
-  if (_dataTimeRangeSet.getDataTimeRangeSets() != rhs._dataTimeRangeSet.getDataTimeRangeSets()) return false;
-  if (_temporalStartRange != rhs._temporalStartRange) return false;
-  if (_temporalEndRange != rhs._temporalEndRange) return false;
+  //if (_dataTimeRangeSet.getDataTimeRangeSets() != rhs._dataTimeRangeSet.getDataTimeRangeSets()) return false;
+  //if (_temporalStartRange != rhs._temporalStartRange) return false;
+  //if (_temporalEndRange != rhs._temporalEndRange) return false;
   if (_outputFileName != rhs._outputFileName) return false;
   if (_resultsFormat != rhs._resultsFormat) return false;
   if (_parametersSourceFileName != rhs._parametersSourceFileName) return false;
@@ -93,6 +93,12 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_prospective_frequency != rhs._prospective_frequency) return false;
   if (_prospective_analysis != rhs._prospective_analysis) return false;
   if (_restrict_temporal_windows != rhs._restrict_temporal_windows) return false;
+
+  if (_data_time_range_str != rhs._data_time_range_str) return false;
+  if (_temporal_start_range_str != rhs._temporal_start_range_str) return false;
+  if (_temporal_end_range_str != rhs._temporal_end_range_str) return false;
+  if (_exclusion_time_range_str != rhs._exclusion_time_range_str) return false;  
+
   return true;
 }
 
@@ -216,6 +222,11 @@ void Parameters::copy(const Parameters &rhs) {
     _prospective_frequency_type = rhs._prospective_frequency_type;
     _prospective_frequency = rhs._prospective_frequency;
     _prospective_analysis = rhs._prospective_analysis;
+
+    _data_time_range_str = rhs._data_time_range_str;
+    _temporal_start_range_str = rhs._temporal_start_range_str;
+    _temporal_end_range_str = rhs._temporal_end_range_str;
+    _exclusion_time_range_str = rhs._exclusion_time_range_str;
 }
 
 /* Returns the maximum temporal window in data time units. */
@@ -405,6 +416,11 @@ void Parameters::setAsDefaulted() {
     _prospective_frequency_type = DAILY;
     _prospective_frequency = 1;
     _prospective_analysis = false;
+
+    _data_time_range_str = "";
+    _temporal_start_range_str = "";
+    _temporal_end_range_str = "";
+    _exclusion_time_range_str = "";
 }
 
 /** Sets output data file name.

@@ -213,62 +213,81 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getRestrictTemporalWindows());
   jni_error::_detectError(Env);
 
-  if (Parameters::isTemporalScanType(parameters.getScanType()) && parameters.getDataTimeRangeSet().getDataTimeRangeSets().size()) {
+  if (Parameters::isTemporalScanType(parameters.getScanType()) && parameters.getDataTimeRangeStr().size() > 0) {
     std::pair<std::string, std::string> data_time_range;
     std::stringstream buffer;
-    if (parameters.getDatePrecisionType() == DataTimeRange::GENERIC) {
-        buffer << parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getStart();
-        data_time_range.first = buffer.str();
-        buffer.str("");
-        buffer << parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getEnd();
-        data_time_range.second = buffer.str();
-    } else {
-        const DataTimeRange& range = parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
-        data_time_range = range.rangeToGregorianStrings(range.getStart(), range.getEnd(), parameters.getDatePrecisionType());
-    }
-    mid = _getMethodId_Checked(Env, clazz, "setDataTimeRangeBegin", "(Ljava/lang/String;)V");
-    Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.first.c_str()));
-    jni_error::_detectError(Env);
-    mid = _getMethodId_Checked(Env, clazz, "setDataTimeRangeClose", "(Ljava/lang/String;)V");
-    Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.second.c_str()));
-    jni_error::_detectError(Env);
-
-    if (parameters.getRestrictTemporalWindows()) {
+    try { // try to parse and assign data time range for class strings -- guard against failure (incorrect format)
+        parameters.setDataTimeRangeSet(
+            DataTimeRangeSet(parameters.getDataTimeRangeStr(), parameters.getDatePrecisionType(), boost::optional<boost::gregorian::date>())
+        );
+    } catch (std::exception& x) {}
+    // Only proceed if we have a defined data time range.
+    if (parameters.getDataTimeRangeSet().getDataTimeRangeSets().size() > 0) {
+        // Create strings for JParameter object based on date time precision.
         if (parameters.getDatePrecisionType() == DataTimeRange::GENERIC) {
-            buffer.str("");
-            buffer << parameters.getTemporalStartRange().getStart();
+            buffer << parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getStart();
             data_time_range.first = buffer.str();
             buffer.str("");
-            buffer << parameters.getTemporalStartRange().getEnd();
+            buffer << parameters.getDataTimeRangeSet().getDataTimeRangeSets().begin()->getEnd();
             data_time_range.second = buffer.str();
         } else {
-            const DataTimeRange& range = parameters.getTemporalStartRange();
+            const DataTimeRange& range = parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
             data_time_range = range.rangeToGregorianStrings(range.getStart(), range.getEnd(), parameters.getDatePrecisionType());
         }
-        mid = _getMethodId_Checked(Env, clazz, "setStartRangeStartDate", "(Ljava/lang/String;)V");
-        Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.first.c_str()));
-        jni_error::_detectError(Env);
-        mid = _getMethodId_Checked(Env, clazz, "setStartRangeEndDate", "(Ljava/lang/String;)V");
-        Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.second.c_str()));
-        jni_error::_detectError(Env);
-
-        if (parameters.getDatePrecisionType() == DataTimeRange::GENERIC) {
-            buffer.str("");
-            buffer << parameters.getTemporalEndRange().getStart();
-            data_time_range.first = buffer.str();
-            buffer.str("");
-            buffer << parameters.getTemporalEndRange().getEnd();
-            data_time_range.second = buffer.str();
-        } else {
-            const DataTimeRange& range = parameters.getTemporalEndRange();
-            data_time_range = range.rangeToGregorianStrings(range.getStart(), range.getEnd(), parameters.getDatePrecisionType());
+        if (data_time_range.first.size() && data_time_range.second.size()) {
+            mid = _getMethodId_Checked(Env, clazz, "setDataTimeRangeBegin", "(Ljava/lang/String;)V");
+            Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.first.c_str()));
+            jni_error::_detectError(Env);
+            mid = _getMethodId_Checked(Env, clazz, "setDataTimeRangeClose", "(Ljava/lang/String;)V");
+            Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.second.c_str()));
+            jni_error::_detectError(Env);
         }
-        mid = _getMethodId_Checked(Env, clazz, "setEndRangeStartDate", "(Ljava/lang/String;)V");
-        Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.first.c_str()));
-        jni_error::_detectError(Env);
-        mid = _getMethodId_Checked(Env, clazz, "setEndRangeEndDate", "(Ljava/lang/String;)V");
-        Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.second.c_str()));
-        jni_error::_detectError(Env);
+        if (parameters.getRestrictTemporalWindows()) {
+            try { // try to parse and assign start temporal range for class strings -- guard against failure (incorrect format)
+                parameters.setTemporalStartRange(
+                    DataTimeRange(parameters.getTemporalStartRangeStr(), parameters.getDatePrecisionType(), parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart())
+                );
+                if (parameters.getDatePrecisionType() == DataTimeRange::GENERIC) {
+                    buffer.str("");
+                    buffer << parameters.getTemporalStartRange().getStart();
+                    data_time_range.first = buffer.str();
+                    buffer.str("");
+                    buffer << parameters.getTemporalStartRange().getEnd();
+                    data_time_range.second = buffer.str();
+                } else {
+                    const DataTimeRange& range = parameters.getTemporalStartRange();
+                    data_time_range = range.rangeToGregorianStrings(range.getStart(), range.getEnd(), parameters.getDatePrecisionType());
+                }
+                mid = _getMethodId_Checked(Env, clazz, "setStartRangeStartDate", "(Ljava/lang/String;)V");
+                Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.first.c_str()));
+                jni_error::_detectError(Env);
+                mid = _getMethodId_Checked(Env, clazz, "setStartRangeEndDate", "(Ljava/lang/String;)V");
+                Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.second.c_str()));
+                jni_error::_detectError(Env);
+            } catch (std::exception& x) {}
+            try { // try to parse and assign end temporal range for class strings -- guard against failure (incorrect format)
+                parameters.setTemporalEndRange(
+                    DataTimeRange(parameters.getTemporalEndRangeStr(), parameters.getDatePrecisionType(), parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart())
+                );
+                if (parameters.getDatePrecisionType() == DataTimeRange::GENERIC) {
+                    buffer.str("");
+                    buffer << parameters.getTemporalEndRange().getStart();
+                    data_time_range.first = buffer.str();
+                    buffer.str("");
+                    buffer << parameters.getTemporalEndRange().getEnd();
+                    data_time_range.second = buffer.str();
+                } else {
+                    const DataTimeRange& range = parameters.getTemporalEndRange();
+                    data_time_range = range.rangeToGregorianStrings(range.getStart(), range.getEnd(), parameters.getDatePrecisionType());
+                }
+                mid = _getMethodId_Checked(Env, clazz, "setEndRangeStartDate", "(Ljava/lang/String;)V");
+                Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.first.c_str()));
+                jni_error::_detectError(Env);
+                mid = _getMethodId_Checked(Env, clazz, "setEndRangeEndDate", "(Ljava/lang/String;)V");
+                Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(data_time_range.second.c_str()));
+                jni_error::_detectError(Env);
+            } catch (std::exception& x) {}
+        }
     }
   }
 
@@ -591,8 +610,7 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
     sFilename = Env.GetStringUTFChars(jstr, &iscopy);
     buffer << "," << sFilename << "]";
     if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
-    parameters.setDataTimeRangeSet(DataTimeRangeSet(buffer.str(), parameters.getDatePrecisionType(), boost::optional<boost::gregorian::date>()));
-
+    parameters.setDataTimeRangeStr(buffer.str());
     if (parameters.getRestrictTemporalWindows()) {
         buffer.str("");
         mid = _getMethodId_Checked(Env, clazz, "getStartRangeStartDate", "()Ljava/lang/String;");
@@ -607,10 +625,7 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
         sFilename = Env.GetStringUTFChars(jstr, &iscopy);
         buffer << "," << sFilename << "]";
         if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
-        parameters.setTemporalStartRange(
-            DataTimeRange(buffer.str(), parameters.getDatePrecisionType(), parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart())
-        );
-
+        parameters.setTemporalStartRangeStr(buffer.str());
         buffer.str("");
         mid = _getMethodId_Checked(Env, clazz, "getEndRangeStartDate", "()Ljava/lang/String;");
         jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
@@ -624,13 +639,15 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
         sFilename = Env.GetStringUTFChars(jstr, &iscopy);
         buffer << "," << sFilename << "]";
         if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
-        parameters.setTemporalEndRange(
-            DataTimeRange(buffer.str(), parameters.getDatePrecisionType(), parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart())
-        );
+        parameters.setTemporalEndRangeStr(buffer.str());
     } else {
-        parameters.setTemporalStartRange(parameters.getDataTimeRangeSet().getDataTimeRangeSets().front());
-        parameters.setTemporalEndRange(parameters.getDataTimeRangeSet().getDataTimeRangeSets().front());
+        parameters.setTemporalStartRangeStr(parameters.getDataTimeRangeStr());
+        parameters.setTemporalEndRangeStr(parameters.getDataTimeRangeStr());
     }
+  } else {
+      parameters.setDataTimeRangeStr("");
+      parameters.setTemporalStartRangeStr("");
+      parameters.setTemporalEndRangeStr("");
   }
 
   mid = _getMethodId_Checked(Env, clazz, "isGeneratingLLRResults", "()Z");

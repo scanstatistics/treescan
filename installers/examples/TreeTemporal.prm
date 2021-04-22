@@ -9,10 +9,6 @@ conditional-type=3
 self-control-design=n
 ;case probability (integer/integer)
 event-probability=1/2
-;start data time range: [integer,integer]
-window-start-range=[1,14]
-;end data time range: [integer,integer]
-window-end-range=[1,21]
 
 [Input]
 ;tree structure filename
@@ -21,6 +17,8 @@ tree-filename=tree.tre
 count-filename=TreeTemporal.cas
 ;control data filename
 control-filename=
+;date precision type (NONE=0, GENERIC=1, YEAR=2, MONTH=3, DAY=4)
+date-precision=1
 ;data time ranges: [integer,integer]
 data-time-range=[1,28]
 
@@ -59,6 +57,14 @@ minimum-window-fixed=2
 apply-risk-window-restriction=y
 ;risk window percentage (0 < x <= 100.0)
 risk-window-percentage=20
+;prospective analysis (y/n)
+prospective-analysis=n
+;restrict temporal windows (y/n)
+restricted-window-range=n
+;start data time range: [integer,integer]
+window-start-range=[1,28]
+;end data time range: [integer,integer]
+window-end-range=[1,28]
 
 [Adjustments]
 ;perform day of week adjustments (y/n)
@@ -117,6 +123,12 @@ alternative-hypothesis-filename=
 baseline-probability=1/2
 ;power z value (0 < z <= 0.01)
 power-z=0.001
+
+[Miscellaneous Analysis]
+;frequency of prospective analyses type (0=Daily, 1=Weekly, 2=Monthy, 3=Quarterly, 4=Yearly)
+prospective-frequency-type=0
+;frequency of prospective (integer)
+prospective-frequency=1
 
 [Additional Output]
 ;create LLR results (y/n)

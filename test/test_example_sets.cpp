@@ -419,31 +419,20 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
                       BOOST_CHECK_CLOSE( p_value, 0.001, 0.0001 ); break;
             case 12 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf2" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(5) );
-                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(6) );
-                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(7) );
-                      BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(2) );
-                      BOOST_CHECK_CLOSE( expected, 0.36, 0.001 );
-                      BOOST_CHECK_CLOSE( rr, 8.67, 0.001 );
-                      BOOST_CHECK_CLOSE( excess, 1.77, 0.001 );
-                      BOOST_CHECK_CLOSE( ar, 0.0088, 0.00001 );
-                      BOOST_CHECK_CLOSE( llr, 2.13538, 0.00001 );
-                      BOOST_CHECK_CLOSE( p_value, 0.998, 0.0001 ); break;
-            case 13 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf7" );
-                      BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(11) );
-                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(6) );
-                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(7) );
+                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(24) );
+                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(27) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(3) );
-                      BOOST_CHECK_CLOSE( expected, 0.79, 0.001 );
-                      BOOST_CHECK_CLOSE( rr, 4.88, 0.001 );
-                      BOOST_CHECK_CLOSE( excess, 2.38, 0.001 );
-                      BOOST_CHECK_CLOSE( ar, 0.012, 0.00001 );
-                      BOOST_CHECK_CLOSE( llr, 2.064557, 0.00001 );
+                      BOOST_CHECK_CLOSE( expected, 0.71, 0.001 );
+                      BOOST_CHECK_CLOSE( rr, 9.00, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 2.67, 0.001 );
+                      BOOST_CHECK_CLOSE( ar, 0.013, 0.00001 );
+                      BOOST_CHECK_CLOSE( llr, 2.780973, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.999, 0.0001 ); break;
             default : break;
         }
         getCSVRow(stream, data);
     }
-    if (dataRows != 13) BOOST_FAIL( "expecting 13 data rows, got " << dataRows );
+    if (dataRows != 12) BOOST_FAIL( "expecting 13 data rows, got " << dataRows );
     stream.close();
 }
 
@@ -539,23 +528,12 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
                       BOOST_CHECK_CLOSE( excess, 1.8, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.009, 0.001 );
                       BOOST_CHECK_CLOSE( teststat, 2.015681, 0.00001 );
-                      BOOST_CHECK_CLOSE( p_value, 0.97, 0.0001 ); break;
-            case 13  :BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf7" );
-                      BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(11) );
-                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(6) );
-                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(7) );
-                      BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(3) );
-                      BOOST_CHECK_CLOSE( expected, 0.82, 0.001 );
-                      BOOST_CHECK_CLOSE( rr, 4.64, 0.001 );
-                      BOOST_CHECK_CLOSE( excess, 2.35, 0.001 );
-                      BOOST_CHECK_CLOSE( ar, 0.012, 0.001 );
-                      BOOST_CHECK_CLOSE( teststat, 1.73029, 0.00001 );
-                      BOOST_CHECK_CLOSE( p_value, 0.995, 0.0001 ); break;
+                      BOOST_CHECK_CLOSE( p_value, 0.999, 0.0001 ); break;
             default : break;
         }
         getCSVRow(stream, data);
     }
-    if (dataRows != 13) BOOST_FAIL( "expecting 13 data rows, got " << dataRows );
+    if (dataRows != 12) BOOST_FAIL( "expecting 12 data rows, got " << dataRows );
     stream.close();
 }
 
@@ -623,11 +601,11 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(5) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(21) );
                       BOOST_CHECK_CLOSE( expected, 10.43, 0.001 );
-                      BOOST_CHECK_CLOSE( ar, 0.068, 0.00001 );
                       BOOST_CHECK_CLOSE( rr, 42.0, 0.001 );
                       BOOST_CHECK_CLOSE( excess, 20.5, 0.001 );
+                      BOOST_CHECK_CLOSE(ar, 0.068, 0.00001);
                       BOOST_CHECK_CLOSE( teststat, 4.796446, 0.00001 );
-                      BOOST_CHECK_CLOSE( p_value, 0.021, 0.0001 ); break;
+                      BOOST_CHECK_CLOSE( p_value, 0.0470, 0.0001 ); break;
             case 2 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf5" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(7) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(2) );
@@ -638,34 +616,23 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
                       BOOST_CHECK_CLOSE( excess, 3.71, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.018, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 3.038383, 0.00001 );
-                      BOOST_CHECK_CLOSE( p_value, 0.363, 0.0001 ); break;
-            case 9 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf3" );
-                      BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(4) );
-                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(12) );
-                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(17) );
-                      BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(2) );
-                      BOOST_CHECK_CLOSE( expected, 0.45, 0.001 );
-                      BOOST_CHECK_CLOSE( rr, 9.33, 0.001 );
-                      BOOST_CHECK_CLOSE( excess, 1.79, 0.001 );
-                      BOOST_CHECK_CLOSE( ar, 0.0087, 0.00001 );
-                      BOOST_CHECK_CLOSE( teststat, 1.433396, 0.00001 );
-                      BOOST_CHECK_CLOSE( p_value, 0.997, 0.0001 ); break;
-            case 10 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node2" );
-                      BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(30) );
-                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(1) );
-                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(3) );
-                      BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(9) );
-                      BOOST_CHECK_CLOSE( expected, 4.95, 0.001 );
-                      BOOST_CHECK_CLOSE( ar, 0.024, 0.00001 );
-                      BOOST_CHECK_CLOSE( rr, 3.67, 0.001 );
-                      BOOST_CHECK_CLOSE( excess, 6.55, 0.001 );
-                      BOOST_CHECK_CLOSE( teststat, 1.422299, 0.00001 );
-                      BOOST_CHECK_CLOSE( p_value, 0.998, 0.0001 ); break;
+                      BOOST_CHECK_CLOSE( p_value, 0.547, 0.0001 ); break;
+            case 7 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node1" );
+                      BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(12) );
+                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(22) );
+                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(28) );
+                      BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(6) );
+                      BOOST_CHECK_CLOSE( expected, 2.35, 0.001 );
+                      BOOST_CHECK_CLOSE( rr, 5.54, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 4.92, 0.001 );
+                      BOOST_CHECK_CLOSE(ar, 0.023, 0.00001);
+                      BOOST_CHECK_CLOSE( teststat, 2.044545, 0.00001 );
+                      BOOST_CHECK_CLOSE( p_value, 0.990, 0.0001 ); break;
             default : break;
         }
         getCSVRow(stream, data);
     }
-    if (dataRows != 10) BOOST_FAIL( "expecting 10 data rows, got " << dataRows );
+    if (dataRows != 7) BOOST_FAIL( "expecting 7 data rows, got " << dataRows );
     stream.close();
 }
 
@@ -728,7 +695,18 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
 
         BOOST_CHECK_EQUAL( cut_num, dataRows );
         switch (dataRows) {
-            case 1 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf5" );
+            case 1 :  BOOST_CHECK_EQUAL(data.at(std::distance(headers.begin(), itrNodeId)), "Leaf2");
+                      BOOST_CHECK_EQUAL(nodecases, static_cast<unsigned int>(5));
+                      BOOST_CHECK_EQUAL(wndstart, static_cast<unsigned int>(24));
+                      BOOST_CHECK_EQUAL(wndend, static_cast<unsigned int>(27));
+                      BOOST_CHECK_EQUAL(wndcases, static_cast<unsigned int>(3));
+                      BOOST_CHECK_CLOSE(expected, 0.57, 0.001);
+                      BOOST_CHECK_CLOSE(rr, 15.75, 0.001);
+                      BOOST_CHECK_CLOSE(excess, 2.81, 0.001);
+                      BOOST_CHECK_CLOSE(ar, 0.014, 0.00001);
+                      BOOST_CHECK_CLOSE(teststat, 2.598209, 0.00001);
+                      BOOST_CHECK_CLOSE(p_value, 0.370, 0.0001); break;
+            case 2 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf5" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(7) );
                       BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(8) );
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(11) );
@@ -738,45 +716,23 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
                       BOOST_CHECK_CLOSE( excess, 1.83, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.009, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 2.312096, 0.00001 );
-                      BOOST_CHECK_CLOSE( p_value, 0.384, 0.0001 ); break;
-            case 2 :  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf11" );
-                      BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(7) );
-                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(14) );
-                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(17) );
-                      BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(2) );
-                      BOOST_CHECK_CLOSE( expected, 0.3, 0.001 );
-                      BOOST_CHECK_CLOSE( rr, 5.6, 0.001 );
-                      BOOST_CHECK_CLOSE( excess, 1.64, 0.001 );
-                      BOOST_CHECK_CLOSE( ar, 0.0089, 0.00001 );
-                      BOOST_CHECK_CLOSE( teststat, 2.12392, 0.00001 );
-                      BOOST_CHECK_CLOSE( p_value, 0.504, 0.0001 ); break;
-            case 8  : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf3" );
+                      BOOST_CHECK_CLOSE( p_value, 0.556, 0.0001 ); break;
+            case 12 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf3" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(4) );
-                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(11) );
-                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(12) );
+                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(27) );
+                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(28) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(1) );
-                      BOOST_CHECK_CLOSE( expected, 0.15, 0.001 );
-                      BOOST_CHECK_CLOSE( rr, 10.0, 0.001 );
-                      BOOST_CHECK_CLOSE( excess, 0.9, 0.001 );
-                      BOOST_CHECK_CLOSE( ar, 0.0044, 0.00001 );
-                      BOOST_CHECK_CLOSE( teststat, 1.029356, 0.00001 );
-                      BOOST_CHECK_CLOSE( p_value, 0.981, 0.0001 ); break;
-            case 9  : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf7" );
-                      BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(11) );
-                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(9) );
-                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(13) );
-                      BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(2) );
-                      BOOST_CHECK_CLOSE( expected, 0.67, 0.001 );
-                      BOOST_CHECK_CLOSE( rr, 4.56, 0.001 );
-                      BOOST_CHECK_CLOSE( excess, 1.56, 0.001 );
-                      BOOST_CHECK_CLOSE( ar, 0.0071, 0.00001 );
-                      BOOST_CHECK_CLOSE( teststat, 0.870215, 0.00001 );
-                      BOOST_CHECK_CLOSE( p_value, 0.999, 0.0001 ); break;
+                      BOOST_CHECK_CLOSE( expected, 0.13, 0.001 );
+                      BOOST_CHECK_CLOSE( rr, 5.87, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 0.83, 0.001 );
+                      BOOST_CHECK_CLOSE( ar, 0.0045, 0.00001 );
+                      BOOST_CHECK_CLOSE( teststat, 1.152125, 0.00001 );
+                      BOOST_CHECK_CLOSE( p_value, 0.998, 0.0001 ); break;
             default : break;
         }
         getCSVRow(stream, data);
     }
-    if (dataRows != 9) BOOST_FAIL( "expecting 9 data rows, got " << dataRows );
+    if (dataRows != 12) BOOST_FAIL( "expecting 12 data rows, got " << dataRows );
     stream.close();
 }
 
@@ -856,22 +812,22 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases ) {
                       BOOST_CHECK_CLOSE( ar, 0.2, 0.00001 );
                       BOOST_CHECK_CLOSE( llr, 23.972955, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.001, 0.0001 ); break;
-            case 16:  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "All" );
+            case 15:  BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "All" );
                       BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(97) );
-                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(1) );
-                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(2) );
-                      BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(9) );
-                      BOOST_CHECK_CLOSE( expected, 6.93, 0.001 );
-                      BOOST_CHECK_CLOSE( rr, 1.33, 0.001 );
-                      BOOST_CHECK_CLOSE( excess, 2.23, 0.001 );
-                      BOOST_CHECK_CLOSE( ar, 0.011, 0.00001 );
-                      BOOST_CHECK_CLOSE( llr, 0.306713, 0.00001 );
-                      BOOST_CHECK_CLOSE( p_value, 0.994, 0.0001 ); break;
+                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(4) );
+                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(17) );
+                      BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(56) );
+                      BOOST_CHECK_CLOSE( expected, 48.50, 0.001 );
+                      BOOST_CHECK_CLOSE( rr, 1.37, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 15.00, 0.001 );
+                      BOOST_CHECK_CLOSE( ar, 0.075, 0.00001 );
+                      BOOST_CHECK_CLOSE( llr, 1.164461, 0.00001 );
+                      BOOST_CHECK_CLOSE( p_value, 0.921, 0.0001 ); break;
             default : break;
         }
         getCSVRow(stream, data);
     }
-    if (dataRows != 16) BOOST_FAIL( "expecting 16 data rows, got " << dataRows );
+    if (dataRows != 15) BOOST_FAIL( "expecting 15 data rows, got " << dataRows );
     stream.close();
 }
 
@@ -956,7 +912,7 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases_day_of_week_adjustment
                       BOOST_CHECK_CLOSE( excess, 4.32, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.022, 0.001 );
                       BOOST_CHECK_CLOSE( teststat, 1.464549, 0.00001 );
-                      BOOST_CHECK_CLOSE( p_value, 0.495, 0.0001 ); break;
+                      BOOST_CHECK_CLOSE( p_value, 0.692, 0.0001 ); break;
             default : break;
         }
         getCSVRow(stream, data);
