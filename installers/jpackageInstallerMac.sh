@@ -8,12 +8,12 @@ else
 fi
 
 APPVERSION="2.0"
-SRCDIR="/Users/satscsvc/prj/treescan.development/treescan"
+SRCDIR="/Users/treescan/prj/treescan.development/treescan"
 INSTALLER_DIR="/prj/treescan/installers/v.${APPVERSION}.x"
 SIGN_KEY="Developer ID Application: Information Management Services, Inc. (VF82MCMA83)"
-BUNDLEDIR="/Users/satscsvc/prj/treescan.development/jpackaged"
-BINARIES="/Users/satscsvc/prj/treescan.development/binaries/mac"
-JAVAJDK="/Users/satscsvc/prj/java/jdk-15.0.2+7/Contents/Home" # AdoptJDK
+BUNDLEDIR="/Users/treescan/prj/treescan.development/jpackaged"
+BINARIES="/Users/treescan/prj/treescan.development/binaries/mac"
+JAVAJDK="/Users/treescan/prj/java/jdk-15.0.2+7/Contents/Home" # AdoptJDK
 ENTITLEMENTS="${SRCDIR}/installers/macosentitlements.plist"
 XCRUN="/usr/bin/xcrun"
 ALTOOL="/Applications/Xcode.app/Contents/Developer/usr/bin/altool"
