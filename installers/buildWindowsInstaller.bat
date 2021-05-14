@@ -17,14 +17,14 @@ set runtimeoutput=%fileshare%\treescan\build\treescan\installers\java\jre
 set innosetup="C:\Program Files (x86)\Inno Setup 6\iscc.exe"
 set innoiss=%fileshare%\treescan\build\treescan\installers\inno-setup\treescan.iss
 
-set signtool=%fileshare%\imsadmin\code.sign.cert.ms.auth.verisign\signtool.exe
-set certificate=%fileshare%\imsadmin\code.sign.cert.ms.auth.verisign\ims-cross-sign.pfx
+set signtool=%fileshare%\imsadmin\code.sign.cert.ms.auth\signtool.exe
+set certificate=%fileshare%\imsadmin\code.sign.cert.ms.auth\ims.pfx
 set timestamp=http://timestamp.digicert.com/
 set password="&4L(JyhyOmwF)$Z"
 
 
 REM Codesigning a GUI exe file.
-%fileshare%\treescan\build\treescan\installers\izpack\sign4j\sign4j.exe --verbose %signtool% sign /f %certificate% /p %password% /t %timestamp% /v %treescanexe%
+%fileshare%\treescan\build\treescan\installers\izpack\sign4j\sign4j.exe --verbose %signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %treescanexe%
 
 REM Verify the GUI exe file is codesigned correctly.
 %signtool% verify /pa /v %treescanexe%
@@ -37,7 +37,7 @@ REM Build InnoSetup installer.
 %innosetup% %innoiss%
 
 REM Codesign installer exe file.
-%signtool% sign /f %certificate% /p %password% /t %timestamp% /v %treescaninstaller%
+%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %treescaninstaller%
 
 REM Verify the installer exe file is codesigned correctly.
 %signtool% verify /pa /v %treescaninstaller%
