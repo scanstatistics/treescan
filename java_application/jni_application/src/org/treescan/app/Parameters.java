@@ -19,6 +19,7 @@ public class Parameters implements Cloneable {
     public enum MaximumWindowType {PERCENTAGE_WINDOW, FIXED_LENGTH};
     public enum PowerEvaluationType {PE_WITH_ANALYSIS, PE_ONLY_CASEFILE,PE_ONLY_SPECIFIED_CASES};
     public enum DatePrecisionType { NONE, GENERIC, YEAR, MONTH, DAY };
+    public enum ProspectiveFrequency { DAILY, WEEKLY, MONTHLY, QUARTERLY, YEARLY };
     public class CreationVersion {
     	public int _major;
     	public int _minor;
@@ -92,6 +93,7 @@ public class Parameters implements Cloneable {
     private double _sequential_alpha_spending = 0.01;
     private DatePrecisionType _date_precision_type=DatePrecisionType.NONE;
     private boolean _prospective_analysis = false;
+    private ProspectiveFrequency _prospective_frequency_type = ProspectiveFrequency.DAILY;
 
     private ArrayList<InputSourceSettings>     _input_sources;
 
@@ -196,10 +198,15 @@ public class Parameters implements Cloneable {
           
           if (_date_precision_type != rhs._date_precision_type) return false;
           if (_prospective_analysis != rhs._prospective_analysis) return false;
+          if (_prospective_frequency_type != rhs._prospective_frequency_type) return false;
 
           return true;
     }
 
+    public ProspectiveFrequency getProspectiveFrequencyType() { return _prospective_frequency_type; }
+    public void setProspectiveFrequencyType(ProspectiveFrequency e) { _prospective_frequency_type = e; }
+    public void setProspectiveFrequencyType(int ord) {try {_prospective_frequency_type = ProspectiveFrequency.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, ProspectiveFrequency.values());}}
+    
     public boolean getRestrictTemporalWindows() { return _restrict_temporal_windows; }
     public void setRestrictTemporalWindows(boolean b) { _restrict_temporal_windows = b; }
     public boolean getIsProspectiveAnalysis() { return _prospective_analysis; }

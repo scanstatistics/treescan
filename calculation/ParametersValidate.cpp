@@ -133,7 +133,7 @@ bool ParametersValidate::ValidateInputSource(const Parameters::InputSource * sou
     lowerString(extension);
     // First exclude file types that are not readable - namely, Excel;
     if (extension == ".xls" || extension == ".xlsx") {
-        PrintDirection.Printf("%s:\nThe Excel file '%s' cannot be read as an input file.\n.SaTScan cannot read directly from Excel files.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filename.c_str());
+        PrintDirection.Printf("%s:\nThe Excel file '%s' cannot be read as an input file.\n.TreeScan cannot read directly from Excel files.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filename.c_str());
         return false;
     }
 

@@ -30,7 +30,7 @@ printf("__TreeScanInit called\n");
   std::set_new_handler(prg_new_handler);
   std::string dir;
   FileName::getCurDirectory(dir);
-  dir += "satscan.exe";
+  dir += "treescan.exe";
   AppToolkit::ToolKitCreate(dir.c_str());
 }
 

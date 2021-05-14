@@ -471,12 +471,13 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.isApplyingExclusionTimeRanges());
   jni_error::_detectError(Env);
 
-  if (parameters.isApplyingExclusionTimeRanges()) {
-      mid = _getMethodId_Checked(Env, clazz, "setExclusionTimeRangeSet", "(Ljava/lang/String;)V");
-      parameters.getExclusionTimeRangeSet().toString(s, parameters.getDatePrecisionType());
-      Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(s.c_str()));
-      jni_error::_detectError(Env);
-  }
+  mid = _getMethodId_Checked(Env, clazz, "setExclusionTimeRangeSet", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getExclusionTimeRangeStr().c_str()));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setProspectiveFrequencyType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getProspectiveFrequencyType());
+  jni_error::_detectError(Env);
 
   return jParameters;
 }
@@ -851,16 +852,15 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   parameters.setApplyingExclusionTimeRanges(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
-  if (parameters.isApplyingExclusionTimeRanges()) {
-      mid = _getMethodId_Checked(Env, clazz, "getExclusionTimeRangeSet", "()Ljava/lang/String;");
-      jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
-      jni_error::_detectError(Env);
-      sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-      parameters.setExclusionTimeRangeSet(DataTimeRangeSet(
-          std::string(sFilename), parameters.getDatePrecisionType(), parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart()
-      ));
-      if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
-  }
+  mid = _getMethodId_Checked(Env, clazz, "getExclusionTimeRangeSet", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  parameters.setExclusionTimeRangeStr(sFilename);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+  parameters.setProspectiveFrequencyType((Parameters::ProspectiveFrequency)getEnumTypeOrdinalIndex(Env, jParameters, "getProspectiveFrequencyType", "Lorg/treescan/app/Parameters$ProspectiveFrequency;"));
+  jni_error::_detectError(Env);
 
   return parameters;
 }

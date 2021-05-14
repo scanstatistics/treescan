@@ -1346,6 +1346,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _probabilityModelPanel1.setPreferredSize(new java.awt.Dimension(200, 108));
 
         timtModelButtonGoup.add(_uniformButton);
+        _uniformButton.setSelected(true);
         _uniformButton.setText("Uniform");
         _uniformButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {

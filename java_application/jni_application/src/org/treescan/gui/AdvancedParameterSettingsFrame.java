@@ -158,6 +158,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (Integer.parseInt(_montCarloReplicationsTextField.getText()) == 999);
         bReturn &= (_restrict_evaluated_levels.isSelected() == false);
         bReturn &= _restricted_levels.getText().equals("");
+        bReturn &= Utils.selectionIs(_prospective_frequency, 0);
         // Temporal Window tab
         bReturn &= _percentageTemporalRadioButton.isSelected();
         bReturn &= (Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 50.0);
@@ -196,6 +197,25 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         return bReturn;
     }
 
+    private Parameters.ProspectiveFrequency getProspectiveFrequencyControlType() {
+        Parameters.ProspectiveFrequency eReturn = null;
+
+        if (_prospective_frequency.getSelectedIndex() == 0) {
+            eReturn = Parameters.ProspectiveFrequency.DAILY;
+        } else if (_prospective_frequency.getSelectedIndex() == 1) {
+            eReturn = Parameters.ProspectiveFrequency.WEEKLY;
+        } else if (_prospective_frequency.getSelectedIndex() == 2) {
+            eReturn = Parameters.ProspectiveFrequency.MONTHLY;
+        } else if (_prospective_frequency.getSelectedIndex() == 3) {
+            eReturn = Parameters.ProspectiveFrequency.QUARTERLY;
+        } else if (_prospective_frequency.getSelectedIndex() == 4) {
+            eReturn = Parameters.ProspectiveFrequency.YEARLY;
+        } else {
+            throw new IllegalArgumentException("No prospective frequency option selected.");
+        }
+        return eReturn;
+    } 
+    
     private Parameters.PowerEvaluationType getPowerEvaluationMethodType() {
         Parameters.PowerEvaluationType eReturn = null;
 
@@ -267,6 +287,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setNumReplications(Integer.parseInt(_montCarloReplicationsTextField.getText()));
         parameters.setRestrictTreeLevels(_restrict_evaluated_levels.isSelected());
         parameters.setRestrictedTreeLevels(_restricted_levels.getText());
+        parameters.setProspectiveFrequencyType(getProspectiveFrequencyControlType().ordinal());
 
         // Temporal Window tab
         parameters.setMaximumWindowPercentage(Double.parseDouble(_maxTemporalClusterSizeTextField.getText()));
@@ -363,6 +384,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _montCarloReplicationsTextField.setText("999");
         _restrict_evaluated_levels.setSelected(false);
         _restricted_levels.setText("");
+        _prospective_frequency.select(0);
         // Temporal Window tab
         _percentageTemporalRadioButton.setSelected(true);
         _maxTemporalClusterSizeTextField.setText("50");
@@ -402,6 +424,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _montCarloReplicationsTextField.setText(Integer.toString(parameters.getNumReplicationsRequested()));
         _restrict_evaluated_levels.setSelected(parameters.getRestrictTreeLevels());
         _restricted_levels.setText(parameters.getRestrictedTreeLevels());
+        _prospective_frequency.select(parameters.getProspectiveFrequencyType().ordinal());
 
         // Temporal Window tab
         _percentageTemporalRadioButton.setSelected(parameters.getMaximumWindowType() == Parameters.MaximumWindowType.PERCENTAGE_WINDOW);
@@ -458,6 +481,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         enablePowerEvaluationsGroup();
         enableSequentialAnalysisGroup();
+        enableProspectiveFrequencyGroup();
     }
 
     /* enabled study period date precision based on time interval unit */
@@ -1033,6 +1057,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _restricted_levels.setEnabled(bEnableGroup && _restrict_evaluated_levels.isSelected());
     }
 
+    /* Enables the prospective frequency controls. */
+    public void enableProspectiveFrequencyGroup() {
+        _prospective_frequency_group.setEnabled(Utils.selected(_prospective_evaluation));
+        _label_prospective_frequency.setEnabled(_prospective_frequency_group.isEnabled());
+        _prospective_frequency.setEnabled(_prospective_frequency_group.isEnabled());
+    }    
+    
     /**
      * Enabled the sequential analysis group based upon current settings.
      */
@@ -1153,6 +1184,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         jPanel3 = new javax.swing.JPanel();
         _restricted_levels = new javax.swing.JTextField();
         _restrict_evaluated_levels = new javax.swing.JCheckBox();
+        _prospective_frequency_group = new javax.swing.JPanel();
+        _label_prospective_frequency = new javax.swing.JLabel();
+        _prospective_frequency = new java.awt.Choice();
         _advanced_power_evaluation_tab = new javax.swing.JPanel();
         _powerEvaluationsGroup = new javax.swing.JPanel();
         _performPowerEvaluations = new javax.swing.JCheckBox();
@@ -1722,6 +1756,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 Parameters.ScanType scanType = _settings_window.getScanType();
                 enableTemporalOptionGroups(scanType == Parameters.ScanType.TREETIME || scanType == Parameters.ScanType.TIMEONLY);
+                enableProspectiveFrequencyGroup();
                 enableSetDefaultsButton();
             }
         });
@@ -1832,6 +1867,41 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _prospective_frequency_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Prospective Analyses"));
+
+        _label_prospective_frequency.setText("How frequently are analyses performed?");
+
+        _prospective_frequency.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+        _prospective_frequency.add("Daily");
+        _prospective_frequency.add("Weekly");
+        _prospective_frequency.add("Monthly");
+        _prospective_frequency.add("Quarterly");
+        _prospective_frequency.add("Yearly");
+
+        javax.swing.GroupLayout _prospective_frequency_groupLayout = new javax.swing.GroupLayout(_prospective_frequency_group);
+        _prospective_frequency_group.setLayout(_prospective_frequency_groupLayout);
+        _prospective_frequency_groupLayout.setHorizontalGroup(
+            _prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_prospective_frequency_groupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_label_prospective_frequency, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_prospective_frequency, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        _prospective_frequency_groupLayout.setVerticalGroup(
+            _prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_prospective_frequency_groupLayout.createSequentialGroup()
+                .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_prospective_frequency, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_label_prospective_frequency, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(0, 14, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout _advanced_inferenece_tabLayout = new javax.swing.GroupLayout(_advanced_inferenece_tab);
         _advanced_inferenece_tab.setLayout(_advanced_inferenece_tabLayout);
         _advanced_inferenece_tabLayout.setHorizontalGroup(
@@ -1840,7 +1910,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addGroup(_advanced_inferenece_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_prospective_frequency_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _advanced_inferenece_tabLayout.setVerticalGroup(
@@ -1850,7 +1921,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(266, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_prospective_frequency_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(200, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _advanced_inferenece_tab);
@@ -2625,6 +2698,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _eventProbabiltyNumerator;
     private javax.swing.JPanel _group_exclusions;
     private javax.swing.JLabel _labelMonteCarloReplications;
+    private javax.swing.JLabel _label_prospective_frequency;
     private javax.swing.JPanel _log_likelihood_ratios_group;
     private javax.swing.JTextField _maxTemporalClusterSizeTextField;
     private javax.swing.JTextField _maxTemporalClusterSizeUnitsTextField;
@@ -2656,6 +2730,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _powerEvaluationWithSpecifiedCasesLabel;
     private javax.swing.JPanel _powerEvaluationsGroup;
     private javax.swing.JCheckBox _prospective_evaluation;
+    private java.awt.Choice _prospective_frequency;
+    private javax.swing.JPanel _prospective_frequency_group;
     private javax.swing.JCheckBox _reportCriticalValuesCheckBox;
     private javax.swing.JCheckBox _reportLLRResultsAsCsvTable;
     private javax.swing.JPanel _report_critical_values_group;

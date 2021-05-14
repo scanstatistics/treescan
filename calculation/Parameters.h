@@ -301,7 +301,7 @@ class Parameters {
     DataTimeRange::DatePrecisionType    getDatePrecisionType() const { return _date_precision_type; }
     void                                setDatePrecisionType(DataTimeRange::DatePrecisionType e) { _date_precision_type = e; }
     ProspectiveFrequency                getProspectiveFrequencyType() const { return _prospective_frequency_type; }
-    void                                setProspectiveFrequencyType(ProspectiveFrequency e) { _prospective_frequency = e; }
+    void                                setProspectiveFrequencyType(ProspectiveFrequency e) { _prospective_frequency_type = e; }
     unsigned int                        getProspectiveFrequency() const { return _prospective_frequency; }
     void                                setProspectiveFrequency(unsigned int i) { _prospective_frequency = i; }
 
