@@ -60,7 +60,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jLabel1" pref="99" max="32767" attributes="0"/>
+                      <Component id="jLabel1" pref="102" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -180,7 +180,7 @@
                           <Component id="_doUpdateButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="_doNotUpdateButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="41" max="32767" attributes="0"/>
+                      <EmptySpace pref="44" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -197,7 +197,7 @@
                 <Property name="text" type="java.lang.String" value="Yes"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_doUpdateButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        downloadFiles();&#xa;    }&#xa;});"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_doUpdateButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            if (UpdateCheckDialog.this._update_archivename == null) {&#xa;                CardLayout cl = (CardLayout) (_cardsPanel.getLayout());&#xa;                cl.show(_cardsPanel, CARD_DOWNLOAD);&#xa;                new UpdaterDownloadTask().execute();&#xa;            } else {&#xa;                _runUpdateOnTerminate = true;&#xa;                setVisible(false);&#xa;            }&#xa;        } catch (Exception ex) {&#xa;            throw new RuntimeException(ex.getMessage(), ex);&#xa;        }&#xa;    }&#xa;});"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JButton" name="_doNotUpdateButton">
@@ -237,7 +237,7 @@
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace pref="43" max="32767" attributes="0"/>
+                      <EmptySpace pref="46" max="32767" attributes="0"/>
                       <Component id="_stepLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -256,6 +256,9 @@
               </Properties>
             </Component>
             <Component class="javax.swing.JProgressBar" name="_downloadProgressBar">
+              <Properties>
+                <Property name="stringPainted" type="boolean" value="true"/>
+              </Properties>
             </Component>
             <Component class="javax.swing.JButton" name="jButton3">
               <Properties>
@@ -292,7 +295,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="errorText" pref="74" max="32767" attributes="0"/>
+                      <Component id="errorText" pref="77" max="32767" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -327,9 +330,6 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_updateInfoOnlyPanel">
-          <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
-          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
               <CardConstraints cardName="updateinfoonly"/>
@@ -339,15 +339,16 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="_updateInfoOnlyText" alignment="0" pref="379" max="32767" attributes="0"/>
-                          <Group type="102" alignment="1" attributes="0">
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="_updateInfoOnlyText" pref="330" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="jButton1" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="webSiteLabel1" alignment="1" max="32767" attributes="0"/>
+                          <Component id="_installer_download_progress" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_installer_download_link" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -357,12 +358,15 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_updateInfoOnlyText" min="-2" pref="26" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="_updateInfoOnlyText" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                          <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="webSiteLabel1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
-                      <Component id="jButton1" min="-2" max="-2" attributes="0"/>
+                      <Component id="_installer_download_link" min="-2" pref="23" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
+                      <Component id="_installer_download_progress" min="-2" pref="23" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -371,7 +375,7 @@
             <Component class="javax.swing.JLabel" name="_updateInfoOnlyText">
               <Properties>
                 <Property name="horizontalAlignment" type="int" value="2"/>
-                <Property name="text" type="java.lang.String" value="Newer version 1.1.0 is available at:"/>
+                <Property name="text" type="java.lang.String" value="Newer version is available."/>
               </Properties>
             </Component>
             <Component class="javax.swing.JButton" name="jButton1">
@@ -382,11 +386,20 @@
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="jButton1.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        setVisible(false);&#xa;    }&#xa;});"/>
               </AuxValues>
             </Component>
-            <Component class="javax.swing.JLabel" name="webSiteLabel1">
+            <Component class="javax.swing.JLabel" name="_installer_download_link">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Download Installer Now"/>
+                <Property name="toolTipText" type="java.lang.String" value=""/>
+              </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JHyperLink(AppConstants.getWebSite());"/>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="((JHyperLink)webSiteLabel1).addActionListener( new ActionListener() {&#xa;    public void actionPerformed( ActionEvent e ) {&#xa;        BareBonesBrowserLaunch.openURL(webSiteLabel1.getText());&#xa;    }&#xa;} );&#xa;"/>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JHyperLink(SystemUtils.IS_OS_MAC ? &quot;Download App Now&quot; : &quot;Download Installer Now&quot;);"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="((JHyperLink)_installer_download_link).addActionListener( new ActionListener() {&#xa;    public void actionPerformed( ActionEvent e ) {&#xa;        try {&#xa;            StringBuilder builder = new StringBuilder();&#xa;            builder.append(&quot;%scgi-bin/treescan/register.pl/?todo=process_download&amp;os=&quot;);&#xa;            builder.append(SystemUtils.IS_OS_MAC ? &quot;mac&quot; : &quot;win&quot;);&#xa;            builder.append(&quot;&amp;passwd=scantree&amp;release-type=standard&quot;);&#xa;            String baseurl = (TreeScanApplication.getDebugURL().length() &gt; 0 ? TreeScanApplication.getDebugURL(): AppConstants.getWebSite());&#xa;            URL url = URI.create(String.format(builder.toString(), baseurl).replace(&quot; &quot;, &quot;%20&quot;)).toURL();&#xa;            _download_file_info = new FileInfo(getFile(_new_update_version + &quot;.tmp&quot;), url);&#xa;            InstallerDownloadTask downloader = new InstallerDownloadTask();&#xa;            downloader.addPropertyChangeListener((PropertyChangeEvent evt) -&gt; {&#xa;                if (&quot;progress&quot;.equals(evt.getPropertyName())) {&#xa;                    _installer_download_progress.setValue((Integer)evt.getNewValue());&#xa;                }&#xa;            });            &#xa;            downloader.execute();&#xa;        } catch (IOException ex) {&#xa;            Logger.getLogger(UpdateCheckDialog.class.getName()).log(Level.WARNING, null, ex);&#xa;            JOptionPane.showMessageDialog(UpdateCheckDialog.this, &quot;Windows installer download failed.\nPlease visit website for latest release.&quot;, &quot;Operation Failed&quot;, JOptionPane.WARNING_MESSAGE);&#xa;        }&#xa;    }&#xa;} );&#xa;"/>
               </AuxValues>
+            </Component>
+            <Component class="javax.swing.JProgressBar" name="_installer_download_progress">
+              <Properties>
+                <Property name="stringPainted" type="boolean" value="true"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>

@@ -93,14 +93,28 @@ void ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, in
 }
 
 /** Returns indication of whether file exists and is readable/writable. */
-bool validateFileAccess(const std::string& filename, bool bWriteEnable) {
-  FILE        * fp=0;
-  bool          bReturn=true;
+bool validateFileAccess(const std::string& filename, bool bWriteEnable, bool useTempFile) {
+    FILE * fp=0;
+    bool bReturn=true;
 
-  bReturn = ((fp = fopen(filename.c_str(), bWriteEnable ? "w" : "r")) != NULL);
-  if (fp) fclose(fp);
+#ifdef __APPLE__
+    // Hack for Mac application - where sample_data is in application bundle. We don't want to write rsult files to the bundle.
+    if (bWriteEnable && filename.find("/Contents/app/sample_data/") != std::string::npos)
+        return false;
+#endif
 
-  return bReturn;
+    if (useTempFile) {
+        std::string buffer;
+        FileName test(filename.c_str());
+        test.setExtension("write-test");
+        bReturn = ((fp = fopen(test.getFullPath(buffer).c_str(), bWriteEnable ? "w" : "r")) != NULL);
+        if (fp) fclose(fp);
+        remove(test.getFullPath(buffer).c_str());
+    } else {
+        bReturn = ((fp = fopen(filename.c_str(), bWriteEnable ? "w" : "r")) != NULL);
+        if (fp) fclose(fp);
+    }
+    return bReturn;
 }
 
 /** Trims leading and trailing 't' strings from source, inplace. */

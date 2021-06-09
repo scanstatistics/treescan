@@ -53,7 +53,6 @@ import javax.swing.KeyStroke;
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
 import org.treescan.gui.utils.FileSelectionDialog;
-import org.treescan.gui.utils.MacOSApplication;
 
 /**
  *
@@ -87,7 +86,6 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     private static String RELAUNCH_ARGS_OPTION = "relaunch_args=";
     private static String RELAUNCH_TOKEN = "&";
     private static String CHECK_UPDATE_START = "true";
-    private Object _mac_os_app = null;
     private final UpdateCheckDialog _updateCheck;
 
     /**
@@ -118,21 +116,15 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         if (SystemUtils.IS_OS_MAC) {
             /* The 'user.dir' property is different on Mac. We're defining the 'java.library.path' in the Info.plist file to be
                "$APP_ROOT/Contents/Java/", so we'll derive needed directories from that value. */
-            String java_lib_path = new File(SystemUtils.JAVA_LIBRARY_PATH).getAbsolutePath();
+            File java_lib_path = new File(SystemUtils.JAVA_LIBRARY_PATH);
             // The jar is in the folder referenced by "java.library.path".
-            _application = java_lib_path + File.separator + "TreeTScan.jar";
+            _application = java_lib_path.getAbsolutePath() + File.separator + "TreeScan.jar";
             // The user guide is on the directory above the application root.
-            _user_guide = java_lib_path.substring(0, java_lib_path.substring(0, java_lib_path.lastIndexOf(".app")).lastIndexOf(File.separator)) + File.separator + "userguide.pdf";
-            /* Java 9 removed underlying interface for the MacOSApplication class. Skip this class for Java 9+ until we move beyond Java 8.
-               This implementation isn't ideal but don't see a way to support both at the same time. */
-            if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9) == false) {
-                _mac_os_app = new MacOSApplication();
-            }
+            _user_guide = java_lib_path.getParentFile().getParent() + File.separator  + "Contents" + File.separator + "app" + File.separator + "userguide.pdf";            
         } else {
-            _application = SystemUtils.getUserDir().getAbsolutePath() + File.separator  + "TreeTScan.jar";
-            _user_guide = SystemUtils.getUserDir().getAbsolutePath() + File.separator + "userguide.pdf";
-        }
-
+            _application = SystemUtils.getUserDir().getAbsolutePath() + File.separator  + "TreeScan.jar";
+            _user_guide = SystemUtils.getUserDir().getAbsolutePath() + File.separator + "userguide.pdf";            
+        }            
     }
 
     public static TreeScanApplication getInstance() {
@@ -1127,15 +1119,15 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
                 if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
                     //JOptionPane.showMessageDialog(null, "Calling Elevator " + System.getProperty("os.name"), "Note", JOptionPane.WARNING_MESSAGE);
                     StringBuilder args = new StringBuilder();
-                    args.append("-jar ").append(UpdateCheckDialog._updaterFilename.getName()).append(" ");
-                    args.append(UpdateCheckDialog._updateArchiveName.getName()).append(" \"").append(_application).append("\" ").append(getRelaunchArgs());
+                    args.append("-jar ").append(UpdateCheckDialog._updater_filename.getName()).append(" ");
+                    args.append(UpdateCheckDialog._update_archivename.getName()).append(" \"").append(_application).append("\" ").append(getRelaunchArgs());
                     Elevator.executeAsAdministrator(java_path.toString(), args.toString(), UpdateCheckDialog.getDownloadTempDirectory().toString());
                 } else {
                     //JOptionPane.showMessageDialog(null, "Calling getRuntime " + System.getProperty("os.name"), "Note", JOptionPane.WARNING_MESSAGE);
                     String[] commandline = new String[]{java_path.toString(),
                         "-jar",
-                        UpdateCheckDialog._updaterFilename.getName(),
-                        UpdateCheckDialog._updateArchiveName.getName(),
+                        UpdateCheckDialog._updater_filename.getName(),
+                        UpdateCheckDialog._update_archivename.getName(),
                         _application,
                         getRelaunchArgs()
                     };

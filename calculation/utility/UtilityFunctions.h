@@ -44,7 +44,7 @@ double                          getNumCombinations(size_t total, size_t choose);
 unsigned int                    GetNumSystemProcessors();
 void                            ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection);
 boost::posix_time::ptime        GetCurrentTime_HighResolution();
-bool                            validateFileAccess(const std::string& filename, bool bWriteEnable=false);
+bool                            validateFileAccess(const std::string& filename, bool bWriteEnable=false, bool useTempFile=false);
 std::string                   & trimString(std::string &source, const char * t=" ");
 std::string                   & lowerString(std::string &source); 
 std::string                   & printString(std::string& s, const char * format, ...);

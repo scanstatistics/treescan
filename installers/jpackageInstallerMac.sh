@@ -13,7 +13,7 @@ INSTALLER_DIR="/prj/treescan/installers/v.${APPVERSION}.x"
 SIGN_KEY="Developer ID Application: Information Management Services, Inc. (VF82MCMA83)"
 BUNDLEDIR="/Users/treescan/prj/treescan.development/jpackaged"
 BINARIES="/Users/treescan/prj/treescan.development/binaries/mac"
-JAVAJDK="/Users/treescan/prj/java/jdk-15.0.2+7/Contents/Home" # AdoptJDK
+JAVAJDK="/Users/treescan/prj/java/jdk-16.0.1+9/Contents/Home" # AdoptJDK
 ENTITLEMENTS="${SRCDIR}/installers/macosentitlements.plist"
 XCRUN="/usr/bin/xcrun"
 ALTOOL="/Applications/Xcode.app/Contents/Developer/usr/bin/altool"
@@ -137,7 +137,18 @@ codesign -vvv --deep --force $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg
 ## # staple application -- assumes notarization succeeds.
 ## $XCRUN $STAPLER staple $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg
 
+# Build batch binaries archive for Mac OS X.
+rm -f $BUNDLEDIR/treescan.${APPVERSION}_mac.tar.bz2
+cd $BINARIES
+tar -cf $BUNDLEDIR/treescan.${APPVERSION}_mac.tar treescan
+cd $SRCDIR/installers
+tar -rf $BUNDLEDIR/treescan.${APPVERSION}_mac.tar documents/*
+tar -rf $BUNDLEDIR/treescan.${APPVERSION}_mac.tar examples/*
+bzip2 -f $BUNDLEDIR/treescan.${APPVERSION}_mac.tar
+
 # push over to fileshare installers directory
 echo Copying dmg to fileshare
-scp -r $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg $BUNDLEDIR/TreeScan.zip treescan@gen-btp-01.imsweb.com:${INSTALLER_DIR}
+mv $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg $BUNDLEDIR/bin/TreeScan_${APPVERSION}_mac.dmg
+mv $BUNDLEDIR/TreeScan.zip $BUNDLEDIR/TreeScan_${APPVERSION}_mac.zip
+scp -r $BUNDLEDIR/bin/TreeScan_${APPVERSION}_mac.dmg $BUNDLEDIR/TreeScan_${APPVERSION}_mac.zip treescan@gen-btp-01.imsweb.com:${INSTALLER_DIR}
 

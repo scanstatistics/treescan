@@ -14,10 +14,7 @@
   <manifest>launch4j_updater.manifest</manifest>
   <icon>/prj/treescan/build/treescan/installers/resources/TreeScan.ico</icon>
   <jre>
-    <path></path>
-    <minVersion>1.8.0_01</minVersion>
-    <maxVersion></maxVersion>
-    <jdkPreference>preferJre</jdkPreference>
+    <path>jre</path>
   </jre>
   <versionInfo>
     <fileVersion>2.0.0</fileVersion>
