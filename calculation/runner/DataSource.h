@@ -42,6 +42,7 @@ class CSVFileDataSource : public DataSource {
     protected:
         std::string _delimiter;
         std::string _grouper;
+        std::string _grouper_escape;
         unsigned long _skip;
         bool _firstRowHeaders;
         size_t _readCount;
@@ -50,7 +51,7 @@ class CSVFileDataSource : public DataSource {
         bool _ignore_empty_fields;
         std::string _read_buffer;
 
-        bool parse(const std::string& s, std::vector<std::string>& read_values, bool ignore_empty_fields, const std::string& delimiter=",", const std::string& grouper="\"");
+        bool parse(std::string& s, std::vector<std::string>& read_values, bool ignore_empty_fields, const std::string& delimiter=",", const std::string& grouper="\"");
         void throwUnicodeException();
 
     public:

@@ -6,8 +6,10 @@
 #include "PrjException.h"
 #include "UtilityFunctions.h"
 #include "DataFileWriter.h"
+#include <regex>
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 using namespace boost;
 
@@ -29,7 +31,7 @@ DataSource * DataSource::getNewDataSourceObject(const std::string& sSourceFilena
 
 /** constructor */
 CSVFileDataSource::CSVFileDataSource(const std::string& sSourceFilename, const std::string& delimiter, const std::string& grouper, unsigned long skip, bool firstRowHeaders)
-                  :DataSource(), _readCount(0), _delimiter(delimiter), _grouper(grouper), _skip(skip), _ignore_empty_fields(false), _firstRowHeaders(firstRowHeaders) {
+                  :DataSource(), _readCount(0), _delimiter(delimiter), _grouper(grouper), _skip(skip), _ignore_empty_fields(false), _firstRowHeaders(firstRowHeaders), _grouper_escape("þæ"){
     // special processing for 'whitespace' delimiter string
     if (_delimiter == "" || _delimiter == " ") {
         _delimiter = "\t\v\f\r\n ";
@@ -68,20 +70,25 @@ void CSVFileDataSource::gotoFirstRecord() {
 }
 
 /** sets current parsing string -- returns indication of whether string contains any words. */
-bool CSVFileDataSource::parse(const std::string& s, std::vector<std::string>& read_values, bool ignore_empty_fields, const std::string& delimiter, const std::string& grouper) {
+bool CSVFileDataSource::parse(std::string& s, std::vector<std::string>& read_values, bool ignore_empty_fields, const std::string& delimiter, const std::string& grouper) {
+    /* The default escape character with boost is the backslash - to mimic C style escaping. But that style doesn't align with common software like Excel,
+       where doubling the group character the escape sequence. So we're going force mimcing the common software here - which requires a hack. */
+    std::stringstream escaped_group_seq;
+    escaped_group_seq << grouper << grouper; // Typical way to escape the grouping character is to escape with itself.
+    boost::replace_all(s, escaped_group_seq.str(), _grouper_escape); // Replace escaped group sequence in parsing string.
+    // Define tokenizer without escape character and specified delimiter and group characters.
+    boost::tokenizer<boost::escaped_list_separator<char> > values(s, boost::escaped_list_separator<char>(std::string(""), delimiter, grouper));
     read_values.clear();
-    std::string e("\\");
-    boost::escaped_list_separator<char> separator(e, delimiter, grouper);
-    boost::tokenizer<boost::escaped_list_separator<char> > values(s, separator);
     for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=values.begin(); itr != values.end(); ++itr) {
         read_values.push_back(*itr);
+        // Replace the escaped grouping sequence - now that token has been parsed.
+        boost::replace_all(read_values.back(), _grouper_escape, grouper);
         //trim any whitespace around value
         boost::trim(read_values.back());
         // ignore empty values if delimiter is whitespace -- boost::escaped_list_separator does not consume adjacent whitespace delimiters
         if (!read_values.back().size() && ignore_empty_fields)
             read_values.pop_back();
     }
-
     // if all fields are empty string, then treat this as empty record
     size_t blanks=0;
     for (std::vector<std::string>::const_iterator itr=read_values.begin(); itr != read_values.end(); ++itr)
@@ -104,10 +111,13 @@ bool CSVFileDataSource::readRecord() {
         getlinePortable(_sourceFile, readbuffer);
         ++_readCount;
     }
-
     _read_values.clear();
     while (isBlank && getlinePortable(_sourceFile, readbuffer)) {
-        isBlank = !parse(readbuffer, _read_values, _ignore_empty_fields, _delimiter, _grouper);
+        try {
+            isBlank = !parse(readbuffer, _read_values, _ignore_empty_fields, _delimiter, _grouper);
+        } catch (boost::escaped_list_error& e) {
+            throw resolvable_error("Unable to parse CSV line:\n%s", readbuffer.c_str());
+        }
         if (isBlank) {
             tripBlankRecordFlag();
             ++_readCount;
