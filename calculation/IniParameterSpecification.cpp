@@ -31,7 +31,7 @@ const char * IniParameterSpecification::SourceFirstRowHeader    = "SourceFirstRo
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
     // default to current version
-    Parameters::CreationVersion  version = {std::atoi(VERSION_MAJOR), std::atoi(VERSION_MINOR), std::atoi(VERSION_RELEASE)};
+    Parameters::CreationVersion  version;
     setup(version);
 }
 
@@ -95,7 +95,7 @@ void IniParameterSpecification::setup(Parameters::CreationVersion version) {
 /* Returns ini version setting or default. */
 Parameters::CreationVersion IniParameterSpecification::getIniVersion(const IniFile& SourceFile) {
     long lSectionIndex, lKeyIndex;
-    Parameters::CreationVersion  version = {std::atoi(VERSION_MAJOR), std::atoi(VERSION_MINOR), std::atoi(VERSION_RELEASE)};
+    Parameters::CreationVersion  version;
     bool bHasVersionKey=false;
 
     // search ini for version setting

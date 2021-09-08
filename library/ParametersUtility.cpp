@@ -21,7 +21,7 @@ JNIEXPORT jboolean JNICALL Java_org_treescan_app_Parameters_Read(JNIEnv * pEnv, 
      }
      else {
        //New session - creation version is this version.
-       Parameters::CreationVersion vVersion = {atoi(VERSION_MAJOR), atoi(VERSION_MINOR), atoi(VERSION_RELEASE)};
+       Parameters::CreationVersion vVersion;
        parameters.setVersion(vVersion);
      }
      if (iscopy == JNI_TRUE)

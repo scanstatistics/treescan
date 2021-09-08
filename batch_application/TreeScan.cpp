@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
             ("help,h", "Help");
 
         // try to determine if user has specified parameter options version
-        Parameters::CreationVersion opts_version = {std::atoi(VERSION_MAJOR), std::atoi(VERSION_MINOR), std::atoi(VERSION_RELEASE)};
+        Parameters::CreationVersion opts_version;
         try {
             // positional options
             po::positional_options_description pd;
