@@ -35,10 +35,10 @@ zip $installer_version/treescan.${version}_windows.zip examples/*
 
 # Build Linux installer. 
 $IzPack/bin/compile $build/treescan/installers/izpack/linux/install_linux.xml -b $installer_version -o $installer_version/install-2_0_linux.jar -k standard
-chmod a+x $installer_version/install-2_0_linux.jar
+chmod a+x $installer_version/install-${versionf}_linux.jar
 
 # Build batch binaries archive for Linux.
-rm -f $installer_version/treescan.${version}_linux.tar.bgz
+rm -f $installer_version/treescan.${version}_linux.tar.gz
 cd $build/binaries/linux
 tar -cf $installer_version/treescan.${version}_linux.tar treescan*
 cd $build/treescan/installers
@@ -69,7 +69,9 @@ zip $installer_version/update_data_windows.zip -j $build/treescan/java_applicati
 cd $build/treescan/java_application/jni_application/dist
 zip $installer_version/update_data_windows.zip -r lib
 cd $build/treescan/installers/java
-zip $installer_version/update_data_windows.zip -r jre
+zip $installer_version/update_data_windows.zip -r jre_x64
+zip $installer_version/update_data_windows.zip -r jre_x86
+
 # We can delete the generated Windows Java runtime now.
 rm -rf $build/treescan/installers/java/jre
 cd $build/treescan/installers

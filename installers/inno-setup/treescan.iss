@@ -49,7 +49,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "U:\build\treescan\java_application\jni_application\dist\TreeScan.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "U:\build\treescan\java_application\jni_application\dist\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "U:\build\treescan\installers\examples\*"; DestDir: "{app}\examples"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "U:\build\treescan\installers\java\jre\*"; DestDir: "{app}\jre"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "U:\build\treescan\installers\java\jre_x86\*"; DestDir: "{app}\jre"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: not Is64BitInstallMode
+Source: "U:\build\treescan\installers\java\jre_x64\*"; DestDir: "{app}\jre"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: Is64BitInstallMode
 Source: "U:\build\treescan\installers\documents\eula.html"; DestDir: "{app}"; Flags: ignoreversion
 Source: "U:\build\treescan\installers\documents\userguide.pdf"; DestDir: "{app}"; Flags: ignoreversion
 Source: "U:\build\treescan\batch_application\Win32\Release\treescan32.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
