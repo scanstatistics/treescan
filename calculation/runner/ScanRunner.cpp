@@ -27,6 +27,7 @@
 #include "TemporalRandomizer.h"
 #include "Toolkit.h"
 #include "ParameterFileAccess.h"
+#include "ChartGenerator.h"
 
 /* Calculates the attributable risk per person for cut. */
 double CutStructure::getAttributableRisk(const ScanRunner& scanner) const {
@@ -352,7 +353,6 @@ double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
     }
 }
 
-
 ////////////////////////// SequentialStatistic ///////////////////////////////
 
 const char * SequentialStatistic::_file_suffix = "_sequential";
@@ -585,6 +585,9 @@ void SequentialStatistic::write(const std::string &casefilename, const std::stri
     std::ifstream latest_simulations(_write_simulations_filename.c_str(), std::ios_base::binary);
     std::ofstream accumulated_simulations(_simulations_filename.c_str(), std::ios_base::trunc | std::ios_base::binary);
     accumulated_simulations << latest_simulations.rdbuf();
+    accumulated_simulations.close();
+    latest_simulations.close();
+    remove(_write_simulations_filename.c_str());
 }
 
 ////////////////////////// ScanRunner ////////////////////////////////////////
@@ -1354,6 +1357,12 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
                 }
             } else {
                 if (node) {
+                    // test that node does not reference itself as parent
+                    if (node->getID() == static_cast<int>(index.second)) {
+                        readSuccess = false;
+                        _print.Printf("Error: Record %ld in tree file has node referencing self as parent (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), identifier.c_str());
+                        continue;
+                    }
                     node->addAsParent(*_Nodes[index.second]);
                     nodesWithParents.set(node->getID());
                     // detect nodes with multiple parents
@@ -1423,7 +1432,15 @@ bool ScanRunner::reportableCut(const CutStructure& cut) const {
            (_parameters.isSequentialScanBernoulli() && getSequentialStatistic().testCutSignaled(static_cast<size_t>(cut.getID())) != 0);
 }
 
-ScanRunner::RecurrenceInterval_t ScanRunner::getRecurrenceInterval(const CutStructure& cut) const {
+bool ScanRunner::reportablePValue(const CutStructure& cut) const {
+    return _parameters.getNumReplicationsRequested() > MIN_REPLICA_RPT_PVALUE && !_parameters.isSequentialScanBernoulli();
+}
+
+bool ScanRunner::reportableRecurrenceInterval(const CutStructure& cut) const {
+    return _parameters.getIsProspectiveAnalysis() && _parameters.getNumReplicationsRequested() > MIN_REPLICA_RPT_PVALUE;
+}
+
+RecurrenceInterval_t ScanRunner::getRecurrenceInterval(const CutStructure& cut) const {
     //if (!parameters.GetIsProspectiveAnalysis())
     //   throw prg_error("GetRecurrenceInterval() called for non-prospective analysis.", "GetRecurrenceInterval()");
 
@@ -1442,6 +1459,31 @@ ScanRunner::RecurrenceInterval_t ScanRunner::getRecurrenceInterval(const CutStru
         case Parameters::WEEKLY:  return std::make_pair(dUnitsInOccurrence / 52.0, std::max((dUnitsInOccurrence / 52.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
         case Parameters::DAILY: return std::make_pair(dUnitsInOccurrence / AVERAGE_DAYS_IN_YEAR, std::max(dUnitsInOccurrence, 1.0));
         default: throw prg_error("Invalid enum '%d' for prospective analysis frequency type.", "getRecurrenceInterval()", _parameters.getProspectiveFrequencyType());
+    }
+}
+
+/** Returns whether cut is significant. */
+boost::logic::tribool ScanRunner::isSignificant(const CutStructure& cut) const {
+    boost::logic::tribool significance(boost::logic::indeterminate);
+    if (reportableRecurrenceInterval(cut)) {
+        significance = isSignificant(getRecurrenceInterval(cut), _parameters);
+    } else if (reportablePValue(cut)) {
+        // p-value  less than 0.05 is significant
+        significance = ((double)cut.getRank() / (double)(_parameters.getNumReplicationsRequested() + 1)) < 0.05;
+    } //else {// If both recurrence interval and p-value are not reportable, so we do not have information to say whether this cluster is significant or not.}
+    return significance;
+}
+
+bool ScanRunner::isSignificant(const RecurrenceInterval_t& ri, const Parameters& parameters) {
+    const double SIGNIFICANCE_MULTIPLIER = 100.0; // I'm not sure how Martin picked this number.
+    double frequency_length = static_cast<double>(parameters.getProspectiveFrequency()); // defaulted to one.
+    switch (parameters.getProspectiveFrequencyType()) {
+        case Parameters::YEARLY: return (ri.first > SIGNIFICANCE_MULTIPLIER * frequency_length);
+        case Parameters::QUARTERLY: return (ri.first * 4.0 > SIGNIFICANCE_MULTIPLIER * frequency_length);
+        case Parameters::MONTHLY: return (ri.first * 12.0 > SIGNIFICANCE_MULTIPLIER * frequency_length);
+        case Parameters::WEEKLY: return (ri.first * 52.0 > SIGNIFICANCE_MULTIPLIER * frequency_length);
+        case Parameters::DAILY: return (ri.second > std::max(365.0, SIGNIFICANCE_MULTIPLIER * frequency_length));
+        default: throw prg_error("Invalid enum '%d' for prospective analysis frequency type.", "isSignificant()", parameters.getProspectiveFrequencyType());
     }
 }
 
@@ -1491,6 +1533,11 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
         if (!resultsWriter.writeHTML(start, end))
             return false;
     }
+
+    // generate temporal chart - if requested
+    if (_parameters.getOutputTemporalGraphFile())
+        TemporalChartGenerator(*this, this->_simVars).generateChart();
+
     // write cuts to csv file
     if (_parameters.isGeneratingTableResults()) {
         CutsRecordWriter cutsWriter(*this);

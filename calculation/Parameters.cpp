@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 67;
+const int Parameters::giNumParameters = 71;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -93,11 +93,14 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_prospective_frequency != rhs._prospective_frequency) return false;
   if (_prospective_analysis != rhs._prospective_analysis) return false;
   if (_restrict_temporal_windows != rhs._restrict_temporal_windows) return false;
-
   if (_data_time_range_str != rhs._data_time_range_str) return false;
   if (_temporal_start_range_str != rhs._temporal_start_range_str) return false;
   if (_temporal_end_range_str != rhs._temporal_end_range_str) return false;
   if (_exclusion_time_range_str != rhs._exclusion_time_range_str) return false;  
+  if (_output_temporal_graph != rhs._output_temporal_graph) return false;
+  if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;
+  if (_temporal_graph_report_count != rhs._temporal_graph_report_count) return false;
+  if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
 
   return true;
 }
@@ -227,6 +230,11 @@ void Parameters::copy(const Parameters &rhs) {
     _temporal_start_range_str = rhs._temporal_start_range_str;
     _temporal_end_range_str = rhs._temporal_end_range_str;
     _exclusion_time_range_str = rhs._exclusion_time_range_str;
+
+    _output_temporal_graph = rhs._output_temporal_graph;
+    _temporal_graph_report_type = rhs._temporal_graph_report_type;
+    _temporal_graph_report_count = rhs._temporal_graph_report_count;
+    _temporal_graph_report_cutoff = rhs._temporal_graph_report_cutoff;
 }
 
 /* Returns the maximum temporal window in data time units. */
@@ -421,6 +429,11 @@ void Parameters::setAsDefaulted() {
     _temporal_start_range_str = "";
     _temporal_end_range_str = "";
     _exclusion_time_range_str = "";
+
+    _output_temporal_graph = false;
+    _temporal_graph_report_cutoff = 0.05;
+    _temporal_graph_report_count = 1;
+    _temporal_graph_report_type = MLC_ONLY;
 }
 
 /** Sets output data file name.
@@ -455,6 +468,13 @@ void Parameters::setSourceFileName(const char * sParametersSourceFileName) {
   //Use FileName class to ensure that a relative path is expanded to absolute path.
   std::string buffer;
   _parametersSourceFileName = FileName(sParametersSourceFileName).getFullPath(buffer);
+}
+
+/** Sets temporal graph report type. Throws exception if out of range. */
+void Parameters::setTemporalGraphReportType(TemporalGraphReportType e) {
+    if (e < MLC_ONLY || e > SIGNIFICANT_ONLY)
+        throw prg_error("Enumeration %d out of range [%d,%d].", "setTemporalGraphReportType()", e, MLC_ONLY, SIGNIFICANT_ONLY);
+    _temporal_graph_report_type = e;
 }
 
 void Parameters::setInputSimulationsFilename(const char * s, bool bCorrectForRelativePath) {

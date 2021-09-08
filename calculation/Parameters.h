@@ -64,6 +64,10 @@ class Parameters {
                         REPORT_CRITICAL_VALUES,
                         REPORT_ATTR_RISK,
                         ATTR_RISK_NUM_EXPOSED,
+                        OUTPUT_TEMPORAL_GRAPH,          /* generate temporal graph output file */
+                        TEMPORAL_GRAPH_REPORT_TYPE,     /* which clusters to generate temporal graph (enum)*/
+                        TEMPORAL_GRAPH_MLC_COUNT,       /* number of most likely clusters to generate temporal graph (integer)*/
+                        TEMPORAL_GRAPH_CUTOFF,          /* p-value cutoff for signicant clusters when generating temporal graph (numeric)*/
                         /* Advanced Analysis - power evaluations */
                         POWER_EVALUATIONS,
                         POWER_EVALUATION_TYPE,
@@ -108,6 +112,13 @@ class Parameters {
     {
         CV_MONTECARLO=0,                /* standard monte carlo */
         CV_POWER_VALUES                 /* user specified values */
+    };
+    /** temporal graph reporting type */
+    enum TemporalGraphReportType
+    {
+        MLC_ONLY = 0,                  /* generate a temporal graph for the most likley cluster only */
+        X_MCL_ONLY,                    /* generate a temporal graph for the first X likley clusters */
+        SIGNIFICANT_ONLY               /* generate a temporal graph for significant clusters only */
     };
     enum ResultsFormat {TEXT=0};
     enum ParametersFormat {XML=0, JSON};
@@ -268,6 +279,12 @@ class Parameters {
     unsigned int                        _prospective_frequency;
     bool                                _prospective_analysis;
 
+    /* temporal clusters graph */
+    bool                                _output_temporal_graph;                 /** generate temporal graph output file */
+    TemporalGraphReportType             _temporal_graph_report_type;            /* which clusters to report in temporal graph */
+    int                                 _temporal_graph_report_count;           /* number of MLC clusters to graph with TemporalGraphReportType.X_MCL_ONLY */
+    double                              _temporal_graph_report_cutoff;          /* P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY */
+
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
     const char                        * getRelativeToParameterName(const FileName& fParameterName, const std::string& sFilename, std::string& sValue) const;
@@ -304,6 +321,15 @@ class Parameters {
     void                                setProspectiveFrequencyType(ProspectiveFrequency e) { _prospective_frequency_type = e; }
     unsigned int                        getProspectiveFrequency() const { return _prospective_frequency; }
     void                                setProspectiveFrequency(unsigned int i) { _prospective_frequency = i; }
+
+    bool                                getOutputTemporalGraphFile() const { return _output_temporal_graph; }
+    void                                setOutputTemporalGraphFile(bool b) { _output_temporal_graph = b; }
+    TemporalGraphReportType             getTemporalGraphReportType() const { return _temporal_graph_report_type; }
+    void                                setTemporalGraphReportType(TemporalGraphReportType e);
+    double                              getTemporalGraphSignificantCutoff() const { return _temporal_graph_report_cutoff; }
+    void                                setTemporalGraphSignificantCutoff(double d) { _temporal_graph_report_cutoff = d; }
+    int                                 getTemporalGraphMostLikelyCount() const { return _temporal_graph_report_count; }
+    void                                setTemporalGraphMostLikelyCount(int i) { _temporal_graph_report_count = i; }
 
     void                                setCurrentLook(unsigned int u) const { _look_index = u; }
     unsigned int                        getCurrentLook() const { return _look_index; }

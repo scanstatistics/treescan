@@ -7,6 +7,7 @@
 #include "Loglikelihood.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/dynamic_bitset.hpp>
+#include <boost/logic/tribool.hpp>
 #include "SimulationVariables.h"
 #include "Parameters.h"
 #include "CriticalValues.h"
@@ -43,7 +44,7 @@ public:
 
     void                    addCutChild(int cutID, bool clear=false) {if (clear) _cut_children.clear(); _cut_children.push_back(cutID);}
     int                     getC() const {return _C; /* Observed */}
-    const CutChildContainer_t & getCutChildren() {return _cut_children;}
+    const CutChildContainer_t & getCutChildren() const {return _cut_children;}
     double                  getAttributableRisk(const ScanRunner& scanner) const;
     std::string           & getAttributableRiskAsString(const ScanRunner& scanner, std::string& s);
     int                     getID() const {return _ID;}
@@ -220,6 +221,7 @@ public:
     void                          setMinCensoredBr(count_t c) { _min_censored_Br = c; }
 
     void addAsParent(NodeStructure& parent) {
+        if (getID() == parent.getID()) return; // skip adding self as parent
         // add node of collection parents
         if (_Parent.end() == std::find(_Parent.begin(), _Parent.end(), &parent))
             _Parent.push_back(&parent);
@@ -407,7 +409,6 @@ public:
     typedef std::vector<TimeIntervalContainer_t>                DayOfWeekIndexes_t;
     typedef boost::shared_ptr<TreeStatistics>                   TreeStatistics_t;
     typedef boost::shared_ptr<SequentialStatistic>              SequentialStatistic_t;
-    typedef std::pair<double, double>                           RecurrenceInterval_t;
 
 protected:
     BasePrint                         & _print;
@@ -484,7 +485,11 @@ public:
     DataTimeRange::index_t             getZeroTranslationAdditive() const {return _zero_translation_additive;}
     bool                               isEvaluated(const NodeStructure& node) const;
     bool                               reportableCut(const CutStructure& cut) const;
+    bool                               reportablePValue(const CutStructure& cut) const;
+    bool                               reportableRecurrenceInterval(const CutStructure& cut) const;
     RecurrenceInterval_t               getRecurrenceInterval(const CutStructure& cut) const;
+    boost::logic::tribool              isSignificant(const CutStructure& cut) const;
+    static bool                        isSignificant(const RecurrenceInterval_t& ri, const Parameters& parameters);
     bool                               run();
     void                               updateCriticalValuesList(double llr) {if (_critical_values.get()) _critical_values->add(llr);}
     DataTimeRange                      temporalStartRange() const {

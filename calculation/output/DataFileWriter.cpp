@@ -408,7 +408,7 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
         } else {
             Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood());
         }
-        if (params.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/ && !params.isSequentialScanBernoulli()) {
+        if (_scanner.reportablePValue(thisCut)) {
             Record.GetFieldValue(P_VALUE_FLD).AsDouble() =  static_cast<double>(thisCut.getRank()) /(_scanner.getParameters().getNumReplicationsRequested() + 1);
             if (params.getIsProspectiveAnalysis())
                 Record.GetFieldValue(RECURR_FLD).AsDouble() = _scanner.getRecurrenceInterval(thisCut).second;

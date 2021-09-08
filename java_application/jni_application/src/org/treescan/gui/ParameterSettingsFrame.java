@@ -561,6 +561,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _advancedParametersSetting.enableSequentialAnalysisGroup();
         _advancedParametersSetting.enableAdditionalOutputOptions();
         _advancedParametersSetting.enableTimeRangeExclusionsGroup();
+        _advancedParametersSetting.enableTemporalGraphsGroup(treeAndTime || timeOnly);
     }
 
     /* Returns the data time range start date as LocalDate. */

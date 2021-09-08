@@ -285,21 +285,14 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 }
                 printString(buffer, "%.6lf", calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood()));
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-                if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/ && !parameters.isSequentialScanBernoulli()) {
+                if (_scanRunner.reportablePValue(thisCut)) {
                     PrintFormat.PrintSectionLabel(outfile, "P-value", true);
                     double p_value = (double)thisCut.getRank() / (parameters.getNumReplicationsRequested() + 1);
                     printString(buffer, format.c_str(), p_value);
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     if (parameters.getIsProspectiveAnalysis()) {
                         PrintFormat.PrintSectionLabel(outfile, "Recurrence Interval", true);
-                        ScanRunner::RecurrenceInterval_t ri = _scanRunner.getRecurrenceInterval(thisCut);
-                        if (ri.first < 1.0)
-                            printString(buffer, "%.0lf %s%s", ri.second, "day", (ri.second < 1.5 ? "" : "s"));
-                        else if (ri.first <= 10.0)
-                            printString(buffer, "%.1lf %s%s", ri.first, "year", (ri.first < 1.05 ? "" : "s"));
-                        else
-                            printString(buffer, "%.0lf %s", ri.first, "years");
-                        PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                        PrintFormat.PrintAlignedMarginsDataString(outfile, getRecurranceIntervalAsString(_scanRunner.getRecurrenceInterval(thisCut), buffer));
                     }
                 }
                 if (parameters.isSequentialScanBernoulli()) {
@@ -409,11 +402,11 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buff
             buffer = "Tree Temporal Scan";
             switch (parameters.getConditionalType()) {
                 case Parameters::NODE : 
-					if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
-						buffer += " with Conditional Bernoulli Model";
-					else
-						buffer += " with Conditional Uniform Model"; 
-					break;
+                    if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
+                        buffer += " with Conditional Bernoulli Model";
+                    else
+                        buffer += " with Conditional Uniform Model"; 
+                    break;
                 case Parameters::NODEANDTIME : buffer += " Conditioned on Node and Time"; break;
                 default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", parameters.getConditionalType());
             } break;
@@ -421,11 +414,11 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buff
             buffer = parameters.isSequentialScanPurelyTemporal() ? "Time Only Sequential Scan" : "Time Only Scan";
             switch (parameters.getConditionalType()) {
                 case Parameters::TOTALCASES : 
-					if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
-						buffer += " with Conditional Bernoulli Model";
-					else
-						buffer += " with Conditional Uniform Model"; 
-					break;
+                    if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
+                        buffer += " with Conditional Bernoulli Model";
+                    else
+                        buffer += " with Conditional Uniform Model"; 
+                    break;
                 default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", parameters.getConditionalType());
             } break;
             if (parameters.isSequentialScanPurelyTemporal()) {
@@ -484,7 +477,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<head>" << std::endl;
     outfile << "<link rel=\"stylesheet\" href=\"https://www.treescan.org/libs/bootstrap.4.1.1/bootstrap.4.1.1.css\">" << std::endl;
     outfile << "<link rel=\"stylesheet\" href=\"https://www.treescan.org/libs/datatables.1.10.16/css/jquery.dataTables.min.css\">" << std::endl;
-    outfile << "<link rel=\"stylesheet\" href=\"https://www.treescan.org/html-results/treescan-results.1.1.css\">" << std::endl;
+    outfile << "<link rel=\"stylesheet\" href=\"https://www.treescan.org/html-results/treescan-results.1.2.css\">" << std::endl;
     outfile << "<link rel=\"stylesheet\" href=\"http://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css\">" << std::endl;
     outfile << "</head>" << std::endl;
     if (parameters.getScanType() != Parameters::TIMEONLY) {
@@ -547,7 +540,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << " }" << std::endl;
         outfile << "};</script>" << std::endl;
     }
-    outfile << "<script src=\"https://www.treescan.org/html-results/treescan-results.1.1.js\" type=\"text/javascript\"></script>" << std::endl;
+    outfile << "<script src=\"https://www.treescan.org/html-results/treescan-results.1.2.js\" type=\"text/javascript\"></script>" << std::endl;
     outfile << "<body>" << std::endl;
     buffer = AppToolkit::getToolkit().GetWebSite();
     outfile << "<table width=\"100%\" border=\"0\" cellpadding=\"2\" cellspacing=\"0\" bgcolor=\"#F8FAFA\" style=\"border-collapse: collapse;\">";
@@ -654,7 +647,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             } else {
                 outfile << "<th>LLR</th>" << std::endl;
             }
-            if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/ && !parameters.isSequentialScanBernoulli()) {
+            if (parameters.getNumReplicationsRequested() > MIN_REPLICA_RPT_PVALUE && !parameters.isSequentialScanBernoulli()) {
                 outfile << "<th>P-value</th>";
                 if (parameters.getIsProspectiveAnalysis())
                     outfile << "<th>Recurrence Interval</th>";
@@ -693,7 +686,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "<div class=\"collapse\" id=\"collapseExample\"><h3>Visualization of Analysis Tree  <span id=\"loading_graph\">... loading <i class=\"fa fa-circle-o-notch fa-spin\"></i></span><span id=\"fail_message\"></span></h3>";
         outfile << "<div class=\"row\">" << std::endl;
 
-        outfile << "<div class=\"col-2\"><div class=\"custom-control custom-radio\">" << std::endl;
+        outfile << "<div class=\"col-3\"><div class=\"custom-control custom-radio\">" << std::endl;
         if (bernoulliSequential) {
             outfile << "<input type=\"radio\" class=\"custom-control-input\" id=\"customControlValidation1\" name=\"radio-stacked\" legend=\"legend-signalled\" required checked=checked>" << std::endl;
             outfile << "<label class=\"custom-control-label\" for=\"customControlValidation1\">Color Nodes by Signal</label></div>" << std::endl;
@@ -701,11 +694,15 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             outfile << "<input type=\"radio\" class=\"custom-control-input\" id=\"customControlValidation2\" name=\"radio-stacked\" legend=\"legend-p-value\" required checked=checked>" << std::endl;
             outfile << "<label class=\"custom-control-label\" for=\"customControlValidation2\">Color Nodes by P-Value</label></div>" << std::endl;
         }
+        if (parameters.getIsProspectiveAnalysis()) {
+            outfile << "<div class=\"custom-control custom-radio\">" << std::endl;
+            outfile << "<input type=\"radio\" class=\"custom-control-input\" id=\"customControlValidation4\" name=\"radio-stacked\" legend=\"legend-recurrence-interval\" required>" << std::endl;
+            outfile << "<label class=\"custom-control-label\" for=\"customControlValidation4\">Color Nodes by Recurrence Interval</label></div>" << std::endl;
+        }
         outfile << "<div class=\"custom-control custom-radio mb-3\">" << std::endl;
         outfile << "<input type=\"radio\" class=\"custom-control-input\" id=\"customControlValidation3\" name=\"radio-stacked\" legend=\"legend-relative-risk\" required>" << std::endl;
         outfile << "<label class=\"custom-control-label\" for=\"customControlValidation3\">Color Nodes by Relative Risk</label></div></div>" << std::endl;
-
-        outfile << "<div class=\"col-10\">";
+        outfile << "<div class=\"col-9\">";
         if (bernoulliSequential) {
             outfile << "<div class='chart-legend legend-signalled'><div class='legend-title'>Signal Legend</div><div class='legend-scale'>" << std::endl;
             outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span><span class=\"legend-val\">Not Signalled</span></li>";
@@ -714,6 +711,11 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             outfile << "<div class='chart-legend legend-p-value'><div class='legend-title'>P-Value Legend</div><div class='legend-scale'>" << std::endl;
             outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span><span class=\"legend-val\">&gt; 0.05</span></li><li><span style='background:#DBD51B;'></span><span class=\"legend-val\">0.05</span></li>";
             outfile << "<li><span style='background:#FFC300;'></span><span class=\"legend-val\">0.01</span></li><li><span style='background:#FF5733;'></span><span class=\"legend-val\">0.001</span></li></ul></div></div>" << std::endl;
+        }
+        if (parameters.getIsProspectiveAnalysis()) {
+            outfile << "<div class='chart-legend legend-recurrence-interval'><div class='legend-title'>Recurrence Interval Legend</div><div class='legend-scale'>";
+            outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span><span class=\"legend-val\">&lt; 90 days</span></li><li><span style='background:#DBD51B;'></span><span class=\"legend-val\">&ge; 90 days &lt; 1 year</span></li>";
+            outfile << "<li><span style='background:#FFC300;'></span><span class=\"legend-val\">&ge; 1 year &lt; 5 years</span></li><li><span style='background:#FF5733;'></span><span class=\"legend-val\">&ge; 5 years</span></li></ul></div></div>" << std::endl;
         }
         outfile << "<div class='chart-legend legend-relative-risk'><div class='legend-title'>Relative Risk Legend</div><div class='legend-scale'>";
         outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span><span class=\"legend-val\">&lt; 2</span></li><li><span style='background:#DBD51B;'></span><span class=\"legend-val\">2</span></li>";
@@ -876,17 +878,11 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
     }
     outfile << "<td>" << printString(buffer, "%.6lf", calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood())).c_str() << "</td>";
     // write p-value
-    if (parameters.getNumReplicationsRequested() > 9/*require more than 9 replications to report p-values*/ && !parameters.isSequentialScanBernoulli()) {
+    if (_scanRunner.reportablePValue(thisCut)) {
         outfile << "<td>" << printString(buffer, format.c_str(), (double)thisCut.getRank() / (parameters.getNumReplicationsRequested() + 1)) << "</td>";
         if (parameters.getIsProspectiveAnalysis()) {
-                ScanRunner::RecurrenceInterval_t ri = _scanRunner.getRecurrenceInterval(thisCut);
-                if (ri.first < 1.0)
-                    printString(buffer, "%.0lf %s%s", ri.second, "day", (ri.second < 1.5 ? "" : "s"));
-                else if (ri.first <= 10.0)
-                    printString(buffer, "%.1lf %s%s", ri.first, "year", (ri.first < 1.05 ? "" : "s"));
-                else
-                    printString(buffer, "%.0lf %s", ri.first, "years");
-                outfile << "<td data-order=" << static_cast<unsigned int>(ri.second) << ">" << buffer << "</td>";
+            RecurrenceInterval_t ri = _scanRunner.getRecurrenceInterval(thisCut);
+            outfile << "<td data-order=" << static_cast<unsigned int>(ri.second) << ">" << getRecurranceIntervalAsString(ri, buffer) << "</td>";
         }
     }
     if (parameters.getScanType() != Parameters::TIMEONLY) {
@@ -931,6 +927,27 @@ const char * ResultsFileWriter::getRelativeRiskClass(double rr, bool childClass)
         return (childClass ? "rr-less-children " : "rr-less ");
 }
 
+const char * ResultsFileWriter::getRecurranceIntervalClass(const RecurrenceInterval_t& ri, bool childClass) const {
+    if (ri.first > 5.0)
+        return (childClass ? "ri-range3-children " : "ri-range3 ");
+    else if (ri.first > 1.0 && ri.first <= 5.0)
+        return (childClass ? "ri-range2-children " : "ri-range2 ");
+    else if (ri.second >= 90.0)
+        return (childClass ? "ri-range1-children " : "ri-range1 ");
+    else
+        return (childClass ? "ri-less-children " : "ri-less ");
+}
+
+std::string& ResultsFileWriter::getRecurranceIntervalAsString(const RecurrenceInterval_t& ri, std::string& buffer) const {
+    if (ri.first < 1.0)
+        printString(buffer, "%.0lf %s%s", ri.second, "day", (ri.second < 1.5 ? "" : "s"));
+    else if (ri.first <= 10.0)
+        printString(buffer, "%.1lf %s%s", ri.first, "year", (ri.first < 1.05 ? "" : "s"));
+    else
+        printString(buffer, "%.0lf %s", ri.first, "years");
+    return buffer;
+}
+
 /* Convert the signall to class name to be used in html/javascript. */
 const char * ResultsFileWriter::getSignalClass(double pval, bool childClass) {
     if (pval > 0.0)
@@ -941,6 +958,7 @@ const char * ResultsFileWriter::getSignalClass(double pval, bool childClass) {
 
 ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstream & outfile, const NodeStructure& node, const std::map<int, const CutStructure*>& cutMap, int collapseAtLevel) {
     bool bernoulliSequential = _scanRunner.getParameters().isSequentialScanBernoulli();
+    bool prospectiveScan = _scanRunner.getParameters().getIsProspectiveAnalysis();
     std::stringstream nodestream;
     // Write header section to this nodestream.
     std::string buffer(node.getIdentifier());
@@ -955,7 +973,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
     }
     nodestream << htmlencode(buffer) << "</a></li>";
     // Add quick info in node that details the relative risk and p-value if there is a cut.
-    BestCutSet_t node_attr_rr(bernoulliSequential ? 0.0 : std::numeric_limits<double>::max(), -std::numeric_limits<double>::max());
+    BestCutSet_t node_attr_rr(bernoulliSequential ? 0.0 : std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(), RecurrenceInterval_t(0.0, 0.0));
     std::map<int, const CutStructure*>::const_iterator itr = cutMap.find(node.getID());
     if (itr != cutMap.end()) {
         if (bernoulliSequential) 
@@ -977,12 +995,16 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
             printString(buffer, format.c_str(), node_attr_rr.get<0>());
             nodestream << buffer;
         }
+        if (prospectiveScan) {
+            node_attr_rr.get<2>() = _scanRunner.getRecurrenceInterval(*(itr->second));
+            nodestream << ", RI = " << getRecurranceIntervalAsString(node_attr_rr.get<2>(), buffer);
+        }
         nodestream << "</li>";
     }
     nodestream << "</ul><div class='nbottom'></div>\"";
 
     // Create a stream for children nodes, if any.
-    BestCutSet_t best_attr_rr_children(bernoulliSequential ? 0.0 : std::numeric_limits<double>::max(), -std::numeric_limits<double>::max());
+    BestCutSet_t best_attr_rr_children(bernoulliSequential ? 0.0 : std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(), RecurrenceInterval_t(0.0, 0.0));
     std::stringstream childrenstream;
     unsigned int children_count = 0;
     if (node.getChildren().size()) {
@@ -1026,6 +1048,10 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
                     }
                     best_attr_rr_children.get<1>() = std::max(best_attr_rr_children.get<1>(), itrNodeSets->get<0>().get<1>());
                     best_attr_rr_children.get<1>() = std::max(best_attr_rr_children.get<1>(), itrNodeSets->get<1>().get<1>());
+                    if (prospectiveScan) {
+                        best_attr_rr_children.get<2>() = best_attr_rr_children.get<2>().first >= itrNodeSets->get<0>().get<2>().first ? best_attr_rr_children.get<2>() : itrNodeSets->get<0>().get<2>();
+                        best_attr_rr_children.get<2>() = best_attr_rr_children.get<2>().first >= itrNodeSets->get<1>().get<2>().first ? best_attr_rr_children.get<2>() : itrNodeSets->get<1>().get<2>();
+                    }
                     ++children_count;
                 }
             } else {
@@ -1044,11 +1070,14 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
                         }
                         best_attr_rr_children.get<1>() = std::max(best_attr_rr_children.get<1>(), itrNodeSets->get<0>().get<1>());
                         best_attr_rr_children.get<1>() = std::max(best_attr_rr_children.get<1>(), itrNodeSets->get<1>().get<1>());
+                        if (prospectiveScan) {
+                            best_attr_rr_children.get<2>() = best_attr_rr_children.get<2>().first >= itrNodeSets->get<0>().get<2>().first ? best_attr_rr_children.get<2>() : itrNodeSets->get<0>().get<2>();
+                            best_attr_rr_children.get<2>() = best_attr_rr_children.get<2>().first >= itrNodeSets->get<1>().get<2>().first ? best_attr_rr_children.get<2>() : itrNodeSets->get<1>().get<2>();
+                        }
                         ++children_count;
                     }
                 }
             }
-
             childrenstream << "]" << std::endl;
         }
 
@@ -1064,11 +1093,17 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
         buffer += getSignalClass(node_attr_rr.get<0>(), false);
     else
         buffer += getPvalueClass(node_attr_rr.get<0>(), false);
+    if (_scanRunner.getParameters().getIsProspectiveAnalysis())
+        buffer += getRecurranceIntervalClass(node_attr_rr.get<2>(), false);
+
     buffer += getRelativeRiskClass(best_attr_rr_children.get<1>(), true);
     if (bernoulliSequential)
         buffer += getSignalClass(best_attr_rr_children.get<0>(), true);
     else
         buffer += getPvalueClass(best_attr_rr_children.get<0>(), true);
+    if (_scanRunner.getParameters().getIsProspectiveAnalysis())
+        buffer += getRecurranceIntervalClass(best_attr_rr_children.get<2>(), true);
+
     outfile << ", HTMLclass: \"" << buffer << "\"" << "}" << std::endl;
 
     // Return the pairs for node and best child node separately.

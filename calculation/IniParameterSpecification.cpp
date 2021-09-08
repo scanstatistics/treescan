@@ -230,7 +230,12 @@ void IniParameterSpecification::Build_2_0_x_ParameterList() {
     _parameter_info[Parameters::START_DATA_TIME_RANGE] = ParamInfo(Parameters::START_DATA_TIME_RANGE, "window-start-range", 8, _temporal_window_section);
     _parameter_info[Parameters::END_DATA_TIME_RANGE] = ParamInfo(Parameters::END_DATA_TIME_RANGE, "window-end-range", 9, _temporal_window_section);
 
-    assert(_parameter_info.size() == 66);
+    _parameter_info[Parameters::OUTPUT_TEMPORAL_GRAPH] = ParamInfo(Parameters::OUTPUT_TEMPORAL_GRAPH, "OutputTemporalGraphHTML", 6, _additional_output_section);
+    _parameter_info[Parameters::TEMPORAL_GRAPH_REPORT_TYPE] = ParamInfo(Parameters::TEMPORAL_GRAPH_REPORT_TYPE, "TemporalGraphReportType", 7, _additional_output_section);
+    _parameter_info[Parameters::TEMPORAL_GRAPH_MLC_COUNT] = ParamInfo(Parameters::TEMPORAL_GRAPH_MLC_COUNT, "TemporalGraphMostMLC", 8, _additional_output_section);
+    _parameter_info[Parameters::TEMPORAL_GRAPH_CUTOFF] = ParamInfo(Parameters::TEMPORAL_GRAPH_CUTOFF, "TemporalGraphSignificanceCutoff", 9, _additional_output_section);
+
+    assert(_parameter_info.size() == 70);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

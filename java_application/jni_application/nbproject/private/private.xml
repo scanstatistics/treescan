@@ -5,7 +5,9 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/C:/Users/hostovic/projects/treescan.development/treescan/java_application/jni_application/src/org/treescan/gui/TreeScanApplication.java</file>
-            <file>file:/C:/Users/hostovic/projects/treescan.development/treescan/java_application/jni_application/src/org/treescan/gui/UpdateCheckDialog.java</file>
+            <file>file:/C:/Users/hostovic/projects/treescan.development/treescan/java_application/jni_application/src/org/treescan/app/Parameters.java</file>
+            <file>file:/C:/Users/hostovic/projects/treescan.development/treescan/java_application/jni_application/src/org/treescan/gui/ParameterSettingsFrame.java</file>
+            <file>file:/C:/Users/hostovic/projects/treescan.development/treescan/java_application/jni_application/src/org/treescan/gui/AdvancedParameterSettingsFrame.java</file>
         </group>
     </open-files>
 </project-private>

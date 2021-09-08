@@ -20,6 +20,8 @@ public class Parameters implements Cloneable {
     public enum PowerEvaluationType {PE_WITH_ANALYSIS, PE_ONLY_CASEFILE,PE_ONLY_SPECIFIED_CASES};
     public enum DatePrecisionType { NONE, GENERIC, YEAR, MONTH, DAY };
     public enum ProspectiveFrequency { DAILY, WEEKLY, MONTHLY, QUARTERLY, YEARLY };
+    /** temporal graph reporting type */
+    public enum TemporalGraphReportType {MLC_ONLY, X_MCL_ONLY, SIGNIFICANT_ONLY}    
     public class CreationVersion {
     	public int _major;
     	public int _minor;
@@ -94,6 +96,10 @@ public class Parameters implements Cloneable {
     private DatePrecisionType _date_precision_type=DatePrecisionType.NONE;
     private boolean _prospective_analysis = false;
     private ProspectiveFrequency _prospective_frequency_type = ProspectiveFrequency.DAILY;
+    private boolean _output_temporal_graph=false; /* report temporal graph file */
+    private TemporalGraphReportType _temporal_graph_report_type=TemporalGraphReportType.MLC_ONLY; /* which clusters to report in temporal graph */
+    private int _temporal_graph_report_count=1; /* number of MLC clusters to graph with TemporalGraphReportType.X_MCL_ONLY */
+    private double _temporal_graph_report_cutoff=0.05; /* P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY */
 
     private ArrayList<InputSourceSettings>     _input_sources;
 
@@ -200,9 +206,23 @@ public class Parameters implements Cloneable {
           if (_prospective_analysis != rhs._prospective_analysis) return false;
           if (_prospective_frequency_type != rhs._prospective_frequency_type) return false;
 
+          if (_output_temporal_graph != rhs._output_temporal_graph) return false;
+          if (_temporal_graph_report_count != rhs._temporal_graph_report_count) return false;
+          if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
+          if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;          
+          
           return true;
     }
 
+    public boolean getOutputTemporalGraphFile() {return _output_temporal_graph;}
+    public void setOutputTemporalGraphFile(boolean b) {_output_temporal_graph = b;}    
+    public double getTemporalGraphSignificantCutoff() {return _temporal_graph_report_cutoff;}
+    public void setTemporalGraphSignificantCutoff(double d) {_temporal_graph_report_cutoff = d;}
+    public int getTemporalGraphMostLikelyCount() {return _temporal_graph_report_count;}
+    public void setTemporalGraphMostLikelyCount(int i) {_temporal_graph_report_count = i;}
+    public TemporalGraphReportType getTemporalGraphReportType() {return _temporal_graph_report_type;}
+    public void setTemporalGraphReportType(int ord){try {_temporal_graph_report_type = TemporalGraphReportType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, TemporalGraphReportType.values());}}
+    
     public ProspectiveFrequency getProspectiveFrequencyType() { return _prospective_frequency_type; }
     public void setProspectiveFrequencyType(ProspectiveFrequency e) { _prospective_frequency_type = e; }
     public void setProspectiveFrequencyType(int ord) {try {_prospective_frequency_type = ProspectiveFrequency.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, ProspectiveFrequency.values());}}

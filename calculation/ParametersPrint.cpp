@@ -7,6 +7,7 @@
 #include "RandomNumberGenerator.h"
 #include "ResultsFileWriter.h"
 #include "DataFileWriter.h"
+#include "ChartGenerator.h"
 
 /** Prints parameters, in a particular format, to passed ascii file. */
 void ParametersPrint::Print(std::ostream& out) const {
@@ -157,6 +158,12 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParame
     settings.push_back(std::make_pair("Report Critical Values",(_parameters.getReportCriticalValues() ? "Yes" : "No")));
     if (_parameters.isGeneratingTableResults() && _parameters.isPrintColumnHeaders()) {
         settings.push_back(std::make_pair("Print Column Headers","Yes"));
+    }
+    if (_parameters.getOutputTemporalGraphFile()) {
+        FileName AdditionalOutputFile(_parameters.getOutputFileName().c_str());
+        AdditionalOutputFile.setFullPath(_parameters.getOutputFileName().c_str());
+        TemporalChartGenerator::getFilename(AdditionalOutputFile);
+        settings.push_back(std::make_pair("Temporal Graph File", AdditionalOutputFile.getFullPath(buffer)));
     }
     return settings;
 }

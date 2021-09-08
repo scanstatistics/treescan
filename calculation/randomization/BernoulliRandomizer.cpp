@@ -20,6 +20,7 @@ UnconditionalBernoulliRandomizer::UnconditionalBernoulliRandomizer(const ScanRun
         if (!scanner.getSequentialStatistic().isFirstLook())
             _read_filename = _scanner.getSequentialStatistic().getSimulationDataFilename();
         _write_filename = _scanner.getSequentialStatistic().getWriteSimulationDataFilename();
+        _sim_stream_writer.reset(new OrderedSimulationDataWriter(_write_filename, scanner.getParameters().getNumReplicationsRequested()));
     }
 
 }

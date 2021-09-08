@@ -65,6 +65,10 @@ bool ParametersValidate::ValidateAdjustmentsParameters(BasePrint & PrintDirectio
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nThe day of week adjustment is not implemented for the 'Tree Only' scan type.\n", BasePrint::P_PARAMERROR);
         }
+        if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe day of week adjustment is not implemented for the 'Bernoulli' model type.\n", BasePrint::P_PARAMERROR);
+        }
     }
     if (_parameters.isApplyingExclusionTimeRanges() && _parameters.getDataTimeRangeSet().getDataTimeRangeSets().size() > 0) {
         if (!(_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME)) {
@@ -485,6 +489,10 @@ bool ParametersValidate::ValidateAdditionalOutputParameters(BasePrint & PrintDir
                 PrintDirection.Printf("Invalid Parameter Setting:\nThe number of exposed cases for the attributable risk must be greater than zero. ", BasePrint::P_PARAMERROR);
             }
         }
+        if (_parameters.getOutputTemporalGraphFile() && !_parameters.isTemporalScanType(_parameters.getScanType())) {
+            const_cast<Parameters&>(_parameters).setOutputTemporalGraphFile(false);
+            PrintDirection.Printf("Parameter Setting Warning:\nThe temporal graph option is only available for temporal scans.\nThe option was disabled.\n", BasePrint::P_WARNING);
+        }
     } catch (prg_exception& x) {
         x.addTrace("ValidateAdditionalOutputParameters()","ParametersValidate");
         throw;
@@ -568,6 +576,11 @@ bool ParametersValidate::ValidatePowerEvaluationParametersParameters(BasePrint &
 /** Validates temporal window settings. */
 bool ParametersValidate::ValidateTemporalWindowParameters(BasePrint & PrintDirection) const {
     bool bValid=true;
+
+    if (!Parameters::isTemporalScanType(_parameters.getScanType()) && _parameters.getIsProspectiveAnalysis()) {
+        bValid = false;
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe prospective evaluation option is only implemtend for temporal analyses.\n", BasePrint::P_PARAMERROR);
+    }
     if (Parameters::isTemporalScanType(_parameters.getScanType()) && _parameters.getDataTimeRangeSet().getDataTimeRangeSets().size() > 0) {
         switch (_parameters.getMaximumWindowType()) {
             case Parameters::PERCENTAGE_WINDOW: {

@@ -479,6 +479,22 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jint)parameters.getProspectiveFrequencyType());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setOutputTemporalGraphFile", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getOutputTemporalGraphFile());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setTemporalGraphReportType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getTemporalGraphReportType());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setTemporalGraphSignificantCutoff", "(D)V");
+  Env.CallVoidMethod(jParameters, mid, (jdouble)parameters.getTemporalGraphSignificantCutoff());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setTemporalGraphMostLikelyCount", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getTemporalGraphMostLikelyCount());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -860,6 +876,21 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   parameters.setProspectiveFrequencyType((Parameters::ProspectiveFrequency)getEnumTypeOrdinalIndex(Env, jParameters, "getProspectiveFrequencyType", "Lorg/treescan/app/Parameters$ProspectiveFrequency;"));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getOutputTemporalGraphFile", "()Z");
+  parameters.setOutputTemporalGraphFile(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  parameters.setTemporalGraphReportType((Parameters::TemporalGraphReportType)getEnumTypeOrdinalIndex(Env, jParameters, "getTemporalGraphReportType", "Lorg/treescan/app/Parameters$TemporalGraphReportType;"));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getTemporalGraphSignificantCutoff", "()D");
+  parameters.setTemporalGraphSignificantCutoff(Env.CallDoubleMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getTemporalGraphMostLikelyCount", "()I");
+  parameters.setTemporalGraphMostLikelyCount(Env.CallIntMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   return parameters;

@@ -1210,6 +1210,7 @@
                           <Component id="_log_likelihood_ratios_group" alignment="0" max="32767" attributes="0"/>
                           <Component id="_report_critical_values_group" alignment="0" max="32767" attributes="0"/>
                           <Component id="jPanel2" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_graphOutputGroup" alignment="1" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1224,7 +1225,9 @@
                       <Component id="_log_likelihood_ratios_group" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_report_critical_values_group" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="177" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_graphOutputGroup" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="27" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1387,6 +1390,124 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="exposed."/>
                   </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JPanel" name="_graphOutputGroup">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Temporal Graphs">
+                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                        <EtchetBorder/>
+                      </Border>
+                    </TitledBorder>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_reportTemporalGraph" pref="506" max="32767" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_temporalGraphSignificant" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                          <Component id="_temporalGraphPvalueCutoff" min="-2" pref="50" max="-2" attributes="1"/>
+                                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      </Group>
+                                      <Component id="_temporalGraphMostLikely" alignment="0" max="32767" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_temporalGraphMostLikelyX" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_numMostLikelyClustersGraph" min="-2" pref="45" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_numMostLikelyClustersGraphLabel" max="32767" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                              </Group>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="_reportTemporalGraph" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="_temporalGraphMostLikely" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Component id="_temporalGraphMostLikelyX" alignment="1" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" alignment="1" groupAlignment="3" attributes="0">
+                                  <Component id="_numMostLikelyClustersGraph" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_numMostLikelyClustersGraphLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_temporalGraphSignificant" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_temporalGraphPvalueCutoff" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JCheckBox" name="_reportTemporalGraph">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Produce Temporal Graphs"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportTemporalGraph.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_temporalGraphMostLikely">
+                  <Properties>
+                    <Property name="selected" type="boolean" value="true"/>
+                    <Property name="text" type="java.lang.String" value="Most likely cluster only"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalGraphMostLikely.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());&#xa;            enableSetDefaultsButton();&#xa;        }&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_temporalGraphMostLikelyX">
+                </Component>
+                <Component class="javax.swing.JTextField" name="_numMostLikelyClustersGraph">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="1" noResource="true"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_numMostLikelyClustersGraph.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_numMostLikelyClustersGraph, e, 5);&#xa;    }&#xa;});&#xa;_numMostLikelyClustersGraph.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_numMostLikelyClustersGraph.getText().length() == 0 || Integer.parseInt(_numMostLikelyClustersGraph.getText()) == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _numMostLikelyClustersGraph.setText(&quot;1&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_numMostLikelyClustersGraph.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_numMostLikelyClustersGraphLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="most likely clusters, one graph for each"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_temporalGraphSignificant">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="All significant clusters, one graph for each, with p-value less than:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_temporalGraphPvalueCutoff">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="0.05" noResource="true"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalGraphPvalueCutoff.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_temporalGraphPvalueCutoff, e, 20);&#xa;    }&#xa;});&#xa;_temporalGraphPvalueCutoff.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_temporalGraphPvalueCutoff.getText().length() == 0 ||&#xa;                Double.parseDouble(_temporalGraphPvalueCutoff.getText()) &lt;= 0 ||&#xa;                Double.parseDouble(_temporalGraphPvalueCutoff.getText()) &gt; 1)&#xa;            if (undo.canUndo()) undo.undo(); else _temporalGraphPvalueCutoff.setText(&quot;.05&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_temporalGraphPvalueCutoff.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
                 </Component>
               </SubComponents>
             </Container>

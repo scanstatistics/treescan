@@ -470,6 +470,10 @@ void IniParameterFileAccess::WriteAdvancedOutputSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, Parameters::REPORT_CRITICAL_VALUES, GetParameterString(Parameters::REPORT_CRITICAL_VALUES, s).c_str(), GetParameterComment(Parameters::REPORT_CRITICAL_VALUES));
         WriteIniParameter(WriteFile, Parameters::REPORT_ATTR_RISK, GetParameterString(Parameters::REPORT_ATTR_RISK, s).c_str(), GetParameterComment(Parameters::REPORT_ATTR_RISK));
         WriteIniParameter(WriteFile, Parameters::ATTR_RISK_NUM_EXPOSED, GetParameterString(Parameters::ATTR_RISK_NUM_EXPOSED, s).c_str(), GetParameterComment(Parameters::ATTR_RISK_NUM_EXPOSED));
+        WriteIniParameter(WriteFile, Parameters::OUTPUT_TEMPORAL_GRAPH, GetParameterString(Parameters::OUTPUT_TEMPORAL_GRAPH, s).c_str(), GetParameterComment(Parameters::OUTPUT_TEMPORAL_GRAPH));
+        WriteIniParameter(WriteFile, Parameters::TEMPORAL_GRAPH_REPORT_TYPE, GetParameterString(Parameters::TEMPORAL_GRAPH_REPORT_TYPE, s).c_str(), GetParameterComment(Parameters::TEMPORAL_GRAPH_REPORT_TYPE));
+        WriteIniParameter(WriteFile, Parameters::TEMPORAL_GRAPH_MLC_COUNT, GetParameterString(Parameters::TEMPORAL_GRAPH_MLC_COUNT, s).c_str(), GetParameterComment(Parameters::TEMPORAL_GRAPH_MLC_COUNT));
+        WriteIniParameter(WriteFile, Parameters::TEMPORAL_GRAPH_CUTOFF, GetParameterString(Parameters::TEMPORAL_GRAPH_CUTOFF, s).c_str(), GetParameterComment(Parameters::TEMPORAL_GRAPH_CUTOFF));
     } catch (prg_exception& x) {
         x.addTrace("WriteAdvancedOutputSettings()","IniParameterFileAccess");
         throw;

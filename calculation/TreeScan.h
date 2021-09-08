@@ -9,7 +9,7 @@
 #define VERSION_MAJOR   "2"
 #define VERSION_MINOR   "0"
 #define VERSION_RELEASE "0"
-#define VERSION_PHASE "Beta 4 Build 1" /** testing phase name - leave blank for release */
+#define VERSION_PHASE "Beta 5 Build 1" /** testing phase name - leave blank for release */
 #define VERSION_DATE    "Not Released"
 
 #if defined(_MSC_VER)
@@ -58,6 +58,9 @@
 enum SourceType {CSV=0, EXCEL}; // TODO -- add EXCEL
 /* data source fields map container typedef */
 typedef std::vector<boost::any> FieldMapContainer_t;
+typedef std::pair<double, double> RecurrenceInterval_t;
+/* require more than 9 replications to report p-values */
+#define MIN_REPLICA_RPT_PVALUE 9
 
 /** va_copy not defined on all compilers */
 #if defined (_MSC_VER) || ( defined(__GNUC__) && (__GNUC__ < 3) )

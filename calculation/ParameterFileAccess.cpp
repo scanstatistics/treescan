@@ -91,6 +91,10 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::REPORT_CRITICAL_VALUES  : return "report critical values (y/n)";
             case Parameters::REPORT_ATTR_RISK        : return "report attributable risk (y/n)";
             case Parameters::ATTR_RISK_NUM_EXPOSED   : return "number of exposed attributable risk is based upon (positive integer)";
+            case Parameters::OUTPUT_TEMPORAL_GRAPH   : return "output temporal graph HTML file (y/n)";
+            case Parameters::TEMPORAL_GRAPH_REPORT_TYPE: return "temporal graph cluster reporting type (0=Only most likely cluster, 1=X most likely clusters, 2=Only significant clusters)";
+            case Parameters::TEMPORAL_GRAPH_MLC_COUNT: return "number of most likely clusters to report in temporal graph (positive integer)";
+            case Parameters::TEMPORAL_GRAPH_CUTOFF   : return "significant clusters p-value cutoff to report in temporal graph (0.000-1.000)";
             /* Power Evaluations */
             case Parameters::POWER_EVALUATIONS       : return "perform power evaluations (y/n)";
             case Parameters::POWER_EVALUATION_TYPE   : return "power evaluation type (0=Analysis And Power Evaluation Together, 1=Only Power Evaluation With Count File, 2=Only Power Evaluation With Defined Total Cases)";
@@ -184,6 +188,10 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::REPORT_CRITICAL_VALUES   : return AsString(s, _parameters.getReportCriticalValues());
             case Parameters::REPORT_ATTR_RISK         : return AsString(s, _parameters.getReportAttributableRisk());
             case Parameters::ATTR_RISK_NUM_EXPOSED    : return AsString(s, _parameters.getAttributableRiskExposed());
+            case Parameters::OUTPUT_TEMPORAL_GRAPH: return AsString(s, _parameters.getOutputTemporalGraphFile());
+            case Parameters::TEMPORAL_GRAPH_REPORT_TYPE: return AsString(s, _parameters.getTemporalGraphReportType());
+            case Parameters::TEMPORAL_GRAPH_MLC_COUNT: return AsString(s, _parameters.getTemporalGraphMostLikelyCount());
+            case Parameters::TEMPORAL_GRAPH_CUTOFF: return AsString(s, _parameters.getTemporalGraphSignificantCutoff());
             /* Power Evaluations */
             case Parameters::POWER_EVALUATIONS        : return AsString(s, _parameters.getPerformPowerEvaluations());
             case Parameters::POWER_EVALUATION_TYPE    : return AsString(s, _parameters.getPowerEvaluationType());
@@ -384,6 +392,11 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::REPORT_CRITICAL_VALUES   : _parameters.setReportCriticalValues(ReadBoolean(value, e)); break;
             case Parameters::REPORT_ATTR_RISK         : _parameters.setReportAttributableRisk(ReadBoolean(value, e)); break;
             case Parameters::ATTR_RISK_NUM_EXPOSED    : _parameters.setAttributableRiskExposed(ReadUnsignedInt(value, e)); break;
+            case Parameters::OUTPUT_TEMPORAL_GRAPH:     _parameters.setOutputTemporalGraphFile(ReadBoolean(value, e)); break;
+            case Parameters::TEMPORAL_GRAPH_REPORT_TYPE: iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::MLC_ONLY, Parameters::SIGNIFICANT_ONLY);
+                                                         _parameters.setTemporalGraphReportType((Parameters::TemporalGraphReportType)iValue); break;
+            case Parameters::TEMPORAL_GRAPH_MLC_COUNT : _parameters.setTemporalGraphMostLikelyCount(ReadUnsignedInt(value, e)); break;
+            case Parameters::TEMPORAL_GRAPH_CUTOFF    : _parameters.setTemporalGraphSignificantCutoff(ReadDouble(value, e)); break;
             /* Power Evaluations */
             case Parameters::POWER_EVALUATIONS        : _parameters.setPerformPowerEvaluations(ReadBoolean(value, e)); break;
             case Parameters::POWER_EVALUATION_TYPE    : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::PE_WITH_ANALYSIS, Parameters::PE_ONLY_SPECIFIED_CASES);

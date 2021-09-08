@@ -45,6 +45,7 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(RUNNER)/RelativeRiskAdjustment.cpp \
                $(OUTPUT)/DataFileWriter.cpp \
                $(OUTPUT)/ResultsFileWriter.cpp \
+               $(OUTPUT)/ChartGenerator.cpp \
                $(PRINT)/BasePrint.cpp \
                $(PRINT)/PrintScreen.cpp \
                $(PRINT)/PrintQueue.cpp \
@@ -79,6 +80,23 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(CALCULATION)/IniParameterSpecification.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/once.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/thread.cpp \
+               $(BOOSTDIR)/libs/regex/src/c_regex_traits.cpp \
+               $(BOOSTDIR)/libs/regex/src/cpp_regex_traits.cpp \
+               $(BOOSTDIR)/libs/regex/src/cregex.cpp \
+               $(BOOSTDIR)/libs/regex/src/fileiter.cpp \
+               $(BOOSTDIR)/libs/regex/src/icu.cpp \
+               $(BOOSTDIR)/libs/regex/src/instances.cpp \
+               $(BOOSTDIR)/libs/regex/src/posix_api.cpp \
+               $(BOOSTDIR)/libs/regex/src/regex.cpp \
+               $(BOOSTDIR)/libs/regex/src/regex_debug.cpp \
+               $(BOOSTDIR)/libs/regex/src/regex_raw_buffer.cpp \
+               $(BOOSTDIR)/libs/regex/src/regex_traits_defaults.cpp \
+               $(BOOSTDIR)/libs/regex/src/static_mutex.cpp \
+               $(BOOSTDIR)/libs/regex/src/usinstances.cpp \
+               $(BOOSTDIR)/libs/regex/src/w32_regex_traits.cpp \
+               $(BOOSTDIR)/libs/regex/src/wc_regex_traits.cpp \
+               $(BOOSTDIR)/libs/regex/src/wide_posix_api.cpp \
+               $(BOOSTDIR)/libs/regex/src/winstances.cpp \			   
                $(BOOSTDIR)/libs/program_options/src/cmdline.cpp \
                $(BOOSTDIR)/libs/program_options/src/config_file.cpp \
                $(BOOSTDIR)/libs/program_options/src/convert.cpp \
