@@ -26,7 +26,7 @@ INCLUDEDIRS := -I$(CALCULATION) -I$(UTILITY) -I$(OUTPUT) -I$(PRINT) -I$(UTILITY)
 DEFINES     := -DBOOST_ALL_NO_LIB
 INFOPLIST_FILE :=
 
-CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -Wno-deprecated -Wall $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE)
+CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -std=c++11 -Wno-deprecated -Wall $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE)
 LFLAGS      := $(COMPILATION) -Wl,-Bstatic -lm -Wl,-Bdynamic -lrt -lpthread
 
 # Linux link flags
@@ -96,7 +96,7 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(BOOSTDIR)/libs/regex/src/w32_regex_traits.cpp \
                $(BOOSTDIR)/libs/regex/src/wc_regex_traits.cpp \
                $(BOOSTDIR)/libs/regex/src/wide_posix_api.cpp \
-               $(BOOSTDIR)/libs/regex/src/winstances.cpp \			   
+               $(BOOSTDIR)/libs/regex/src/winstances.cpp \
                $(BOOSTDIR)/libs/program_options/src/cmdline.cpp \
                $(BOOSTDIR)/libs/program_options/src/config_file.cpp \
                $(BOOSTDIR)/libs/program_options/src/convert.cpp \
