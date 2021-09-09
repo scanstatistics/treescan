@@ -51,7 +51,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jTabbedPane1" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" pref="399" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -74,10 +74,11 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="_timePrecisionGroup" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="_studyPeriodGroup" max="32767" attributes="0"/>
+                          <Component id="_timePrecisionGroup" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
@@ -107,13 +108,6 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
-                  <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_studyPeriodGroup" max="32767" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
@@ -142,16 +136,11 @@
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="_timePrecisionGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="116" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_studyPeriodGroup" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="26" max="32767" attributes="0"/>
                       <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace min="-2" pref="240" max="-2" attributes="0"/>
-                          <Component id="_studyPeriodGroup" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="83" max="32767" attributes="0"/>
-                      </Group>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -234,15 +223,15 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" max="-2" attributes="0"/>
-                          <Component id="_timePrecisionNone" pref="87" max="32767" attributes="0"/>
+                          <Component id="_timePrecisionNone" max="32767" attributes="0"/>
                           <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
-                          <Component id="_timePrecisionGeneric" pref="88" max="32767" attributes="0"/>
+                          <Component id="_timePrecisionGeneric" max="32767" attributes="0"/>
                           <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
-                          <Component id="_timePrecisionYear" pref="71" max="32767" attributes="0"/>
+                          <Component id="_timePrecisionYear" max="32767" attributes="0"/>
                           <EmptySpace min="-2" pref="60" max="-2" attributes="0"/>
-                          <Component id="_timePrecisionMonth" pref="98" max="32767" attributes="0"/>
+                          <Component id="_timePrecisionMonth" max="32767" attributes="0"/>
                           <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
-                          <Component id="_timePrecisionDay" pref="68" max="32767" attributes="0"/>
+                          <Component id="_timePrecisionDay" max="32767" attributes="0"/>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -418,7 +407,7 @@
                                   <Component id="_endDateDayLabel" alignment="0" max="32767" attributes="1"/>
                                   <Component id="_studyPeriodEndDateDayTextField" alignment="0" min="-2" pref="30" max="-2" attributes="1"/>
                               </Group>
-                              <EmptySpace pref="162" max="32767" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -590,7 +579,7 @@
                                   <Component id="_endRangeYearLabel" alignment="0" max="32767" attributes="1"/>
                                   <Component id="_studyPeriodEndDateGenericTextField" alignment="0" pref="80" max="32767" attributes="1"/>
                               </Group>
-                              <EmptySpace pref="196" max="32767" attributes="0"/>
+                              <EmptySpace pref="229" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -683,9 +672,9 @@
                           <Component id="_scanStatisticPanel1" max="32767" attributes="1"/>
                           <Component id="_scanStatisticPanel" max="32767" attributes="1"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="_probabilityModelPanel" pref="306" max="32767" attributes="1"/>
+                              <Component id="_probabilityModelPanel" pref="322" max="32767" attributes="1"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="_probabilityModelPanel1" pref="280" max="32767" attributes="1"/>
+                              <Component id="_probabilityModelPanel1" pref="297" max="32767" attributes="1"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -708,7 +697,7 @@
                           <Component id="_probabilityModelPanel" pref="113" max="32767" attributes="1"/>
                           <Component id="_probabilityModelPanel1" pref="113" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace pref="119" max="32767" attributes="0"/>
+                      <EmptySpace pref="97" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -859,13 +848,13 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" max="-2" attributes="0"/>
-                          <Component id="_unconditionalButton" pref="167" max="32767" attributes="0"/>
+                          <Component id="_unconditionalButton" pref="175" max="32767" attributes="0"/>
                           <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                          <Component id="_conditionalTotalCasesButton" pref="135" max="32767" attributes="0"/>
+                          <Component id="_conditionalTotalCasesButton" pref="143" max="32767" attributes="0"/>
                           <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                          <Component id="_conditionalBranchCasesButton" pref="109" max="32767" attributes="0"/>
+                          <Component id="_conditionalBranchCasesButton" pref="118" max="32767" attributes="0"/>
                           <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                          <Component id="_conditionalNodeTimeButton" pref="151" max="32767" attributes="0"/>
+                          <Component id="_conditionalNodeTimeButton" pref="159" max="32767" attributes="0"/>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1031,8 +1020,8 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_uniformButton" pref="256" max="32767" attributes="0"/>
-                              <Component id="_bernoulliTimeButton" alignment="0" pref="256" max="32767" attributes="0"/>
+                              <Component id="_uniformButton" pref="273" max="32767" attributes="0"/>
+                              <Component id="_bernoulliTimeButton" alignment="0" pref="273" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -1101,7 +1090,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="_outputFileTextField" pref="561" max="32767" attributes="0"/>
+                              <Component id="_outputFileTextField" pref="594" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_resultsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                           </Group>
@@ -1137,7 +1126,7 @@
                       <Component id="_reportResultsAsHTML" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportResultsAsCsvTable" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="227" max="32767" attributes="0"/>
+                      <EmptySpace pref="213" max="32767" attributes="0"/>
                       <Component id="_advancedOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>

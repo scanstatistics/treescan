@@ -126,7 +126,7 @@ void Parameters::assignMissingPath(std::string & sInputFilename, bool bCheckWrit
       fFilename.setFullPath(sInputFilename.c_str());
       fFilename.setLocation(fParameterFilename.getLocation(buffer).c_str());
 
-      if (bCheckWritable && !validateFileAccess(fFilename.getFullPath(buffer), true)) {
+      if (bCheckWritable && !validateFileAccess(fFilename.getFullPath(buffer), true, true)) {
         // if writability fails, then try setting to user documents directory
         std::string temp;
         fFilename.setLocation(GetUserDocumentsDirectory(buffer, fParameterFilename.getLocation(temp)).c_str());

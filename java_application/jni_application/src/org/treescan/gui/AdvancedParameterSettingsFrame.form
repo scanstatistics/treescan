@@ -9,9 +9,7 @@
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="1"/>
-    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[575, 500]"/>
-    </Property>
+    <Property name="resizable" type="boolean" value="true"/>
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
@@ -85,7 +83,7 @@
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
-                              <Component id="_cutFileTextField" pref="503" max="32767" attributes="1"/>
+                              <Component id="_cutFileTextField" pref="626" max="32767" attributes="1"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_cutFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -104,7 +102,7 @@
                           <Component id="_cutFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="_cutFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="331" max="32767" attributes="0"/>
+                      <EmptySpace pref="343" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -505,7 +503,7 @@
                                           <Component id="_endRangeEndDayTextField" min="-2" pref="30" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="104" max="32767" attributes="0"/>
+                                  <EmptySpace pref="227" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -655,7 +653,7 @@
                                           <Component id="_endRangeEndGenericTextField" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="112" max="32767" attributes="0"/>
+                                  <EmptySpace pref="235" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -789,7 +787,7 @@
                       <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_prospective_frequency_group" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="200" max="32767" attributes="0"/>
+                      <EmptySpace pref="216" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -816,7 +814,7 @@
                           <Component id="_labelMonteCarloReplications" min="-2" max="-2" attributes="1"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_montCarloReplicationsTextField" min="-2" pref="58" max="-2" attributes="0"/>
-                          <EmptySpace pref="171" max="32767" attributes="0"/>
+                          <EmptySpace pref="294" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1002,7 +1000,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_totalPowerCases" min="-2" pref="78" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_powerEvaluationWithSpecifiedCasesLabel" pref="257" max="32767" attributes="0"/>
+                                  <Component id="_powerEvaluationWithSpecifiedCasesLabel" pref="380" max="32767" attributes="0"/>
                               </Group>
                               <Component id="_alternativeHypothesisFilenameLabel" alignment="0" max="32767" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
@@ -1027,7 +1025,7 @@
                                           <Component id="_numberPowerReplications" min="-2" pref="58" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace min="0" pref="183" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="306" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -1067,7 +1065,7 @@
                               <Component id="_alternativeHypothesisFilename" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_alternativeHypothesisFilenameButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="164" max="32767" attributes="0"/>
+                          <EmptySpace pref="176" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1227,7 +1225,7 @@
                       <Component id="_report_critical_values_group" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_graphOutputGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="27" max="32767" attributes="0"/>
+                      <EmptySpace pref="43" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1251,7 +1249,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_reportLLRResultsAsCsvTable" pref="510" max="32767" attributes="0"/>
+                          <Component id="_reportLLRResultsAsCsvTable" pref="633" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1295,7 +1293,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_reportCriticalValuesCheckBox" pref="502" max="32767" attributes="0"/>
+                          <Component id="_reportCriticalValuesCheckBox" pref="625" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1351,7 +1349,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_attributable_risk_exposed" min="-2" pref="70" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_chk_attributable_risk_extra" pref="243" max="32767" attributes="0"/>
+                          <Component id="_chk_attributable_risk_extra" pref="366" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1413,7 +1411,7 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_reportTemporalGraph" pref="506" max="32767" attributes="0"/>
+                                  <Component id="_reportTemporalGraph" pref="629" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
@@ -1568,7 +1566,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_apply_time_range_restrictions" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_time_range_restrictions" pref="365" max="32767" attributes="0"/>
+                          <Component id="_time_range_restrictions" pref="488" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1609,7 +1607,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="_perform_dayofweek_adjustments" alignment="1" pref="534" max="32767" attributes="0"/>
+                      <Component id="_perform_dayofweek_adjustments" alignment="1" pref="657" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
@@ -1739,7 +1737,7 @@
                                               <Component id="_maximum_cases_signal" pref="80" max="32767" attributes="0"/>
                                               <Component id="_minimum_cases_signal" max="32767" attributes="0"/>
                                           </Group>
-                                          <EmptySpace min="0" pref="264" max="32767" attributes="0"/>
+                                          <EmptySpace min="0" pref="387" max="32767" attributes="0"/>
                                       </Group>
                                       <Component id="_sequential_analysis_file_label" alignment="0" max="32767" attributes="0"/>
                                   </Group>
@@ -1862,7 +1860,7 @@
                                       <Component id="_sequential_alpha_spending" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="_alpha_spent_to_date_label" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace min="0" pref="264" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="276" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>

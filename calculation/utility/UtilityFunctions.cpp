@@ -98,7 +98,7 @@ bool validateFileAccess(const std::string& filename, bool bWriteEnable, bool use
     bool bReturn=true;
 
 #ifdef __APPLE__
-    // Hack for Mac application - where sample_data is in application bundle. We don't want to write rsult files to the bundle.
+    // Hack for Mac application - where examples are in application bundle. We don't want to write result files to the bundle.
     if (bWriteEnable && filename.find("/Contents/app/sample_data/") != std::string::npos)
         return false;
 #endif
