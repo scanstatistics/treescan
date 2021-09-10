@@ -41,23 +41,34 @@ void OrderedSimulationDataWriter::write(unsigned int simulation, const SimNodeCo
         _sim_stream->close();
 }
 
+FileStreamReadManager::SharedStream_t FileStreamReadManager::getStream(const AbstractRandomizer * r, boost::mutex& mutex) {
+    auto it = std::find_if(_managed_streams.begin(), _managed_streams.end(), [r](const ManagedStream_t& element) { return element.first == r; });
+    if (it == _managed_streams.end()) {
+        boost::mutex::scoped_lock lock(mutex);
+        _managed_streams.push_back(std::make_pair(r, boost::shared_ptr<std::ifstream>(new std::ifstream())));
+        _managed_streams.back().second->open(_filename.c_str());
+        return _managed_streams.back().second;
+    }
+    return it->second;
+}
+
 ////////////////////////////////////////////////// AbstractDenominatorDataRandomizer ///////////////////////////////////
 
 AbstractDenominatorDataRandomizer::AbstractDenominatorDataRandomizer(const Parameters& parameters, bool multiparents, long lInitialSeed) :
-    AbstractRandomizer(parameters, multiparents, lInitialSeed), _sim_position(0) {}
+    AbstractRandomizer(parameters, multiparents, lInitialSeed), _sim_position(1) {}
+
+AbstractDenominatorDataRandomizer::~AbstractDenominatorDataRandomizer() {}
 
 int AbstractDenominatorDataRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes) {
-    int TotalSimC;
+    int TotalSimC = 0;
     if (_read_data) {
         std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
         boost::mutex::scoped_lock lock(mutex);
-        TotalSimC = read(_read_filename, iSimulation, treeNodes, treeSimNodes);
+        TotalSimC = read(_read_filename, iSimulation, treeNodes, treeSimNodes, mutex);
     } else if (_parameters.isSequentialScanBernoulli()) {
         TotalSimC = randomize(iSimulation, SequentialNodesProxy(treeNodes, _parameters.getProbability()), treeSimNodes);
-        // Now read stored data set
-        if (_read_filename.size()) {
-            TotalSimC += read(_read_filename, iSimulation, treeNodes, treeSimNodes);
-        }
+        if (_read_filename.size()) // Now read stored data set
+            TotalSimC += read(_read_filename, iSimulation, treeNodes, treeSimNodes, mutex);
         boost::mutex::scoped_lock writelock(mutex);
         _sim_stream_writer->write(iSimulation, treeSimNodes);
     } else { // else standard randomization
@@ -75,19 +86,16 @@ int AbstractDenominatorDataRandomizer::RandomizeData(unsigned int iSimulation, c
 }
 
 /** Reads simulation data from file. */
-int AbstractDenominatorDataRandomizer::read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) {
-    //std::ifstream stream;
-    if (!_sim_stream.get()) _sim_stream.reset(new std::ifstream());
-    if (!_sim_stream->is_open()) _sim_stream->open(filename.c_str());
-
-    int count, total_sim=0;
-    //seek line offset for reading simulation'th simulation data
-    unsigned int skip = simulation - 1;
-    for (; _sim_position < skip; ++_sim_position)
+int AbstractDenominatorDataRandomizer::read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex) {
+    FileStreamReadManager::SharedStream_t _sim_stream = _sim_stream_reader->getStream(this, mutex);
+    // seek line offset from current simulation row to this simulation
+    while (_sim_position < simulation) {
         _sim_stream->ignore(std::numeric_limits<int>::max(), '\n');
-
+        ++_sim_position;
+    }
     size_t checkNodes = treeSimNodes.size();
-    for (size_t i=0; i < treeSimNodes.size(); ++i) {
+    int count, total_sim = 0;
+    for (size_t i=0; i < checkNodes; ++i) {
         // check for end of file yet we should have more to read
         if (!(*_sim_stream >> count) && i < checkNodes) {
             if (_sim_stream->eof())
@@ -98,9 +106,7 @@ int AbstractDenominatorDataRandomizer::read(const std::string& filename, unsigne
         treeSimNodes[i].refBrC() = 0;
         total_sim += count;
     }
-    _sim_stream->ignore(1, '\n'); // read possible trailing newline from current data set line
-    ++_sim_position; // advance simulation position
-
+    _sim_stream->ignore(1, '\n'); // read trailing newline from current data set line
     return total_sim;
 }
 

@@ -48,3 +48,6 @@ test/test-sets/squish97/TreeTemporal-timeonly-censordata.txt
 /java_application/updater_application/nbproject/private/
 /java_application/updater_application/dist/
 /java_application/updater_application/build/
+
+installers/java/jre_x64
+installers/java/jre_x86

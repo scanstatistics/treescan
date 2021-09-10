@@ -71,7 +71,7 @@ int AlternativeHypothesisRandomizater::RandomizeData(unsigned int iSimulation, c
     // read simulation data to file if requested
     if (_read_data) {
         boost::mutex::scoped_lock lock(mutex);
-        totalCases = read(_read_filename, iSimulation, treeNodes, treeSimNodes);
+        totalCases = read(_read_filename, iSimulation, treeNodes, treeSimNodes, mutex);
     }
 
     totalCases = randomize(iSimulation, *_nodes_proxy, treeSimNodes);
@@ -87,8 +87,8 @@ int AlternativeHypothesisRandomizater::RandomizeData(unsigned int iSimulation, c
     return totalCases;
 }
 
-int AlternativeHypothesisRandomizater::read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) {
-    return _randomizer->read(filename, simulation, treeNodes, treeSimNodes);
+int AlternativeHypothesisRandomizater::read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex) {
+    return _randomizer->read(filename, simulation, treeNodes, treeSimNodes, mutex);
 }
 
 void AlternativeHypothesisRandomizater::write(const std::string& filename, const SimNodeContainer_t& treeSimNodes) {

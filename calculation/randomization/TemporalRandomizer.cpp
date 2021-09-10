@@ -100,7 +100,7 @@ int TemporalRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner
     int TotalSimC = 0;
     if (_read_data) {
         boost::mutex::scoped_lock lock(mutex);
-        TotalSimC = read(_read_filename, iSimulation, treeNodes, treeSimNodes);
+        TotalSimC = read(_read_filename, iSimulation, treeNodes, treeSimNodes, mutex);
     } else { // else standard randomization
         TotalSimC = randomize(iSimulation, NodesProxy(treeNodes), treeSimNodes);
     }
@@ -118,7 +118,7 @@ int TemporalRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner
 }
 
 /** Reads simulation data from file. */
-int TemporalRandomizer::read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) {
+int TemporalRandomizer::read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex) {
     std::ifstream stream;
     if (!stream.is_open()) stream.open(filename.c_str());
     if (!stream) throw resolvable_error("Error: Could not open file '%s' to read the simulated data.\n", filename.c_str());

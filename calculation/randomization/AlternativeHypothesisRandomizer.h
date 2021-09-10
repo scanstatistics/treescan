@@ -14,7 +14,7 @@ class AlternativeHypothesisRandomizater : public AbstractRandomizer {
         boost::shared_ptr<AbstractNodesProxy> _nodes_proxy;
 
         virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
-        virtual int read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes);
+        virtual int read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex);
         virtual void write(const std::string& filename, const SimNodeContainer_t& treeSimNodes);
 
     public:

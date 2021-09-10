@@ -23,22 +23,47 @@ class OrderedSimulationDataWriter {
         void write(unsigned int simulation, const SimNodeContainer_t& treeSimNodes);
 };
 
+/** Class which manages a std::ifstream associated with a randomizer object. This object can be shared by randomizer objects. */
+class FileStreamReadManager {
+    public:
+        typedef boost::shared_ptr<std::ifstream> SharedStream_t;
+        typedef std::pair<const AbstractRandomizer*, SharedStream_t> ManagedStream_t;
+
+    protected:
+        std::vector<ManagedStream_t> _managed_streams;
+        const std::string _filename;
+
+    public:
+        FileStreamReadManager(const std::string& filename) : _filename(filename) {}
+        virtual ~FileStreamReadManager() {
+            try {
+                for (auto it=_managed_streams.begin(); it != _managed_streams.end(); ++it)
+                    it->second->close();
+            } catch (...) {}
+        }
+
+        SharedStream_t getStream(const AbstractRandomizer * r, boost::mutex& mutex);
+};
+
 /** Abstraction for denominator data randomizer. */
 class AbstractDenominatorDataRandomizer : public AbstractRandomizer {
   protected:
+    typedef boost::shared_ptr<OrderedSimulationDataWriter> SharedSimWriter_t;
+    typedef boost::shared_ptr<FileStreamReadManager> SharedSimReader_t;
+
     BinomialGenerator   _binomial_generator;
-    boost::shared_ptr<std::ifstream> _sim_stream;
     unsigned int        _sim_position;
-    boost::shared_ptr<OrderedSimulationDataWriter> _sim_stream_writer;
+    SharedSimWriter_t   _sim_stream_writer;
+    SharedSimReader_t   _sim_stream_reader;
 
     //virtual int randomize(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) = 0;
 
-    virtual int read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes);
+    virtual int read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex);
     virtual void write(const std::string& filename, const SimNodeContainer_t& treeSimNodes);
 
   public:
       AbstractDenominatorDataRandomizer(const Parameters& parameters, bool multiparents, long lInitialSeed = RandomNumberGenerator::glDefaultSeed);
-    virtual ~AbstractDenominatorDataRandomizer() {}
+      virtual ~AbstractDenominatorDataRandomizer();
 
     virtual int RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes);
 };

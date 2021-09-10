@@ -164,7 +164,7 @@ class AbstractRandomizer {
         void addSimC_C(size_t source_id, size_t target_id, const NodeStructure::CountContainer_t& c, SimNodeContainer_t& treeSimNodes, const ScanRunner::NodeStructureContainer_t& treeNodes);
         void setSeed(unsigned int iSimulationIndex);
         virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) = 0;
-        virtual int read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) = 0;
+        virtual int read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex) = 0;
         virtual void write(const std::string& filename, const SimNodeContainer_t& treeSimNodes) = 0;
 
     public:
