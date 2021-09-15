@@ -714,12 +714,13 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         }
         if (parameters.getIsProspectiveAnalysis()) {
             outfile << "<div class='chart-legend legend-recurrence-interval'><div class='legend-title'>Recurrence Interval Legend</div><div class='legend-scale'>";
-            outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span><span class=\"legend-val\">&lt; 90 days</span></li><li><span style='background:#DBD51B;'></span><span class=\"legend-val\">&ge; 90 days &lt; 1 year</span></li>";
-            outfile << "<li><span style='background:#FFC300;'></span><span class=\"legend-val\">&ge; 1 year &lt; 5 years</span></li><li><span style='background:#FF5733;'></span><span class=\"legend-val\">&ge; 5 years</span></li></ul></div></div>" << std::endl;
+            outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span><span class=\"legend-val\">&lt; 100 days</span></li><li><span style='background:#DBD51B;'></span><span class=\"legend-val\">100 days</span></li>";
+            outfile << "<li><span style='background:#FFC300;'></span><span class=\"legend-val\">1 year</span></li><li><span style='background:#FF5733;'></span><span class=\"legend-val\">5 years</span></li>" << std::endl;
+            outfile << "<li><span style='background:#8A1901;'></span><span class=\"legend-val\">100 years</span></li></ul></div></div>" << std::endl;
         }
         outfile << "<div class='chart-legend legend-relative-risk'><div class='legend-title'>Relative Risk Legend</div><div class='legend-scale'>";
         outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span><span class=\"legend-val\">&lt; 2</span></li><li><span style='background:#DBD51B;'></span><span class=\"legend-val\">2</span></li>";
-        outfile << "<li><span style='background:#FFC300;'></span><span class=\"legend-val\">4</span></li><li><span style='background:#FF5733;'></span><span class=\"legend-val\">&ge; 8</span></li></ul></div></div></div>" << std::endl;
+        outfile << "<li><span style='background:#FFC300;'></span><span class=\"legend-val\">4</span></li><li><span style='background:#FF5733;'></span><span class=\"legend-val\">8</span></li></ul></div></div></div>" << std::endl;
         outfile << "</div><div class=\"chart\" id=\"treescan-tree-visualization\" style=\"background-color: #EAEDED; border: 2px solid #566573; border-radius: 5px; padding:2px;\"> </div>" << std::endl;
         outfile << "<div class=\"row\" style=\"font-style:italic; margin:5px 20px 10px 30px;font-size: 1.1em;\"><ol><li>Selecting the circle in the upper right corner of each node will expand/collapse children under node. The color of circle indicates best p-value &#47; relative risk found in descendent nodes.</li>";
         if (bernoulliSequential)
@@ -928,11 +929,13 @@ const char * ResultsFileWriter::getRelativeRiskClass(double rr, bool childClass)
 }
 
 const char * ResultsFileWriter::getRecurranceIntervalClass(const RecurrenceInterval_t& ri, bool childClass) const {
-    if (ri.first > 5.0)
+    if (ri.first >= 100.0)
+        return (childClass ? "ri-range4-children " : "ri-range4 ");
+    else if (ri.first >= 5.0)
         return (childClass ? "ri-range3-children " : "ri-range3 ");
-    else if (ri.first > 1.0 && ri.first <= 5.0)
+    else if (ri.first >= 1.0)
         return (childClass ? "ri-range2-children " : "ri-range2 ");
-    else if (ri.second >= 90.0)
+    else if (ri.second >= 100.0)
         return (childClass ? "ri-range1-children " : "ri-range1 ");
     else
         return (childClass ? "ri-less-children " : "ri-less ");
