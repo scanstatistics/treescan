@@ -88,6 +88,9 @@
     <Filter Include="Source Files\source\boost\filesystem">
       <UniqueIdentifier>{cf9480a7-4092-4199-a2d6-230fe6cb3cac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\boost\regex">
+      <UniqueIdentifier>{b444d03a-ebb0-488b-81e1-936c0d428d9d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -210,6 +213,9 @@
     <ClCompile Include="..\calculation\output\ResultsFileWriter.cpp">
       <Filter>Source Files\source\calculation\output</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\output\ChartGenerator.cpp">
+      <Filter>Source Files\calculation\output</Filter>
+    </ClCompile>
     <ClCompile Include="..\boost\boost_1_70_0\libs\program_options\src\cmdline.cpp">
       <Filter>Source Files\source\boost\program_options</Filter>
     </ClCompile>
@@ -308,6 +314,57 @@
     </ClCompile>
     <ClCompile Include="unittest_cumulative.cpp">
       <Filter>Source Files\unit_tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\c_regex_traits.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\cpp_regex_traits.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\cregex.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\fileiter.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\icu.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\instances.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\posix_api.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\regex.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\regex_debug.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\regex_raw_buffer.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\regex_traits_defaults.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\static_mutex.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\usinstances.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\w32_regex_traits.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\wc_regex_traits.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\wide_posix_api.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\winstances.cpp">
+      <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -436,6 +493,9 @@
     </ClInclude>
     <ClInclude Include="..\calculation\output\ResultsFileWriter.h">
       <Filter>Header Files\source\calculation\output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\output\ChartGenerator.h">
+      <Filter>Header Files\calculation\output</Filter>
     </ClInclude>
     <ClInclude Include="fixture_prm_source.h">
       <Filter>Header Files</Filter>

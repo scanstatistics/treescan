@@ -406,7 +406,7 @@ SequentialStatistic::SequentialStatistic(const Parameters& parameters, const Sca
         if (_parameters.getProbabilityRatio() != _statistic_parameters.getProbabilityRatio())
             throw resolvable_error("Error: Event probability requested (%s) does match setting in previous sequential scan (%s).",
                                     AbtractParameterFileAccess::AsString(buffer1, _parameters.getProbabilityRatio()).c_str(),
-                                    AbtractParameterFileAccess::AsString(buffer1, _statistic_parameters.getProbabilityRatio()).c_str());
+                                    AbtractParameterFileAccess::AsString(buffer2, _statistic_parameters.getProbabilityRatio()).c_str());
         if (_parameters.getRestrictTreeLevels() != _statistic_parameters.getRestrictTreeLevels())
             throw resolvable_error("Error: Restricted tree levels (requested=%s) does match setting in previous sequential scan (requested=%s).",
                                    (_parameters.getRestrictTreeLevels() ? "y" : "n"),
@@ -419,7 +419,7 @@ SequentialStatistic::SequentialStatistic(const Parameters& parameters, const Sca
         if (_parameters.getSequentialAlphaOverall() != _statistic_parameters.getSequentialAlphaOverall())
             throw resolvable_error("Error: Alpha overall specified for sequential analysis (%s) does match setting in previous alpha overall (%s).",
                 AbtractParameterFileAccess::AsString(buffer1, _parameters.getSequentialAlphaOverall()).c_str(),
-                AbtractParameterFileAccess::AsString(buffer1, _statistic_parameters.getSequentialAlphaOverall()).c_str());
+                AbtractParameterFileAccess::AsString(buffer2, _statistic_parameters.getSequentialAlphaOverall()).c_str());
         if (getTreeHash(buffer1) != _tree_hash)
             throw resolvable_error("Error: The tree file and/or cut file are not the same as prior sequential scan(s). The tree structure must remain the same for each look.");
 
@@ -487,8 +487,8 @@ void SequentialStatistic::readSettings(const std::string &filename) {
 
     // Read parameters section and store in _statistic_parameters class variable.
     _statistic_parameters.setNumReplications(static_cast<unsigned int>(pt.get<unsigned int>("parameters.replications", _parameters.getNumReplicationsRequested())));
-    _statistic_parameters.setPowerBaselineProbabilityRatio(Parameters::ratio_t(pt.get<unsigned int>("parameters.event-probability-numerator", _parameters.getProbabilityRatio().first),
-                                                                               pt.get<unsigned int>("parameters.event-probability-denominator", _parameters.getProbabilityRatio().second)));
+    _statistic_parameters.setProbabilityRatio(Parameters::ratio_t(pt.get<unsigned int>("parameters.event-probability-numerator", _parameters.getProbabilityRatio().first),
+                                                                  pt.get<unsigned int>("parameters.event-probability-denominator", _parameters.getProbabilityRatio().second)));
     _statistic_parameters.setRestrictTreeLevels(pt.get<bool>("parameters.restrict-tree-levels", false));
     buffer = pt.get<std::string>("parameters.restricted-tree-levels", "");
     Parameters::RestrictTreeLevels_t restricted_tree_levels;

@@ -89,6 +89,7 @@ BOOST_FIXTURE_TEST_CASE( test_select_parameters_cannot_change, time_only_fixture
     printString(buffer, "[%d,%d]", test.getDataTimeRangeSet().getDataTimeRangeSets().front().getStart(),
                                    test.getDataTimeRangeSet().getDataTimeRangeSets().front().getEnd() + 1);
     test.setDataTimeRangeSet(DataTimeRangeSet(buffer, _parameters.getDatePrecisionType(), boost::optional<boost::gregorian::date>()));
+    test.setDataTimeRangeStr(buffer);
     BOOST_REQUIRE_EQUAL( ParametersValidate(test).Validate(_print), true );
     BOOST_CHECK_THROW( run_analysis("test", results_user_directory, test, _print), resolvable_error );
 
@@ -97,6 +98,7 @@ BOOST_FIXTURE_TEST_CASE( test_select_parameters_cannot_change, time_only_fixture
     BOOST_CHECK(parameter_types[4] ==  Parameters::START_DATA_TIME_RANGE);
     printString(buffer, "[%d,%d]", test.getTemporalStartRange().getStart(), test.getTemporalStartRange().getEnd() + 1);
     test.setTemporalStartRange(DataTimeRange(buffer, _parameters.getDatePrecisionType(), test.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart()));
+    test.setTemporalStartRangeStr(buffer);
     BOOST_REQUIRE_EQUAL( ParametersValidate(test).Validate(_print), true );
     BOOST_CHECK_THROW( run_analysis("test", results_user_directory, test, _print), resolvable_error );
 
@@ -105,6 +107,7 @@ BOOST_FIXTURE_TEST_CASE( test_select_parameters_cannot_change, time_only_fixture
     BOOST_CHECK(parameter_types[5] ==  Parameters::END_DATA_TIME_RANGE);
     printString(buffer, "[%d,%d]", test.getTemporalEndRange().getStart(), test.getTemporalEndRange().getEnd() + 1);
     test.setTemporalEndRange(DataTimeRange(buffer, _parameters.getDatePrecisionType(), test.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart()));
+    test.setTemporalEndRangeStr(buffer);
     BOOST_REQUIRE_EQUAL( ParametersValidate(test).Validate(_print), true );
     BOOST_CHECK_THROW( run_analysis("test", results_user_directory, test, _print), resolvable_error );
 
