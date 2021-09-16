@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE( test_poisson_unconditional ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(11)) BOOST_FAIL( "expecting 11 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(12)) BOOST_FAIL( "expecting 12 columns, got " << headers.size() );
 
     // check the expected values
     unsigned int dataRows=0;
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE( test_poisson_conditional ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(11)) BOOST_FAIL( "expecting 11 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(12)) BOOST_FAIL( "expecting 12 columns, got " << headers.size() );
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrObserved = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::OBSERVED_CASES_FIELD);
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(12)) BOOST_FAIL( "expecting 12 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(13)) BOOST_FAIL( "expecting 13 columns, got " << headers.size() );
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrObserved = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::OBSERVATIONS_FIELD);
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(12)) BOOST_FAIL( "expecting 12 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(13)) BOOST_FAIL( "expecting 13 columns, got " << headers.size() );
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrObserved = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::OBSERVATIONS_FIELD);
@@ -361,7 +361,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(14)) BOOST_FAIL( "expecting 14 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(15)) BOOST_FAIL( "expecting 15 columns, got " << headers.size() );
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrNodeCases = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_CASES_FIELD);
@@ -462,7 +462,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(14)) BOOST_FAIL( "expecting 14 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(15)) BOOST_FAIL( "expecting 15 columns, got " << headers.size() );
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrNodeCases = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_CASES_FIELD);
@@ -561,7 +561,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(14)) BOOST_FAIL( "expecting 14 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(15)) BOOST_FAIL( "expecting 15 columns, got " << headers.size() );
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrNodeCases = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_CASES_FIELD);
@@ -661,7 +661,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(14)) BOOST_FAIL( "expecting 14 columns, got " << headers.size() );
+    if (headers.size() != static_cast<size_t>(15)) BOOST_FAIL( "expecting 15 columns, got " << headers.size() );
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrNodeCases = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_CASES_FIELD);

@@ -229,7 +229,8 @@ const char * DataRecordWriter::TEST_STATISTIC_FIELD                      = "Test
 const char * DataRecordWriter::P_VALUE_FLD                               = "P-value";
 const char * DataRecordWriter::RECURR_FLD                                = "Recurrence Interval";
 const char * DataRecordWriter::P_LEVEL_FLD                               = "Tree Level";
-const char * DataRecordWriter::ANCESTRY_ORDER_FLD                        = "Ancestry Order";
+const char * DataRecordWriter::BRANCH_ORDER_FLD                          = "Branch Order";
+const char * DataRecordWriter::PARENT_NODE_FLD                           = "Parent Node";
 const char * DataRecordWriter::SIGNALLED_FLD                             = "Signalled";
 const size_t DataRecordWriter::DEFAULT_LOC_FIELD_SIZE                    = 30;
 const size_t DataRecordWriter::MAX_LOC_FIELD_SIZE                        = 254;
@@ -309,8 +310,10 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
         if (params.getIsProspectiveAnalysis())
             CreateField(_dataFieldDefinitions, RECURR_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     }
-    if (params.getScanType() != Parameters::TIMEONLY)
-        CreateField(_dataFieldDefinitions, ANCESTRY_ORDER_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+    if (params.getScanType() != Parameters::TIMEONLY) {
+        CreateField(_dataFieldDefinitions, PARENT_NODE_FLD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()) * 10/*multiple? guessing*/, 0, uwOffset, 0);
+        CreateField(_dataFieldDefinitions, BRANCH_ORDER_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+    }
     if (params.isSequentialScanBernoulli())
         CreateField(_dataFieldDefinitions, SIGNALLED_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
 
@@ -413,8 +416,10 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
             if (params.getIsProspectiveAnalysis())
                 Record.GetFieldValue(RECURR_FLD).AsDouble() = _scanner.getRecurrenceInterval(thisCut).second;
         }
-        if (params.getScanType() != Parameters::TIMEONLY)
-            Record.GetFieldValue(ANCESTRY_ORDER_FLD).AsDouble() = thisCut.getAncestryOrder();
+        if (params.getScanType() != Parameters::TIMEONLY) {
+            thisCut.getParentIndentifiers(_scanner, Record.GetFieldValue(PARENT_NODE_FLD).AsString());
+            Record.GetFieldValue(BRANCH_ORDER_FLD).AsDouble() = thisCut.getBranchOrder();
+        }
         if (params.isSequentialScanBernoulli()) {
             unsigned int signalInLook = _scanner.getSequentialStatistic().testCutSignaled(static_cast<size_t>(thisCut.getID()));
             if (signalInLook != 0)

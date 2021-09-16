@@ -175,7 +175,10 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                         }
                     }
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer.c_str());
-
+                    if (thisNode.getLevel() > 1) {
+                        PrintFormat.PrintSectionLabel(outfile, "Parent Node", true);
+                        PrintFormat.PrintAlignedMarginsDataString(outfile, thisCut.getParentIndentifiers(_scanRunner, buffer));
+                    }
                     PrintFormat.PrintSectionLabel(outfile, "Tree Level", true);
                     printString(buffer, "%ld", thisNode.getLevel());
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
@@ -653,7 +656,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                     outfile << "<th>Recurrence Interval</th>";
             }
             if (parameters.getScanType() != Parameters::TIMEONLY) {
-                outfile << "<th>Ancestry</th>";
+                outfile << "<th>Parent Node</th><th>Branch Order</th>";
             }
             if (parameters.isSequentialScanBernoulli()) {
                 outfile << "<th>Signalled</th>";
@@ -887,7 +890,8 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         }
     }
     if (parameters.getScanType() != Parameters::TIMEONLY) {
-        outfile << "<td class='exclude-tree'>" << thisCut.getAncestryOrder() << "</td>";
+        outfile << "<td>" << thisCut.getParentIndentifiers(_scanRunner, buffer) << "</td>";
+        outfile << "<td class='exclude-tree'>" << thisCut.getBranchOrder() << "</td>";
     }
     if (parameters.isSequentialScanBernoulli()) {
         /* Hack - this is dependent on the ResultsFileWriter::writeASCII being called first. */

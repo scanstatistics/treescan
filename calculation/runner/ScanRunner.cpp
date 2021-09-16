@@ -248,6 +248,16 @@ double CutStructure::getExpected(const ScanRunner& scanner) const {
     }
 }
 
+/* Returns nodes parent(s) as csv list. */
+std::string& CutStructure::getParentIndentifiers(const ScanRunner& scanner, std::string& parents) const {
+    std::stringstream buffer;
+    const NodeStructure * node = scanner.getNodes().at(getID());
+    for (auto itr = node->getParents().begin(); itr != node->getParents().end(); ++itr)
+        buffer << (itr != node->getParents().begin() ? "," : "") << (*itr)->getIdentifier();
+    parents = buffer.str();
+    return parents;
+}
+
 /** Returns cut's relative risk. See user guide for formula explanation. */
 double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
     double relative_risk=0;
@@ -1523,7 +1533,7 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
             std::sort(_Cut.begin(), _Cut.end(), CompareCutsByAncestoryString(*this));
             i = 1;
             for (CutStructureContainer_t::iterator itr = _Cut.begin(); itr != _Cut.end(); ++itr, ++i)
-                (*itr)->setAncestryOrder(i);
+                (*itr)->setBranchOrder(i);
             // Now return to report order.
             std::sort(_Cut.begin(), _Cut.end(), CompareCutsByReportOrder());
         }

@@ -34,13 +34,13 @@ private:
     double                  _LogLikelihood; // Loglikelihood value.
     unsigned int            _rank;
     unsigned int            _report_order;
-    unsigned int            _ancestry_order;
+    unsigned int            _branch_order;
     DataTimeRange::index_t _start_idx;      // temporal start window index
     DataTimeRange::index_t _end_idx;        // temporal end window index
     CutChildContainer_t    _cut_children;   // optional collection of children indexes
 
 public:
-    CutStructure() : _ID(0), _C(0), _N(0), _LogLikelihood(-std::numeric_limits<double>::max()), _rank(1), _start_idx(0), _end_idx(1), _report_order(0), _ancestry_order(0) {}
+    CutStructure() : _ID(0), _C(0), _N(0), _LogLikelihood(-std::numeric_limits<double>::max()), _rank(1), _start_idx(0), _end_idx(1), _report_order(0), _branch_order(0) {}
 
     void                    addCutChild(int cutID, bool clear=false) {if (clear) _cut_children.clear(); _cut_children.push_back(cutID);}
     int                     getC() const {return _C; /* Observed */}
@@ -52,7 +52,8 @@ public:
     double                  getN() const {return _N;}
     double                  getExcessCases(const ScanRunner& scanner) const;
     double                  getExpected(const ScanRunner& scanner) const;
-    unsigned int            getAncestryOrder() const { return _ancestry_order; }
+    unsigned int            getBranchOrder() const { return _branch_order; }
+    std::string           & getParentIndentifiers(const ScanRunner& scanner, std::string& parents) const;
     unsigned int            getReportOrder() const { return _report_order; }
     unsigned int            getRank() const {return _rank;}
     double                  getRelativeRisk(const ScanRunner& scanner) const;
@@ -61,7 +62,7 @@ public:
     unsigned int            incrementRank() {return ++_rank;}
     void                    setC(int i) {_C = i;}
     void                    setCutChildren(const CutChildContainer_t & c) {_cut_children = c;}
-    void                    setAncestryOrder(unsigned int u) { _ancestry_order = u; }
+    void                    setBranchOrder(unsigned int u) { _branch_order = u; }
     void                    setReportOrder(unsigned int u) { _report_order = u; }
     void                    setID(int i) {_ID = i;}
     void                    setLogLikelihood(double d) {_LogLikelihood = d;}

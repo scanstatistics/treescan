@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE( test_treetime_censored ) {
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
-    if (headers.size() != static_cast<size_t>(14)) BOOST_FAIL("expecting 14 columns, got " << headers.size());
+    if (headers.size() != static_cast<size_t>(15)) BOOST_FAIL("expecting 15 columns, got " << headers.size());
     std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrNodeId = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::NODE_ID_FIELD);
     std::vector<std::string>::iterator itrTreeLevel = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::P_LEVEL_FLD);

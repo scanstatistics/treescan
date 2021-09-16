@@ -59,7 +59,8 @@ class DataRecordWriter {
     static const char         * P_VALUE_FLD;
     static const char         * RECURR_FLD;
     static const char         * P_LEVEL_FLD;
-    static const char         * ANCESTRY_ORDER_FLD;
+    static const char         * BRANCH_ORDER_FLD;
+    static const char         * PARENT_NODE_FLD;
     static const char         * SIGNALLED_FLD;
     static const char         * HYPOTHESIS_ALTERNATIVE_NUM_FIELD;
     static const char         * HA_ALPHA05_FIELD;
