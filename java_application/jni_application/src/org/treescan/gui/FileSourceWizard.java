@@ -389,11 +389,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 else if (_startingmodeltype == Parameters.ModelType.BERNOULLI_TIME) {
                     if (_startingscantype != Parameters.ScanType.TIMEONLY)
                         builder.append("&lt;Node ID&gt;&#44;  ");
-                    builder.append("&lt;Number of Cases&gt;&#44; &lt;Days Since Event&gt;");
+                    builder.append("&lt;Number of Cases&gt;&#44; &lt;Time&gt;");
                 } else if (_startingmodeltype == null || _startingmodeltype == Parameters.ModelType.MODEL_NOT_APPLICABLE || _startingmodeltype == Parameters.ModelType.UNIFORM) {
                     if (_startingscantype != Parameters.ScanType.TIMEONLY)
                         builder.append("&lt;Node ID&gt;&#44;  ");
-                    builder.append("&lt;Number of Cases&gt;&#44;  &lt;Days Since Event&gt;");
+                    builder.append("&lt;Number of Cases&gt;&#44;  &lt;Time&gt;");
                     if (_startingmodeltype == Parameters.ModelType.UNIFORM)
                         builder.append("&#44; &lt;Censor Time&gt;(optional)");
                 }
@@ -414,7 +414,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 else if (_startingmodeltype == Parameters.ModelType.BERNOULLI_TIME) {
                     if (_startingscantype != Parameters.ScanType.TIMEONLY)
                         builder.append("&lt;Node ID&gt;&#44;  ");
-                    builder.append("&lt;Number of Controls&gt;&#44;  &lt;Days Since Event&gt;");
+                    builder.append("&lt;Number of Controls&gt;&#44;  &lt;Time&gt;");
                 } else throw new UnknownEnumException(_startingmodeltype);
                 break;
             case Cut:
@@ -906,7 +906,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _import_variables.add(new ImportVariable("Cases", 1, true, null, null));
         _import_variables.add(new ImportVariable("Population", 2, true, null, null));
         //_import_variables.add(new ImportVariable("Controls", 2, false, null, null));
-        _import_variables.add(new ImportVariable("Days Since Event", 2, true, null, null));
+        _import_variables.add(new ImportVariable("Time", 2, true, null, null));
         _import_variables.add(new ImportVariable("Censored Time", 3, false, null, null));
     }
 
@@ -915,7 +915,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _import_variables.clear();
         _import_variables.add(new ImportVariable("Node ID", 0, true, null, null));
         _import_variables.add(new ImportVariable("Controls", 1, true, null, null));
-        _import_variables.add(new ImportVariable("Days Since Event", 2, true, null, null));
+        _import_variables.add(new ImportVariable("Time", 2, true, null, null));
     }    
     
     /** Setup field descriptors for power evaluations file. */
@@ -991,7 +991,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 _import_variables.get(2).setShowing(_displayVariablesComboBox.getSelectedIndex() == 0 /* Tree Only, Unconditional Poisson */ ||
                                                     _displayVariablesComboBox.getSelectedIndex() == 1 /* Tree Only, Conditional Poisson */);
                 model.setShowing(_import_variables.get(2));
-                // Days Since Event
+                // Days Since Event / Time
                 _import_variables.get(3).setShowing(_displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */ ||
                                                     _displayVariablesComboBox.getSelectedIndex() == 5 /* Tree-time, Condition Node-Time */ ||
                                                     _displayVariablesComboBox.getSelectedIndex() == 7 /* Tree-time, Bernoulli */ ||
@@ -1018,7 +1018,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                                                     _displayVariablesComboBox.getSelectedIndex() == 7 /* Tree-time, Bernoulli */ ||
                                                     _displayVariablesComboBox.getSelectedIndex() == 8 /* Time-Only, Bernoulli */);
                 model.setShowing(_import_variables.get(1));
-                // Days Since Event
+                // Days Since Event / Time
                 _import_variables.get(2).setShowing(_displayVariablesComboBox.getSelectedIndex() == 7 /* Tree-time, Bernoulli */ ||
                                                     _displayVariablesComboBox.getSelectedIndex() == 8 /* Time-Only, Bernoulli */);
                 model.setShowing(_import_variables.get(2));
