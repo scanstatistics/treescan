@@ -1017,7 +1017,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     
     /** enables options of the Adjustments tab */
     public void enableAdjustmentsOptions() {
-        _perform_dayofweek_adjustments.setEnabled(_settings_window.getScanType() == Parameters.ScanType.TREETIME || _settings_window.getScanType() == Parameters.ScanType.TIMEONLY);
+        _perform_dayofweek_adjustments.setEnabled(
+                (_settings_window.getScanType() == Parameters.ScanType.TREETIME || _settings_window.getScanType() == Parameters.ScanType.TIMEONLY) 
+                && _settings_window.getModelType() != Parameters.ModelType.BERNOULLI_TIME
+        );
         if (_perform_dayofweek_adjustments.isEnabled()) {
             // switch label based upon condition type
             switch (_settings_window.getConditionalType()) {

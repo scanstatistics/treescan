@@ -172,7 +172,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParame
 ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(SettingContainer_t & settings) const {
     std::string buffer;
     settings.clear();
-    if (Parameters::isTemporalScanType(_parameters.getScanType())) {
+    if (Parameters::isTemporalScanType(_parameters.getScanType()) && _parameters.getModelType() != Parameters::BERNOULLI_TIME) {
         std::string buffer;
         switch (_parameters.getConditionalType()) {
             case Parameters::TOTALCASES: // this is the time-only scan
