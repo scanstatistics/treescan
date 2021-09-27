@@ -63,6 +63,14 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
         .options-table h4{text-align:center;color:#13369f;font-weight:bold;margin:0} \n \
         .options-table th{vertical-align:top;text-align:right;color:#13369f} \n \
         .help-block{font-size:11px;color:#666;font-style:oblique;margin:0} \n \
+        .container {/*display: block;*/ position: relative; padding-left: 25px; margin-bottom: 12px; margin-right: 12px; cursor: pointer;-webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;} \n \
+        .container input{ position: absolute; opacity : 0; cursor: pointer; height : 0; width : 0; } \n \
+        .checkmark{position:absolute;top:0;left:0;height:13px;width:13px;background-color:#eee;border-radius:2px;border:1px solid black;} \n \
+        /*.container:hover input ~ .checkmark {background-color:#ccc;}*/ \n \
+        /*.container input:checked ~ .checkmark {background-color:red;}*/ \n \
+        .checkmark:after{ content: \"\";position:absolute;display:none;} \n \
+        .container input : checked ~.checkmark : after{display: block;} \n \
+        .container.checkmark : after{left:4px;top:0px;width:4px;height:8px;border:solid white;border-width:0 2px 2px 0;-webkit-transform:rotate(45deg);-ms-transform:rotate(45deg);transform:rotate(45deg);} \n \
         </style> \n \
         <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-1.9.0/jquery-1.9.0.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-9.1.2/code/highcharts.js'></script> \n \
@@ -81,7 +89,7 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
                     var chart = charts[$(this).parents('.chart-section').find('.highchart-container').first().attr('id')]; \n \
                     $.each($(this).attr('series-id').split(','), function(index, value) { chart.get(value).update({type:series_type}, true); }); \n \
                 }); \n \
-                $('.options-row input[type=\"checkbox\"]').click(function(event) { \n \
+                $('.options-row input.show-cluster-band[type=\"checkbox\"]').click(function(event) { \n \
                     var chart = charts[$(this).parents('.chart-section').find('.highchart-container').first().attr('id')]; \n \
                     if ($(this).is(':checked')) { \n \
                         chart.xAxis[0].addPlotBand({color: '#FFB3B3', from: $(this).attr('start-idx'), to: $(this).attr('end-idx'), id: 'band', zindex:0}); \n \
@@ -93,12 +101,25 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
                         chart.xAxis[0].removePlotLine('end'); \n \
                     } \n \
                 }); \n \
-                $('.options-row input[type=\"checkbox\"]').trigger('click'); \n \
+                $.each($('.options-row input.series-toggle[type=\"checkbox\"]'), function(index, checkbox) { seriesToggle(checkbox); }); \n \
+                $('.options-row input.series-toggle[type=\"checkbox\"]').click(function(event) { seriesToggle($(this)); }); \n \
+                $('.options-row input.show-cluster-band[type=\"checkbox\"]').trigger('click'); \n \
                 } catch (error) { \n \
                    $('#load_error').html('There was a problem loading the graph. Please <a href=\"mailto:--tech-support-email--?Subject=Graph%20Error\" target=\"_top\">email</a> technical support and attach the file:<br/>' + window.location.href.replace('file:///', '').replace(/%20/g, ' ') ).show(); \n \
                    throw( error ); \n \
                 } \n \
             }); \n \
+            function seriesToggle(checkbox) { \n \
+               var chart = charts[$(checkbox).parents('.chart-section').find('.highchart-container').first().attr('id')]; \n \
+               var series = chart.get($(checkbox).attr('series-id')); \n \
+               if ($(checkbox).is(':checked')) { \n \
+                 series.show(); \n \
+                 $(checkbox).parent().find('span.checkmark').css({ 'background-color': series.color }); \n \
+               } else { \n \
+                 series.hide(); \n \
+                 $(checkbox).parent().find('span.checkmark').css({ 'background-color': '#FFFFFF' }); \n \
+               } \n \
+           }\n \
         </script> \n \
     </head> \n \
     <body> \n \
@@ -118,7 +139,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTHEADER = "\n \
                     exporting: {filename: 'cluster_graph', chartOptions: { plotOptions: { series: { showInLegend: false } } }}, \n \
                     plotOptions: { column: { grouping: false }}, \n \
                     tooltip: { crosshairs: true, shared: true, formatter: function(){var is_cluster = false;var has_observed = false;$.each(this.points, function(i, point) {if (point.series.options.id == 'cluster') {is_cluster = true;}if (point.series.options.id == 'obs') {has_observed = true;}});var s = '<b>'+ this.x +'</b>'; if (is_cluster) {s+= '<br/><b>Cluster Point</b>';}$.each(this.points,function(i, point){if (point.series.options.id == 'cluster'){if (!has_observed) {s += '<br/>Observed: '+ point.y;}} else {s += '<br/>'+ point.series.name +': '+ point.y;}});return s;}, }, \n \
-                    legend: { backgroundColor: '#F5F5F5', verticalAlign: 'bottom', y: 20 }, \n \
+                    legend: { enabled: false, backgroundColor: '#F5F5F5', verticalAlign: 'bottom', y: 20 }, \n \
                     xAxis: [{ categories: [--categories--], tickmarkPlacement: 'on', labels: { step: --step--, rotation: -45, align: 'right' }, tickInterval: --tickinterval-- }], \n \
                     yAxis: [{ title: { enabled: true, text: 'Number of Cases', style: { fontWeight: 'normal' } }, min: 0, showEmpty: false }--additional-yaxis--], \n \
                     navigation: { buttonOptions: { align: 'right' } }, \n \
@@ -141,6 +162,40 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
                           </div> \n \
                       </div> \n \
                       <div class=\"options-row\"> \n \
+                          <label>Series Inside Cluster</label> \n \
+                              <div> \n \
+                                  <label class=\"container\">Observed \n \
+                                      <input class =\"series-toggle\" series-id=\"cluster_obs\" name=\"--container-id--_observed_series_toggle\" id=\"id_--container-id--_observed_series_toggle\" value=\"observed\" type=checkbox checked /> \n \
+                                      <span class=\"checkmark\"></span> \n \
+                                  </label> \n \
+                                  <label class=\"container\">Expected \n \
+                                      <input class=\"series-toggle\" series-id=\"cluster_exp\" name=\"--container-id--_expected_series_toggle\" id=\"id_--container-id--_observed_series_toggle\" value=\"expected\" type=checkbox checked /> \n \
+                                      <span class=\"checkmark\"></span> \n \
+                                  </label> \n \
+                                  <label class=\"container\">Observed / Expected \n \
+                                      <input class=\"series-toggle\" series-id=\"cluster_obs_exp\" name=\"--container-id--_ode_series_toggle\" id=\"id_--container-id--_ode_series_toggle\" value=\"ode\" type=checkbox /> \n \
+                                      <span class=\"checkmark\"></span> \n \
+                                  </label> \n \
+                                  <label class=\"container\">Percent Cases \n \
+                                      <input class=\"series-toggle\" series-id=\"cluster_perc_cases\" name=\"--container-id--_case_perc_series_toggle\" id=\"id_--container-id--_case_perc_series_toggle\" value=\"case_perc\" type=checkbox /> \n \
+                                      <span class=\"checkmark\"></span> \n \
+                                  </label> \n \
+                              </div> \n \
+                      </div> \n \
+                      <div class=\"options-row\"> \n \
+                          <label>Series Outside Cluster</label> \n \
+                          <div> \n \
+                              <label class=\"container\">Observed \n \
+                                  <input class=\"series-toggle\" series-id=\"obs\" name=\"--container-id--_observed_series_toggle\" id=\"id_--container-id--_observed_series_toggle\" value=\"observed\" type=checkbox checked /> \n \
+                                  <span class=\"checkmark\"></span> \n \
+                              </label> \n \
+                              <label class=\"container\">Expected \n \
+                                  <input class=\"series-toggle\" series-id=\"exp\" name=\"--container-id--_expected_series_toggle\" id=\"id_--container-id--_observed_series_toggle\" value=\"expected\" type=checkbox checked /> \n \
+                                  <span class=\"checkmark\"></span> \n \
+                              </label> \n \
+                          </div> \n \
+                      </div> \n \
+                      <div class=\"options-row\"> \n \
                           <label>Observed Chart Type</label> \n \
                           <div> \n \
                             <label> \n \
@@ -156,7 +211,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
                           <label>Cluster Band</label> \n \
                           <div> \n \
                             <label> \n \
-                              <input type=\"checkbox\" name=\"--container-id--_cluster_band\" start-idx=\"--cluster-start-idx--\" end-idx=\"--cluster-end-idx--\"/>Show Cluster Band \n \
+                              <input type=\"checkbox\" class=\"show-cluster-band\" name=\"--container-id--_cluster_band\" start-idx=\"--cluster-start-idx--\" end-idx=\"--cluster-end-idx--\"/>Show Cluster Band \n \
                             </label> \n \
                             <p class=\"help-block\">Band stretching across the plot area marking cluster interval.</p> \n \
                           </div> \n \
@@ -232,10 +287,10 @@ void TemporalChartGenerator::generateChart() const {
         int margin_bottom=130;
         switch (parameters.getDatePrecisionType()) {
             case DataTimeRange::YEAR : margin_bottom = 90; break;
-            case DataTimeRange::MONTH : margin_bottom = 110; break;
+            case DataTimeRange::MONTH : margin_bottom = 100; break;
             case DataTimeRange::DAY:
             case DataTimeRange::GENERIC:
-            default: margin_bottom=130;
+            default: margin_bottom=100;
         }
 
         // Determine clusters will have a graph generated based on settings.
@@ -269,19 +324,19 @@ void TemporalChartGenerator::generateChart() const {
 
                 bool is_pt(parameters.getScanType() == Parameters::TIMEONLY); // not if cluster is purely temporal
                 // define seach series that we'll graph - next three are always printed.
-                std::auto_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed (Outside Cluster)"), "003264", "square", 0));
+                std::auto_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed (Outside Cluster)"), "7D96B0", "square", 0));
                 std::auto_ptr<ChartSeries> expectedSeries(new ChartSeries("exp", is_pt ? 3 : 2, "line", (is_pt ? "Expected" : "Expected (Outside Cluster)"), "89A54E", "triangle", 0));
                 std::auto_ptr<ChartSeries> clusterSeries; // (new ChartSeries("cluster", is_pt ? 2 : 5, "column", "Cluster", "AA4643", "circle", 0));
                 // the remaining series are conditionally present in the chart
                 std::auto_ptr<ChartSeries> observedClusterSeries, expectedClusterSeries;
                 std::auto_ptr<ChartSeries> odeSeries, cluster_odeSeries;
                 std::auto_ptr<ChartSeries> percentCasesSeries(new ChartSeries("perc_cases", 6, "line", "Percent Cases (Outside Cluster)", "46460F", "circle", 2, false));
-                std::auto_ptr<ChartSeries> cluster_percentCasesSeries(new ChartSeries("cluster_perc_cases", 6, "line", "Percent Cases (Inside Cluster)", "A7A79C", "circle", 2, false));
+                std::auto_ptr<ChartSeries> cluster_percentCasesSeries(new ChartSeries("cluster_perc_cases", 6, "line", "Percent Cases (Inside Cluster)", "454540", "circle", 2, false, "1", "LongDashDotDot"));
                 std::stringstream additional_yaxis;
 
                 // space-time clusters also graph series which allow comparison between inside and outside the cluster
                 if (!is_pt) {
-                    observedClusterSeries.reset(new ChartSeries("cluster_obs", 3, "column", "Observed (Inside Cluster)", "AA4643", "square", 0, true, "0.85"));
+                    observedClusterSeries.reset(new ChartSeries("cluster_obs", 3, "column", "Observed (Inside Cluster)", "471D1B", "square", 0));
                     expectedClusterSeries.reset(new ChartSeries("cluster_exp", 4, "line", "Expected (Inside Cluster)", "394521", "triangle", 0));
                 }
 
@@ -289,31 +344,33 @@ void TemporalChartGenerator::generateChart() const {
                 if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
                     // the Bernoulli model also graphs cases / (cases + controls)
                     // graphing cases ratio, with y-axis along right side
-                    //templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Cases Ratio', style: { fontWeight: 'normal' } }, max: 1, min: 0, opposite: true, showEmpty: false }");
-                    additional_yaxis << ", { title: { enabled: true, text: 'Cases Ratio', style: { fontWeight: 'normal' } }, max: 1, min: 0, opposite: true, showEmpty: false }";
+                    additional_yaxis << ", { title: { enabled: true, text: 'Cases Ratio', style: { fontWeight: 'normal' } }, max: 1, min: 0, opposite: false, showEmpty: false }";
                     odeSeries.reset(new ChartSeries("case_ratio", 2, "line", (is_pt ? "Cases Ratio" : "Cases Ratio (Outside Cluster)"), "00FF00", "triangle", 1));
                     if (!is_pt)
                         // space-time clusters also graph series which allow comparison between inside and outside the cluster
                         cluster_odeSeries.reset(new ChartSeries("cluster_case_ratio", 2, "line", "Cases Ratio (Inside Cluster)", "FF8000", "triangle", 1));
                 } else if (parameters.getModelType() == Parameters::UNIFORM || (parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE && parameters.getConditionalType() == Parameters::NODEANDTIME)) {
                     // graphing observed / expected, with y-axis along right side
-                    //templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Observed / Expected', style: { fontWeight: 'normal' } }, min: 0, opposite: true, showEmpty: false }");
-                    additional_yaxis << ", { title: { enabled: true, text: 'Observed / Expected', style: { fontWeight: 'normal' } }, min: 0, opposite: true, showEmpty: false }";
+                    additional_yaxis << ", { title: { enabled: true, text: 'Observed / Expected', style: { fontWeight: 'normal' } }, min: 0, opposite: false, showEmpty: false }";
                     odeSeries.reset(new ChartSeries("obs_exp", 2, "line", (is_pt ? "Observed / Expected" : "Observed / Expected (Outside Cluster)"), "00FF00", "triangle", 1, false));
                     if (!is_pt)
                         // space-time clusters also graph series which allow comparison between inside and outside the cluster
                         cluster_odeSeries.reset(new ChartSeries("cluster_obs_exp", 2, "line", "Observed / Expected (Inside Cluster)", "FF8000", "triangle", 1, false));
                 }
 
-                additional_yaxis << ", { title: { enabled: true, text: 'Percent Cases', style: { fontWeight: 'normal' } }, max: 100, min: 0, opposite: false, showEmpty: false, labels: {format: '{text}%'} }";
+                additional_yaxis << ", { title: { enabled: true, text: 'Percent Cases', style: { fontWeight: 'normal' } }, max: 100, min: 0, startOnTick: false, endOnTick: false, gridLineWidth: 0.1, opposite: true, showEmpty: false, labels: {format: '{text}%'} }";
                 templateReplace(chart_js, "--additional-yaxis--", additional_yaxis.str());
 
                 
                 // set default chart title 
                 if (is_pt)
                     buffer = "Detected Cluster";
-                else 
-                    printString(buffer, "Cluster #%u", clusterIdx + 1);
+                else {
+                    //printString(buffer, "Cluster #%u", clusterIdx + 1);
+                    buffer = _scanner.getNodes().at(cluster.getID())->getIdentifier();
+                    htmlencode(buffer);
+                }
+                    
                 templateReplace(chart_js, "--chart-title--", buffer);
                 templateReplace(chart_js, "--margin-bottom--", printString(buffer, "%d", margin_bottom));
                 templateReplace(chart_js, "--margin-right--", printString(buffer, "%d", (odeSeries.get() || cluster_odeSeries.get() ? 80 : 20)));
@@ -344,11 +401,11 @@ void TemporalChartGenerator::generateChart() const {
                     chart_series << "," << observedClusterSeries->toString(buffer).c_str();
                 if (expectedClusterSeries.get())
                     chart_series << "," << expectedClusterSeries->toString(buffer).c_str();
-                if (odeSeries.get()) 
-                    chart_series << "," << odeSeries->toString(buffer).c_str();
+                //if (odeSeries.get()) 
+                //    chart_series << "," << odeSeries->toString(buffer).c_str();
                 if (cluster_odeSeries.get())
                     chart_series << "," << cluster_odeSeries->toString(buffer).c_str();
-                chart_series << "," << percentCasesSeries->toString(buffer).c_str();
+                //chart_series << "," << percentCasesSeries->toString(buffer).c_str();
                 chart_series << "," << cluster_percentCasesSeries->toString(buffer).c_str();
                 templateReplace(chart_js, "--series--", chart_series.str());
 
@@ -363,7 +420,7 @@ void TemporalChartGenerator::generateChart() const {
                 templateReplace(chart_section, "--cluster-start-idx--", buffer);
                 printString(buffer, "%d", cluster_grp_idx.second - 1);
                 templateReplace(chart_section, "--cluster-end-idx--", buffer);
-                templateReplace(chart_section, "--chart-switch-ids--", is_pt ? "obs,cluster" : "obs,cluster,cluster_obs");
+                templateReplace(chart_section, "--chart-switch-ids--", is_pt ? "obs" : "obs,cluster_obs");
                 // add section to collection of sections
                 cluster_sections << chart_section.str() << std::endl << std::endl;
         }
