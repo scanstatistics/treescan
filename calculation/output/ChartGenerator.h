@@ -63,7 +63,9 @@ class TemporalChartGenerator : public AbstractChartGenerator {
     protected:
         static const char * BASE_TEMPLATE;
         static const char * TEMPLATE_CHARTHEADER;
-        static const char * TEMPLATE_CHARTSECTION;
+		static const char * TEMPLATE_CHARTSERIES;
+		static const char * TEMPLATE_CHARTSERIES_PT;
+		static const char * TEMPLATE_CHARTSECTION;
         const ScanRunner &  _scanner;
         const SimulationVariables & _simVars;
 
@@ -88,8 +90,8 @@ class TemporalChartGenerator : public AbstractChartGenerator {
                                               ChartSeries * cluster_expectedSeries,
                                               ChartSeries * odeSeries,
                                               ChartSeries * cluster_odeSeries,
-                                              ChartSeries& percCasesSeries,
-                                              ChartSeries& cluster_percCasesSeries
+                                              ChartSeries * percCasesSeries,
+                                              ChartSeries * cluster_percCasesSeries
             ) const;
 
     public:

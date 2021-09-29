@@ -128,7 +128,7 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
             <i>This page is known to display correctly with the following browsers: Safari 4+, Firefox 3+, Opera 10+ and Google Chrome 5+.</i> \n \
         </div></div></div> \n \
         <![endif]--> \
-        --body-- \
+        --body--<div style=\"font-style:italic;margin-left:20px;font-size:14px;\">Generated with --treescan-version--</div> \n \
     </body> \n \
 </html> \n";
 
@@ -147,20 +147,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTHEADER = "\n \
                 }); \n \
                 charts['--container-id--'] = --container-id--;";
 
-const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
-         <div style=\"margin:20px;\" class=\"chart-section\"> \n \
-            <div id=\"--container-id--\" class=\"highchart-container\" style=\"margin-top:0px;\"></div> \n \
-            <div class=\"options\"> \n \
-                <div class=\"show-chart-options\"><a href=\"#\">Show Chart Options</a></div> \n \
-                <div class=\"chart-options\"> \n \
-                    <div class=\"options-table\"> \n \
-                      <h4>Chart Options</h4> \n \
-                      <div class=\"options-row\"> \n \
-                          <label for=\"title_obs\">Title</label> \n \
-                          <div><input type=\"text\" style=\"width:95%;\" class=\"title-setter\" id=\"title_obs\"> \n \
-                              <p class=\"help-block\">Title can be changed by editing this text.</p> \n \
-                          </div> \n \
-                      </div> \n \
+const char * TemporalChartGenerator::TEMPLATE_CHARTSERIES = "\
                       <div class=\"options-row\"> \n \
                           <label>Series Inside Cluster</label> \n \
                               <div> \n \
@@ -194,7 +181,37 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
                                   <span class=\"checkmark\"></span> \n \
                               </label> \n \
                           </div> \n \
-                      </div> \n \
+                      </div> \n";
+
+const char * TemporalChartGenerator::TEMPLATE_CHARTSERIES_PT = "\
+                      <div class=\"options-row\"> \n \
+                          <label>Series Cluster</label> \n \
+                          <div> \n \
+                              <label class=\"container\">Observed \n \
+                                  <input class=\"series-toggle\" series-id=\"obs\" name=\"--container-id--_observed_series_toggle\" id=\"id_--container-id--_observed_series_toggle\" value=\"observed\" type=checkbox checked /> \n \
+                                  <span class=\"checkmark\"></span> \n \
+                              </label> \n \
+                              <label class=\"container\">Expected \n \
+                                  <input class=\"series-toggle\" series-id=\"exp\" name=\"--container-id--_expected_series_toggle\" id=\"id_--container-id--_observed_series_toggle\" value=\"expected\" type=checkbox checked /> \n \
+                                  <span class=\"checkmark\"></span> \n \
+                              </label> \n \
+                          </div> \n \
+                      </div> \n";
+
+const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
+         <div style=\"margin:20px;\" class=\"chart-section\"> \n \
+            <div id=\"--container-id--\" class=\"highchart-container\" style=\"margin-top:0px;\"></div> \n \
+            <div class=\"options\"> \n \
+                <div class=\"show-chart-options\"><a href=\"#\">Show Chart Options</a></div> \n \
+                <div class=\"chart-options\"> \n \
+                    <div class=\"options-table\"> \n \
+                      <h4>Chart Options</h4> \n \
+                      <div class=\"options-row\"> \n \
+                          <label for=\"title_obs\">Title</label> \n \
+                          <div><input type=\"text\" style=\"width:95%;\" class=\"title-setter\" id=\"title_obs\"> \n \
+                              <p class=\"help-block\">Title can be changed by editing this text.</p> \n \
+                          </div> \n \
+                      </div> \n--series-selection-- \
                       <div class=\"options-row\"> \n \
                           <label>Observed Chart Type</label> \n \
                           <div> \n \
@@ -324,21 +341,21 @@ void TemporalChartGenerator::generateChart() const {
 
                 bool is_pt(parameters.getScanType() == Parameters::TIMEONLY); // not if cluster is purely temporal
                 // define seach series that we'll graph - next three are always printed.
-                std::auto_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed (Outside Cluster)"), "7D96B0", "square", 0));
-                std::auto_ptr<ChartSeries> expectedSeries(new ChartSeries("exp", is_pt ? 3 : 2, "line", (is_pt ? "Expected" : "Expected (Outside Cluster)"), "89A54E", "triangle", 0));
+                std::auto_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed (Outside Cluster)"), is_pt ? "471D1B" : "7D96B0", "square", 0));
+                std::auto_ptr<ChartSeries> expectedSeries(new ChartSeries("exp", is_pt ? 3 : 2, "line", (is_pt ? "Expected" : "Expected (Outside Cluster)"), is_pt ? "394521" : "89A54E", "triangle", 0));
                 std::auto_ptr<ChartSeries> clusterSeries; // (new ChartSeries("cluster", is_pt ? 2 : 5, "column", "Cluster", "AA4643", "circle", 0));
                 // the remaining series are conditionally present in the chart
                 std::auto_ptr<ChartSeries> observedClusterSeries, expectedClusterSeries;
-                std::auto_ptr<ChartSeries> odeSeries, cluster_odeSeries;
-                std::auto_ptr<ChartSeries> percentCasesSeries(new ChartSeries("perc_cases", 6, "line", "Percent Cases (Outside Cluster)", "46460F", "circle", 2, false));
-                std::auto_ptr<ChartSeries> cluster_percentCasesSeries(new ChartSeries("cluster_perc_cases", 6, "line", "Percent Cases (Inside Cluster)", "454540", "circle", 2, false, "1", "LongDashDotDot"));
+                std::auto_ptr<ChartSeries> odeSeries, cluster_odeSeries, percentCasesSeries, cluster_percentCasesSeries;
                 std::stringstream additional_yaxis;
 
                 // space-time clusters also graph series which allow comparison between inside and outside the cluster
                 if (!is_pt) {
                     observedClusterSeries.reset(new ChartSeries("cluster_obs", 3, "column", "Observed (Inside Cluster)", "471D1B", "square", 0));
                     expectedClusterSeries.reset(new ChartSeries("cluster_exp", 4, "line", "Expected (Inside Cluster)", "394521", "triangle", 0));
-                }
+					percentCasesSeries.reset(new ChartSeries("perc_cases", 6, "line", "Percent Cases (Outside Cluster)", "46460F", "circle", 2, false));
+					cluster_percentCasesSeries.reset(new ChartSeries("cluster_perc_cases", 6, "line", "Percent Cases (Inside Cluster)", "454540", "circle", 2, false, "1", "Dot"));
+				}
 
                 // the Poisson and Exponential models also graphs observed / expected
                 if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
@@ -366,7 +383,6 @@ void TemporalChartGenerator::generateChart() const {
                 if (is_pt)
                     buffer = "Detected Cluster";
                 else {
-                    //printString(buffer, "Cluster #%u", clusterIdx + 1);
                     buffer = _scanner.getNodes().at(cluster.getID())->getIdentifier();
                     htmlencode(buffer);
                 }
@@ -384,7 +400,7 @@ void TemporalChartGenerator::generateChart() const {
                                                                       *observedSeries, *expectedSeries, 
                                                                       observedClusterSeries.get(), expectedClusterSeries.get(),
                                                                       odeSeries.get(), cluster_odeSeries.get(),
-                                                                      *percentCasesSeries, *cluster_percentCasesSeries);
+                                                                      percentCasesSeries.get(), cluster_percentCasesSeries.get());
 
                 // define the identifying attribute of this chart
                 printString(buffer, "chart_%d_%u", clusterIdx + 1, 0 + 1);
@@ -406,7 +422,8 @@ void TemporalChartGenerator::generateChart() const {
                 if (cluster_odeSeries.get())
                     chart_series << "," << cluster_odeSeries->toString(buffer).c_str();
                 //chart_series << "," << percentCasesSeries->toString(buffer).c_str();
-                chart_series << "," << cluster_percentCasesSeries->toString(buffer).c_str();
+				if (cluster_percentCasesSeries.get())
+					chart_series << "," << cluster_percentCasesSeries->toString(buffer).c_str();
                 templateReplace(chart_js, "--series--", chart_series.str());
 
                 // add this charts javascript to collection
@@ -414,6 +431,7 @@ void TemporalChartGenerator::generateChart() const {
 
                 // create chart html section
                 chart_section << TEMPLATE_CHARTSECTION;
+				templateReplace(chart_section, "--series-selection--", is_pt ? TEMPLATE_CHARTSERIES_PT : TEMPLATE_CHARTSERIES);
                 printString(buffer, "chart_%d_%u", clusterIdx + 1, 0 + 1);
                 templateReplace(chart_section, "--container-id--", buffer);
                 printString(buffer, "%d", cluster_grp_idx.first);
@@ -422,7 +440,7 @@ void TemporalChartGenerator::generateChart() const {
                 templateReplace(chart_section, "--cluster-end-idx--", buffer);
                 templateReplace(chart_section, "--chart-switch-ids--", is_pt ? "obs" : "obs,cluster_obs");
                 // add section to collection of sections
-                cluster_sections << chart_section.str() << std::endl << std::endl;
+                cluster_sections << chart_section.str();
         }
 
         templateReplace(html, "--charts--", charts_javascript.str());
@@ -434,6 +452,16 @@ void TemporalChartGenerator::generateChart() const {
             );
             templateReplace(html, "--main-content--", buffer2.c_str());
         }
+		printString(buffer,
+			"TreeScan v%s.%s%s%s%s%s",
+			VERSION_MAJOR,
+			VERSION_MINOR,
+			(!strcmp(VERSION_RELEASE, "0") ? "" : "."),
+			(!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE),
+			(strlen(VERSION_PHASE) ? " " : ""),
+			VERSION_PHASE
+		);
+		templateReplace(html, "--treescan-version--", buffer.c_str());
         HTMLout << html.str() << std::endl;
         HTMLout.close();
     } catch (prg_exception& x) {
@@ -477,7 +505,7 @@ std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CutStructure&
                                                              ChartSeries& observedSeries, ChartSeries& expectedSeries,
                                                              ChartSeries * cluster_observedSeries, ChartSeries * cluster_expectedSeries,
                                                              ChartSeries * odeSeries, ChartSeries * cluster_odeSeries,
-                                                             ChartSeries& percCasesSeries, ChartSeries& cluster_percCasesSeries) const {
+                                                             ChartSeries * percCasesSeries, ChartSeries * cluster_percCasesSeries) const {
 
     std::string buffer;
     const Parameters parameters = _scanner.getParameters();
@@ -564,8 +592,10 @@ std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CutStructure&
         observedSeries.datastream() <<  (itrGrp==groups.getGroups().begin() ? "" : ",") << observed;
 
         double totalCases = static_cast<double>(observed + cluster_observed);
-        percCasesSeries.datastream() << (itrGrp == groups.getGroups().begin() ? "" : ",") << getValueAsString((totalCases ? static_cast<double>(observed) / totalCases : totalCases) * 100, buffer, 1).c_str();
-        cluster_percCasesSeries.datastream() << (itrGrp == groups.getGroups().begin() ? "" : ",") << getValueAsString((totalCases ? static_cast<double>(cluster_observed) / totalCases : totalCases) * 100, buffer, 1).c_str();
+		if (percCasesSeries)
+			percCasesSeries->datastream() << (itrGrp == groups.getGroups().begin() ? "" : ",") << getValueAsString((totalCases ? static_cast<double>(observed) / totalCases : totalCases) * 100, buffer, 1).c_str();
+		if (cluster_percCasesSeries)
+			cluster_percCasesSeries->datastream() << (itrGrp == groups.getGroups().begin() ? "" : ",") << getValueAsString((totalCases ? static_cast<double>(cluster_observed) / totalCases : totalCases) * 100, buffer, 1).c_str();
 
         bool is_pt(_scanner.getParameters().getScanType() == Parameters::TIMEONLY); // not if cluster is purely temporal
 
