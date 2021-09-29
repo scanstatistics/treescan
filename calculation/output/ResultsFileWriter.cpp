@@ -540,8 +540,8 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         }
         if (root_counter > 0)
             outfile << ", children: [" << std::endl << rootstream.str() << "]";
-        outfile << " }" << std::endl;
-        outfile << "};</script>" << std::endl;
+		outfile << " }" << std::endl << "};" << std::endl;
+		outfile << "$(document).ready(function(){if (Object.keys(chart_config.nodeStructure).length < 2){$('#show_tree').addClass('disabled').html('Tree Visualization (No nodes for display)');}});</script>" << std::endl;
     }
     outfile << "<script src=\"https://www.treescan.org/html-results/treescan-results.1.2.js\" type=\"text/javascript\"></script>" << std::endl;
     outfile << "<body>" << std::endl;
@@ -796,8 +796,17 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<tr><th>Program completed</th><td>" << ctime(&end) << "</td></tr>" << std::endl;
     outfile << "<tr><th>Total Running Time</th><td>" << getTotalRunningTime(start, end, buffer) << "</td></tr>" << std::endl;
     if (parameters.getNumParallelProcessesToExecute() > 1) outfile << "<tr><th>Processor Usage</th><td>" << parameters.getNumParallelProcessesToExecute() << " processors" << "</td></tr>" << std::endl;
+	printString(buffer,
+		"TreeScan v%s.%s%s%s%s%s",
+		VERSION_MAJOR,
+		VERSION_MINOR,
+		(!strcmp(VERSION_RELEASE, "0") ? "" : "."),
+		(!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE),
+		(strlen(VERSION_PHASE) ? " " : ""),
+		VERSION_PHASE
+	);
+	outfile << "<tr><th>Version</th><td>" << buffer << "</td></tr>" << std::endl;
     outfile << "</tbody></table></div>" << std::endl;
-
     outfile << "</body></html>" << std::endl;
     outfile.close();
 
