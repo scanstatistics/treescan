@@ -10,30 +10,36 @@
 package org.treescan.utils;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 
 /**
- *
  * @author Hostovic
  */
 public class FileAccess {
-    /**
-     *
-     */
+
     public static boolean ValidateFileAccess(String filename, boolean bWrite) {
         boolean bAccessible=false;
-        
         try {
+            Path fpath = FileSystems.getDefault().getPath(filename);
             if (bWrite) {
-                @SuppressWarnings("unused") FileOutputStream file = new FileOutputStream(filename);
+                if (Files.exists(fpath)) { // File exists - test whether it is writable.
+                    bAccessible = Files.isWritable(fpath);
+                } else { // File doesn't exist, create temporary file then test whether it is writable.
+                    @SuppressWarnings("unused") 
+                    FileOutputStream file = new FileOutputStream(filename);
+                    file.close();
+                    bAccessible = true;
+                    Files.deleteIfExists(fpath);
+                }
             } else {
-                @SuppressWarnings("unused") FileInputStream file = new FileInputStream(filename);
+                bAccessible = Files.isReadable(fpath);
             }
-            bAccessible = true;
-        } catch (FileNotFoundException e) {} catch (SecurityException e) {}
-        
+        } catch (java.io.IOException | SecurityException e) {}
         return bAccessible;
     }   
     
