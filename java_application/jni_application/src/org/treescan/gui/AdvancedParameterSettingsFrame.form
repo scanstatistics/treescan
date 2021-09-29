@@ -102,7 +102,7 @@
                           <Component id="_cutFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="_cutFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="343" max="32767" attributes="0"/>
+                      <EmptySpace pref="350" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -165,8 +165,8 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_prospective_evaluation" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="_temporalWindowDefinitionGroup" min="-2" pref="104" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="_temporalWindowDefinitionGroup" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -439,7 +439,6 @@
                           <Component id="_restrictTemporalRangeCheckBox" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_temporal_window_cards" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -787,7 +786,7 @@
                       <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_prospective_frequency_group" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="216" max="32767" attributes="0"/>
+                      <EmptySpace pref="223" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1065,7 +1064,7 @@
                               <Component id="_alternativeHypothesisFilename" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_alternativeHypothesisFilenameButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="176" max="32767" attributes="0"/>
+                          <EmptySpace pref="183" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1225,7 +1224,7 @@
                       <Component id="_report_critical_values_group" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_graphOutputGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="43" max="32767" attributes="0"/>
+                      <EmptySpace pref="50" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1860,7 +1859,7 @@
                                       <Component id="_sequential_alpha_spending" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="_alpha_spent_to_date_label" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace min="0" pref="276" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="283" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
