@@ -28,11 +28,12 @@ public class XLSImportDataSource implements ImportDataSource {
             "To test whether you are importing an unsupported version, re-save the file to versions 97-2003 and try again.";
     private String _file_path;
     private int _sheet_index = 0;
-    private ArrayList<Object> _column_names = new ArrayList<Object>();
+    private ArrayList<Object> _column_names;
     private boolean _hasHeader=false;
     private InputStream _input_stream=null;
-    
+
     public XLSImportDataSource(File file, boolean hasHeader) {
+        _column_names = new ArrayList<Object>();
         _current_row = 0;
         _hasHeader = hasHeader;
         try {
@@ -73,6 +74,7 @@ public class XLSImportDataSource implements ImportDataSource {
         }
     }
 
+    @Override
     public void close() {        
         try {
             if (_input_stream != null) {_input_stream.close(); _input_stream=null;}
@@ -199,6 +201,36 @@ public class XLSImportDataSource implements ImportDataSource {
         return dateValue.toString();
     }
 
+    /* Attempts to convert numeric cell value. */
+    private String formatNumericCell(Cell cell, double cellValue) {
+        boolean isPoiKnownDate = DateUtil.isCellDateFormatted(cell) || DateUtil.isInternalDateFormat(cell.getCellStyle().getDataFormat());
+        if (isPoiKnownDate) {
+            return formatDate(cellValue);
+        } else {
+            //try to see if this is a user defined date format (unknown by POI's HSSFDateUtil)
+            short formatIndex = cell.getCellStyle().getDataFormat();
+            try {
+                BuiltinFormats.getBuiltinFormat(formatIndex);
+            } catch (ArrayIndexOutOfBoundsException e) { // user defined format
+                DataFormat dataFormat = _workbook.createDataFormat();
+                String format = dataFormat.getFormat(formatIndex);
+                boolean isValid = DateUtil.isValidExcelDate(cellValue);
+                //see if there are any date formatting strings in the format
+                boolean hasDateFormating = format.matches(".*[mM]{2,}.*|.*[dD]{2,}.*|.*[yY]{2,}.*|.*[hH]{2,}.*|.*[sS]{2,}.*|.*[qQ]{2,}.*|.*[nN]{2,}.*|.*[wW]{2,}.*");
+                if (isValid && hasDateFormating) {
+                    return formatDate(cellValue);
+                }
+            }
+            //if this is not a date process as a number
+            Double number = cellValue;
+            //if this is an int create the string as such
+            if (number.doubleValue() == number.intValue()) {
+                return (Integer.toString(number.intValue()));
+            }
+            return (number.toString());
+        }        
+    }
+    
     /**
      * The only types of cell supported are:<br>
      * NUMERIC, STRING, FORMULA, and BLANK.
@@ -208,52 +240,27 @@ public class XLSImportDataSource implements ImportDataSource {
      * cell is blank or unsupported an empty String is returned.
      */
     private String getCellValue(Cell cell) {
-        switch (cell.getCellTypeEnum()) {
-            case NUMERIC:
-                double cellValue = cell.getNumericCellValue();
-                //check if this is a date
-                boolean isPoiKnownDate = DateUtil.isCellDateFormatted(cell) || DateUtil.isInternalDateFormat(cell.getCellStyle().getDataFormat());
-                if (isPoiKnownDate) {
-                    return formatDate(cellValue);
-                } else {
-                    //try to see if this is a user defined date format (unknown by POI's HSSFDateUtil)
-                    short formatIndex = cell.getCellStyle().getDataFormat();
-                    try {
-                        BuiltinFormats.getBuiltinFormat(formatIndex);
-                    } catch (ArrayIndexOutOfBoundsException e) { //this is a user defined format
-                        DataFormat dataFormat = _workbook.createDataFormat();
-                        String format = dataFormat.getFormat(formatIndex);
-
-                        boolean isValid = DateUtil.isValidExcelDate(cellValue);
-                        //see if there are any date formatting strings in the format
-                        boolean hasDateFormating = format.matches(".*[mM]{2,}.*|.*[dD]{2,}.*|.*[yY]{2,}.*|.*[hH]{2,}.*|.*[sS]{2,}.*|.*[qQ]{2,}.*|.*[nN]{2,}.*|.*[wW]{2,}.*");
-
-                        if (isValid && hasDateFormating) {
-                            return formatDate(cellValue);
-                        }
-
+        try {
+            switch (cell.getCellType()) {
+                case ERROR:
+                    return cell.getStringCellValue();
+                case NUMERIC:
+                    return formatNumericCell(cell, cell.getNumericCellValue());
+                case BOOLEAN:
+                    return cell.getBooleanCellValue() + "";
+                case STRING:
+                    return cell.getStringCellValue();
+                case FORMULA:
+                    try { // First try as numeric then fallback to string.
+                        return formatNumericCell(cell, cell.getNumericCellValue());
+                    } catch (Throwable e) {
+                        return cell.getStringCellValue();
                     }
-                    //if this is not a date process as a number
-                    Double number = Double.valueOf(cellValue);
-                    //if this is an int create the string as such
-                    if (number.doubleValue() == number.intValue()) {
-                        return (Integer.toString(number.intValue()));
-                    }
-                    return (number.toString());
-                }
-
-            case BOOLEAN: return cell.getBooleanCellValue() + "";
-                
-            case STRING: return (cell.getStringCellValue());
-                
-            //If this is a formula evaluate it to a value
-            case FORMULA:
-                String cellResult = String.valueOf(cell.getNumericCellValue());
-                return cellResult.equals("NaN") ? cell.getStringCellValue() : cellResult;
-
-            //If this cell is not of a supported type fill array in
-            //with empty string (includes HSSFCell.CELL_TYPE_BLANK)
-            default: return "";
+                case BLANK:
+                default: return "";
+            }
+        } catch (Throwable e) {
+            return "##cell-read-failure##";
         }
     }
 

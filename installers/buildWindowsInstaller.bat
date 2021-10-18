@@ -13,7 +13,7 @@ set treescaninstaller=%fileshare%\treescan\installers\v.%treescanversion%.x\inst
 
 set javajdkx64=%fileshare%\treescan\build\packages\java\jdk-16.0.2+7_adopt_windows_x64
 set runtimeoutputx64=%fileshare%\treescan\build\treescan\installers\java\jre_x64
-set javajdkx86=%fileshare%\treescan\build\packages\java\jdk-16.0.1+9_adopt_windows_x86
+set javajdkx86=%fileshare%\treescan\build\packages\java\jdk-16.0.2+7_adopt_windows_x86
 set runtimeoutputx86=%fileshare%\treescan\build\treescan\installers\java\jre_x86
 
 

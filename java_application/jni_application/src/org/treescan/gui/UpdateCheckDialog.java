@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import javax.swing.SwingWorker;
+import java.util.Base64;
 import org.treescan.gui.utils.WaitCursor;
 import org.treescan.app.AppConstants;
 import org.treescan.utils.BareBonesBrowserLaunch;
@@ -32,7 +33,6 @@ import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.xmlbeans.impl.util.Base64;
 
 /** @author  Hostovic */
 public class UpdateCheckDialog extends javax.swing.JDialog {
@@ -140,7 +140,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         // Apply authentication if specified by user.s
         if (TreeScanApplication.getDebugAuth().length() > 0) {
             connection.setRequestProperty(
-                "Authorization", "Basic " + new String(Base64.encode(TreeScanApplication.getDebugAuth().getBytes()))
+                "Authorization", "Basic " + new String(Base64.getEncoder().encode(TreeScanApplication.getDebugAuth().getBytes()))
             );
         }
         return connection;

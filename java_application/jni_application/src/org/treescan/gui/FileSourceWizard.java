@@ -409,13 +409,13 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     builder.append(" using the time-only scan and conditional Bernoulli");
                 } else throw new UnknownEnumException(_startingscantype);
                 builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
-                if (_startingmodeltype == Parameters.ModelType.BERNOULLI_TREE)
-                    builder.append("&lt;Node ID&gt;&#44;  &lt;Number of Controls&gt;");
-                else if (_startingmodeltype == Parameters.ModelType.BERNOULLI_TIME) {
+                if (_startingmodeltype == Parameters.ModelType.BERNOULLI_TIME) {
                     if (_startingscantype != Parameters.ScanType.TIMEONLY)
                         builder.append("&lt;Node ID&gt;&#44;  ");
                     builder.append("&lt;Number of Controls&gt;&#44;  &lt;Time&gt;");
-                } else throw new UnknownEnumException(_startingmodeltype);
+                } else { // _startingmodeltype == Parameters.ModelType.BERNOULLI_TREE or default                    
+                    builder.append("&lt;Node ID&gt;&#44;  &lt;Number of Controls&gt;");                
+                }
                 break;
             case Cut:
                 builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
