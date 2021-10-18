@@ -134,7 +134,7 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
 
 const char * TemporalChartGenerator::TEMPLATE_CHARTHEADER = "\n \
                 var --container-id-- = new Highcharts.Chart({ \n \
-                    chart: { height: 600, renderTo: '--container-id--', zoomType:'x', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: --margin-bottom--, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 0, borderWidth: 1, marginRight: --margin-right-- }, \n \
+                    chart: { height: 600, renderTo: '--container-id--', zoomType:'xy', panning: true, panKey: 'shift', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: --margin-bottom--, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 0, borderWidth: 1, marginRight: --margin-right-- }, \n \
                     title: { text: '--chart-title--', align: 'center' }, \n \
                     exporting: {filename: 'cluster_graph', chartOptions: { plotOptions: { series: { showInLegend: false } } }}, \n \
                     plotOptions: { column: { grouping: false }}, \n \
@@ -156,7 +156,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSERIES = "\
                                       <span class=\"checkmark\"></span> \n \
                                   </label> \n \
                                   <label class=\"container\">Expected \n \
-                                      <input class=\"series-toggle\" series-id=\"cluster_exp\" name=\"--container-id--_expected_series_toggle\" id=\"id_--container-id--_observed_series_toggle\" value=\"expected\" type=checkbox checked /> \n \
+                                      <input class=\"series-toggle\" series-id=\"cluster_exp\" name=\"--container-id--_expected_series_toggle\" id=\"id_--container-id--_observed_series_toggle\" value=\"expected\" type=checkbox /> \n \
                                       <span class=\"checkmark\"></span> \n \
                                   </label> \n \
                                   <label class=\"container\">Observed / Expected \n \
@@ -164,7 +164,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSERIES = "\
                                       <span class=\"checkmark\"></span> \n \
                                   </label> \n \
                                   <label class=\"container\">Percent Cases \n \
-                                      <input class=\"series-toggle\" series-id=\"cluster_perc_cases\" name=\"--container-id--_case_perc_series_toggle\" id=\"id_--container-id--_case_perc_series_toggle\" value=\"case_perc\" type=checkbox /> \n \
+                                      <input class=\"series-toggle\" series-id=\"cluster_perc_cases\" name=\"--container-id--_case_perc_series_toggle\" id=\"id_--container-id--_case_perc_series_toggle\" value=\"case_perc\" type=checkbox checked /> \n \
                                       <span class=\"checkmark\"></span> \n \
                                   </label> \n \
                               </div> \n \
@@ -177,7 +177,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSERIES = "\
                                   <span class=\"checkmark\"></span> \n \
                               </label> \n \
                               <label class=\"container\">Expected \n \
-                                  <input class=\"series-toggle\" series-id=\"exp\" name=\"--container-id--_expected_series_toggle\" id=\"id_--container-id--_observed_series_toggle\" value=\"expected\" type=checkbox checked /> \n \
+                                  <input class=\"series-toggle\" series-id=\"exp\" name=\"--container-id--_expected_series_toggle\" id=\"id_--container-id--_observed_series_toggle\" value=\"expected\" type=checkbox /> \n \
                                   <span class=\"checkmark\"></span> \n \
                               </label> \n \
                           </div> \n \
@@ -233,7 +233,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
                             <p class=\"help-block\">Band stretching across the plot area marking cluster interval.</p> \n \
                           </div> \n \
                       </div> \n \
-                      <div class=\"options-row\">To zoom a portion of the chart, select and drag mouse within the chart.</div> \n \
+                      <div class=\"options-row\">To zoom a portion of the chart, select and drag mouse within the chart. Hold down shift key to pan zoomed chart.</div> \n \
                     </div> \n \
                     <div class=\"hide-chart-options\"><a href=\"#\">Close Chart Options</a></div> \n \
                 </div> \n \

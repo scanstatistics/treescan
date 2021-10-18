@@ -5,6 +5,8 @@
 #include "CriticalValues.h"
 #include "PrjException.h"
 #include <cstring>
+#include <algorithm>
+#include <functional>
 
 /** constructor */
 CriticalValues::CriticalValues(unsigned int iNumReplications) : _numReplications(iNumReplications) {
