@@ -1144,17 +1144,17 @@ bool ScanRunner::readDateColumn(DataSource& source, size_t columnIdx, int& dateI
     switch (eStatus) {
         case  DateStringParser::OUT_OF_RANGE:
             _print.Printf(
-                "Error: Record %ld in %s file references an invalid '%s' value.\n       The variable precedes Data Time Range start date.\n",
+                "Error: Record %ld in %s file references an invalid '%s' value.\n       The value precedes Data Time Range start date.\n",
                 BasePrint::P_READERROR, source.getCurrentRecordIndex(), file_name.c_str(), column_name.c_str()
             ); return false;
         case  DateStringParser::LESSER_PRECISION:
             _print.Printf(
-                "Error: Record %ld in %s file references an invalid '%s' value.\n       The variable must match precision matching 'Time Precision' setting.\n",
+                "Error: Record %ld in %s file references an invalid '%s' value.\n       The value must match precision setting 'Time Precision' setting.\n",
                 BasePrint::P_READERROR, source.getCurrentRecordIndex(), file_name.c_str(), column_name.c_str()
             ); return false;
         case  DateStringParser::INVALID_DATE:
             _print.Printf(
-                "Error: Record %ld in %s file references an invalid '%s' value.\n       The variable must be %s.\n",
+                "Error: Record %ld in %s file references an invalid '%s' value.\n       The value must be %s.\n",
                 BasePrint::P_READERROR, source.getCurrentRecordIndex(), file_name.c_str(), column_name.c_str(),
                 _parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "an integer" : "a date"
             ); return false;
