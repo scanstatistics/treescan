@@ -69,6 +69,14 @@ bool ParametersValidate::ValidateAdjustmentsParameters(BasePrint & PrintDirectio
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nThe day of week adjustment is not implemented for the 'Bernoulli' model type.\n", BasePrint::P_PARAMERROR);
         }
+        if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe day of week adjustment is not implemented for the 'Bernoulli' model type.\n", BasePrint::P_PARAMERROR);
+        }
+        if (!(_parameters.getDatePrecisionType() == DataTimeRange::GENERIC || _parameters.getDatePrecisionType() == DataTimeRange::DAY)) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe day of week adjustment is only implemented for the date precision of day or generic.\n", BasePrint::P_PARAMERROR);
+        }
     }
     if (_parameters.isApplyingExclusionTimeRanges() && _parameters.getDataTimeRangeSet().getDataTimeRangeSets().size() > 0) {
         if (!(_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME)) {

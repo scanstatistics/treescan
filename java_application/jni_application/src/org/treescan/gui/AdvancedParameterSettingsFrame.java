@@ -1023,6 +1023,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _perform_dayofweek_adjustments.setEnabled(
                 (_settings_window.getScanType() == Parameters.ScanType.TREETIME || _settings_window.getScanType() == Parameters.ScanType.TIMEONLY) 
                 && _settings_window.getModelType() != Parameters.ModelType.BERNOULLI_TIME
+                && (_settings_window.getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.DAY ||
+                    _settings_window.getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.GENERIC)
         );
         if (_perform_dayofweek_adjustments.isEnabled()) {
             // switch label based upon condition type

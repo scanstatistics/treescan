@@ -134,6 +134,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         //enableSettingsForStatisticModelCombination();
         
         enableDatesByTimePrecisionUnits();
+        getAdvancedParameterInternalFrame().enableAdjustmentsOptions();
     }    
     
     /* enabled study period and prospective date precision based on time interval unit */
