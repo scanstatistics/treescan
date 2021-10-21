@@ -15,8 +15,8 @@ IzPack=$build/packages/IzPack/IzPack5.1.3
 # Build the Inno Setup installer for Windows. (Note that someday we might replace this process with jpackageInstallerWindows.bat)
 
 # Build Windows TreeScan executable from java jar file ... TreeScan.jar -> TreeScan.exe.
-chmod g+w $build/treescan/java_application/jni_application/dist/TreeScan.exe
 $javajdk/bin/java -jar $launch4j/launch4j.jar $build/treescan/installers/izpack/windows/launch4j_app.xml
+chmod g+w $build/treescan/java_application/jni_application/dist/TreeScan.exe
 
 # Prompt user to codesign TreeScan.exe then build installer and codesign that file as well.
 echo
