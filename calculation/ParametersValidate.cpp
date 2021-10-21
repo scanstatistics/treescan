@@ -69,6 +69,14 @@ bool ParametersValidate::ValidateAdjustmentsParameters(BasePrint & PrintDirectio
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nThe day of week adjustment is not implemented for the 'Bernoulli' model type.\n", BasePrint::P_PARAMERROR);
         }
+        if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe day of week adjustment is not implemented for the 'Bernoulli' model type.\n", BasePrint::P_PARAMERROR);
+        }
+        if (!(_parameters.getDatePrecisionType() == DataTimeRange::GENERIC || _parameters.getDatePrecisionType() == DataTimeRange::DAY)) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe day of week adjustment is only implemented for the date precision of day or generic.\n", BasePrint::P_PARAMERROR);
+        }
     }
     if (_parameters.isApplyingExclusionTimeRanges() && _parameters.getDataTimeRangeSet().getDataTimeRangeSets().size() > 0) {
         if (!(_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME)) {
@@ -733,10 +741,6 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan is not implemented with the options to read or write simulation data.\n", BasePrint::P_PARAMERROR);
         }
-        if (_parameters.getNumReplicationsRequested() < 999) {
-            bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, the minimum number of replications is 999.\n", BasePrint::P_PARAMERROR);
-        }
         if (_parameters.getPerformDayOfWeekAdjustment()) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan is not implemented for the day of week adjustment.\n", BasePrint::P_PARAMERROR);
@@ -751,11 +755,20 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
                 PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, the minimum number of cases to signal must be greater than 1 and less than total sequential cases.\n", BasePrint::P_PARAMERROR);
             }
         }
-        if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
+        if (_parameters.getNumReplicationsRequested() < 999) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, the minimum number of replications is 999.\n", BasePrint::P_PARAMERROR);
+        } else if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
             if (_parameters.getSequentialAlphaSpending() < 1.0 / static_cast<double>(_parameters.getNumReplicationsRequested() + 1)) {
                 bValid = false;
-                PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, alpha spending cannot be less than %lf with %u replications.\n", 
-                    BasePrint::P_PARAMERROR, 1.0 / static_cast<double>(_parameters.getNumReplicationsRequested() + 1), _parameters.getNumReplicationsRequested());
+                std::string buffer;
+                PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, alpha spending cannot be less than %s with %u replications.\n", 
+                    BasePrint::P_PARAMERROR, 
+                    getRoundAsString(1.0 / static_cast<double>(_parameters.getNumReplicationsRequested() + 1), 
+                        buffer, static_cast<unsigned int>(ceil(fabs(log10(_parameters.getNumReplicationsRequested()))))
+                    ).c_str(),
+                    _parameters.getNumReplicationsRequested()
+                );
             }
             if (_parameters.getSequentialAlphaSpending() > _parameters.getSequentialAlphaOverall()) {
                 bValid = false;

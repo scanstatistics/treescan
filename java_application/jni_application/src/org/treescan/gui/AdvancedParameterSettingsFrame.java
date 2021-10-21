@@ -195,7 +195,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= _reportCriticalValuesCheckBox.isSelected() == false;
         bReturn &= _chk_rpt_attributable_risk.isSelected() == false;
         bReturn &= _attributable_risk_exposed.getText().equals("");
-        bReturn &= _reportTemporalGraph.isSelected();
+        bReturn &= _reportTemporalGraph.isSelected() == false;
         bReturn &= _temporalGraphMostLikely.isSelected();
         bReturn &= _numMostLikelyClustersGraph.getText().equals("1");
         bReturn &= (Double.parseDouble(_temporalGraphPvalueCutoff.getText()) == 0.05);
@@ -1007,12 +1007,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public void enableTemporalGraphsGroup(boolean enable) {
         _graphOutputGroup.setEnabled(enable);
         _reportTemporalGraph.setEnabled(_graphOutputGroup.isEnabled());
+
         _temporalGraphMostLikely.setEnabled(enable && _reportTemporalGraph.isSelected());
+ 
         _temporalGraphMostLikelyX.setEnabled(enable && _reportTemporalGraph.isSelected());
-        _numMostLikelyClustersGraph.setEnabled(enable && _reportTemporalGraph.isSelected());
-        _numMostLikelyClustersGraphLabel.setEnabled(enable && _reportTemporalGraph.isSelected());
+        _numMostLikelyClustersGraphLabel.setEnabled(enable && _reportTemporalGraph.isSelected() && _temporalGraphMostLikelyX.isSelected());
+        _numMostLikelyClustersGraph.setEnabled(enable && _reportTemporalGraph.isSelected() && _temporalGraphMostLikelyX.isSelected());
+
         _temporalGraphSignificant.setEnabled(enable && _reportTemporalGraph.isSelected());
-        _temporalGraphPvalueCutoff.setEnabled(enable && _reportTemporalGraph.isSelected());
+        _temporalGraphPvalueCutoff.setEnabled(enable && _reportTemporalGraph.isSelected() && _temporalGraphSignificant.isSelected());
     }    
     
     /** enables options of the Adjustments tab */
@@ -1020,6 +1023,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _perform_dayofweek_adjustments.setEnabled(
                 (_settings_window.getScanType() == Parameters.ScanType.TREETIME || _settings_window.getScanType() == Parameters.ScanType.TIMEONLY) 
                 && _settings_window.getModelType() != Parameters.ModelType.BERNOULLI_TIME
+                && (_settings_window.getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.DAY ||
+                    _settings_window.getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.GENERIC)
         );
         if (_perform_dayofweek_adjustments.isEnabled()) {
             // switch label based upon condition type
@@ -1166,6 +1171,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         maximumWindowButtonGroup = new javax.swing.ButtonGroup();
         _powerEstimationButtonGroup = new javax.swing.ButtonGroup();
+        _temporal_graph_buttongroup = new javax.swing.ButtonGroup();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         _advanced_input_tab = new javax.swing.JPanel();
         _cutFileLabel = new javax.swing.JLabel();
@@ -2323,6 +2329,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _temporal_graph_buttongroup.add(_temporalGraphMostLikely);
         _temporalGraphMostLikely.setSelected(true);
         _temporalGraphMostLikely.setText("Most likely cluster only");
         _temporalGraphMostLikely.addItemListener(new java.awt.event.ItemListener() {
@@ -2334,7 +2341,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _temporal_graph_buttongroup.add(_temporalGraphMostLikelyX);
+        _temporalGraphMostLikelyX.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());
+                    enableSetDefaultsButton();
+                }
+            }
+        });
+
         _numMostLikelyClustersGraph.setText("1"); // NOI18N
+        _numMostLikelyClustersGraph.setEnabled(false);
         _numMostLikelyClustersGraph.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 Utils.validatePostiveFloatKeyTyped(_numMostLikelyClustersGraph, e, 5);
@@ -2356,9 +2374,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _numMostLikelyClustersGraphLabel.setText("most likely clusters, one graph for each");
 
+        _temporal_graph_buttongroup.add(_temporalGraphSignificant);
         _temporalGraphSignificant.setText("All significant clusters, one graph for each, with p-value less than:");
+        _temporalGraphSignificant.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());
+                    enableSetDefaultsButton();
+                }
+            }
+        });
 
         _temporalGraphPvalueCutoff.setText("0.05"); // NOI18N
+        _temporalGraphPvalueCutoff.setEnabled(false);
         _temporalGraphPvalueCutoff.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 Utils.validatePostiveFloatKeyTyped(_temporalGraphPvalueCutoff, e, 20);
@@ -2931,6 +2959,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _temporalGraphPvalueCutoff;
     private javax.swing.JRadioButton _temporalGraphSignificant;
     private javax.swing.JPanel _temporalWindowDefinitionGroup;
+    private javax.swing.ButtonGroup _temporal_graph_buttongroup;
     private javax.swing.JPanel _temporal_window_cards;
     private javax.swing.JRadioButton _timeTemporalRadioButton;
     private javax.swing.JTextField _time_range_restrictions;

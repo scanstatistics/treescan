@@ -444,12 +444,13 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParamete
             settings.push_back(std::make_pair("Maximum Temporal Window", buffer));
         }
         settings.push_back(std::make_pair("Prospective Analysis", (_parameters.getIsProspectiveAnalysis() ? "Yes" : "No")));
-        settings.push_back(std::make_pair("Restrict Temporal Windows", (_parameters.getRestrictTemporalWindows() ? "Yes" : "No")));
-        if (_parameters.getRestrictTemporalWindows()) {
-            settings.push_back(std::make_pair("Temporal Time Window Start", _parameters.getTemporalStartRangeStr()));
-            settings.push_back(std::make_pair("Temporal Time Window End", _parameters.getTemporalEndRangeStr()));
-        }
-
+		if (!_parameters.getIsProspectiveAnalysis()) {
+			settings.push_back(std::make_pair("Restrict Temporal Windows", (_parameters.getRestrictTemporalWindows() ? "Yes" : "No")));
+			if (_parameters.getRestrictTemporalWindows()) {
+				settings.push_back(std::make_pair("Temporal Time Window Start", _parameters.getTemporalStartRangeStr()));
+				settings.push_back(std::make_pair("Temporal Time Window End", _parameters.getTemporalEndRangeStr()));
+			}
+		}
     }
     return settings;
 }

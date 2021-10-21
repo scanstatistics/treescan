@@ -365,7 +365,7 @@ void TemporalChartGenerator::generateChart() const {
                     odeSeries.reset(new ChartSeries("case_ratio", 2, "line", (is_pt ? "Cases Ratio" : "Cases Ratio (Outside Cluster)"), "00FF00", "triangle", 1));
                     if (!is_pt)
                         // space-time clusters also graph series which allow comparison between inside and outside the cluster
-                        cluster_odeSeries.reset(new ChartSeries("cluster_case_ratio", 2, "line", "Cases Ratio (Inside Cluster)", "FF8000", "triangle", 1));
+                        cluster_odeSeries.reset(new ChartSeries("cluster_obs_exp", 2, "line", "Cases Ratio (Inside Cluster)", "FF8000", "triangle", 1));
                 } else if (parameters.getModelType() == Parameters::UNIFORM || (parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE && parameters.getConditionalType() == Parameters::NODEANDTIME)) {
                     // graphing observed / expected, with y-axis along right side
                     additional_yaxis << ", { title: { enabled: true, text: 'Observed / Expected', style: { fontWeight: 'normal' } }, min: 0, opposite: false, showEmpty: false }";

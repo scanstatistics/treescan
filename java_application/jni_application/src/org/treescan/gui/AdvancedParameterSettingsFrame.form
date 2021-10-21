@@ -6,6 +6,8 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_powerEstimationButtonGroup">
     </Component>
+    <Component class="javax.swing.ButtonGroup" name="_temporal_graph_buttongroup">
+    </Component>
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="1"/>
@@ -1471,6 +1473,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalGraphMostLikely">
                   <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_temporal_graph_buttongroup"/>
+                    </Property>
                     <Property name="selected" type="boolean" value="true"/>
                     <Property name="text" type="java.lang.String" value="Most likely cluster only"/>
                   </Properties>
@@ -1479,10 +1484,19 @@
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalGraphMostLikelyX">
+                  <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_temporal_graph_buttongroup"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalGraphMostLikelyX.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());&#xa;            enableSetDefaultsButton();&#xa;        }&#xa;    }&#xa;});"/>
+                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_numMostLikelyClustersGraph">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="1" noResource="true"/>
+                    <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_numMostLikelyClustersGraph.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_numMostLikelyClustersGraph, e, 5);&#xa;    }&#xa;});&#xa;_numMostLikelyClustersGraph.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_numMostLikelyClustersGraph.getText().length() == 0 || Integer.parseInt(_numMostLikelyClustersGraph.getText()) == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _numMostLikelyClustersGraph.setText(&quot;1&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_numMostLikelyClustersGraph.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
@@ -1495,12 +1509,19 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalGraphSignificant">
                   <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_temporal_graph_buttongroup"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="All significant clusters, one graph for each, with p-value less than:"/>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalGraphSignificant.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xd;&#xa;            enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());&#xd;&#xa;            enableSetDefaultsButton();&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;});"/>
+                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_temporalGraphPvalueCutoff">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="0.05" noResource="true"/>
+                    <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalGraphPvalueCutoff.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_temporalGraphPvalueCutoff, e, 20);&#xa;    }&#xa;});&#xa;_temporalGraphPvalueCutoff.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_temporalGraphPvalueCutoff.getText().length() == 0 ||&#xa;                Double.parseDouble(_temporalGraphPvalueCutoff.getText()) &lt;= 0 ||&#xa;                Double.parseDouble(_temporalGraphPvalueCutoff.getText()) &gt; 1)&#xa;            if (undo.canUndo()) undo.undo(); else _temporalGraphPvalueCutoff.setText(&quot;.05&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_temporalGraphPvalueCutoff.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
