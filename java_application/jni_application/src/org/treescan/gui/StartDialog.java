@@ -26,7 +26,9 @@ public class StartDialog extends javax.swing.JDialog {
         super(parent, true);
         initComponents();
         _open_last_session.setEnabled(ParameterHistory.getInstance().getHistoryList().size() > 0);
-        _open_last_session.setToolTipText(ParameterHistory.getInstance().getHistoryList().get(0).toString());
+        if (ParameterHistory.getInstance().getHistoryList().size() > 0) {
+            _open_last_session.setToolTipText(ParameterHistory.getInstance().getHistoryList().get(0).toString());
+        }
         setLocationRelativeTo(parent);
     }
     
