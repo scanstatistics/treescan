@@ -23,6 +23,7 @@ class RecordBuffer {
       const FieldDef                  & GetFieldDefinition(unsigned int iFieldIndex) const;
       const FieldDef                  & GetFieldDefinition(const std::string& sFieldName) const;
       unsigned int                      GetFieldIndex(const std::string& sFieldName) const;
+      unsigned int                      GetFieldIndex(std::initializer_list<std::string> fieldNames) const;
       bool                              GetFieldIsBlank(unsigned int iFieldNumber) const;
       FieldValue                      & GetFieldValue(const std::string& sFieldName);
       FieldValue                      & GetFieldValue(unsigned int iFieldIndex);
@@ -70,11 +71,12 @@ class DataRecordWriter {
   protected:
     ptr_vector<FieldDef>        _dataFieldDefinitions;       /** field definitions              */
 
-    size_t                      getLocationIdentiferFieldLength() const {return DEFAULT_LOC_FIELD_SIZE;}
 
   public:
     DataRecordWriter() {}
     virtual ~DataRecordWriter() {}
+
+    static size_t               getLocationIdentiferFieldLength() { return DEFAULT_LOC_FIELD_SIZE; }
 
     static void                 CreateField(ptr_vector<FieldDef>& vFields, const std::string& sFieldName, char cType,
                                             short wLength, short wPrecision, unsigned short& uwOffset, 
@@ -98,11 +100,12 @@ class CSVDataFileWriter {
       CSVDataFileWriter(std::ofstream& outfile, const ptr_vector<FieldDef>& vFieldDefs, bool printHeaders, bool append=false);
       virtual ~CSVDataFileWriter() {}
 
-     virtual void	            writeRecord(const RecordBuffer& Record);
+     virtual void            writeRecord(const RecordBuffer& Record);
 };
 
 class ScanRunner; /* forward class declaration */
 class CutStructure; /* forward class declaration */
+class NodeStructure; /* forward class declaration */
 class CutsRecordWriter : public DataRecordWriter {
   public:
     static const char         * CUT_FILE_SUFFIX;
@@ -117,6 +120,8 @@ class CutsRecordWriter : public DataRecordWriter {
        virtual ~CutsRecordWriter();
 
        static std::string & getFilename(const Parameters& parameters, std::string& buffer);
+       static ptr_vector<FieldDef>& getFieldDefs(ptr_vector<FieldDef>& fields, const Parameters& params);
+       static RecordBuffer& getRecordForCutChild(RecordBuffer& Record, const CutStructure& thisCut, const NodeStructure& childNode, size_t subIndex, const ScanRunner& scanner);
 
        void                  write(const CutStructure& thisCut) const;
 };

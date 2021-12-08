@@ -23,6 +23,13 @@
 #include <algorithm>
 
 class ScanRunner;
+
+double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx);
+double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx);
+double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx);
+double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx);
+std::string & AttributableRiskAsString(double ar, std::string& s);
+
 class CutStructure {
 public:
     typedef std::vector<int> CutChildContainer_t;
@@ -94,7 +101,7 @@ private:
     RelationContainer_t     _Parent;
     Parameters::CutType     _cut_type;
     CumulativeStatus        _cumulative_status;
-	unsigned int            _level;             // calculated node level
+    unsigned int            _level;             // calculated node level
 
     CountContainer_t        _IntC_Censored;     // Number of censored cases internal to the ndoe.
     count_t                 _min_censored_Br;   // minimum censored on branch
@@ -187,6 +194,13 @@ public:
     const ExpectedContainer_t   & getBrN_C() const {return _BrN_C;}
     const RelationContainer_t   & getChildren() const {return _Child;}
     const RelationContainer_t   & getParents() const {return _Parent;}
+    std::string                 & getParentIndentifiers(std::string& parents) const {
+                                    std::stringstream buffer;
+                                    for (auto itr = getParents().begin(); itr != getParents().end(); ++itr)
+                                        buffer << (itr != getParents().begin() ? "," : "") << (*itr)->getIdentifier();
+                                    parents = buffer.str();
+                                    return parents;
+                                  }
     Parameters::CutType           getCutType() const {return _cut_type;} 
     ExpectedContainer_t         & refIntN_C() {
                                     if (_IntN_C.size() == 0) {
@@ -460,6 +474,16 @@ protected:
 public:
     ScanRunner(const Parameters& parameters, BasePrint& print);
 
+    const NodeStructure::RelationContainer_t getCutChildNodes(const CutStructure& cut) const {
+        // Returns the direct child nodes for cut. If this cut wasn't simple, then this might be a subset of the children.
+        if (cut.getCutChildren().size()) {
+            NodeStructure::RelationContainer_t children;
+            for (auto itr=cut.getCutChildren().begin(); itr != cut.getCutChildren().end(); ++itr)
+                children.push_back(_Nodes[*itr]);
+            return children;
+        }
+        return _Nodes[cut.getID()]->getChildren();
+    }
     Index_t                            getNodeIndex(const std::string& identifier) const;
     bool                               isCensoredData() const { return _censored_data; }
     DataTimeRange::index_t             getAvgCensorTime() const { return _avg_censor_time; }

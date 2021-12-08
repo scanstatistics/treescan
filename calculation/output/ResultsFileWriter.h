@@ -19,7 +19,7 @@ class ResultsFileWriter {
   protected:
     const ScanRunner & _scanRunner;
 
-    std::ofstream & addTableRowForCut(CutStructure& thisCut, Loglikelihood_t & calcLogLikelihood, const std::string& format, std::ofstream& outfile);
+    std::ofstream & addTableRowForCut(CutStructure& thisCut, Loglikelihood_t & calcLogLikelihood, const std::string& format, std::ofstream& outfile, std::stringstream * subrows=0);
     const char    * getPvalueClass(double pval, bool childClass);
     const char    * getRelativeRiskClass(double rr, bool childClass);
     const char    * getRecurranceIntervalClass(const RecurrenceInterval_t& ri, bool childClass) const;

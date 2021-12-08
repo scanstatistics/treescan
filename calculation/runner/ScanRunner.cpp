@@ -29,31 +29,183 @@
 #include "ParameterFileAccess.h"
 #include "ChartGenerator.h"
 
-/* Calculates the attributable risk per person for cut. */
-double CutStructure::getAttributableRisk(const ScanRunner& scanner) const {
+double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
     const Parameters& parameters = scanner.getParameters();
-    double C = static_cast<double>(_C);
-    double totalC = static_cast<double>(scanner.getTotalC());
-
+    double C = static_cast<double>(_C), totalC = static_cast<double>(scanner.getTotalC());
+    
     switch (parameters.getScanType()) {
-
         case Parameters::TREEONLY: {
             switch (parameters.getConditionalType()) {
-                case Parameters::UNCONDITIONAL :
-                case Parameters::TOTALCASES : return getExcessCases(scanner) / static_cast<double>(parameters.getAttributableRiskExposed());
-                default: throw prg_error("Cannot calculate attributable risk: tree-only, condition type (%d).", "getAttributableRisk()", parameters.getConditionalType());
+                case Parameters::UNCONDITIONAL:
+                    if (parameters.getModelType() == Parameters::POISSON)
+                        return C - _N;
+                    if (parameters.getModelType() == Parameters::BERNOULLI_TREE)
+                        if (parameters.getSelfControlDesign())
+                            return C - scanner.getParameters().getProbability() * (_N - C) / (1.0 - scanner.getParameters().getProbability());
+                    return C - _N * scanner.getParameters().getProbability();
+                    throw prg_error("Cannot calculate excess cases: tree-only, unconditonal, model (%d).", "getExcessCases()", parameters.getModelType());
+                case Parameters::TOTALCASES:
+                    if (parameters.getModelType() == Parameters::POISSON) {
+                        if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", parameters.getModelType(), scanner.getTotalN(), _N);
+                        return C - _N * (totalC - C) / (scanner.getTotalN() - _N);
+                    }
+                    if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
+                        if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", parameters.getModelType(), scanner.getTotalN(), _N);
+                        return C - _N * (totalC - C) / (scanner.getTotalN() - _N);
+                    }
+                    throw prg_error("Cannot calculate excess cases: tree-only, total-cases, model (%d).", "getExcessCases()", parameters.getModelType());
+                default: throw prg_error("Cannot calculate excess cases: tree-only, condition type (%d).", "getExcessCases()", parameters.getConditionalType());
             }
         }
-
         case Parameters::TIMEONLY: /* time-only, condtioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
         case Parameters::TREETIME: {
             switch (parameters.getConditionalType()) {
-                case Parameters::TOTALCASES : /* this option is really only for time-only */
-                case Parameters::NODE :       /* this option is really only for tree-time */
-                    return getExcessCases(scanner) / static_cast<double>(parameters.getAttributableRiskExposed());
-                case Parameters::NODEANDTIME : {
-                    double exp = getExpected(scanner);
-                    double NodeCases = static_cast<double>(scanner.getNodes()[getID()]->getBrC());
+                case Parameters::TOTALCASES: /* this option is really only for time-only */
+                case Parameters::NODE:       /* this option is really only for tree-time */
+                    if (parameters.getModelType() == Parameters::UNIFORM) {
+                        if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
+                            //Obs - Exp * [ (NodeCases-Obs) / (NodeCases-Exp) ]
+                            double exp = getExpectedFor(scanner, nodeID, _C, _N, _start_idx, _end_idx);
+                            double NodeCases = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
+                            return C - exp * ((NodeCases - C) / (NodeCases - exp));
+                        }
+                        double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+                        double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                        if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getExcessCases()", parameters.getModelType(), T, W);
+                        return C - W * (_N - C) / (T - W);
+                    } if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+                        /* TODO -- is this correct or should it be in terms of node only? */
+
+                        if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", parameters.getModelType(), scanner.getTotalN(), _N);
+                        return C - _N * (totalC - C) / (scanner.getTotalN() - _N);
+                    }
+                    throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getExcessCases()", parameters.getModelType());
+                case Parameters::NODEANDTIME: {
+                    /* c = cases in detected cluster
+                    C = total cases in the whole tree
+                    C(n)=total cases in the cluster node, summed over the whole study time period
+                    C(t)=total cases in the cluster time window, summed over all the nodes
+                    Let E2 = (C(n)-c)*(C(t)-c) / (C-C(n)-C(t)+c) -- this is an alternative method for calculating expected counts
+                    Excess Cases = c-E2
+                    */
+                    double Cn = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
+                    double Ct = 0.0;
+                    for (size_t t = 0; t < scanner.getNodes().size(); ++t)
+                        Ct += static_cast<double>(scanner.getNodes()[t]->getIntC_C()[_start_idx]) - static_cast<double>(scanner.getNodes()[t]->getIntC_C()[_end_idx + 1]);
+                    double denominator = totalC - Cn - Ct + C;
+                    if (denominator == 0.0) // This will never happen when looking for clusters with high rates.
+                        return std::numeric_limits<double>::quiet_NaN();
+                    double e2 = (Cn - C) * (Ct - C) / denominator;
+                    if (e2 == 0.0 && C == 0.0) // C == 0.0 will never happen when looking for clusters with high rates.
+                        return std::numeric_limits<double>::quiet_NaN();
+                    return C - e2;
+                }
+                default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getExcessCases()", parameters.getConditionalType());
+            }
+        }
+        default: throw prg_error("Unknown scan type (%d).", "getExcessCases()", parameters.getScanType());
+    }
+}
+
+double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
+    const Parameters& parameters = scanner.getParameters();
+    double C = static_cast<double>(_C), totalC = static_cast<double>(scanner.getTotalC());
+    switch (parameters.getScanType()) {
+        case Parameters::TREEONLY: {
+            switch (parameters.getConditionalType()) {
+            case Parameters::UNCONDITIONAL:
+                if (parameters.getModelType() == Parameters::POISSON)
+                    return _N;
+                if (parameters.getModelType() == Parameters::BERNOULLI_TREE)
+                    return _N * scanner.getParameters().getProbability();
+                throw prg_error("Cannot determine expected cases: tree-only, unconditonal, model (%d).", "getExpected()", parameters.getModelType());
+            case Parameters::TOTALCASES:
+                if (parameters.getModelType() == Parameters::POISSON)
+                    return _N * totalC / scanner.getTotalN();
+                if (parameters.getModelType() == Parameters::BERNOULLI_TREE)
+                    return _N * (scanner.getTotalC() / scanner.getTotalN());
+                throw prg_error("Cannot determine expected cases: tree-only, total-cases, model (%d).", "getExpected()", parameters.getModelType());
+            default: throw prg_error("Cannot determine expected cases: tree-only, condition type (%d).", "getExpected()", parameters.getConditionalType());
+            }
+        }
+        case Parameters::TREETIME: {
+            switch (parameters.getConditionalType()) {
+                case Parameters::NODE:
+                    if (parameters.getModelType() == Parameters::UNIFORM) {
+                        if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
+                            return _N;
+                        } else {
+                            /*  (N*W/T)
+                            N = number of cases in the node, through the whole time period (below, all 0604 cases)
+                            W = number of days in the temporal cluster (below, 11-6=5)
+                            T = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used)
+                            */
+                            double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+                            double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                            return _N * W / T;
+                        }
+                    } else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+                        /* TODO -- is this correct or should it be in terms of node only? */
+                        return static_cast<double>(scanner.getTotalC()) / scanner.getTotalN() * _N;
+                    }
+                    throw prg_error("Cannot determine expected cases: tree-time, total-cases, model (%d).", "getExpected()", parameters.getModelType());
+                case Parameters::NODEANDTIME:
+                    if (parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE)
+                        return _N;
+                    throw prg_error("Cannot determine expected cases: tree-time, node-time, model (%d).", "getExpected()", parameters.getModelType());
+                default: throw prg_error("Cannot determine expected cases: tree-time, condition type (%d).", "getExpected()", parameters.getConditionalType());
+            }
+        }
+        case Parameters::TIMEONLY: { /* time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
+            switch (parameters.getConditionalType()) {
+                case Parameters::TOTALCASES:
+                    if (parameters.getModelType() == Parameters::UNIFORM) {
+                        if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
+                            return _N;
+                        } else {
+                            /*  (N*W/T)
+                            N = number of cases in the node, through the whole time period (below, all 0604 cases)
+                            W = number of days in the temporal cluster (below, 11-6=5)
+                            T = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used)
+                            */
+                            double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+                            double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                            return _N * W / T;
+                        }
+                    } else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+                        /* TODO -- is this correct or should it be in terms of node only? */
+                        return static_cast<double>(scanner.getTotalC()) / scanner.getTotalN() * _N;
+                    }
+                    throw prg_error("Cannot determine expected cases: tree-time, total-cases, model (%d).", "getExpected()", parameters.getModelType());
+                default: throw prg_error("Cannot determine expected cases: tree-time, condition type (%d).", "getExpected()", parameters.getConditionalType());
+            }
+       }
+       default: throw prg_error("Unknown scan type (%d).", "getExpected()", parameters.getScanType());
+    }
+}
+
+/* Calculates the attributable risk per person for cut. */
+double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
+    const Parameters& parameters = scanner.getParameters();
+    double C = static_cast<double>(_C), totalC = static_cast<double>(scanner.getTotalC());
+
+    switch (parameters.getScanType()) {
+        case Parameters::TREEONLY: {
+            switch (parameters.getConditionalType()) {
+                case Parameters::UNCONDITIONAL:
+                case Parameters::TOTALCASES: return getExcessCasesFor(scanner, nodeID, _C, _N, _start_idx, _end_idx) / static_cast<double>(parameters.getAttributableRiskExposed());
+                default: throw prg_error("Cannot calculate attributable risk: tree-only, condition type (%d).", "getAttributableRisk()", parameters.getConditionalType());
+            }
+        }
+        case Parameters::TIMEONLY: /* time-only, condtioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
+        case Parameters::TREETIME: {
+            switch (parameters.getConditionalType()) {
+                case Parameters::TOTALCASES: /* this option is really only for time-only */
+                case Parameters::NODE:       /* this option is really only for tree-time */
+                    return getExcessCasesFor(scanner, nodeID, _C, _N, _start_idx, _end_idx) / static_cast<double>(parameters.getAttributableRiskExposed());
+                case Parameters::NODEANDTIME: {
+                    double exp = getExcessCasesFor(scanner, nodeID, _C, _N, _start_idx, _end_idx);
+                    double NodeCases = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
                     // O/Eout = (NodeCases – CasesInWindow) / (NodeCases-  - Expected)
                     double o_eout = (NodeCases - C) / (NodeCases - exp);
                     // EHA = Expected * O/Eout
@@ -67,9 +219,130 @@ double CutStructure::getAttributableRisk(const ScanRunner& scanner) const {
                 default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getAttributableRisk()", parameters.getConditionalType());
             }
         }
-
         default: throw prg_error("Unknown scan type (%d).", "getExcessCases()", parameters.getScanType());
     }
+}
+
+/** Returns cut's relative risk. See user guide for formula explanation. */
+double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
+    double relative_risk = 0;
+    double C = static_cast<double>(_C), totalC = static_cast<double>(scanner.getTotalC());
+
+    const Parameters& parameters = scanner.getParameters();
+        switch (parameters.getScanType()) {
+            case Parameters::TREEONLY: {
+                switch (parameters.getConditionalType()) {
+                    case Parameters::UNCONDITIONAL:
+                        if (parameters.getModelType() == Parameters::POISSON) {
+                            relative_risk = C / _N;
+                            return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
+                        }
+                        if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
+                            if (parameters.getSelfControlDesign())
+                                relative_risk = (C / parameters.getProbability()) / ((_N - C) / (1.0 - parameters.getProbability()));
+                            else
+                                relative_risk = C / (_N * parameters.getProbability());
+                            return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
+                        }
+                        throw prg_error("Cannot calculate relative risk: tree-only, unconditonal, model (%d).", "getRelativeRisk()", parameters.getModelType());
+                    case Parameters::TOTALCASES:
+                        if (parameters.getModelType() == Parameters::POISSON) {
+                            double NN = scanner.getTotalN() - _N;
+                            if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", parameters.getModelType(), scanner.getTotalN(), _N);
+                            double CC = totalC - C;
+                            relative_risk = CC ? (C / _N) / (CC / NN) : 0;
+                            return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
+                        }
+                        if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
+                            double NN = scanner.getTotalN() - _N;
+                            if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", parameters.getModelType(), scanner.getTotalN(), _N);
+                            double CC = totalC - C;
+                            relative_risk = CC ? (C / _N) / (CC / NN) : 0;
+                            return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
+                        }
+                        throw prg_error("Cannot calculate relative risk: tree-only, total-cases, model (%d).", "getRelativeRisk()", parameters.getModelType());
+                    default: throw prg_error("Cannot calculate relative risk: tree-only, condition type (%d).", "getRelativeRisk()", parameters.getConditionalType());
+                }
+            }
+            case Parameters::TIMEONLY: /* time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
+            case Parameters::TREETIME: {
+                switch (parameters.getConditionalType()) {
+                case Parameters::TOTALCASES: /* this option is really only for time-only */
+                case Parameters::NODE:       /* this option is really only for tree-time */
+                    if (parameters.getModelType() == Parameters::UNIFORM) {
+                        if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
+                            // (Obs/Exp) / [ (NodeCases-Obs) / (NodeCases-Exp) ]
+                            double exp = getExpectedFor(scanner, nodeID, _C, _N, _start_idx, _end_idx);
+                            double NodeCases = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
+                            if (C == NodeCases)
+                                relative_risk = std::numeric_limits<double>::infinity();
+                            else
+                                relative_risk = (C / exp) / ((NodeCases - C) / (NodeCases - exp));
+                            return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
+                        }
+                        double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+                        double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                        if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getRelativeRisk()", parameters.getModelType(), T, W);
+                        double CC = _N - static_cast<double>(_C);
+                        relative_risk = CC ? (static_cast<double>(_C) / W) / (CC / (T - W)) : 0.0;
+                        return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
+                    }
+                    else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+                        /* TODO -- is this correct or should it be in terms of node only? */
+
+                        //when all cases are inside cluster, relative risk goes to infinity
+                        if (totalC == static_cast<double>(_C)) return -1;
+
+                        if (_N && totalC - _N && ((totalC - _C) / (totalC - _N)))
+                            return (_C / _N) / ((totalC - _C) / (totalC - _N));
+                        return 0;
+                    }
+                    throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getRelativeRisk()", parameters.getModelType());
+                case Parameters::NODEANDTIME: {
+                    /* c = cases in detected cluster
+                    C = total cases in the whole tree
+                    C(n)=total cases in the cluster node, summed over the whole study time period
+                    C(t)=total cases in the cluster time window, summed over all the nodes
+                    Let E2 = (C(n)-c)*(C(t)-c) / (C-C(n)-C(t)+c) -- this is an alternative method for calculating expected counts
+                    RR = c/E2
+                    */
+                    double Cn = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
+                    double Ct = 0.0;
+                    for (size_t t = 0; t < scanner.getNodes().size(); ++t)
+                        Ct += static_cast<double>(scanner.getNodes()[t]->getIntC_C()[_start_idx]) - static_cast<double>(scanner.getNodes()[t]->getIntC_C()[_end_idx + 1]);
+                    double denominator = totalC - Cn - Ct + C;
+                    if (denominator == 0.0) // This will never happen when looking for clusters with high rates.
+                        return std::numeric_limits<double>::quiet_NaN();
+                    double e2 = (Cn - C) * (Ct - C) / denominator;
+                    if (e2 == 0.0) // C == 0.0 will never happen when looking for clusters with high rates.
+                        return C == 0.0 ? std::numeric_limits<double>::quiet_NaN() : std::numeric_limits<double>::infinity()/*This will happen now and then.*/;
+                    return C / e2;
+                }
+                default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getRelativeRisk()", parameters.getConditionalType());
+                }
+            }
+
+            default: throw prg_error("Unknown scan type (%d).", "getRelativeRisk()", parameters.getScanType());
+    }
+}
+
+/** Returns the attributable risk as formatted string. */
+std::string & AttributableRiskAsString(double ar, std::string& s) {
+    std::stringstream ss;
+    if (ar >= 0.001) {
+        ss << getRoundAsString(ar * 1000.0, s, 1, true).c_str() << " per 1,000";
+    } else {
+        ss << getRoundAsString(ar * 1000000.0, s, 1, true).c_str() << " per 1,000,000";
+    }
+    s = ss.str().c_str();
+    return s;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/* Calculates the attributable risk per person for cut. */
+double CutStructure::getAttributableRisk(const ScanRunner& scanner) const {
+    return getAttributableRiskFor(scanner, _ID, _C, _N, _start_idx, _end_idx);
 }
 
 /** Returns the attributable risk as formatted string. */
@@ -87,165 +360,12 @@ std::string & CutStructure::getAttributableRiskAsString(const ScanRunner& scanne
 
 /* Calculates the excess number of cases. See user guide for formula explanation. */
 double CutStructure::getExcessCases(const ScanRunner& scanner) const {
-    const Parameters& parameters = scanner.getParameters();
-    double C = static_cast<double>(_C);
-    double totalC = static_cast<double>(scanner.getTotalC());
-    switch (parameters.getScanType()) {
-
-        case Parameters::TREEONLY: {
-            switch (parameters.getConditionalType()) {
-                case Parameters::UNCONDITIONAL :
-                    if (parameters.getModelType() == Parameters::POISSON)
-                        return C - _N;
-                    if (parameters.getModelType() == Parameters::BERNOULLI_TREE)
-                        if (parameters.getSelfControlDesign())
-                            return C - scanner.getParameters().getProbability() * (_N - C)/(1.0 - scanner.getParameters().getProbability());
-                        return C - _N * scanner.getParameters().getProbability();
-                    throw prg_error("Cannot calculate excess cases: tree-only, unconditonal, model (%d).", "getExcessCases()", parameters.getModelType());
-                case Parameters::TOTALCASES :
-                    if (parameters.getModelType() == Parameters::POISSON) {
-                        if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", parameters.getModelType(), scanner.getTotalN(), _N);
-                        return C - _N * (totalC - C)/(scanner.getTotalN() - _N);
-                    }
-                    if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
-                        if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", parameters.getModelType(), scanner.getTotalN(), _N);
-                        return C - _N * (totalC - C)/(scanner.getTotalN() - _N);
-                    }
-                    throw prg_error("Cannot calculate excess cases: tree-only, total-cases, model (%d).", "getExcessCases()", parameters.getModelType());
-                default: throw prg_error("Cannot calculate excess cases: tree-only, condition type (%d).", "getExcessCases()", parameters.getConditionalType());
-            }
-        }
-
-        case Parameters::TIMEONLY: /* time-only, condtioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
-        case Parameters::TREETIME: {
-            switch (parameters.getConditionalType()) {
-                case Parameters::TOTALCASES : /* this option is really only for time-only */
-                case Parameters::NODE :       /* this option is really only for tree-time */
-                    if (parameters.getModelType() == Parameters::UNIFORM) {
-                        if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
-                            //Obs - Exp * [ (NodeCases-Obs) / (NodeCases-Exp) ]
-                            double exp = getExpected(scanner);
-                            double NodeCases = static_cast<double>(scanner.getNodes()[getID()]->getBrC());
-                            return C - exp * ((NodeCases - C) / (NodeCases - exp));
-                        }
-                        double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-                        double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-                        if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getExcessCases()", parameters.getModelType(), T, W);
-                        return C - W * (_N - C)/(T - W);
-                    } if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-                        /* TODO -- is this correct or should it be in terms of node only? */
-
-                        if (!(scanner.getTotalN() - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", parameters.getModelType(), scanner.getTotalN(), _N);
-                        return C - _N * (totalC - C) / (scanner.getTotalN() - _N);
-                    }
-                    throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getExcessCases()", parameters.getModelType());
-                case Parameters::NODEANDTIME : {
-                    /* c = cases in detected cluster
-                       C = total cases in the whole tree
-                       C(n)=total cases in the cluster node, summed over the whole study time period
-                       C(t)=total cases in the cluster time window, summed over all the nodes
-                       Let E2 = (C(n)-c)*(C(t)-c) / (C-C(n)-C(t)+c) -- this is an alternative method for calculating expected counts
-                       Excess Cases = c-E2
-                       */
-                    double Cn =  static_cast<double>(scanner.getNodes()[getID()]->getBrC());
-                    double Ct = 0.0;
-                    for (size_t t=0; t < scanner.getNodes().size(); ++t)
-                        Ct += static_cast<double>(scanner.getNodes()[t]->getIntC_C()[getStartIdx()]) - static_cast<double>(scanner.getNodes()[t]->getIntC_C()[getEndIdx() + 1]);
-                    double denominator = totalC - Cn - Ct + C;
-                    if (denominator == 0.0) // This will never happen when looking for clusters with high rates.
-                        return std::numeric_limits<double>::quiet_NaN();
-                    double e2 = (Cn - C) * (Ct - C) / denominator;
-                    if (e2 == 0.0 && C == 0.0) // C == 0.0 will never happen when looking for clusters with high rates.
-                        return std::numeric_limits<double>::quiet_NaN();
-                    return C - e2;
-                }
-                default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getExcessCases()", parameters.getConditionalType());
-            }
-        }
-        default: throw prg_error("Unknown scan type (%d).", "getExcessCases()", parameters.getScanType());
-    }
+    return getExcessCasesFor(scanner, _ID, _C, _N, _start_idx, _end_idx);
 }
 
 /** Returns cut's expected count. See user guide for formula explanation. */
 double CutStructure::getExpected(const ScanRunner& scanner) const {
-    const Parameters& parameters = scanner.getParameters();
-    double C = static_cast<double>(_C);
-    double totalC = static_cast<double>(scanner.getTotalC());
-    switch (parameters.getScanType()) {
-
-        case Parameters::TREEONLY: {
-            switch (parameters.getConditionalType()) {
-                case Parameters::UNCONDITIONAL :
-                    if (parameters.getModelType() == Parameters::POISSON)
-                        return _N;
-                    if (parameters.getModelType() == Parameters::BERNOULLI_TREE)
-                        return _N * scanner.getParameters().getProbability();
-                    throw prg_error("Cannot determine expected cases: tree-only, unconditonal, model (%d).", "getExpected()", parameters.getModelType());
-                case Parameters::TOTALCASES :
-                    if (parameters.getModelType() == Parameters::POISSON)
-                        return _N * totalC/scanner.getTotalN();
-                    if (parameters.getModelType() == Parameters::BERNOULLI_TREE)
-                        return _N * (scanner.getTotalC() / scanner.getTotalN());
-                    throw prg_error("Cannot determine expected cases: tree-only, total-cases, model (%d).", "getExpected()", parameters.getModelType());
-                default: throw prg_error("Cannot determine expected cases: tree-only, condition type (%d).", "getExpected()", parameters.getConditionalType());
-            }
-        }
-
-        case Parameters::TREETIME: {
-            switch (parameters.getConditionalType()) {
-                case Parameters::NODE:
-                    if (parameters.getModelType() == Parameters::UNIFORM) {
-                        if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
-                            return _N;
-                        } else {
-                            /*  (N*W/T)
-                                N = number of cases in the node, through the whole time period (below, all 0604 cases)
-                                W = number of days in the temporal cluster (below, 11-6=5)
-                                T = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used)
-                            */
-                            double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-                            double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-                            return _N * W / T;
-                        }
-                    } else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-                        /* TODO -- is this correct or should it be in terms of node only? */
-                        return static_cast<double>(scanner.getTotalC()) / scanner.getTotalN() * _N;
-                    }
-                    throw prg_error("Cannot determine expected cases: tree-time, total-cases, model (%d).", "getExpected()", parameters.getModelType());
-                case Parameters::NODEANDTIME :
-                    if (parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE) 
-                        return _N;
-                    throw prg_error("Cannot determine expected cases: tree-time, node-time, model (%d).", "getExpected()", parameters.getModelType());
-                default: throw prg_error("Cannot determine expected cases: tree-time, condition type (%d).", "getExpected()", parameters.getConditionalType());
-            }
-        }
-
-        case Parameters::TIMEONLY: { /* time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
-            switch (parameters.getConditionalType()) {
-                case Parameters::TOTALCASES:
-                    if (parameters.getModelType() == Parameters::UNIFORM) {
-                        if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
-                            return _N;
-                        } else {
-                            /*  (N*W/T)
-                                N = number of cases in the node, through the whole time period (below, all 0604 cases)
-                                W = number of days in the temporal cluster (below, 11-6=5)
-                                T = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used)
-                            */
-                            double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-                            double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-                            return _N * W / T;
-                        }
-                    } else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-                        /* TODO -- is this correct or should it be in terms of node only? */
-                        return static_cast<double>(scanner.getTotalC()) / scanner.getTotalN() * _N;
-                    }
-                    throw prg_error("Cannot determine expected cases: tree-time, total-cases, model (%d).", "getExpected()", parameters.getModelType());
-                default: throw prg_error("Cannot determine expected cases: tree-time, condition type (%d).", "getExpected()", parameters.getConditionalType());
-            }
-        }
-        default: throw prg_error("Unknown scan type (%d).", "getExpected()", parameters.getScanType());
-    }
+    return getExpectedFor(scanner, _ID, _C, _N, _start_idx, _end_idx);
 }
 
 /* Returns nodes parent(s) as csv list. */
@@ -260,107 +380,7 @@ std::string& CutStructure::getParentIndentifiers(const ScanRunner& scanner, std:
 
 /** Returns cut's relative risk. See user guide for formula explanation. */
 double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
-    double relative_risk=0;
-    double C = static_cast<double>(_C);
-    double totalC = static_cast<double>(scanner.getTotalC());
-    const Parameters& parameters = scanner.getParameters();
-
-    switch (parameters.getScanType()) {
-
-        case Parameters::TREEONLY: {
-            switch (parameters.getConditionalType()) {
-                case Parameters::UNCONDITIONAL :
-                    if (parameters.getModelType() == Parameters::POISSON) {
-                        relative_risk = C / _N;
-                        return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
-                    }
-                    if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
-                        if (parameters.getSelfControlDesign())
-                            relative_risk = (C/parameters.getProbability()) / ((_N - C) / (1.0 - parameters.getProbability()));
-                        else
-                            relative_risk = C / (_N * parameters.getProbability());
-                        return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
-                    }
-                    throw prg_error("Cannot calculate relative risk: tree-only, unconditonal, model (%d).", "getRelativeRisk()", parameters.getModelType());
-                case Parameters::TOTALCASES :
-                    if (parameters.getModelType() == Parameters::POISSON) {
-                        double NN = scanner.getTotalN() - _N;
-                        if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", parameters.getModelType(), scanner.getTotalN(), _N);
-                        double CC = totalC - C;
-                        relative_risk = CC ? (C / _N) / (CC /  NN): 0;
-                        return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
-                    }
-                    if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
-                        double NN = scanner.getTotalN() - _N;
-                        if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", parameters.getModelType(), scanner.getTotalN(), _N);
-                        double CC = totalC - C;
-                        relative_risk = CC ? (C / _N) / (CC /  NN): 0;
-                        return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
-                    }
-                    throw prg_error("Cannot calculate relative risk: tree-only, total-cases, model (%d).", "getRelativeRisk()", parameters.getModelType());
-                default: throw prg_error("Cannot calculate relative risk: tree-only, condition type (%d).", "getRelativeRisk()", parameters.getConditionalType());
-            }
-        }
-
-        case Parameters::TIMEONLY: /* time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
-        case Parameters::TREETIME: {
-            switch (parameters.getConditionalType()) {
-                case Parameters::TOTALCASES : /* this option is really only for time-only */
-                case Parameters::NODE :       /* this option is really only for tree-time */
-                    if (parameters.getModelType() == Parameters::UNIFORM) {
-                        if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
-                            // (Obs/Exp) / [ (NodeCases-Obs) / (NodeCases-Exp) ]
-                            double exp = getExpected(scanner);
-                            double NodeCases = static_cast<double>(scanner.getNodes()[getID()]->getBrC());
-                            if (C == NodeCases)
-                                relative_risk = std::numeric_limits<double>::infinity();
-                            else
-                                relative_risk = (C / exp) / ( (NodeCases - C) / (NodeCases - exp) );
-                            return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
-                        }
-                        double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-                        double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-                        if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getRelativeRisk()", parameters.getModelType(), T, W);
-                        double CC = _N - static_cast<double>(_C);
-                        relative_risk = CC ? (static_cast<double>(_C) / W ) / ( CC / (T - W) ) : 0.0;
-                        return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
-                    } else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-                        /* TODO -- is this correct or should it be in terms of node only? */
-
-                        //when all cases are inside cluster, relative risk goes to infinity
-                        if (totalC == static_cast<double>(_C)) return -1;
-
-                        if (_N && totalC - _N && ((totalC - _C) / (totalC - _N)))
-                            return (_C / _N) / ((totalC - _C) / (totalC - _N));
-                        return 0;
-                    }
-                    throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getRelativeRisk()", parameters.getModelType());
-                case Parameters::NODEANDTIME : {
-                    /* c = cases in detected cluster
-                       C = total cases in the whole tree
-                       C(n)=total cases in the cluster node, summed over the whole study time period
-                       C(t)=total cases in the cluster time window, summed over all the nodes
-                       Let E2 = (C(n)-c)*(C(t)-c) / (C-C(n)-C(t)+c) -- this is an alternative method for calculating expected counts
-                       RR = c/E2
-                       */
-                    double Cn =  static_cast<double>(scanner.getNodes()[getID()]->getBrC());
-                    double Ct = 0.0;
-                    for (size_t t=0; t < scanner.getNodes().size(); ++t)
-                        Ct += static_cast<double>(scanner.getNodes()[t]->getIntC_C()[getStartIdx()]) - static_cast<double>(scanner.getNodes()[t]->getIntC_C()[getEndIdx() + 1]);
-                    double denominator = totalC - Cn - Ct + C;
-                    if (denominator == 0.0) // This will never happen when looking for clusters with high rates.
-                        return std::numeric_limits<double>::quiet_NaN();
-                    double e2 = (Cn - C) * (Ct - C) / denominator;
-                    if (e2 == 0.0) // C == 0.0 will never happen when looking for clusters with high rates.
-                        return C == 0.0 ? std::numeric_limits<double>::quiet_NaN() : std::numeric_limits<double>::infinity()/*This will happen now and then.*/;
-                    return C / e2;
-                }
-                default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getRelativeRisk()", parameters.getConditionalType());
-            }
-        }
-
-        default: throw prg_error("Unknown scan type (%d).", "getRelativeRisk()", parameters.getScanType());
-    }
+    return getRelativeRiskFor(scanner, _ID, _C, _N, _start_idx, _end_idx);
 }
 
 ////////////////////////// SequentialStatistic ///////////////////////////////

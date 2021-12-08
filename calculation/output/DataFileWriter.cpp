@@ -61,8 +61,7 @@ unsigned int RecordBuffer::GetFieldIndex(const std::string& sFieldName) const {
        bFound = (!strcmp(vFieldDefinitions[i]->GetName(), sFieldName.c_str()));
        iPosition = i;
    }
-   if (!bFound)
-     throw prg_error("Field name %s not found in the field vector.", "GetFieldIndex()", sFieldName.c_str());
+   if (!bFound) throw prg_error("Field name %s not found in the field vector.", "GetFieldIndex()", sFieldName.c_str());
   }
   catch (prg_exception& x) {
     x.addTrace("GetFieldIndex()","RecordBuffer");
@@ -70,6 +69,22 @@ unsigned int RecordBuffer::GetFieldIndex(const std::string& sFieldName) const {
   }
   return iPosition;
 }
+
+unsigned int RecordBuffer::GetFieldIndex(std::initializer_list<std::string> fieldNames) const {
+    try {
+        for (auto filename : fieldNames) {
+            for (auto i=0; i < vFieldDefinitions.size(); ++i) {
+                if (!strcmp(vFieldDefinitions[i]->GetName(), filename.c_str())) return i;
+            }
+        }
+        throw prg_error("Field name not found in the field vector.", "GetFieldIndex()");
+    } catch (prg_exception& x) {
+        x.addTrace("GetFieldIndex()", "RecordBuffer");
+        throw;
+    }
+    return 0;
+}
+
 
 /** Returns reference to field value for named field, setting field 'blank' indicator to false. */
 FieldValue& RecordBuffer::GetFieldValue(const std::string& sFieldName) {
@@ -176,13 +191,13 @@ void CSVDataFileWriter::createFormatString(std::string& sValue, const FieldDef& 
   unsigned long ulStringLength = 0;
 
   switch(fv.GetType()) {
-    case FieldValue::ALPHA_FLD  :
+    case FieldValue::ALPHA_FLD :
       {if (fv.AsString().find(",") != std::string::npos) {
           printString(sValue, "\"%s\"", fv.AsString().c_str());
        } else sValue = fv.AsString();
       } break;
     case FieldValue::NUMBER_FLD :
-        sValue = getValueAsString(fv.AsDouble(), temp ,FieldDef.GetAsciiDecimals());
+        sValue = getValueAsString(fv.AsDouble(), temp, FieldDef.GetAsciiDecimals());
       break;
     default : throw prg_error("Unsupported field type %c", "Error!", fv.GetType());
   }
@@ -245,78 +260,11 @@ const char * DataRecordWriter::HA_ALPHA001_FIELD                         = "Alph
 const char * CutsRecordWriter::CUT_FILE_SUFFIX                            = "";
 
 CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scanRunner) {
-  unsigned short uwOffset=0;
   std::string    buffer;
   const Parameters& params = _scanner.getParameters();
 
   try {
-    CreateField(_dataFieldDefinitions, CUT_NUM_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-    CreateField(_dataFieldDefinitions, NODE_ID_FIELD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()), 0, uwOffset, 0);
-    if (params.getScanType() != Parameters::TIMEONLY) {
-        CreateField(_dataFieldDefinitions, P_LEVEL_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-    }
-    switch (params.getModelType()) {
-        case Parameters::BERNOULLI_TIME:
-            if (params.getScanType() != Parameters::TIMEONLY) {
-                CreateField(_dataFieldDefinitions, NODE_OBSERVATIONS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-                CreateField(_dataFieldDefinitions, NODE_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-            }
-        case Parameters::BERNOULLI_TREE:
-            CreateField(_dataFieldDefinitions, OBSERVATIONS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-            CreateField(_dataFieldDefinitions, CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-            CreateField(_dataFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-            break;
-        case Parameters::POISSON :
-            CreateField(_dataFieldDefinitions, OBSERVED_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-            CreateField(_dataFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-            break;
-        case Parameters::UNIFORM :
-        case Parameters::MODEL_NOT_APPLICABLE :
-        default :
-            if (Parameters::isTemporalScanType(params.getScanType())) {
-                CreateField(_dataFieldDefinitions, NODE_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-                if (params.getDatePrecisionType() == DataTimeRange::GENERIC) {
-                    CreateField(_dataFieldDefinitions, START_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-                    CreateField(_dataFieldDefinitions, END_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-                } else {
-                    CreateField(_dataFieldDefinitions, START_WINDOW_FIELD, FieldValue::ALPHA_FLD, 10, 0, uwOffset, 0);
-                    CreateField(_dataFieldDefinitions, END_WINDOW_FIELD, FieldValue::ALPHA_FLD, 10, 0, uwOffset, 0);
-                }
-                CreateField(_dataFieldDefinitions, WNDW_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-                CreateField(_dataFieldDefinitions, EXPECTED_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-            } else
-                throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", params.getModelType());
-    }
-    CreateField(_dataFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-    CreateField(_dataFieldDefinitions, EXCESS_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-
-    if (params.getReportAttributableRisk()) {
-        CreateField(_dataFieldDefinitions, ATTRIBUTABLE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-    }
-
-    if ((params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME) ||
-        (params.getScanType() == Parameters::TIMEONLY && params.getConditionalType() == Parameters::TOTALCASES && params.isPerformingDayOfWeekAdjustment()) ||
-        (params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODE && params.isPerformingDayOfWeekAdjustment())) {
-        // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
-        CreateField(_dataFieldDefinitions, TEST_STATISTIC_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
-        //CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
-    } else {
-        CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
-    }
-
-    if (!params.isSequentialScanBernoulli()) {
-        printString(buffer, "%u", params.getNumReplicationsRequested());
-        CreateField(_dataFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, static_cast<unsigned short>(buffer.size()));
-        if (params.getIsProspectiveAnalysis())
-            CreateField(_dataFieldDefinitions, RECURR_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-    }
-    if (params.getScanType() != Parameters::TIMEONLY) {
-        CreateField(_dataFieldDefinitions, PARENT_NODE_FLD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()) * 10/*multiple? guessing*/, 0, uwOffset, 0);
-        CreateField(_dataFieldDefinitions, BRANCH_ORDER_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-    }
-    if (params.isSequentialScanBernoulli())
-        CreateField(_dataFieldDefinitions, SIGNALLED_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-
+     getFieldDefs(_dataFieldDefinitions, params);
     _outfile.open(getFilename(params, buffer).c_str(), std::ofstream::trunc);
     if (!_outfile.is_open())
       throw resolvable_error("Unable to open/create file %s.", buffer.c_str());
@@ -333,6 +281,79 @@ CutsRecordWriter::~CutsRecordWriter() {
   } catch (...) { }
 }
 
+ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& fields, const Parameters& params) {
+    unsigned short uwOffset = 0;
+    std::string    buffer;
+
+    CreateField(fields, CUT_NUM_FIELD, FieldValue::ALPHA_FLD, 10, 0, uwOffset, 0);
+    CreateField(fields, NODE_ID_FIELD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()), 0, uwOffset, 0);
+    if (params.getScanType() != Parameters::TIMEONLY) {
+        CreateField(fields, P_LEVEL_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+    }
+    switch (params.getModelType()) {
+        case Parameters::BERNOULLI_TIME:
+            if (params.getScanType() != Parameters::TIMEONLY) {
+                CreateField(fields, NODE_OBSERVATIONS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+                CreateField(fields, NODE_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+                CreateField(fields, START_WINDOW_FIELD, FieldValue::ALPHA_FLD, 10, 0, uwOffset, 0);
+                CreateField(fields, END_WINDOW_FIELD, FieldValue::ALPHA_FLD, 10, 0, uwOffset, 0);
+            }
+        case Parameters::BERNOULLI_TREE:
+            CreateField(fields, OBSERVATIONS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+            CreateField(fields, CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+            CreateField(fields, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            break;
+        case Parameters::POISSON:
+            CreateField(fields, OBSERVED_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+            CreateField(fields, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            break;
+        case Parameters::UNIFORM:
+        case Parameters::MODEL_NOT_APPLICABLE:
+        default:
+            if (Parameters::isTemporalScanType(params.getScanType())) {
+                CreateField(fields, NODE_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+                if (params.getDatePrecisionType() == DataTimeRange::GENERIC) {
+                    CreateField(fields, START_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+                    CreateField(fields, END_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+                } else {
+                    CreateField(fields, START_WINDOW_FIELD, FieldValue::ALPHA_FLD, 10, 0, uwOffset, 0);
+                    CreateField(fields, END_WINDOW_FIELD, FieldValue::ALPHA_FLD, 10, 0, uwOffset, 0);
+                }
+                CreateField(fields, WNDW_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+                CreateField(fields, EXPECTED_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            } else
+                throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", params.getModelType());
+        }
+        CreateField(fields, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+        CreateField(fields, EXCESS_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+        if (params.getReportAttributableRisk()) {
+            CreateField(fields, ATTRIBUTABLE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+        }
+        if ((params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME) ||
+            (params.getScanType() == Parameters::TIMEONLY && params.getConditionalType() == Parameters::TOTALCASES && params.isPerformingDayOfWeekAdjustment()) ||
+            (params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODE && params.isPerformingDayOfWeekAdjustment())) {
+            // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
+            CreateField(fields, TEST_STATISTIC_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
+            //CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
+        } else {
+            CreateField(fields, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
+        }
+        if (!params.isSequentialScanBernoulli()) {
+            printString(buffer, "%u", params.getNumReplicationsRequested());
+            CreateField(fields, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, static_cast<unsigned short>(buffer.size()));
+            if (params.getIsProspectiveAnalysis())
+                CreateField(fields, RECURR_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+        }
+        if (params.getScanType() != Parameters::TIMEONLY) {
+            CreateField(fields, PARENT_NODE_FLD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()) * 10/*multiple? guessing*/, 0, uwOffset, 0);
+            CreateField(fields, BRANCH_ORDER_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+        }
+        if (params.isSequentialScanBernoulli())
+            CreateField(fields, SIGNALLED_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+
+        return fields;
+}
+
 std::string& CutsRecordWriter::getFilename(const Parameters& parameters, std::string& buffer) {
     std::stringstream suffix;
     suffix << CutsRecordWriter::CUT_FILE_SUFFIX;
@@ -344,20 +365,34 @@ std::string& CutsRecordWriter::getFilename(const Parameters& parameters, std::st
 void CutsRecordWriter::write(const CutStructure& thisCut) const {
     const Parameters& params = _scanner.getParameters();
     std::string buffer;
-    RecordBuffer Record(_dataFieldDefinitions);
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_scanner.getParameters(), _scanner.getTotalC(), _scanner.getTotalN(), _scanner.isCensoredData()));
+    const NodeStructure& cutNode = *(_scanner.getNodes()[thisCut.getID()]);
 
     try {
-        Record.GetFieldValue(CUT_NUM_FIELD).AsDouble() = thisCut.getReportOrder();
-        Record.GetFieldValue(NODE_ID_FIELD).AsString() = _scanner.getNodes()[thisCut.getID()]->getIdentifier();
-        if (params.getScanType() != Parameters::TIMEONLY) {
-            Record.GetFieldValue(P_LEVEL_FLD).AsDouble() = static_cast<int>(_scanner.getNodes()[thisCut.getID()]->getLevel());
-        }
+        RecordBuffer Record(_dataFieldDefinitions);
+        Record.GetFieldValue(CUT_NUM_FIELD).AsString() = printString(buffer, "%u", thisCut.getReportOrder());
+        Record.GetFieldValue(NODE_ID_FIELD).AsString() = cutNode.getIdentifier();
+        if (params.getScanType() != Parameters::TIMEONLY)
+            Record.GetFieldValue(P_LEVEL_FLD).AsDouble() = static_cast<int>(cutNode.getLevel());
         switch (params.getModelType()) {
             case Parameters::BERNOULLI_TIME:
                 if (params.getScanType() != Parameters::TIMEONLY) {
-                    Record.GetFieldValue(NODE_OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(_scanner.getNodes()[thisCut.getID()]->getBrN());
-                    Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getNodes()[thisCut.getID()]->getBrC());
+                    Record.GetFieldValue(NODE_OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(cutNode.getBrN());
+                    Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(cutNode.getBrC());
+                    if (params.getDatePrecisionType() == DataTimeRange::GENERIC) {
+                        Record.GetFieldValue(START_WINDOW_FIELD).AsDouble() = thisCut.getStartIdx() - _scanner.getZeroTranslationAdditive();
+                        Record.GetFieldValue(END_WINDOW_FIELD).AsDouble() = thisCut.getEndIdx() - _scanner.getZeroTranslationAdditive();
+                    }
+                    else {
+                        const DataTimeRange& range = params.getDataTimeRangeSet().getDataTimeRangeSets().front();
+                        std::pair<std::string, std::string> rangeDates = range.rangeToGregorianStrings(
+                            thisCut.getStartIdx() - _scanner.getZeroTranslationAdditive(),
+                            thisCut.getEndIdx() - _scanner.getZeroTranslationAdditive(),
+                            params.getDatePrecisionType()
+                        );
+                        Record.GetFieldValue(START_WINDOW_FIELD).AsString() = rangeDates.first;
+                        Record.GetFieldValue(END_WINDOW_FIELD).AsString() = rangeDates.second;
+                    }
                 }
             case Parameters::BERNOULLI_TREE:
                 Record.GetFieldValue(OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(thisCut.getN());
@@ -372,23 +407,20 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
             case Parameters::MODEL_NOT_APPLICABLE :
             default :
                 if (Parameters::isTemporalScanType(params.getScanType())) {
-                    if (params.isPerformingDayOfWeekAdjustment() || params.getConditionalType() == Parameters::NODEANDTIME || _scanner.isCensoredData()) {
-                        Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(_scanner.getNodes()[thisCut.getID()]->getBrC());
-                    } else {
+                    if (params.isPerformingDayOfWeekAdjustment() || params.getConditionalType() == Parameters::NODEANDTIME || _scanner.isCensoredData())
+                        Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(cutNode.getBrC());
+                    else
                         Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(thisCut.getN());
-                    }
                     if (params.getDatePrecisionType() == DataTimeRange::GENERIC) {
                         Record.GetFieldValue(START_WINDOW_FIELD).AsDouble() = thisCut.getStartIdx()  - _scanner.getZeroTranslationAdditive();
                         Record.GetFieldValue(END_WINDOW_FIELD).AsDouble() = thisCut.getEndIdx() - _scanner.getZeroTranslationAdditive();
                     } else {
                         const DataTimeRange& range = params.getDataTimeRangeSet().getDataTimeRangeSets().front();
-
                         std::pair<std::string, std::string> rangeDates = range.rangeToGregorianStrings(
                             thisCut.getStartIdx() - _scanner.getZeroTranslationAdditive(),
                             thisCut.getEndIdx() - _scanner.getZeroTranslationAdditive(),
                             params.getDatePrecisionType()
                         );
-
                         Record.GetFieldValue(START_WINDOW_FIELD).AsString() = rangeDates.first;
                         Record.GetFieldValue(END_WINDOW_FIELD).AsString() = rangeDates.second;
                     }
@@ -399,25 +431,22 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
         }
         Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = thisCut.getRelativeRisk(_scanner);
         Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = thisCut.getExcessCases(_scanner);
-        if (params.getReportAttributableRisk()) {
+        if (params.getReportAttributableRisk())
             Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = thisCut.getAttributableRisk(_scanner);
-        }
-
         if ((params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME) ||
             (params.getScanType() == Parameters::TIMEONLY && params.getConditionalType() == Parameters::TOTALCASES && params.isPerformingDayOfWeekAdjustment()) ||
             (params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODE && params.isPerformingDayOfWeekAdjustment())) {
             // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
             Record.GetFieldValue(TEST_STATISTIC_FIELD).AsDouble() = calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood());
-        } else {
+        } else
             Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood());
-        }
         if (_scanner.reportablePValue(thisCut)) {
-            Record.GetFieldValue(P_VALUE_FLD).AsDouble() =  static_cast<double>(thisCut.getRank()) /(_scanner.getParameters().getNumReplicationsRequested() + 1);
+            Record.GetFieldValue(P_VALUE_FLD).AsDouble() = static_cast<double>(thisCut.getRank()) /(_scanner.getParameters().getNumReplicationsRequested() + 1);
             if (params.getIsProspectiveAnalysis())
                 Record.GetFieldValue(RECURR_FLD).AsDouble() = _scanner.getRecurrenceInterval(thisCut).second;
         }
         if (params.getScanType() != Parameters::TIMEONLY) {
-            thisCut.getParentIndentifiers(_scanner, Record.GetFieldValue(PARENT_NODE_FLD).AsString());
+            cutNode.getParentIndentifiers(Record.GetFieldValue(PARENT_NODE_FLD).AsString());
             Record.GetFieldValue(BRANCH_ORDER_FLD).AsDouble() = thisCut.getBranchOrder();
         }
         if (params.isSequentialScanBernoulli()) {
@@ -426,10 +455,127 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
                 Record.GetFieldValue(SIGNALLED_FLD).AsDouble() = signalInLook;
         }
         _csvWriter->writeRecord(Record);
+        unsigned int countFieldIdx = Record.GetFieldIndex({ std::string(CASES_FIELD), std::string(OBSERVED_CASES_FIELD), std::string(WNDW_CASES_FIELD) });
+
+        // Now write records for each direct child of this cut/node.
+        std::vector<boost::shared_ptr<RecordBuffer> > childRecords;
+        for (auto pnode : _scanner.getCutChildNodes(thisCut)) {
+            boost::shared_ptr<RecordBuffer> record(new RecordBuffer(_dataFieldDefinitions));
+            getRecordForCutChild(*(record), thisCut, *pnode, thisCut.getReportOrder(), _scanner);
+            if (record->GetFieldValue(countFieldIdx).AsDouble() > 0.0 && !std::isnan(record->GetFieldValue(EXCESS_CASES_FIELD).AsDouble()))
+                childRecords.push_back(record);
+        }
+        std::sort(std::begin(childRecords), std::end(childRecords), [](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
+            return recordA->GetFieldValue(EXCESS_CASES_FIELD).AsDouble() > recordB->GetFieldValue(EXCESS_CASES_FIELD).AsDouble();
+        });
+        unsigned int writeIdx = 0;
+        for (auto record : childRecords) {
+            record->GetFieldValue(CUT_NUM_FIELD).AsString() = printString(buffer, "%u_%u", thisCut.getReportOrder(), ++writeIdx);
+            _csvWriter->writeRecord(*record);
+        }
     } catch (prg_exception& x) {
         x.addTrace("write()","CutsRecordWriter");
         throw;
     }
+}
+
+/* Populates the RecordBuffer for NodeStructure of this CutStructure per analysis settings. */
+RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const CutStructure& thisCut, const NodeStructure& childNode, size_t subIndex, const ScanRunner& scanner) {
+    std::string buffer;
+    const Parameters& params = scanner.getParameters();
+
+    Record.GetFieldValue(CUT_NUM_FIELD).AsString() = printString(buffer, "%u_%u", thisCut.getReportOrder(), subIndex);
+    Record.GetFieldValue(NODE_ID_FIELD).AsString() = childNode.getIdentifier();
+    if (params.getScanType() != Parameters::TIMEONLY) {
+        Record.GetFieldValue(P_LEVEL_FLD).AsDouble() = static_cast<int>(childNode.getLevel());
+        childNode.getParentIndentifiers(Record.GetFieldValue(PARENT_NODE_FLD).AsString());
+    }
+    // Calculate case and expected based on analysis type - this mirrors the scan process.
+    int _C;
+    double _N;
+    if ((params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME) ||
+        (params.getScanType() == Parameters::TIMEONLY && params.isPerformingDayOfWeekAdjustment()) ||
+        (params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODE && params.isPerformingDayOfWeekAdjustment())) {
+        _C = childNode.getBrC_C()[thisCut.getStartIdx()] - childNode.getBrC_C()[thisCut.getEndIdx() + 1];
+        _N = childNode.getBrN_C()[thisCut.getStartIdx()] - childNode.getBrN_C()[thisCut.getEndIdx() + 1];
+    } else if (params.getModelType() == Parameters::UNIFORM) {
+        if (scanner.isCensoredData()) {
+            _C = childNode.getBrC_C()[thisCut.getStartIdx()] - childNode.getBrC_C()[thisCut.getEndIdx() + 1];
+            _N = childNode.getBrN_C()[thisCut.getStartIdx()] - childNode.getBrN_C()[thisCut.getEndIdx() + 1];
+        } else {
+            _C = childNode.getBrC_C()[thisCut.getStartIdx()] - childNode.getBrC_C()[thisCut.getEndIdx() + 1],
+            _N = static_cast<NodeStructure::expected_t>(childNode.getBrC());
+        }
+    } else if (params.getModelType() == Parameters::BERNOULLI_TIME) {
+        _C = childNode.getBrC_C()[thisCut.getStartIdx()] - childNode.getBrC_C()[thisCut.getEndIdx() + 1];
+        _N = childNode.getBrN_C()[thisCut.getStartIdx()] - childNode.getBrN_C()[thisCut.getEndIdx() + 1];
+    } else {
+        _C = childNode.getBrC();
+        _N = childNode.getBrN();
+    }
+    switch (params.getModelType()) {
+        case Parameters::BERNOULLI_TIME:
+            if (params.getScanType() != Parameters::TIMEONLY) {
+                Record.GetFieldValue(NODE_OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(childNode.getBrN());
+                Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(childNode.getBrC());
+                if (params.getDatePrecisionType() == DataTimeRange::GENERIC) {
+                    Record.GetFieldValue(START_WINDOW_FIELD).AsDouble() = thisCut.getStartIdx() - scanner.getZeroTranslationAdditive();
+                    Record.GetFieldValue(END_WINDOW_FIELD).AsDouble() = thisCut.getEndIdx() - scanner.getZeroTranslationAdditive();
+                } else {
+                    const DataTimeRange& range = params.getDataTimeRangeSet().getDataTimeRangeSets().front();
+                    std::pair<std::string, std::string> rangeDates = range.rangeToGregorianStrings(
+                        thisCut.getStartIdx() - scanner.getZeroTranslationAdditive(),
+                        thisCut.getEndIdx() - scanner.getZeroTranslationAdditive(),
+                        params.getDatePrecisionType()
+                    );
+                    Record.GetFieldValue(START_WINDOW_FIELD).AsString() = rangeDates.first;
+                    Record.GetFieldValue(END_WINDOW_FIELD).AsString() = rangeDates.second;
+                }
+            }
+        case Parameters::BERNOULLI_TREE:
+            Record.GetFieldValue(OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(_N);
+            Record.GetFieldValue(CASES_FIELD).AsDouble() = static_cast<int>(_C);
+            Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = getExpectedFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
+            break;
+        case Parameters::POISSON:
+            Record.GetFieldValue(OBSERVED_CASES_FIELD).AsDouble() = _C;
+            Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = getExpectedFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
+            break;
+        case Parameters::UNIFORM:
+        case Parameters::MODEL_NOT_APPLICABLE:
+        default:
+            if (Parameters::isTemporalScanType(params.getScanType())) {
+                if (params.isPerformingDayOfWeekAdjustment() || params.getConditionalType() == Parameters::NODEANDTIME || scanner.isCensoredData()) {
+                    Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(childNode.getBrC());
+                } else {
+                    Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(_N);
+                }
+                if (params.getDatePrecisionType() == DataTimeRange::GENERIC) {
+                    Record.GetFieldValue(START_WINDOW_FIELD).AsDouble() = thisCut.getStartIdx() - scanner.getZeroTranslationAdditive();
+                    Record.GetFieldValue(END_WINDOW_FIELD).AsDouble() = thisCut.getEndIdx() - scanner.getZeroTranslationAdditive();
+                } else {
+                    const DataTimeRange& range = params.getDataTimeRangeSet().getDataTimeRangeSets().front();
+                    std::pair<std::string, std::string> rangeDates = range.rangeToGregorianStrings(
+                        thisCut.getStartIdx() - scanner.getZeroTranslationAdditive(),
+                        thisCut.getEndIdx() - scanner.getZeroTranslationAdditive(),
+                        params.getDatePrecisionType()
+                    );
+                    Record.GetFieldValue(START_WINDOW_FIELD).AsString() = rangeDates.first;
+                    Record.GetFieldValue(END_WINDOW_FIELD).AsString() = rangeDates.second;
+                }
+                Record.GetFieldValue(WNDW_CASES_FIELD).AsDouble() = static_cast<int>(_C);
+                Record.GetFieldValue(EXPECTED_CASES_FIELD).AsDouble() = getExpectedFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
+            }
+            else
+                throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", params.getModelType());
+    }
+
+    Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = getRelativeRiskFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
+    Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = getExcessCasesFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
+    if (params.getReportAttributableRisk()) {
+        Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = thisCut.getAttributableRisk(scanner);
+    }
+    return Record;
 }
 
 ///////////// PowerEstimationRecordWriter ///////////////////////////////////

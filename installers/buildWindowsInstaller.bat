@@ -34,11 +34,11 @@ REM Verify the GUI exe file is codesigned correctly.
 
 REM Create Java 64-bit runtime
 if exist %runtimeoutputx64% rmdir %runtimeoutputx64% /s /q
-%javajdkx64%\bin\jlink.exe --module-path %javajdkx64%\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.crypto.cryptoki --output %runtimeoutputx64% --strip-debug --compress 2 --no-header-files --no-man-pages
+%javajdkx64%\bin\jlink.exe --module-path %javajdkx64%\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.crypto.cryptoki,jdk.accessibility --output %runtimeoutputx64% --strip-debug --compress 2 --no-header-files --no-man-pages
 
 REM Create Java 32-bit runtime
 if exist %runtimeoutputx86% rmdir %runtimeoutputx86% /s /q
-%javajdkx86%\bin\jlink.exe --module-path %javajdkx86%\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.crypto.cryptoki --output %runtimeoutputx86% --strip-debug --compress 2 --no-header-files --no-man-pages
+%javajdkx86%\bin\jlink.exe --module-path %javajdkx86%\jmods --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.crypto.cryptoki,jdk.accessibility --output %runtimeoutputx86% --strip-debug --compress 2 --no-header-files --no-man-pages
 
 REM Build InnoSetup installer.
 %innosetup% %innoiss%

@@ -183,7 +183,7 @@ unsigned int getFormatPrecision(double value, unsigned int iSignificant) {
     The 'g' format specifier might have sufficed but Martin wanted this format.
 */
 std::string& getValueAsString(double value, std::string& s, unsigned int iSignificant) {
-    if (value == std::numeric_limits<double>::infinity())
+    if (std::isinf(value))
         s = "infinity";
     else if (boost::math::isnan(value))
         s = "undefined";

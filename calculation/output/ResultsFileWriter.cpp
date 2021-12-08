@@ -9,6 +9,7 @@
 #include "ParametersPrint.h"
 #include "UtilityFunctions.h"
 #include "Toolkit.h"
+#include "DataFileWriter.h"
 
 std::string& ResultsFileWriter::getFilenameHTML(const Parameters& parameters, std::string& buffer) {
   return getDerivedFilename(parameters.getOutputFileName(), "", ".html", buffer);
@@ -275,8 +276,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getExcessCases(_scanRunner), buffer));
                 if (parameters.getReportAttributableRisk()) {
                     PrintFormat.PrintSectionLabel(outfile, "Attributable Risk", true);
-                    buffer = thisCut.getAttributableRiskAsString(_scanRunner, buffer);
-                    PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, AttributableRiskAsString(thisCut.getAttributableRisk(_scanRunner), buffer));
                 }
                 if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||
                     (parameters.getScanType() == Parameters::TIMEONLY && parameters.getConditionalType() == Parameters::TOTALCASES && parameters.isPerformingDayOfWeekAdjustment()) ||
@@ -540,10 +540,10 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         }
         if (root_counter > 0)
             outfile << ", children: [" << std::endl << rootstream.str() << "]";
-		outfile << " }" << std::endl << "};" << std::endl;
-		outfile << "$(document).ready(function(){if (Object.keys(chart_config.nodeStructure).length < 2){$('#show_tree').addClass('disabled').html('Tree Visualization (No nodes for display)');}});</script>" << std::endl;
+        outfile << " }" << std::endl << "};" << std::endl;
+        outfile << "$(document).ready(function(){if (Object.keys(chart_config.nodeStructure).length < 2){$('#show_tree').addClass('disabled').html('Tree Visualization (No nodes for display)');}});</script>" << std::endl;
     }
-    outfile << "<script src=\"https://www.treescan.org/html-results/treescan-results.1.2.js\" type=\"text/javascript\"></script>" << std::endl;
+    outfile << "<script src=\"https://www.treescan.org/html-results/treescan-results.1.3.js\" type=\"text/javascript\"></script>" << std::endl;
     outfile << "<body>" << std::endl;
     buffer = AppToolkit::getToolkit().GetWebSite();
     outfile << "<table width=\"100%\" border=\"0\" cellpadding=\"2\" cellspacing=\"0\" bgcolor=\"#F8FAFA\" style=\"border-collapse: collapse;\">";
@@ -667,13 +667,15 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             printString(replicas, "%u", parameters.getNumReplicationsRequested());
             printString(format, "%%.%dlf", replicas.size());
 
+            std::stringstream subrows;
             outfile.setf(std::ios::fixed);
             outfile.precision(5);
             ScanRunner::CutStructureContainer_t::const_iterator itrCuts = _scanRunner.getCuts().begin(), itrCutsEnd = _scanRunner.getCuts().end();
             for (unsigned int k=0; itrCuts != itrCutsEnd; ++itrCuts, ++k)
-                addTableRowForCut(*(*itrCuts), calcLogLikelihood, format, outfile);
+                addTableRowForCut(*(*itrCuts), calcLogLikelihood, format, outfile, &subrows);
             outfile << "</tbody></table></div>" << std::endl;
             outfile << "</div></div>" << std::endl;
+            outfile << "<script>" << std::endl << "var sub_rows = {" << subrows.str() << "};" << std::endl << "</script>" << std::endl;
 
             outfile << "<div id=\"id_trimmed_cuts\" style=\"display:none;\"><table>";
             itrCuts = _scanRunner.getTrimmedCuts().begin();
@@ -796,17 +798,18 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<tr><th>Program completed</th><td>" << ctime(&end) << "</td></tr>" << std::endl;
     outfile << "<tr><th>Total Running Time</th><td>" << getTotalRunningTime(start, end, buffer) << "</td></tr>" << std::endl;
     if (parameters.getNumParallelProcessesToExecute() > 1) outfile << "<tr><th>Processor Usage</th><td>" << parameters.getNumParallelProcessesToExecute() << " processors" << "</td></tr>" << std::endl;
-	printString(buffer,
-		"TreeScan v%s.%s%s%s%s%s",
-		VERSION_MAJOR,
-		VERSION_MINOR,
-		(!strcmp(VERSION_RELEASE, "0") ? "" : "."),
-		(!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE),
-		(strlen(VERSION_PHASE) ? " " : ""),
-		VERSION_PHASE
-	);
-	outfile << "<tr><th>Version</th><td>" << buffer << "</td></tr>" << std::endl;
+    printString(buffer,
+        "TreeScan v%s.%s%s%s%s%s",
+        VERSION_MAJOR,
+        VERSION_MINOR,
+        (!strcmp(VERSION_RELEASE, "0") ? "" : "."),
+        (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE),
+        (strlen(VERSION_PHASE) ? " " : ""),
+        VERSION_PHASE
+    );
+    outfile << "<tr><th>Version</th><td>" << buffer << "</td></tr>" << std::endl;
     outfile << "</tbody></table></div>" << std::endl;
+
     outfile << "</body></html>" << std::endl;
     outfile.close();
 
@@ -814,24 +817,34 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
 }
 
 /* Write table row for cut. */
-std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Loglikelihood_t & calcLogLikelihood, const std::string& format, std::ofstream& outfile) {
+std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Loglikelihood_t & calcLogLikelihood, const std::string& format, std::ofstream& outfile, std::stringstream * subrows) {
     const Parameters& parameters = _scanRunner.getParameters();
     const NodeStructure& thisNode = *(_scanRunner.getNodes()[thisCut.getID()]);
-    std::string buffer(thisNode.getIdentifier());
-    outfile << "<tr id=\"tr-" << stripNodeIdForHtml(buffer) << "\"><td>" << thisCut.getReportOrder() << "</td>";
+    std::string node_tr(thisNode.getIdentifier()), buffer, buffer2;
+    std::vector<boost::shared_ptr<RecordBuffer> > childRecords;
+    ptr_vector<FieldDef> fieldDefinitions;
+
+    outfile << "<tr id=\"tr-" << stripNodeIdForHtml(node_tr) << "\"><td>" << thisCut.getReportOrder() << "</td>";
     // skip reporting node identifier for time-only scans
     if (parameters.getScanType() != Parameters::TIMEONLY) {
         buffer = thisNode.getIdentifier();
-        outfile << "<td>" << htmlencode(buffer);
-        if (thisCut.getCutChildren().size()) {
-            outfile << " children: ";
-            const CutStructure::CutChildContainer_t& childNodeIds = thisCut.getCutChildren();
-            for (size_t t = 0; t < childNodeIds.size(); ++t) {
-                buffer = _scanRunner.getNodes()[childNodeIds[t]]->getIdentifier();
-                outfile << htmlencode(buffer) << ((t < childNodeIds.size() - 1) ? ", " : "");
-            }
+        // Obtain the child notes for this cut and remove any children which are not interesting.
+        unsigned int countFieldIdx = std::numeric_limits<unsigned int>::max();
+        CutsRecordWriter::getFieldDefs(fieldDefinitions, parameters);
+        for (auto pnode : _scanRunner.getCutChildNodes(thisCut)) {
+            boost::shared_ptr<RecordBuffer> record(new RecordBuffer(fieldDefinitions));
+            CutsRecordWriter::getRecordForCutChild(*(record), thisCut, *pnode, thisCut.getReportOrder(), _scanRunner);
+            if (countFieldIdx == std::numeric_limits<unsigned int>::max())
+                countFieldIdx = record->GetFieldIndex({ std::string(DataRecordWriter::CASES_FIELD), std::string(DataRecordWriter::OBSERVED_CASES_FIELD), std::string(DataRecordWriter::WNDW_CASES_FIELD) });
+            // Add this record if it is interesting.
+            if (record->GetFieldValue(countFieldIdx).AsDouble() > 0.0 && !std::isnan(record->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble()))
+                childRecords.push_back(record);
         }
-        outfile << "</td>";
+        std::sort(std::begin(childRecords), std::end(childRecords), [](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
+            return recordA->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble() > recordB->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble();
+        });
+        outfile << "<td>" << (childRecords.size() > 0 ? "<a href=\"#\" class=\"cut-node-w-children\">" : "") << htmlencode(buffer);
+        outfile << (childRecords.size() > 0 ? "</a>" : "") << "</td>";
         outfile << "<td>" << printString(buffer, "%ld", static_cast<int>(thisNode.getLevel())).c_str() << "</td>";
     }
     if (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) {
@@ -849,8 +862,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
             );
             outfile << "<td data-order=" << startIdx << ">" << rangeDates.first << " to " << rangeDates.second << "</td>";
         }
-    }
-    else if (parameters.getModelType() == Parameters::UNIFORM) {
+    } else if (parameters.getModelType() == Parameters::UNIFORM) {
         // write node cases
         // skip reporting node cases for time-only scans
         if (parameters.getScanType() != Parameters::TIMEONLY) {
@@ -864,8 +876,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         // write time window
         outfile << "<td>" << (thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
     } else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-        // write node cases
-        // skip reporting node cases/boservations for time-only scans
+        // skip reporting node cases/observations for time-only scans
         if (parameters.getScanType() != Parameters::TIMEONLY) {
             printString(buffer, "%ld", static_cast<int>(thisNode.getBrN()));
             outfile << "<td>" << buffer.c_str() << "</td>";
@@ -886,8 +897,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
     outfile << "<td>" << getValueAsString(thisCut.getRelativeRisk(_scanRunner), buffer) << "</td>";
     outfile << "<td>" << getValueAsString(thisCut.getExcessCases(_scanRunner), buffer) << "</td>";
     if (parameters.getReportAttributableRisk()) {
-        buffer = thisCut.getAttributableRiskAsString(_scanRunner, buffer);
-        outfile << "<td>" << buffer << "</td>";
+        outfile << "<td>" << AttributableRiskAsString(thisCut.getAttributableRisk(_scanRunner), buffer) << "</td>";
     }
     outfile << "<td>" << printString(buffer, "%.6lf", calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood())).c_str() << "</td>";
     // write p-value
@@ -912,8 +922,89 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
             outfile << "No";
         outfile << "</td>";
     }
-
     outfile << "</tr>" << std::endl;
+
+    if (parameters.getScanType() != Parameters::TIMEONLY && subrows && childRecords.size() > 0) {
+        // Now write records for each direct child of this cut/node. This process is slightly brittle and relies on the columns in csv matching html table.
+        std::string not_applicable("'-'");
+        ptr_vector<FieldDef> fieldDefinitions;
+        CutsRecordWriter::getFieldDefs(fieldDefinitions, parameters);
+        std::vector<std::string> children_arrays;
+        for (auto Record : childRecords) {
+            std::vector<std::string> string_values;
+            string_values.push_back(printString(buffer, "'%u_%u'", thisCut.getReportOrder(), children_arrays.size() + 1));
+            buffer = Record->GetFieldValue(CutsRecordWriter::NODE_ID_FIELD).AsString();
+            string_values.push_back(printString(buffer, "'%s'", htmlencode(buffer).c_str()));
+            string_values.push_back(printString(buffer, "'%ld'", static_cast<int>(Record->GetFieldValue(CutsRecordWriter::P_LEVEL_FLD).AsDouble())));
+            switch (parameters.getModelType()) {
+                case Parameters::BERNOULLI_TIME:
+                    if (parameters.getScanType() != Parameters::TIMEONLY) {
+                        string_values.push_back(printString(buffer, "'%ld'", static_cast<int>(Record->GetFieldValue(CutsRecordWriter::NODE_OBSERVATIONS_FIELD).AsDouble())));
+                        string_values.push_back(printString(buffer, "'%ld'", static_cast<int>(Record->GetFieldValue(CutsRecordWriter::NODE_CASES_FIELD).AsDouble())));
+                        if (parameters.getDatePrecisionType() == DataTimeRange::GENERIC)
+                            string_values.push_back(
+                                printString(buffer, "'%ld to %ld'", static_cast<int>(Record->GetFieldValue(CutsRecordWriter::START_WINDOW_FIELD).AsDouble()), static_cast<int>(Record->GetFieldValue(CutsRecordWriter::END_WINDOW_FIELD).AsDouble()))
+                            );
+                        else
+                            string_values.push_back(
+                                printString(buffer, "'%s to %s'", Record->GetFieldValue(CutsRecordWriter::START_WINDOW_FIELD).AsString().c_str(), Record->GetFieldValue(CutsRecordWriter::END_WINDOW_FIELD).AsString().c_str())
+                            );
+                    }
+                case Parameters::BERNOULLI_TREE:
+                    string_values.push_back(printString(buffer, "'%ld'", static_cast<int>(Record->GetFieldValue(CutsRecordWriter::OBSERVATIONS_FIELD).AsDouble())));
+                    string_values.push_back(printString(buffer, "'%ld'", static_cast<int>(Record->GetFieldValue(CutsRecordWriter::CASES_FIELD).AsDouble())));
+                    string_values.push_back(printString(buffer, "'%s'", getValueAsString(Record->GetFieldValue(CutsRecordWriter::EXPECTED_FIELD).AsDouble(), buffer2).c_str()));
+                    break;
+                case Parameters::POISSON:
+                    string_values.push_back(printString(buffer, "'%ld'", static_cast<int>(Record->GetFieldValue(CutsRecordWriter::OBSERVED_CASES_FIELD).AsDouble())));
+                    string_values.push_back(printString(buffer, "'%s'", getValueAsString(Record->GetFieldValue(CutsRecordWriter::EXPECTED_FIELD).AsDouble(), buffer2).c_str()));
+                    break;
+                case Parameters::UNIFORM:
+                case Parameters::MODEL_NOT_APPLICABLE:
+                default:
+                    if (Parameters::isTemporalScanType(parameters.getScanType())) {
+                        string_values.push_back(printString(buffer, "'%ld'", static_cast<int>(Record->GetFieldValue(CutsRecordWriter::NODE_CASES_FIELD).AsDouble())));
+                        if (parameters.getDatePrecisionType() == DataTimeRange::GENERIC)
+                            string_values.push_back(
+                                printString(buffer, "'%ld to %ld'", static_cast<int>(Record->GetFieldValue(CutsRecordWriter::START_WINDOW_FIELD).AsDouble()), static_cast<int>(Record->GetFieldValue(CutsRecordWriter::END_WINDOW_FIELD).AsDouble()))
+                            );
+                        else 
+                            string_values.push_back(
+                                printString(buffer, "'%s to %s'", Record->GetFieldValue(CutsRecordWriter::START_WINDOW_FIELD).AsString().c_str(), Record->GetFieldValue(CutsRecordWriter::END_WINDOW_FIELD).AsString().c_str())
+                            );
+                        string_values.push_back(printString(buffer, "'%ld'", static_cast<int>(Record->GetFieldValue(CutsRecordWriter::WNDW_CASES_FIELD).AsDouble())));
+                        string_values.push_back(printString(buffer, "'%s'", getValueAsString(Record->GetFieldValue(CutsRecordWriter::EXPECTED_CASES_FIELD).AsDouble(), buffer2).c_str()));
+                    } else
+                        throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", parameters.getModelType());
+            }
+            string_values.push_back(printString(buffer, "'%s'", getValueAsString(Record->GetFieldValue(CutsRecordWriter::RELATIVE_RISK_FIELD).AsDouble(), buffer2).c_str()));
+            string_values.push_back(printString(buffer, "'%s'", getValueAsString(Record->GetFieldValue(CutsRecordWriter::EXCESS_CASES_FIELD).AsDouble(), buffer2).c_str()));
+            if (parameters.getReportAttributableRisk()) {
+                string_values.push_back(printString(buffer, "'%s'", AttributableRiskAsString(Record->GetFieldValue(CutsRecordWriter::ATTRIBUTABLE_RISK_FIELD).AsDouble(), buffer2).c_str()));
+            }
+            string_values.push_back(not_applicable);
+            if (_scanRunner.reportablePValue(thisCut)) {
+                string_values.push_back(not_applicable);
+                if (parameters.getIsProspectiveAnalysis()) {
+                    string_values.push_back(not_applicable);
+                }
+            }
+            if (parameters.getScanType() != Parameters::TIMEONLY) {
+                std::string buffer2(thisNode.getIdentifier());
+                string_values.push_back(printString(buffer, "'%s'", htmlencode(buffer2).c_str()));
+                string_values.push_back(not_applicable);
+            }
+            if (parameters.isSequentialScanBernoulli()) {
+                string_values.push_back(not_applicable);
+            }
+            buffer = Record->GetFieldValue(CutsRecordWriter::NODE_ID_FIELD).AsString();
+            stripNodeIdForHtml(buffer);
+            typelist_csv_string<std::string>(string_values, buffer2);
+            children_arrays.push_back(printString(buffer, "'tr-%s': [%s]", buffer.c_str(), buffer2.c_str()));
+        }
+        typelist_csv_string<std::string>(children_arrays, buffer);
+        *subrows << "'tr-" << node_tr << "' : {" << buffer << "},";
+    }
     return outfile;
 }
 
@@ -973,14 +1064,21 @@ const char * ResultsFileWriter::getSignalClass(double pval, bool childClass) {
 }
 
 ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstream & outfile, const NodeStructure& node, const std::map<int, const CutStructure*>& cutMap, int collapseAtLevel) {
-    bool bernoulliSequential = _scanRunner.getParameters().isSequentialScanBernoulli();
-    bool prospectiveScan = _scanRunner.getParameters().getIsProspectiveAnalysis();
+    const Parameters& parameters = _scanRunner.getParameters();
+    bool bernoulliSequential = parameters.isSequentialScanBernoulli();
+    bool prospectiveScan = parameters.getIsProspectiveAnalysis();
     std::stringstream nodestream;
     // Write header section to this nodestream.
-    std::string buffer(node.getIdentifier());
+    std::string buffer(node.getIdentifier()), parent;
+    if (node.getParents().size()) {
+        parent = node.getParents().front()->getIdentifier();
+        stripNodeIdForHtml(parent);
+    }
     nodestream << "{ HTMLid: '" << stripNodeIdForHtml(buffer) << "', innerHTML: \"<ul><li><a data-toggle='tooltip' title='<ul><li class=" << buffer << ">";
     buffer = node.getIdentifier();
-    nodestream << htmlencode(buffer) << "</li></ul>' data-html='true'>";
+    nodestream << htmlencode(buffer) << "</li></ul>' data-html='true'";
+    if (!parent.empty()) { nodestream << " parent_id=" << parent << " "; }
+    nodestream << "> ";
     // Truncate identifier if longer than 25 characters -- so it can fit in node box outline.
     buffer = node.getIdentifier();
     if (buffer.size() > 25) {
@@ -995,7 +1093,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
         if (bernoulliSequential) 
             node_attr_rr.get<0>() = static_cast<double>(_scanRunner.getSequentialStatistic().testCutSignaled(static_cast<size_t>(itr->second->getID())));
         else
-            node_attr_rr.get<0>() = (double)itr->second->getRank() / (_scanRunner.getParameters().getNumReplicationsRequested() + 1);
+            node_attr_rr.get<0>() = (double)itr->second->getRank() / (parameters.getNumReplicationsRequested() + 1);
         node_attr_rr.get<1>() = itr->second->getRelativeRisk(_scanRunner);
         nodestream << "<li>RR = " << getValueAsString(node_attr_rr.get<1>(), buffer);
         if (bernoulliSequential) {
@@ -1006,7 +1104,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
         } else {
             nodestream << ", p = ";
             std::string format, replicas;
-            printString(replicas, "%u", _scanRunner.getParameters().getNumReplicationsRequested());
+            printString(replicas, "%u", parameters.getNumReplicationsRequested());
             printString(format, "%%.%dlf", replicas.size());
             printString(buffer, format.c_str(), node_attr_rr.get<0>());
             nodestream << buffer;
@@ -1018,6 +1116,9 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
         nodestream << "</li>";
     }
     nodestream << "</ul><div class='nbottom'></div>\"";
+
+    // Is this node significant?
+    bool nodesignificant = (bernoulliSequential ? node_attr_rr.get<0>() > 0.0 : node_attr_rr.get<0>() <= 0.05);
 
     // Create a stream for children nodes, if any.
     BestCutSet_t best_attr_rr_children(bernoulliSequential ? 0.0 : std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(), RecurrenceInterval_t(0.0, 0.0));
@@ -1045,12 +1146,13 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
             if (bernoulliSequential ? childrenNodesets.back().get<1>().get<0>() > 0.0 : childrenNodesets.back().get<1>().get<0>() <= 0.05)
                 ++significantBranches;
         }
-        if (significantChildNodes > 0 || significantBranches > 0) {
+        if (nodesignificant || significantChildNodes > 0 || significantBranches > 0) {
             // There exist significant child nodes and/or significant descendents, so we're including at least some children of this node.
             if (static_cast<int>(node.getLevel()) >= collapseAtLevel) childrenstream << ", collapsed : true ";
             childrenstream << ", children: [" << std::endl;
-            if (significantChildNodes > 0) {
-                // Rule 1 - Include child node if it or one off it's siblings are significant. This means we're including all children if we're including one.
+            if (nodesignificant || significantChildNodes > 0) {
+                // Rule 1a - Include child nodes if this node is significant - so at least one level below significant nodes are displayed.
+                // Rule 1b - Include child node if it or one off it's siblings are significant. This means we're including all children if we're including one.
                 std::vector<NodeSet_t>::iterator itrNodeSets = childrenNodesets.begin();
                 for (itrStream = childNodestreams.begin(); itrStream != childNodestreams.end(); ++itrStream, ++itrNodeSets) {
                     childrenstream << (*itrStream)->str();
