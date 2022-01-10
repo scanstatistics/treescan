@@ -295,6 +295,11 @@ ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& field
             if (params.getScanType() != Parameters::TIMEONLY) {
                 CreateField(fields, NODE_OBSERVATIONS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
                 CreateField(fields, NODE_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+            }
+            if (params.getDatePrecisionType() == DataTimeRange::GENERIC) {
+                CreateField(fields, START_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+                CreateField(fields, END_WINDOW_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+            } else {
                 CreateField(fields, START_WINDOW_FIELD, FieldValue::ALPHA_FLD, 10, 0, uwOffset, 0);
                 CreateField(fields, END_WINDOW_FIELD, FieldValue::ALPHA_FLD, 10, 0, uwOffset, 0);
             }
@@ -379,20 +384,19 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
                 if (params.getScanType() != Parameters::TIMEONLY) {
                     Record.GetFieldValue(NODE_OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(cutNode.getBrN());
                     Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(cutNode.getBrC());
-                    if (params.getDatePrecisionType() == DataTimeRange::GENERIC) {
-                        Record.GetFieldValue(START_WINDOW_FIELD).AsDouble() = thisCut.getStartIdx() - _scanner.getZeroTranslationAdditive();
-                        Record.GetFieldValue(END_WINDOW_FIELD).AsDouble() = thisCut.getEndIdx() - _scanner.getZeroTranslationAdditive();
-                    }
-                    else {
-                        const DataTimeRange& range = params.getDataTimeRangeSet().getDataTimeRangeSets().front();
-                        std::pair<std::string, std::string> rangeDates = range.rangeToGregorianStrings(
-                            thisCut.getStartIdx() - _scanner.getZeroTranslationAdditive(),
-                            thisCut.getEndIdx() - _scanner.getZeroTranslationAdditive(),
-                            params.getDatePrecisionType()
-                        );
-                        Record.GetFieldValue(START_WINDOW_FIELD).AsString() = rangeDates.first;
-                        Record.GetFieldValue(END_WINDOW_FIELD).AsString() = rangeDates.second;
-                    }
+                }
+                if (params.getDatePrecisionType() == DataTimeRange::GENERIC) {
+                    Record.GetFieldValue(START_WINDOW_FIELD).AsDouble() = thisCut.getStartIdx() - _scanner.getZeroTranslationAdditive();
+                    Record.GetFieldValue(END_WINDOW_FIELD).AsDouble() = thisCut.getEndIdx() - _scanner.getZeroTranslationAdditive();
+                } else {
+                    const DataTimeRange& range = params.getDataTimeRangeSet().getDataTimeRangeSets().front();
+                    std::pair<std::string, std::string> rangeDates = range.rangeToGregorianStrings(
+                        thisCut.getStartIdx() - _scanner.getZeroTranslationAdditive(),
+                        thisCut.getEndIdx() - _scanner.getZeroTranslationAdditive(),
+                        params.getDatePrecisionType()
+                    );
+                    Record.GetFieldValue(START_WINDOW_FIELD).AsString() = rangeDates.first;
+                    Record.GetFieldValue(END_WINDOW_FIELD).AsString() = rangeDates.second;
                 }
             case Parameters::BERNOULLI_TREE:
                 Record.GetFieldValue(OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(thisCut.getN());
@@ -518,19 +522,19 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
             if (params.getScanType() != Parameters::TIMEONLY) {
                 Record.GetFieldValue(NODE_OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(childNode.getBrN());
                 Record.GetFieldValue(NODE_CASES_FIELD).AsDouble() = static_cast<int>(childNode.getBrC());
-                if (params.getDatePrecisionType() == DataTimeRange::GENERIC) {
-                    Record.GetFieldValue(START_WINDOW_FIELD).AsDouble() = thisCut.getStartIdx() - scanner.getZeroTranslationAdditive();
-                    Record.GetFieldValue(END_WINDOW_FIELD).AsDouble() = thisCut.getEndIdx() - scanner.getZeroTranslationAdditive();
-                } else {
-                    const DataTimeRange& range = params.getDataTimeRangeSet().getDataTimeRangeSets().front();
-                    std::pair<std::string, std::string> rangeDates = range.rangeToGregorianStrings(
-                        thisCut.getStartIdx() - scanner.getZeroTranslationAdditive(),
-                        thisCut.getEndIdx() - scanner.getZeroTranslationAdditive(),
-                        params.getDatePrecisionType()
-                    );
-                    Record.GetFieldValue(START_WINDOW_FIELD).AsString() = rangeDates.first;
-                    Record.GetFieldValue(END_WINDOW_FIELD).AsString() = rangeDates.second;
-                }
+            }
+            if (params.getDatePrecisionType() == DataTimeRange::GENERIC) {
+                Record.GetFieldValue(START_WINDOW_FIELD).AsDouble() = thisCut.getStartIdx() - scanner.getZeroTranslationAdditive();
+                Record.GetFieldValue(END_WINDOW_FIELD).AsDouble() = thisCut.getEndIdx() - scanner.getZeroTranslationAdditive();
+            } else {
+                const DataTimeRange& range = params.getDataTimeRangeSet().getDataTimeRangeSets().front();
+                std::pair<std::string, std::string> rangeDates = range.rangeToGregorianStrings(
+                    thisCut.getStartIdx() - scanner.getZeroTranslationAdditive(),
+                    thisCut.getEndIdx() - scanner.getZeroTranslationAdditive(),
+                    params.getDatePrecisionType()
+                );
+                Record.GetFieldValue(START_WINDOW_FIELD).AsString() = rangeDates.first;
+                Record.GetFieldValue(END_WINDOW_FIELD).AsString() = rangeDates.second;
             }
         case Parameters::BERNOULLI_TREE:
             Record.GetFieldValue(OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(_N);
@@ -573,7 +577,7 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
     Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = getRelativeRiskFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
     Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = getExcessCasesFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
     if (params.getReportAttributableRisk()) {
-        Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = thisCut.getAttributableRisk(scanner);
+        Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = getAttributableRiskFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
     }
     return Record;
 }

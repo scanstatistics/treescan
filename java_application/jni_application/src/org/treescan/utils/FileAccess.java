@@ -11,8 +11,6 @@ package org.treescan.utils;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
