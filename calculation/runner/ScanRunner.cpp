@@ -89,9 +89,7 @@ double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _
                     Excess Cases = c-E2
                     */
                     double Cn = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
-                    double Ct = 0.0;
-                    for (size_t t = 0; t < scanner.getNodes().size(); ++t)
-                        Ct += static_cast<double>(scanner.getNodes()[t]->getIntC_C()[_start_idx]) - static_cast<double>(scanner.getNodes()[t]->getIntC_C()[_end_idx + 1]);
+                    double Ct = scanner.get_node_n_time_total_cases(_start_idx, _end_idx);
                     double denominator = totalC - Cn - Ct + C;
                     if (denominator == 0.0) // This will never happen when looking for clusters with high rates.
                         return std::numeric_limits<double>::quiet_NaN();
@@ -194,7 +192,7 @@ double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, dou
             switch (parameters.getConditionalType()) {
                 case Parameters::UNCONDITIONAL:
                 case Parameters::TOTALCASES: return getExcessCasesFor(scanner, nodeID, _C, _N, _start_idx, _end_idx) / static_cast<double>(parameters.getAttributableRiskExposed());
-                default: throw prg_error("Cannot calculate attributable risk: tree-only, condition type (%d).", "getAttributableRisk()", parameters.getConditionalType());
+                default: throw prg_error("Cannot calculate attributable risk: tree-only, condition type (%d).", "getAttributableRiskFor()", parameters.getConditionalType());
             }
         }
         case Parameters::TIMEONLY: /* time-only, condtioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
@@ -204,7 +202,7 @@ double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, dou
                 case Parameters::NODE:       /* this option is really only for tree-time */
                     return getExcessCasesFor(scanner, nodeID, _C, _N, _start_idx, _end_idx) / static_cast<double>(parameters.getAttributableRiskExposed());
                 case Parameters::NODEANDTIME: {
-                    double exp = getExcessCasesFor(scanner, nodeID, _C, _N, _start_idx, _end_idx);
+                    double exp = getExpectedFor(scanner, nodeID, _C, _N, _start_idx, _end_idx);
                     double NodeCases = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
                     // O/Eout = (NodeCases – CasesInWindow) / (NodeCases-  - Expected)
                     double o_eout = (NodeCases - C) / (NodeCases - exp);
@@ -216,10 +214,10 @@ double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, dou
                     double ec = C - eha;
                     return ec / static_cast<double>(parameters.getAttributableRiskExposed());
                 }
-                default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getAttributableRisk()", parameters.getConditionalType());
+                default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getAttributableRiskFor()", parameters.getConditionalType());
             }
         }
-        default: throw prg_error("Unknown scan type (%d).", "getExcessCases()", parameters.getScanType());
+        default: throw prg_error("Unknown scan type (%d).", "getAttributableRiskFor()", parameters.getScanType());
     }
 }
 
@@ -307,9 +305,7 @@ double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double 
                     RR = c/E2
                     */
                     double Cn = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
-                    double Ct = 0.0;
-                    for (size_t t = 0; t < scanner.getNodes().size(); ++t)
-                        Ct += static_cast<double>(scanner.getNodes()[t]->getIntC_C()[_start_idx]) - static_cast<double>(scanner.getNodes()[t]->getIntC_C()[_end_idx + 1]);
+                    double Ct = scanner.get_node_n_time_total_cases(_start_idx, _end_idx);
                     double denominator = totalC - Cn - Ct + C;
                     if (denominator == 0.0) // This will never happen when looking for clusters with high rates.
                         return std::numeric_limits<double>::quiet_NaN();

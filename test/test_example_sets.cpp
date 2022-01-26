@@ -76,10 +76,15 @@ BOOST_AUTO_TEST_CASE( test_poisson_conditional ) {
     std::vector<std::string>::iterator itrPValue = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::P_VALUE_FLD);
 
     // check the expected values
-    unsigned int dataRows=0;
+    unsigned int dataRows=0, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         ++dataRows;
         unsigned int cut_num; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrCutNum)).c_str(), cut_num) );
         unsigned int observed; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrObserved)).c_str(), observed) );
@@ -129,6 +134,7 @@ BOOST_AUTO_TEST_CASE( test_poisson_conditional ) {
         getCSVRow(stream, data);
     }
     if (dataRows != 6) BOOST_FAIL( "expecting 6 data rows, got " << dataRows );
+    if (childRows != 6) BOOST_FAIL("expecting 6 child data rows, got " << childRows);
     stream.close();
 }
 
@@ -173,10 +179,15 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
     std::vector<std::string>::iterator itrPValue = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::P_VALUE_FLD);
 
     // check the expected values
-    unsigned int dataRows=0;
+    unsigned int dataRows=0, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         ++dataRows;
         unsigned int cut_num; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrCutNum)).c_str(), cut_num) );
         unsigned int observed; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrObserved)).c_str(), observed) );
@@ -231,6 +242,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
         getCSVRow(stream, data);
     }
     if (dataRows != 9) BOOST_FAIL( "expecting 9 data rows, got " << dataRows );
+    if (childRows != 12) BOOST_FAIL("expecting 12 child data rows, got " << childRows);
     stream.close();
 }
 
@@ -270,10 +282,15 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
     std::vector<std::string>::iterator itrPValue = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::P_VALUE_FLD);
 
     // check the expected values
-    unsigned int dataRows=0;
+    unsigned int dataRows=0, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         ++dataRows;
         unsigned int cut_num; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrCutNum)).c_str(), cut_num) );
         unsigned int observed; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrObserved)).c_str(), observed) );
@@ -328,6 +345,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
         getCSVRow(stream, data);
     }
     if (dataRows != 6) BOOST_FAIL( "expecting 6 data rows, got " << dataRows );
+    if (childRows != 6) BOOST_FAIL("expecting 6 child data rows, got " << childRows);
     stream.close();
 }
 
@@ -376,10 +394,15 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
     std::vector<std::string>::iterator itrPValue = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::P_VALUE_FLD);
 
     // check the expected values
-    unsigned int dataRows=0;
+    unsigned int dataRows=0, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         ++dataRows;
         unsigned int cut_num; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrCutNum)).c_str(), cut_num) );
         unsigned int nodecases; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrNodeCases)).c_str(), nodecases) );
@@ -433,6 +456,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
         getCSVRow(stream, data);
     }
     if (dataRows != 12) BOOST_FAIL( "expecting 13 data rows, got " << dataRows );
+    if (childRows != 14) BOOST_FAIL("expecting 14 data rows, got " << childRows);
     stream.close();
 }
 
@@ -477,10 +501,15 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
     std::vector<std::string>::iterator itrPValue = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::P_VALUE_FLD);
 
     // check the expected values
-    unsigned int dataRows=0;
+    unsigned int dataRows=0, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         ++dataRows;
         unsigned int cut_num; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrCutNum)).c_str(), cut_num) );
         unsigned int nodecases; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrNodeCases)).c_str(), nodecases) );
@@ -534,6 +563,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
         getCSVRow(stream, data);
     }
     if (dataRows != 12) BOOST_FAIL( "expecting 12 data rows, got " << dataRows );
+    if (childRows != 14) BOOST_FAIL("expecting 14 data rows, got " << childRows);
     stream.close();
 }
 
@@ -576,10 +606,15 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
     std::vector<std::string>::iterator itrPValue = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::P_VALUE_FLD);
 
     // check the expected values
-    unsigned int dataRows=0;
+    unsigned int dataRows=0, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         ++dataRows;
         unsigned int cut_num; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrCutNum)).c_str(), cut_num) );
         unsigned int nodecases; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrNodeCases)).c_str(), nodecases) );
@@ -633,6 +668,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
         getCSVRow(stream, data);
     }
     if (dataRows != 7) BOOST_FAIL( "expecting 7 data rows, got " << dataRows );
+    if (childRows != 8) BOOST_FAIL("expecting 8 data rows, got " << childRows);
     stream.close();
 }
 
@@ -676,10 +712,15 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
     std::vector<std::string>::iterator itrPValue = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::P_VALUE_FLD);
 
     // check the expected values
-    unsigned int dataRows=0;
+    unsigned int dataRows=0, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         ++dataRows;
         unsigned int cut_num; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrCutNum)).c_str(), cut_num) );
         unsigned int nodecases; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrNodeCases)).c_str(), nodecases) );
@@ -733,6 +774,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
         getCSVRow(stream, data);
     }
     if (dataRows != 12) BOOST_FAIL( "expecting 12 data rows, got " << dataRows );
+    if (childRows != 10) BOOST_FAIL("expecting 10 data rows, got " << childRows);
     stream.close();
 }
 
@@ -782,10 +824,15 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases ) {
     std::vector<std::string>::iterator itrPValue = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::P_VALUE_FLD);
 
     // check the expected values
-    unsigned int dataRows=0;
+    unsigned int dataRows=0, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         ++dataRows;
         unsigned int cut_num; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrCutNum)).c_str(), cut_num) );
         unsigned int nodecases; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrNodeCases)).c_str(), nodecases) );
@@ -828,6 +875,7 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases ) {
         getCSVRow(stream, data);
     }
     if (dataRows != 15) BOOST_FAIL( "expecting 15 data rows, got " << dataRows );
+    if (childRows != 0) BOOST_FAIL("expecting 0 data rows, got " << childRows);
     stream.close();
 }
 
@@ -872,10 +920,15 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases_day_of_week_adjustment
     std::vector<std::string>::iterator itrPValue = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::P_VALUE_FLD);
 
     // check the expected values
-    unsigned int dataRows=0;
+    unsigned int dataRows=0, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         ++dataRows;
         unsigned int cut_num; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrCutNum)).c_str(), cut_num) );
         unsigned int nodecases; BOOST_CHECK( string_to_numeric_type<unsigned int>(data.at(std::distance(headers.begin(), itrNodeCases)).c_str(), nodecases) );
@@ -918,6 +971,7 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases_day_of_week_adjustment
         getCSVRow(stream, data);
     }
     if (dataRows != 16) BOOST_FAIL( "expecting 16 data rows, got " << dataRows );
+    if (childRows != 0) BOOST_FAIL("expecting 0 data rows, got " << childRows);
     stream.close();
 }
 

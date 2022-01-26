@@ -448,6 +448,8 @@ protected:
     DataTimeRange::index_t              _avg_censor_time;
     NodeStructure::count_t              _num_cases_excluded;
     mutable SequentialStatistic_t       _sequential_statistic;
+    // cache for storing total cases in time window
+    mutable std::map<std::pair<DataTimeRange::index_t, DataTimeRange::index_t>, double> _node_n_time_total_cases_cache;
 
     unsigned int                addCN_C(const NodeStructure& sourceNode, NodeStructure& destinationNode, boost::dynamic_bitset<>& ancestor_nodes);
     size_t                      calculateCutsCount() const;
@@ -533,6 +535,18 @@ public:
     }
 
     boost::shared_ptr<AbstractWindowLength> getNewWindowLength() const;
+    double get_node_n_time_total_cases(DataTimeRange::index_t start_idx, DataTimeRange::index_t end_idx) const {
+        /* Obtain the total number of cases in window range for all nodes. */
+        auto test = std::make_pair(start_idx, end_idx);
+        auto finder = _node_n_time_total_cases_cache.find(test);
+        if (finder != _node_n_time_total_cases_cache.end())
+            return finder->second;
+        double Ct = 0.0;
+        for (auto node : getNodes())
+            Ct += static_cast<double>(node->getIntC_C()[start_idx]) - static_cast<double>(node->getIntC_C()[end_idx + 1]);
+        _node_n_time_total_cases_cache[test] = Ct;
+        return Ct;
+    }
 };
 
 class CompareCutsByAncestoryString {

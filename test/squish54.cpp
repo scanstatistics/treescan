@@ -55,14 +55,20 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_conditional_poisson, poisson_fix
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
+    std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
     double expected [6] = {0.059, 0.12, 0.089, 0.023, 0.017, 0.02};
-    unsigned int dataRows=0, expectedRows=6;
+    unsigned int dataRows=0, expectedRows=6, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         if (dataRows < expectedRows) {
             double ar; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrAR)).c_str(), ar) );
             BOOST_REQUIRE_CLOSE( ar, expected[dataRows], 0.001 );
@@ -71,6 +77,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_conditional_poisson, poisson_fix
         getCSVRow(stream, data);
     }
     if (dataRows != expectedRows) BOOST_FAIL( "expecting " << expectedRows << " data rows, got " << dataRows );
+    if (childRows != 6) BOOST_FAIL("expecting 15 child data rows, got " << childRows);
     stream.close();
 }
 
@@ -93,14 +100,20 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_unconditional_bernoulli, bernoul
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
+    std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
     double expected [9] = {0.052, 0.03, 0.04, 0.013, 0.01, 0.035, 0.013, 0.01, 0.0025};
-    unsigned int dataRows=0, expectedRows=9;
+    unsigned int dataRows=0, expectedRows=9, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         if (dataRows < expectedRows) {
             double ar; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrAR)).c_str(), ar) );
             BOOST_REQUIRE_CLOSE( ar, expected[dataRows], 0.001 );
@@ -109,6 +122,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_unconditional_bernoulli, bernoul
         getCSVRow(stream, data);
     }
     if (dataRows != expectedRows) BOOST_FAIL( "expecting " << expectedRows << " data rows, got " << dataRows );
+    if (childRows != 12) BOOST_FAIL("expecting 15 child data rows, got " << childRows);
     stream.close();
 }
 
@@ -132,6 +146,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_unconditional_bernoulli_self_con
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
+    std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrRR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::RELATIVE_RISK_FIELD);
     std::vector<std::string>::iterator itrExcess = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXCESS_CASES_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
@@ -140,10 +155,15 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_unconditional_bernoulli_self_con
     double expected_rr [9] = {2.75, 7.0, 1.84, 3.5, 3.0, 1.34, 2.25, 1.31, 1.33};
     double expected_ex [9] = {21.0, 12.0, 16.0, 5.0, 4.0, 14.0, 5.0, 4.0, 1.0};
     double expected_ar [9] = {0.10, 0.06, 0.08, 0.025, 0.02, 0.07, 0.025, 0.02, 0.005};
-    unsigned int dataRows=0, expectedRows=9;
+    unsigned int dataRows=0, expectedRows=9, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         if (dataRows < expectedRows) {
             double rr; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrRR)).c_str(), rr) );
             double excess; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrExcess)).c_str(), excess) );
@@ -156,6 +176,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_unconditional_bernoulli_self_con
         getCSVRow(stream, data);
     }
     if (dataRows != expectedRows) BOOST_FAIL( "expecting " << expectedRows << " data rows, got " << dataRows );
+    if (childRows != 12) BOOST_FAIL("expecting 15 child data rows, got " << childRows);
     stream.close();
 }
 
@@ -178,14 +199,20 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_conditional_bernoulli, bernoulli
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
+    std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
     double expected [6] = {0.068, 0.029, 0.046, 0.01, 0.0077, 0.009};
-    unsigned int dataRows=0, expectedRows=6;
+    unsigned int dataRows=0, expectedRows=6, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         if (dataRows < expectedRows) {
             double ar; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrAR)).c_str(), ar) );
             BOOST_REQUIRE_CLOSE( ar, expected[dataRows], 0.001 );
@@ -194,6 +221,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_conditional_bernoulli, bernoulli
         getCSVRow(stream, data);
     }
     if (dataRows != expectedRows) BOOST_FAIL( "expecting " << expectedRows << " data rows, got " << dataRows );
+    if (childRows != 6) BOOST_FAIL("expecting 15 child data rows, got " << childRows);
     stream.close();
 }
 
@@ -290,14 +318,20 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node, t
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
+    std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
     double expected [10] = {0.068, 0.018, 0.055, 0.033, 0.0093, 0.023, 0.013, 0.024, 0.024, 0.014};
-    unsigned int dataRows=0, expectedRows=10;
+    unsigned int dataRows=0, expectedRows=10, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         if (dataRows < expectedRows) {
             double ar; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrAR)).c_str(), ar) );
             BOOST_REQUIRE_CLOSE( ar, expected[dataRows], 0.001 );
@@ -306,6 +340,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node, t
         getCSVRow(stream, data);
     }
     if (dataRows != expectedRows) BOOST_FAIL( "expecting " << expectedRows << " data rows, got " << dataRows );
+    if (childRows != 9) BOOST_FAIL("expecting 9 child data rows, got " << childRows);
     stream.close();
 }
 
@@ -328,14 +363,20 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node_w_
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
+    std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
     double expected [11] = { 0.014, 0.009, 0.0089, 0.0092, 0.022, 0.018, 0.018, 0.046, 0.062, 0.0044, 0.0042 };
-    unsigned int dataRows=0, expectedRows=11;
+    unsigned int dataRows=0, expectedRows=11, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         if (dataRows < expectedRows) {
             double ar; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrAR)).c_str(), ar) );
             BOOST_REQUIRE_CLOSE( ar, expected[dataRows], 0.001 );
@@ -344,6 +385,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node_w_
         getCSVRow(stream, data);
     }
     if (dataRows != expectedRows) BOOST_FAIL( "expecting " << expectedRows << " data rows, got " << dataRows );
+    if (childRows != 8) BOOST_FAIL("expecting 11 child data rows, got " << childRows);
     stream.close();
 }
 
@@ -366,14 +408,20 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_nodetim
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
+    std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
     double expected [10] = {0.068, 0.018, 0.055, 0.033, 0.0093, 0.023, 0.013, 0.024, 0.024, 0.014 };
-    unsigned int dataRows=0, expectedRows=10;
+    unsigned int dataRows=0, expectedRows=10, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         if (dataRows < expectedRows) {
             double ar; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrAR)).c_str(), ar) );
             BOOST_REQUIRE_CLOSE( ar, expected[dataRows], 0.001 );
@@ -382,6 +430,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_nodetim
         getCSVRow(stream, data);
     }
     if (dataRows != expectedRows) BOOST_FAIL( "expecting " << expectedRows << " data rows, got " << dataRows );
+    if (childRows != 9) BOOST_FAIL("expecting 10 child data rows, got " << childRows);
     stream.close();
 }
 
@@ -405,14 +454,20 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_nodetim
 
     CSV_Row_t headers;
     getCSVRow(stream, headers);
+    std::vector<std::string>::iterator itrCutNum = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::CUT_NUM_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
     double expected [11] = { 0.014, 0.009, 0.0089, 0.0092, 0.022, 0.018, 0.018, 0.046, 0.062, 0.0044, 0.0042 };
-    unsigned int dataRows=0, expectedRows=11;
+    unsigned int dataRows=0, expectedRows=11, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
+        if (data.at(std::distance(headers.begin(), itrCutNum)).find("_") != std::string::npos) {
+            ++childRows;
+            getCSVRow(stream, data);
+            continue;
+        }
         if (dataRows < expectedRows) {
             double ar; BOOST_CHECK( string_to_numeric_type<double>(data.at(std::distance(headers.begin(), itrAR)).c_str(), ar) );
             BOOST_REQUIRE_CLOSE( ar, expected[dataRows], 0.001 );
@@ -421,6 +476,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_nodetim
         getCSVRow(stream, data);
     }
     if (dataRows != expectedRows) BOOST_FAIL( "expecting " << expectedRows << " data rows, got " << dataRows );
+    if (childRows != 8) BOOST_FAIL("expecting 11 child data rows, got " << childRows);
     stream.close();
 }
 
