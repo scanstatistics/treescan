@@ -714,8 +714,8 @@ const TreeStatistics& ScanRunner::getTreeStatistics() const {
 
 /* Returns true if NodeStructure is evaluated in scanning processing. */
 bool ScanRunner::isEvaluated(const NodeStructure& node) const {
-    // If node does not have cases in branch, it is not evaluated.
-    if (node.getBrC() <= 1) return false;
+    // If node branch does not have the minimum number of cases in branch, it is not evaluated.
+    if (node.getBrC() < static_cast<int>(_parameters.getMinimumNodeCases())) return false;
     if (_parameters.getScanType() != Parameters::TIMEONLY && _parameters.getRestrictTreeLevels())
         return std::find(_parameters.getRestrictedTreeLevels().begin(), _parameters.getRestrictedTreeLevels().end(), node.getLevel()) == _parameters.getRestrictedTreeLevels().end();
     return true;
@@ -2487,7 +2487,10 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
 
 CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx, int BrC_All, double BrN_All) {
     double loglikelihood = 0;
-    
+
+    if (BrC < static_cast<int>(_parameters.getMinimumNodeCases()))
+        return 0;
+
     if ((_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) ||
         (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.isPerformingDayOfWeekAdjustment()) ||
         (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE && _parameters.isPerformingDayOfWeekAdjustment()))
@@ -2516,6 +2519,9 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, 
 CutStructure * ScanRunner::calculateCut(size_t node_index, int C, double N, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx) {
     double loglikelihood = logCalculator->LogLikelihood(C, N, BrC, BrN);
     if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) return 0;
+
+    if (C < static_cast<int>(_parameters.getMinimumNodeCases()))
+        return 0;
 
     std::auto_ptr<CutStructure> cut(new CutStructure());
     cut->setLogLikelihood(loglikelihood);

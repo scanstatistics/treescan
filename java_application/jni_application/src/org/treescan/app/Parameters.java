@@ -100,7 +100,8 @@ public class Parameters implements Cloneable {
     private TemporalGraphReportType _temporal_graph_report_type=TemporalGraphReportType.MLC_ONLY; /* which clusters to report in temporal graph */
     private int _temporal_graph_report_count=1; /* number of MLC clusters to graph with TemporalGraphReportType.X_MCL_ONLY */
     private double _temporal_graph_report_cutoff=0.05; /* P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY */
-
+    private int _minimum_nodes_cases=2; /*minimum number of nodes cases*/
+    
     private ArrayList<InputSourceSettings>     _input_sources;
 
     public Parameters() {
@@ -210,10 +211,13 @@ public class Parameters implements Cloneable {
           if (_temporal_graph_report_count != rhs._temporal_graph_report_count) return false;
           if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
           if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;          
+          if(_minimum_nodes_cases != rhs._minimum_nodes_cases) return false;
           
           return true;
     }
 
+    public int getMinimumNodeCases() {return _minimum_nodes_cases;}
+    public void setMinimumNodeCases(int i) {_minimum_nodes_cases = i;}
     public boolean getOutputTemporalGraphFile() {return _output_temporal_graph;}
     public void setOutputTemporalGraphFile(boolean b) {_output_temporal_graph = b;}    
     public double getTemporalGraphSignificantCutoff() {return _temporal_graph_report_cutoff;}

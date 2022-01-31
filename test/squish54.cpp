@@ -350,6 +350,8 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node_w_
     _parameters.setGeneratingTableResults(true);
     _parameters.setReportAttributableRisk(true);
     _parameters.setAttributableRiskExposed(200);
+    _parameters.setConditionalType(Parameters::NODE);
+    _parameters.setModelType(Parameters::UNIFORM);
     BOOST_REQUIRE_EQUAL( ParametersValidate(_parameters).Validate(_print), true );
 
     std::string results_user_directory;
@@ -367,8 +369,8 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node_w_
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
-    double expected [11] = { 0.014, 0.009, 0.0089, 0.0092, 0.022, 0.018, 0.018, 0.046, 0.062, 0.0044, 0.0042 };
-    unsigned int dataRows=0, expectedRows=11, childRows = 0;
+    double expected [12] = { 0.21, 0.093, 0.12, 0.041 , 0.019, 0.035, 0.023, 0.035, 0.037, 0.027, 0.013, 0.009 };
+    unsigned int dataRows=0, expectedRows=12, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {
@@ -385,7 +387,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node_w_
         getCSVRow(stream, data);
     }
     if (dataRows != expectedRows) BOOST_FAIL( "expecting " << expectedRows << " data rows, got " << dataRows );
-    if (childRows != 8) BOOST_FAIL("expecting 11 child data rows, got " << childRows);
+    if (childRows != 14) BOOST_FAIL("expecting 14 child data rows, got " << childRows);
     stream.close();
 }
 
@@ -458,8 +460,8 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_nodetim
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
 
     // check the expected values for this analysis
-    double expected [11] = { 0.014, 0.009, 0.0089, 0.0092, 0.022, 0.018, 0.018, 0.046, 0.062, 0.0044, 0.0042 };
-    unsigned int dataRows=0, expectedRows=11, childRows = 0;
+    double expected [10] = { 0.014, 0.009, 0.0089, 0.0092, 0.022, 0.018, 0.018, 0.046, 0.062, 0.0082 };
+    unsigned int dataRows=0, expectedRows=10, childRows = 0;
     CSV_Row_t data;
     getCSVRow(stream, data);
     while (data.size()) {

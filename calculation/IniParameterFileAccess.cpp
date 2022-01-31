@@ -444,6 +444,7 @@ void IniParameterFileAccess::WriteAdvancedAnalysisInferenceSettings(IniFile& Wri
         WriteIniParameter(WriteFile, Parameters::RESTRICTED_TREE_LEVELS, GetParameterString(Parameters::RESTRICTED_TREE_LEVELS, s).c_str(), GetParameterComment(Parameters::RESTRICTED_TREE_LEVELS));
         WriteIniParameter(WriteFile, Parameters::RANDOMIZATION_SEED, GetParameterString(Parameters::RANDOMIZATION_SEED, s).c_str(), GetParameterComment(Parameters::RANDOMIZATION_SEED));
         WriteIniParameter(WriteFile, Parameters::RANDOMLY_GENERATE_SEED, GetParameterString(Parameters::RANDOMLY_GENERATE_SEED, s).c_str(), GetParameterComment(Parameters::RANDOMLY_GENERATE_SEED));
+        WriteIniParameter(WriteFile, Parameters::MINIMUM_CASES_NODE, GetParameterString(Parameters::MINIMUM_CASES_NODE, s).c_str(), GetParameterComment(Parameters::MINIMUM_CASES_NODE));
     } catch (prg_exception& x) {
         x.addTrace("WriteAdvancedAnalysisInferenceSettings()","IniParameterFileAccess");
         throw;

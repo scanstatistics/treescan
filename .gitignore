@@ -54,3 +54,4 @@ installers/java/jre_x86
 /java_application/jni_application/nbproject/private/config.properties
 /java_application/jni_application/nbproject/private/private.properties
 /java_application/jni_application/nbproject/private/private.xml
+/test/results.xml

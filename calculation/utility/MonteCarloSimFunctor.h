@@ -16,9 +16,10 @@ class AbstractMeasureList {
 
         const ScanRunner& _scanRunner;
         Loglikelihood_t _loglikelihood;
+        unsigned int _minimum_cases;
 
     public:
-        AbstractMeasureList(const ScanRunner & scanRunner, Loglikelihood_t loglikelihood) : _scanRunner(scanRunner), _loglikelihood(loglikelihood) {}
+        AbstractMeasureList(const ScanRunner & scanRunner, Loglikelihood_t loglikelihood);
         virtual ~AbstractMeasureList() {}
 
         virtual void add(int c, double n) = 0;
@@ -37,7 +38,9 @@ class NonMeasureList : public AbstractMeasureList {
         NonMeasureList(const ScanRunner & scanRunner, Loglikelihood_t loglikelihood) : AbstractMeasureList(scanRunner, loglikelihood), _max_loglikelihood(-std::numeric_limits<double>::max()) {}
         virtual ~NonMeasureList() {}
 
-        virtual void add(int c, double n) { _max_loglikelihood = std::max(_max_loglikelihood, _loglikelihood->LogLikelihood(c, n)); }
+        virtual void add(int c, double n) {
+            if (c >= static_cast<int>(_minimum_cases)) _max_loglikelihood = std::max(_max_loglikelihood, _loglikelihood->LogLikelihood(c, n));
+        }
         virtual void initialize() {_max_loglikelihood = -std::numeric_limits<double>::max();}
         virtual double loglikelihood() { return _max_loglikelihood; }
 };
@@ -75,8 +78,8 @@ class MinimumMeasureList : public AbstractMeasureList {
             double simLogLikelihood = -std::numeric_limits<double>::max(),  max_excess(0);
             list_container_t::size_type iListSize = static_cast<list_container_t::size_type>(_scanRunner.getTotalC()),
                                         iHalfListSize = static_cast<list_container_t::size_type>(iListSize/2);
-            /* Start case index at two -- don't want to consider simulations with one case as this could indicate a false high loglikelihood. */
-            list_container_t::size_type i = 2;
+            /* Don't want to consider simulations with cases less than minimum. */
+            list_container_t::size_type i = static_cast<list_container_t::size_type>(_minimum_cases);
 
             list_container_t& measure = (*_min_measure);
             if (_scanRunner.getParameters().getModelType() == Parameters::BERNOULLI_TREE) {
@@ -89,7 +92,7 @@ class MinimumMeasureList : public AbstractMeasureList {
                     }
                 }
                 /* Calculate LLR for remaining half - trick not valid when number of cases is greater than or equal half. */
-                list_container_t::size_type i=std::max(iHalfListSize, static_cast<list_container_t::size_type>(2));
+                list_container_t::size_type i=std::max(iHalfListSize, static_cast<list_container_t::size_type>(_minimum_cases));
                 for (; i <= iListSize; ++i) {
                     if (measure[i] != 0.0 && static_cast<double>(i) * total_measure > measure[i] * static_cast<double>(iListSize)) {
                         simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(static_cast<int>(i), measure[i]));
@@ -104,7 +107,7 @@ class MinimumMeasureList : public AbstractMeasureList {
                     }
                 }
                 /* Calculate LLR for remaining half - trick not valid when number of cases is greater than or equal half. */
-                list_container_t::size_type i=std::max(iHalfListSize, static_cast<list_container_t::size_type>(2));
+                list_container_t::size_type i=std::max(iHalfListSize, static_cast<list_container_t::size_type>(_minimum_cases));
                 for (; i <= iListSize; ++i) {
                     if (measure[i] != 0.0 && static_cast<double>(i) > measure[i]) {
                         simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(static_cast<int>(i), measure[i]));
@@ -132,10 +135,10 @@ private:
     //boost::shared_ptr<std::vector<double> >     _measure;
     boost::shared_ptr<AbstractMeasureList>     _measure_list;
 
-	bool isEvaluated(const NodeStructure& node, const SimulationNode& simNode) const;
+    bool isEvaluated(const NodeStructure& node, const SimulationNode& simNode) const;
     successful_result_type scanTree(param_type const & param);
     successful_result_type scanTreeTemporalConditionNode(param_type const & param);
-	successful_result_type scanTreeTemporalConditionNodeCensored(param_type const & param);
+    successful_result_type scanTreeTemporalConditionNodeCensored(param_type const & param);
     successful_result_type scanTreeTemporalConditionNodeTime(param_type const & param);
 
 public:

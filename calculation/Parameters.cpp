@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 71;
+const int Parameters::giNumParameters = 72;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -101,6 +101,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;
   if (_temporal_graph_report_count != rhs._temporal_graph_report_count) return false;
   if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
+  if (_minimum_nodes_cases != rhs._minimum_nodes_cases) return false;
 
   return true;
 }
@@ -159,6 +160,7 @@ void Parameters::copy(const Parameters &rhs) {
     _maximum_window_length = rhs._maximum_window_length;
     _maximum_window_type = rhs._maximum_window_type;
     _minimum_window_length = rhs._minimum_window_length;
+    _minimum_nodes_cases = rhs._minimum_nodes_cases;
 
     _outputFileName = rhs._outputFileName;
     _resultsFormat = rhs._resultsFormat;
@@ -358,6 +360,7 @@ void Parameters::setAsDefaulted() {
     _maximum_window_length = 1;
     _maximum_window_type = PERCENTAGE_WINDOW;
     _minimum_window_length = 2;
+    _minimum_nodes_cases = 2;
 
     _outputFileName = "";
     _generateHtmlResults = false;
@@ -544,6 +547,7 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     setSequentialFilename(pt.get<std::string>("parameters.analysis.advanced.sequential-scan.sequential-filename", "").c_str(), true);
     _sequential_alpha_overall = pt.get<double>("parameters.analysis.advanced.sequential-scan.sequential-alpha-overall", 0.05);
     _sequential_alpha_spending = pt.get<double>("parameters.analysis.advanced.sequential-scan.sequential-alpha-spending", 0.01);
+    _minimum_nodes_cases = pt.get<unsigned int>("parameters.analysis.advanced.inference.minimum-node-cases", 2);
     // Advanced Analysis - Power Evaluations
     _perform_power_evaluations = pt.get<bool>("parameters.analysis.advanced.power-evaluations.perform-power-evaluations", false);
     _power_evaluation_type = static_cast<PowerEvaluationType>(pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.power-evaluation-type", PE_WITH_ANALYSIS));
@@ -622,6 +626,7 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.analysis.advanced.inference.restrict-tree-levels", _restrict_tree_levels);
     typelist_csv_string<unsigned int>(_restricted_tree_levels, buffer);	
     pt.put("parameters.analysis.advanced.inference.tree-levels", buffer);
+    pt.put("parameters.analysis.advanced.inference.minimum-node-cases", _minimum_nodes_cases);
     // Advanced Analysis - Sequential Scan
     pt.put("parameters.analysis.advanced.sequential-scan.sequential-scan", _sequential_scan);
     pt.put("parameters.analysis.advanced.sequential-scan.sequential-maximum-signal", _sequential_max_signal);

@@ -48,6 +48,7 @@ bool ParametersValidate::Validate(BasePrint& printDirection) const {
     bValid &= ValidateAdditionalOutputParameters(printDirection);
     bValid &= ValidateTemporalWindowParameters(printDirection);
     bValid &= ValidateAdjustmentsParameters(printDirection);
+    bValid &= ValidateInferenceParameters(printDirection);
     bValid &= ValidateSequentialScanParameters(printDirection);
     bValid &= ValidatePowerEvaluationParametersParameters(printDirection);
     bValid &= ValidateRandomizationSeed(printDirection);
@@ -171,6 +172,16 @@ bool ParametersValidate::ValidateInputSource(const Parameters::InputSource * sou
             return false;
         }
     } return true;
+}
+
+/** Validates input/output file parameters. */
+bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection) const {
+    bool bValid = true;
+    if (_parameters.getMinimumNodeCases() < 2) {
+        bValid = false;
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe minimum number of node cases option cannot be less than 2.\n", BasePrint::P_PARAMERROR);
+    }
+    return bValid;
 }
 
 /** Validates input/output file parameters. */

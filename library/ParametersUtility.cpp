@@ -495,6 +495,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jint)parameters.getTemporalGraphMostLikelyCount());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setMinimumNodeCases", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getMinimumNodeCases());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -891,6 +895,10 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
 
   mid = _getMethodId_Checked(Env, clazz, "getTemporalGraphMostLikelyCount", "()I");
   parameters.setTemporalGraphMostLikelyCount(Env.CallIntMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getMinimumNodeCases", "()I");
+  parameters.setMinimumNodeCases(Env.CallIntMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   return parameters;

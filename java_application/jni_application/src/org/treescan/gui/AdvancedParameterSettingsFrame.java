@@ -159,6 +159,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (_restrict_evaluated_levels.isSelected() == false);
         bReturn &= _restricted_levels.getText().equals("");
         bReturn &= Utils.selectionIs(_prospective_frequency, 0);
+        bReturn &= _minimum_cases_textfield.getText().equals("2");
         // Temporal Window tab
         bReturn &= _percentageTemporalRadioButton.isSelected();
         bReturn &= (Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 50.0);
@@ -293,6 +294,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setRestrictTreeLevels(_restrict_evaluated_levels.isSelected());
         parameters.setRestrictedTreeLevels(_restricted_levels.getText());
         parameters.setProspectiveFrequencyType(getProspectiveFrequencyControlType().ordinal());
+        parameters.setMinimumNodeCases(Integer.parseInt(_minimum_cases_textfield.getText()));
 
         // Temporal Window tab
         parameters.setMaximumWindowPercentage(Double.parseDouble(_maxTemporalClusterSizeTextField.getText()));
@@ -400,6 +402,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _restrict_evaluated_levels.setSelected(false);
         _restricted_levels.setText("");
         _prospective_frequency.select(0);
+        _minimum_cases_textfield.setText("2");
         // Temporal Window tab
         _percentageTemporalRadioButton.setSelected(true);
         _maxTemporalClusterSizeTextField.setText("50");
@@ -440,6 +443,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _restrict_evaluated_levels.setSelected(parameters.getRestrictTreeLevels());
         _restricted_levels.setText(parameters.getRestrictedTreeLevels());
         _prospective_frequency.select(parameters.getProspectiveFrequencyType().ordinal());
+        _minimum_cases_textfield.setText(Integer.toString(parameters.getMinimumNodeCases()));
 
         // Temporal Window tab
         _percentageTemporalRadioButton.setSelected(parameters.getMaximumWindowType() == Parameters.MaximumWindowType.PERCENTAGE_WINDOW);
@@ -1232,6 +1236,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _prospective_frequency_group = new javax.swing.JPanel();
         _label_prospective_frequency = new javax.swing.JLabel();
         _prospective_frequency = new java.awt.Choice();
+        _group_min_cases = new javax.swing.JPanel();
+        _label_restrict_cuts = new javax.swing.JLabel();
+        _minimum_cases_textfield = new javax.swing.JTextField();
+        _label_restrict_cuts2 = new javax.swing.JLabel();
         _advanced_power_evaluation_tab = new javax.swing.JPanel();
         _powerEvaluationsGroup = new javax.swing.JPanel();
         _performPowerEvaluations = new javax.swing.JCheckBox();
@@ -1954,6 +1962,54 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGap(0, 14, Short.MAX_VALUE))
         );
 
+        _group_min_cases.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Minimum Number of Cases"));
+
+        _label_restrict_cuts.setText("Restrict cuts to have at least"); // NOI18N
+
+        _minimum_cases_textfield.setText("2"); // NOI18N
+        _minimum_cases_textfield.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_minimum_cases_textfield.getText().length() == 0 ||
+                    Integer.parseInt(_minimum_cases_textfield.getText()) < 2)
+                if (undo.canUndo()) undo.undo(); else _minimum_cases_textfield.setText("2");
+            }
+        });
+        _minimum_cases_textfield.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_minimum_cases_textfield, e, 10);
+            }
+        });
+        _minimum_cases_textfield.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _label_restrict_cuts2.setText("cases");
+
+        javax.swing.GroupLayout _group_min_casesLayout = new javax.swing.GroupLayout(_group_min_cases);
+        _group_min_cases.setLayout(_group_min_casesLayout);
+        _group_min_casesLayout.setHorizontalGroup(
+            _group_min_casesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_group_min_casesLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_label_restrict_cuts, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_minimum_cases_textfield, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_label_restrict_cuts2)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        _group_min_casesLayout.setVerticalGroup(
+            _group_min_casesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_group_min_casesLayout.createSequentialGroup()
+                .addGroup(_group_min_casesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_label_restrict_cuts)
+                    .addComponent(_minimum_cases_textfield, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_label_restrict_cuts2))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout _advanced_inferenece_tabLayout = new javax.swing.GroupLayout(_advanced_inferenece_tab);
         _advanced_inferenece_tab.setLayout(_advanced_inferenece_tabLayout);
         _advanced_inferenece_tabLayout.setHorizontalGroup(
@@ -1963,7 +2019,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_advanced_inferenece_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_prospective_frequency_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_prospective_frequency_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_group_min_cases, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _advanced_inferenece_tabLayout.setVerticalGroup(
@@ -1975,7 +2032,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_prospective_frequency_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(223, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_group_min_cases, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(168, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _advanced_inferenece_tab);
@@ -2886,8 +2945,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _eventProbabiltyNumerator;
     private javax.swing.JPanel _graphOutputGroup;
     private javax.swing.JPanel _group_exclusions;
+    private javax.swing.JPanel _group_min_cases;
     private javax.swing.JLabel _labelMonteCarloReplications;
     private javax.swing.JLabel _label_prospective_frequency;
+    private javax.swing.JLabel _label_restrict_cuts;
+    private javax.swing.JLabel _label_restrict_cuts2;
     private javax.swing.JPanel _log_likelihood_ratios_group;
     private javax.swing.JTextField _maxTemporalClusterSizeTextField;
     private javax.swing.JTextField _maxTemporalClusterSizeUnitsTextField;
@@ -2901,6 +2963,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _minTemporalTimeUnitsLabel;
     private javax.swing.JTextField _minimum_cases_signal;
     private javax.swing.JLabel _minimum_cases_signal_label;
+    private javax.swing.JTextField _minimum_cases_textfield;
     private javax.swing.JTextField _montCarloReplicationsTextField;
     private javax.swing.JTextField _numMostLikelyClustersGraph;
     private javax.swing.JLabel _numMostLikelyClustersGraphLabel;

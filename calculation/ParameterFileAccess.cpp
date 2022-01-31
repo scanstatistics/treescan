@@ -82,7 +82,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::RANDOMLY_GENERATE_SEED  : return "generate randomization seed (y/n)";
             case Parameters::RESTRICT_TREE_LEVELS    : return "restrict tree levels evaluated (y/n)";
             case Parameters::RESTRICTED_TREE_LEVELS  : return "tree levels excluded from evaluation (csv list of unsigned integers, root level is 1)";
-            /* Output */
+            case Parameters::MINIMUM_CASES_NODE      : return "minimum number of cases in a node (integer)";
+                /* Output */
             case Parameters::RESULTS_FILE            : return "results filename";
             case Parameters::RESULTS_HTML            : return "create HTML results (y/n)";
             case Parameters::RESULTS_CSV             : return "create CSV results (y/n)";
@@ -177,8 +178,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::RANDOMIZATION_SEED       : return AsString(s, static_cast<unsigned int>(_parameters.getRandomizationSeed()));
             case Parameters::RANDOMLY_GENERATE_SEED   : return AsString(s, _parameters.isRandomlyGeneratingSeed());
             case Parameters::RESTRICT_TREE_LEVELS     : return AsString(s, _parameters.getRestrictTreeLevels());
-            case Parameters::RESTRICTED_TREE_LEVELS   : typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), s);
-                                                        return s;
+            case Parameters::RESTRICTED_TREE_LEVELS   : typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), s); return s;
+            case Parameters::MINIMUM_CASES_NODE       : return AsString(s, _parameters.getMinimumNodeCases());
             /* Output */
             case Parameters::RESULTS_FILE             : s = _parameters.getOutputFileName(); return s;
             case Parameters::RESULTS_HTML             : return AsString(s, _parameters.isGeneratingHtmlResults());
@@ -383,6 +384,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
                                                             _parameters.setRestrictedTreeLevels(list);
                                                         }
                                                         break;
+            case Parameters::MINIMUM_CASES_NODE       : return _parameters.setMinimumNodeCases(ReadUnsignedInt(value, e)); break;
             /* Output */
             case Parameters::RESULTS_FILE             : _parameters.setOutputFileName(value.c_str(), true); break;
             case Parameters::RESULTS_HTML             : _parameters.setGeneratingHtmlResults(ReadBoolean(value, e)); break;

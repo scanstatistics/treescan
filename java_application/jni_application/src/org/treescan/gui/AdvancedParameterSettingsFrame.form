@@ -774,6 +774,7 @@
                           <Component id="jPanel1" max="32767" attributes="0"/>
                           <Component id="jPanel3" alignment="1" max="32767" attributes="0"/>
                           <Component id="_prospective_frequency_group" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_group_min_cases" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -788,7 +789,9 @@
                       <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_prospective_frequency_group" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="223" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_group_min_cases" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="168" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -943,6 +946,67 @@
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospective_frequency.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;   public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;      enableSetDefaultsButton();&#xd;&#xa;   }&#xd;&#xa; });&#xd;&#xa;_prospective_frequency.add(&quot;Daily&quot;);&#xd;&#xa;_prospective_frequency.add(&quot;Weekly&quot;);&#xd;&#xa;_prospective_frequency.add(&quot;Monthly&quot;);&#xd;&#xa;_prospective_frequency.add(&quot;Quarterly&quot;);&#xd;&#xa;_prospective_frequency.add(&quot;Yearly&quot;);&#xd;&#xa;"/>
                   </AuxValues>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JPanel" name="_group_min_cases">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Minimum Number of Cases">
+                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                        <EtchetBorder/>
+                      </Border>
+                    </TitledBorder>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_label_restrict_cuts" min="-2" pref="148" max="-2" attributes="1"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_minimum_cases_textfield" min="-2" pref="58" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="_label_restrict_cuts2" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_label_restrict_cuts" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_minimum_cases_textfield" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_label_restrict_cuts2" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JLabel" name="_label_restrict_cuts">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Restrict cuts to have at least" noResource="true"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_minimum_cases_textfield">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="2" noResource="true"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_minimum_cases_textfield.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_minimum_cases_textfield.getText().length() == 0 ||&#xa;               Integer.parseInt(_minimum_cases_textfield.getText()) &lt; 2)&#xa;            if (undo.canUndo()) undo.undo(); else _minimum_cases_textfield.setText(&quot;2&quot;);&#xa;    }&#xa;});&#xa;_minimum_cases_textfield.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_minimum_cases_textfield, e, 10);&#xa;    }&#xa;});&#xa;_minimum_cases_textfield.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_label_restrict_cuts2">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="cases"/>
+                  </Properties>
                 </Component>
               </SubComponents>
             </Container>

@@ -55,6 +55,7 @@ class Parameters {
                         RANDOMLY_GENERATE_SEED,
                         RESTRICT_TREE_LEVELS,
                         RESTRICTED_TREE_LEVELS,
+                        MINIMUM_CASES_NODE,
                         /* Output */
                         RESULTS_FILE,
                         RESULTS_HTML,
@@ -284,6 +285,8 @@ class Parameters {
     unsigned int                        _prospective_frequency;
     bool                                _prospective_analysis;
 
+    unsigned int                        _minimum_nodes_cases;
+
     /* temporal clusters graph */
     bool                                _output_temporal_graph;                 /** generate temporal graph output file */
     TemporalGraphReportType             _temporal_graph_report_type;            /* which clusters to report in temporal graph */
@@ -304,6 +307,9 @@ class Parameters {
     Parameters                        & operator=(const Parameters &rhs)  {if (this != &rhs) copy(rhs); return (*this);}
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
+
+    unsigned int                        getMinimumNodeCases() const { return _minimum_nodes_cases; }
+    void                                setMinimumNodeCases(unsigned int i) { _minimum_nodes_cases = i; }
 
     const std::string                 & getDataTimeRangeStr() const { return _data_time_range_str;}
     void                                setDataTimeRangeStr(const std::string& s) { _data_time_range_str = s; }

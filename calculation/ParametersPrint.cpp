@@ -273,15 +273,14 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getSequentialScanParamete
 ParametersPrint::SettingContainer_t & ParametersPrint::getInferenceParameters(SettingContainer_t & settings) const {
     std::string buffer;
     settings.clear();
-    printString(buffer, "%u", _parameters.getNumReplicationsRequested());  
-    settings.push_back(std::make_pair("Number of Replications",buffer));
+    settings.push_back(std::make_pair("Number of Replications", printString(buffer, "%u", _parameters.getNumReplicationsRequested())));
 
     if (_parameters.getScanType() != Parameters::TIMEONLY) {
-		settings.push_back(std::make_pair("Restrict Tree Levels", _parameters.getRestrictTreeLevels() ? "Yes" : "No"));
-		if (_parameters.getRestrictTreeLevels()) {
-			typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), buffer);
-			settings.push_back(std::make_pair("Tree Levels Excluded From Evaluation", buffer));
-		}
+        settings.push_back(std::make_pair("Restrict Tree Levels", _parameters.getRestrictTreeLevels() ? "Yes" : "No"));
+        if (_parameters.getRestrictTreeLevels()) {
+            typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), buffer);
+            settings.push_back(std::make_pair("Tree Levels Excluded From Evaluation", buffer));
+        }
     }
 
     buffer = "Cut Type";
@@ -293,6 +292,8 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInferenceParameters(Se
         case Parameters::SIMPLE : //settings.push_back(std::make_pair(buffer,"Simple")); break;
         default: break;
     }
+
+    settings.push_back(std::make_pair("Minimum Number of Node Cases", printString(buffer, "%u", _parameters.getMinimumNodeCases())));
     return settings;
 }
 
@@ -422,7 +423,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getSystemParameters(Setti
 ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParameters(SettingContainer_t & settings) const {
     std::string buffer;
     settings.clear();
-	if (_parameters.isTemporalScanType(_parameters.getScanType())) {
+    if (_parameters.isTemporalScanType(_parameters.getScanType())) {
         switch (_parameters.getMaximumWindowType()) {
             case Parameters::PERCENTAGE_WINDOW :
                 printString(buffer, "%g%% of Data Time Range", _parameters.getMaximumWindowPercentage());
@@ -444,13 +445,13 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParamete
             settings.push_back(std::make_pair("Maximum Temporal Window", buffer));
         }
         settings.push_back(std::make_pair("Prospective Analysis", (_parameters.getIsProspectiveAnalysis() ? "Yes" : "No")));
-		if (!_parameters.getIsProspectiveAnalysis()) {
-			settings.push_back(std::make_pair("Restrict Temporal Windows", (_parameters.getRestrictTemporalWindows() ? "Yes" : "No")));
-			if (_parameters.getRestrictTemporalWindows()) {
-				settings.push_back(std::make_pair("Temporal Time Window Start", _parameters.getTemporalStartRangeStr()));
-				settings.push_back(std::make_pair("Temporal Time Window End", _parameters.getTemporalEndRangeStr()));
-			}
-		}
+        if (!_parameters.getIsProspectiveAnalysis()) {
+            settings.push_back(std::make_pair("Restrict Temporal Windows", (_parameters.getRestrictTemporalWindows() ? "Yes" : "No")));
+            if (_parameters.getRestrictTemporalWindows()) {
+                settings.push_back(std::make_pair("Temporal Time Window Start", _parameters.getTemporalStartRangeStr()));
+                settings.push_back(std::make_pair("Temporal Time Window End", _parameters.getTemporalEndRangeStr()));
+            }
+        }
     }
     return settings;
 }

@@ -758,22 +758,22 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
                       BOOST_CHECK_CLOSE( ar, 0.009, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 2.312096, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.556, 0.0001 ); break;
-            case 12 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Leaf3" );
-                      BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(4) );
-                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(27) );
-                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(28) );
-                      BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(1) );
-                      BOOST_CHECK_CLOSE( expected, 0.13, 0.001 );
-                      BOOST_CHECK_CLOSE( rr, 5.87, 0.001 );
-                      BOOST_CHECK_CLOSE( excess, 0.83, 0.001 );
-                      BOOST_CHECK_CLOSE( ar, 0.0045, 0.00001 );
-                      BOOST_CHECK_CLOSE( teststat, 1.152125, 0.00001 );
-                      BOOST_CHECK_CLOSE( p_value, 0.998, 0.0001 ); break;
+            case 10 : BOOST_CHECK_EQUAL( data.at(std::distance(headers.begin(), itrNodeId)), "Node3" );
+                      BOOST_CHECK_EQUAL( nodecases, static_cast<unsigned int>(46) );
+                      BOOST_CHECK_EQUAL( wndstart, static_cast<unsigned int>(1) );
+                      BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(5) );
+                      BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(28) );
+                      BOOST_CHECK_CLOSE( expected, 21.41, 0.001 );
+                      BOOST_CHECK_CLOSE( rr, 6.38, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 23.61, 0.001 );
+                      BOOST_CHECK_CLOSE( ar, 0.062, 0.00001 );
+                      BOOST_CHECK_CLOSE( teststat, 1.219591, 0.00001 );
+                      BOOST_CHECK_CLOSE( p_value, 0.997, 0.0001 ); break;
             default : break;
         }
         getCSVRow(stream, data);
     }
-    if (dataRows != 12) BOOST_FAIL( "expecting 12 data rows, got " << dataRows );
+    if (dataRows != 10) BOOST_FAIL( "expecting 10 data rows, got " << dataRows );
     if (childRows != 10) BOOST_FAIL("expecting 10 data rows, got " << childRows);
     stream.close();
 }
