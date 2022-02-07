@@ -874,7 +874,17 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
             outfile << "<td>" << buffer.c_str() << "</td>";
         }
         // write time window
-        outfile << "<td>" << (thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive()) << " to " << (thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
+        int startIdx = (thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive());
+        if (parameters.getDatePrecisionType() == DataTimeRange::GENERIC)
+            outfile << "<td data-order=" << startIdx << ">" << startIdx << " to " << (thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
+        else {
+            std::pair<std::string, std::string> rangeDates = parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().rangeToGregorianStrings(
+                thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(),
+                thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive(),
+                parameters.getDatePrecisionType()
+            );
+            outfile << "<td data-order=" << startIdx << ">" << rangeDates.first << " to " << rangeDates.second << "</td>";
+        }
     } else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
         // skip reporting node cases/observations for time-only scans
         if (parameters.getScanType() != Parameters::TIMEONLY) {
@@ -885,7 +895,16 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         }
         // write time window
         int startIdx = (thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive());
-        outfile << "<td data-order=" << startIdx << ">" << startIdx << " to " << (thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
+        if (parameters.getDatePrecisionType() == DataTimeRange::GENERIC)
+            outfile << "<td data-order=" << startIdx << ">" << startIdx << " to " << (thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive()) << "</td>";
+        else {
+            std::pair<std::string, std::string> rangeDates = parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().rangeToGregorianStrings(
+                thisCut.getStartIdx() - _scanRunner.getZeroTranslationAdditive(),
+                thisCut.getEndIdx() - _scanRunner.getZeroTranslationAdditive(),
+                parameters.getDatePrecisionType()
+            );
+            outfile << "<td data-order=" << startIdx << ">" << rangeDates.first << " to " << rangeDates.second << "</td>";
+        }
         outfile << "<td>" << static_cast<int>(thisCut.getN()) << "</td>";
     } else if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
         // write number of observations
