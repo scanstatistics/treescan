@@ -85,6 +85,8 @@ excluded-tree-levels=
 randomization-seed=12345678
 ;generate randomization seed (y/n)
 random-randomization-seed=n
+;minimum number of cases in a node (integer)
+minimum-node-cases=2
 
 [Sequential Scan]
 ;perform sequential scan - time-only scan (y/n)
@@ -139,6 +141,14 @@ report-critical-values=n
 report-attributable-risk=n
 ;number of exposed attributable risk is based upon (positive integer)
 attributable-risk-exposed=0
+;output temporal graph HTML file (y/n)
+output-temporal-graph-html=n
+;temporal graph cluster reporting type (0=Only most likely cluster, 1=X most likely clusters, 2=Only significant clusters)
+temporal-graph-type=0
+;number of most likely clusters to report in temporal graph (positive integer)
+temporal-graph-most-mlc=1
+;significant clusters p-value cutoff to report in temporal graph (0.000-1.000)
+temporal-graph-significance-cutoff=0.05
 
 [Power Simulations]
 ;input simulation data (y/n)

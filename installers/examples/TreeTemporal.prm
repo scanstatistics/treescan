@@ -19,7 +19,7 @@ count-filename=TreeTemporal.cas
 control-filename=
 ;date precision type (NONE=0, GENERIC=1, YEAR=2, MONTH=3, DAY=4)
 date-precision=1
-;data time ranges: [integer,integer]
+;data time ranges: [integer,integer] or [yyyy/mm/dd,yyyy/mm/dd]
 data-time-range=[1,28]
 
 [Output]
@@ -61,9 +61,9 @@ risk-window-percentage=20
 prospective-analysis=n
 ;restrict temporal windows (y/n)
 restricted-window-range=n
-;start data time range: [integer,integer]
+;start data time range: [integer,integer] or [yyyy/mm/dd,yyyy/mm/dd]
 window-start-range=[1,28]
-;end data time range: [integer,integer]
+;end data time range: [integer,integer] or [yyyy/mm/dd,yyyy/mm/dd]
 window-end-range=[1,28]
 
 [Adjustments]
@@ -71,7 +71,7 @@ window-end-range=[1,28]
 perform-day-of-week-adjustments=n
 ;apply exclusion time ranges (y/n)
 apply-exclusion-data-ranges=n
-;exclusion time ranges (semi-colon separated list of ranges: [integer,integer];[integer,integer])
+;exclusion time ranges (semi-colon separated list of ranges: [integer,integer];[integer,integer] or [yyyy/mm/dd,yyyy/mm/dd];[yyyy/mm/dd,yyyy/mm/dd])
 exclusion-data-ranges=
 
 [Inference]
@@ -85,6 +85,8 @@ excluded-tree-levels=
 randomization-seed=12345678
 ;generate randomization seed (y/n)
 random-randomization-seed=n
+;minimum number of cases in a node (integer)
+minimum-node-cases=2
 
 [Sequential Scan]
 ;perform sequential scan - time-only scan (y/n)
@@ -139,6 +141,14 @@ report-critical-values=n
 report-attributable-risk=n
 ;number of exposed attributable risk is based upon (positive integer)
 attributable-risk-exposed=0
+;output temporal graph HTML file (y/n)
+output-temporal-graph-html=n
+;temporal graph cluster reporting type (0=Only most likely cluster, 1=X most likely clusters, 2=Only significant clusters)
+temporal-graph-type=0
+;number of most likely clusters to report in temporal graph (positive integer)
+temporal-graph-most-mlc=1
+;significant clusters p-value cutoff to report in temporal graph (0.000-1.000)
+temporal-graph-significance-cutoff=0.05
 
 [Power Simulations]
 ;input simulation data (y/n)
