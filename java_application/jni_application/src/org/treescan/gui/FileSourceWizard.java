@@ -1034,10 +1034,14 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
                 /* start and end dates are only for temporal scans*/
                 _import_variables.get(2).setShowing(_displayVariablesComboBox.getSelectedIndex() == 6 /* Time-Only */ ||
-                                                    _displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */);
+                                                    _displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */ ||
+                                                    _displayVariablesComboBox.getSelectedIndex() == 7 /* Tree-time, Bernoulli */ ||
+                                                    _displayVariablesComboBox.getSelectedIndex() == 8 /* Time-Only, Bernoulli */);
                 model.setShowing(_import_variables.get(2));
                 _import_variables.get(3).setShowing(_displayVariablesComboBox.getSelectedIndex() == 6 /* Time-Only */ ||
-                                                    _displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */);
+                                                    _displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */ ||
+                                                    _displayVariablesComboBox.getSelectedIndex() == 7 /* Tree-time, Bernoulli */ ||
+                                                    _displayVariablesComboBox.getSelectedIndex() == 8 /* Time-Only, Bernoulli */);
                 model.setShowing(_import_variables.get(3));
                 break;
             case Tree:
