@@ -9,8 +9,8 @@
 # - icon still wrong
 # - probably other things when looking closer
 
-javajdk="/prj/treescan/build/packages/java/jdk-16.0.2+7-linux_x86"
-version="2.0"
+javajdk="/prj/treescan/build/packages/java/jdk-17.0.2+8-linux_x86"
+version=$1
 srcdir="/prj/treescan/build/treescan"
 bundleinputdir="/prj/treescan/build/jpackage/treescanbundlesrc"
 bundledir="/prj/treescan/build/jpackage"
@@ -34,8 +34,15 @@ cp -f $binaries/treescan64 $bundleinputdir
 cp -f $binaries/libtreescan64.so $bundleinputdir
 
 # Build TreeScan app bundle
-$javajdk/bin/jpackage --verbose --type app-image --input $bundleinputdir  --main-jar TreeScan.jar --icon $srcdir/installers/resources/TreeScan.png --app-version $version --name TreeScan --dest $bundledir --java-options "-Djava.library.path=\$APPDIR"
+$javajdk/bin/jpackage --verbose --type app-image --input $bundleinputdir \
+                      --main-jar TreeScan.jar --icon $srcdir/installers/resources/TreeScan.png \
+					  --app-version $version --name TreeScan --dest $bundledir \
+					  --java-options "-Djava.library.path=\$APPDIR"
 
 #  Create application rpm
-$javajdk/bin/jpackage --verbose --type rpm --app-image $bundledir/TreeScan --app-version $version --name TreeScan  --resource-dir $srcdir/installers/resources --dest $bundledir/bin --description "Software for the spatial, temporal, and space-time scan statistics" --vendor "Information Management Services, Inc." --copyright "Copyright 2021, All rights reserved"  --linux-shortcut --linux-menu-group
+$javajdk/bin/jpackage --verbose --type rpm --app-image $bundledir/TreeScan --app-version $version \
+                      --name TreeScan  --resource-dir $srcdir/installers/resources --dest $2 \
+					  --description "Software for the spatial, temporal, and space-time scan statistics" \
+					  --vendor "Information Management Services, Inc." --copyright "Copyright 2021, All rights reserved" \
+					  --linux-shortcut --linux-menu-group
 

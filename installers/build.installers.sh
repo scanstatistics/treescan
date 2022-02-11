@@ -47,6 +47,9 @@ tar -rf $installer_version/treescan.${version}_linux.tar documents/*
 tar -rf $installer_version/treescan.${version}_linux.tar examples/*
 gzip -f $installer_version/treescan.${version}_linux.tar
 
+# Build the linux rpm -- still a work in progress.
+$build/treescan/installers/jpackageInstallerLinux.sh $version $installer_version
+
 ############ Java Application Update Archive ######################################################
 # Build update archive files -- relative paths are important; must be the same as installation.
 #
