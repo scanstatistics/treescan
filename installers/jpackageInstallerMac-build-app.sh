@@ -85,7 +85,7 @@ $XCRUN $STAPLER staple $BUNDLEDIR/TreeScan.app
 # test notarized
 codesign --test-requirement="=notarized" --verify --verbose $BUNDLEDIR/TreeScan.app
 
-Echo How did the app sign go? This step usually will not have issue. Reboot Mac VM and build the dmg using the created app as source (jpackageInstallerMac-build-dmg.sh).
+Echo How did the app sign go? This step usually will not have issue. Reboot Mac VM and build the dmg using the created app as source jpackageInstallerMac-build-dmg.sh.
 
 # There has been some issue with jpackage and resources being busy during the dmg build. For now, we're juat accepting the hoops that need
 # to be jumped through. Meaning, we build the app, reboot the VM then build the dmg -- this process appears to allows work.
