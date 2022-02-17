@@ -39,6 +39,7 @@ public class InstallerFrame extends javax.swing.JFrame {
     private final ZipFile _archive;
     private final File _launchApp;
     private final Vector<String> _relaunchArgs;
+    private boolean is64BitVM = true;
 
     /** Creates new form MainFrame */
     public InstallerFrame(String archiveFile, String launchApp, Vector<String> relaunchArgs) {
@@ -49,6 +50,34 @@ public class InstallerFrame extends javax.swing.JFrame {
             _relaunchArgs = relaunchArgs;
             setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/treescan/updaterapplication/TreeScan.gif")));
             setLocationRelativeTo(null);
+            
+          String bits = null;
+          String vm_name = null;
+          String os_arch = null;
+          try { // first try to get VM type from 'sun.arch.data.model' property
+            bits = System.getProperty("sun.arch.data.model");
+          } catch (Throwable t) {System.out.println("'sun.arch.data.model' property not avaiable");}
+          try { // second try to get VM type from 'java.vm.name' property
+            vm_name = System.getProperty("java.vm.name");
+          } catch (Throwable t) {System.out.println("'java.vm.name' property not avaiable");}
+          try { // lastly try to get VM type from 'os.arch' property, this is the least best choice
+            // since OS arch could be 64-bit but VM 32-bit
+            os_arch = System.getProperty("os.arch");
+          } catch (Throwable t) {System.out.println("'os.arch' property not avaiable");}
+        
+          if (bits != null) {
+            is64BitVM = (bits.indexOf("64") >= 0);
+            System.out.println("'sun.arch.data.model' property indicating VM data model is " + (is64BitVM ? "64" : "32") + "-bit");
+          } else if (vm_name != null) {
+            is64BitVM = vm_name.indexOf("64") >= 0; 
+            System.out.println("'java.vm.name' property indicating VM data model is " + (is64BitVM ? "64" : "32") + "-bit");
+          } else if (os_arch != null) {
+            is64BitVM = os_arch.indexOf("64") >= 0; 
+            System.out.println("'os.arch' property indicating VM data model is " + (is64BitVM ? "64" : "32") + "-bit");
+          } else {
+            is64BitVM = false; 
+            System.out.println("Assuming VM data model is 32-bit.");
+          }
         } catch (IOException e) {//
             throw new archiveException(e.getMessage());
         }
@@ -136,6 +165,10 @@ public class InstallerFrame extends javax.swing.JFrame {
 
         /*This function determines whether the ZipEntry should be extracted. */
         private boolean isExtracted(ZipEntry entry) {
+            // We're bundling both x64 and x86 for Windows -- extract jre detected VM bitness, skip other.
+            if (System.getProperty("os.name").toLowerCase().startsWith("windows") &&
+                ((is64BitVM && entry.getName().contains("jre_x86")) || (!is64BitVM && entry.getName().contains("jre_x64"))))
+                   return false;
             return true;
         }
 
@@ -175,11 +208,18 @@ public class InstallerFrame extends javax.swing.JFrame {
             }
         }
 
-        /**
-         * Returns complete file path relative to launch application.
-         */
+        /* Returns complete file path relative to launch application. */
         private File getCompleteFile(ZipEntry entry) {
-            return new File(_launchApp.getParent(), entry.getName());
+            String entryName = entry.getName();
+            // We're bundling both x64 and x86 for Windows -- renaming jre version for detected VM bitness.
+            if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
+               if (is64BitVM && entryName.contains("jre_x64")) {
+                   entryName = entryName.replace("jre_x64", "jre");
+               } else if (!is64BitVM && entryName.contains("jre_x86")) {
+                   entryName = entryName.replace("jre_x86", "jre");
+               }
+            }
+            return new File(_launchApp.getParent(), entryName);
         }
 
         /**
