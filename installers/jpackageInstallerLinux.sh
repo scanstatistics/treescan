@@ -9,7 +9,7 @@
 # - icon still wrong
 # - probably other things when looking closer
 
-javajdk="/prj/treescan/build/packages/java/jdk-17.0.2+8-linux_x86"
+javajdk="/prj/treescan/build/packages/java/jdk-17.0.2+8-linux_x64"
 version=$1
 srcdir="/prj/treescan/build/treescan"
 bundleinputdir="/prj/treescan/build/jpackage/treescanbundlesrc"
@@ -42,7 +42,7 @@ $javajdk/bin/jpackage --verbose --type app-image --input $bundleinputdir \
 #  Create application rpm
 $javajdk/bin/jpackage --verbose --type rpm --app-image $bundledir/TreeScan --app-version $version \
             --name TreeScan --resource-dir $srcdir/installers/resources --dest $2 \
-            --description "Software for the spatial, temporal, and space-time scan statistics" \
+            --description "Software for the tree-based scan statistic" \
             --vendor "Martin Kulldorff together with Information Management Services Inc." \
             --linux-shortcut --linux-rpm-license-type "see TreeScan License Agreement @ https://www.treescan.org/techdoc.html" \
             --linux-app-release "0" --copyright "Copyright 2021, All rights reserved"
@@ -50,7 +50,7 @@ $javajdk/bin/jpackage --verbose --type rpm --app-image $bundledir/TreeScan --app
 #  Create application deb
 #$javajdk/bin/jpackage --verbose --type deb --app-image $bundledir/TreeScan --app-version $version \
 #           --name TreeScan --resource-dir $srcdir/installers/resources --dest $2 \
-#           --description "Software for the spatial, temporal, and space-time scan statistics" \
+#           --description "Software for the tree-based scan statistic" \
 #           --vendor "Martin Kulldorff together with Information Management Services Inc." \
 #           --linux-shortcut --linux-rpm-license-type "see TreeScan License Agreement @ https://www.treescan.org/techdoc.html" \
 #           --linux-app-release "0" --copyright "Copyright 2021, All rights reserved" \

@@ -7,8 +7,8 @@ REM   1) License isn't presented to user -- not sure what I'm doing wrong.
 REM   2) I need to test update process - installing over previous installation.
 REM   3) How to properly identify beta releases vs public releases?
 
-set javabin=c:\jdk\jdk-15.0.2\bin
-set version=10.0
+set javabin=c:\jdk\jdk-17.0.2+8\bin
+set version=2.0
 set srcdir=C:\Users\hostovic\projects\treescan.development\treescan
 set bundledir=C:\Users\hostovic\projects\treescan.development\jpackage
 
@@ -16,7 +16,7 @@ if exist %bundledir%\TreeScan rmdir %bundledir%\TreeScan /s /q
 if exist %bundledir%\bin rmdir %bundledir%\bin /s /q
 
 REM Build TreeScan app bundle
-%javabin%\jpackage.exe  --verbose --type app-image --input %srcdir%\java_application\jni_application\dist --main-jar TreeScan.jar --icon %srcdir%\installers\resources\TreeScan.ico --app-version 10.0 --name TreeScan --dest %bundledir% --java-options "'-Djava.library.path=$APPDIR'"
+%javabin%\jpackage.exe  --verbose --type app-image --input %srcdir%\java_application\jni_application\dist --main-jar TreeScan.jar --icon %srcdir%\installers\resources\TreeScan.ico --app-version %version% --name TreeScan --dest %bundledir% --java-options "'-Djava.library.path=$APPDIR'"
 
 REM Add additional files to bundle - command-line executables, dlls, sample data, user guide, etc.
 xcopy /E /I /Y %srcdir%\installers\examples %bundledir%\TreeScan\installers
@@ -35,10 +35,10 @@ REM Toggle read-only flag on again.
 attrib +r %bundledir%\TreeScan\TreeScan.exe
 
 REM  Create application installer.
-%javabin%\jpackage.exe  --verbose --type msi --app-image %bundledir%\TreeScan --app-version 10.0 --name TreeScan --dest %bundledir%\bin --description "Software for the tree-based scan statistic" --vendor "Information Management Services, Inc." --copyright "Copyright 2021, All rights reserved"  --win-shortcut --win-dir-chooser --win-menu-group --win-upgrade-uuid\"AD0046EA-ADC2-4AD7-B623-E53C00CDAEC9" --license-file  %bundledir%\TreeScan\License.txt
+%javabin%\jpackage.exe  --verbose --type msi --app-image %bundledir%\TreeScan --app-version %version% --name TreeScan --dest %bundledir%\bin --description "Software for the tree-based scan statistic" --vendor "Information Management Services, Inc." --copyright "Copyright 2021, All rights reserved"  --win-shortcut --win-dir-chooser --win-menu-group --win-upgrade-uuid\"AD0046EA-ADC2-4AD7-B623-E53C00CDAEC9" --license-file  %bundledir%\TreeScan\License.txt
 
 REM Codesigning a installer exe but first toggle off read-only flag.
-attrib -r %bundledir%\bin\TreeScan-2.0.msi
-call %srcdir%\signbinary.bat %bundledir%\bin\TreeScan-2.0.msi
+attrib -r %bundledir%\bin\TreeScan-%version%.msi
+call %srcdir%\signbinary.bat %bundledir%\bin\TreeScan-%version%.msi
 REM Toggle read-only flag on again.
-attrib +r %bundledir%\bin\TreeScan-2.0.msi
+attrib +r %bundledir%\bin\TreeScan-%version%.msi
