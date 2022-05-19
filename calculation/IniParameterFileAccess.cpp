@@ -362,6 +362,8 @@ void IniParameterFileAccess::WriteOutputSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, Parameters::RESULTS_FILE, GetParameterString(Parameters::RESULTS_FILE, s).c_str(), GetParameterComment(Parameters::RESULTS_FILE));
     WriteIniParameter(WriteFile, Parameters::RESULTS_HTML, GetParameterString(Parameters::RESULTS_HTML, s).c_str(), GetParameterComment(Parameters::RESULTS_HTML));
     WriteIniParameter(WriteFile, Parameters::RESULTS_CSV, GetParameterString(Parameters::RESULTS_CSV, s).c_str(), GetParameterComment(Parameters::RESULTS_CSV));
+    WriteIniParameter(WriteFile, Parameters::RESULTS_ASN, GetParameterString(Parameters::RESULTS_ASN, s).c_str(), GetParameterComment(Parameters::RESULTS_ASN));
+    WriteIniParameter(WriteFile, Parameters::RESULTS_NWK, GetParameterString(Parameters::RESULTS_NWK, s).c_str(), GetParameterComment(Parameters::RESULTS_NWK));
   } catch (prg_exception& x) {
     x.addTrace("WriteOutputSettings()","IniParameterFileAccess");
     throw;

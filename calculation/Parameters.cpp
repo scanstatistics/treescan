@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 72;
+const int Parameters::giNumParameters = 74;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -38,7 +38,9 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_randomlyGenerateSeed != rhs._randomlyGenerateSeed) return false;
   if (_generateHtmlResults != rhs._generateHtmlResults) return false;
   if (_generateTableResults != rhs._generateTableResults) return false;
-  if (_printColumnHeaders != rhs._printColumnHeaders) return false; 
+  if (_generateNCBIAsnResults != rhs._generateNCBIAsnResults) return false;
+  if (_generateNewickFile != rhs._generateNewickFile) return false;
+  if (_printColumnHeaders != rhs._printColumnHeaders) return false;
   if (_modelType != rhs._modelType) return false;
   if (_probablility_ratio != rhs._probablility_ratio) return false;
   if (_cut_type != rhs._cut_type) return false;
@@ -166,6 +168,8 @@ void Parameters::copy(const Parameters &rhs) {
     _resultsFormat = rhs._resultsFormat;
     _generateHtmlResults = rhs._generateHtmlResults;
     _generateTableResults = rhs._generateTableResults;
+    _generateNCBIAsnResults = rhs._generateNCBIAsnResults;
+    _generateNewickFile = rhs._generateNewickFile;
     _printColumnHeaders = rhs._printColumnHeaders;
     _generate_llr_results = rhs._generate_llr_results;
 
@@ -365,6 +369,8 @@ void Parameters::setAsDefaulted() {
     _outputFileName = "";
     _generateHtmlResults = false;
     _generateTableResults = false;
+    _generateNCBIAsnResults = false;
+    _generateNewickFile = false;
     _printColumnHeaders = true;
     _resultsFormat = TEXT;
     _generate_llr_results = false;
@@ -568,6 +574,8 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     setOutputFileName(pt.get<std::string>("parameters.output.results-file", "").c_str(), true);
     _generateHtmlResults = pt.get<bool>("parameters.output.generate-html-results", true);
     _generateTableResults = pt.get<bool>("parameters.output.generate-table-results", true);
+    _generateNCBIAsnResults = pt.get<bool>("parameters.output.generate-ncbi-asn-results", true);
+    _generateNewickFile = pt.get<bool>("parameters.output.generate-newick-file", true);
     // Advanced Output - Additional Output
     _generate_llr_results = pt.get<bool>("parameters.output.advanced.additional-output.generate-llr-results", true);
     _report_critical_values = pt.get<bool>("parameters.output.advanced.additional-output.report-critical-values", false);
@@ -641,6 +649,8 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.output.results-file", _outputFileName);
     pt.put("parameters.output.generate-html-results", _generateHtmlResults);
     pt.put("parameters.output.generate-table-results", _generateTableResults);
+    pt.put("parameters.output.generate-ncbi-asn-results", _generateNCBIAsnResults);
+    pt.put("parameters.output.generate-newick-file", _generateNewickFile);
     // Advanced Output - Additional Output
     pt.put("parameters.output.generate-llr-results", _generate_llr_results);
     pt.put("parameters.output.report-critical-values", _report_critical_values);

@@ -6,8 +6,8 @@ REM This steps can't be executed from build environment -- currently Linux.
 REM script definitions
 set fileshare=\\oriole-03-int
 
-set treescanversion=2.0
-set treescanversionf=2_0
+set treescanversion=2.1
+set treescanversionf=2_1
 set treescanexe=%fileshare%\treescan\build\treescan\java_application\jni_application\dist\TreeScan.exe
 set treescaninstaller=%fileshare%\treescan\installers\v.%treescanversion%.x\install-%treescanversionf%_windows.exe
 

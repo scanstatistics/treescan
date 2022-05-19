@@ -87,6 +87,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::RESULTS_FILE            : return "results filename";
             case Parameters::RESULTS_HTML            : return "create HTML results (y/n)";
             case Parameters::RESULTS_CSV             : return "create CSV results (y/n)";
+            case Parameters::RESULTS_ASN             : return "create NCBI Asn results (y/n)";
+            case Parameters::RESULTS_NWK             : return "create Newick File (y/n)";
             /* Advanced Output - Additional Output */
             case Parameters::RESULTS_LLR             : return "create LLR results (y/n)";
             case Parameters::REPORT_CRITICAL_VALUES  : return "report critical values (y/n)";
@@ -184,7 +186,9 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::RESULTS_FILE             : s = _parameters.getOutputFileName(); return s;
             case Parameters::RESULTS_HTML             : return AsString(s, _parameters.isGeneratingHtmlResults());
             case Parameters::RESULTS_CSV              : return AsString(s, _parameters.isGeneratingTableResults());
-            /* Advanced Output - Additional Output */
+            case Parameters::RESULTS_ASN              : return AsString(s, _parameters.isGeneratingNCBIAsnResults());
+            case Parameters::RESULTS_NWK              : return AsString(s, _parameters.isGeneratingNewickFile());
+                /* Advanced Output - Additional Output */
             case Parameters::RESULTS_LLR              : return AsString(s, _parameters.isGeneratingLLRResults());
             case Parameters::REPORT_CRITICAL_VALUES   : return AsString(s, _parameters.getReportCriticalValues());
             case Parameters::REPORT_ATTR_RISK         : return AsString(s, _parameters.getReportAttributableRisk());
@@ -389,7 +393,9 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::RESULTS_FILE             : _parameters.setOutputFileName(value.c_str(), true); break;
             case Parameters::RESULTS_HTML             : _parameters.setGeneratingHtmlResults(ReadBoolean(value, e)); break;
             case Parameters::RESULTS_CSV              : _parameters.setGeneratingTableResults(ReadBoolean(value, e)); break;
-            /* Advanced Output - Additional Output */
+            case Parameters::RESULTS_ASN              : _parameters.setGeneratingNCBIAsnResults(ReadBoolean(value, e)); break;
+            case Parameters::RESULTS_NWK              : _parameters.setGeneratingNewickFile(ReadBoolean(value, e)); break;
+                /* Advanced Output - Additional Output */
             case Parameters::RESULTS_LLR              : _parameters.setGeneratingLLRResults(ReadBoolean(value, e)); break;
             case Parameters::REPORT_CRITICAL_VALUES   : _parameters.setReportCriticalValues(ReadBoolean(value, e)); break;
             case Parameters::REPORT_ATTR_RISK         : _parameters.setReportAttributableRisk(ReadBoolean(value, e)); break;

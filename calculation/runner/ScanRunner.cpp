@@ -1559,11 +1559,19 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
         if (!resultsWriter.writeHTML(start, end))
             return false;
     }
-
+    // write newick file
+    if (_parameters.isGeneratingNewickFile()) {
+        if (!resultsWriter.writeNewick())
+            return false;
+    }
+    // write ASN file
+    if (_parameters.isGeneratingNCBIAsnResults()) {
+        if (!resultsWriter.writeNCBIAsn())
+            return false;
+    }
     // generate temporal chart - if requested
     if (_parameters.getOutputTemporalGraphFile())
         TemporalChartGenerator(*this, this->_simVars).generateChart();
-
     // write cuts to csv file
     if (_parameters.isGeneratingTableResults()) {
         CutsRecordWriter cutsWriter(*this);

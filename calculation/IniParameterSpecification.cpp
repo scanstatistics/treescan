@@ -88,8 +88,10 @@ void IniParameterSpecification::setup(Parameters::CreationVersion version) {
         Build_1_3_x_ParameterList();
     else if (version.iMajor == 1 && version.iMinor == 4)
         Build_1_4_x_ParameterList();
-    else
+    else if (version.iMajor == 2 && version.iMinor == 0)
         Build_2_0_x_ParameterList();
+    else
+        Build_2_1_x_ParameterList();
 }
 
 /* Returns ini version setting or default. */
@@ -238,6 +240,16 @@ void IniParameterSpecification::Build_2_0_x_ParameterList() {
     _parameter_info[Parameters::MINIMUM_CASES_NODE] = ParamInfo(Parameters::MINIMUM_CASES_NODE, "minimum-node-cases", 6, _inference_section);
 
     assert(_parameter_info.size() == 71);
+}
+
+/** Version 2.1 parameter specifications. */
+void IniParameterSpecification::Build_2_1_x_ParameterList() {
+    Build_2_0_x_ParameterList();
+
+    _parameter_info[Parameters::RESULTS_ASN] = ParamInfo(Parameters::RESULTS_ASN, "results-asn", 4, _output_section);
+    _parameter_info[Parameters::RESULTS_NWK] = ParamInfo(Parameters::RESULTS_NWK, "results-nwk", 5, _output_section);
+
+    assert(_parameter_info.size() == 73);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

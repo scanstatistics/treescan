@@ -167,6 +167,14 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.isGeneratingTableResults());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setGeneratingNCBIAsnResults", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.isGeneratingNCBIAsnResults());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setGeneratingNewickFile", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.isGeneratingNewickFile());
+  jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "setPrintColunHeaders", "(Z)V");
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.isPrintColumnHeaders());
   jni_error::_detectError(Env);
@@ -588,6 +596,14 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
 
   mid = _getMethodId_Checked(Env, clazz, "isGeneratingTableResults", "()Z");
   parameters.setGeneratingTableResults(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "isGeneratingNCBIAsnResults", "()Z");
+  parameters.setGeneratingNCBIAsnResults(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "isGeneratingNewickFile", "()Z");
+  parameters.setGeneratingNewickFile(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "isPrintColumnHeaders", "()Z");

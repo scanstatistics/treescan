@@ -94,13 +94,12 @@ class CSVDataFileWriter {
    protected:
      std::ofstream  & _outfile;
 
-     void                       createFormatString(std::string& sValue, const FieldDef& FieldDef, const FieldValue& fv);
-
    public:
       CSVDataFileWriter(std::ofstream& outfile, const ptr_vector<FieldDef>& vFieldDefs, bool printHeaders, bool append=false);
       virtual ~CSVDataFileWriter() {}
 
-     virtual void            writeRecord(const RecordBuffer& Record);
+      static std::string& createFormatString(std::string& sValue, const FieldDef& FieldDef, const FieldValue& fv);
+      virtual void         writeRecord(const RecordBuffer& Record);
 };
 
 class ScanRunner; /* forward class declaration */
@@ -121,6 +120,7 @@ class CutsRecordWriter : public DataRecordWriter {
 
        static std::string & getFilename(const Parameters& parameters, std::string& buffer);
        static ptr_vector<FieldDef>& getFieldDefs(ptr_vector<FieldDef>& fields, const Parameters& params);
+       static RecordBuffer& getRecordForCut(RecordBuffer& Record, const CutStructure& thisCut, const ScanRunner& scanner);
        static RecordBuffer& getRecordForCutChild(RecordBuffer& Record, const CutStructure& thisCut, const NodeStructure& childNode, size_t subIndex, const ScanRunner& scanner);
 
        void                  write(const CutStructure& thisCut) const;

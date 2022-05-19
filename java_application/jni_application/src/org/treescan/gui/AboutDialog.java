@@ -117,7 +117,7 @@ public class AboutDialog extends javax.swing.JDialog {
             }
         } );
 
-        jLabel1.setText("Martin Kulldorff, Harvard Medical School, Boston and");
+        jLabel1.setText("Martin Kulldorff and");
 
         jLabel5.setText("Information Management Services Inc, Calverton, Maryland.");
 

@@ -389,6 +389,8 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _outputFileTextField.setCaretPosition(0);
         _reportResultsAsHTML.setSelected(parameters.isGeneratingHtmlResults());
         _reportResultsAsCsvTable.setSelected(parameters.isGeneratingTableResults());
+        _generate_ncbi_asn.setSelected(parameters.isGeneratingNCBIAsnResults());
+        _generate_newick.setSelected(parameters.isGeneratingNewickFile());
 
         _input_source_map.clear();
         for (int i=0; i < parameters.getInputSourceSettings().size(); ++i) {
@@ -466,7 +468,9 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         parameters.setProbabilityRatioDenominator(Integer.parseInt(_eventProbabiltyDenominator.getText()));
         parameters.setOutputFileName(_outputFileTextField.getText());
         parameters.setGeneratingHtmlResults(_reportResultsAsHTML.isSelected());
-        parameters.setGeneratingTableResults(_reportResultsAsCsvTable.isSelected());
+        parameters.setGeneratingTableResults(Utils.selected(_reportResultsAsCsvTable));
+        parameters.setGeneratingNCBIAsnResults(Utils.selected(_generate_ncbi_asn));
+        parameters.setGeneratingNewickFile(Utils.selected(_generate_newick));
         getAdvancedParameterInternalFrame().saveParameterSettings(parameters);
         parameters.clearInputSourceSettings();
         Iterator it = _input_source_map.entrySet().iterator();
@@ -554,6 +558,8 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _eventProbabiltyNumerator.setEnabled(enabled);
         _eventProbabiltyDenominator.setEnabled(enabled);
         _self_control_design.setEnabled(enabled);
+        _generate_ncbi_asn.setEnabled(!timeOnly);
+        _generate_newick.setEnabled(!timeOnly);
         _advancedParametersSetting.enableAdvancedInputsSettings(!timeOnly);
         _advancedParametersSetting.enableTemporalOptionGroups(treeAndTime || timeOnly);
         _advancedParametersSetting.enableAdjustmentsOptions();
@@ -671,6 +677,9 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _resultsFileLabel1 = new javax.swing.JLabel();
         _reportResultsAsCsvTable = new javax.swing.JCheckBox();
         _advancedOutputButton = new javax.swing.JButton();
+        _generate_ncbi_asn = new javax.swing.JCheckBox();
+        _generate_newick = new javax.swing.JCheckBox();
+        jLabel1 = new javax.swing.JLabel();
 
         _timePrecisionButtonGroup.add(_timePrecisionNone);
         _timePrecisionButtonGroup.add(_timePrecisionYear);
@@ -1467,6 +1476,17 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             }
         });
 
+        _generate_ncbi_asn.setText("Generate NCBI Genome Workbench ASN1 File");
+        _generate_ncbi_asn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                _generate_ncbi_asnActionPerformed(evt);
+            }
+        });
+
+        _generate_newick.setText("Generate Newick Tree Format File");
+
+        jLabel1.setText("Whole Tree Visualizations:");
+
         javax.swing.GroupLayout _outputTabLayout = new javax.swing.GroupLayout(_outputTab);
         _outputTab.setLayout(_outputTabLayout);
         _outputTabLayout.setHorizontalGroup(
@@ -1478,15 +1498,18 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                         .addComponent(_outputFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_resultsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(_outputTabLayout.createSequentialGroup()
-                        .addComponent(_resultsFileLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(_reportResultsAsCsvTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_reportResultsAsHTML, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_resultsFileLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _outputTabLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(_advancedOutputButton)))
+                        .addComponent(_advancedOutputButton))
+                    .addGroup(_outputTabLayout.createSequentialGroup()
+                        .addComponent(_resultsFileLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_generate_ncbi_asn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_generate_newick, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _outputTabLayout.setVerticalGroup(
@@ -1504,7 +1527,13 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addComponent(_reportResultsAsHTML)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportResultsAsCsvTable)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 213, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_generate_ncbi_asn)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_generate_newick)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 145, Short.MAX_VALUE)
                 .addComponent(_advancedOutputButton)
                 .addContainerGap())
         );
@@ -1524,12 +1553,16 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void _generate_ncbi_asnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__generate_ncbi_asnActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event__generate_ncbi_asnActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton _BernoulliButton;
@@ -1558,6 +1591,8 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
     private javax.swing.JLabel _eventProbabilityLabel2;
     private javax.swing.JTextField _eventProbabiltyDenominator;
     private javax.swing.JTextField _eventProbabiltyNumerator;
+    private javax.swing.JCheckBox _generate_ncbi_asn;
+    private javax.swing.JCheckBox _generate_newick;
     private javax.swing.JPanel _inputTab;
     public javax.swing.JTextField _outputFileTextField;
     private javax.swing.JPanel _outputTab;
@@ -1604,6 +1639,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
     private javax.swing.JRadioButton _unconditionalButton;
     private javax.swing.JRadioButton _uniformButton;
     private javax.swing.ButtonGroup conditionalButtonGroup;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.ButtonGroup scanButtonGroup;
     private javax.swing.ButtonGroup timtModelButtonGoup;

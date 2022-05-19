@@ -8,7 +8,7 @@ REM   2) I need to test update process - installing over previous installation.
 REM   3) How to properly identify beta releases vs public releases?
 
 set javabin=c:\jdk\jdk-17.0.2+8\bin
-set version=2.0
+set version=2.1
 set srcdir=C:\Users\hostovic\projects\treescan.development\treescan
 set bundledir=C:\Users\hostovic\projects\treescan.development\jpackage
 

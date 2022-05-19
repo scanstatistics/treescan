@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ############ Script Defines #######################################################################
-version="2.0"
-versionf="2_0"
+version="2.1"
+versionf="2_1"
 build="/prj/treescan/build"
 installer_version="/prj/treescan/installers/v.${version}.x"
 binaries="/prj/treescan/build/binaries/linux"

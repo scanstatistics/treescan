@@ -51,7 +51,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jTabbedPane1" pref="399" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -1094,10 +1094,6 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_resultsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                           </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="_resultsFileLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          </Group>
                           <Component id="_reportResultsAsCsvTable" alignment="0" max="32767" attributes="0"/>
                           <Component id="_reportResultsAsHTML" alignment="0" max="32767" attributes="0"/>
                           <Component id="_resultsFileLabel1" max="32767" attributes="0"/>
@@ -1105,6 +1101,13 @@
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               <Component id="_advancedOutputButton" min="-2" max="-2" attributes="0"/>
                           </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="_resultsFileLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          </Group>
+                          <Component id="jLabel1" max="32767" attributes="0"/>
+                          <Component id="_generate_ncbi_asn" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_generate_newick" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1126,7 +1129,13 @@
                       <Component id="_reportResultsAsHTML" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportResultsAsCsvTable" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="213" max="32767" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_generate_ncbi_asn" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="_generate_newick" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="145" max="32767" attributes="0"/>
                       <Component id="_advancedOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1178,6 +1187,24 @@
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_advancedOutputButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.OUTPUT);&#xa;        getAdvancedParameterInternalFrame().requestFocus();&#xa;    }&#xa;});"/>
               </AuxValues>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="_generate_ncbi_asn">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Generate NCBI Genome Workbench ASN1 File"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_generate_ncbi_asnActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="_generate_newick">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Generate Newick Tree Format File"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel1">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Whole Tree Visualizations:"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>

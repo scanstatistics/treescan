@@ -11,11 +11,22 @@
 #include "Toolkit.h"
 #include "DataFileWriter.h"
 
-std::string& ResultsFileWriter::getFilenameHTML(const Parameters& parameters, std::string& buffer) {
+/* Returns filename of html output. */
+std::string& ResultsFileWriter::getHtmlFilename(const Parameters& parameters, std::string& buffer) {
   return getDerivedFilename(parameters.getOutputFileName(), "", ".html", buffer);
 }
 
-std::ofstream & ResultsFileWriter::openStream(const std::string& outputfile, std::ofstream & outfile, bool overwrite) {
+/* Returns filename of NCBI Asn1 output. */
+std::string & ResultsFileWriter::getAsnFilename(const Parameters& parameters, std::string& buffer) {
+    return getDerivedFilename(parameters.getOutputFileName(), "_ncbi", ".asn", buffer);
+}
+
+/* Returns filename of Newick output. */
+std::string & ResultsFileWriter::getNewickFilename(const Parameters& parameters, std::string& buffer) {
+    return getDerivedFilename(parameters.getOutputFileName(), "", ".nwk", buffer);
+}
+
+std::ofstream & ResultsFileWriter::openStream(const std::string& outputfile, std::ofstream & outfile, bool overwrite) const {
     std::string buffer;
     BasePrint & print(const_cast<ScanRunner&>(_scanRunner).getPrint());
 
@@ -39,6 +50,7 @@ std::ofstream & ResultsFileWriter::openStream(const std::string& outputfile, std
     return outfile;
 }
 
+/* Writes results of analysis to primary text file. */
 bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     std::ofstream outfile;
     openStream(_scanRunner.getParameters().getOutputFileName(), outfile, true);
@@ -379,7 +391,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     return true;
 }
 
-/** Returns a string which is */
+/** Returns a string which is details primary analysis settings. */
 std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buffer) const {
     const Parameters& parameters = _scanRunner.getParameters();
     switch (parameters.getScanType()) {
@@ -433,6 +445,104 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buff
     return buffer;
 }
 
+/* Writes tree structure and results of analysis to NCBI ASN1 file. */
+bool ResultsFileWriter::writeNCBIAsn() const {
+    if (_scanRunner.getRootNodes().size() != 1)
+        throw prg_error("Only can generate NCBI Asn file for tree with one root, given %u roots.", "writeNCBIAsn()", _scanRunner.getRootNodes().size());
+    // Create output filename.
+    std::string buffer;
+    std::ofstream outfile;
+    openStream(getAsnFilename(_scanRunner.getParameters(), buffer), outfile, true);
+    if (!outfile) return false;
+    // Write opening block and fdict structure.
+    ptr_vector<FieldDef> fieldDefinitions;
+    CutsRecordWriter::getFieldDefs(fieldDefinitions, _scanRunner.getParameters());
+    outfile << "BioTreeContainer ::= {" << std::endl << "fdict {" << std::endl;
+    outfile << "{ id 0, name \"label\" }," << std::endl << "{ id 1, name \"dist\" }," << std::endl << "{ id 2, name \"" << DataRecordWriter::NODE_ID_FIELD << "\" }";
+    size_t fid = 3, nfields(fieldDefinitions.size());
+    std::string cutField(DataRecordWriter::CUT_NUM_FIELD), idField(DataRecordWriter::NODE_ID_FIELD);
+    for(auto const field: fieldDefinitions) {
+        if (cutField == field->GetName() || idField == field->GetName()) continue;
+        outfile << "," << std::endl << "{ id " << fid << ", name \"" << field->GetName() <<  "\" }";
+        ++fid;
+    }
+    outfile << std::endl << "}," << std::endl;
+    // Write the nodes of tree and possibly the cut record as well.
+    outfile << "nodes {" << std::endl;
+    std::stringstream destination("");
+    // create a map of NodeID to Cut objects
+    std::map<int, const CutStructure*> nodeCuts;
+    for (const auto& cut : _scanRunner.getCuts()) nodeCuts[cut->getID()] = cut;
+    getNCBIAsnDefinition(*(*(_scanRunner.getRootNodes().begin())), fieldDefinitions, nodeCuts, destination);
+    // Remove trailing comma ...
+    destination.seekp(-2, std::ios_base::end);
+    destination << ' ';
+    outfile << destination.rdbuf();
+    outfile <<  "}," << std::endl;
+    // Write user options.
+    outfile << "user { type str \"Tree Metadata\", data { { label str \"layout\", data int 0 }, { label str \"use-distances\", data bool TRUE }, { label str \"rotate-labels\", data bool FALSE } } }" << std::endl;
+    outfile << "}" << std::endl; // end block
+    outfile.close();
+    return true;
+}
+
+/* Collects asn node definition for this node and children. */
+std::stringstream & ResultsFileWriter::getNCBIAsnDefinition(const NodeStructure& node, const ptr_vector<FieldDef>& fieldDefinitions, const std::map<int, const CutStructure*>& nodeCuts, std::stringstream& destination) const {
+    std::string buffer;
+    // First write the current node - including additional information if there is a cut for the node.
+    auto const& nodeCut = nodeCuts.find(node.getID());
+    destination << "{ id " << node.getID() << ", ";
+    if (node.getLevel() > 1)
+        destination << "parent " << node.getParents().front()->getID() << ",";
+    if (nodeCut != nodeCuts.end()) printString(buffer, " (Cut #%u)", nodeCut->second->getReportOrder());
+    destination << " features { { featureid 0, value \"" << node.getIdentifier() << buffer << "\" },{ featureid 1, value \"1\" },{ featureid 2, value \""<< node.getIdentifier() << "\" }";
+    if (nodeCut != nodeCuts.end()) {
+        RecordBuffer Record(fieldDefinitions);
+        CutsRecordWriter::getRecordForCut(Record, *(nodeCut->second), _scanRunner);
+        size_t fid = 3, nfields(fieldDefinitions.size());
+        std::string cutField(DataRecordWriter::CUT_NUM_FIELD), idField(DataRecordWriter::NODE_ID_FIELD);
+        for (auto const field : fieldDefinitions) {
+            if (cutField == field->GetName() || idField == field->GetName()) continue;
+            CSVDataFileWriter::createFormatString(buffer, Record.GetFieldDefinition(field->GetName()), Record.GetFieldValue(field->GetName()));
+            destination << ", { featureid " << fid << ", value \"" << buffer << "\"}";
+            ++fid;
+        }
+    }
+    destination << " } }," << std::endl;
+    // Recursively write child nodes.
+    for (const auto child : node.getChildren())
+        getNCBIAsnDefinition(*child, fieldDefinitions, nodeCuts, destination).rdbuf();
+    return destination;
+}
+
+/* Writes tree structure to Newick formatted file. */
+bool ResultsFileWriter::writeNewick() const {
+    if (_scanRunner.getRootNodes().size() != 1)
+        throw prg_error("Only can generate Newick string for tree with one root, given %u roots.", "writeNewick()", _scanRunner.getRootNodes().size());
+    Parameters& parameters(const_cast<Parameters&>(_scanRunner.getParameters()));
+    std::string buffer;
+    std::ofstream outfile;
+    openStream(getNewickFilename(parameters, buffer), outfile, true);
+    if (!outfile) return false;
+    std::stringstream destination("");
+    outfile << getNewickDefinition(*(*(_scanRunner.getRootNodes().begin())), destination).rdbuf() << ";";
+    outfile.close();
+    return true;
+}
+
+/* Collects Newick node definition for this node and children. */
+std::stringstream & ResultsFileWriter::getNewickDefinition(const NodeStructure& node, std::stringstream& destination) const {
+    size_t nchild(node.getChildren().size());
+    if (nchild) destination << "(";
+    for (size_t c = 0; c < nchild; ++c) {
+        getNewickDefinition(*(node.getChildren()[c]), destination);
+        if (c + 1 < nchild) destination << ",";
+    }
+    if (nchild) destination << ")";
+    destination << node.getIdentifier() << ":1";
+    return destination;
+}
+
 std::string & ResultsFileWriter::getTotalRunningTime(time_t start, time_t end, std::string & buffer) const {
     double nTotalTime = difftime(end, start);
     double nHours     = floor(nTotalTime/(60*60));
@@ -470,7 +580,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     std::string buffer;
     Parameters& parameters(const_cast<Parameters&>(_scanRunner.getParameters()));
     std::ofstream outfile;
-    openStream(getFilenameHTML(parameters, buffer), outfile);
+    openStream(getHtmlFilename(parameters, buffer), outfile);
     if (!outfile) return false;
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN(), _scanRunner.isCensoredData()));
 

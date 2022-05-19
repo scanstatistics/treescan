@@ -4,12 +4,15 @@
 //******************************************************************************
 #include <iostream>
 #include <fstream>
+#include <map>
 #include "Loglikelihood.h"
+#include "ptr_vector.h"
 
 class ScanRunner;
 class Parameters;
 class NodeStructure;
 class CutStructure;
+class FieldDef;
 
 class ResultsFileWriter {
   public:
@@ -28,17 +31,24 @@ class ResultsFileWriter {
     std::string   & stripNodeIdForHtml(std::string & s);
     NodeSet_t       writeJsTreeNode(std::stringstream & outfile, const NodeStructure& node, const std::map<int, const CutStructure*>& cutMap, int collapseAtLevel);
 
-    std::ofstream & openStream(const std::string& outputfile, std::ofstream & outfile, bool overwrite=false);
+    std::ofstream & openStream(const std::string& outputfile, std::ofstream & outfile, bool overwrite=false) const;
     std::string   & getTotalRunningTime(time_t start, time_t end, std::string & buffer) const;
     std::string   & getAnalysisSuccinctStatement(std::string & buffer) const;
+
+    std::stringstream & getNCBIAsnDefinition(const NodeStructure& node, const ptr_vector<FieldDef>& fieldDefinitions, const std::map<int, const CutStructure*>& nodeCuts, std::stringstream& destination) const;
+    std::stringstream & getNewickDefinition(const NodeStructure& node, std::stringstream& destination) const;
 
   public:
     ResultsFileWriter(const ScanRunner& scanRunner) : _scanRunner(scanRunner) {}
 
-    static std::string & getFilenameHTML(const Parameters& parameters, std::string& buffer);
+    static std::string & getHtmlFilename(const Parameters& parameters, std::string& buffer);
+    static std::string & getAsnFilename(const Parameters& parameters, std::string& buffer);
+    static std::string & getNewickFilename(const Parameters& parameters, std::string& buffer);
 
     bool writeASCII(time_t start, time_t end);
     bool writeHTML(time_t start, time_t end);
+    bool writeNCBIAsn() const;
+    bool writeNewick() const;
 };
 //******************************************************************************
 #endif

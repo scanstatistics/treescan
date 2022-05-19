@@ -48,6 +48,8 @@ public class Parameters implements Cloneable {
     private boolean _randomlyGenerateSeed=false;
     private boolean _generateHtmlResults=false;
     private boolean _generateTableResults=false;
+    private boolean _generateNCBIAsnResults=false;
+    private boolean _generateNewickFile=false;
     private boolean _printColumnHeaders=true;
     private ModelType _modelType=ModelType.POISSON;
     private ScanType _scanType=ScanType.TREEONLY;
@@ -183,6 +185,8 @@ public class Parameters implements Cloneable {
     	  if (!_outputfilename.equals(rhs._outputfilename)) return false;
     	  if (_generateHtmlResults != rhs._generateHtmlResults) return false;
     	  if (_generateTableResults != rhs._generateTableResults) return false;
+    	  if (_generateNCBIAsnResults != rhs._generateNCBIAsnResults) return false;
+    	  if (_generateNewickFile != rhs._generateNewickFile) return false;
           if (_report_attributable_risk != rhs._report_attributable_risk) return false;
           if (_attributable_risk_exposed != rhs._attributable_risk_exposed) return false;
           if (_generate_llr_results != rhs._generate_llr_results) return false;
@@ -216,6 +220,10 @@ public class Parameters implements Cloneable {
           return true;
     }
 
+    public boolean isGeneratingNCBIAsnResults() { return _generateNCBIAsnResults; }
+    public boolean isGeneratingNewickFile() { return _generateNewickFile; }    
+    public void setGeneratingNCBIAsnResults(boolean b) { _generateNCBIAsnResults = b; }
+    public void setGeneratingNewickFile(boolean b) { _generateNewickFile = b; }
     public int getMinimumNodeCases() {return _minimum_nodes_cases;}
     public void setMinimumNodeCases(int i) {_minimum_nodes_cases = i;}
     public boolean getOutputTemporalGraphFile() {return _output_temporal_graph;}

@@ -60,6 +60,8 @@ class Parameters {
                         RESULTS_FILE,
                         RESULTS_HTML,
                         RESULTS_CSV,
+                        RESULTS_ASN,
+                        RESULTS_NWK,
                         /* Advanced Output - Additional Output */
                         RESULTS_LLR,
                         REPORT_CRITICAL_VALUES,
@@ -229,6 +231,8 @@ class Parameters {
     bool                                _randomlyGenerateSeed;
     bool                                _generateHtmlResults;
     bool                                _generateTableResults;
+    bool                                _generateNCBIAsnResults;
+    bool                                _generateNewickFile;
     bool                                _printColumnHeaders;
     ModelType                           _modelType;
     ratio_t                             _probablility_ratio;
@@ -427,6 +431,8 @@ class Parameters {
     bool                                isGeneratingHtmlResults() const {return _generateHtmlResults;}
     bool                                isGeneratingLLRResults() const {return _generate_llr_results;}
     bool                                isGeneratingTableResults() const {return _generateTableResults;}
+    bool                                isGeneratingNCBIAsnResults() const { return _generateNCBIAsnResults; }
+    bool                                isGeneratingNewickFile() const { return _generateNewickFile; }
     bool                                isPerformingDayOfWeekAdjustment() const {return isTemporalScanType(_scan_type) && _dayofweek_adjustment;}
     bool                                isPrintColumnHeaders() const {return _printColumnHeaders;}
     bool                                isRandomlyGeneratingSeed() const {return _randomlyGenerateSeed;}
@@ -452,6 +458,8 @@ class Parameters {
     void                                setGeneratingHtmlResults(bool b) {_generateHtmlResults = b;}
     void                                setGeneratingLLRResults(bool b) {_generate_llr_results = b;}
     void                                setGeneratingTableResults(bool b) {_generateTableResults = b;}
+    void                                setGeneratingNCBIAsnResults(bool b) { _generateNCBIAsnResults = b; }
+    void                                setGeneratingNewickFile(bool b) { _generateNewickFile = b; }
     void                                setInputSimulationsFilename(const char * s, bool bCorrectForRelativePath=false);
     void                                setMaximumWindowLength(unsigned int u) {_maximum_window_length = u;}
     void                                setMaximumWindowPercentage(double d) {_maximum_window_percentage = d;}

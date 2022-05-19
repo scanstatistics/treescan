@@ -303,12 +303,18 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getOutputParameters(Setti
     settings.clear();
     settings.push_back(std::make_pair("Results File",_parameters.getOutputFileName()));
     settings.push_back(std::make_pair("Report Results as HTML",(_parameters.isGeneratingHtmlResults() ? "Yes" : "No")));
-    if (_parameters.isGeneratingHtmlResults()) {
-        settings.push_back(std::make_pair("Results HTML", ResultsFileWriter::getFilenameHTML(_parameters, buffer)));
-    }
+    if (_parameters.isGeneratingHtmlResults())
+        settings.push_back(std::make_pair("Results HTML", ResultsFileWriter::getHtmlFilename(_parameters, buffer)));
     settings.push_back(std::make_pair("Report Results as CSV Table",(_parameters.isGeneratingTableResults() ? "Yes" : "No")));
-    if (_parameters.isGeneratingTableResults()) {
+    if (_parameters.isGeneratingTableResults())
         settings.push_back(std::make_pair("Results CSV Table", CutsRecordWriter::getFilename(_parameters, buffer)));
+    if (_parameters.getScanType() != Parameters::TIMEONLY) {
+        settings.push_back(std::make_pair("Generate NCBI Genome Workbench ASN1 File", (_parameters.isGeneratingHtmlResults() ? "Yes" : "No")));
+        if (_parameters.isGeneratingHtmlResults())
+            settings.push_back(std::make_pair("NCBI Genome Workbench ASN1 File", ResultsFileWriter::getAsnFilename(_parameters, buffer)));
+        settings.push_back(std::make_pair("Generate Newick Tree Format File", (_parameters.isGeneratingNewickFile() ? "Yes" : "No")));
+        if (_parameters.isGeneratingNewickFile())
+            settings.push_back(std::make_pair("Newick Tree Format File", ResultsFileWriter::getNewickFilename(_parameters, buffer)));
     }
     return settings;
 }

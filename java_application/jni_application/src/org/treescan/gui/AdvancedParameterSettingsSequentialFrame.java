@@ -140,6 +140,8 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
         parameters.setGeneratingHtmlResults(_reportResultsAsHTML.isSelected());
         parameters.setGeneratingTableResults(_reportResultsAsCsvTable.isSelected());
         parameters.setGeneratingLLRResults(_reportLLRResultsAsCsvTable.isSelected());
+        parameters.setGeneratingNCBIAsnResults(Utils.selected(_generate_ncbi_asn));
+        parameters.setGeneratingNewickFile(Utils.selected(_generate_newick));        
         parameters.setReportCriticalValues(_reportCriticalValuesCheckBox.isSelected());
         parameters.setReportAttributableRisk(_chk_rpt_attributable_risk.isEnabled() && _chk_rpt_attributable_risk.isSelected());
         parameters.setAttributableRiskExposed(_attributable_risk_exposed.getText().length() > 0 ? Integer.parseInt(_attributable_risk_exposed.getText()): 0);
@@ -158,6 +160,8 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
         _reportResultsAsCsvTable.setSelected(parameters.isGeneratingTableResults());
         _reportCriticalValuesCheckBox.setSelected(parameters.getReportCriticalValues());
         _reportLLRResultsAsCsvTable.setSelected(parameters.isGeneratingLLRResults());
+        _generate_ncbi_asn.setSelected(parameters.isGeneratingNCBIAsnResults());
+        _generate_newick.setSelected(parameters.isGeneratingNewickFile());
         _chk_rpt_attributable_risk.setSelected(parameters.getReportAttributableRisk());
         _attributable_risk_exposed.setText(parameters.getAttributableRiskExposed() > 0 ? Integer.toString(parameters.getAttributableRiskExposed()) : "");
     }
@@ -226,11 +230,14 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
         jPanel1 = new javax.swing.JPanel();
         _reportResultsAsHTML = new javax.swing.JCheckBox();
         _reportResultsAsCsvTable = new javax.swing.JCheckBox();
+        _generate_ncbi_asn = new javax.swing.JCheckBox();
+        _generate_newick = new javax.swing.JCheckBox();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(575, 440));
+        setResizable(true);
+        setPreferredSize(new java.awt.Dimension(575, 450));
 
         _log_likelihood_ratios_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Log Likelihood Ratios"));
 
@@ -348,6 +355,10 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
 
         _reportResultsAsCsvTable.setText("Report Results as CSV Table");
 
+        _generate_ncbi_asn.setText("Generate NCBI Genome Workbench ASN1 File");
+
+        _generate_newick.setText("Generate Newick Tree Format File");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -355,8 +366,10 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_reportResultsAsCsvTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_reportResultsAsHTML, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_reportResultsAsCsvTable, javax.swing.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)
+                    .addComponent(_reportResultsAsHTML, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_generate_ncbi_asn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_generate_newick, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -365,7 +378,11 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
                 .addComponent(_reportResultsAsHTML)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportResultsAsCsvTable)
-                .addContainerGap(9, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_generate_ncbi_asn)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_generate_newick)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout _advanced_output_tabLayout = new javax.swing.GroupLayout(_advanced_output_tab);
@@ -385,14 +402,14 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
             _advanced_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _advanced_output_tabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_report_critical_values_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(20, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
@@ -426,7 +443,7 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -445,6 +462,8 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
     private javax.swing.JLabel _chk_attributable_risk_extra;
     private javax.swing.JCheckBox _chk_rpt_attributable_risk;
     private javax.swing.JButton _closeButton;
+    private javax.swing.JCheckBox _generate_ncbi_asn;
+    private javax.swing.JCheckBox _generate_newick;
     private javax.swing.JPanel _log_likelihood_ratios_group;
     private javax.swing.ButtonGroup _powerEstimationButtonGroup;
     private javax.swing.JCheckBox _reportCriticalValuesCheckBox;
