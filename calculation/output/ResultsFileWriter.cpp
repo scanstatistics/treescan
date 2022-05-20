@@ -447,8 +447,6 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buff
 
 /* Writes tree structure and results of analysis to NCBI ASN1 file. */
 bool ResultsFileWriter::writeNCBIAsn() const {
-    if (_scanRunner.getRootNodes().size() != 1)
-        throw prg_error("Only can generate NCBI Asn file for tree with one root, given %u roots.", "writeNCBIAsn()", _scanRunner.getRootNodes().size());
     // Create output filename.
     std::string buffer;
     std::ofstream outfile;
@@ -473,7 +471,10 @@ bool ResultsFileWriter::writeNCBIAsn() const {
     // create a map of NodeID to Cut objects
     std::map<int, const CutStructure*> nodeCuts;
     for (const auto& cut : _scanRunner.getCuts()) nodeCuts[cut->getID()] = cut;
-    getNCBIAsnDefinition(*(*(_scanRunner.getRootNodes().begin())), fieldDefinitions, nodeCuts, destination);
+    size_t nroots(_scanRunner.getRootNodes().size());
+    if (nroots > 1) outfile << "{ id 0 }," << std::endl;
+    for (auto const& root: _scanRunner.getRootNodes())
+        getNCBIAsnDefinition(*root, fieldDefinitions, nroots > 1, nodeCuts, destination);
     // Remove trailing comma ...
     destination.seekp(-2, std::ios_base::end);
     destination << ' ';
@@ -487,13 +488,15 @@ bool ResultsFileWriter::writeNCBIAsn() const {
 }
 
 /* Collects asn node definition for this node and children. */
-std::stringstream & ResultsFileWriter::getNCBIAsnDefinition(const NodeStructure& node, const ptr_vector<FieldDef>& fieldDefinitions, const std::map<int, const CutStructure*>& nodeCuts, std::stringstream& destination) const {
+std::stringstream & ResultsFileWriter::getNCBIAsnDefinition(const NodeStructure& node, const ptr_vector<FieldDef>& fieldDefinitions, bool idoffset, const std::map<int, const CutStructure*>& nodeCuts, std::stringstream& destination) const {
     std::string buffer;
     // First write the current node - including additional information if there is a cut for the node.
     auto const& nodeCut = nodeCuts.find(node.getID());
-    destination << "{ id " << node.getID() << ", ";
-    if (node.getLevel() > 1)
-        destination << "parent " << node.getParents().front()->getID() << ",";
+    destination << "{ id " << (node.getID() + (idoffset ? 1 : 0)) << ", ";
+    if (node.getLevel() == 1 && idoffset)
+        destination << "parent 0,";
+    else if (node.getLevel() > 1)
+        destination << "parent " << (node.getParents().front()->getID() + (idoffset ? 1 : 0)) << ",";
     if (nodeCut != nodeCuts.end()) printString(buffer, " (Cut #%u)", nodeCut->second->getReportOrder());
     destination << " features { { featureid 0, value \"" << node.getIdentifier() << buffer << "\" },{ featureid 1, value \"1\" },{ featureid 2, value \""<< node.getIdentifier() << "\" }";
     if (nodeCut != nodeCuts.end()) {
@@ -511,21 +514,26 @@ std::stringstream & ResultsFileWriter::getNCBIAsnDefinition(const NodeStructure&
     destination << " } }," << std::endl;
     // Recursively write child nodes.
     for (const auto child : node.getChildren())
-        getNCBIAsnDefinition(*child, fieldDefinitions, nodeCuts, destination).rdbuf();
+        getNCBIAsnDefinition(*child, fieldDefinitions, idoffset, nodeCuts, destination).rdbuf();
     return destination;
 }
 
 /* Writes tree structure to Newick formatted file. */
 bool ResultsFileWriter::writeNewick() const {
-    if (_scanRunner.getRootNodes().size() != 1)
-        throw prg_error("Only can generate Newick string for tree with one root, given %u roots.", "writeNewick()", _scanRunner.getRootNodes().size());
     Parameters& parameters(const_cast<Parameters&>(_scanRunner.getParameters()));
     std::string buffer;
     std::ofstream outfile;
     openStream(getNewickFilename(parameters, buffer), outfile, true);
     if (!outfile) return false;
     std::stringstream destination("");
-    outfile << getNewickDefinition(*(*(_scanRunner.getRootNodes().begin())), destination).rdbuf() << ";";
+    size_t nroots(_scanRunner.getRootNodes().size());
+    if (nroots > 1) outfile << "(";
+    for (size_t r=0; r < nroots; ++r) {
+        outfile << getNewickDefinition(*(_scanRunner.getRootNodes()[r]), destination).rdbuf();
+        if (r + 1 < nroots) outfile << ",";
+    }
+    if (nroots > 1) outfile << ")";
+    outfile << ";";
     outfile.close();
     return true;
 }
@@ -534,7 +542,7 @@ bool ResultsFileWriter::writeNewick() const {
 std::stringstream & ResultsFileWriter::getNewickDefinition(const NodeStructure& node, std::stringstream& destination) const {
     size_t nchild(node.getChildren().size());
     if (nchild) destination << "(";
-    for (size_t c = 0; c < nchild; ++c) {
+    for (size_t c=0; c < nchild; ++c) {
         getNewickDefinition(*(node.getChildren()[c]), destination);
         if (c + 1 < nchild) destination << ",";
     }
