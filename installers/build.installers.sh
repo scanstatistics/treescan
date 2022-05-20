@@ -35,7 +35,7 @@ zip $installer_version/treescan.${version}_windows.zip examples/*
 # Build the IzPack Java installer for Linux. (Note that someday we might replace this process with jpackageInstallerLinux.sh)
 
 # Build Linux installer. 
-$IzPack/bin/compile $build/treescan/installers/izpack/linux/install_linux.xml -b $installer_version -o $installer_version/install-2_0_linux.jar -k standard
+$IzPack/bin/compile $build/treescan/installers/izpack/linux/install_linux.xml -b $installer_version -o $installer_version/install-${versionf}_linux.jar -k standard
 chmod a+x $installer_version/install-${versionf}_linux.jar
 
 # Build batch binaries archive for Linux.
