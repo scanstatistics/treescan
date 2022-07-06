@@ -309,8 +309,8 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getOutputParameters(Setti
     if (_parameters.isGeneratingTableResults())
         settings.push_back(std::make_pair("Results CSV Table", CutsRecordWriter::getFilename(_parameters, buffer)));
     if (_parameters.getScanType() != Parameters::TIMEONLY) {
-        settings.push_back(std::make_pair("Generate NCBI Genome Workbench ASN1 File", (_parameters.isGeneratingHtmlResults() ? "Yes" : "No")));
-        if (_parameters.isGeneratingHtmlResults())
+        settings.push_back(std::make_pair("Generate NCBI Genome Workbench ASN1 File", (_parameters.isGeneratingNCBIAsnResults() ? "Yes" : "No")));
+        if (_parameters.isGeneratingNCBIAsnResults())
             settings.push_back(std::make_pair("NCBI Genome Workbench ASN1 File", ResultsFileWriter::getAsnFilename(_parameters, buffer)));
         settings.push_back(std::make_pair("Generate Newick Tree Format File", (_parameters.isGeneratingNewickFile() ? "Yes" : "No")));
         if (_parameters.isGeneratingNewickFile())
