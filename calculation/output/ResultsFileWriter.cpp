@@ -848,6 +848,8 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "<div class=\"row\" style=\"font-style:italic; margin:5px 20px 10px 30px;font-size: 1.1em;\"><ol><li>Selecting the circle in the upper right corner of each node will expand/collapse children under node. The color of circle indicates best p-value &#47; relative risk found in descendent nodes.</li>";
         if (bernoulliSequential)
             outfile << "<li>The visualization tree displays significant nodes which have signalled. Siblings and ancestry to root are also displayed for significant nodes, regardless of whether they have signalled.</li>";
+        else if (parameters.getIsProspectiveAnalysis())
+            outfile << "<li>The visualization tree displays nodes with recurrence interval &ge; 100 days. Siblings and ancestry to root are also displayed for significant nodes, regardless of their recurrence interval.</li>";
         else
             outfile << "<li>The visualization tree displays nodes with significant p-values (&le; 0.05). Siblings and ancestry to root are also displayed for significant nodes, regardless of their p-value.</li>";
         outfile << "</ol></div></div>" << std::endl;
@@ -1255,7 +1257,13 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
     nodestream << "</ul><div class='nbottom'></div>\"";
 
     // Is this node significant?
-    bool nodesignificant = (bernoulliSequential ? node_attr_rr.get<0>() > 0.0 : node_attr_rr.get<0>() <= 0.05);
+    bool nodesignificant = true;
+    if (bernoulliSequential)
+        nodesignificant = node_attr_rr.get<0>() > 0.0;
+    else if (prospectiveScan)
+        nodesignificant = node_attr_rr.get<2>().second >= 100.0;
+    else
+        nodesignificant = node_attr_rr.get<0>() <= 0.05;
 
     // Create a stream for children nodes, if any.
     BestCutSet_t best_attr_rr_children(bernoulliSequential ? 0.0 : std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(), RecurrenceInterval_t(0.0, 0.0));
