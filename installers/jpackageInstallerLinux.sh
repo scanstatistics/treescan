@@ -17,7 +17,7 @@ bundledir="/prj/treescan/build/jpackage"
 binaries="/prj/treescan/build/binaries/linux"
 
 rm -rf $bundleinputdir
-rm -rf $bundledir/TreeScan
+rm -rf $bundledir/TreeScanStatistic
 rm -rf $bundledir/bin
 
 # copy all input files to bundle input dir
@@ -35,21 +35,21 @@ cp -f $binaries/libtreescan64.so $bundleinputdir
 
 # Build TreeScan app bundle
 $javajdk/bin/jpackage --verbose --type app-image --input $bundleinputdir \
-            --main-jar TreeScan.jar --icon $srcdir/installers/resources/TreeScan.png \
-            --app-version $version --name TreeScan --dest $bundledir \
+            --main-jar TreeScan.jar --icon $srcdir/installers/resources/TreeScanStatistic.png \
+            --app-version $version --name TreeScanStatistic --dest $bundledir \
             --java-options "-Djava.library.path=\$APPDIR"
 
 #  Create application rpm
-$javajdk/bin/jpackage --verbose --type rpm --app-image $bundledir/TreeScan --app-version $version \
-            --name TreeScan --resource-dir $srcdir/installers/resources --dest $2 \
+$javajdk/bin/jpackage --verbose --type rpm --app-image $bundledir/TreeScanStatistic --app-version $version \
+            --name TreeScanStatistic --resource-dir $srcdir/installers/resources --dest $2 \
             --description "Software for the tree-based scan statistic" \
             --vendor "Martin Kulldorff together with Information Management Services Inc." \
             --linux-shortcut --linux-rpm-license-type "see TreeScan License Agreement @ https://www.treescan.org/techdoc.html" \
             --linux-app-release "0" --copyright "Copyright 2021, All rights reserved"
 
 #  Create application deb
-#$javajdk/bin/jpackage --verbose --type deb --app-image $bundledir/TreeScan --app-version $version \
-#           --name TreeScan --resource-dir $srcdir/installers/resources --dest $2 \
+#$javajdk/bin/jpackage --verbose --type deb --app-image $bundledir/TreeScanStatistic --app-version $version \
+#           --name TreeScanStatistic --resource-dir $srcdir/installers/resources --dest $2 \
 #           --description "Software for the tree-based scan statistic" \
 #           --vendor "Martin Kulldorff together with Information Management Services Inc." \
 #           --linux-shortcut --linux-rpm-license-type "see TreeScan License Agreement @ https://www.treescan.org/techdoc.html" \

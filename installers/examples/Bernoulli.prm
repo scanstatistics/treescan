@@ -29,6 +29,10 @@ results-filename=Bernoulli.txt
 results-html=n
 ;create CSV results (y/n)
 results-csv=n
+;create NCBI Asn results (y/n)
+results-asn=n
+;create Newick File (y/n)
+results-nwk=n
 
 [Advanced Input]
 ;cuts filename
@@ -166,5 +170,5 @@ parallel-processes=0
 
 [System]
 ;parameters version - do not modify
-parameters-version=2.0.0
+parameters-version=2.1.0
 

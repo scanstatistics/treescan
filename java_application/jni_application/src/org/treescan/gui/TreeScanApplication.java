@@ -37,6 +37,8 @@ import ca.guydavis.swing.desktop.CascadingWindowPositioner;
 import java.awt.Desktop;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.event.KeyEvent;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
@@ -123,7 +125,12 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             _user_guide = java_lib_path.getParentFile().getParent() + File.separator  + "Contents" + File.separator + "app" + File.separator + "userguide.pdf";            
         } else {
             _application = SystemUtils.getUserDir().getAbsolutePath() + File.separator  + "TreeScan.jar";
-            _user_guide = SystemUtils.getUserDir().getAbsolutePath() + File.separator + "userguide.pdf";            
+            _user_guide = SystemUtils.getUserDir().getAbsolutePath() + File.separator + "userguide.pdf";
+            if (Files.notExists(Paths.get(_user_guide))) {
+                // Default to java library path
+                File java_lib_path = new File(SystemUtils.JAVA_LIBRARY_PATH);
+                _user_guide = java_lib_path.getAbsolutePath() + File.separator + "userguide.pdf";
+            }            
         }            
     }
 
@@ -573,8 +580,12 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
                     System.out.println(userGuide);
                     BareBonesBrowserLaunch.openURL(userGuide);
                 }
-            } catch (Throwable t) {
-                new ExceptionDialog(TreeScanApplication.this, t).setVisible(true);
+            } catch (Throwable t) { // Default to website.
+                try {
+                    BareBonesBrowserLaunch.openURL(AppConstants.getWebSite() + "techdoc.html");
+                } catch (Throwable ignored) {
+                    new ExceptionDialog(TreeScanApplication.this, t).setVisible(true);
+                }
             }
         }
     }
