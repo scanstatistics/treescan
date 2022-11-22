@@ -11,7 +11,7 @@
 const char * AppToolkit::gsDebugFileName = "_debug_";
 
 /** Default website. */
-const char * AppToolkit::gsDefaultTreeScanWebSite = "http://www.treescan.org/";
+const char * AppToolkit::gsDefaultTreeScanWebSite = "https://www.treescan.org/";
 /** Default Substantive Support Email. */
 const char * AppToolkit::gsDefaultSubstantiveSupportEmail = "kulldorff@treescan.org";
 /** Default Technical Support Email. */
