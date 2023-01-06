@@ -76,8 +76,7 @@ double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _
                     } if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
                         double casesInNode = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
                         double totalInNode = scanner.getNodes()[nodeID]->getBrN();
-                        if (!(totalInNode - _N)) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getExcessCases()", parameters.getModelType(), totalInNode, _N);
-                        return C - _N * (casesInNode - C) / (totalInNode - _N);
+                        return (totalInNode && (totalInNode - _N)) ? C - _N * (casesInNode - C) / (totalInNode - _N) : 0.0;
                     }
                     throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getExcessCases()", parameters.getModelType());
                 case Parameters::NODEANDTIME: {
@@ -143,7 +142,9 @@ double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, 
                             return _N * W / T;
                         }
                     } else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-                        return static_cast<double>(static_cast<double>(scanner.getNodes()[nodeID]->getBrC())) / scanner.getNodes()[nodeID]->getBrN() * _N;
+                        double cases = static_cast<double>(static_cast<double>(scanner.getNodes()[nodeID]->getBrC()));
+                        double total = scanner.getNodes()[nodeID]->getBrN();
+                        return total ? cases / total * _N : 0.0;
                     }
                     throw prg_error("Cannot determine expected cases: tree-time, total-cases, model (%d).", "getExpected()", parameters.getModelType());
                 case Parameters::NODEANDTIME:
@@ -170,7 +171,9 @@ double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, 
                             return _N * W / T;
                         }
                     } else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-                        return static_cast<double>(scanner.getNodes()[nodeID]->getBrC()) / scanner.getNodes()[nodeID]->getBrN() * _N;
+                        double cases = static_cast<double>(static_cast<double>(scanner.getNodes()[nodeID]->getBrC()));
+                        double total = scanner.getNodes()[nodeID]->getBrN();
+                        return total ? cases / total * _N : 0.0;
                     }
                     throw prg_error("Cannot determine expected cases: tree-time, total-cases, model (%d).", "getExpected()", parameters.getModelType());
                 default: throw prg_error("Cannot determine expected cases: tree-time, condition type (%d).", "getExpected()", parameters.getConditionalType());
@@ -291,7 +294,7 @@ double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double 
                         // RR = (c / n) / ((C - c) / (N - n))
                         if (_N && totalInNode - _N && ((casesInNode - _C) / (totalInNode - _N)))
                             return (_C / _N) / ((casesInNode - _C) / (totalInNode - _N));
-                        return 0;
+                        return 0.0;
                     }
                     throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getRelativeRisk()", parameters.getModelType());
                 case Parameters::NODEANDTIME: {

@@ -589,10 +589,12 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
                 throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", params.getModelType());
     }
 
-    Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = getRelativeRiskFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
-    Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = getExcessCasesFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
-    if (params.getReportAttributableRisk()) {
-        Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = getAttributableRiskFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
+    if (_C > 0) { // In terms of child nodes, we're only interested if there are cases in them, so shortcut these calculations (which don't always play nice here).
+        Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = getRelativeRiskFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
+        Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = getExcessCasesFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
+        if (params.getReportAttributableRisk()) {
+            Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = getAttributableRiskFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
+        }
     }
     return Record;
 }

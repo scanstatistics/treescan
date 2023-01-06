@@ -953,9 +953,9 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         CutsRecordWriter::getFieldDefs(fieldDefinitions, parameters);
         for (auto pnode : _scanRunner.getCutChildNodes(thisCut)) {
             boost::shared_ptr<RecordBuffer> record(new RecordBuffer(fieldDefinitions));
-            CutsRecordWriter::getRecordForCutChild(*(record), thisCut, *pnode, thisCut.getReportOrder(), _scanRunner);
             if (countFieldIdx == std::numeric_limits<unsigned int>::max())
                 countFieldIdx = record->GetFieldIndex({ std::string(DataRecordWriter::CASES_FIELD), std::string(DataRecordWriter::OBSERVED_CASES_FIELD), std::string(DataRecordWriter::WNDW_CASES_FIELD) });
+            CutsRecordWriter::getRecordForCutChild(*(record), thisCut, *pnode, thisCut.getReportOrder(), _scanRunner);
             // Add this record if it is interesting.
             if (record->GetFieldValue(countFieldIdx).AsDouble() > 0.0 && !std::isnan(record->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble()))
                 childRecords.push_back(record);
