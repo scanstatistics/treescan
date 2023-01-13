@@ -13,7 +13,7 @@ INSTALLER_DIR="/prj/treescan/installers/v.${APPVERSION}.x"
 SIGN_KEY="Developer ID Application: Information Management Services, Inc. (VF82MCMA83)"
 BUNDLEDIR="/Users/treescan/prj/treescan.development/jpackaged"
 BINARIES="/Users/treescan/prj/treescan.development/binaries/mac"
-JAVAJDK="/Users/treescan/prj/java/jdk-17.0.2+8/Contents/Home" # AdoptJDK
+JAVAJDK="/Users/treescan/prj/java/jdk-17.0.5+8_x86_64/Contents/Home" # AdoptJDK
 ENTITLEMENTS="${SRCDIR}/installers/macosentitlements.plist"
 XCRUN="/usr/bin/xcrun"
 ALTOOL="/Applications/Xcode.app/Contents/Developer/usr/bin/altool"
@@ -62,52 +62,50 @@ codesign -vvv --strict $BUNDLEDIR/imagesrc/TreeScan.jar
 
 # Create TreeScan app directory
 $JAVAJDK/bin/jpackage --verbose --type app-image --input $BUNDLEDIR/imagesrc --main-jar TreeScan.jar \
-                      --icon $SRCDIR/installers/izpack/mac/treescan2app/Mac-App-Template/Contents/Resources/TreeScan.icns --app-version ${APPVERSION} \
-                      --name TreeScan --dest $BUNDLEDIR --java-options "-Djava.library.path=\$APPDIR" \
+                      --icon $SRCDIR/installers/izpack/mac/treescan2app/Mac-App-Template/Contents/Resources/TreeScan.icns \
+                      --app-version ${APPVERSION} --name TreeScan --dest $BUNDLEDIR --java-options "-Djava.library.path=\$APPDIR" \
+                      --mac-sign --mac-package-signing-prefix org.treescan.TreeScan --mac-signing-key-user-name "${SIGN_KEY}" --mac-package-name "TreeScan" --mac-entitlements ${ENTITLEMENTS} \
                       --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.crypto.cryptoki,jdk.accessibility
 
-## # Sign APP's runtime and itself.
-codesign --sign "${SIGN_KEY}" --options runtime  --timestamp --entitlements ${ENTITLEMENTS} -vvv --force $BUNDLEDIR/TreeScan.app/Contents/runtime/Contents/MacOS/libjli.dylib
-codesign -vvv --strict $BUNDLEDIR/TreeScan.app/Contents/runtime/Contents/MacOS/libjli.dylib
-codesign --sign "${SIGN_KEY}" --options runtime  --timestamp --entitlements ${ENTITLEMENTS} -vvv --force $BUNDLEDIR/TreeScan.app/Contents/MacOS/TreeScan
-codesign -vvv --strict $BUNDLEDIR/TreeScan.app/Contents/MacOS/TreeScan
-codesign --sign "${SIGN_KEY}" --options runtime --timestamp --entitlements ${ENTITLEMENTS} -vvvv --force $BUNDLEDIR/TreeScan.app
-codesign -dvvv  $BUNDLEDIR/TreeScan.app
-spctl -vvv --assess --type exec $BUNDLEDIR/TreeScan.app
-Echo Any problems codesigning app?
+# Create zip file from TreeScan.app notarize application alone.
+ditto -c -k --sequesterRsrc --keepParent $BUNDLEDIR/TreeScan.app $BUNDLEDIR/TreeScan.zip
+
+# Notorize TreeScan app
+REQUEST_UUID_APP=$($XCRUN $ALTOOL --notarize-app --primary-bundle-id "org.treescan" --username "meagherk@imsweb.com" --password "${PASSWORD}" --asc-provider "VF82MCMA83" --file $BUNDLEDIR/TreeScan.zip | grep RequestUUID | awk '{print $3}')
+# Poll for verification completion.
+while $XCRUN $ALTOOL --notarization-info "$REQUEST_UUID_APP" -u "meagherk@imsweb.com" -p "${PASSWORD}" | grep "Status: in progress" > /dev/null; do
+    echo "Verification in progress..."
+    sleep 60
+done
+echo Results of notarization
+$XCRUN $ALTOOL --notarization-info "$REQUEST_UUID_APP" -u "meagherk@imsweb.com" -p "${PASSWORD}"
+Echo Any problems notarizing app?
+# staple application -- assumes notarization succeeds.
+$XCRUN $STAPLER staple $BUNDLEDIR/TreeScan.app
+# test notarized
+codesign --test-requirement="=notarized" --verify --verbose $BUNDLEDIR/TreeScan.app
+
+Echo Any problems creating app and codesigning?
 read APPLES_TEST
 
 # Create dmg with notarized application - but codesign separately.
-$JAVAJDK/bin/jpackage --type pkg --verbose --app-image $BUNDLEDIR/TreeScan.app --app-version $APPVERSION --verbose --type dmg --name TreeScan --dest $BUNDLEDIR/bin \
-                      --description "Software for the tree-based scan statistic" --vendor "Information Management Services, Inc." \
-                      --copyright "Copyright 2021, All rights reserved" --resource-dir $BUNDLEDIR/dmgresources                     
-Echo Any problems creating dmg file?
+$JAVAJDK/bin/jpackage --type pkg  --verbose --app-image $BUNDLEDIR/TreeScan.app --app-version $APPVERSION \
+                      --name TreeScan --dest $BUNDLEDIR/bin --description "Software for the tree-based scan statistic" \
+					  --vendor "Information Management Services, Inc." --copyright "Copyright 2021, All rights reserved" \
+					  --resource-dir $BUNDLEDIR/dmgresources --type dmg
+Echo How did the dmg build go?
 read APPLES_TEST
 
 # codesign and check TreeScan.dmg
-# xattr -cr $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg
-
-# codesign -dvvv $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg
-codesign --entitlements  ${ENTITLEMENTS} --options runtime --timestamp -vvvv --deep -s "${SIGN_KEY}" $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg
-codesign -dvvv $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg
-Echo Any problems codesigning dmg file?
-read APPLES_TEST
-
-# Create pkg
-# $JAVAJDK/bin/jpackage  --type pkg --verbose --mac-package-identifier TreeScan --app-image $BUNDLEDIR/TreeScan.app --app-version $APPVERSION --name TreeScan --verbose --type pkg --dest $BUNDLEDIR/bin --description "Software for the tree-based scan statistic" --vendor "Information Management Services, Inc." --copyright "Copyright 2021, All rights reserved" --resource-dir $BUNDLEDIR/dmgresources
-# Echo Any problems creating pkg file?
-# read APPLES_TEST
-## productsign --sign "${INSTALLER_SIGN_KEY}" $BUNDLEDIR/bin/TreeScan-${APPVERSION}.pkg $BUNDLEDIR/bin/TreeScan-${APPVERSION}-signed.pkg
-# Echo Any problems codesigning pkg file?
-# read APPLES_TEST
+codesign --entitlements  ${ENTITLEMENTS} --options runtime -vvvv --deep --timestamp -s "${SIGN_KEY}" $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg
 
 # Notorize TreeScan.dmg
-REQUEST_UUID_DMG=$($XCRUN $ALTOOL --notarize-app --primary-bundle-id "org.treescan.dmg" --username "meagherk@imsweb.com" --password "${PASSWORD}" --asc-provider "VF82MCMA83" --file $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg | grep RequestUUID | awk '{print $3}')
+REQUEST_UUID_DMG=$($XCRUN $ALTOOL --notarize-app --primary-bundle-id "org.treescan" --username "meagherk@imsweb.com" --password "${PASSWORD}" --asc-provider "VF82MCMA83" --file $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg | grep RequestUUID | awk '{print $3}')
 
 # Poll for verification completion.
 while $XCRUN $ALTOOL --notarization-info "$REQUEST_UUID_DMG" -u "meagherk@imsweb.com" -p "${PASSWORD}" | grep "Status: in progress" > /dev/null; do
     echo "Verification in progress..."
-    sleep 30
+    sleep 60
 done
 
 echo Results of notarization
@@ -121,29 +119,6 @@ $XCRUN $STAPLER staple $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg
 
 # test notarized
 codesign --test-requirement="=notarized" --verify --verbose $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg
-
-## TODD: First need to create installer signing identity.
-## # Notorize TreeScan.pkg
-## REQUEST_UUID_PKG=$($XCRUN $ALTOOL --notarize-app --primary-bundle-id "org.treescan" --username "meagherk@imsweb.com" --password "${PASSWORD}" --asc-provider "VF82MCMA83" --file $BUNDLEDIR/bin/TreeScan-${APPVERSION}.pkg | grep RequestUUID | awk '{print $3}')
-## 
-## # Poll for verification completion.
-## while $XCRUN $ALTOOL --notarization-info "$REQUEST_UUID_PKG" -u "meagherk@imsweb.com" -p "${PASSWORD}" | grep "Status: in progress" > /dev/null; do
-##     echo "Verification in progress..."
-##     sleep 30
-## done
-## 
-## Echo Any problems notarizing pkg file?
-## read APPLES_TEST
-## 
-## echo Results of notarization
-## $XCRUN $ALTOOL --notarization-info "$REQUEST_UUID_PKG" -u "meagherk@imsweb.com" -p "${PASSWORD}"
-## 
-## # staple application -- assumes notarization succeeds.
-## $XCRUN $STAPLER staple $BUNDLEDIR/bin/TreeScan-${APPVERSION}.pkg
-## 
-## # test notarized
-## codesign --test-requirement="=notarized" --verify --verbose $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dpkg
-## 
 
 # Build batch binaries archive for Mac OS X.
 rm -f $BUNDLEDIR/treescan.${APPVERSION}_mac.tar.bz2
@@ -159,4 +134,3 @@ echo Copying dmg to fileshare
 mv $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg $BUNDLEDIR/bin/TreeScan_${APPVERSION}_mac.dmg
 mv $BUNDLEDIR/TreeScan.zip $BUNDLEDIR/TreeScan_${APPVERSION}_mac.zip
 scp -r $BUNDLEDIR/bin/TreeScan_${APPVERSION}_mac.dmg $BUNDLEDIR/TreeScan_${APPVERSION}_mac.zip $BUNDLEDIR/treescan.${APPVERSION}_mac.tar.bz2 treescan@gen-btp-01.imsweb.com:${INSTALLER_DIR}
-

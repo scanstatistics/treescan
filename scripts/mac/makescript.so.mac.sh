@@ -12,7 +12,7 @@ fi
 echo building TreeScan binary ...
 cd $2
 make clean TREESCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/sharedlibrary-info.plist" CC="$6 $7 $8" M_CFLAGS=-fPIC
-make libtreescan.jnilib TREESCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/sharedlibrary-info.plist" CC="$6 $7 $8" $9 M_CFLAGS=-fPIC JNI=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/include JNI_PLAT=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/include/darwin
+make libtreescan.jnilib TREESCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/sharedlibrary-info.plist" CC="$6 $7 $8" $9 M_CFLAGS=-fPIC JNI=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home/include JNI_PLAT=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home/include/darwin
 strip libtreescan.jnilib
 mv libtreescan.jnilib $1
 
