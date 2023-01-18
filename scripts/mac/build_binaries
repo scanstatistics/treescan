@@ -21,18 +21,28 @@ processors="-j2"
 rm -f $binaries/*
 
 
-# Intel command-line binaries
+# Intel command-line binary
+echo building TreeScan for x86_64 64-bit system
+./makescript.mac.sh $binaries/treescan_x86_64 $treescan_src $boost_src -m64 -O3 $cpp_compiler "-arch x86_64" $osx_min_version $processors
 
-echo building TreeScan for 64-bit system - x86_64
-./makescript.mac.sh $binaries/treescan $treescan_src $boost_src -m64 -O3 $cpp_compiler "-arch x86_64" $osx_min_version $processors
+# M1 command-line binary
+echo building TreeScan for M1 system
+./makescript.mac.sh $binaries/treescan_arm64 $treescan_src $boost_src -m64 -O3 $cpp_compiler "-arch arm64" $osx_min_version $processors
 
-# Intel JNI libraries
-
-echo building TreeScan shared object for 64-bit system - x86_64
+# Intel JNI library
+echo building TreeScan shared object for x86_64 64-bit system
 ./makescript.so.mac.sh $binaries/libtreescan.jnilib $treescan_src $boost_src -m64 -O3 $cpp_compiler "-arch x86_64" $osx_min_version $processors
 
 # codesign binaries
 security unlock-keychain $HOME/Library/Keychains/login.keychain
+codesign --force -v --deep -s "Developer ID Application: Information Management Services, Inc. (VF82MCMA83)" $binaries/treescan_x86_64
+codesign --force -v --deep -s "Developer ID Application: Information Management Services, Inc. (VF82MCMA83)" $binaries/treescan_arm64
+
+# Create universal binary for command-line.
+echo creating universal binary for x86_64 and arm64.
+lipo -create $binaries/treescan_x86_64 $binaries/treescan_arm64 -output $binaries/treescan
+rm $binaries/treescan_x86_64 $binaries/treescan_arm64
+
 codesign --force -v --deep -s "Developer ID Application: Information Management Services, Inc. (VF82MCMA83)" $binaries/treescan
 codesign --force -v --deep -s "Developer ID Application: Information Management Services, Inc. (VF82MCMA83)" $binaries/libtreescan.jnilib
 

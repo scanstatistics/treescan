@@ -11,13 +11,37 @@ APPVERSION="2.1"
 SRCDIR="/Users/treescan/prj/treescan.development/treescan"
 INSTALLER_DIR="/prj/treescan/installers/v.${APPVERSION}.x"
 SIGN_KEY="Developer ID Application: Information Management Services, Inc. (VF82MCMA83)"
+TEAM_ID="VF82MCMA83"
 BUNDLEDIR="/Users/treescan/prj/treescan.development/jpackaged"
 BINARIES="/Users/treescan/prj/treescan.development/binaries/mac"
 JAVAJDK="/Users/treescan/prj/java/jdk-17.0.5+8_x86_64/Contents/Home" # AdoptJDK
 ENTITLEMENTS="${SRCDIR}/installers/macosentitlements.plist"
 XCRUN="/usr/bin/xcrun"
-ALTOOL="/Applications/Xcode.app/Contents/Developer/usr/bin/altool"
-STAPLER="/Applications/Xcode.app/Contents/Developer/usr/bin/stapler"
+NOTARYTOOL="notarytool"
+STAPLER="stapler"
+
+notarizeOrFail() {
+    # Notorize binary.
+    echo "Requesting package notarization... this may take some time."
+    n_time=$(date +%s)
+    response=$($XCRUN $NOTARYTOOL submit ${1} --wait --apple-id "meagherk@imsweb.com" --password ${2} --team-id ${3})
+    # Get the notarization job ID from the response
+    e_time=$(date +%s)
+    job_id_line=$(grep -m 1 '  id:' < <(echo -e "${response}"))
+    job_id=$(echo "${job_id_line}" | cut -d ":" -s -f 2 | cut -d " " -f 2)
+    n_time=$((e_time - n_time))
+    echo "Notarization completed after ${n_time} seconds. Job ID: ${job_id}"
+    # Get the notarization status from the response
+    status_line=$(grep -m 1 '  status:' < <(echo -e "${response}"))
+    status_result=$(echo "${status_line}" | cut -d ":" -s -f 2 | cut -d " " -f 2)
+    # Check response status and exit
+    if [[ ${status_result} != "Accepted" ]]; then
+        echo "Notarization failed with status ${status_result}. Hit enter to see log results ..."
+        $XCRUN $NOTARYTOOL log ${job_id} --apple-id "meagherk@imsweb.com" --password ${2} --team-id ${3}
+        exit 1
+    fi
+    echo "Notarization -${status_line}"
+}
 
 # Clean up output directory
 rm -rf $BUNDLEDIR
@@ -42,7 +66,7 @@ mkdir $BUNDLEDIR/dmgresources
 cp -f $SRCDIR/installers/resources/TreeScan.icns $BUNDLEDIR/dmgresources
 cp -f $SRCDIR/installers/resources/TreeScan-volume.icns $BUNDLEDIR/dmgresources
 
-# Ensure that our binaries/main jar are codesigned and runtime hardened. 
+# Ensure that our binaries/main jar are codesigned and runtime hardened.
 # This is just a safe guard to ensure they are runtime hardened since jpackage skips already signed.
 codesign --entitlements  ${ENTITLEMENTS} --options runtime --timestamp -f -v -s "${SIGN_KEY}" $BUNDLEDIR/imagesrc/treescan
 codesign -vvv --strict $BUNDLEDIR/imagesrc/treescan
@@ -70,22 +94,18 @@ $JAVAJDK/bin/jpackage --verbose --type app-image --input $BUNDLEDIR/imagesrc --m
 # Create zip file from TreeScan.app notarize application alone.
 ditto -c -k --sequesterRsrc --keepParent $BUNDLEDIR/TreeScan.app $BUNDLEDIR/TreeScan.zip
 
-# Notorize TreeScan app
-REQUEST_UUID_APP=$($XCRUN $ALTOOL --notarize-app --primary-bundle-id "org.treescan" --username "meagherk@imsweb.com" --password "${PASSWORD}" --asc-provider "VF82MCMA83" --file $BUNDLEDIR/TreeScan.zip | grep RequestUUID | awk '{print $3}')
-# Poll for verification completion.
-while $XCRUN $ALTOOL --notarization-info "$REQUEST_UUID_APP" -u "meagherk@imsweb.com" -p "${PASSWORD}" | grep "Status: in progress" > /dev/null; do
-    echo "Verification in progress..."
-    sleep 60
-done
-echo Results of notarization
-$XCRUN $ALTOOL --notarization-info "$REQUEST_UUID_APP" -u "meagherk@imsweb.com" -p "${PASSWORD}"
-Echo Any problems notarizing app?
-# staple application -- assumes notarization succeeds.
+echo Any problems creating app and codesigning?
+read APPLES_TEST
+
+# Notorize app file.
+notarizeOrFail ${BUNDLEDIR}/TreeScan.zip ${PASSWORD} ${TEAM_ID}
+
+# Staple application.
 $XCRUN $STAPLER staple $BUNDLEDIR/TreeScan.app
-# test notarized
+# Test notarization.
 codesign --test-requirement="=notarized" --verify --verbose $BUNDLEDIR/TreeScan.app
 
-Echo Any problems creating app and codesigning?
+echo Any problems notarizing app?
 read APPLES_TEST
 
 # Create dmg with notarized application - but codesign separately.
@@ -93,32 +113,24 @@ $JAVAJDK/bin/jpackage --type pkg  --verbose --app-image $BUNDLEDIR/TreeScan.app 
                       --name TreeScan --dest $BUNDLEDIR/bin --description "Software for the tree-based scan statistic" \
 					  --vendor "Information Management Services, Inc." --copyright "Copyright 2021, All rights reserved" \
 					  --resource-dir $BUNDLEDIR/dmgresources --type dmg
-Echo How did the dmg build go?
-read APPLES_TEST
 
 # codesign and check TreeScan.dmg
 codesign --entitlements  ${ENTITLEMENTS} --options runtime -vvvv --deep --timestamp -s "${SIGN_KEY}" $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg
 
-# Notorize TreeScan.dmg
-REQUEST_UUID_DMG=$($XCRUN $ALTOOL --notarize-app --primary-bundle-id "org.treescan" --username "meagherk@imsweb.com" --password "${PASSWORD}" --asc-provider "VF82MCMA83" --file $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg | grep RequestUUID | awk '{print $3}')
-
-# Poll for verification completion.
-while $XCRUN $ALTOOL --notarization-info "$REQUEST_UUID_DMG" -u "meagherk@imsweb.com" -p "${PASSWORD}" | grep "Status: in progress" > /dev/null; do
-    echo "Verification in progress..."
-    sleep 60
-done
-
-echo Results of notarization
-$XCRUN $ALTOOL --notarization-info "$REQUEST_UUID_DMG" -u "meagherk@imsweb.com" -p "${PASSWORD}"
-
-Echo Any problems notarizing dmg file?
+echo Any problems creating dmg and codesigning?
 read APPLES_TEST
 
-# staple application -- assumes notarization succeeds.
+# Notorize TreeScan.dmg
+notarizeOrFail $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg ${PASSWORD} ${TEAM_ID}
+
+# Staple dmg.
 $XCRUN $STAPLER staple $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg
 
-# test notarized
+# Test dmg notarized.
 codesign --test-requirement="=notarized" --verify --verbose $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg
+
+echo Any problems notarizing dmg file?
+read APPLES_TEST
 
 # Build batch binaries archive for Mac OS X.
 rm -f $BUNDLEDIR/treescan.${APPVERSION}_mac.tar.bz2
