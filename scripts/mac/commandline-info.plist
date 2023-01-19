@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleIdentifier</key>
+	<string>org.treescan.TreeScan.treescan</string>
+	<key>CFBundleName</key>
+	<string>TreeScan-commandline</string>
+	<key>CFBundleVersion</key>
+	<string>2.0.0</string>
+</dict>
+</plist>

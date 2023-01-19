@@ -11,8 +11,8 @@ fi
 
 echo building TreeScan binary ...
 cd $2
-make clean TREESCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/commandline-info.plist" CC="$6 $7 $8"
-make TreeScan_mac TREESCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/installers/izpack/mac/commandline-info.plist" CC="$6 $7 $8" $9
+make clean TREESCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/scripts/mac/commandline-info.plist" CC="$6 $7 $8"
+make TreeScan_mac TREESCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/scripts/mac/commandline-info.plist" CC="$6 $7 $8" $9
 strip TreeScan_mac
 mv TreeScan_mac $1
 
