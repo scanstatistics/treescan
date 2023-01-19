@@ -86,7 +86,7 @@ codesign -vvv --strict $BUNDLEDIR/imagesrc/TreeScan.jar
 
 # Create TreeScan app directory
 $JAVAJDK/bin/jpackage --verbose --type app-image --input $BUNDLEDIR/imagesrc --main-jar TreeScan.jar \
-                      --icon $SRCDIR/installers/izpack/mac/treescan2app/Mac-App-Template/Contents/Resources/TreeScan.icns \
+                      --icon CDIR/installers/resources/TreeScan.icns \
                       --app-version ${APPVERSION} --name TreeScan --dest $BUNDLEDIR --java-options "-Djava.library.path=\$APPDIR" \
                       --mac-sign --mac-package-signing-prefix org.treescan.TreeScan --mac-signing-key-user-name "${SIGN_KEY}" --mac-package-name "TreeScan" --mac-entitlements ${ENTITLEMENTS} \
                       --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.crypto.cryptoki,jdk.accessibility
