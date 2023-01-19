@@ -740,9 +740,11 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
     bool bValid=true;
     if (_parameters.getSequentialScan()) {
         if (!((_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES) ||
-              (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL))) {
+              (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) ||
+			  (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::UNCONDITIONAL)
+			)) {
             bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nSequential scan is only implemented for the time-only scan conditioned on total cases or unconditional Benoulli.\n", BasePrint::P_PARAMERROR);
+            PrintDirection.Printf("Invalid Parameter Setting:\nSequential scan is only implemented for the time-only scan conditioned on total cases\nor unconditional Benoulli or unconditional Poisson.\n", BasePrint::P_PARAMERROR);
         }
         if (_parameters.getPerformPowerEvaluations()) {
             bValid = false;
@@ -769,7 +771,7 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
         if (_parameters.getNumReplicationsRequested() < 999) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, the minimum number of replications is 999.\n", BasePrint::P_PARAMERROR);
-        } else if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
+        } else if (_parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getModelType() == Parameters::POISSON) {
             if (_parameters.getSequentialAlphaSpending() < 1.0 / static_cast<double>(_parameters.getNumReplicationsRequested() + 1)) {
                 bValid = false;
                 std::string buffer;

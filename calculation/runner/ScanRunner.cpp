@@ -387,6 +387,8 @@ const char * SequentialStatistic::_accumulated_case_ext = ".casedata";
 const char * SequentialStatistic::_accumulated_control_ext = ".controldata";
 const char * SequentialStatistic::_accumulated_sim_ext = ".simulationdata";
 const char * SequentialStatistic::_settings_ext = ".xml";
+const char * SequentialStatistic::_period = ".";
+const char * SequentialStatistic::_period_replace = "-period-";
 
 double SequentialStatistic::getAlphaSpentToDate(const std::string &output_filename) {
     std::string filename, buffer;
@@ -411,7 +413,8 @@ SequentialStatistic::SequentialStatistic(const Parameters& parameters, const Sca
     std::string buffer1, buffer2;
     // Expected filenames are derived from output filename.
     getDerivedFilename(_parameters.getOutputFileName(), _file_suffix, _accumulated_case_ext, _counts_filename);
-    getDerivedFilename(_parameters.getOutputFileName(), _file_suffix, _accumulated_control_ext, _controls_filename);
+	if (_parameters.isSequentialScanBernoulli())
+		getDerivedFilename(_parameters.getOutputFileName(), _file_suffix, _accumulated_control_ext, _controls_filename);
     getDerivedFilename(_parameters.getOutputFileName(), _file_suffix, _accumulated_sim_ext, _simulations_filename);
     GetTemporaryFilename(_write_simulations_filename);
     GetTemporaryFilename(_write_llr_filename);
@@ -422,6 +425,7 @@ SequentialStatistic::SequentialStatistic(const Parameters& parameters, const Sca
     // Get alpha spending for this look via user parameter setting.
     _alpha_spending = _parameters.getSequentialAlphaSpending();
     if (!isFirstLook()) {
+		const_cast<ScanRunner&>(scanner).getPrint().Printf("Reading sequential scan data from cache files ...\n", BasePrint::P_STDOUT);
         readSettings(_settings_filename);
         parameters.setCurrentLook(_look_idx);
         // Read calculate the look index.
@@ -430,7 +434,7 @@ SequentialStatistic::SequentialStatistic(const Parameters& parameters, const Sca
             throw resolvable_error("Error: Number of replications requested (%u) does match setting in previous sequential scan (%u).",
                                    _parameters.getNumReplicationsRequested(), 
                                    _statistic_parameters.getNumReplicationsRequested());
-        if (_parameters.getProbabilityRatio() != _statistic_parameters.getProbabilityRatio())
+        if (_parameters.isSequentialScanBernoulli() && _parameters.getProbabilityRatio() != _statistic_parameters.getProbabilityRatio())
             throw resolvable_error("Error: Event probability requested (%s) does match setting in previous sequential scan (%s).",
                                     AbtractParameterFileAccess::AsString(buffer1, _parameters.getProbabilityRatio()).c_str(),
                                     AbtractParameterFileAccess::AsString(buffer2, _statistic_parameters.getProbabilityRatio()).c_str());
@@ -479,6 +483,11 @@ bool SequentialStatistic::addSimulationLLR(double llr, unsigned int simIdx) {
     } return false;
 }
 
+std::string& SequentialStatistic::keyEscapeXML(std::string& key, const std::string& to, const std::string& from) const {
+	boost::replace_all(key, from, to);
+	return key;
+}
+
 /* Creates a hash of the structure -- does not include data. */
 std::string & SequentialStatistic::getTreeHash(std::string& treehash) const {
     md5 hash;
@@ -514,8 +523,11 @@ void SequentialStatistic::readSettings(const std::string &filename) {
 
     // Read parameters section and store in _statistic_parameters class variable.
     _statistic_parameters.setNumReplications(static_cast<unsigned int>(pt.get<unsigned int>("parameters.replications", _parameters.getNumReplicationsRequested())));
-    _statistic_parameters.setProbabilityRatio(Parameters::ratio_t(pt.get<unsigned int>("parameters.event-probability-numerator", _parameters.getProbabilityRatio().first),
-                                                                  pt.get<unsigned int>("parameters.event-probability-denominator", _parameters.getProbabilityRatio().second)));
+    if (_parameters.isSequentialScanBernoulli())
+		_statistic_parameters.setProbabilityRatio(
+			Parameters::ratio_t(pt.get<unsigned int>("parameters.event-probability-numerator", _parameters.getProbabilityRatio().first),
+                                pt.get<unsigned int>("parameters.event-probability-denominator", _parameters.getProbabilityRatio().second))
+    );
     _statistic_parameters.setRestrictTreeLevels(pt.get<bool>("parameters.restrict-tree-levels", false));
     buffer = pt.get<std::string>("parameters.restricted-tree-levels", "");
     Parameters::RestrictTreeLevels_t restricted_tree_levels;
@@ -543,9 +555,10 @@ void SequentialStatistic::readSettings(const std::string &filename) {
     // Read collection of cuts that signalled in previous looks and store in class variable.
     ptree & cuts = pt.get_child("accumulation.signalled-cuts");
     for (ptree::iterator it = cuts.begin(); it != cuts.end(); ++it) {
-        ScanRunner::Index_t index = _scanner.getNodeIndex(it->first);
+		buffer = it->first;
+        ScanRunner::Index_t index = _scanner.getNodeIndex(keyEscapeXML(buffer, _period, _period_replace));
         if (!index.first)
-            throw resolvable_error("Unknown node identifier in sequential configuration file: '%s'", it->first.c_str());
+            throw resolvable_error("Unknown node identifier in sequential configuration file: '%s'", buffer.c_str());
         _cuts_signaled.insert(std::make_pair(index.second, it->second.get_value<unsigned int>()));
     }
 }
@@ -559,8 +572,10 @@ void SequentialStatistic::writeSettings(const std::string &filename) {
 
     // Write parameter settings.
     pt.put("parameters.replications", _parameters.getNumReplicationsRequested());
-    pt.put("parameters.event-probability-numerator", _parameters.getProbabilityRatio().first);
-    pt.put("parameters.event-probability-denominator", _parameters.getProbabilityRatio().second);
+	if (_parameters.isSequentialScanBernoulli()) {
+		pt.put("parameters.event-probability-numerator", _parameters.getProbabilityRatio().first);
+		pt.put("parameters.event-probability-denominator", _parameters.getProbabilityRatio().second);
+	}
     pt.put("parameters.restrict-tree-levels", _parameters.getRestrictTreeLevels());
     typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), buffer);
     pt.put("parameters.restricted-tree-levels", buffer);
@@ -583,6 +598,7 @@ void SequentialStatistic::writeSettings(const std::string &filename) {
     ptree signalled_cuts_node;
     for (signalled_cuts_container_t::iterator itr=_cuts_signaled.begin(); itr != _cuts_signaled.end(); ++itr) {
         buffer = _scanner.getNodes().at(itr->first)->getIdentifier().c_str();
+		keyEscapeXML(buffer, _period_replace, _period);
         signalled_cuts_node.put(buffer, itr->second);
     }
     pt.add_child("accumulation.signalled-cuts", signalled_cuts_node);
@@ -603,11 +619,13 @@ void SequentialStatistic::write(const std::string &casefilename, const std::stri
     // add case file to case accumulation.
     std::ifstream latest_cases(casefilename.c_str(), std::ios_base::binary);
     std::ofstream accumulated_cases(_counts_filename.c_str(), std::ios_base::app | std::ios_base::binary);
-    accumulated_cases << latest_cases.rdbuf();
-    // add control file to control accumulation.
-    std::ifstream latest_controls(controlfilename.c_str(), std::ios_base::binary);
-    std::ofstream accumulated_controls(_controls_filename.c_str(), std::ios_base::app | std::ios_base::binary);
-    accumulated_controls << latest_controls.rdbuf();
+    accumulated_cases << latest_cases.rdbuf() << accumulated_cases.widen('\n');
+	if (_parameters.isSequentialScanBernoulli()) {
+		// add control file to control accumulation.
+		std::ifstream latest_controls(controlfilename.c_str(), std::ios_base::binary);
+		std::ofstream accumulated_controls(_controls_filename.c_str(), std::ios_base::app | std::ios_base::binary);
+		accumulated_controls << latest_controls.rdbuf() << accumulated_controls.widen('\n');
+	}
     // Overwrite simulations file.
     std::ifstream latest_simulations(_write_simulations_filename.c_str(), std::ios_base::binary);
     std::ofstream accumulated_simulations(_simulations_filename.c_str(), std::ios_base::trunc | std::ios_base::binary);
@@ -971,6 +989,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                 continue;
             }
             node->refIntN_C().front() += population;
+			if (sequence_new_data) node->refIntN_C_Seq_New().front() += population;
         } else if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
             node->refIntC_C().front() += count;
             node->refIntN_C().front() += count;
@@ -1455,12 +1474,12 @@ bool ScanRunner::reportableCut(const CutStructure& cut) const {
            (_parameters.getNumReplicationsRequested() > 0 && cut.getRank() < _parameters.getNumReplicationsRequested() + 1) ||
            /* If not performing replications, is the cut's observed greater than expected? (we're only scanning for high rates) */
            (_parameters.getNumReplicationsRequested() == 0 && static_cast<double>(cut.getC()) > cut.getExpected(*this)) ||
-           /* If Bernoulli sequential scan -- a cut reported in previous look is always reportable. */
-           (_parameters.isSequentialScanBernoulli() && getSequentialStatistic().testCutSignaled(static_cast<size_t>(cut.getID())) != 0);
+           /* If tree-only sequential scan -- a cut reported in previous look is always reportable. */
+           (_parameters.isSequentialScanTreeOnly() && getSequentialStatistic().testCutSignaled(static_cast<size_t>(cut.getID())) != 0);
 }
 
 bool ScanRunner::reportablePValue(const CutStructure& cut) const {
-    return _parameters.getNumReplicationsRequested() > MIN_REPLICA_RPT_PVALUE && !_parameters.isSequentialScanBernoulli();
+    return _parameters.getNumReplicationsRequested() > MIN_REPLICA_RPT_PVALUE && !_parameters.isSequentialScanTreeOnly();
 }
 
 bool ScanRunner::reportableRecurrenceInterval(const CutStructure& cut) const {
@@ -1609,8 +1628,8 @@ bool ScanRunner::run() {
         throw resolvable_error("\nProblem encountered when reading the data from the cut file.");
     if (_print.GetIsCanceled()) return false;
 
-    // create SequentialStatistic object if Bernoulli sequential
-    if (_parameters.isSequentialScanBernoulli()) {
+    // create SequentialStatistic object if tree only sequential scan
+    if (_parameters.isSequentialScanTreeOnly()) {
         _sequential_statistic.reset(new SequentialStatistic(_parameters, *this));
         if (macro_less_than(_parameters.getSequentialAlphaOverall(), _sequential_statistic->getAlphaSpending(), DBL_CMP_TOLERANCE)) {
             std::stringstream buffer;
@@ -1633,10 +1652,10 @@ bool ScanRunner::run() {
         if (!readControls(_parameters.getControlFileName(), true))
             throw resolvable_error("\nProblem encountered when reading the data from the control file.");
 
-    if (_parameters.isSequentialScanBernoulli() && !_sequential_statistic->isFirstLook()) {
+    if (_parameters.isSequentialScanTreeOnly() && !_sequential_statistic->isFirstLook()) {
         if (!readCounts(_sequential_statistic->getCountDataFilename(), false))
             throw resolvable_error("\nProblem encountered when reading the sequential case data file.");
-        if (!readControls(_sequential_statistic->getControlDataFilename(), false))
+        if (_parameters.isSequentialScanBernoulli() && !readControls(_sequential_statistic->getControlDataFilename(), false))
             throw resolvable_error("\nProblem encountered when reading the sequential control data file.");
         if (_print.GetIsCanceled()) return false;
     }
@@ -1703,9 +1722,11 @@ bool ScanRunner::run() {
     time(&gEndTime); //get end time
     if (!reportResults(gStartTime, gEndTime)) return false;
 
-    // create SequentialStatistic object if Bernoulli sequential
-    if (_parameters.isSequentialScanBernoulli())
-        _sequential_statistic->write(_parameters.getCountFileName(), _parameters.getControlFileName());
+    // create SequentialStatistic object if tree-only sequential scan
+	if (_parameters.isSequentialScanTreeOnly()) {
+		_print.Printf("Writing sequential scan data to cache files ...\n", BasePrint::P_STDOUT);
+		_sequential_statistic->write(_parameters.getCountFileName(), _parameters.getControlFileName());
+	}
 
     return true;
 }
@@ -2510,7 +2531,7 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, 
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN, BrC_All, BrN_All);
     else
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN);
-    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD && !(_parameters.isSequentialScanBernoulli() && getSequentialStatistic().testCutSignaled(static_cast<int>(node_index)) != 0))
+    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD && !(_parameters.isSequentialScanTreeOnly() && getSequentialStatistic().testCutSignaled(static_cast<int>(node_index)) != 0))
         // Exclude this cut if log likelihood is unset -- unless we're sequential scannig and this cut has signalled in prior looks.
         return 0;
 

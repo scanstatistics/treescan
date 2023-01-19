@@ -439,7 +439,9 @@ class Parameters {
     bool                                isReadingSimulationData() const {return _read_simulations;}
     bool                                isSequentialScanPurelyTemporal() const;
     bool                                isSequentialScanBernoulli() const;
-    static bool                         isSpatialScanType(ScanType e) {return e == Parameters::TREEONLY || e == Parameters::TREETIME;}
+	bool                                isSequentialScanPoisson() const;
+	bool                                isSequentialScanTreeOnly() const;
+	static bool                         isSpatialScanType(ScanType e) {return e == Parameters::TREEONLY || e == Parameters::TREETIME;}
     static bool                         isTemporalScanType(ScanType e) {return e == Parameters::TIMEONLY || e == Parameters::TREETIME;}
     bool                                isWritingSimulationData() const {return _write_simulations;}
 

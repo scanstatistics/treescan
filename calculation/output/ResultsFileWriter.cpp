@@ -67,7 +67,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     PrintFormat.SetMarginsAsSummarySection();
     PrintFormat.PrintSectionSeparatorString(outfile);
     outfile << std::endl << "SUMMARY OF DATA" << std::endl << std::endl;
-    if (parameters.isSequentialScanBernoulli()) {
+    if (parameters.isSequentialScanTreeOnly()) {
         PrintFormat.PrintSectionLabel(outfile, "Look", false);
         std::stringstream stringbuffer;
         stringbuffer << _scanRunner.getSequentialStatistic().getLook();
@@ -123,7 +123,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         }
         PrintFormat.PrintAlignedMarginsDataString(outfile, stringbuffer.str().c_str());
     }
-    if (parameters.isSequentialScanBernoulli()) {
+    if (parameters.isSequentialScanTreeOnly()) {
         const SequentialStatistic & sequentialStatistic = _scanRunner.getSequentialStatistic();
 
         std::stringstream stringbuffer;
@@ -153,7 +153,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         outfile << "Note: The sequential scan reached or exceeded the specified maximum cases." << std::endl << "      The sequential analysis is over." << std::endl;
     } else if (!parameters.getPerformPowerEvaluations() || (parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
 
-        if (parameters.isSequentialScanBernoulli() && macro_less_than_or_equal(parameters.getSequentialAlphaOverall(), _scanRunner.getSequentialStatistic().getAlphaSpending(), DBL_CMP_TOLERANCE))
+        if (parameters.isSequentialScanTreeOnly() && macro_less_than_or_equal(parameters.getSequentialAlphaOverall(), _scanRunner.getSequentialStatistic().getAlphaSpending(), DBL_CMP_TOLERANCE))
             outfile << "Note: The alpha spending for sequential scan reached the specified alpha overall." << std::endl << "      The sequential analysis is over." << std::endl << std::endl;
         if (_scanRunner.getCuts().size() == 0 || !_scanRunner.reportableCut(*_scanRunner.getCuts()[0])) {
             outfile << "No cuts were found." << std::endl;
@@ -310,7 +310,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                         PrintFormat.PrintAlignedMarginsDataString(outfile, getRecurranceIntervalAsString(_scanRunner.getRecurrenceInterval(thisCut), buffer));
                     }
                 }
-                if (parameters.isSequentialScanBernoulli()) {
+                if (parameters.isSequentialScanTreeOnly()) {
                     PrintFormat.PrintSectionLabel(outfile, "Signalled", true);
                     unsigned int signalInLook = _scanRunner.getSequentialStatistic().testCutSignaled(static_cast<size_t>(thisCut.getID()));
                     if (signalInLook != 0) {
@@ -396,7 +396,7 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buff
     const Parameters& parameters = _scanRunner.getParameters();
     switch (parameters.getScanType()) {
         case Parameters::TREEONLY : {
-            buffer = parameters.isSequentialScanBernoulli() ? "Tree Only Sequential Scan" : "Tree Only Scan";
+            buffer = parameters.isSequentialScanTreeOnly() ? "Tree Only Sequential Scan" : "Tree Only Scan";
             switch (parameters.getConditionalType()) {
                 case Parameters::UNCONDITIONAL : buffer += " with Unconditional"; break;
                 case Parameters::TOTALCASES : buffer += " with Conditional"; break;
@@ -624,7 +624,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         showingTreeGraph &= parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS;
     showingTreeGraph &= (_scanRunner.getCuts().size() > 0 && _scanRunner.reportableCut(*_scanRunner.getCuts()[0]));
 
-    bool bernoulliSequential = _scanRunner.getParameters().isSequentialScanBernoulli();
+    bool sequentialTreeOnly = _scanRunner.getParameters().isSequentialScanTreeOnly();
     if (showingTreeGraph) {
         outfile << "<script type=\"text/javascript\" charset=\"utf-8\">" << std::endl;
         outfile << "var chart_config = { chart: { container: \"#treescan-tree-visualization\", levelSeparation: 20, siblingSeparation: 15, subTeeSeparation: 15, rootOrientation: \"WEST\", ";
@@ -648,9 +648,9 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             std::stringstream  nodestream;
             NodeSet_t test = writeJsTreeNode(nodestream, *(*itr), node_cut_map, 2);
             // If the best p-value for this node or down along descendent's branch meets threshold, then include branch in nodes. Otherwise exclude entire branch.
-            BestCutSet_t best_branch(bernoulliSequential ? std::max(test.get<0>().get<0>(), test.get<1>().get<0>()) : std::min(test.get<0>().get<0>(), test.get<1>().get<0>()),
+            BestCutSet_t best_branch(sequentialTreeOnly ? std::max(test.get<0>().get<0>(), test.get<1>().get<0>()) : std::min(test.get<0>().get<0>(), test.get<1>().get<0>()),
                                      std::max(test.get<0>().get<1>(), test.get<1>().get<1>()));
-            if ((bernoulliSequential ? best_branch.get<0>() > 0.0 : best_branch.get<0>() <= 0.05)) {
+            if ((sequentialTreeOnly ? best_branch.get<0>() > 0.0 : best_branch.get<0>() <= 0.05)) {
                 if (root_counter > 0) rootstream << ",";
                 ++root_counter;
                 rootstream << nodestream.str();
@@ -672,7 +672,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<div class=\"hr\"></div><div class=\"program-info\">" << std::endl;
     outfile << getAnalysisSuccinctStatement(buffer);
     outfile << "<table style=\"text-align: left;\"><tbody>" << std::endl;
-    if (parameters.isSequentialScanBernoulli()) {
+    if (parameters.isSequentialScanTreeOnly()) {
         outfile << "<tr><th>Look</th><td>" << _scanRunner.getSequentialStatistic().getLook() << "</td></tr>" << std::endl;
     }
     if (!parameters.getPerformPowerEvaluations() || 
@@ -713,7 +713,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         }
         outfile << "<tr><th>Nodes per Levels:</th><td>" << stringbuffer.str().c_str() << "</td></tr>" << std::endl;
     }
-    if (parameters.isSequentialScanBernoulli()) {
+    if (parameters.isSequentialScanTreeOnly()) {
         const SequentialStatistic & sequentialStatistic = _scanRunner.getSequentialStatistic();
         outfile << "<tr><th>Alpha Spent To Date:</th>";
         outfile << "<td>" << sequentialStatistic.getAlphaSpending() << " (" << parameters.getSequentialAlphaOverall() << " alpha overall)</td></tr>" << std::endl;
@@ -725,7 +725,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "<div class=\"warning\">Note: The sequential scan reached or exceeded the specified maximum cases. The sequential analysis is over.</div><div class=\"hr\"></div>";
     } else if (!parameters.getPerformPowerEvaluations() || (parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
 
-        if (parameters.isSequentialScanBernoulli() && macro_less_than_or_equal(parameters.getSequentialAlphaOverall(), _scanRunner.getSequentialStatistic().getAlphaSpending(), DBL_CMP_TOLERANCE))
+        if (parameters.isSequentialScanTreeOnly() && macro_less_than_or_equal(parameters.getSequentialAlphaOverall(), _scanRunner.getSequentialStatistic().getAlphaSpending(), DBL_CMP_TOLERANCE))
             outfile << "<div class=\"warning\">Note: The alpha spending for sequential scan reached the specified alpha overall. The sequential analysis is over.</div><div class=\"hr\"></div>";
 
         outfile << "<div id=\"cuts\">" << std::endl;
@@ -768,7 +768,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             } else {
                 outfile << "<th>LLR</th>" << std::endl;
             }
-            if (parameters.getNumReplicationsRequested() > MIN_REPLICA_RPT_PVALUE && !parameters.isSequentialScanBernoulli()) {
+            if (parameters.getNumReplicationsRequested() > MIN_REPLICA_RPT_PVALUE && !parameters.isSequentialScanTreeOnly()) {
                 outfile << "<th>P-value</th>";
                 if (parameters.getIsProspectiveAnalysis())
                     outfile << "<th>Recurrence Interval</th>";
@@ -776,7 +776,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             if (parameters.getScanType() != Parameters::TIMEONLY) {
                 outfile << "<th>Parent Node</th><th>Branch Order</th>";
             }
-            if (parameters.isSequentialScanBernoulli()) {
+            if (parameters.isSequentialScanTreeOnly()) {
                 outfile << "<th>Signalled</th>";
             }
 
@@ -810,7 +810,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "<div class=\"row\">" << std::endl;
 
         outfile << "<div class=\"col-3\"><div class=\"custom-control custom-radio\">" << std::endl;
-        if (bernoulliSequential) {
+        if (sequentialTreeOnly) {
             outfile << "<input type=\"radio\" class=\"custom-control-input\" id=\"customControlValidation1\" name=\"radio-stacked\" legend=\"legend-signalled\" required checked=checked>" << std::endl;
             outfile << "<label class=\"custom-control-label\" for=\"customControlValidation1\">Color Nodes by Signal</label></div>" << std::endl;
         } else {
@@ -826,7 +826,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "<input type=\"radio\" class=\"custom-control-input\" id=\"customControlValidation3\" name=\"radio-stacked\" legend=\"legend-relative-risk\" required>" << std::endl;
         outfile << "<label class=\"custom-control-label\" for=\"customControlValidation3\">Color Nodes by Relative Risk</label></div></div>" << std::endl;
         outfile << "<div class=\"col-9\">";
-        if (bernoulliSequential) {
+        if (sequentialTreeOnly) {
             outfile << "<div class='chart-legend legend-signalled'><div class='legend-title'>Signal Legend</div><div class='legend-scale'>" << std::endl;
             outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span><span class=\"legend-val\">Not Signalled</span></li>";
             outfile << "<li><span style='background:#FF5733;'></span><span class=\"legend-val\">Signalled</span></li></ul></div></div>" << std::endl;
@@ -846,7 +846,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "<li><span style='background:#FFC300;'></span><span class=\"legend-val\">4</span></li><li><span style='background:#FF5733;'></span><span class=\"legend-val\">8</span></li></ul></div></div></div>" << std::endl;
         outfile << "</div><div class=\"chart\" id=\"treescan-tree-visualization\" style=\"background-color: #EAEDED; border: 2px solid #566573; border-radius: 5px; padding:2px;\"> </div>" << std::endl;
         outfile << "<div class=\"row\" style=\"font-style:italic; margin:5px 20px 10px 30px;font-size: 1.1em;\"><ol><li>Selecting the circle in the upper right corner of each node will expand/collapse children under node. The color of circle indicates best p-value &#47; relative risk found in descendent nodes.</li>";
-        if (bernoulliSequential)
+        if (sequentialTreeOnly)
             outfile << "<li>The visualization tree displays significant nodes which have signalled. Siblings and ancestry to root are also displayed for significant nodes, regardless of whether they have signalled.</li>";
         else if (parameters.getIsProspectiveAnalysis())
             outfile << "<li>The visualization tree displays nodes with recurrence interval &ge; 100 days. Siblings and ancestry to root are also displayed for significant nodes, regardless of their recurrence interval.</li>";
@@ -1051,7 +1051,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         outfile << "<td>" << thisCut.getParentIndentifiers(_scanRunner, buffer) << "</td>";
         outfile << "<td class='exclude-tree'>" << thisCut.getBranchOrder() << "</td>";
     }
-    if (parameters.isSequentialScanBernoulli()) {
+    if (parameters.isSequentialScanTreeOnly()) {
         /* Hack - this is dependent on the ResultsFileWriter::writeASCII being called first. */
         unsigned int signalInLook = _scanRunner.getSequentialStatistic().testCutSignaled(static_cast<size_t>(thisCut.getID()));
         outfile << "<td>";
@@ -1133,7 +1133,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
                 string_values.push_back(printString(buffer, "'%s'", htmlencode(buffer2).c_str()));
                 string_values.push_back(not_applicable);
             }
-            if (parameters.isSequentialScanBernoulli()) {
+            if (parameters.isSequentialScanTreeOnly()) {
                 string_values.push_back(not_applicable);
             }
             buffer = Record->GetFieldValue(CutsRecordWriter::NODE_ID_FIELD).AsString();
@@ -1204,7 +1204,7 @@ const char * ResultsFileWriter::getSignalClass(double pval, bool childClass) {
 
 ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstream & outfile, const NodeStructure& node, const std::map<int, const CutStructure*>& cutMap, int collapseAtLevel) {
     const Parameters& parameters = _scanRunner.getParameters();
-    bool bernoulliSequential = parameters.isSequentialScanBernoulli();
+    bool sequentialTreeOnly = parameters.isSequentialScanTreeOnly();
     bool prospectiveScan = parameters.getIsProspectiveAnalysis();
     std::stringstream nodestream;
     // Write header section to this nodestream.
@@ -1226,16 +1226,16 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
     }
     nodestream << htmlencode(buffer) << "</a></li>";
     // Add quick info in node that details the relative risk and p-value if there is a cut.
-    BestCutSet_t node_attr_rr(bernoulliSequential ? 0.0 : std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(), RecurrenceInterval_t(0.0, 0.0));
+    BestCutSet_t node_attr_rr(sequentialTreeOnly ? 0.0 : std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(), RecurrenceInterval_t(0.0, 0.0));
     std::map<int, const CutStructure*>::const_iterator itr = cutMap.find(node.getID());
     if (itr != cutMap.end()) {
-        if (bernoulliSequential) 
+        if (sequentialTreeOnly) 
             node_attr_rr.get<0>() = static_cast<double>(_scanRunner.getSequentialStatistic().testCutSignaled(static_cast<size_t>(itr->second->getID())));
         else
             node_attr_rr.get<0>() = (double)itr->second->getRank() / (parameters.getNumReplicationsRequested() + 1);
         node_attr_rr.get<1>() = itr->second->getRelativeRisk(_scanRunner);
         nodestream << "<li>RR = " << getValueAsString(node_attr_rr.get<1>(), buffer);
-        if (bernoulliSequential) {
+        if (sequentialTreeOnly) {
             if (node_attr_rr.get<0>() != 0.0)
                 nodestream << ", signalled look " << node_attr_rr.get<0>();
             else
@@ -1258,7 +1258,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
 
     // Is this node significant?
     bool nodesignificant = true;
-    if (bernoulliSequential)
+    if (sequentialTreeOnly)
         nodesignificant = node_attr_rr.get<0>() > 0.0;
     else if (prospectiveScan)
         nodesignificant = node_attr_rr.get<2>().second >= 100.0;
@@ -1266,7 +1266,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
         nodesignificant = node_attr_rr.get<0>() <= 0.05;
 
     // Create a stream for children nodes, if any.
-    BestCutSet_t best_attr_rr_children(bernoulliSequential ? 0.0 : std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(), RecurrenceInterval_t(0.0, 0.0));
+    BestCutSet_t best_attr_rr_children(sequentialTreeOnly ? 0.0 : std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(), RecurrenceInterval_t(0.0, 0.0));
     std::stringstream childrenstream;
     unsigned int children_count = 0;
     if (node.getChildren().size()) {
@@ -1284,11 +1284,11 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
 
         for (; itrChild != childrenCopy.end(); ++itrChild, ++itrStream) {
             childrenNodesets.push_back(writeJsTreeNode(*(*itrStream), *(*itrChild), cutMap, collapseAtLevel));
-            if (bernoulliSequential ? childrenNodesets.back().get<0>().get<0>() > 0.0 : childrenNodesets.back().get<0>().get<0>() <= 0.05) {
+            if (sequentialTreeOnly ? childrenNodesets.back().get<0>().get<0>() > 0.0 : childrenNodesets.back().get<0>().get<0>() <= 0.05) {
                 ++significantChildNodes;
                 ++significantBranches;
             } 
-            if (bernoulliSequential ? childrenNodesets.back().get<1>().get<0>() > 0.0 : childrenNodesets.back().get<1>().get<0>() <= 0.05)
+            if (sequentialTreeOnly ? childrenNodesets.back().get<1>().get<0>() > 0.0 : childrenNodesets.back().get<1>().get<0>() <= 0.05)
                 ++significantBranches;
         }
         if (nodesignificant || significantChildNodes > 0 || significantBranches > 0) {
@@ -1302,7 +1302,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
                 for (itrStream = childNodestreams.begin(); itrStream != childNodestreams.end(); ++itrStream, ++itrNodeSets) {
                     childrenstream << (*itrStream)->str();
                     if ((itrStream + 1) != childNodestreams.end()) childrenstream << ", ";
-                    if (bernoulliSequential) {
+                    if (sequentialTreeOnly) {
                         best_attr_rr_children.get<0>() = std::max(best_attr_rr_children.get<0>(), itrNodeSets->get<0>().get<0>());
                         best_attr_rr_children.get<0>() = std::max(best_attr_rr_children.get<0>(), itrNodeSets->get<1>().get<0>());
                     } else {
@@ -1324,7 +1324,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
                     if (itrNodeSets->get<0>().get<0>() <= 0.05 || itrNodeSets->get<1>().get<0>() <= 0.05) {
                         if (children_count > 0) childrenstream << ",";
                         childrenstream << (*itrStream)->str();
-                        if (bernoulliSequential) {
+                        if (sequentialTreeOnly) {
                             best_attr_rr_children.get<0>() = std::max(best_attr_rr_children.get<0>(), itrNodeSets->get<0>().get<0>());
                             best_attr_rr_children.get<0>() = std::max(best_attr_rr_children.get<0>(), itrNodeSets->get<1>().get<0>());
                         } else {
@@ -1352,7 +1352,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
 
     // Get the class names for node relative risk and p-value. Do this for best child node as well.
     buffer = getRelativeRiskClass(node_attr_rr.get<1>(), false);
-    if (bernoulliSequential)
+    if (sequentialTreeOnly)
         buffer += getSignalClass(node_attr_rr.get<0>(), false);
     else
         buffer += getPvalueClass(node_attr_rr.get<0>(), false);
@@ -1360,7 +1360,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
         buffer += getRecurranceIntervalClass(node_attr_rr.get<2>(), false);
 
     buffer += getRelativeRiskClass(best_attr_rr_children.get<1>(), true);
-    if (bernoulliSequential)
+    if (sequentialTreeOnly)
         buffer += getSignalClass(best_attr_rr_children.get<0>(), true);
     else
         buffer += getPvalueClass(best_attr_rr_children.get<0>(), true);

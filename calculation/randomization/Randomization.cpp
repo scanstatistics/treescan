@@ -16,13 +16,13 @@ AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const ScanRunner& scan
             switch (parameters.getConditionalType()) {
                 case Parameters::UNCONDITIONAL :
                     if (parameters.getModelType() == Parameters::POISSON)
-                        return new PoissonRandomizer(false, scanner.getTotalC(), scanner.getTotalN(), parameters, scanner.getMultiParentNodesExist());
+                        return new PoissonRandomizer(false, scanner);
                     if (parameters.getModelType() == Parameters::BERNOULLI_TREE)
                         return new UnconditionalBernoulliRandomizer(scanner);
                     throw prg_error("Cannot determine randomizer: tree-only, unconditonal, model (%d).", "getNewRandomizer()", parameters.getModelType());
                 case Parameters::TOTALCASES :
                     if (parameters.getModelType() == Parameters::POISSON)
-                        return new PoissonRandomizer(true, scanner.getTotalC(), scanner.getTotalN(), parameters, scanner.getMultiParentNodesExist());
+                        return new PoissonRandomizer(true, scanner);
                     if (parameters.getModelType() == Parameters::BERNOULLI_TREE)
                         return new ConditionalBernoulliRandomizer(scanner.getTotalC(), scanner.getTotalControls(), parameters, scanner.getMultiParentNodesExist());
                     throw prg_error("Cannot determine randomizer: tree-only, total-cases, model (%d).", "getNewRandomizer()", parameters.getModelType());

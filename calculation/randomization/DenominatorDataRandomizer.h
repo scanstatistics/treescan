@@ -59,6 +59,7 @@ class AbstractDenominatorDataRandomizer : public AbstractRandomizer {
     //virtual int randomize(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) = 0;
 
     virtual int read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex);
+	void sequentialSetup(const ScanRunner& scanner);
     virtual void write(const std::string& filename, const SimNodeContainer_t& treeSimNodes);
 
   public:

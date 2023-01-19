@@ -362,9 +362,9 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         
         _treelFileTextField.setText(parameters.getTreeFileNames().get(0));
         _treelFileTextField.setCaretPosition(0);
-        // Since this is a follow-up sequentail analysis, the user will need to specify a new count file.
-        boolean isFollowupSequential = _parameters.isSequentialScanBernoulli() && Parameters.getAlphaSpentToDate(parameters.getOutputFileName()) != 0.0;
-        if (!isFollowupSequential) {
+        // Since this is a follow-up sequential analysis, the user will need to specify a new count file.
+        boolean isFollowupSequentialBernoulli = _parameters.isSequentialScanBernoulli() && Parameters.getAlphaSpentToDate(parameters.getOutputFileName()) != 0.0;
+        if (!isFollowupSequentialBernoulli) {
             _countFileTextField.setText(parameters.getCountFileName());
             _countFileTextField.setCaretPosition(0);
         }
@@ -395,7 +395,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _input_source_map.clear();
         for (int i=0; i < parameters.getInputSourceSettings().size(); ++i) {
             InputSourceSettings iss = parameters.getInputSourceSettings().get(i);
-            if (!(isFollowupSequential && iss.getInputFileType() == InputSourceSettings.InputFileType.Counts))
+            if (!(isFollowupSequentialBernoulli && iss.getInputFileType() == InputSourceSettings.InputFileType.Counts))
                 _input_source_map.put(iss.getInputFileType().toString() + iss.getIndex(), iss);
         }
         _advancedParametersSetting.setupInterface(parameters);

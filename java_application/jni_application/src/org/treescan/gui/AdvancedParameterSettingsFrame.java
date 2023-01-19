@@ -741,13 +741,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         FocusedTabSet.ANALYSIS,(Component) _eventProbabiltyNumerator
                     );
             }
-            // Power evaluation not implemented for sequential Bernoulli model
+            // Power evaluation not implemented for sequential Tree-Only Bernoulli or Poisson models
             if (_perform_sequential_scan.isEnabled() &&
                 _perform_sequential_scan.isSelected() &&
                 _settings_window.getScanType() == Parameters.ScanType.TREEONLY &&
-                _settings_window.getModelType() == Parameters.ModelType.BERNOULLI_TREE &&
+                (_settings_window.getModelType() == Parameters.ModelType.BERNOULLI_TREE || _settings_window.getModelType() == Parameters.ModelType.POISSON) &&
                 _settings_window.getConditionalType() == Parameters.ConditionalType.UNCONDITIONAL) {
-               throw new AdvFeaturesExpection("The power evaluation is not implemented for the sequential scan with unconditional Bernoulli model.", 
+               throw new AdvFeaturesExpection("The power evaluation is not implemented for the sequential scan with unconditional Bernoulli or unconditional Poisson model.", 
                     FocusedTabSet.ANALYSIS,(Component) _performPowerEvaluations
                );
             }
@@ -1124,9 +1124,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         /* Time only not exposed in gui: https://www.squishlist.com/ims/treescan/62/ */
 
         //boolean bEnableGroup = true; scanType == Parameters.ScanType.TIMEONLY;
-        boolean bEnableGroup = scanType == Parameters.ScanType.TREEONLY &&
-                               modelType == Parameters.ModelType.BERNOULLI_TREE &&
-                               conditionType == Parameters.ConditionalType.UNCONDITIONAL;
+        boolean bEnableGroup = (
+		    scanType == Parameters.ScanType.TREEONLY &&
+            (modelType == Parameters.ModelType.BERNOULLI_TREE || modelType == Parameters.ModelType.POISSON) &&
+            conditionType == Parameters.ConditionalType.UNCONDITIONAL
+	    );
         _sequential_analysis_group.setEnabled(bEnableGroup);
         _perform_sequential_scan.setEnabled(bEnableGroup);
 

@@ -14,15 +14,7 @@ using boost::uniform_01;
 UnconditionalBernoulliRandomizer::UnconditionalBernoulliRandomizer(const ScanRunner& scanner, long lInitialSeed)
                     :AbstractDenominatorDataRandomizer(scanner.getParameters(), scanner.getMultiParentNodesExist(), lInitialSeed), 
                     _scanner(scanner), _total_C(scanner.getTotalC()), _total_Controls(scanner.getTotalControls()) {
-    if (scanner.getParameters().isSequentialScanBernoulli()) {
-        if (!scanner.getSequentialStatistic().isFirstLook())
-            _read_filename = _scanner.getSequentialStatistic().getSimulationDataFilename();
-        _write_filename = _scanner.getSequentialStatistic().getWriteSimulationDataFilename();
-        // Create new OrderedSimulationDataWriter in explicit constructor. Since it's a shared pointer, clones will share this class.
-        _sim_stream_writer.reset(new OrderedSimulationDataWriter(_write_filename, scanner.getParameters().getNumReplicationsRequested()));
-		// Create new FileStreamReadManager in explicit constructor. Since it's a shared pointer, clones will share this class.
-        _sim_stream_reader.reset(new FileStreamReadManager(_read_filename));
-    }
+	sequentialSetup(_scanner);
 }
 
 /** Distributes cases into simulation case array. Caller is responsible for ensuring that

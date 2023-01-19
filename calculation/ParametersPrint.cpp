@@ -250,7 +250,8 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getSequentialScanParamete
     settings.clear();
 
     if ((_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES) ||
-        (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
+        (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) ||
+		(_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
         settings.push_back(std::make_pair("Perform Sequential Analysis", _parameters.getSequentialScan() ? "Yes" : "No"));
         if (_parameters.isSequentialScanPurelyTemporal() && _parameters.getScanType() == Parameters::TIMEONLY) {
             printString(buffer, "%u", _parameters.getSequentialMinimumSignal());
@@ -259,7 +260,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getSequentialScanParamete
             settings.push_back(std::make_pair("Sequential Maximum Cases to Signal", buffer));
             settings.push_back(std::make_pair("Sequential File", SequentialScanLoglikelihoodRatioWriter::getFilename(_parameters, buffer)));
         }
-        if (_parameters.isSequentialScanBernoulli()) {
+        if (_parameters.isSequentialScanTreeOnly()) {
             printString(buffer, "%g", _parameters.getSequentialAlphaOverall());
             settings.push_back(std::make_pair("Alpha Overall", buffer));
             printString(buffer, "%g", _parameters.getSequentialAlphaSpending());

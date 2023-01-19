@@ -250,6 +250,16 @@ public class Parameters implements Cloneable {
                _conditionalType == Parameters.ConditionalType.UNCONDITIONAL;
     }
 
+    public boolean isSequentialScanPoisson() {
+        return _sequential_scan &&
+               _modelType == Parameters.ModelType.POISSON &&
+               _conditionalType == Parameters.ConditionalType.UNCONDITIONAL;
+    }
+    
+    public boolean isSequentialScanTreeOnly() {
+        return isSequentialScanBernoulli() || isSequentialScanPoisson();
+    }    
+    
     public DatePrecisionType getPrecisionOfTimesType() {return _date_precision_type;}
     public void setPrecisionOfTimesType(DatePrecisionType e) { _date_precision_type = e;}
     public void setPrecisionOfTimesType(int ord) {try {_date_precision_type = DatePrecisionType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, DatePrecisionType.values());}}    

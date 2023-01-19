@@ -5,8 +5,11 @@
 #include "PoissonRandomizer.h"
 
 /* constructor */
-PoissonRandomizer::PoissonRandomizer(bool conditional, int TotalC, double TotalN, const Parameters& parameters, bool multiparents, long lInitialSeed)
-                  : AbstractDenominatorDataRandomizer(parameters, multiparents, lInitialSeed), _conditional(conditional), _total_C(TotalC), _total_N(TotalN) {}
+PoissonRandomizer::PoissonRandomizer(bool conditional, const ScanRunner& scanner, long lInitialSeed)
+                  : AbstractDenominatorDataRandomizer(scanner.getParameters(), scanner.getMultiParentNodesExist(), lInitialSeed), 
+	               _conditional(conditional), _scanner(scanner), _total_C(scanner.getTotalC()), _total_N(scanner.getTotalN()) {
+	sequentialSetup(_scanner);
+}
 
 /** Creates randomized under the null hypothesis for Poisson model, assigning data to DataSet objects structures.
     Random number generator seed initialized based upon 'iSimulation' index. */

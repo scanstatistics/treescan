@@ -120,7 +120,7 @@ private:
             _IntN_C.resize(container_size);
             _BrN_C.resize(container_size);
         }
-        if (parameters.isSequentialScanBernoulli()) {
+        if (parameters.isSequentialScanTreeOnly()) {
             // Also initialize structures used to store existing data from previous sequential scans.
             _IntN_C_Seq_New.resize(container_size);
         }
@@ -351,6 +351,8 @@ class SequentialStatistic {
         static const char         * _accumulated_control_ext;
         static const char         * _accumulated_sim_ext;
         static const char         * _settings_ext;
+		static const char         * _period;
+		static const char         * _period_replace;
 
     protected:
         const Parameters          & _parameters;
@@ -370,6 +372,7 @@ class SequentialStatistic {
         llr_sim_container_t         _llr_sims;
         std::string                 _tree_hash;
 
+		std::string               & keyEscapeXML(std::string& key, const std::string& to, const std::string& from) const;
         std::string               & getTreeHash(std::string& treehash) const;
         void                        readSettings(const std::string &filename);
         void                        writeSettings(const std::string &filename);

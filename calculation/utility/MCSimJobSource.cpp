@@ -288,7 +288,7 @@ void MCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, para
     //update ratios, significance, etc.
     double llr_result = grLoglikelihood->LogLikelihoodRatio(rResult.dSuccessfulResult.first);
 
-    if (!_isPowerStep && !grRunner.getParameters().isSequentialScanBernoulli()) {
+    if (!_isPowerStep && !grRunner.getParameters().isSequentialScanTreeOnly()) {
         ScanRunner::CutStructureContainer_t::const_iterator itr=grRunner.getCuts().begin(), itrEnd=grRunner.getCuts().end();
         for (; itr != itrEnd; ++itr) {
             if (rResult.dSuccessfulResult.first >= (*itr)->getLogLikelihood()) {
@@ -299,7 +299,7 @@ void MCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, para
 
     if (_ratio_writer.get()) _ratio_writer->write(llr_result, rParam);
     if (!_isPowerStep) grRunner.updateCriticalValuesList(llr_result);
-    if (grRunner.getParameters().isSequentialScanBernoulli()) grRunner.refSequentialStatistic().addSimulationLLR(llr_result, rParam);
+    if (grRunner.getParameters().isSequentialScanTreeOnly()) grRunner.refSequentialStatistic().addSimulationLLR(llr_result, rParam);
     grRunner.getSimulationVariables().add_llr(llr_result);
     grRunner.getSimulationVariables().increment_sim_count();
 

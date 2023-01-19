@@ -65,7 +65,7 @@ int AbstractDenominatorDataRandomizer::RandomizeData(unsigned int iSimulation, c
         std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
         boost::mutex::scoped_lock lock(mutex);
         TotalSimC = read(_read_filename, iSimulation, treeNodes, treeSimNodes, mutex);
-    } else if (_parameters.isSequentialScanBernoulli()) {
+    } else if (_parameters.isSequentialScanTreeOnly()) {
         TotalSimC = randomize(iSimulation, SequentialNodesProxy(treeNodes, _parameters.getProbability()), treeSimNodes);
         if (_read_filename.size()) // Now read stored data set
             TotalSimC += read(_read_filename, iSimulation, treeNodes, treeSimNodes, mutex);
@@ -108,6 +108,18 @@ int AbstractDenominatorDataRandomizer::read(const std::string& filename, unsigne
     }
     _sim_stream->ignore(1, '\n'); // read trailing newline from current data set line
     return total_sim;
+}
+
+void AbstractDenominatorDataRandomizer::sequentialSetup(const ScanRunner& scanner) {
+	if (scanner.getParameters().isSequentialScanTreeOnly()) {
+		if (!scanner.getSequentialStatistic().isFirstLook())
+			_read_filename = scanner.getSequentialStatistic().getSimulationDataFilename();
+		_write_filename = scanner.getSequentialStatistic().getWriteSimulationDataFilename();
+		// Create new OrderedSimulationDataWriter in explicit constructor. Since it's a shared pointer, clones will share this class.
+		_sim_stream_writer.reset(new OrderedSimulationDataWriter(_write_filename, scanner.getParameters().getNumReplicationsRequested()));
+		// Create new FileStreamReadManager in explicit constructor. Since it's a shared pointer, clones will share this class.
+		_sim_stream_reader.reset(new FileStreamReadManager(_read_filename));
+	}
 }
 
 /** Writes simulation data to file. */

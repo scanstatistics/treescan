@@ -30,6 +30,13 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
      */
     public ParameterSettingsSequentialScanFrame(final JRootPane rootPane, Parameters parameters) {
         super(rootPane, parameters);
+        Parameters.ModelType model = parameters.getModelType();
+        _analysis_primary_settings.setText(
+           "Analysis: Tree only, Unconditional, " + (model == Parameters.ModelType.POISSON ? "Poisson" : "Bernoulli") + " model" 
+        );
+        _controlFileLabel.setEnabled(model == Parameters.ModelType.BERNOULLI_TREE);
+        _controlFileTextField.setEnabled(model == Parameters.ModelType.BERNOULLI_TREE);
+        _controlFileImportButton.setEnabled(model == Parameters.ModelType.BERNOULLI_TREE);
     }
 
     @Override
@@ -133,7 +140,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
     static boolean shouldShowWindow(Parameters parameters) {
         boolean shouldShow = true;
         // Is this a sequential bernoulli model scan?
-        shouldShow &= parameters.isSequentialScanBernoulli();
+        shouldShow &= parameters.isSequentialScanTreeOnly();
         // Is the tree filename defined and exist?
         shouldShow &= parameters.getTreeFileName(1).length() != 0 && FileAccess.ValidateFileAccess(parameters.getTreeFileName(1), false);
         // Is the output filename defined and exist/writable?
@@ -149,10 +156,12 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
                 throw new SettingsException("Please specify a count file.", (Component) _countFileTextField);
             if (!FileAccess.ValidateFileAccess(_countFileTextField.getText(), false))
                 throw new SettingsException("The count file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", (Component) _countFileTextField);
-            if (_controlFileTextField.getText().length() == 0)
-                throw new SettingsException("Please specify a control file.", (Component) _controlFileTextField);
-            if (!FileAccess.ValidateFileAccess(_controlFileTextField.getText(), false))
-                throw new SettingsException("The control file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", (Component) _controlFileTextField);
+            if (_controlFileTextField.isEnabled()) {
+                if (_controlFileTextField.getText().length() == 0)
+                    throw new SettingsException("Please specify a control file.", (Component) _controlFileTextField);
+                if (!FileAccess.ValidateFileAccess(_controlFileTextField.getText(), false))
+                    throw new SettingsException("The control file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", (Component) _controlFileTextField);
+            }
             /* Check output settings */
         } catch (SettingsException e) {
             focusWindow();
@@ -214,7 +223,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
         _controlFileTextField = new javax.swing.JTextField();
         _controlFileImportButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        _analysis_primary_settings = new javax.swing.JLabel();
         _advancedOutputButton = new javax.swing.JButton();
 
         setClosable(true);
@@ -360,7 +369,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jLabel1.setText("Sequential  Analysis Window");
 
-        jLabel2.setText("Analysis: Tree only, Unconditional, Bernoulli model");
+        _analysis_primary_settings.setText("Analysis: Tree only, Unconditional, Bernoulli model");
 
         _advancedOutputButton.setText("Advanced >>"); // NOI18N
         _advancedOutputButton.addActionListener(new java.awt.event.ActionListener() {
@@ -380,7 +389,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_analysis_primary_settings, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(_advancedOutputButton)))
@@ -392,7 +401,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
+                .addComponent(_analysis_primary_settings)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -408,6 +417,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton _advancedOutputButton;
     private javax.swing.JLabel _alpha_spent_to_date_label;
+    private javax.swing.JLabel _analysis_primary_settings;
     private javax.swing.JButton _controlFileImportButton;
     private javax.swing.JLabel _controlFileLabel;
     private javax.swing.JTextField _controlFileTextField;
@@ -418,7 +428,6 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
     private javax.swing.JTextField _sequential_alpha_spending;
     private javax.swing.JLabel _sequential_alpha_spending_label;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     // End of variables declaration//GEN-END:variables

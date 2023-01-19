@@ -300,6 +300,14 @@ bool Parameters::isSequentialScanBernoulli() const{
     return _sequential_scan && _modelType == Parameters::BERNOULLI_TREE && _conditional_type == Parameters::UNCONDITIONAL;
 }
 
+bool Parameters::isSequentialScanPoisson() const {
+	return _sequential_scan && _modelType == Parameters::POISSON && _conditional_type == Parameters::UNCONDITIONAL;
+}
+
+bool Parameters::isSequentialScanTreeOnly() const {
+	return isSequentialScanBernoulli() || isSequentialScanPoisson();
+}
+
 /** Sets counts data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */

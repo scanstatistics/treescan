@@ -344,7 +344,7 @@ ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& field
         } else {
             CreateField(fields, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
         }
-        if (!params.isSequentialScanBernoulli()) {
+        if (!params.isSequentialScanTreeOnly()) {
             printString(buffer, "%u", params.getNumReplicationsRequested());
             CreateField(fields, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, static_cast<unsigned short>(buffer.size()));
             if (params.getIsProspectiveAnalysis())
@@ -354,7 +354,7 @@ ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& field
             CreateField(fields, PARENT_NODE_FLD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()) * 10/*multiple? guessing*/, 0, uwOffset, 0);
             CreateField(fields, BRANCH_ORDER_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
         }
-        if (params.isSequentialScanBernoulli())
+        if (params.isSequentialScanTreeOnly())
             CreateField(fields, SIGNALLED_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
 
         return fields;
@@ -363,7 +363,7 @@ ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& field
 std::string& CutsRecordWriter::getFilename(const Parameters& parameters, std::string& buffer) {
     std::stringstream suffix;
     suffix << CutsRecordWriter::CUT_FILE_SUFFIX;
-    if (parameters.isSequentialScanBernoulli())
+    if (parameters.isSequentialScanTreeOnly())
         suffix << "_look" << parameters.getCurrentLook();
     return getDerivedFilename(parameters.getOutputFileName(), suffix.str().c_str(), CSVDataFileWriter::CSV_FILE_EXT, buffer);
 }
@@ -486,7 +486,7 @@ RecordBuffer& CutsRecordWriter::getRecordForCut(RecordBuffer& Record, const CutS
             cutNode.getParentIndentifiers(Record.GetFieldValue(PARENT_NODE_FLD).AsString());
             Record.GetFieldValue(BRANCH_ORDER_FLD).AsDouble() = thisCut.getBranchOrder();
         }
-        if (params.isSequentialScanBernoulli()) {
+        if (params.isSequentialScanTreeOnly()) {
             unsigned int signalInLook = scanner.getSequentialStatistic().testCutSignaled(static_cast<size_t>(thisCut.getID()));
             if (signalInLook != 0)
                 Record.GetFieldValue(SIGNALLED_FLD).AsDouble() = signalInLook;

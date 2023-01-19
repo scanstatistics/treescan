@@ -11,6 +11,7 @@ protected:
     bool            _conditional;
     int             _total_C;
     double          _total_N;
+	const ScanRunner  & _scanner;
 
     int             BinomialGenerator(int n, double p, bool classic=false);
     int             PoissonGenerator(double lambda);
@@ -19,7 +20,7 @@ protected:
     virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
 
 public:
-    PoissonRandomizer(bool conditional, int TotalC, double TotalN, const Parameters& parameters, bool multiparents, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+    PoissonRandomizer(bool conditional, const ScanRunner& scanner, long lInitialSeed = RandomNumberGenerator::glDefaultSeed);
     virtual ~PoissonRandomizer() {}
 
     virtual PoissonRandomizer * clone() const {return new PoissonRandomizer(*this);}
