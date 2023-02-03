@@ -206,9 +206,9 @@ public class Utils {
         if (rangeStart.isAfter(rangeEnd)) return 0;
         switch (precision) {
             case DAY:
-            case GENERIC : return (int)ChronoUnit.DAYS.between(rangeStart, rangeEnd);
-            case YEAR: return (int)ChronoUnit.YEARS.between(rangeStart, rangeEnd);
-            case MONTH: return (int)ChronoUnit.MONTHS.between(rangeStart, rangeEnd);
+            case GENERIC : return (int)ChronoUnit.DAYS.between(rangeStart, rangeEnd) + 1;
+            case YEAR: return (int)ChronoUnit.YEARS.between(rangeStart, rangeEnd) + 1;
+            case MONTH: return (int)ChronoUnit.MONTHS.between(rangeStart, rangeEnd) + 1;
                 //int yearsInBetween = endData.get(Calendar.YEAR) - startDate.get(Calendar.YEAR); 
                 //int monthsDiff = endData.get(Calendar.MONTH) - startDate.get(Calendar.MONTH); 
                 //return yearsInBetween * 12 + monthsDiff;
