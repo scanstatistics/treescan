@@ -22,6 +22,41 @@ const char * AbstractChartGenerator::TEMPLATE_BODY = "\n \
         </tr> \n \
         </tbody></table> \n \
         <div id=\"load_error\" style=\"color:#101010; text-align: center;font-size: 1.2em; padding: 20px;background-color: #ece1e1; border: 1px solid #e49595; display:none;\"></div> \n \
+	    <div style=\"position: relative;\"> \n \
+	        <div class=\"search-and-account\" title=\"Choose which graphs to display.\"> \n \
+                <a href=\"#\" data-toggle=\"modal\" data-target=\"#graphs-modal-modal\" class=\"offscreen\"> \n \
+                    <span class=\"screen-reader-text\">Search</span> \n \
+                        <svg width=\"40\" height=\"40\" fill=\"red\"> \n \
+                            <image xlink:href=\"--resource-path--images/graph-choose.svg\" src=\"--resource-path--images/graph-choose.png\" width=\"40\" height=\"40\"/> \n \
+                        </svg> \n \
+                </a> \n \
+            </div> \n \
+        </div> \n \
+        <div class=\"modal fade\" id=\"graphs-modal-modal\" data-backdrop=\"static\" data-keyboard=\"false\"> \n \
+            <div class=\"modal-dialog modal-sm\"> \n \
+                <div class=\"modal-content\"> \n \
+                    <div class=\"modal-body\"> \n \
+                        <div style=\"display: table;\"> \n \
+                            <div class=\"btn-group\" style=\"display: table-cell;\"> \n \
+                                <label style=\"font-size: 16px;\">Choose which graphs to display:</label> \n \
+                                <select id=\"graph-checkbox-list\" multiple=\"multiple\"> \n \
+                                --graph-list-options-- \n \
+                                </select> \n \
+                            </div> \n \
+                           <div class=\"btn-group-vertical\" style=\"display: table-cell; padding-left: 10px;\"> \n \
+                               <button id=\"id_apply_graphs\" class=\"btn btn-primary export-submit btn-sm\">Apply</button> \n \
+                               <button id=\"id_cancel_modal\" type=\"button\" class=\"btn btn-warning btn-sm\" data-dismiss=\"modal\">Cancel</button> \n \
+                           </div> \n \
+                       </div> \n \
+                       <div class=\"progress\"> \n \
+                           <div class=\"progress-bar\" role=\"progressbar\" aria-valuenow=\"0\" aria-valuemin=\"0\" aria-valuemax=\"100\" style=\"width:0%\"> \n \
+                               <span class=\"sr-only\">0 % Complete</span> \n \
+                           </div> \n \
+                       </div> \n \
+                    </div> \n \
+                </div> \n \
+            </div> \n \
+        </div> \n \
         --main-content-- \n";
 
 /** Replaces 'replaceStub' text in passed stringstream 'templateText' with text of 'replaceWith'. */
@@ -46,6 +81,8 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
         <title>--title--</title> \n \
         <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"> \n \
         <link rel=\"stylesheet\" href=\"--resource-path--javascript/highcharts/highcharts-9.1.2/code/css/highcharts.css\" type=\"text/css\">\n \
+        <link rel='stylesheet' href='--resource-path--javascript/jquery/bootstrap/3.3.7/bootstrap.min.css'> \n \
+        <link rel='stylesheet' href='--resource-path--javascript/jquery/bootstrap/bootstrap-multiselect/bootstrap-multiselect.css'> \n \
         <style type=\"text/css\"> \n \
         body{font:100% Arial,Helvetica;background:#9ea090} \n \
         .chart-options{display:none} \n \
@@ -56,10 +93,11 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
         .show-chart-options a:hover{background-color:#d9e6ec;color:#13369f;text-decoration:underline;background-image:url('--resource-path--images/down_grip_selected.png')} \n \
         .hide-chart-options a{border-top:1px solid #d7e9ed;background-image:url('--resource-path--images/up_grip.png')} \n \
         .hide-chart-options a:hover{background-color:#d9e6ec;color:#13369f;text-decoration:underline;background-image:url('--resource-path--images/up_grip_selected.png')} \n \
-        .chart-options{padding:10px 0 10px 0;background-color:#e6eef2;border:1px solid silver} \n \
+        .chart-options{padding:10px 20px 10px 20px;background-color:#e6eef2;border:1px solid silver} \n \
         .options-row{margin:0 10px 10px 10px} \n \
         .options-row>label:first-child, .options-row detail{color:#13369f;font-weight:bold} \n \
         .options-row input[type='radio']{margin:5px} \n \
+        .options-table {font-size:small !important;} \n \
         .options-table h4{text-align:center;color:#13369f;font-weight:bold;margin:0} \n \
         .options-table th{vertical-align:top;text-align:right;color:#13369f} \n \
         .help-block{font-size:11px;color:#666;font-style:oblique;margin:0} \n \
@@ -71,17 +109,41 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
         .checkmark:after{ content: \"\";position:absolute;display:none;} \n \
         .container input : checked ~.checkmark : after{display: block;} \n \
         .container.checkmark : after{left:4px;top:0px;width:4px;height:8px;border:solid white;border-width:0 2px 2px 0;-webkit-transform:rotate(45deg);-ms-transform:rotate(45deg);transform:rotate(45deg);} \n \
+        .modal-dialog { margin-top: 100px; margin-left: 100px; width: 450px; } \n \
+	    .btn-sm{font-size: 13px;} \n \
+        .progress{margin-top: 20px; margin-bottom: 0; height: 10px; display: none;} \n \
+        .search-and-account{position: fixed; z-index: 15; top: 11.5rem; /*right: var(--gap);*/ left: 5px;} \n \
+        .search-and-account a{ margin-left: 0.5rem;} \n \
+        .offscreen{line-height: 0; font-size: 0; color: transparent;} \n \
         </style> \n \
-        <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-1.9.0/jquery-1.9.0.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-3.1.1.min.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-9.1.2/code/highcharts.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-9.1.2/code/modules/exporting.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/jquery/bootstrap/3.3.7/bootstrap.min.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/jquery/bootstrap/bootstrap-multiselect/bootstrap-multiselect.js'></script> \n \
         <script type='text/javascript'> \n \
+            function get_extended_export_buttons(menu_text, menu_function){ \n \
+	            var defaultButtons = Highcharts.getOptions().exporting.buttons; // get default Highchart Export buttons \n \
+                var extendedButtons = $.extend(true, {}, defaultButtons); \n \
+                extendedButtons.contextButton.menuItems.unshift({ text: menu_text, onclick : menu_function }); \n \
+                return extendedButtons; \n \
+			} \n \
+			function showChartOptions() { \n \
+			    var section = $(this.renderTo).parents('div.chart-section'); \n \
+			    $(section).find('div.show-chart-options a').trigger('click'); \n \
+			    $(section).find('div.options-table')[0].scrollIntoView(); \n \
+			} \n \
             var charts = {}; \n \
             $(document).ready(function () { \n \
                 try { \n \
                 --charts--   \n\n \
                 $('.chart-section').each(function() { $(this).find('.title-setter').val(charts[$(this).find('.highchart-container').first().attr('id')].title.textStr); }); \n \
-                $('.title-setter').keyup(function(){ charts[$(this).parents('.chart-section').find('.highchart-container').first().attr('id')].setTitle({text: $( this ).val()}); }); \n \
+                $('.title-setter').keyup(function(){\n \
+                    var chart_id = $(this).parents('.chart-section').find('.highchart-container').first().attr('id'); \n \
+                    charts[chart_id].setTitle({text: $( this ).val()}); \n \
+                    $('option[value=\"' + chart_id +  '\"]').text($( this ).val()); \n \
+                    $('#graph-checkbox-list').multiselect('rebuild'); \n \
+                }); \n \
                 $('.show-chart-options a').click(function(event) { event.preventDefault(); $(this).parents('.options').find('.chart-options').show().end().find('.show-chart-options').hide(); }); \n \
                 $('.hide-chart-options a').click(function(event) { event.preventDefault(); $(this).parents('.options').find('.chart-options').hide().end().find('.show-chart-options').show(); }); \n \
                 $('.options-row input[type=\"radio\"]').click(function(event) { \n \
@@ -91,19 +153,73 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
                 }); \n \
                 $('.options-row input.show-cluster-band[type=\"checkbox\"]').click(function(event) { \n \
                     var chart = charts[$(this).parents('.chart-section').find('.highchart-container').first().attr('id')]; \n \
-                    if ($(this).is(':checked')) { \n \
-                        chart.xAxis[0].addPlotBand({color: '#FFB3B3', from: $(this).attr('start-idx'), to: $(this).attr('end-idx'), id: 'band', zindex:0}); \n \
-                        chart.xAxis[0].addPlotLine({id:'start',color: '#FF0000', width: 1, value: $(this).attr('start-idx'), zIndex: 5 }); \n \
-                        chart.xAxis[0].addPlotLine({id:'end',color: '#FF0000', width: 1, value: $(this).attr('end-idx'), zIndex: 5 }); \n \
-                    } else { \n \
-                        chart.xAxis[0].removePlotBand('band' ); \n \
-                        chart.xAxis[0].removePlotLine('start'); \n \
-                        chart.xAxis[0].removePlotLine('end'); \n \
+                    if (chart.credits !== undefined) { \n \
+                        if ($(this).is(':checked')) { \n \
+                            chart.xAxis[0].addPlotBand({color: '#FFB3B3', from: $(this).attr('start-idx'), to: $(this).attr('end-idx'), id: 'band', zindex:0}); \n \
+                            chart.xAxis[0].addPlotLine({id:'start',color: '#FF0000', width: 1, value: $(this).attr('start-idx'), zIndex: 5 }); \n \
+                            chart.xAxis[0].addPlotLine({id:'end',color: '#FF0000', width: 1, value: $(this).attr('end-idx'), zIndex: 5 }); \n \
+                        } else { \n \
+                            chart.xAxis[0].removePlotBand('band' ); \n \
+                            chart.xAxis[0].removePlotLine('start'); \n \
+                            chart.xAxis[0].removePlotLine('end'); \n \
+                        } \n \
                     } \n \
                 }); \n \
                 $.each($('.options-row input.series-toggle[type=\"checkbox\"]'), function(index, checkbox) { seriesToggle(checkbox); }); \n \
                 $('.options-row input.series-toggle[type=\"checkbox\"]').click(function(event) { seriesToggle($(this)); }); \n \
                 $('.options-row input.show-cluster-band[type=\"checkbox\"]').trigger('click'); \n \
+                $('#graph-checkbox-list').multiselect({ numberDisplayed: 1, enableFiltering : true, includeSelectAllOption : true, maxHeight : 300, buttonWidth : '100%', dropRight : true }); \n \
+                    if (Object.keys(charts).length) setTimeout(() => charts[Object.keys(charts)[0]].reflow(), 1000); \n \
+                     var renderCharts = []; \n \
+                     var reflowCharts = []; \n \
+                     var timerID; \n \
+                     function renderNextChart() { \n \
+                         if (renderCharts.length) { \n \
+                             var chart_id = renderCharts.shift(); \n \
+                             var chart_section = $('div.highchart-container#' + chart_id).parent('div.chart-section'); \n \
+                             if (charts[chart_id].credits === undefined) { \n \
+                                 charts[chart_id] = new Highcharts.Chart(charts[chart_id]); \n \
+                                 $.each($(chart_section).find('.options-row input.series-toggle[type=\"checkbox\"]'), function(index, checkbox) { seriesToggle(checkbox); }); \n \
+                                 $(chart_section).find('.options-row input.show-cluster-band[type=\"checkbox\"]').prop('checked', false).trigger('click'); \n \
+                                 $(chart_section).find('.title-setter').val(charts[chart_id].title.textStr); \n \
+                             } \n \
+                             chart_section.parent().show(); \n \
+                             reflowCharts.push(chart_id); \n \
+                             var increase = parseInt($('.progress-bar').attr('aria-valuenow')) + 1; \n \
+                             var percentage = Math.round((increase / parseInt($('.progress-bar').attr('aria-valuemax'))) * 100); \n \
+                             $('.progress-bar').css('width', percentage + '%').attr('aria-valuenow', increase); \n \
+                             clearInterval(timerID); \n \
+                             if (renderCharts.length) { \n \
+                                 timerID = setTimeout(function() { renderNextChart() }, 10); \n \
+		                     } else { \n \
+                                 setTimeout(() => { \n \
+                                     $.each(reflowCharts, function(index, chart_id) { charts[chart_id].reflow(); }); \n \
+                                     reflowCharts = []; \n \
+                                 }, 1000); \n \
+                                 $('#graphs-modal-modal').modal('hide'); \n \
+                                 $('.modal-footer button').removeClass('disabled').prop('disabled', false); \n \
+                                 $('.progress-bar').attr('aria-valuenow', 0).css(\"width\", \"0%\"); \n \
+                                 $('.progress').hide(); \n \
+                            } \n \
+                         } \n \
+                     } \n \
+                     $('button#id_apply_graphs').on('click', function(e) { \n \
+                         $('.modal-footer button').addClass('disabled').prop('disabled', true); \n \
+                         $('.progress').show(); \n \
+                         $('.progress-bar').attr('aria-valuenow', 0).css(\"width\", \"0%\").attr('aria-valuemax', $('select#graph-checkbox-list option:selected').length); \n \
+                         renderCharts = []; \n \
+                         $.each($('select#graph-checkbox-list option'), function(index, checkbox) { \n \
+                             var chart_id = $(checkbox).val(); \n \
+                             if ($(checkbox).is(':checked')) { \n \
+                                 renderCharts.push(chart_id); \n \
+                             } else { \n \
+                                 $('div.highchart-container#' + chart_id).parent('div.chart-section').parent().hide(); \n \
+                             } \n \
+                        }); \n \
+                        timerID = setTimeout(function() { renderNextChart() }, 10); \n \
+                     }); \n \
+                     renderCharts = ['chart_1_1']; \n \
+                     timerID = setTimeout(function() { renderNextChart() }, 10); \n \
                 } catch (error) { \n \
                    $('#load_error').html('There was a problem loading the graph. Please <a href=\"mailto:--tech-support-email--?Subject=Graph%20Error\" target=\"_top\">email</a> technical support and attach the file:<br/>' + window.location.href.replace('file:///', '').replace(/%20/g, ' ') ).show(); \n \
                    throw( error ); \n \
@@ -111,13 +227,15 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
             }); \n \
             function seriesToggle(checkbox) { \n \
                var chart = charts[$(checkbox).parents('.chart-section').find('.highchart-container').first().attr('id')]; \n \
-               var series = chart.get($(checkbox).attr('series-id')); \n \
-               if ($(checkbox).is(':checked')) { \n \
-                 series.show(); \n \
-                 $(checkbox).parent().find('span.checkmark').css({ 'background-color': series.color }); \n \
-               } else { \n \
-                 series.hide(); \n \
-                 $(checkbox).parent().find('span.checkmark').css({ 'background-color': '#FFFFFF' }); \n \
+               if (chart.credits !== undefined) { \n \
+                   var series = chart.get($(checkbox).attr('series-id')); \n \
+                   if ($(checkbox).is(':checked')) { \n \
+                       series.show(); \n \
+                       $(checkbox).parent().find('span.checkmark').css({ 'background-color': series.color }); \n \
+                   } else { \n \
+                       series.hide(); \n \
+                       $(checkbox).parent().find('span.checkmark').css({ 'background-color': '#FFFFFF' }); \n \
+                   } \n \
                } \n \
            }\n \
         </script> \n \
@@ -133,18 +251,19 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
 </html> \n";
 
 const char * TemporalChartGenerator::TEMPLATE_CHARTHEADER = "\n \
-                var --container-id-- = new Highcharts.Chart({ \n \
-                    chart: { height: 600, renderTo: '--container-id--', zoomType:'xy', panning: true, panKey: 'shift', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: --margin-bottom--, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 0, borderWidth: 1, marginRight: --margin-right-- }, \n \
+                var --container-id-- = { \n \
+                    chart: { height: 400, renderTo: '--container-id--', zoomType:'xy', panning: true, panKey: 'shift', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: --margin-bottom--, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 0, borderWidth: 1, marginRight: --margin-right-- }, \n \
                     title: { text: '--chart-title--', align: 'center' }, \n \
-                    exporting: {filename: 'cluster_graph', chartOptions: { plotOptions: { series: { showInLegend: false } } }}, \n \
-                    plotOptions: { column: { grouping: false }}, \n \
+                    exporting: {filename: 'cluster_graph', chartOptions: { plotOptions: { series: { showInLegend: false } } }, buttons: get_extended_export_buttons('Chart Options', showChartOptions)}, \n \
+                    plotOptions: { column: { grouping: true, stacking: 'normal' }}, \n \
+                    responsive: { rules: [{ condition: {  maxWidth: null }, chartOptions: { chart: { height: 400 }, subtitle: { text: null }, navigator: { enabled: false } } }] }, \n \
                     tooltip: { crosshairs: true, shared: true, formatter: function(){var is_cluster = false;var has_observed = false;$.each(this.points, function(i, point) {if (point.series.options.id == 'cluster') {is_cluster = true;}if (point.series.options.id == 'obs') {has_observed = true;}});var s = '<b>'+ this.x +'</b>'; if (is_cluster) {s+= '<br/><b>Cluster Point</b>';}$.each(this.points,function(i, point){if (point.series.options.id == 'cluster'){if (!has_observed) {s += '<br/>Observed: '+ point.y;}} else {s += '<br/>'+ point.series.name +': '+ point.y;}});return s;}, }, \n \
                     legend: { enabled: false, backgroundColor: '#F5F5F5', verticalAlign: 'bottom', y: 20 }, \n \
                     xAxis: [{ categories: [--categories--], tickmarkPlacement: 'on', labels: { step: --step--, rotation: -45, align: 'right' }, tickInterval: --tickinterval-- }], \n \
                     yAxis: [{ title: { enabled: true, text: 'Number of Cases', style: { fontWeight: 'normal' } }, min: 0, showEmpty: false }--additional-yaxis--], \n \
                     navigation: { buttonOptions: { align: 'right' } }, \n \
                     series: [--series--]\n \
-                }); \n \
+                }; \n \
                 charts['--container-id--'] = --container-id--;";
 
 const char * TemporalChartGenerator::TEMPLATE_CHARTSERIES = "\
@@ -199,7 +318,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSERIES_PT = "\
                       </div> \n";
 
 const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
-         <div style=\"margin:20px;\" class=\"chart-section\"> \n \
+	        <div class=\"item\" style=\"display:none;\"><div style=\"margin:20px;\" class=\"chart-section\"> \n \
             <div id=\"--container-id--\" class=\"highchart-container\" style=\"margin-top:0px;\"></div> \n \
             <div class=\"options\"> \n \
                 <div class=\"show-chart-options\"><a href=\"#\">Show Chart Options</a></div> \n \
@@ -238,7 +357,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
                     <div class=\"hide-chart-options\"><a href=\"#\">Close Chart Options</a></div> \n \
                 </div> \n \
             </div> \n \
-         </div> \n";
+         </div></div> \n";
 
 /** constructor */
 TemporalChartGenerator::TemporalChartGenerator(const ScanRunner& scanner, const SimulationVariables& simVars)
@@ -270,7 +389,7 @@ TemporalChartGenerator::TemporalChartGenerator(const ScanRunner& scanner, const 
 
 /** Creates HighCharts graph for purely temporal cluster. */
 void TemporalChartGenerator::generateChart() const {
-    std::string buffer, buffer2;
+    std::string nodeName, buffer, buffer2;
     FileName fileName;
     const Parameters parameters = _scanner.getParameters();
 
@@ -287,7 +406,7 @@ void TemporalChartGenerator::generateChart() const {
             return;
         }
 
-        std::stringstream html, charts_javascript, cluster_sections;
+        std::stringstream html, charts_javascript, cluster_sections, chart_select_options;
 
         // read template into stringstream
         html << BASE_TEMPLATE << std::endl;
@@ -341,7 +460,7 @@ void TemporalChartGenerator::generateChart() const {
 
                 bool is_pt(parameters.getScanType() == Parameters::TIMEONLY); // not if cluster is purely temporal
                 // define seach series that we'll graph - next three are always printed.
-                std::auto_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed (Outside Cluster)"), is_pt ? "471D1B" : "7D96B0", "square", 0));
+                std::auto_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed (Outside Cluster)"), is_pt ? "471D1B" : "7D96B0", "square", 0, true, "1", "Solid", "observed"));
                 std::auto_ptr<ChartSeries> expectedSeries(new ChartSeries("exp", is_pt ? 3 : 2, "line", (is_pt ? "Expected" : "Expected (Outside Cluster)"), is_pt ? "394521" : "89A54E", "triangle", 0));
                 std::auto_ptr<ChartSeries> clusterSeries; // (new ChartSeries("cluster", is_pt ? 2 : 5, "column", "Cluster", "AA4643", "circle", 0));
                 // the remaining series are conditionally present in the chart
@@ -351,10 +470,10 @@ void TemporalChartGenerator::generateChart() const {
 
                 // space-time clusters also graph series which allow comparison between inside and outside the cluster
                 if (!is_pt) {
-                    observedClusterSeries.reset(new ChartSeries("cluster_obs", 3, "column", "Observed (Inside Cluster)", "471D1B", "square", 0));
+                    observedClusterSeries.reset(new ChartSeries("cluster_obs", 3, "column", "Observed (Inside Cluster)", "471D1B", "square", 0, true, "1", "Solid", "observed"));
                     expectedClusterSeries.reset(new ChartSeries("cluster_exp", 4, "line", "Expected (Inside Cluster)", "394521", "triangle", 0));
 					percentCasesSeries.reset(new ChartSeries("perc_cases", 6, "line", "Percent Cases (Outside Cluster)", "46460F", "circle", 2, false));
-					cluster_percentCasesSeries.reset(new ChartSeries("cluster_perc_cases", 6, "line", "Percent Cases (Inside Cluster)", "454540", "circle", 2, false, "1", "Dot"));
+					cluster_percentCasesSeries.reset(new ChartSeries("cluster_perc_cases", 6, "line", "Percent Cases (Inside Cluster)", "C24641", "circle", 2, false, "1", "Dot"));
 				}
 
                 // the Poisson and Exponential models also graphs observed / expected
@@ -381,13 +500,13 @@ void TemporalChartGenerator::generateChart() const {
                 
                 // set default chart title 
                 if (is_pt)
-                    buffer = "Detected Cluster";
+					nodeName = "Detected Cluster";
                 else {
-                    buffer = _scanner.getNodes().at(cluster.getID())->getIdentifier();
-                    htmlencode(buffer);
+					nodeName = _scanner.getNodes().at(cluster.getID())->getIdentifier();
+                    htmlencode(nodeName);
                 }
                     
-                templateReplace(chart_js, "--chart-title--", buffer);
+                templateReplace(chart_js, "--chart-title--", nodeName);
                 templateReplace(chart_js, "--margin-bottom--", printString(buffer, "%d", margin_bottom));
                 templateReplace(chart_js, "--margin-right--", printString(buffer, "%d", (odeSeries.get() || cluster_odeSeries.get() ? 80 : 20)));
 
@@ -405,6 +524,8 @@ void TemporalChartGenerator::generateChart() const {
                 // define the identifying attribute of this chart
                 printString(buffer, "chart_%d_%u", clusterIdx + 1, 0 + 1);
                 templateReplace(chart_js, "--container-id--", buffer);
+				// add select option for this chart
+				chart_select_options << "<option value=\"" << buffer.c_str() << "\" " << (clusterIdx == 0 ? "selected=selected" : "") << ">" << nodeName.c_str() << "</option>" << std::endl;
                 printString(buffer, "%u", static_cast<unsigned int>(std::ceil( static_cast<double>(groups.getGroups().size()) / static_cast<double>(MAX_X_AXIS_TICKS) )));
                 templateReplace(chart_js, "--tickinterval--", buffer);
                 templateReplace(chart_js, "--categories--", categories.str());
@@ -444,7 +565,8 @@ void TemporalChartGenerator::generateChart() const {
         }
 
         templateReplace(html, "--charts--", charts_javascript.str());
-        if (graphClusters.size()) {
+		templateReplace(html, "--graph-list-options--", chart_select_options.str());
+		if (graphClusters.size()) {
             templateReplace(html, "--main-content--", cluster_sections.str());
         } else {
             printString(buffer2, "<h3 style=\"text-align:center;\">No significant clusters to graph. All clusters had a p-value greater than %lf.</h3>",

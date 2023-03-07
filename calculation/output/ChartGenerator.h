@@ -29,14 +29,17 @@ class ChartSeries {
         std::string _symbol;
         std::string _opacity;
         std::string _dashstyle;
+		std::string _stack;
         unsigned int _y_axis;
         bool _visible;
         std::stringstream _data_stream;
 
     public:
         ChartSeries(const std::string& id, unsigned int zindex, const std::string& type, 
-                    const std::string& name, const std::string& color, const std::string& symbol, unsigned int y_axis, bool visible=true, const std::string& opacity="1", const std::string& dashstyle="Solid")
-                    : _id(id), _zindex(zindex), _type(type), _name(name), _color(color), _symbol(symbol), _y_axis(y_axis), _visible(visible), _opacity(opacity), _dashstyle(dashstyle) {}
+                    const std::string& name, const std::string& color, const std::string& symbol, unsigned int y_axis, 
+			        bool visible=true, const std::string& opacity="1", const std::string& dashstyle="Solid", const std::string& stack="")
+                    : _id(id), _zindex(zindex), _type(type), _name(name), _color(color), _symbol(symbol), _y_axis(y_axis), _visible(visible),
+			          _opacity(opacity), _dashstyle(dashstyle), _stack(stack) {}
 
         std::stringstream & datastream() {return _data_stream;}
         std::string & toString(std::string& r) const {
@@ -44,7 +47,10 @@ class ChartSeries {
 
             s << "{ id: '" << _id.c_str() << "', zIndex: " << _zindex << ", type: '" << _type.c_str() << "', name: '" << _name.c_str()
               << "', color: '#" << _color.c_str() << "', dashStyle: '" << _dashstyle.c_str() << "', yAxis: " << _y_axis << ", visible:" << (_visible ? "true" : "false") << ", opacity: " << _opacity
-              <<", marker: { enabled: true, symbol: '" << _symbol.c_str() << "', radius: 0 }, data: [" << _data_stream.str().c_str() << "] }";
+              <<", marker: { enabled: true, symbol: '" << _symbol.c_str() << "', radius: 0 }, data: [" << _data_stream.str().c_str() << "]";
+			if (!_stack.empty())
+				s << ", stack: '" << _stack << "'";
+			s << " }";
             r = s.str();
             return r;
         }
