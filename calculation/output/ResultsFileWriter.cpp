@@ -664,14 +664,9 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<script src=\"https://www.treescan.org/html-results/treescan-results.1.3.js\" type=\"text/javascript\"></script>" << std::endl;
     outfile << "<body>" << std::endl;
     buffer = AppToolkit::getToolkit().GetWebSite();
-    outfile << "<table width=\"100%\" border=\"0\" cellpadding=\"2\" cellspacing=\"0\" bgcolor=\"#F8FAFA\" style=\"border-collapse: collapse;\">";
-    outfile << "<tbody><tr style=\"background-image:url('" << buffer << "images/bannerbg.jpg'); background-repeat:repeat-x;\">";
-    outfile << "<td width=\"130\" height=\"125\" align=\"center\" style=\"background: url(" << buffer << "images/TreeScan_logo.png) no-repeat center;\"></td>";
-    outfile << "<td align=\"center\"><img height=\"120\" style=\"margin-left:-20px;\" src=\"" << buffer << "images/banner.jpg\" alt=\"TreeScan&trade; - Software for the spatial, temporal, and space-time scan statistics\" title=\"TreeScan&trade; - Software for the spatial, temporal, and space-time scan statistics\"></td></tr></tbody></table>";
-
-    outfile << "<div class=\"hr\"></div><div class=\"program-info\">" << std::endl;
+    outfile << "<div class='hr' style='margin-top: 5px;'></div><div class='program-info'>" << std::endl;
     outfile << getAnalysisSuccinctStatement(buffer);
-    outfile << "<table style=\"text-align: left;\"><tbody>" << std::endl;
+    outfile << "<table style='text-align: left;'><tbody>" << std::endl;
     if (parameters.isSequentialScanTreeOnly()) {
         outfile << "<tr><th>Look</th><td>" << _scanRunner.getSequentialStatistic().getLook() << "</td></tr>" << std::endl;
     }

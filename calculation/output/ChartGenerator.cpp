@@ -13,14 +13,6 @@ const char * AbstractChartGenerator::HTML_FILE_EXT = ".html";
 
 const char * AbstractChartGenerator::TEMPLATE_BODY = "\n \
         <body style=\"margin:0;background-color: #fff;\"> \n \
-        <table width=\"100%\" border=\"0\" cellpadding=\"2\" cellspacing=\"0\" bgcolor=\"#F8FAFA\" style=\"border-collapse: collapse;\"> \n \
-        <tbody><tr style=\"background-image:url('--resource-path--images/bannerbg.jpg');background-repeat:repeat-x;\"> \n \
-        <td width=\"130\" height=\"125\" align=\"center\" style=\"background: url(--resource-path--images/TreeScan_logo.png) no-repeat center;\"></td> \n \
-        <td align=\"center\"> \n \
-        <img height=\"120\" style=\"margin-left:-20px;\" src=\"--resource-path--images/banner.jpg\" alt=\"TreeScan&#0153; - Software for the spatial, temporal, and space-time scan statistics\" title=\"TreeScan&#0153 - Software for the spatial, temporal, and space-time scan statistics\"> \n \
-        </td> \n \
-        </tr> \n \
-        </tbody></table> \n \
         <div id=\"load_error\" style=\"color:#101010; text-align: center;font-size: 1.2em; padding: 20px;background-color: #ece1e1; border: 1px solid #e49595; display:none;\"></div> \n \
 	    <div style=\"position: relative;\"> \n \
 	        <div class=\"search-and-account\" title=\"Choose which graphs to display.\"> \n \
@@ -112,7 +104,7 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
         .modal-dialog { margin-top: 100px; margin-left: 100px; width: 450px; } \n \
 	    .btn-sm{font-size: 13px;} \n \
         .progress{margin-top: 20px; margin-bottom: 0; height: 10px; display: none;} \n \
-        .search-and-account{position: fixed; z-index: 15; top: 11.5rem; /*right: var(--gap);*/ left: 5px;} \n \
+        .search-and-account{position: fixed; z-index: 15; /*top: 11.5rem;*/ /*right: var(--gap);*/ left: 5px;} \n \
         .search-and-account a{ margin-left: 0.5rem;} \n \
         .offscreen{line-height: 0; font-size: 0; color: transparent;} \n \
         </style> \n \
