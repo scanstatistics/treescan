@@ -367,7 +367,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         switch (_input_source_settings.getInputFileType()) {
             case Tree :
                 builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
-                builder.append("&lt;Node ID&gt;&#44;  &lt;Node Parent ID&gt;");
+                builder.append("&lt;Node ID&gt;&#44;  &lt;Node Parent ID&gt;&#44; &lt;Distance Between&gt;(optional)");
                 break;
             case Counts:
                 /* build statement indicating the current parameter settings in main windows */
@@ -897,6 +897,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _import_variables.clear();
         _import_variables.add(new ImportVariable("Node ID", 0, true, null, null));
         _import_variables.add(new ImportVariable("Node Parent ID", 1, true, null, null));
+        _import_variables.add(new ImportVariable("Distance Between", 2, false, null, null));
     }
 
     /** Setup field descriptors for counts file. */

@@ -89,7 +89,7 @@ void AbstractRandomizer::_addSimC_C_ancestor_list(size_t source_id, const NodeSt
 void AbstractRandomizer::_addSimC_C_recursive(size_t id, const NodeStructure::CountContainer_t& c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) {
     std::transform(c.begin(), c.end(), treeSimNodes[id].refBrC_C().begin(), treeSimNodes[id].refBrC_C().begin(), std::plus<int>());
     for(size_t j=0; j < treeNodes[id]->getParents().size(); ++j) 
-        _addSimC_C_recursive(treeNodes[id]->getParents()[j]->getID(), c, treeNodes, treeSimNodes);
+        _addSimC_C_recursive(treeNodes[id]->getParents()[j].first->getID(), c, treeNodes, treeSimNodes);
 }
 
 /** Reset seed of randomizer for particular simulation index. */

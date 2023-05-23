@@ -427,7 +427,7 @@ void TemporalChartGenerator::generateChart() const {
             case Parameters::MLC_ONLY :
                 graphClusters.push_back(_scanner.getCuts()[0]); break;
             case Parameters::X_MCL_ONLY :
-                for (int i=0; i < parameters.getTemporalGraphMostLikelyCount() && i < _scanner.getCuts().size(); ++i) {
+                for (int i=0; i < parameters.getTemporalGraphMostLikelyCount() && static_cast<unsigned int>(i) < _scanner.getCuts().size(); ++i) {
                     if (_scanner.reportableCut(*_scanner.getCuts()[i]))
                         graphClusters.push_back(_scanner.getCuts()[i]);
                 }

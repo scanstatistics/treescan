@@ -81,7 +81,7 @@ MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuc
 /* Returns true if NodeStructure/SimulationNode is evaluated in scanning processing. */
 bool MCSimSuccessiveFunctor::isEvaluated(const NodeStructure& node, const SimulationNode& simNode) const {
     // If the node branch does not have the minimum number of cases in branch, it is not evaluated.
-    if (simNode.getBrC() < _scanRunner.getParameters().getMinimumNodeCases()) return false;
+    if (static_cast<unsigned int>(simNode.getBrC()) < _scanRunner.getParameters().getMinimumNodeCases()) return false;
     if (_scanRunner.getParameters().getScanType() != Parameters::TIMEONLY && _scanRunner.getParameters().getRestrictTreeLevels())
         return std::find(_scanRunner.getParameters().getRestrictedTreeLevels().begin(), 
                          _scanRunner.getParameters().getRestrictedTreeLevels().end(), 

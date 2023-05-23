@@ -493,12 +493,16 @@ std::stringstream & ResultsFileWriter::getNCBIAsnDefinition(const NodeStructure&
     // First write the current node - including additional information if there is a cut for the node.
     auto const& nodeCut = nodeCuts.find(node.getID());
     destination << "{ id " << (node.getID() + (idoffset ? 1 : 0)) << ", ";
-    if (node.getLevel() == 1 && idoffset)
+    std::string distance = "1";
+    if (node.getLevel() == 1 && idoffset) {
         destination << "parent 0,";
-    else if (node.getLevel() > 1)
-        destination << "parent " << (node.getParents().front()->getID() + (idoffset ? 1 : 0)) << ",";
+        distance = "0";
+    } else if (node.getLevel() > 1) {
+        destination << "parent " << (node.getParents().front().first->getID() + (idoffset ? 1 : 0)) << ",";
+        distance = node.getParents().front().second;
+    }
     if (nodeCut != nodeCuts.end()) printString(buffer, " (Cut #%u)", nodeCut->second->getReportOrder());
-    destination << " features { { featureid 0, value \"" << node.getIdentifier() << buffer << "\" },{ featureid 1, value \"1\" },{ featureid 2, value \""<< node.getIdentifier() << "\" }";
+    destination << " features { { featureid 0, value \"" << node.getIdentifier() << buffer << "\" },{ featureid 1, value \"" << distance << "\" },{ featureid 2, value \""<< node.getIdentifier() << "\" }";
     if (nodeCut != nodeCuts.end()) {
         RecordBuffer Record(fieldDefinitions);
         CutsRecordWriter::getRecordForCut(Record, *(nodeCut->second), _scanRunner);
@@ -547,7 +551,7 @@ std::stringstream & ResultsFileWriter::getNewickDefinition(const NodeStructure& 
         if (c + 1 < nchild) destination << ",";
     }
     if (nchild) destination << ")";
-    destination << node.getIdentifier() << ":1";
+    destination << node.getIdentifier() << ":" << (node.getParents().size() ? node.getParents().front().second : "1");
     return destination;
 }
 
@@ -643,7 +647,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << " { text:{name:\"Root\"}";
         std::stringstream  rootstream;
         unsigned int root_counter = 0;
-        for (NodeStructure::RelationContainer_t::const_iterator itr = _scanRunner.getRootNodes().begin(); itr != _scanRunner.getRootNodes().end(); ++itr) {
+        for (NodeStructure::ChildContainer_t::const_iterator itr = _scanRunner.getRootNodes().begin(); itr != _scanRunner.getRootNodes().end(); ++itr) {
             // For each root node, walk down tree looking for significant nodes.
             std::stringstream  nodestream;
             NodeSet_t test = writeJsTreeNode(nodestream, *(*itr), node_cut_map, 2);
@@ -1205,7 +1209,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
     // Write header section to this nodestream.
     std::string buffer(node.getIdentifier()), parent;
     if (node.getParents().size()) {
-        parent = node.getParents().front()->getIdentifier();
+        parent = node.getParents().front().first->getIdentifier();
         stripNodeIdForHtml(parent);
     }
     nodestream << "{ HTMLid: '" << stripNodeIdForHtml(buffer) << "', innerHTML: \"<ul><li><a data-toggle='tooltip' title='<ul><li class=" << buffer << ">";
@@ -1273,9 +1277,9 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
         // Iterate over children recursively obtain branch stream and p-value/relative risk by node and best child.
         std::vector<boost::shared_ptr<std::stringstream> >::iterator itrStream = childNodestreams.begin();
         // Copy the children and sort by identified.
-        NodeStructure::RelationContainer_t childrenCopy = node.getChildren();
+        NodeStructure::ChildContainer_t childrenCopy = node.getChildren();
         std::sort(childrenCopy.begin(), childrenCopy.end(), CompareNodeStructureByIdentifier());
-        NodeStructure::RelationContainer_t::const_iterator itrChild = childrenCopy.begin();
+        NodeStructure::ChildContainer_t::const_iterator itrChild = childrenCopy.begin();
 
         for (; itrChild != childrenCopy.end(); ++itrChild, ++itrStream) {
             childrenNodesets.push_back(writeJsTreeNode(*(*itrStream), *(*itrChild), cutMap, collapseAtLevel));

@@ -82,7 +82,9 @@ class NodeStructure {
 public:
     typedef int count_t;
     typedef double expected_t;
-    typedef std::vector<NodeStructure*> RelationContainer_t;
+    typedef std::vector<NodeStructure*> ChildContainer_t;
+    typedef std::pair<NodeStructure*, std::string> ParentDefinition_t;
+    typedef std::vector<ParentDefinition_t> ParentContainer_t;
     typedef std::vector<count_t> CountContainer_t;
     typedef std::vector<expected_t> ExpectedContainer_t;
     enum CumulativeStatus {NON_CUMULATIVE=0, CUMULATIVE};
@@ -97,8 +99,8 @@ private:
     ExpectedContainer_t     _IntN_C;            // Expected number of cases internal to the node.
     ExpectedContainer_t     _IntN_C_Seq_New;    // Expected number cases in new sequential data set.
     ExpectedContainer_t     _BrN_C;             // Expected number of cases internal to the node and with all decendants.
-    RelationContainer_t     _Child;             // List of node IDs of the children and parents
-    RelationContainer_t     _Parent;
+    ChildContainer_t         _Child;             // List of node IDs of the children and parents
+    ParentContainer_t       _Parent;
     Parameters::CutType     _cut_type;
     CumulativeStatus        _cumulative_status;
     unsigned int            _level;             // calculated node level
@@ -137,8 +139,8 @@ private:
         if (node.getParents().empty()) return 1;
 
         unsigned int parent_level=std::numeric_limits<unsigned int>::max();
-        for (NodeStructure::RelationContainer_t::const_iterator itr=node.getParents().begin(); itr != node.getParents().end(); ++itr) {
-            parent_level = std::min(parent_level, getLevel(*(*itr)));
+        for (NodeStructure::ParentContainer_t::const_iterator itr=node.getParents().begin(); itr != node.getParents().end(); ++itr) {
+            parent_level = std::min(parent_level, getLevel(*(itr->first)));
         }
         return parent_level + 1;
     }
@@ -192,12 +194,12 @@ public:
     const ExpectedContainer_t   & getIntN_C() const {return _IntN_C;}
     double                        getBrN() const {return _BrN_C.front();}
     const ExpectedContainer_t   & getBrN_C() const {return _BrN_C;}
-    const RelationContainer_t   & getChildren() const {return _Child;}
-    const RelationContainer_t   & getParents() const {return _Parent;}
+    const ChildContainer_t      & getChildren() const {return _Child;}
+    const ParentContainer_t     & getParents() const {return _Parent;}
     std::string                 & getParentIndentifiers(std::string& parents) const {
                                     std::stringstream buffer;
                                     for (auto itr = getParents().begin(); itr != getParents().end(); ++itr)
-                                        buffer << (itr != getParents().begin() ? "," : "") << (*itr)->getIdentifier();
+                                        buffer << (itr != getParents().begin() ? "," : "") << itr->first->getIdentifier();
                                     parents = buffer.str();
                                     return parents;
                                   }
@@ -222,7 +224,7 @@ public:
                                     }
                                     return _BrN_C;
                                   }
-    RelationContainer_t         & refChildren() {return _Child;}
+    ChildContainer_t            & refChildren() {return _Child;}
 
     const CountContainer_t      & getIntC_Censored() const { return _IntC_Censored; }
     CountContainer_t            & refIntC_Censored() {
@@ -235,11 +237,17 @@ public:
     void                          setCutType(Parameters::CutType cut_type) {_cut_type = cut_type;}
     void                          setMinCensoredBr(count_t c) { _min_censored_Br = c; }
 
-    void addAsParent(NodeStructure& parent) {
+    void addAsParent(NodeStructure& parent, const std::string& distance) {
         if (getID() == parent.getID()) return; // skip adding self as parent
         // add node of collection parents
-        if (_Parent.end() == std::find(_Parent.begin(), _Parent.end(), &parent))
-            _Parent.push_back(&parent);
+        auto itrParent = std::find_if(_Parent.begin(), _Parent.end(), [&parent](const ParentDefinition_t& pd) { return pd.first->getIdentifier() == parent.getIdentifier(); });
+        if (itrParent == _Parent.end())
+            _Parent.push_back(std::make_pair(&parent, distance));
+        else if (itrParent->second != distance)
+            throw resolvable_error(
+                "\nProblem encountered when reading the data from the tree file.\nDistance from node '%s' to parent '%s' conflicts in tree file.\n",
+                getIdentifier().c_str(), itrParent->first->getIdentifier().c_str()
+            );
         // and add this node as child in parents collection
         if (parent.refChildren().end() == std::find(parent.refChildren().begin(), parent.refChildren().end(), this))
             parent.refChildren().push_back(this);
@@ -269,7 +277,7 @@ public:
             s << std::setfill('0') << std::setw(padding) << getLevel() << "-" << getIdentifier();
             return;
         }
-        _Parent.front()->getAncestoryString(s, padding);
+        _Parent.front().first->getAncestoryString(s, padding);
         s << "," << std::setfill('0') << std::setw(padding) << getLevel() << "-" << getIdentifier();
     }
 };
@@ -431,7 +439,7 @@ public:
 protected:
     BasePrint                         & _print;
     NodeStructureContainer_t            _Nodes;
-    NodeStructure::RelationContainer_t  _rootNodes;
+    NodeStructure::ChildContainer_t  _rootNodes;
     CutStructureContainer_t             _Cut;
     CutStructureContainer_t             _trimmed_cuts;
     int                                 _TotalC;
@@ -479,10 +487,10 @@ protected:
 public:
     ScanRunner(const Parameters& parameters, BasePrint& print);
 
-    const NodeStructure::RelationContainer_t getCutChildNodes(const CutStructure& cut) const {
+    const NodeStructure::ChildContainer_t getCutChildNodes(const CutStructure& cut) const {
         // Returns the direct child nodes for cut. If this cut wasn't simple, then this might be a subset of the children.
         if (cut.getCutChildren().size()) {
-            NodeStructure::RelationContainer_t children;
+            NodeStructure::ChildContainer_t children;
             for (auto itr=cut.getCutChildren().begin(); itr != cut.getCutChildren().end(); ++itr)
                 children.push_back(_Nodes[*itr]);
             return children;
@@ -501,7 +509,7 @@ public:
     const DayOfWeekIndexes_t         & getDayOfWeekIndexes() const {return _day_of_week_indexes;}
     bool                               getMultiParentNodesExist() const {return _has_multi_parent_nodes;}
     const NodeStructureContainer_t   & getNodes() const {return _Nodes;}
-    const NodeStructure::RelationContainer_t & getRootNodes() const { return _rootNodes; }
+    const NodeStructure::ChildContainer_t & getRootNodes() const { return _rootNodes; }
     const Parameters                 & getParameters() const {return _parameters;}
     const PowerEstimationContainer_t & getPowerEstimations() const {return _power_estimations;}
     BasePrint                        & getPrint() {return _print;}

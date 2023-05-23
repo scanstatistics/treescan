@@ -38,7 +38,7 @@ class testRunner : public ScanRunner {
 				if (_Nodes[t]->getParents().size()) {
 					unsigned int parent_level = std::numeric_limits<unsigned int>::max();
 					for (size_t s=0; s < _Nodes[t]->getParents().size(); ++s) {
-						parent_level = std::min(parent_level, _Nodes[t]->getParents()[s]->getLevel());
+						parent_level = std::min(parent_level, _Nodes[t]->getParents()[s].first->getLevel());
 					}
 					BOOST_CHECK_EQUAL(parent_level + 1, _Nodes[t]->getLevel());
 				} else {

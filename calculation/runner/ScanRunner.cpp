@@ -370,7 +370,7 @@ std::string& CutStructure::getParentIndentifiers(const ScanRunner& scanner, std:
     std::stringstream buffer;
     const NodeStructure * node = scanner.getNodes().at(getID());
     for (auto itr = node->getParents().begin(); itr != node->getParents().end(); ++itr)
-        buffer << (itr != node->getParents().begin() ? "," : "") << (*itr)->getIdentifier();
+        buffer << (itr != node->getParents().begin() ? "," : "") << itr->first->getIdentifier();
     parents = buffer.str();
     return parents;
 }
@@ -689,9 +689,9 @@ unsigned int ScanRunner::addCN_C(const NodeStructure& sourceNode, NodeStructure&
     destinationNode.setMinCensoredBr(std::min(sourceNode.getMinCensoredBr(), destinationNode.getMinCensoredBr()));
 
     // continue walking up the tree
-    NodeStructure::RelationContainer_t::const_iterator itr=destinationNode.getParents().begin(), itr_end=destinationNode.getParents().end();
+    NodeStructure::ParentContainer_t::const_iterator itr=destinationNode.getParents().begin(), itr_end=destinationNode.getParents().end();
     for (; itr != itr_end; ++itr)
-        source_count += addCN_C(sourceNode, *(*itr), ancestor_nodes);
+        source_count += addCN_C(sourceNode, *(itr->first), ancestor_nodes);
     return source_count;
 }
 
@@ -1366,9 +1366,9 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
 
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
     while (dataSource->readRecord()) {
-        if (dataSource->getNumValues() > 2) {
+        if (dataSource->getNumValues() > 3) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in tree file has %ld values but expecting 2: <node id>, <parent node id>(optional).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getNumValues());
+            _print.Printf("Error: Record %ld in tree file has %ld values but expecting 2: <node id>, <parent node id>(optional) <distance between>(optional).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getNumValues());
             continue;
         }
         std::string identifier = dataSource->getValueAt(0);
@@ -1390,32 +1390,41 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
     // now set parent/children nodes
     dataSource->gotoFirstRecord();
     while (dataSource->readRecord()) {
-        NodeStructure * node = 0;
-        // assign parent nodes to node
-        for (size_t t=0; t < dataSource->getNumValues(); ++t) {
-            std::string identifier = dataSource->getValueAt(static_cast<long>(t));
-            ScanRunner::Index_t index = getNodeIndex(identifier);
-            if (!index.first) {
-                /* If this current node being read is a parent field and value is not blank and id is not known, then signal reading a bad record. */
-                if (node != 0 && identifier.size() != 0) {
-                    readSuccess = false;
-                    _print.Printf("Error: Record %ld in tree file has unknown parent node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), identifier.c_str());
-                }
-            } else {
-                if (node) {
-                    // test that node does not reference itself as parent
-                    if (node->getID() == static_cast<int>(index.second)) {
-                        readSuccess = false;
-                        _print.Printf("Error: Record %ld in tree file has node referencing self as parent (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), identifier.c_str());
-                        continue;
-                    }
-                    node->addAsParent(*_Nodes[index.second]);
-                    nodesWithParents.set(node->getID());
-                    // detect nodes with multiple parents
-                    _has_multi_parent_nodes |= node->getParents().size() > 1;
-                } else node = _Nodes[index.second];
+        ScanRunner::Index_t index = getNodeIndex(dataSource->getValueAt(0));
+        NodeStructure * node = _Nodes[index.second];
+        std::string record_value = dataSource->getValueAt(1);
+        if (dataSource->getNumValues() == 1 || record_value.empty())
+            continue;
+        index = getNodeIndex(record_value);
+        if (!index.first) {
+            readSuccess = false;
+            _print.Printf("Error: Record %ld in tree file has unknown parent node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), record_value.c_str());
+        }
+        // test that node does not reference itself as parent
+        if (node->getID() == static_cast<int>(index.second)) {
+            readSuccess = false;
+            _print.Printf("Error: Record %ld in tree file has node referencing self as parent (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), record_value.c_str());
+            continue;
+        }
+        // Read distance column if defined by user, default to one otherwise.
+        record_value = "1";
+        if (dataSource->getNumValues() == 3) {
+            record_value = dataSource->getValueAt(2);
+            double distanceBetween = 1.0;
+            if (!record_value.empty() && (!string_to_numeric_type<double>(record_value.c_str(), distanceBetween) || distanceBetween < 0.0)) {
+                readSuccess = false;
+                _print.Printf(
+                    "Error: Record %ld in tree file references an invalid distance between nodes.\n"
+                    "       The distance must be a value greater than zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex()
+                );
+                continue;
             }
         }
+        // Add node as parent.
+        node->addAsParent(*_Nodes[index.second], record_value.empty() ? "1" : record_value);
+        nodesWithParents.set(node->getID());
+        // Detect nodes with multiple parents.
+        _has_multi_parent_nodes |= node->getParents().size() > 1;
     }
 
     // confirm that there exists at least one root node
