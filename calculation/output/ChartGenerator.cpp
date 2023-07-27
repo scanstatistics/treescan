@@ -6,7 +6,6 @@
 #include "ScanRunner.h"
 #include "SimulationVariables.h"
 #include "Toolkit.h"
-#include <boost/regex.hpp>
 
 /** ------------------- AbstractChartGenerator --------------------------------*/
 const char * AbstractChartGenerator::HTML_FILE_EXT = ".html";
@@ -50,15 +49,6 @@ const char * AbstractChartGenerator::TEMPLATE_BODY = "\n \
             </div> \n \
         </div> \n \
         --main-content-- \n";
-
-/** Replaces 'replaceStub' text in passed stringstream 'templateText' with text of 'replaceWith'. */
-std::stringstream & AbstractChartGenerator::templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith) {
-    boost::regex to_be_replaced(replaceStub);
-    std::string changed(boost::regex_replace(templateText.str(), to_be_replaced, replaceWith));
-    templateText.str(std::string());
-    templateText << changed;
-    return templateText;
-}
 
 /** ------------------- TemporalChartGenerator --------------------------------*/
 
@@ -129,11 +119,11 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
             $(document).ready(function () { \n \
                 try { \n \
                 --charts--   \n\n \
-                $('.chart-section').each(function() { $(this).find('.title-setter').val(charts[$(this).find('.highchart-container').first().attr('id')].title.textStr); }); \n \
+                $('.chart-section').each(function() { $(this).find('.title-setter').val($('<textarea/>').html(charts[$(this).find('.highchart-container').first().attr('id')].title.textStr).val()); }); \n \
                 $('.title-setter').keyup(function(){\n \
                     var chart_id = $(this).parents('.chart-section').find('.highchart-container').first().attr('id'); \n \
                     charts[chart_id].setTitle({text: $( this ).val()}); \n \
-                    $('option[value=\"' + chart_id +  '\"]').text($( this ).val()); \n \
+                    $('option[value=\"' + chart_id +  '\"]').text(($( this ).val().length > 50 ? ($( this ).val().substring(0, 50) + '..') : $( this ).val())); \n \
                     $('#graph-checkbox-list').multiselect('rebuild'); \n \
                 }); \n \
                 $('.show-chart-options a').click(function(event) { event.preventDefault(); $(this).parents('.options').find('.chart-options').show().end().find('.show-chart-options').hide(); }); \n \
@@ -173,7 +163,7 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
                                  charts[chart_id] = new Highcharts.Chart(charts[chart_id]); \n \
                                  $.each($(chart_section).find('.options-row input.series-toggle[type=\"checkbox\"]'), function(index, checkbox) { seriesToggle(checkbox); }); \n \
                                  $(chart_section).find('.options-row input.show-cluster-band[type=\"checkbox\"]').prop('checked', false).trigger('click'); \n \
-                                 $(chart_section).find('.title-setter').val(charts[chart_id].title.textStr); \n \
+                                 $(chart_section).find('.title-setter').val($('<textarea/>').html(charts[chart_id].title.textStr).val()); \n \
                              } \n \
                              chart_section.parent().show(); \n \
                              reflowCharts.push(chart_id); \n \
@@ -381,7 +371,7 @@ TemporalChartGenerator::TemporalChartGenerator(const ScanRunner& scanner, const 
 
 /** Creates HighCharts graph for purely temporal cluster. */
 void TemporalChartGenerator::generateChart() const {
-    std::string nodeName, buffer, buffer2;
+    std::string nodeName, nodeShortName, buffer, buffer2;
     FileName fileName;
     const Parameters parameters = _scanner.getParameters();
 
@@ -491,12 +481,14 @@ void TemporalChartGenerator::generateChart() const {
 
                 
                 // set default chart title 
-                if (is_pt)
-					nodeName = "Detected Cluster";
-                else {
-					nodeName = _scanner.getNodes().at(cluster.getID())->getIdentifier();
-                    htmlencode(nodeName);
+			    nodeName = is_pt ? std::string("Detected Cluster") : _scanner.getNodes().at(cluster.getID())->getOutputLabel();
+                nodeShortName = nodeName;
+                htmlencode(nodeName);
+                if (nodeShortName.size() > 50) {
+                    nodeShortName.resize(50);
+                    nodeShortName.resize(52, '.');
                 }
+                htmlencode(nodeShortName);
                     
                 templateReplace(chart_js, "--chart-title--", nodeName);
                 templateReplace(chart_js, "--margin-bottom--", printString(buffer, "%d", margin_bottom));
@@ -517,7 +509,7 @@ void TemporalChartGenerator::generateChart() const {
                 printString(buffer, "chart_%d_%u", clusterIdx + 1, 0 + 1);
                 templateReplace(chart_js, "--container-id--", buffer);
 				// add select option for this chart
-				chart_select_options << "<option value=\"" << buffer.c_str() << "\" " << (clusterIdx == 0 ? "selected=selected" : "") << ">" << nodeName.c_str() << "</option>" << std::endl;
+				chart_select_options << "<option value=\"" << buffer.c_str() << "\" " << (clusterIdx == 0 ? "selected=selected" : "") << ">" << nodeShortName.c_str() << "</option>" << std::endl;
                 printString(buffer, "%u", static_cast<unsigned int>(std::ceil( static_cast<double>(groups.getGroups().size()) / static_cast<double>(MAX_X_AXIS_TICKS) )));
                 templateReplace(chart_js, "--tickinterval--", buffer);
                 templateReplace(chart_js, "--categories--", categories.str());

@@ -92,7 +92,8 @@ public:
     typedef std::list<std::pair<int, count_t> > CensorDist_t;
 
 private:
-    std::string             _identifier;
+    std::string             _identifier;        // node identidier as read from input file
+    std::string             _name;              // node name, for ease of use and quicker understanding of the output
     int                     _ID;                // The node ID.
     CountContainer_t        _IntC_C;            // Number of true and simulated cases internal to the node, respectively.
     CountContainer_t        _BrC_C;             // Number of true and simulated cases in the node and all decendants (children, grandchildren etc.)
@@ -181,6 +182,8 @@ public:
         return censor_distribution;
     }
     const std::string           & getIdentifier() const {return _identifier;}
+    const std::string           & getName() const { return _name; }
+    const std::string           & getOutputLabel() const { return _name.size() ? _name : _identifier; }
     int                           getID() const {return _ID;}
     int                           getIntC() const {return _IntC_C.front();}
     const CountContainer_t      & getIntC_C() const {return _IntC_C;}
@@ -196,10 +199,10 @@ public:
     const ExpectedContainer_t   & getBrN_C() const {return _BrN_C;}
     const ChildContainer_t      & getChildren() const {return _Child;}
     const ParentContainer_t     & getParents() const {return _Parent;}
-    std::string                 & getParentIndentifiers(std::string& parents) const {
+    std::string                 & getParentIndentifiers(std::string& parents, bool asLabels=true) const {
                                     std::stringstream buffer;
                                     for (auto itr = getParents().begin(); itr != getParents().end(); ++itr)
-                                        buffer << (itr != getParents().begin() ? "," : "") << itr->first->getIdentifier();
+                                        buffer << (itr != getParents().begin() ? "," : "") << (asLabels ? itr->first->getOutputLabel() : itr->first->getIdentifier());
                                     parents = buffer.str();
                                     return parents;
                                   }
@@ -233,6 +236,7 @@ public:
                                     }
                                     return _IntC_Censored; }
     void                          setIdentifier(const std::string& s) {_identifier = s;}
+    void                          setName(const std::string& s) { _name = s; }
     void                          setID(int i) {_ID = i;}
     void                          setCutType(Parameters::CutType cut_type) {_cut_type = cut_type;}
     void                          setMinCensoredBr(count_t c) { _min_censored_Br = c; }

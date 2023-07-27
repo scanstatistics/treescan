@@ -98,7 +98,7 @@ class CSVDataFileWriter {
       CSVDataFileWriter(std::ofstream& outfile, const ptr_vector<FieldDef>& vFieldDefs, bool printHeaders, bool append=false);
       virtual ~CSVDataFileWriter() {}
 
-      static std::string& createFormatString(std::string& sValue, const FieldDef& FieldDef, const FieldValue& fv);
+      static std::string& encodeForCSV(std::string& sValue, const FieldDef& FieldDef, const FieldValue& fv);
       virtual void         writeRecord(const RecordBuffer& Record);
 };
 

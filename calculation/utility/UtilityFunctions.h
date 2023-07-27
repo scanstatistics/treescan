@@ -55,7 +55,7 @@ std::string                   & GetUserDocumentsDirectory(std::string& s, const 
 std::string                   & GetUserTemporaryDirectory(std::string& s);
 std::string                   & GetTemporaryFilename(std::string& s);
 bool                            getlinePortable(std::ifstream& readstream, std::string& line);
-std::string                   & htmlencode(std::string& data);
+std::string                   & htmlencode(std::string& text);
 template <typename T>           bool string_to_numeric_type(const char * s, T& t, bool test_finite=true) {
                                     try {
                                         t = boost::lexical_cast<T>(s);
@@ -129,5 +129,6 @@ void writePadRight(const std::string& text, _OutTy& destintation, size_t width, 
 
 using boost::uuids::detail::md5;
 std::string toString(const md5::digest_type &digest);
+std::stringstream & templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith);
 //******************************************************************************
 #endif

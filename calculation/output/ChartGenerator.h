@@ -12,7 +12,6 @@ class AbstractChartGenerator {
     protected:
         static const char * HTML_FILE_EXT;
         static const char * TEMPLATE_BODY;
-        static std::stringstream & templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith);
 
     public:
         AbstractChartGenerator() {}

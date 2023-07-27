@@ -370,7 +370,7 @@ std::string& CutStructure::getParentIndentifiers(const ScanRunner& scanner, std:
     std::stringstream buffer;
     const NodeStructure * node = scanner.getNodes().at(getID());
     for (auto itr = node->getParents().begin(); itr != node->getParents().end(); ++itr)
-        buffer << (itr != node->getParents().begin() ? "," : "") << itr->first->getIdentifier();
+        buffer << (itr != node->getParents().begin() ? "," : "") << itr->first->getOutputLabel();
     parents = buffer.str();
     return parents;
 }
@@ -1343,9 +1343,7 @@ std::string & ScanRunner::getCaselessWindowsAsString(std::string& s) const {
     return s;
 }
 
-/*
- Reads tree structure from passed file. The file format is: <node identifier>, <parent node identifier 1>, <parent node identifier 2>, ... <parent node identifier N>
- */
+/* Reads tree structure from passed file. */
 bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal) {
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     size_t daysInDataTimeRange = Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
@@ -1366,9 +1364,9 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
 
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
     while (dataSource->readRecord()) {
-        if (dataSource->getNumValues() > 3) {
+        if (dataSource->getNumValues() > 4) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in tree file has %ld values but expecting 2: <node id>, <parent node id>(optional) <distance between>(optional).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getNumValues());
+            _print.Printf("Error: Record %ld in tree file has %ld values but expecting 2: <node id>, <parent node id>(optional) <distance between>(optional) <node label>(optional).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getNumValues());
             continue;
         }
         std::string identifier = dataSource->getValueAt(0);
@@ -1390,9 +1388,18 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
     // now set parent/children nodes
     dataSource->gotoFirstRecord();
     while (dataSource->readRecord()) {
+        std::string record_value;
         ScanRunner::Index_t index = getNodeIndex(dataSource->getValueAt(0));
         NodeStructure * node = _Nodes[index.second];
-        std::string record_value = dataSource->getValueAt(1);
+        // Read optional node name in fourth column.
+        if (dataSource->getNumValues() == 4) {
+            record_value = dataSource->getValueAt(3);
+            if (!record_value.empty()) {
+                node->setName(record_value);
+            }
+        }
+        // Read optional parent node.
+        record_value = dataSource->getValueAt(1);
         if (dataSource->getNumValues() == 1 || record_value.empty())
             continue;
         index = getNodeIndex(record_value);
@@ -1406,9 +1413,9 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
             _print.Printf("Error: Record %ld in tree file has node referencing self as parent (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), record_value.c_str());
             continue;
         }
-        // Read distance column if defined by user, default to one otherwise.
+        // Read optional distance column or assign default.
         record_value = "1";
-        if (dataSource->getNumValues() == 3) {
+        if (dataSource->getNumValues() >= 3) {
             record_value = dataSource->getValueAt(2);
             double distanceBetween = 1.0;
             if (!record_value.empty() && (!string_to_numeric_type<double>(record_value.c_str(), distanceBetween) || distanceBetween < 0.0)) {

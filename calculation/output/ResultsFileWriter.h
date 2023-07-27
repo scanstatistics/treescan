@@ -28,7 +28,7 @@ class ResultsFileWriter {
     const char    * getRecurranceIntervalClass(const RecurrenceInterval_t& ri, bool childClass) const;
     std::string   & getRecurranceIntervalAsString(const RecurrenceInterval_t& ri, std::string& buffer) const;
     const char    * getSignalClass(double pval, bool childClass);
-    std::string   & stripNodeIdForHtml(std::string & s);
+    std::string   & encodeForJavascript(std::string & text) const;
     NodeSet_t       writeJsTreeNode(std::stringstream & outfile, const NodeStructure& node, const std::map<int, const CutStructure*>& cutMap, int collapseAtLevel);
 
     std::ofstream & openStream(const std::string& outputfile, std::ofstream & outfile, bool overwrite=false) const;
@@ -36,7 +36,9 @@ class ResultsFileWriter {
     std::string   & getAnalysisSuccinctStatement(std::string & buffer) const;
 
     std::stringstream & getNCBIAsnDefinition(const NodeStructure& node, const ptr_vector<FieldDef>& fieldDefinitions, bool idoffset, const std::map<int, const CutStructure*>& nodeCuts, std::stringstream& destination) const;
+    std::string & encodeForASN(std::string & text) const;
     std::stringstream & getNewickDefinition(const NodeStructure& node, std::stringstream& destination) const;
+    std::string & encodeForNewick(std::string & text) const;
 
   public:
     ResultsFileWriter(const ScanRunner& scanRunner) : _scanRunner(scanRunner) {}

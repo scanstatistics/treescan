@@ -182,40 +182,40 @@ CSVDataFileWriter::CSVDataFileWriter(std::ofstream& outfile, const ptr_vector<Fi
     }
 }
 
-// creates the formatted string from the precision and type of the field value and stores the formatted
-//  output value in sValue
-// pre : none
-// post : formats the string sValue based upon the settings of fieldValue
-std::string& CSVDataFileWriter::createFormatString(std::string& sValue, const FieldDef& FieldDef, const FieldValue& fv) {
-  std::string   temp;
-  unsigned long ulStringLength = 0;
-
-  switch(fv.GetType()) {
-    case FieldValue::ALPHA_FLD :
-      {if (fv.AsString().find(",") != std::string::npos) {
-          printString(sValue, "\"%s\"", fv.AsString().c_str());
-       } else sValue = fv.AsString();
-      } break;
-    case FieldValue::NUMBER_FLD :
-        sValue = getValueAsString(fv.AsDouble(), temp, FieldDef.GetAsciiDecimals());
-      break;
-    default : throw prg_error("Unsupported field type %c", "Error!", fv.GetType());
-  }
-  return sValue;
+/* Creates a formatted string for field value suitable for use in csv string. */
+std::string& CSVDataFileWriter::encodeForCSV(std::string& sValue, const FieldDef& FieldDef, const FieldValue& fv) {
+    std::string temp;
+    switch(fv.GetType()) {
+        case FieldValue::ALPHA_FLD : {
+                for (size_t pos=0; pos != fv.AsString().size(); ++pos) {
+                    switch (fv.AsString()[pos]) {
+                        case '\"': temp.append("\"\""); break;
+                        default: temp.append(&fv.AsString()[pos], 1); break;
+                    }
+                }
+                if (temp.find(",") != std::string::npos) {
+                    printString(sValue, "\"%s\"", temp.c_str());
+                } else sValue = temp;
+            } break;
+        case FieldValue::NUMBER_FLD:
+            sValue = getValueAsString(fv.AsDouble(), temp, FieldDef.GetAsciiDecimals());
+            break;
+        default : throw prg_error("Unsupported field type %c", "Error!", fv.GetType());
+    }
+    return sValue;
 }
 
 /** Writes record buffer to file stream. */
 void CSVDataFileWriter::writeRecord(const RecordBuffer& Record) {
-  std::string sFormatString;
-
-  for (unsigned int j=0; j < Record.GetNumFields(); ++j) {
-    sFormatString.clear();
-    if (!Record.GetFieldIsBlank(j))
-      createFormatString(sFormatString, Record.GetFieldDefinition(j), Record.GetFieldValue(j));
-    _outfile << sFormatString;
-    if (j < Record.GetNumFields() - 1) _outfile << ",";
-  }
-  _outfile << std::endl;
+    std::string value;
+    for (unsigned int j=0; j < Record.GetNumFields(); ++j) {
+        value.clear();
+        if (!Record.GetFieldIsBlank(j))
+            encodeForCSV(value, Record.GetFieldDefinition(j), Record.GetFieldValue(j));
+        _outfile << value;
+        if (j < Record.GetNumFields() - 1) _outfile << ",";
+    }
+    _outfile << std::endl;
 }
 
 
@@ -406,7 +406,7 @@ RecordBuffer& CutsRecordWriter::getRecordForCut(RecordBuffer& Record, const CutS
 
     try {
         Record.GetFieldValue(CUT_NUM_FIELD).AsString() = printString(buffer, "%u", thisCut.getReportOrder());
-        Record.GetFieldValue(NODE_ID_FIELD).AsString() = cutNode.getIdentifier();
+        Record.GetFieldValue(NODE_ID_FIELD).AsString() = cutNode.getOutputLabel();
         if (params.getScanType() != Parameters::TIMEONLY)
             Record.GetFieldValue(P_LEVEL_FLD).AsDouble() = static_cast<int>(cutNode.getLevel());
         switch (params.getModelType()) {
@@ -504,7 +504,7 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
     const Parameters& params = scanner.getParameters();
 
     Record.GetFieldValue(CUT_NUM_FIELD).AsString() = printString(buffer, "%u_%u", thisCut.getReportOrder(), subIndex);
-    Record.GetFieldValue(NODE_ID_FIELD).AsString() = childNode.getIdentifier();
+    Record.GetFieldValue(NODE_ID_FIELD).AsString() = childNode.getOutputLabel();
     if (params.getScanType() != Parameters::TIMEONLY) {
         Record.GetFieldValue(P_LEVEL_FLD).AsDouble() = static_cast<int>(childNode.getLevel());
         childNode.getParentIndentifiers(Record.GetFieldValue(PARENT_NODE_FLD).AsString());

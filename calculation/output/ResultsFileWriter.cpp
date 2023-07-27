@@ -176,13 +176,13 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 outfile << thisCut.getReportOrder() << ")";
                 // skip reporting node identifier for time-only scans
                 if (parameters.getScanType() != Parameters::TIMEONLY) {
-                    PrintFormat.PrintSectionLabel(outfile, "Node Identifier", false);
-                    buffer = thisNode.getIdentifier();
+                    PrintFormat.PrintSectionLabel(outfile, "Node", false);
+                    buffer = thisNode.getOutputLabel();
                     if (thisCut.getCutChildren().size()) {
                         buffer += " children: ";
                         const CutStructure::CutChildContainer_t& childNodeIds = thisCut.getCutChildren();
                         for (size_t t=0; t < childNodeIds.size(); ++t) {
-                            buffer +=  _scanRunner.getNodes()[childNodeIds[t]]->getIdentifier();
+                            buffer +=  _scanRunner.getNodes()[childNodeIds[t]]->getOutputLabel();
                             if (t < childNodeIds.size() - 1)
                                 buffer += ", ";
                         }
@@ -502,7 +502,8 @@ std::stringstream & ResultsFileWriter::getNCBIAsnDefinition(const NodeStructure&
         distance = node.getParents().front().second;
     }
     if (nodeCut != nodeCuts.end()) printString(buffer, " (Cut #%u)", nodeCut->second->getReportOrder());
-    destination << " features { { featureid 0, value \"" << node.getIdentifier() << buffer << "\" },{ featureid 1, value \"" << distance << "\" },{ featureid 2, value \""<< node.getIdentifier() << "\" }";
+    buffer = node.getOutputLabel();
+    destination << " features { { featureid 0, value \"" << encodeForASN(buffer) << "\" },{ featureid 1, value \"" << distance << "\" },{ featureid 2, value \""<< buffer << "\" }";
     if (nodeCut != nodeCuts.end()) {
         RecordBuffer Record(fieldDefinitions);
         CutsRecordWriter::getRecordForCut(Record, *(nodeCut->second), _scanRunner);
@@ -510,7 +511,10 @@ std::stringstream & ResultsFileWriter::getNCBIAsnDefinition(const NodeStructure&
         std::string cutField(DataRecordWriter::CUT_NUM_FIELD), idField(DataRecordWriter::NODE_ID_FIELD);
         for (auto const field : fieldDefinitions) {
             if (cutField == field->GetName() || idField == field->GetName()) continue;
-            CSVDataFileWriter::createFormatString(buffer, Record.GetFieldDefinition(field->GetName()), Record.GetFieldValue(field->GetName()));
+            if (field->GetType() == FieldValue::ALPHA_FLD) // Special case character fields.
+                encodeForASN(nodeCut->second->getParentIndentifiers(_scanRunner, buffer));
+            else // Otherwise format in same way as CSV output.
+                CSVDataFileWriter::encodeForCSV(buffer, *field, Record.GetFieldValue(field->GetName()));
             destination << ", { featureid " << fid << ", value \"" << buffer << "\"}";
             ++fid;
         }
@@ -551,7 +555,8 @@ std::stringstream & ResultsFileWriter::getNewickDefinition(const NodeStructure& 
         if (c + 1 < nchild) destination << ",";
     }
     if (nchild) destination << ")";
-    destination << node.getIdentifier() << ":" << (node.getParents().size() ? node.getParents().front().second : "1");
+    std::string buffer(node.getOutputLabel());
+    destination << encodeForNewick(buffer) << ":" << (node.getParents().size() ? node.getParents().front().second : "1");
     return destination;
 }
 
@@ -569,23 +574,43 @@ std::string & ResultsFileWriter::getTotalRunningTime(time_t start, time_t end, s
     return buffer;
 }
 
-std::string & ResultsFileWriter::stripNodeIdForHtml(std::string & s) {
-    std::string buffer;
-    buffer.reserve(s.size());
-    for (size_t pos = 0; pos != s.size(); ++pos) {
-        switch (s[pos]) {
-        case '&':  buffer.append("-amp-"); break;
-        case '\"': buffer.append("-quot-"); break;
-        case '\'': buffer.append("-apos-"); break;
-        case '<':  buffer.append("-lt-"); break;
-        case '>':  buffer.append("-gt-"); break;
-        case '.':  buffer.append("-period-"); break;
-        case '#':  buffer.append("-num-"); break;
-        default:   buffer.append(&s[pos], 1); break;
+/* Encodes text for javascript id reference by replacing symbols/punctuation with underscore. */
+std::string & ResultsFileWriter::encodeForJavascript(std::string & text) const {
+    // Now replace HTML number characters that would interfere in javascript.
+    std::transform(text.begin(), text.end(), text.begin(), [](auto& ch) {
+        if (std::ispunct(ch) || ch == ' ')
+            ch = '_';
+        return ch;
+    });
+    return text;
+}
+
+/* Encodes string for Newick format (https://en.wikipedia.org/wiki/Newick_format). */
+std::string & ResultsFileWriter::encodeForNewick(std::string & text) const {
+    std::stringstream buffer;
+    buffer << '\''; // Always enclosing in single quotes - just in case there are characters which conflict with reserved characters.
+    for (auto ch : text) {
+        switch (ch) {
+            case '\'': buffer << "\'\'"; break; // escape single quotes since they are the enclosing character for Newick
+            default: buffer << ch; break;
         }
     }
-    s.swap(buffer);
-    return s;
+    buffer << '\'';
+    text = buffer.str();
+    return text;
+}
+
+/* Encodes string characters for ASN.1 format used in Genome Workbench and NCBI's Tree Viewer. */
+std::string & ResultsFileWriter::encodeForASN(std::string & text) const {
+    std::stringstream buffer;
+    for (auto ch : text) {
+        switch (ch) {
+            case '\"': buffer << "\"\""; break; // escape double quotes since they are the enclosing character for ASN values
+            default: buffer << ch; break;
+        }
+    }
+    text = buffer.str();
+    return text;
 }
 
 bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
@@ -939,14 +964,13 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
 std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Loglikelihood_t & calcLogLikelihood, const std::string& format, std::ofstream& outfile, std::stringstream * subrows) {
     const Parameters& parameters = _scanRunner.getParameters();
     const NodeStructure& thisNode = *(_scanRunner.getNodes()[thisCut.getID()]);
-    std::string node_tr(thisNode.getIdentifier()), buffer, buffer2;
+    std::string node_tr(thisNode.getOutputLabel()), buffer, buffer2;
     std::vector<boost::shared_ptr<RecordBuffer> > childRecords;
     ptr_vector<FieldDef> fieldDefinitions;
 
-    outfile << "<tr id=\"tr-" << stripNodeIdForHtml(node_tr) << "\"><td>" << thisCut.getReportOrder() << "</td>";
+    outfile << "<tr id=\"tr-" << encodeForJavascript(node_tr) << "\"><td>" << thisCut.getReportOrder() << "</td>";
     // skip reporting node identifier for time-only scans
     if (parameters.getScanType() != Parameters::TIMEONLY) {
-        buffer = thisNode.getIdentifier();
         // Obtain the child notes for this cut and remove any children which are not interesting.
         unsigned int countFieldIdx = std::numeric_limits<unsigned int>::max();
         CutsRecordWriter::getFieldDefs(fieldDefinitions, parameters);
@@ -962,6 +986,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         std::sort(std::begin(childRecords), std::end(childRecords), [](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
             return recordA->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble() > recordB->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble();
         });
+        buffer = thisNode.getOutputLabel();
         outfile << "<td>" << (childRecords.size() > 0 ? "<a href=\"#\" class=\"cut-node-w-children\">" : "") << htmlencode(buffer);
         outfile << (childRecords.size() > 0 ? "</a>" : "") << "</td>";
         outfile << "<td>" << printString(buffer, "%ld", static_cast<int>(thisNode.getLevel())).c_str() << "</td>";
@@ -1128,17 +1153,16 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
                 }
             }
             if (parameters.getScanType() != Parameters::TIMEONLY) {
-                std::string buffer2(thisNode.getIdentifier());
+                buffer2 = thisNode.getOutputLabel();
                 string_values.push_back(printString(buffer, "'%s'", htmlencode(buffer2).c_str()));
                 string_values.push_back(not_applicable);
             }
             if (parameters.isSequentialScanTreeOnly()) {
                 string_values.push_back(not_applicable);
             }
-            buffer = Record->GetFieldValue(CutsRecordWriter::NODE_ID_FIELD).AsString();
-            stripNodeIdForHtml(buffer);
             typelist_csv_string<std::string>(string_values, buffer2);
-            children_arrays.push_back(printString(buffer, "'tr-%s': [%s]", buffer.c_str(), buffer2.c_str()));
+            buffer = Record->GetFieldValue(CutsRecordWriter::NODE_ID_FIELD).AsString();
+            children_arrays.push_back(printString(buffer, "'tr-%s': [%s]", encodeForJavascript(buffer).c_str(), buffer2.c_str()));
         }
         typelist_csv_string<std::string>(children_arrays, buffer);
         *subrows << "'tr-" << node_tr << "' : {" << buffer << "},";
@@ -1207,18 +1231,16 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
     bool prospectiveScan = parameters.getIsProspectiveAnalysis();
     std::stringstream nodestream;
     // Write header section to this nodestream.
-    std::string buffer(node.getIdentifier()), parent;
-    if (node.getParents().size()) {
-        parent = node.getParents().front().first->getIdentifier();
-        stripNodeIdForHtml(parent);
-    }
-    nodestream << "{ HTMLid: '" << stripNodeIdForHtml(buffer) << "', innerHTML: \"<ul><li><a data-toggle='tooltip' title='<ul><li class=" << buffer << ">";
-    buffer = node.getIdentifier();
+    std::string buffer(node.getOutputLabel()), parent;
+    if (node.getParents().size())
+        parent = node.getParents().front().first->getOutputLabel();
+    nodestream << "{ HTMLid: '" << encodeForJavascript(buffer) << "', innerHTML: \"<ul><li><a data-toggle='tooltip' title='<ul><li class=" << buffer << ">";
+    buffer = node.getOutputLabel();
     nodestream << htmlencode(buffer) << "</li></ul>' data-html='true'";
-    if (!parent.empty()) { nodestream << " parent_id=" << parent << " "; }
+    if (!parent.empty()) { nodestream << " parent_id=" << encodeForJavascript(parent) << " "; }
     nodestream << "> ";
-    // Truncate identifier if longer than 25 characters -- so it can fit in node box outline.
-    buffer = node.getIdentifier();
+    // Create truncated identifier if longer than 25 characters -- so it can fit in node box outline.
+    buffer = node.getOutputLabel();
     if (buffer.size() > 25) {
         buffer.resize(25);
         buffer.resize(27, '.');

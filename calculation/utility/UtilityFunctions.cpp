@@ -10,6 +10,7 @@
 using namespace boost::math;
 #include <boost/filesystem.hpp>
 #include <locale>
+#include <boost/regex.hpp>
 
 /* returns number of combinations, given 'total' to choose from, choosing 'choose'; where order does not matter and repetition not allowed. */
 double getNumCombinations(size_t total, size_t choose) {
@@ -318,26 +319,32 @@ const char * getOrdinalSuffix(unsigned int ordinal) {
     return "th";
 }
 
-std::string& htmlencode(std::string& data) {
-    std::string buffer;
-    buffer.reserve(data.size());
-    for (size_t pos = 0; pos != data.size(); ++pos) {
-        switch (data[pos]) {
-        case '&':  buffer.append("&amp;");       break;
-        case '\"': buffer.append("&quot;");      break;
-        case '\'': buffer.append("&apos;");      break;
-        case '<':  buffer.append("&lt;");        break;
-        case '>':  buffer.append("&gt;");        break;
-        default:   buffer.append(&data[pos], 1); break;
-        }
+/* HTML encodes text - replacing symbols/punctuation with html codes. */
+std::string& htmlencode(std::string& text) {
+    std::stringstream ss;
+    for (size_t pos = 0; pos != text.size(); ++pos) {
+        if (std::ispunct(static_cast<unsigned char>(text[pos])) || text[pos] == ' ')
+            ss << "&#" << int(text[pos]) << ';';
+        else
+            ss << text[pos];
     }
-    data.swap(buffer);
-    return data;
+    text = ss.str();
+    return text;
 }
 
+/* Returns string representation of MD5 digest. */
 std::string toString(const md5::digest_type &digest) {
     const char * charDigest = reinterpret_cast<const char *>(&digest);
     std::string result;
     boost::algorithm::hex(charDigest, charDigest + sizeof(md5::digest_type), std::back_inserter(result));
     return result;
+}
+
+/** Replaces 'replaceStub' text in passed stringstream 'templateText' with text of 'replaceWith'. */
+std::stringstream & templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith) {
+    boost::regex to_be_replaced(replaceStub);
+    std::string changed(boost::regex_replace(templateText.str(), to_be_replaced, replaceWith));
+    templateText.str(std::string());
+    templateText << changed;
+    return templateText;
 }
