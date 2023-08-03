@@ -587,7 +587,7 @@ std::string & ResultsFileWriter::getTotalRunningTime(time_t start, time_t end, s
 /* Encodes text for javascript id reference by replacing symbols/punctuation with underscore. */
 std::string & ResultsFileWriter::encodeForJavascript(std::string & text) const {
     // Now replace HTML number characters that would interfere in javascript.
-    std::transform(text.begin(), text.end(), text.begin(), [](auto& ch) {
+    std::transform(text.begin(), text.end(), text.begin(), [](char& ch) {
         if (std::ispunct(ch) || ch == ' ')
             ch = '_';
         return ch;
