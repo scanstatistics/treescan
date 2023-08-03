@@ -346,6 +346,22 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         return true;
     }
 
+    /* returns scan rate type for control group */
+    public Parameters.ScanRateType getScanRateControlType() {
+        Parameters.ScanRateType eReturn = null;
+
+        if (_scanAreaHighRates.isSelected()) {
+            eReturn = Parameters.ScanRateType.HIGHRATE;
+        } else if (_scanAreaLowRates.isSelected()) {
+            eReturn = Parameters.ScanRateType.LOWRATE;
+        } else if (_scanAreaHighOrLowRates.isSelected()) {
+            eReturn = Parameters.ScanRateType.HIGHORLOWRATE;
+        } else {
+            throw new RuntimeException("Unable to determine scanning area type.");
+        }
+        return eReturn;
+    }    
+    
     /* setup interface from parameter settings */
     @Override
     protected void setupInterface(final Parameters parameters) {
@@ -384,7 +400,13 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _self_control_design.setSelected(parameters.getSelfControlDesign());
         _eventProbabiltyNumerator.setText(Integer.toString(parameters.getProbabilityRatioNumerator()));
         _eventProbabiltyDenominator.setText(Integer.toString(parameters.getProbabilityRatioDenominator()));
-
+        switch (parameters.getScanRateType()) {
+            case LOWRATE: _scanAreaLowRates.setSelected(true); break;
+            case HIGHORLOWRATE: _scanAreaHighOrLowRates.setSelected(true); break;
+            case HIGHRATE:
+            default: _scanAreaHighRates.setSelected(true);
+        }
+        
         _outputFileTextField.setText(parameters.getOutputFileName());
         _outputFileTextField.setCaretPosition(0);
         _reportResultsAsHTML.setSelected(parameters.isGeneratingHtmlResults());
@@ -466,6 +488,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         parameters.setSelfControlDesign(_self_control_design.isEnabled() && _self_control_design.isSelected());
         parameters.setProbabilityRatioNumerator(Integer.parseInt(_eventProbabiltyNumerator.getText()));
         parameters.setProbabilityRatioDenominator(Integer.parseInt(_eventProbabiltyDenominator.getText()));
+        parameters.setScanRateType(getScanRateControlType().ordinal());
         parameters.setOutputFileName(_outputFileTextField.getText());
         parameters.setGeneratingHtmlResults(_reportResultsAsHTML.isSelected());
         parameters.setGeneratingTableResults(Utils.selected(_reportResultsAsCsvTable));
@@ -569,6 +592,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _advancedParametersSetting.enableAdditionalOutputOptions();
         _advancedParametersSetting.enableTimeRangeExclusionsGroup();
         _advancedParametersSetting.enableTemporalGraphsGroup(treeAndTime || timeOnly);
+        _advancedParametersSetting.enableMinimumCasesGroup();
     }
 
     /* Returns the data time range start date as LocalDate. */
@@ -606,6 +630,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         scanButtonGroup = new javax.swing.ButtonGroup();
         timtModelButtonGoup = new javax.swing.ButtonGroup();
         _timePrecisionButtonGroup = new javax.swing.ButtonGroup();
+        scanAreaButtonGroup = new javax.swing.ButtonGroup();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         _inputTab = new javax.swing.JPanel();
         _treelFileTextField = new javax.swing.JTextField();
@@ -669,6 +694,10 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _uniformButton = new javax.swing.JRadioButton();
         _bernoulliTimeButton = new javax.swing.JRadioButton();
         _advancedAnalysisButton = new javax.swing.JButton();
+        _scanAreaPanel = new javax.swing.JPanel();
+        _scanAreaLowRates = new javax.swing.JRadioButton();
+        _scanAreaHighRates = new javax.swing.JRadioButton();
+        _scanAreaHighOrLowRates = new javax.swing.JRadioButton();
         _outputTab = new javax.swing.JPanel();
         _reportResultsAsHTML = new javax.swing.JCheckBox();
         _outputFileTextField = new javax.swing.JTextField();
@@ -1398,6 +1427,62 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             }
         });
 
+        _scanAreaPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Scan For Branches With:"));
+
+        scanAreaButtonGroup.add(_scanAreaLowRates);
+        _scanAreaLowRates.setText("Low Rates");
+        _scanAreaLowRates.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    _advancedParametersSetting.enableMinimumCasesGroup();
+                }
+            }
+        });
+
+        scanAreaButtonGroup.add(_scanAreaHighRates);
+        _scanAreaHighRates.setSelected(true);
+        _scanAreaHighRates.setText("High Rates");
+        _scanAreaHighRates.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    _advancedParametersSetting.enableMinimumCasesGroup();
+                }
+            }
+        });
+
+        scanAreaButtonGroup.add(_scanAreaHighOrLowRates);
+        _scanAreaHighOrLowRates.setText("High or Low Rates");
+        _scanAreaHighOrLowRates.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    _advancedParametersSetting.enableMinimumCasesGroup();
+                }
+            }
+        });
+
+        javax.swing.GroupLayout _scanAreaPanelLayout = new javax.swing.GroupLayout(_scanAreaPanel);
+        _scanAreaPanel.setLayout(_scanAreaPanelLayout);
+        _scanAreaPanelLayout.setHorizontalGroup(
+            _scanAreaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_scanAreaPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_scanAreaHighRates, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_scanAreaLowRates, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_scanAreaHighOrLowRates, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _scanAreaPanelLayout.setVerticalGroup(
+            _scanAreaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _scanAreaPanelLayout.createSequentialGroup()
+                .addGroup(_scanAreaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_scanAreaHighRates)
+                    .addComponent(_scanAreaLowRates)
+                    .addComponent(_scanAreaHighOrLowRates))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout _analysisTabLayout = new javax.swing.GroupLayout(_analysisTab);
         _analysisTab.setLayout(_analysisTabLayout);
         _analysisTabLayout.setHorizontalGroup(
@@ -1413,7 +1498,8 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                         .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _analysisTabLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(_advancedAnalysisButton)))
+                        .addComponent(_advancedAnalysisButton))
+                    .addComponent(_scanAreaPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _analysisTabLayout.setVerticalGroup(
@@ -1427,7 +1513,9 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(_probabilityModelPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE)
                     .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 97, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_scanAreaPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 47, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -1603,6 +1691,10 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
     private javax.swing.JButton _resultsFileBrowseButton;
     private javax.swing.JLabel _resultsFileLabel;
     private javax.swing.JLabel _resultsFileLabel1;
+    private javax.swing.JRadioButton _scanAreaHighOrLowRates;
+    private javax.swing.JRadioButton _scanAreaHighRates;
+    private javax.swing.JRadioButton _scanAreaLowRates;
+    private javax.swing.JPanel _scanAreaPanel;
     private javax.swing.JPanel _scanStatisticPanel;
     private javax.swing.JPanel _scanStatisticPanel1;
     private javax.swing.JCheckBox _self_control_design;
@@ -1641,6 +1733,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
     private javax.swing.ButtonGroup conditionalButtonGroup;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.ButtonGroup scanAreaButtonGroup;
     private javax.swing.ButtonGroup scanButtonGroup;
     private javax.swing.ButtonGroup timtModelButtonGoup;
     private javax.swing.ButtonGroup treeModelButtonGroup;

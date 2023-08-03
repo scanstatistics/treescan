@@ -443,7 +443,7 @@ public:
 protected:
     BasePrint                         & _print;
     NodeStructureContainer_t            _Nodes;
-    NodeStructure::ChildContainer_t  _rootNodes;
+    NodeStructure::ChildContainer_t     _rootNodes;
     CutStructureContainer_t             _Cut;
     CutStructureContainer_t             _trimmed_cuts;
     int                                 _TotalC;
@@ -462,6 +462,7 @@ protected:
     NodeStructure::count_t              _num_censored_cases;
     DataTimeRange::index_t              _avg_censor_time;
     NodeStructure::count_t              _num_cases_excluded;
+    unsigned int                        _node_evaluation_minimum;
     mutable SequentialStatistic_t       _sequential_statistic;
     // cache for storing total cases in time window
     mutable std::map<std::pair<DataTimeRange::index_t, DataTimeRange::index_t>, double> _node_n_time_total_cases_cache;
@@ -526,6 +527,7 @@ public:
     const TreeStatistics             & getTreeStatistics() const;
     DataTimeRange::index_t             getZeroTranslationAdditive() const {return _zero_translation_additive;}
     bool                               isEvaluated(const NodeStructure& node) const;
+    unsigned int                       getNodeEvaluationMinimum() const { return _node_evaluation_minimum; }
     bool                               reportableCut(const CutStructure& cut) const;
     bool                               reportablePValue(const CutStructure& cut) const;
     bool                               reportableRecurrenceInterval(const CutStructure& cut) const;

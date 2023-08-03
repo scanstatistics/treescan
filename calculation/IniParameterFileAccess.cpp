@@ -333,6 +333,7 @@ void IniParameterFileAccess::WriteAnalysisSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, Parameters::CONDITIONAL_TYPE, GetParameterString(Parameters::CONDITIONAL_TYPE, s).c_str(), GetParameterComment(Parameters::CONDITIONAL_TYPE));
         WriteIniParameter(WriteFile, Parameters::SELF_CONTROL_DESIGN, GetParameterString(Parameters::SELF_CONTROL_DESIGN, s).c_str(), GetParameterComment(Parameters::SELF_CONTROL_DESIGN));
         WriteIniParameter(WriteFile, Parameters::EVENT_PROBABILITY, GetParameterString(Parameters::EVENT_PROBABILITY, s).c_str(), GetParameterComment(Parameters::EVENT_PROBABILITY));
+        WriteIniParameter(WriteFile, Parameters::SCAN_RATE_TYPE, GetParameterString(Parameters::SCAN_RATE_TYPE, s).c_str(), GetParameterComment(Parameters::SCAN_RATE_TYPE));
     } catch (prg_exception& x) {
         x.addTrace("WriteAnalysisSettings()","IniParameterFileAccess");
         throw;

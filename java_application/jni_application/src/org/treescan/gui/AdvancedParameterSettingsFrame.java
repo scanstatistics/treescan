@@ -294,7 +294,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setRestrictTreeLevels(_restrict_evaluated_levels.isSelected());
         parameters.setRestrictedTreeLevels(_restricted_levels.getText());
         parameters.setProspectiveFrequencyType(getProspectiveFrequencyControlType().ordinal());
-        parameters.setMinimumNodeCases(Integer.parseInt(_minimum_cases_textfield.getText()));
+        parameters.setMinimumHighRateNodeCases(Integer.parseInt(_minimum_cases_textfield.getText()));
 
         // Temporal Window tab
         parameters.setMaximumWindowPercentage(Double.parseDouble(_maxTemporalClusterSizeTextField.getText()));
@@ -443,7 +443,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _restrict_evaluated_levels.setSelected(parameters.getRestrictTreeLevels());
         _restricted_levels.setText(parameters.getRestrictedTreeLevels());
         _prospective_frequency.select(parameters.getProspectiveFrequencyType().ordinal());
-        _minimum_cases_textfield.setText(Integer.toString(parameters.getMinimumNodeCases()));
+        _minimum_cases_textfield.setText(Integer.toString(parameters.getMinimumHighRateNodeCases()));
 
         // Temporal Window tab
         _percentageTemporalRadioButton.setSelected(parameters.getMaximumWindowType() == Parameters.MaximumWindowType.PERCENTAGE_WINDOW);
@@ -1106,6 +1106,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _restricted_levels.setEnabled(bEnableGroup && _restrict_evaluated_levels.isSelected());
     }
 
+    /**
+     * Enabled the minimum cases group based upon current settings.
+     */
+    public void enableMinimumCasesGroup() {
+        boolean bEnableGroup = _settings_window.getScanRateControlType() != Parameters.ScanRateType.LOWRATE;
+        _label_restrict_cuts.setEnabled(bEnableGroup);
+        _minimum_cases_textfield.setEnabled(bEnableGroup);
+        _label_restrict_cuts2.setEnabled(bEnableGroup);
+    }    
+    
     /* Enables the prospective frequency controls. */
     public void enableProspectiveFrequencyGroup() {
         _prospective_frequency_group.setEnabled(Utils.selected(_prospective_evaluation));
@@ -1967,7 +1977,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _group_min_cases.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Minimum Number of Cases"));
 
         _label_restrict_cuts.setLabelFor(_minimum_cases_textfield);
-        _label_restrict_cuts.setText("Restrict cuts to have at least:"); // NOI18N
+        _label_restrict_cuts.setText("Restrict high rate cuts to have at least:"); // NOI18N
 
         _minimum_cases_textfield.setText("2"); // NOI18N
         _minimum_cases_textfield.addFocusListener(new java.awt.event.FocusAdapter() {

@@ -394,18 +394,26 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
 /** Returns a string which is details primary analysis settings. */
 std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buffer) const {
     const Parameters& parameters = _scanRunner.getParameters();
+    std::string scanrate("\nlooking for ");
+    switch (parameters.getScanRateType()) {
+        case Parameters::LOWRATE: scanrate += "low rate branches\n"; break;
+        case Parameters::HIGHORLOWRATE: scanrate += "high or low rate branches\n"; break;
+        case Parameters::HIGHRATE: scanrate += "high rate branches\n"; break;
+        default: throw prg_error("Unknown scan rate type'%d'.", "getAnalysisSuccinctStatement()", parameters.getScanRateType());
+    }
     switch (parameters.getScanType()) {
         case Parameters::TREEONLY : {
-            buffer = parameters.isSequentialScanTreeOnly() ? "Tree Only Sequential Scan" : "Tree Only Scan";
+            buffer = parameters.isSequentialScanTreeOnly() ? "Tree Only Sequential scan" : "Tree Only scan";
+            buffer += scanrate;
             switch (parameters.getConditionalType()) {
-                case Parameters::UNCONDITIONAL : buffer += " with Unconditional"; break;
-                case Parameters::TOTALCASES : buffer += " with Conditional"; break;
+                case Parameters::UNCONDITIONAL : buffer += "with unconditional"; break;
+                case Parameters::TOTALCASES : buffer += "with conditional"; break;
                 case Parameters::NODE : break;
                 default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", parameters.getConditionalType());
             }
             switch (parameters.getModelType()) {
-                case Parameters::POISSON : buffer += " Poisson Model"; break;
-                case Parameters::BERNOULLI_TREE: buffer += " Bernoulli Model";
+                case Parameters::POISSON : buffer += " Poisson model"; break;
+                case Parameters::BERNOULLI_TREE: buffer += " Bernoulli model";
                     if (_scanRunner.getParameters().getSelfControlDesign())
                         buffer += " (self-control design)";
                     break;
@@ -414,25 +422,27 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buff
             }
         } break;
         case Parameters::TREETIME : 
-            buffer = "Tree Temporal Scan";
+            buffer = "Tree Temporal scan";
+            buffer += scanrate;
             switch (parameters.getConditionalType()) {
                 case Parameters::NODE : 
                     if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
-                        buffer += " with Conditional Bernoulli Model";
+                        buffer += "with conditional Bernoulli model";
                     else
-                        buffer += " with Conditional Uniform Model"; 
+                        buffer += "with conditional Uniform model"; 
                     break;
-                case Parameters::NODEANDTIME : buffer += " Conditioned on Node and Time"; break;
+                case Parameters::NODEANDTIME : buffer += "conditioned on node and time"; break;
                 default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", parameters.getConditionalType());
             } break;
-        case Parameters::TIMEONLY : 
-            buffer = parameters.isSequentialScanPurelyTemporal() ? "Time Only Sequential Scan" : "Time Only Scan";
+        case Parameters::TIMEONLY :
+            buffer = parameters.isSequentialScanPurelyTemporal() ? "Time Only Sequential scan" : "Time Only scan";
+            buffer += scanrate;
             switch (parameters.getConditionalType()) {
                 case Parameters::TOTALCASES : 
                     if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
-                        buffer += " with Conditional Bernoulli Model";
+                        buffer += "with conditional Bernoulli model";
                     else
-                        buffer += " with Conditional Uniform Model"; 
+                        buffer += "with conditional Uniform model"; 
                     break;
                 default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", parameters.getConditionalType());
             } break;

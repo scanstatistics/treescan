@@ -16,6 +16,7 @@ public class Parameters implements Cloneable {
     public enum ModelType {POISSON, BERNOULLI_TREE, UNIFORM, MODEL_NOT_APPLICABLE, BERNOULLI_TIME};
     public enum ScanType {TREEONLY, TREETIME, TIMEONLY};
     public enum ConditionalType {UNCONDITIONAL, TOTALCASES, NODE, NODEANDTIME};
+    public enum ScanRateType { HIGHRATE, LOWRATE, HIGHORLOWRATE };
     public enum MaximumWindowType {PERCENTAGE_WINDOW, FIXED_LENGTH};
     public enum PowerEvaluationType {PE_WITH_ANALYSIS, PE_ONLY_CASEFILE,PE_ONLY_SPECIFIED_CASES};
     public enum DatePrecisionType { NONE, GENERIC, YEAR, MONTH, DAY };
@@ -56,6 +57,7 @@ public class Parameters implements Cloneable {
     private ConditionalType _conditionalType=ConditionalType.UNCONDITIONAL;
     private int _probability_ratio_numerator=1;
     private int _probability_ratio_denominator=2;
+    private ScanRateType _scan_rate_type=ScanRateType.HIGHRATE;
 
     private boolean _restrict_temporal_windows = false;
     private String _data_time_range_sstart = "0";
@@ -102,14 +104,14 @@ public class Parameters implements Cloneable {
     private TemporalGraphReportType _temporal_graph_report_type=TemporalGraphReportType.MLC_ONLY; /* which clusters to report in temporal graph */
     private int _temporal_graph_report_count=1; /* number of MLC clusters to graph with TemporalGraphReportType.X_MCL_ONLY */
     private double _temporal_graph_report_cutoff=0.05; /* P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY */
-    private int _minimum_nodes_cases=2; /*minimum number of nodes cases*/
+    private int _minimum_highrate_nodes_cases=2; /*minimum number of high rate nodes cases*/
     
     private ArrayList<InputSourceSettings>     _input_sources;
 
     public Parameters() {
     	super();
-        _input_sources = new ArrayList<InputSourceSettings>();
-        _treefilenames = new ArrayList<String>();
+        _input_sources = new ArrayList<>();
+        _treefilenames = new ArrayList<>();
         _treefilenames.add("");
     }
     @Override
@@ -150,6 +152,7 @@ public class Parameters implements Cloneable {
           if (_probability_ratio_numerator != rhs._probability_ratio_numerator) return false;
           if (_probability_ratio_denominator != rhs._probability_ratio_denominator) return false;
           if (_self_control_design != rhs._self_control_design) return false;
+          if (_scan_rate_type != rhs._scan_rate_type) return false;
           if (_restrict_temporal_windows != rhs._restrict_temporal_windows) return false;
           if (!_temporal_start_range_sbegin.equals(rhs._temporal_start_range_sbegin)) return false;
           if (!_temporal_start_range_sclose.equals(rhs._temporal_start_range_sclose)) return false;
@@ -215,17 +218,19 @@ public class Parameters implements Cloneable {
           if (_temporal_graph_report_count != rhs._temporal_graph_report_count) return false;
           if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
           if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;          
-          if(_minimum_nodes_cases != rhs._minimum_nodes_cases) return false;
+          if(_minimum_highrate_nodes_cases != rhs._minimum_highrate_nodes_cases) return false;
           
           return true;
     }
 
+    public ScanRateType getScanRateType() { return _scan_rate_type; }
+    public void setScanRateType(int ord){try {_scan_rate_type = ScanRateType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, ScanRateType.values());}}
     public boolean isGeneratingNCBIAsnResults() { return _generateNCBIAsnResults; }
     public boolean isGeneratingNewickFile() { return _generateNewickFile; }    
     public void setGeneratingNCBIAsnResults(boolean b) { _generateNCBIAsnResults = b; }
     public void setGeneratingNewickFile(boolean b) { _generateNewickFile = b; }
-    public int getMinimumNodeCases() {return _minimum_nodes_cases;}
-    public void setMinimumNodeCases(int i) {_minimum_nodes_cases = i;}
+    public int getMinimumHighRateNodeCases() {return _minimum_highrate_nodes_cases;}
+    public void setMinimumHighRateNodeCases(int i) {_minimum_highrate_nodes_cases = i;}
     public boolean getOutputTemporalGraphFile() {return _output_temporal_graph;}
     public void setOutputTemporalGraphFile(boolean b) {_output_temporal_graph = b;}    
     public double getTemporalGraphSignificantCutoff() {return _temporal_graph_report_cutoff;}

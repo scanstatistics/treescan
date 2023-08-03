@@ -503,8 +503,12 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jint)parameters.getTemporalGraphMostLikelyCount());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setMinimumNodeCases", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getMinimumNodeCases());
+  mid = _getMethodId_Checked(Env, clazz, "setMinimumHighRateNodeCases", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getMinimumHighRateNodeCases());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setScanRateType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getScanRateType());
   jni_error::_detectError(Env);
 
   return jParameters;
@@ -913,8 +917,11 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   parameters.setTemporalGraphMostLikelyCount(Env.CallIntMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "getMinimumNodeCases", "()I");
-  parameters.setMinimumNodeCases(Env.CallIntMethod(jParameters, mid));
+  mid = _getMethodId_Checked(Env, clazz, "getMinimumHighRateNodeCases", "()I");
+  parameters.setMinimumHighRateNodeCases(Env.CallIntMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  parameters.setScanRateType((Parameters::ScanRateType)getEnumTypeOrdinalIndex(Env, jParameters, "getScanRateType", "Lorg/treescan/app/Parameters$ScanRateType;"));
   jni_error::_detectError(Env);
 
   return parameters;

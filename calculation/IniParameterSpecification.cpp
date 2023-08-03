@@ -90,8 +90,10 @@ void IniParameterSpecification::setup(Parameters::CreationVersion version) {
         Build_1_4_x_ParameterList();
     else if (version.iMajor == 2 && version.iMinor == 0)
         Build_2_0_x_ParameterList();
-    else
+    else if (version.iMajor == 2 && version.iMinor == 1)
         Build_2_1_x_ParameterList();
+    else
+        Build_2_2_x_ParameterList();
 }
 
 /* Returns ini version setting or default. */
@@ -250,6 +252,15 @@ void IniParameterSpecification::Build_2_1_x_ParameterList() {
     _parameter_info[Parameters::RESULTS_NWK] = ParamInfo(Parameters::RESULTS_NWK, "results-nwk", 5, _output_section);
 
     assert(_parameter_info.size() == 73);
+}
+
+/** Version 2.2 parameter specifications. */
+void IniParameterSpecification::Build_2_2_x_ParameterList() {
+    Build_2_1_x_ParameterList();
+
+    _parameter_info[Parameters::SCAN_RATE_TYPE] = ParamInfo(Parameters::SCAN_RATE_TYPE, "scan-rate-type", 10, _analysis_section);
+
+    assert(_parameter_info.size() == 74);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

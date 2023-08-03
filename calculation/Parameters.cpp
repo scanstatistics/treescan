@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 74;
+const int Parameters::giNumParameters = 75;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -103,7 +103,9 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;
   if (_temporal_graph_report_count != rhs._temporal_graph_report_count) return false;
   if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
-  if (_minimum_nodes_cases != rhs._minimum_nodes_cases) return false;
+  if (_minimum_highrate_nodes_cases != rhs._minimum_highrate_nodes_cases) return false;
+  if (_minimum_lowrate_nodes_cases != rhs._minimum_lowrate_nodes_cases) return false;
+  if (_scan_rate_type != rhs._scan_rate_type) return false;
 
   return true;
 }
@@ -162,7 +164,8 @@ void Parameters::copy(const Parameters &rhs) {
     _maximum_window_length = rhs._maximum_window_length;
     _maximum_window_type = rhs._maximum_window_type;
     _minimum_window_length = rhs._minimum_window_length;
-    _minimum_nodes_cases = rhs._minimum_nodes_cases;
+    _minimum_highrate_nodes_cases = rhs._minimum_highrate_nodes_cases;
+    _minimum_lowrate_nodes_cases = rhs._minimum_lowrate_nodes_cases;
 
     _outputFileName = rhs._outputFileName;
     _resultsFormat = rhs._resultsFormat;
@@ -241,6 +244,7 @@ void Parameters::copy(const Parameters &rhs) {
     _temporal_graph_report_type = rhs._temporal_graph_report_type;
     _temporal_graph_report_count = rhs._temporal_graph_report_count;
     _temporal_graph_report_cutoff = rhs._temporal_graph_report_cutoff;
+    _scan_rate_type = rhs._scan_rate_type;
 }
 
 /* Returns the maximum temporal window in data time units. */
@@ -372,7 +376,9 @@ void Parameters::setAsDefaulted() {
     _maximum_window_length = 1;
     _maximum_window_type = PERCENTAGE_WINDOW;
     _minimum_window_length = 2;
-    _minimum_nodes_cases = 2;
+    _minimum_highrate_nodes_cases = 2;
+    _minimum_lowrate_nodes_cases = 0;
+    _scan_rate_type = HIGHRATE;
 
     _outputFileName = "";
     _generateHtmlResults = false;
@@ -534,7 +540,8 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _probablility_ratio.first = pt.get<unsigned int>("parameters.analysis.event-probability.numerator", 1);
     _probablility_ratio.second = pt.get<unsigned int>("parameters.analysis.event-probability.denominator", 2);
      _self_control_design = pt.get<bool>("parameters.analysis.self-control-design", false);
-    // Advanced Analysis - Temporal Window
+     _scan_rate_type = static_cast<ScanRateType>(pt.get<unsigned int>("parameters.analysis.scanrate", HIGHRATE));
+     // Advanced Analysis - Temporal Window
     _maximum_window_percentage = pt.get<double>("parameters.analysis.advanced.temporal-window.maximum-window-percentage", 50);
     _maximum_window_length = pt.get<unsigned int>("parameters.analysis.advanced.temporal-window.maximum-window-length", 1);
     _maximum_window_type = static_cast<MaximumWindowType>(pt.get<unsigned int>("parameters.analysis.advanced.temporal-window.maximum-window-type", PERCENTAGE_WINDOW));
@@ -561,7 +568,7 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     setSequentialFilename(pt.get<std::string>("parameters.analysis.advanced.sequential-scan.sequential-filename", "").c_str(), true);
     _sequential_alpha_overall = pt.get<double>("parameters.analysis.advanced.sequential-scan.sequential-alpha-overall", 0.05);
     _sequential_alpha_spending = pt.get<double>("parameters.analysis.advanced.sequential-scan.sequential-alpha-spending", 0.01);
-    _minimum_nodes_cases = pt.get<unsigned int>("parameters.analysis.advanced.inference.minimum-node-cases", 2);
+    _minimum_highrate_nodes_cases = pt.get<unsigned int>("parameters.analysis.advanced.inference.minimum-node-cases", 2);
     // Advanced Analysis - Power Evaluations
     _perform_power_evaluations = pt.get<bool>("parameters.analysis.advanced.power-evaluations.perform-power-evaluations", false);
     _power_evaluation_type = static_cast<PowerEvaluationType>(pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.power-evaluation-type", PE_WITH_ANALYSIS));
@@ -622,6 +629,7 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.analysis.self-control-design", _self_control_design);
     pt.put("parameters.analysis.event-probability.numerator", _probablility_ratio.first);
     pt.put("parameters.analysis.event-probability.denominator", _probablility_ratio.second);
+    pt.put("parameters.analysis.scanrate", static_cast<unsigned int>(_scan_rate_type));
     // Advanced Analysis - Temporal Window
     pt.put("parameters.analysis.advanced.temporal-window.maximum-window-percentage", _maximum_window_percentage);
     pt.put("parameters.analysis.advanced.temporal-window.maximum-window-length", _maximum_window_length);
@@ -642,7 +650,7 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.analysis.advanced.inference.restrict-tree-levels", _restrict_tree_levels);
     typelist_csv_string<unsigned int>(_restricted_tree_levels, buffer);	
     pt.put("parameters.analysis.advanced.inference.tree-levels", buffer);
-    pt.put("parameters.analysis.advanced.inference.minimum-node-cases", _minimum_nodes_cases);
+    pt.put("parameters.analysis.advanced.inference.minimum-node-cases", _minimum_highrate_nodes_cases);
     // Advanced Analysis - Sequential Scan
     pt.put("parameters.analysis.advanced.sequential-scan.sequential-scan", _sequential_scan);
     pt.put("parameters.analysis.advanced.sequential-scan.sequential-maximum-signal", _sequential_max_signal);

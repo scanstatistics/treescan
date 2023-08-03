@@ -654,6 +654,13 @@ ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) :
     }
     // Potentially force censored execution.
     _censored_data = parameters.isForcedCensoredAlgorithm();
+    // Determine the minimum numbers of cases in a branch as a short cut when evaluating a node.
+    switch (parameters.getScanRateType()) {
+        case Parameters::LOWRATE: _node_evaluation_minimum = parameters.getMinimumLowRateNodeCases(); break;
+        case Parameters::HIGHORLOWRATE: _node_evaluation_minimum = std::min(parameters.getMinimumLowRateNodeCases(), parameters.getMinimumHighRateNodeCases()); break;
+        case Parameters::HIGHRATE: _node_evaluation_minimum = parameters.getMinimumHighRateNodeCases(); break;
+        default: throw prg_error("Unknown scan rate type'%d'.", "ScanRunner()", parameters.getScanRateType());
+    }
 }
 
 boost::shared_ptr<AbstractWindowLength> ScanRunner::getNewWindowLength() const {
@@ -733,8 +740,9 @@ const TreeStatistics& ScanRunner::getTreeStatistics() const {
 
 /* Returns true if NodeStructure is evaluated in scanning processing. */
 bool ScanRunner::isEvaluated(const NodeStructure& node) const {
-    // If node branch does not have the minimum number of cases in branch, it is not evaluated.
-    if (node.getBrC() < static_cast<int>(_parameters.getMinimumNodeCases())) return false;
+    // If the node branch does not have the minimum number of cases in branch, it is not evaluated.
+    if (static_cast<unsigned int>(node.getBrC()) < _node_evaluation_minimum) return false;
+    // Check whether the nodes level is excluded from evaluation - per user settings.
     if (_parameters.getScanType() != Parameters::TIMEONLY && _parameters.getRestrictTreeLevels())
         return std::find(_parameters.getRestrictedTreeLevels().begin(), _parameters.getRestrictedTreeLevels().end(), node.getLevel()) == _parameters.getRestrictedTreeLevels().end();
     return true;
@@ -2531,12 +2539,12 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
     return _Cut.size() != 0;
 }
 
+/* Calculates the log likelihood of the cut over evaluation currently, then updates collection of best cuts by node. */
 CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx, int BrC_All, double BrN_All) {
+    // Skip calculation if branch count does not meet evaluation minimum,
+    if (BrC < _node_evaluation_minimum) return 0;
+
     double loglikelihood = 0;
-
-    if (BrC < static_cast<int>(_parameters.getMinimumNodeCases()))
-        return 0;
-
     if ((_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) ||
         (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.isPerformingDayOfWeekAdjustment()) ||
         (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE && _parameters.isPerformingDayOfWeekAdjustment()))
@@ -2562,13 +2570,12 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, 
     return updateCut(cut);
 }
 
+/* Calculates the log likelihood of the cut over evaluation currently, then updates collection of best cuts by node. */
 CutStructure * ScanRunner::calculateCut(size_t node_index, int C, double N, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx) {
+    // Skip calculation if branch count does not meet evaluation minimum,
+    if (BrC < _node_evaluation_minimum) return 0;
     double loglikelihood = logCalculator->LogLikelihood(C, N, BrC, BrN);
     if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) return 0;
-
-    if (C < static_cast<int>(_parameters.getMinimumNodeCases()))
-        return 0;
-
     std::auto_ptr<CutStructure> cut(new CutStructure());
     cut->setLogLikelihood(loglikelihood);
     cut->setID(static_cast<int>(node_index));

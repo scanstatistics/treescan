@@ -40,6 +40,7 @@ class Parameters {
                         RESTRICTED_TIME_RANGE,
                         START_DATA_TIME_RANGE,
                         END_DATA_TIME_RANGE,
+                        SCAN_RATE_TYPE,
                         /* Advanced Analysis - Temporal Window */
                         MAXIMUM_WINDOW_PERCENTAGE,
                         MAXIMUM_WINDOW_FIXED,
@@ -129,7 +130,8 @@ class Parameters {
     enum CutType {SIMPLE=0, PAIRS, TRIPLETS, ORDINAL, COMBINATORIAL};
     enum ScanType {TREEONLY=0, TREETIME, TIMEONLY};
     enum ConditionalType {UNCONDITIONAL=0, TOTALCASES, NODE, NODEANDTIME};
-    enum MaximumWindowType {PERCENTAGE_WINDOW=0, FIXED_LENGTH};
+    enum MaximumWindowType {PERCENTAGE_WINDOW=0, FIXED_LENGTH};    
+    enum ScanRateType { HIGHRATE=0, LOWRATE, HIGHORLOWRATE };
     typedef std::map<std::string,Parameters::CutType> cut_map_t;
     typedef std::pair<cut_map_t, cut_map_t> cut_maps_t;
     typedef std::vector<std::string> FileNameContainer_t;
@@ -239,6 +241,7 @@ class Parameters {
     CutType                             _cut_type;
     ScanType                            _scan_type;
     ConditionalType                     _conditional_type;
+    ScanRateType                        _scan_rate_type;
     double                              _maximum_window_percentage;
     unsigned int                        _maximum_window_length;
     MaximumWindowType                   _maximum_window_type;
@@ -289,7 +292,8 @@ class Parameters {
     unsigned int                        _prospective_frequency;
     bool                                _prospective_analysis;
 
-    unsigned int                        _minimum_nodes_cases;
+    unsigned int                        _minimum_highrate_nodes_cases;
+    unsigned int                        _minimum_lowrate_nodes_cases;
 
     /* temporal clusters graph */
     bool                                _output_temporal_graph;                 /** generate temporal graph output file */
@@ -312,8 +316,12 @@ class Parameters {
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
 
-    unsigned int                        getMinimumNodeCases() const { return _minimum_nodes_cases; }
-    void                                setMinimumNodeCases(unsigned int i) { _minimum_nodes_cases = i; }
+    ScanRateType                        getScanRateType() const { return _scan_rate_type; }
+    void                                setScanRateType(ScanRateType e) { _scan_rate_type = e; }
+    unsigned int                        getMinimumHighRateNodeCases() const { return _minimum_highrate_nodes_cases; }
+    void                                setMinimumHighRateNodeCases(unsigned int i) { _minimum_highrate_nodes_cases = i; }
+    unsigned int                        getMinimumLowRateNodeCases() const { return _minimum_lowrate_nodes_cases; }
+    void                                setMinimumLowRateNodeCases(unsigned int i) { _minimum_lowrate_nodes_cases = i; }
 
     const std::string                 & getDataTimeRangeStr() const { return _data_time_range_str;}
     void                                setDataTimeRangeStr(const std::string& s) { _data_time_range_str = s; }

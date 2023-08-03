@@ -995,7 +995,7 @@
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="_minimum_cases_textfield"/>
                     </Property>
-                    <Property name="text" type="java.lang.String" value="Restrict cuts to have at least:" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Restrict high rate cuts to have at least:" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_minimum_cases_textfield">

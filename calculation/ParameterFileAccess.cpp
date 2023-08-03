@@ -62,6 +62,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::RESTRICTED_TIME_RANGE   : return "restrict temporal windows (y/n)";
             case Parameters::START_DATA_TIME_RANGE   : return "start data time range: [integer,integer] or [yyyy/mm/dd,yyyy/mm/dd]";
             case Parameters::END_DATA_TIME_RANGE     : return "end data time range: [integer,integer] or [yyyy/mm/dd,yyyy/mm/dd]";
+            case Parameters::SCAN_RATE_TYPE          : return "scan rate type (HIGHRATE=0, LOWRATE=1, HIGHORLOWRATE=2)";
             /* Advanced Analysis - Temporal Window */
             case Parameters::MAXIMUM_WINDOW_PERCENTAGE : return "maximum temporal size as percentage of data time range (0 < x <= 50.0)";
             case Parameters::MAXIMUM_WINDOW_FIXED    : return "maximum temporal size as fixed time length (integer)";
@@ -149,8 +150,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::MINIMUM_CENSOR_TIME      : return AsString(s, _parameters.getMinimumCensorTime());
             case Parameters::MINIMUM_CENSOR_PERCENTAGE: return AsString(s, _parameters.getMinimumCensorPercentage());
             case Parameters::RSK_WND_CENSOR: return AsString(s, _parameters.isApplyingRiskWindowRestrictionCensored());
-            case Parameters::RSK_WND_ALT_CENSOR_DENOM: return AsString(s, _parameters.getRiskWindowAltCensorDenominator());
-                /* Analysis */
+            case Parameters::RSK_WND_ALT_CENSOR_DENOM : return AsString(s, _parameters.getRiskWindowAltCensorDenominator());
+            /* Analysis */
             case Parameters::SCAN_TYPE                : return AsString(s, _parameters.getScanType());
             case Parameters::CONDITIONAL_TYPE         : return AsString(s, _parameters.getConditionalType());
             case Parameters::MODEL_TYPE               : return AsString(s, _parameters.getModelType());
@@ -165,6 +166,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::RESTRICTED_TIME_RANGE    : return AsString(s, _parameters.getRestrictTemporalWindows());
             case Parameters::START_DATA_TIME_RANGE    : return s = _parameters.getTemporalStartRangeStr(); return s;
             case Parameters::END_DATA_TIME_RANGE      : return s = _parameters.getTemporalEndRangeStr(); return s;
+            case Parameters::SCAN_RATE_TYPE           : return AsString(s, _parameters.getScanRateType());
             /* Advanced Analysis - Temporal Window */
             case Parameters::MAXIMUM_WINDOW_PERCENTAGE: return AsString(s, _parameters.getMaximumWindowPercentage());
             case Parameters::MAXIMUM_WINDOW_FIXED     : return AsString(s, _parameters.getMaximumWindowLength());
@@ -181,7 +183,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::RANDOMLY_GENERATE_SEED   : return AsString(s, _parameters.isRandomlyGeneratingSeed());
             case Parameters::RESTRICT_TREE_LEVELS     : return AsString(s, _parameters.getRestrictTreeLevels());
             case Parameters::RESTRICTED_TREE_LEVELS   : typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), s); return s;
-            case Parameters::MINIMUM_CASES_NODE       : return AsString(s, _parameters.getMinimumNodeCases());
+            case Parameters::MINIMUM_CASES_NODE       : return AsString(s, _parameters.getMinimumHighRateNodeCases());
             /* Output */
             case Parameters::RESULTS_FILE             : s = _parameters.getOutputFileName(); return s;
             case Parameters::RESULTS_HTML             : return AsString(s, _parameters.isGeneratingHtmlResults());
@@ -346,7 +348,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::MINIMUM_CENSOR_TIME      : _parameters.setMinimumCensorTime(ReadUnsignedInt(value, e)); break;
             case Parameters::MINIMUM_CENSOR_PERCENTAGE: _parameters.setMinimumCensorPercentage(ReadUnsignedInt(value, e)); break;
             case Parameters::RSK_WND_CENSOR           : _parameters.setApplyingRiskWindowRestrictionCensored(ReadBoolean(value, e)); break;
-            case Parameters::RSK_WND_ALT_CENSOR_DENOM: _parameters.setRiskWindowAltCensorDenominator(ReadDouble(value, e)); break;
+            case Parameters::RSK_WND_ALT_CENSOR_DENOM : _parameters.setRiskWindowAltCensorDenominator(ReadDouble(value, e)); break;
             /* Analysis */
             case Parameters::SCAN_TYPE                : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::TREEONLY, Parameters::TIMEONLY);
                                                         _parameters.setScanType((Parameters::ScanType)iValue); break;
@@ -365,6 +367,8 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::RESTRICTED_TIME_RANGE    : _parameters.setRestrictTemporalWindows(ReadBoolean(value, e)); break;
             case Parameters::START_DATA_TIME_RANGE    : _parameters.setTemporalStartRangeStr(value.c_str()); break;
             case Parameters::END_DATA_TIME_RANGE      : _parameters.setTemporalEndRangeStr(value.c_str()); break;
+            case Parameters::SCAN_RATE_TYPE           : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::HIGHRATE, Parameters::HIGHORLOWRATE);
+                                                        _parameters.setScanRateType((Parameters::ScanRateType)iValue); break;
             /* Advanced Analysis - Temporal Window */
             case Parameters::MAXIMUM_WINDOW_PERCENTAGE: _parameters.setMaximumWindowPercentage(ReadDouble(value, e)); break;
             case Parameters::MAXIMUM_WINDOW_FIXED     : _parameters.setMaximumWindowLength(ReadUnsignedInt(value, e)); break;
@@ -388,7 +392,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
                                                             _parameters.setRestrictedTreeLevels(list);
                                                         }
                                                         break;
-            case Parameters::MINIMUM_CASES_NODE       : return _parameters.setMinimumNodeCases(ReadUnsignedInt(value, e)); break;
+            case Parameters::MINIMUM_CASES_NODE       : return _parameters.setMinimumHighRateNodeCases(ReadUnsignedInt(value, e)); break;
             /* Output */
             case Parameters::RESULTS_FILE             : _parameters.setOutputFileName(value.c_str(), true); break;
             case Parameters::RESULTS_HTML             : _parameters.setGeneratingHtmlResults(ReadBoolean(value, e)); break;

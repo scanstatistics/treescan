@@ -241,6 +241,13 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
         printString(buffer, "%u/%u", _parameters.getProbabilityRatio().first, _parameters.getProbabilityRatio().second);
         settings.push_back(std::make_pair("Case Probability",buffer));
     }
+    buffer = "Scan Rate";
+    switch (_parameters.getScanRateType()) {
+        case Parameters::HIGHRATE: settings.push_back(std::make_pair(buffer, "High Rates")); break;
+        case Parameters::LOWRATE: settings.push_back(std::make_pair(buffer, "Low Rates")); break;
+        case Parameters::HIGHORLOWRATE: settings.push_back(std::make_pair(buffer, "High or Low Rates")); break;
+        default: throw prg_error("Unknown scan rate type (%d).", "getAnalysisParameters()", _parameters.getScanRateType());
+    }
     return settings;
 }
 
@@ -293,8 +300,8 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInferenceParameters(Se
         case Parameters::SIMPLE : //settings.push_back(std::make_pair(buffer,"Simple")); break;
         default: break;
     }
-
-    settings.push_back(std::make_pair("Minimum Number of Node Cases", printString(buffer, "%u", _parameters.getMinimumNodeCases())));
+    if (_parameters.getScanRateType() != Parameters::LOWRATE)
+        settings.push_back(std::make_pair("Minimum Number of High Rate Node Cases", printString(buffer, "%u", _parameters.getMinimumHighRateNodeCases())));
     return settings;
 }
 

@@ -177,9 +177,9 @@ bool ParametersValidate::ValidateInputSource(const Parameters::InputSource * sou
 /** Validates input/output file parameters. */
 bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection) const {
     bool bValid = true;
-    if (_parameters.getMinimumNodeCases() < 2) {
+    if (_parameters.getScanRateType() != Parameters::LOWRATE && _parameters.getMinimumHighRateNodeCases() < 2) {
         bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe minimum number of node cases option cannot be less than 2.\n", BasePrint::P_PARAMERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe minimum number of node cases cannot be less than 2 for high rate scans.\n", BasePrint::P_PARAMERROR);
     }
     return bValid;
 }

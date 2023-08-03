@@ -12,15 +12,15 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
             switch (parameters.getModelType()) {
                 case Parameters::POISSON: {
                     switch (parameters.getConditionalType()) {
-                        case Parameters::UNCONDITIONAL : return new UnconditionalPoissonLoglikelihood();
-                        case Parameters::TOTALCASES : return new PoissonLoglikelihood(TotalC, TotalN);
+                        case Parameters::UNCONDITIONAL : return new UnconditionalPoissonLoglikelihood(parameters);
+                        case Parameters::TOTALCASES : return new PoissonLoglikelihood(TotalC, TotalN, parameters);
                         default: throw prg_error("Unknown conditional type (%d).", "getNewLoglikelihood()", parameters.getConditionalType());
                     }
                 } break;
                 case Parameters::BERNOULLI_TREE: {
                     switch (parameters.getConditionalType()) {
-                        case Parameters::UNCONDITIONAL : return new UnconditionalBernoulliLogLoglikelihood(parameters.getProbability());
-                        case Parameters::TOTALCASES : return new BernoulliLoglikelihood(TotalC, TotalN);
+                        case Parameters::UNCONDITIONAL : return new UnconditionalBernoulliLogLoglikelihood(parameters);
+                        case Parameters::TOTALCASES : return new BernoulliLoglikelihood(TotalC, TotalN, parameters);
                         default: throw prg_error("Unknown conditional type (%d).", "getNewLoglikelihood()", parameters.getConditionalType());
                     }
                 } break;
@@ -37,28 +37,28 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
         */
         case Parameters::TREETIME:
             if (parameters.getConditionalType() == Parameters::NODEANDTIME)
-                return new PoissonLoglikelihood(TotalC, TotalN);
+                return new PoissonLoglikelihood(TotalC, TotalN, parameters);
         case Parameters::TIMEONLY: {
             switch (parameters.getModelType()) {
                 case Parameters::UNIFORM :
                     if (parameters.isPerformingDayOfWeekAdjustment()) {
                         /* TODO: Martin said to stub this log-likelihood for now. He needs to work through the correct function. */
-                        return new PoissonLoglikelihood(TotalC, TotalN);
+                        return new PoissonLoglikelihood(TotalC, TotalN, parameters);
                     }
                     if (censored_data) {
-                        return new PoissonCensoredLoglikelihood();
+                        return new PoissonCensoredLoglikelihood(parameters);
                     }
                     switch (parameters.getConditionalType()) {
                         case Parameters::TOTALCASES :
                         case Parameters::NODE :
                             if (!parameters.isPerformingDayOfWeekAdjustment())
-                                return new TemporalLoglikelihood(TotalC, TotalN, parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets(), parameters.getMaximumWindowInTimeUnits());
-                            return new PoissonLoglikelihood(TotalC, TotalN);
+                                return new TemporalLoglikelihood(TotalC, TotalN, parameters);
+                            return new PoissonLoglikelihood(TotalC, TotalN, parameters);
                         default: throw prg_error("Unknown conditional type (%d).", "getNewLoglikelihood()", parameters.getConditionalType());
                     }
                     break;
 				case Parameters::BERNOULLI_TIME:
-					return  new BernoulliTimeLoglikelihood();
+					return  new BernoulliTimeLoglikelihood(parameters);
 				default: throw prg_error("Unknown model type (%d).", "getNewLoglikelihood()", parameters.getModelType());
             }
         } break;

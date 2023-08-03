@@ -8,11 +8,16 @@
 #include "DataSource.h"
 
 AbstractMeasureList::AbstractMeasureList(const ScanRunner & scanRunner, Loglikelihood_t loglikelihood) :
-    _scanRunner(scanRunner), _loglikelihood(loglikelihood), _minimum_cases(scanRunner.getParameters().getMinimumNodeCases()) {}
+    _scanRunner(scanRunner), _loglikelihood(loglikelihood) {}
 
-/* Returns new AbstractMeasureList object - based on settings. */
+/* Returns new AbstractMeasureList object based on settings. */
 AbstractMeasureList * AbstractMeasureList::getNewMeasureList(const ScanRunner& scanner, Loglikelihood_t loglikelihood) {
-    return new MinimumMeasureList(scanner, loglikelihood);
+    switch (scanner.getParameters().getScanRateType()) {
+        case Parameters::LOWRATE: return new MaximumMeasureList(scanner, loglikelihood);
+        case Parameters::HIGHORLOWRATE: return new MinimumMaximumMeasureList(scanner, loglikelihood);
+        case Parameters::HIGHRATE: return new MinimumMeasureList(scanner, loglikelihood);
+        default: throw prg_error("Unknown scan rate type'%d'.", "getNewMeasureList()", scanner.getParameters().getScanRateType());
+    }
 }
 
 /* constructor */
@@ -81,7 +86,7 @@ MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuc
 /* Returns true if NodeStructure/SimulationNode is evaluated in scanning processing. */
 bool MCSimSuccessiveFunctor::isEvaluated(const NodeStructure& node, const SimulationNode& simNode) const {
     // If the node branch does not have the minimum number of cases in branch, it is not evaluated.
-    if (static_cast<unsigned int>(simNode.getBrC()) < _scanRunner.getParameters().getMinimumNodeCases()) return false;
+    if (static_cast<unsigned int>(simNode.getBrC()) < _scanRunner.getNodeEvaluationMinimum()) return false;
     if (_scanRunner.getParameters().getScanType() != Parameters::TIMEONLY && _scanRunner.getParameters().getRestrictTreeLevels())
         return std::find(_scanRunner.getParameters().getRestrictedTreeLevels().begin(), 
                          _scanRunner.getParameters().getRestrictedTreeLevels().end(), 
@@ -97,7 +102,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTree(
     //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
     int sumBranchC = 0, sumBranchC2 = 0;
-    double simLogLikelihood = -std::numeric_limits<double>::max(), minimum_cases = _scanRunner.getParameters().getMinimumNodeCases(), sumBranchN=0.0;
+    double simLogLikelihood = -std::numeric_limits<double>::max(), minimum_cases = _scanRunner.getNodeEvaluationMinimum(), sumBranchN=0.0;
     for (size_t i=0; i < nodes.size(); ++i) {
         const NodeStructure& thisNode(*(nodes[i]));
         if (isEvaluated(thisNode, _treeSimNodes[i])) {
@@ -184,7 +189,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
 
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
     int branchSum = 0, branchSum2 = 0;
-    double simLogLikelihood = -std::numeric_limits<double>::max(), minimum_cases = _scanRunner.getParameters().getMinimumNodeCases();
+    double simLogLikelihood = -std::numeric_limits<double>::max(), minimum_cases = _scanRunner.getNodeEvaluationMinimum();
     for (size_t i=0; i < nodes.size(); ++i) {
         const NodeStructure& thisNode(*(nodes[i]));
         const SimulationNode& thisSimNode(_treeSimNodes[i]);
@@ -323,7 +328,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
 
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
     int branchWindowSum = 0, branchWindowSum2 = 0;
-    double simLogLikelihood = -std::numeric_limits<double>::max(), minimum_cases = _scanRunner.getParameters().getMinimumNodeCases();
+    double simLogLikelihood = -std::numeric_limits<double>::max(), minimum_cases = _scanRunner.getNodeEvaluationMinimum();
     for (size_t i = 0; i < nodes.size(); ++i) {
         const NodeStructure& thisNode(*(nodes[i]));
         const SimulationNode& thisSimNode(_treeSimNodes[i]);
