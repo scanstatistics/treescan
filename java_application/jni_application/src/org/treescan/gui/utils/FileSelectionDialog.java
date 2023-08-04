@@ -8,7 +8,6 @@ import java.awt.Component;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFileChooser;
@@ -36,7 +35,7 @@ public class FileSelectionDialog {
 
     public FileSelectionDialog(final Component parent, final InputSourceSettings.InputFileType fileType, final File lastBrowseDirectory) {
         String browse_title;
-        List<InputFileFilter> filters = new ArrayList<InputFileFilter>();
+        List<InputFileFilter> filters = new ArrayList<>();
 
         browse_title = "Select " + getFileTypeAsString(fileType) +" File";
         switch (fileType) {
@@ -66,17 +65,7 @@ public class FileSelectionDialog {
     }
 
     public FileSelectionDialog(final Component parent, final String title, final File lastBrowseDirectory) {
-        _parent = parent;
-        _lastBrowseDirectory = lastBrowseDirectory;
-        if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
-            System.setProperty("apple.awt.fileDialogForDirectories", "true");
-            _file_dialog = new FileDialog((Frame)parent, title);
-            _file_dialog.setDirectory(lastBrowseDirectory.getAbsolutePath());
-        } else {
-            _file_chooser = new JFileChooser(lastBrowseDirectory);
-            _file_chooser.setDialogTitle(title);
-            _file_chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        }
+        setup(parent, title, null, lastBrowseDirectory);
     }
 
     /* Returns file type as text string. */
@@ -94,26 +83,30 @@ public class FileSelectionDialog {
     public void setup(final Component parent, final String title, final List<InputFileFilter> filters, final File lastBrowseDirectory) {
         _parent = parent;
         _lastBrowseDirectory = lastBrowseDirectory;
-        if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
-            System.setProperty("apple.awt.fileDialogForDirectories", "false");
+        
+        if (TreeScanApplication.getAwtBrowse()) {
+            if (System.getProperty("os.name").toLowerCase().startsWith("mac"))
+                System.setProperty("apple.awt.fileDialogForDirectories", "false");
             _file_dialog = new FileDialog((Frame)parent, title);
             _file_dialog.setDirectory(lastBrowseDirectory.getAbsolutePath());
-            _file_dialog.setFilenameFilter(new FilenameFilter(){
-                    @Override
-                    public boolean accept(File dir, String name) {
-                        for (int f=0; f < filters.size(); f++) {
-                            if (name.endsWith("." + filters.get(f).getFilter())) {
-                                return true;
-                            }
+            if (filters != null) {
+                _file_dialog.setFilenameFilter((File dir, String name) -> {
+                    for (InputFileFilter f: filters) {
+                        if (name.endsWith("." + f.getFilter())) {
+                            return true;
                         }
-                        return false;
                     }
-            });
+                    return false;
+                });
+            }
         } else {
             _file_chooser = new JFileChooser(lastBrowseDirectory);
             _file_chooser.setDialogTitle(title);
-            for (int f=0; f < filters.size(); f++) {
-                _file_chooser.addChoosableFileFilter(filters.get(f));
+            if (filters != null) {
+                for (InputFileFilter f: filters)
+                    _file_chooser.addChoosableFileFilter(f);
+            } else {
+                _file_chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             }
         }
     }

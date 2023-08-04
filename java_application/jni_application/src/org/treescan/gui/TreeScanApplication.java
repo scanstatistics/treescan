@@ -52,7 +52,6 @@ import org.treescan.utils.Elevator;
  */
 import javax.help.SwingHelpUtilities;
 import javax.swing.KeyStroke;
-import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
 import org.treescan.gui.utils.FileSelectionDialog;
 
@@ -66,6 +65,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     private static String _user_guide = null;
     private static String _debug_url = "";
     private static String _debug_auth = "";
+    private static boolean _awt_browse = System.getProperty("os.name").toLowerCase().startsWith("mac");
     private static String _run_args[] = new String[]{};
     private static final long serialVersionUID = 1L;
     private final ExecuteSessionAction _executeSessionAction = new ExecuteSessionAction();
@@ -77,7 +77,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     private final ApplicationPreferencesAction _applicationPreferencesAction = new ApplicationPreferencesAction();
     private JInternalFrame _focusedInternalFrame = null;
     private boolean _firstShow = true;
-    private ArrayList<JInternalFrame> allOpenFrames;
+    private final ArrayList<JInternalFrame> allOpenFrames=new ArrayList<>();
     private static TreeScanApplication _instance;
     public File lastBrowseDirectory = new File(System.getProperty("user.dir"));
     WindowsMenu windowsMenu = null;
@@ -85,21 +85,21 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     private final String WIDTH_KEY = "width";
     private final String DEFAULT_HEIGHT = "768";
     private final String DEFAULT_WIDTH = "1024";
-    private static String RELAUNCH_ARGS_OPTION = "relaunch_args=";
-    private static String RELAUNCH_TOKEN = "&";
-    private static String CHECK_UPDATE_START = "true";
+    private static final String RELAUNCH_ARGS_OPTION = "relaunch_args=";
+    private static final String RELAUNCH_TOKEN = "&";
     private final UpdateCheckDialog _updateCheck;
+    public static final String FILE_BROWSE_KEY = "filebrowse";
 
     /**
      * Creates new form TreeScanApplication
      */
     public TreeScanApplication() {
         _instance = this;
-        allOpenFrames = new ArrayList<JInternalFrame>();
         System.out.println(System.getProperties());
         initComponents();
         Preferences _prefs = Preferences.userNodeForPackage(TreeScanApplication.class);
         setSize(Integer.parseInt(_prefs.get(WIDTH_KEY, DEFAULT_WIDTH)), Integer.parseInt(_prefs.get(HEIGHT_KEY, DEFAULT_HEIGHT)));
+        _awt_browse = Boolean.parseBoolean(_prefs.get(FILE_BROWSE_KEY, Boolean.toString(_awt_browse)));
         windowsMenu = new WindowsMenu(this.desktopPane);
         windowsMenu.setWindowPositioner(new CascadingWindowPositioner(this.desktopPane));
         windowsMenu.setMnemonic(KeyEvent.VK_W);
@@ -229,6 +229,14 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         return _debug_auth;
     }
 
+    public static boolean getAwtBrowse() {
+        return _awt_browse;
+    }   
+
+    public static void setAwtBrowse(boolean b) {
+        _awt_browse = b;
+    }   
+    
     /**
      * Open new session action.
      */

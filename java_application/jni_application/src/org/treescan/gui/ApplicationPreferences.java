@@ -6,28 +6,20 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.event.UndoableEditListener;
-import javax.swing.undo.UndoManager;
-import org.treescan.app.Parameters;
-import org.treescan.gui.utils.Utils;
 import java.util.prefs.Preferences;
-import java.lang.StringBuffer;
 
 /**
  * @author  Hostovic
  */
 public class ApplicationPreferences extends javax.swing.JDialog {
     private static ApplicationPreferences _instance;
-    private static String CHECK_FREQUENCY_KEY = "check-frequency";
-    private static String CHECK_DATE_KEY = "check-date";
-    private static String KEY_DATE_FORAMT = "yyyy-MM-dd";
-    private static String CHECK_WEEKLY_KEY = "Once a week";
-    private static String CHECK_MONTHLY_KEY = "Once a month";
-    private static String CHECK_EVERYTIME_KEY = "Each time TreeScan starts";
-    private static String CHECK_MANUALLY_KEY = "Manually Only";
+    private static final String CHECK_FREQUENCY_KEY = "check-frequency";
+    private static final String CHECK_DATE_KEY = "check-date";
+    private static final String KEY_DATE_FORAMT = "yyyy-MM-dd";
+    private static final String CHECK_WEEKLY_KEY = "Once a week";
+    private static final String CHECK_MONTHLY_KEY = "Once a month";
+    private static final String CHECK_EVERYTIME_KEY = "Each time TreeScan starts";
+    private static final String CHECK_MANUALLY_KEY = "Manually Only";
 
     /** Creates new form ExecutionOptionsDialog */
     public ApplicationPreferences(java.awt.Frame parent) {
@@ -36,6 +28,9 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         initComponents();
         _checkFrequency.setModel(new javax.swing.DefaultComboBoxModel(updateFrequencyChoices()));
         _checkFrequency.setSelectedItem(getUpdateFrequency());
+        _file_browse_options.setEnabled(!System.getProperty("os.name").toLowerCase().startsWith("mac"));
+        _alternative_browsing.setEnabled(!System.getProperty("os.name").toLowerCase().startsWith("mac"));
+        if (_alternative_browsing.isEnabled()) _alternative_browsing.setSelected(TreeScanApplication.getAwtBrowse());
         setLocationRelativeTo(parent);
     }
 
@@ -52,6 +47,17 @@ public class ApplicationPreferences extends javax.swing.JDialog {
     public static void setUpdateFrequency(String choice) {
         Preferences prefs = Preferences.userNodeForPackage(TreeScanApplication.class);
         prefs.put(CHECK_FREQUENCY_KEY, choice);        
+    }
+
+    /*
+     * Sets the type of file selection dialog to use.
+     */
+    public void setAlternativeBrowsing(boolean selected) {
+        if (_alternative_browsing.isEnabled()) {
+            Preferences prefs = Preferences.userNodeForPackage(TreeScanApplication.class);
+            prefs.put(TreeScanApplication.FILE_BROWSE_KEY, Boolean.toString(selected));
+            TreeScanApplication.setAwtBrowse(selected);
+        }
     }
     
     /*
@@ -115,9 +121,13 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         cancelButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
+        _alternative_browsing = new javax.swing.JCheckBox();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        _file_browse_options = new javax.swing.JTextPane();
 
         setTitle("Preferences");
         setModal(true);
+        setPreferredSize(new java.awt.Dimension(350, 250));
         setResizable(false);
 
         parallelProcessorsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Software Updates"));
@@ -132,7 +142,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(parallelProcessorsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_checkFrequency, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE))
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE))
                 .addContainerGap())
         );
         parallelProcessorsGroupLayout.setVerticalGroup(
@@ -141,7 +151,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
                 .addComponent(jLabel1)
                 .addGap(11, 11, 11)
                 .addComponent(_checkFrequency, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 17, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         cancelButton.setText("Cancel");
@@ -155,21 +165,39 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 setUpdateFrequency(_instance._checkFrequency.getSelectedItem().toString());
+                setAlternativeBrowsing(_alternative_browsing.isSelected());
                 _instance.setVisible(false);
             }
         });
+
+        _alternative_browsing.setText("Use Alternative File Browsing Dialog");
+
+        jScrollPane1.setBorder(null);
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        _file_browse_options.setEditable(false);
+        _file_browse_options.setBackground(new java.awt.Color(240, 240, 240));
+        _file_browse_options.setBorder(null);
+        _file_browse_options.setText("In some instances the dialog used to browse for parameter, input, and output files takes an excessive amount of time to browse the file system. Selecting the above option causes this application to use an alternative dialog which should help resolve the excessive file browsing time, although providing a slightly less rich experience.");
+        _file_browse_options.setMargin(new java.awt.Insets(10, 10, 10, 10));
+        jScrollPane1.setViewportView(_file_browse_options);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(parallelProcessorsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(okButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(cancelButton))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(_alternative_browsing, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(parallelProcessorsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(okButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(cancelButton))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -183,17 +211,24 @@ public class ApplicationPreferences extends javax.swing.JDialog {
                         .addComponent(cancelButton))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(parallelProcessorsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addComponent(parallelProcessorsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_alternative_browsing)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox _alternative_browsing;
     private javax.swing.JComboBox _checkFrequency;
+    private javax.swing.JTextPane _file_browse_options;
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton okButton;
     private javax.swing.JPanel parallelProcessorsGroup;
     // End of variables declaration//GEN-END:variables
