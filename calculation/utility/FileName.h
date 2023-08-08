@@ -18,7 +18,8 @@ class FileName {
     FileName(const FileName &rhs);
     virtual ~FileName() {}
 
-    static const char   SLASH;
+    static const char   BACKSLASH;
+    static const char   FORWARDSLASH;
     static const char * UNC_TAG;
     static const char * getCurDirectory(std::string & theDirectory);
     static const char * getCurDrive(std::string & theDrive);
@@ -33,6 +34,7 @@ class FileName {
     const std::string & getFileName() const {return gsFileName;}
     std::string       & getFullPath(std::string& fullPath) const;
     std::string       & getLocation(std::string& location) const;
+    static char         getPathSeparator();
     void                setDirectory(const char * sNewDirectory);
     void                setDrive(const char * sNewDrive);
     void                setExtension(const char* sNewExt);

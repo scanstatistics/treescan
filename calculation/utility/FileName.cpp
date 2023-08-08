@@ -7,11 +7,9 @@
 #include "PrjException.h"
 
 const char * FileName::UNC_TAG = "\\\\";
-#ifdef _WINDOWS_
-const char FileName::SLASH = '\\';
-#else
-const char FileName::SLASH = '/';
-#endif
+
+const char FileName::BACKSLASH = '\\';
+const char FileName::FORWARDSLASH = '/';
 
 // The constructor will break up sName into four parts by calling SetFullName().  If NULL is passed
 // in, zero length strings are stored in the data members.
@@ -41,6 +39,15 @@ bool FileName::operator==(const FileName& rhs) const {
   if (gsFileName != rhs.gsFileName) return false;
   if (gsExtension != rhs.gsExtension) return false;
   return true;
+}
+
+// Returns the platform file path separator character.
+char FileName::getPathSeparator() {
+#ifdef _WINDOWS_
+    return BACKSLASH;
+#else
+    return FORWARDSLASH;
+#endif
 }
 
 
@@ -107,8 +114,8 @@ void FileName::setDirectory(const char * sNewDirectory) {
   // copy directory and append slash
   gsDirectory = sNewDirectory;
   if (gsDirectory.size())
-    if (gsDirectory.find_last_of(SLASH) != gsDirectory.size() - 1)
-       gsDirectory += SLASH;
+    if (gsDirectory.find_last_of(getPathSeparator()) != gsDirectory.size() - 1)
+       gsDirectory += getPathSeparator();
 }
 
 void FileName::setDrive(const char * sNewDrive) {
@@ -174,7 +181,7 @@ void FileName::setFullPath(const char* sFileName) {
   else
     setExtension("");
    // Parse the filename
-   lPosition = sWorkPath.rfind(SLASH);
+   lPosition = sWorkPath.rfind(getPathSeparator());
    if (lPosition < 0)  // not found
      lPosition = sWorkPath.rfind(':');
    if (lPosition >= 0) { // found slash or :
