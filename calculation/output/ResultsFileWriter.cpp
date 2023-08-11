@@ -61,7 +61,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN(), _scanRunner.isCensoredData()));
 
     PrintFormat.PrintVersionHeader(outfile);
-    std::string buffer = ctime(&start);
+    std::string buffer = ctime(&start), buffer2;
     outfile << std::endl << "Program run on: " << buffer << std::endl;
     PrintFormat.PrintNonRightMarginedDataString(outfile, getAnalysisSuccinctStatement(buffer), false);
     PrintFormat.SetMarginsAsSummarySection();
@@ -176,21 +176,31 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 outfile << thisCut.getReportOrder() << ")";
                 // skip reporting node identifier for time-only scans
                 if (parameters.getScanType() != Parameters::TIMEONLY) {
-                    PrintFormat.PrintSectionLabel(outfile, "Node", false);
-                    buffer = thisNode.getOutputLabel();
+                    PrintFormat.PrintSectionLabel(outfile, "Node ID", false);
+                    buffer = thisNode.getIdentifier();
                     if (thisCut.getCutChildren().size()) {
                         buffer += " children: ";
                         const CutStructure::CutChildContainer_t& childNodeIds = thisCut.getCutChildren();
                         for (size_t t=0; t < childNodeIds.size(); ++t) {
-                            buffer +=  _scanRunner.getNodes()[childNodeIds[t]]->getOutputLabel();
+                            buffer +=  _scanRunner.getNodes()[childNodeIds[t]]->getIdentifier();
                             if (t < childNodeIds.size() - 1)
                                 buffer += ", ";
                         }
                     }
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer.c_str());
+                    if (thisNode.getName().size()) {
+                        PrintFormat.PrintSectionLabel(outfile, "Node Name", true);
+                        PrintFormat.PrintAlignedMarginsDataString(outfile, thisNode.getName().c_str());
+                    }
                     if (thisNode.getLevel() > 1) {
                         PrintFormat.PrintSectionLabel(outfile, "Parent Node", true);
-                        PrintFormat.PrintAlignedMarginsDataString(outfile, thisCut.getParentIndentifiers(_scanRunner, buffer));
+                        PrintFormat.PrintAlignedMarginsDataString(outfile, thisCut.getParentIndentifiers(_scanRunner, buffer, true));
+                        if (_scanRunner.hasNodeDescriptions()) {
+                            if (thisCut.getParentIndentifiers(_scanRunner, buffer2, false) != buffer) {
+                                PrintFormat.PrintSectionLabel(outfile, "Parent Node Name", true);
+                                PrintFormat.PrintAlignedMarginsDataString(outfile, thisCut.getParentIndentifiers(_scanRunner, buffer, false));
+                            }
+                        }
                     }
                     PrintFormat.PrintSectionLabel(outfile, "Tree Level", true);
                     printString(buffer, "%ld", thisNode.getLevel());
@@ -464,13 +474,14 @@ bool ResultsFileWriter::writeNCBIAsn() const {
     if (!outfile) return false;
     // Write opening block and fdict structure.
     ptr_vector<FieldDef> fieldDefinitions;
-    CutsRecordWriter::getFieldDefs(fieldDefinitions, _scanRunner.getParameters());
+    CutsRecordWriter::getFieldDefs(fieldDefinitions, _scanRunner.getParameters(), _scanRunner.hasNodeDescriptions());
     outfile << "BioTreeContainer ::= {" << std::endl << "fdict {" << std::endl;
     outfile << "{ id 0, name \"label\" }," << std::endl << "{ id 1, name \"dist\" }," << std::endl << "{ id 2, name \"" << DataRecordWriter::NODE_ID_FIELD << "\" }";
-    size_t fid = 3, nfields(fieldDefinitions.size());
-    std::string cutField(DataRecordWriter::CUT_NUM_FIELD), idField(DataRecordWriter::NODE_ID_FIELD);
+    if (_scanRunner.hasNodeDescriptions()) outfile << "," << std::endl << "{ id 3, name \"" << DataRecordWriter::NODE_NAME_FIELD << "\" }";
+    size_t fid = (_scanRunner.hasNodeDescriptions() ? 4 : 3), nfields(fieldDefinitions.size());
+    std::string cutField(DataRecordWriter::CUT_NUM_FIELD), idField(DataRecordWriter::NODE_ID_FIELD), nameField(DataRecordWriter::NODE_NAME_FIELD);
     for(auto const field: fieldDefinitions) {
-        if (cutField == field->GetName() || idField == field->GetName()) continue;
+        if (cutField == field->GetName() || idField == field->GetName() || nameField == field->GetName()) continue;
         outfile << "," << std::endl << "{ id " << fid << ", name \"" << field->GetName() <<  "\" }";
         ++fid;
     }
@@ -499,7 +510,7 @@ bool ResultsFileWriter::writeNCBIAsn() const {
 
 /* Collects asn node definition for this node and children. */
 std::stringstream & ResultsFileWriter::getNCBIAsnDefinition(const NodeStructure& node, const ptr_vector<FieldDef>& fieldDefinitions, bool idoffset, const std::map<int, const CutStructure*>& nodeCuts, std::stringstream& destination) const {
-    std::string buffer;
+    std::string buffer, buffer2;
     // First write the current node - including additional information if there is a cut for the node.
     auto const& nodeCut = nodeCuts.find(node.getID());
     destination << "{ id " << (node.getID() + (idoffset ? 1 : 0)) << ", ";
@@ -512,17 +523,31 @@ std::stringstream & ResultsFileWriter::getNCBIAsnDefinition(const NodeStructure&
         distance = node.getParents().front().second;
     }
     if (nodeCut != nodeCuts.end()) printString(buffer, " (Cut #%u)", nodeCut->second->getReportOrder());
-    buffer = node.getOutputLabel();
-    destination << " features { { featureid 0, value \"" << encodeForASN(buffer) << "\" },{ featureid 1, value \"" << distance << "\" },{ featureid 2, value \""<< buffer << "\" }";
+    buffer = node.getIdentifier();
+    if (node.getName().size()) {
+        buffer2 = node.getName();
+        if (buffer2.size() > 25) {
+            buffer2.resize(25);
+            buffer2.resize(27, '.');
+        }
+        buffer += " ("; buffer += buffer2; buffer += ")";
+    }
+    buffer2 = node.getIdentifier();
+    destination << " features { { featureid 0, value \"" << encodeForASN(buffer) << "\" },{ featureid 1, value \"" << distance << "\" },{ featureid 2, value \""<< buffer2 << "\" }";
+    if (_scanRunner.hasNodeDescriptions()) {
+        buffer = node.getName();
+        destination << ",{ featureid 3, value \"" << encodeForASN(buffer) << "\" }";
+    }
     if (nodeCut != nodeCuts.end()) {
         RecordBuffer Record(fieldDefinitions);
         CutsRecordWriter::getRecordForCut(Record, *(nodeCut->second), _scanRunner);
-        size_t fid = 3, nfields(fieldDefinitions.size());
-        std::string cutField(DataRecordWriter::CUT_NUM_FIELD), idField(DataRecordWriter::NODE_ID_FIELD);
+        size_t fid = (_scanRunner.hasNodeDescriptions() ? 4 : 3), nfields(fieldDefinitions.size());
+        std::string cutField(DataRecordWriter::CUT_NUM_FIELD), idField(DataRecordWriter::NODE_ID_FIELD), 
+            nameField(DataRecordWriter::NODE_NAME_FIELD), parentField(DataRecordWriter::PARENT_NODE_FLD);
         for (auto const field : fieldDefinitions) {
-            if (cutField == field->GetName() || idField == field->GetName()) continue;
+            if (cutField == field->GetName() || idField == field->GetName() || nameField == field->GetName()) continue;
             if (field->GetType() == FieldValue::ALPHA_FLD) // Special case character fields.
-                encodeForASN(nodeCut->second->getParentIndentifiers(_scanRunner, buffer));
+                buffer = encodeForASN(Record.GetFieldValue(field->GetName()).AsString());
             else // Otherwise format in same way as CSV output.
                 CSVDataFileWriter::encodeForCSV(buffer, *field, Record.GetFieldValue(field->GetName()));
             destination << ", { featureid " << fid << ", value \"" << buffer << "\"}";
@@ -565,7 +590,7 @@ std::stringstream & ResultsFileWriter::getNewickDefinition(const NodeStructure& 
         if (c + 1 < nchild) destination << ",";
     }
     if (nchild) destination << ")";
-    std::string buffer(node.getOutputLabel());
+    std::string buffer(node.getIdentifier());
     destination << encodeForNewick(buffer) << ":" << (node.getParents().size() ? node.getParents().front().second : "1");
     return destination;
 }
@@ -770,7 +795,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             outfile << "<thead><tr><th>No.</th>";
             // skip reporting node identifier for time-only scans
             if (parameters.getScanType() != Parameters::TIMEONLY) {
-                outfile << "<th>Node</th><th>Tree Level</th>";
+                outfile << "<th>Node ID</th>" << (_scanRunner.hasNodeDescriptions() ? "<th>Node Name</th>" : "") << "<th>Tree Level</th>";
             }
             if (Parameters::isTemporalScanType(parameters.getScanType())) {
                // skip reporting node cases for time-only scans
@@ -808,7 +833,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                     outfile << "<th>Recurrence Interval</th>";
             }
             if (parameters.getScanType() != Parameters::TIMEONLY) {
-                outfile << "<th>Parent Node</th><th>Branch Order</th>";
+                outfile << "<th>Parent Node</th>" << (_scanRunner.hasNodeDescriptions() ? "<th>Parent Node Name</th>" : "") << "<th>Branch Order</th>";
             }
             if (parameters.isSequentialScanTreeOnly()) {
                 outfile << "<th>Signalled</th>";
@@ -983,7 +1008,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
     if (parameters.getScanType() != Parameters::TIMEONLY) {
         // Obtain the child notes for this cut and remove any children which are not interesting.
         unsigned int countFieldIdx = std::numeric_limits<unsigned int>::max();
-        CutsRecordWriter::getFieldDefs(fieldDefinitions, parameters);
+        CutsRecordWriter::getFieldDefs(fieldDefinitions, parameters, _scanRunner.hasNodeDescriptions());
         for (auto pnode : _scanRunner.getCutChildNodes(thisCut)) {
             boost::shared_ptr<RecordBuffer> record(new RecordBuffer(fieldDefinitions));
             if (countFieldIdx == std::numeric_limits<unsigned int>::max())
@@ -996,9 +1021,13 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         std::sort(std::begin(childRecords), std::end(childRecords), [](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
             return recordA->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble() > recordB->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble();
         });
-        buffer = thisNode.getOutputLabel();
+        buffer = thisNode.getIdentifier();
         outfile << "<td>" << (childRecords.size() > 0 ? "<a href=\"#\" class=\"cut-node-w-children\">" : "") << htmlencode(buffer);
         outfile << (childRecords.size() > 0 ? "</a>" : "") << "</td>";
+        if (_scanRunner.hasNodeDescriptions()) {
+            buffer = thisNode.getName();
+            outfile << "<td>" << htmlencode(buffer) << "</td>";
+        }
         outfile << "<td>" << printString(buffer, "%ld", static_cast<int>(thisNode.getLevel())).c_str() << "</td>";
     }
     if (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) {
@@ -1082,7 +1111,9 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         }
     }
     if (parameters.getScanType() != Parameters::TIMEONLY) {
-        outfile << "<td>" << thisCut.getParentIndentifiers(_scanRunner, buffer) << "</td>";
+        outfile << "<td>" << htmlencode(thisCut.getParentIndentifiers(_scanRunner, buffer, true)) << "</td>";
+        if (_scanRunner.hasNodeDescriptions())
+            outfile << "<td>" << (htmlencode(thisCut.getParentIndentifiers(_scanRunner, buffer2, false)) != buffer ? buffer2 : "") << "</td>";
         outfile << "<td class='exclude-tree'>" << thisCut.getBranchOrder() << "</td>";
     }
     if (parameters.isSequentialScanTreeOnly()) {
@@ -1101,13 +1132,17 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         // Now write records for each direct child of this cut/node. This process is slightly brittle and relies on the columns in csv matching html table.
         std::string not_applicable("'-'");
         ptr_vector<FieldDef> fieldDefinitions;
-        CutsRecordWriter::getFieldDefs(fieldDefinitions, parameters);
+        CutsRecordWriter::getFieldDefs(fieldDefinitions, parameters, _scanRunner.hasNodeDescriptions());
         std::vector<std::string> children_arrays;
         for (auto Record : childRecords) {
             std::vector<std::string> string_values;
             string_values.push_back(printString(buffer, "'%u_%u'", thisCut.getReportOrder(), children_arrays.size() + 1));
             buffer = Record->GetFieldValue(CutsRecordWriter::NODE_ID_FIELD).AsString();
             string_values.push_back(printString(buffer, "'%s'", htmlencode(buffer).c_str()));
+            if (_scanRunner.hasNodeDescriptions()) {
+                buffer = Record->GetFieldValue(CutsRecordWriter::NODE_NAME_FIELD).AsString();
+                string_values.push_back(printString(buffer, "'%s'", htmlencode(buffer).c_str()));
+            }
             string_values.push_back(printString(buffer, "'%ld'", static_cast<int>(Record->GetFieldValue(CutsRecordWriter::P_LEVEL_FLD).AsDouble())));
             switch (parameters.getModelType()) {
                 case Parameters::BERNOULLI_TIME:
@@ -1163,8 +1198,12 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
                 }
             }
             if (parameters.getScanType() != Parameters::TIMEONLY) {
-                buffer2 = thisNode.getOutputLabel();
+                buffer2 = thisNode.getIdentifier();
                 string_values.push_back(printString(buffer, "'%s'", htmlencode(buffer2).c_str()));
+                if (_scanRunner.hasNodeDescriptions()) {
+                    buffer2 = thisNode.getName();
+                    string_values.push_back(printString(buffer, "'%s'", htmlencode(buffer2).c_str()));
+                }
                 string_values.push_back(not_applicable);
             }
             if (parameters.isSequentialScanTreeOnly()) {

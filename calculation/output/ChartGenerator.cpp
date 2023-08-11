@@ -345,28 +345,8 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
 TemporalChartGenerator::TemporalChartGenerator(const ScanRunner& scanner, const SimulationVariables& simVars)
     :_scanner(scanner), _simVars(simVars) {}
 
-/* TODO: Once we start creating Gini graph, we might break TEMPLATE into parts. A good portion of the header
-         will certainly be shared between the 2 files.
-*/
-
-/* TODO: It might be better to use a true template/generator library. Some possibilities are reference here: 
-          http://stackoverflow.com/questions/355650/c-html-template-framework-templatizing-library-html-generator-library
-
-         We'll see first if this simple implementation is adequate.
-*/
-
-/* TODO: I'm not certain whether the javascript libraries should be -- locally or from www.treescan.org.
-         locally: 
-            pros: user does not need internet access
-            cons: how do we know where the libraries are installed on user machine?
-         treescan.org:
-            pros: easy to maintain
-            cons: requires user to have internet access
-         library website:
-            pros: bug fixes automatically
-            cons: re-organization of site could break links, site goes away
-
-        I'm leaning towards hosting from treescan.org. In html, test for each library and display message if jQuery or highcharts does not exist.
+/* TODO: It might be better to use a true template/generator library. Some possibilities are: 
+   http://stackoverflow.com/questions/355650/c-html-template-framework-templatizing-library-html-generator-library 
 */
 
 /** Creates HighCharts graph for purely temporal cluster. */
@@ -478,10 +458,17 @@ void TemporalChartGenerator::generateChart() const {
 
                 additional_yaxis << ", { title: { enabled: true, text: 'Percent Cases', style: { fontWeight: 'normal' } }, max: 100, min: 0, startOnTick: false, endOnTick: false, gridLineWidth: 0.1, opposite: true, showEmpty: false, labels: {format: '{text}%'} }";
                 templateReplace(chart_js, "--additional-yaxis--", additional_yaxis.str());
-
                 
-                // set default chart title 
-			    nodeName = is_pt ? std::string("Detected Cluster") : _scanner.getNodes().at(cluster.getID())->getOutputLabel();
+                // set default chart title
+                if (is_pt)
+                    nodeName = "Detected Cluster";
+                else {
+                    auto node = _scanner.getNodes().at(cluster.getID());
+                    nodeName = node->getIdentifier();
+                    if (node->getName().size()) {
+                        nodeName += " ("; nodeName += node->getName();  nodeName += ")";
+                    }
+                }
                 nodeShortName = nodeName;
                 htmlencode(nodeName);
                 if (nodeShortName.size() > 50) {

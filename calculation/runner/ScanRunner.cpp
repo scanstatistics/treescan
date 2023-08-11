@@ -366,11 +366,11 @@ double CutStructure::getExpected(const ScanRunner& scanner) const {
 }
 
 /* Returns nodes parent(s) as csv list. */
-std::string& CutStructure::getParentIndentifiers(const ScanRunner& scanner, std::string& parents) const {
+std::string& CutStructure::getParentIndentifiers(const ScanRunner& scanner, std::string& parents, bool asIdentifier) const {
     std::stringstream buffer;
     const NodeStructure * node = scanner.getNodes().at(getID());
     for (auto itr = node->getParents().begin(); itr != node->getParents().end(); ++itr)
-        buffer << (itr != node->getParents().begin() ? "," : "") << itr->first->getOutputLabel();
+        buffer << (itr != node->getParents().begin() ? "," : "") << (asIdentifier ? itr->first->getIdentifier() : itr->first->getOutputLabel());
     parents = buffer.str();
     return parents;
 }
@@ -639,7 +639,8 @@ void SequentialStatistic::write(const std::string &casefilename, const std::stri
 
 /** class constructor */
 ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : 
-    _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0),_has_multi_parent_nodes(false), _censored_data(false), _num_censored_cases(0), _avg_censor_time(0), _num_cases_excluded(0) {
+    _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0),_has_multi_parent_nodes(false), 
+    _censored_data(false), _num_censored_cases(0), _avg_censor_time(0), _num_cases_excluded(0), _has_node_descriptions(false){
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     DataTimeRange min_max = Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getMinMax() : DataTimeRange(0,0);
     // translate to ensure zero based additive
@@ -1404,6 +1405,7 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
             record_value = dataSource->getValueAt(3);
             if (!record_value.empty()) {
                 node->setName(record_value);
+                _has_node_descriptions = true;
             }
         }
         // Read optional parent node.

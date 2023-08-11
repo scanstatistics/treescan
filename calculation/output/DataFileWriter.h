@@ -41,6 +41,7 @@ class DataRecordWriter {
     static const size_t         MAX_LOC_FIELD_SIZE;
     static const char         * CUT_NUM_FIELD;
     static const char         * NODE_ID_FIELD;
+    static const char         * NODE_NAME_FIELD;
     static const char         * NODE_OBSERVATIONS_FIELD;
     static const char         * NODE_CASES_FIELD;
     static const char         * START_WINDOW_FIELD;
@@ -62,6 +63,7 @@ class DataRecordWriter {
     static const char         * P_LEVEL_FLD;
     static const char         * BRANCH_ORDER_FLD;
     static const char         * PARENT_NODE_FLD;
+    static const char         * PARENT_NODE_NAME_FLD;
     static const char         * SIGNALLED_FLD;
     static const char         * HYPOTHESIS_ALTERNATIVE_NUM_FIELD;
     static const char         * HA_ALPHA05_FIELD;
@@ -119,7 +121,7 @@ class CutsRecordWriter : public DataRecordWriter {
        virtual ~CutsRecordWriter();
 
        static std::string & getFilename(const Parameters& parameters, std::string& buffer);
-       static ptr_vector<FieldDef>& getFieldDefs(ptr_vector<FieldDef>& fields, const Parameters& params);
+       static ptr_vector<FieldDef>& getFieldDefs(ptr_vector<FieldDef>& fields, const Parameters& params, bool hasNodeNames);
        static RecordBuffer& getRecordForCut(RecordBuffer& Record, const CutStructure& thisCut, const ScanRunner& scanner);
        static RecordBuffer& getRecordForCutChild(RecordBuffer& Record, const CutStructure& thisCut, const NodeStructure& childNode, size_t subIndex, const ScanRunner& scanner);
 

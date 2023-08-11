@@ -60,7 +60,7 @@ public:
     double                  getExcessCases(const ScanRunner& scanner) const;
     double                  getExpected(const ScanRunner& scanner) const;
     unsigned int            getBranchOrder() const { return _branch_order; }
-    std::string           & getParentIndentifiers(const ScanRunner& scanner, std::string& parents) const;
+    std::string           & getParentIndentifiers(const ScanRunner& scanner, std::string& parents, bool asIdentifier) const;
     unsigned int            getReportOrder() const { return _report_order; }
     unsigned int            getRank() const {return _rank;}
     double                  getRelativeRisk(const ScanRunner& scanner) const;
@@ -199,10 +199,10 @@ public:
     const ExpectedContainer_t   & getBrN_C() const {return _BrN_C;}
     const ChildContainer_t      & getChildren() const {return _Child;}
     const ParentContainer_t     & getParents() const {return _Parent;}
-    std::string                 & getParentIndentifiers(std::string& parents, bool asLabels=true) const {
+    std::string                 & getParentIndentifiers(std::string& parents, bool asIdentifier) const {
                                     std::stringstream buffer;
                                     for (auto itr = getParents().begin(); itr != getParents().end(); ++itr)
-                                        buffer << (itr != getParents().begin() ? "," : "") << (asLabels ? itr->first->getOutputLabel() : itr->first->getIdentifier());
+                                        buffer << (itr != getParents().begin() ? "," : "") << (asIdentifier ? itr->first->getIdentifier() : itr->first->getOutputLabel());
                                     parents = buffer.str();
                                     return parents;
                                   }
@@ -459,6 +459,7 @@ protected:
     mutable TreeStatistics_t            _tree_statistics;
     bool                                _has_multi_parent_nodes;
     bool                                _censored_data;
+    bool                                _has_node_descriptions;
     NodeStructure::count_t              _num_censored_cases;
     DataTimeRange::index_t              _avg_censor_time;
     NodeStructure::count_t              _num_cases_excluded;
@@ -513,6 +514,7 @@ public:
     const CutStructureContainer_t    & getTrimmedCuts() const { return _trimmed_cuts; }
     const DayOfWeekIndexes_t         & getDayOfWeekIndexes() const {return _day_of_week_indexes;}
     bool                               getMultiParentNodesExist() const {return _has_multi_parent_nodes;}
+    bool                               hasNodeDescriptions() const { return _has_node_descriptions; }
     const NodeStructureContainer_t   & getNodes() const {return _Nodes;}
     const NodeStructure::ChildContainer_t & getRootNodes() const { return _rootNodes; }
     const Parameters                 & getParameters() const {return _parameters;}

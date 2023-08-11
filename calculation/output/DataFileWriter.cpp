@@ -223,6 +223,7 @@ void CSVDataFileWriter::writeRecord(const RecordBuffer& Record) {
 
 const char * DataRecordWriter::CUT_NUM_FIELD                             = "Cut No.";
 const char * DataRecordWriter::NODE_ID_FIELD                             = "Node Identifier";
+const char * DataRecordWriter::NODE_NAME_FIELD                           = "Node Name";
 const char * DataRecordWriter::NODE_OBSERVATIONS_FIELD                   = "Node Observations";
 const char * DataRecordWriter::NODE_CASES_FIELD                          = "Node Cases";
 const char * DataRecordWriter::START_WINDOW_FIELD                        = "Time Window Start";
@@ -247,6 +248,7 @@ const char * DataRecordWriter::RECURR_FLD                                = "Recu
 const char * DataRecordWriter::P_LEVEL_FLD                               = "Tree Level";
 const char * DataRecordWriter::BRANCH_ORDER_FLD                          = "Branch Order";
 const char * DataRecordWriter::PARENT_NODE_FLD                           = "Parent Node";
+const char * DataRecordWriter::PARENT_NODE_NAME_FLD                      = "Parent Node Name";
 const char * DataRecordWriter::SIGNALLED_FLD                             = "Signalled";
 const size_t DataRecordWriter::DEFAULT_LOC_FIELD_SIZE                    = 30;
 const size_t DataRecordWriter::MAX_LOC_FIELD_SIZE                        = 254;
@@ -265,7 +267,7 @@ CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scan
   const Parameters& params = _scanner.getParameters();
 
   try {
-     getFieldDefs(_dataFieldDefinitions, params);
+     getFieldDefs(_dataFieldDefinitions, params, _scanner.hasNodeDescriptions());
     _outfile.open(getFilename(params, buffer).c_str(), std::ofstream::trunc);
     if (!_outfile.is_open())
       throw resolvable_error("Unable to open/create file %s.", buffer.c_str());
@@ -282,12 +284,13 @@ CutsRecordWriter::~CutsRecordWriter() {
   } catch (...) { }
 }
 
-ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& fields, const Parameters& params) {
+ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& fields, const Parameters& params, bool hasNodeNames) {
     unsigned short uwOffset = 0;
     std::string    buffer;
 
     CreateField(fields, CUT_NUM_FIELD, FieldValue::ALPHA_FLD, 10, 0, uwOffset, 0);
     CreateField(fields, NODE_ID_FIELD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()), 0, uwOffset, 0);
+    if (hasNodeNames) CreateField(fields, NODE_NAME_FIELD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()), 0, uwOffset, 0);
     if (params.getScanType() != Parameters::TIMEONLY) {
         CreateField(fields, P_LEVEL_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     }
@@ -352,6 +355,7 @@ ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& field
         }
         if (params.getScanType() != Parameters::TIMEONLY) {
             CreateField(fields, PARENT_NODE_FLD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()) * 10/*multiple? guessing*/, 0, uwOffset, 0);
+            if (hasNodeNames) CreateField(fields, PARENT_NODE_NAME_FLD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()) * 10/*multiple? guessing*/, 0, uwOffset, 0);
             CreateField(fields, BRANCH_ORDER_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
         }
         if (params.isSequentialScanTreeOnly())
@@ -406,7 +410,8 @@ RecordBuffer& CutsRecordWriter::getRecordForCut(RecordBuffer& Record, const CutS
 
     try {
         Record.GetFieldValue(CUT_NUM_FIELD).AsString() = printString(buffer, "%u", thisCut.getReportOrder());
-        Record.GetFieldValue(NODE_ID_FIELD).AsString() = cutNode.getOutputLabel();
+        Record.GetFieldValue(NODE_ID_FIELD).AsString() = cutNode.getIdentifier();
+        if (scanner.hasNodeDescriptions()) Record.GetFieldValue(NODE_NAME_FIELD).AsString() = cutNode.getName();
         if (params.getScanType() != Parameters::TIMEONLY)
             Record.GetFieldValue(P_LEVEL_FLD).AsDouble() = static_cast<int>(cutNode.getLevel());
         switch (params.getModelType()) {
@@ -483,7 +488,13 @@ RecordBuffer& CutsRecordWriter::getRecordForCut(RecordBuffer& Record, const CutS
                 Record.GetFieldValue(RECURR_FLD).AsDouble() = scanner.getRecurrenceInterval(thisCut).second;
         }
         if (params.getScanType() != Parameters::TIMEONLY) {
-            cutNode.getParentIndentifiers(Record.GetFieldValue(PARENT_NODE_FLD).AsString());
+            cutNode.getParentIndentifiers(Record.GetFieldValue(PARENT_NODE_FLD).AsString(), true);
+            if (scanner.hasNodeDescriptions()) {
+                // If defining node names and parent node names are different that parent node IDs.
+                cutNode.getParentIndentifiers(buffer, false);
+                if (buffer != Record.GetFieldValue(PARENT_NODE_FLD).AsString())
+                    Record.GetFieldValue(PARENT_NODE_NAME_FLD).AsString() = buffer;
+            }
             Record.GetFieldValue(BRANCH_ORDER_FLD).AsDouble() = thisCut.getBranchOrder();
         }
         if (params.isSequentialScanTreeOnly()) {
@@ -504,10 +515,17 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
     const Parameters& params = scanner.getParameters();
 
     Record.GetFieldValue(CUT_NUM_FIELD).AsString() = printString(buffer, "%u_%u", thisCut.getReportOrder(), subIndex);
-    Record.GetFieldValue(NODE_ID_FIELD).AsString() = childNode.getOutputLabel();
+    Record.GetFieldValue(NODE_ID_FIELD).AsString() = childNode.getIdentifier();
+    if (scanner.hasNodeDescriptions()) Record.GetFieldValue(NODE_NAME_FIELD).AsString() = childNode.getName();
     if (params.getScanType() != Parameters::TIMEONLY) {
         Record.GetFieldValue(P_LEVEL_FLD).AsDouble() = static_cast<int>(childNode.getLevel());
-        childNode.getParentIndentifiers(Record.GetFieldValue(PARENT_NODE_FLD).AsString());
+        childNode.getParentIndentifiers(Record.GetFieldValue(PARENT_NODE_FLD).AsString(), true);
+        if (scanner.hasNodeDescriptions()) {
+            // If defining node names and parent node names are different that parent node IDs.
+            childNode.getParentIndentifiers(buffer, false);
+            if (buffer != Record.GetFieldValue(PARENT_NODE_FLD).AsString())
+                childNode.getParentIndentifiers(Record.GetFieldValue(PARENT_NODE_NAME_FLD).AsString(), false);
+        }
     }
     // Calculate case and expected based on analysis type - this mirrors the scan process.
     int _C;
