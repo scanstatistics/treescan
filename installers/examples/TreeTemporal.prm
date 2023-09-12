@@ -9,6 +9,8 @@ conditional-type=3
 self-control-design=n
 ;case probability (integer/integer)
 event-probability=1/2
+;scan rate type (HIGHRATE=0, LOWRATE=1, HIGHORLOWRATE=2)
+scan-rate-type=0
 
 [Input]
 ;tree structure filename
@@ -39,6 +41,8 @@ results-nwk=n
 cut-filename=
 ;default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)
 cut-type=0
+;allow data only on tree leaves - (y/n)
+data-only-on-leaves=y
 ;minimum censor time (2 <= x)
 minimum-censor-time=50
 ;minimum censor time percentage of study period (0 < x <= 100.0)
@@ -170,5 +174,5 @@ parallel-processes=0
 
 [System]
 ;parameters version - do not modify
-parameters-version=2.1.0
+parameters-version=2.2.0
 

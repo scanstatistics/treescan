@@ -105,6 +105,7 @@ public class Parameters implements Cloneable {
     private int _temporal_graph_report_count=1; /* number of MLC clusters to graph with TemporalGraphReportType.X_MCL_ONLY */
     private double _temporal_graph_report_cutoff=0.05; /* P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY */
     private int _minimum_highrate_nodes_cases=2; /*minimum number of high rate nodes cases*/
+    private boolean _data_only_on_leaves=true;
     
     private ArrayList<InputSourceSettings>     _input_sources;
 
@@ -219,10 +220,13 @@ public class Parameters implements Cloneable {
           if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
           if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;          
           if(_minimum_highrate_nodes_cases != rhs._minimum_highrate_nodes_cases) return false;
+          if (_data_only_on_leaves != rhs._data_only_on_leaves) return false;
           
           return true;
     }
 
+    public boolean getDataOnlyOnLeaves() { return _data_only_on_leaves; }
+    public void setDataOnlyOnLeaves(boolean b) { _data_only_on_leaves = b; }
     public ScanRateType getScanRateType() { return _scan_rate_type; }
     public void setScanRateType(int ord){try {_scan_rate_type = ScanRateType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, ScanRateType.values());}}
     public boolean isGeneratingNCBIAsnResults() { return _generateNCBIAsnResults; }

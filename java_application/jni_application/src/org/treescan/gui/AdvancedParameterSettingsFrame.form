@@ -77,20 +77,16 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="_cutFileLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="_cutFileTextField" pref="626" max="32767" attributes="1"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_cutFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                          </Group>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="_checkbox_data_leaves_only" max="32767" attributes="0"/>
+                          <Component id="_cutFileLabel" max="32767" attributes="0"/>
+                          <Component id="_cutFileTextField" pref="626" max="32767" attributes="1"/>
                       </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_cutFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -104,7 +100,9 @@
                           <Component id="_cutFileImportButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="_cutFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="358" max="32767" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="_checkbox_data_leaves_only" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="332" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -130,6 +128,12 @@
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_cutFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Cut.toString() + &quot;1&quot;;&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Cut));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_cutFileTextField, inputSourceSettings, _settings_window, false);&#xa;    }&#xa;});"/>
               </AuxValues>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="_checkbox_data_leaves_only">
+              <Properties>
+                <Property name="selected" type="boolean" value="true"/>
+                <Property name="text" type="java.lang.String" value="Only Allow Data on Leaves of Tree"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>
@@ -384,9 +388,6 @@
                     <Property name="selected" type="boolean" value="true"/>
                     <Property name="text" type="java.lang.String" value="Ensure that temporal window length is at least "/>
                   </Properties>
-                  <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_apply_risk_window_restrictionActionPerformed"/>
-                  </Events>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_apply_risk_window_restriction.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        _risk_window_percentage.setEnabled(e.getStateChange() == java.awt.event.ItemEvent.SELECTED);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>

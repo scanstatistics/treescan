@@ -18,6 +18,7 @@ class Parameters {
                         /* Advanced Input */
                         CUT_FILE,
                         CUT_TYPE,
+                        DATA_ONLY_ON_LEAVES,
                         APPLY_RISK_WINDOW_RESTRICTION,
                         RISK_WINDOW_PERCENTAGE,
                         MINIMUM_CENSOR_TIME,
@@ -239,6 +240,7 @@ class Parameters {
     ModelType                           _modelType;
     ratio_t                             _probablility_ratio;
     CutType                             _cut_type;
+    bool                                _data_only_on_leaves;
     ScanType                            _scan_type;
     ConditionalType                     _conditional_type;
     ScanRateType                        _scan_rate_type;
@@ -316,6 +318,8 @@ class Parameters {
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
 
+    bool                                getDataOnlyOnLeaves() const { return _data_only_on_leaves; }
+    void                                setDataOnlyOnLeaves(bool b) { _data_only_on_leaves = b; }
     ScanRateType                        getScanRateType() const { return _scan_rate_type; }
     void                                setScanRateType(ScanRateType e) { _scan_rate_type = e; }
     unsigned int                        getMinimumHighRateNodeCases() const { return _minimum_highrate_nodes_cases; }

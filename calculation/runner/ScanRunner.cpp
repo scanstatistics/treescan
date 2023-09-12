@@ -935,7 +935,17 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
         if (_parameters.getScanType() != Parameters::TIMEONLY) expectedColumns = boost::assign::list_of (col_id) (col_count) (col_time);
         else expectedColumns = boost::assign::list_of (col_count) (col_time);
     }
-
+    auto checkNonLeafWithData = [&readSuccess, &dataSource, this](const NodeStructure* node, bool hasData) {
+        if (_parameters.getDataOnlyOnLeaves() && !node->isLeaf() && hasData) {
+            readSuccess = false;
+            _print.Printf(
+                "Error: Record %ld in count file references a tree node that is not a leaf.\n"
+                "       Current parameter settings restrict data to only the leaves of the tree.\n",
+                BasePrint::P_READERROR, dataSource->getCurrentRecordIndex()
+            );
+            return true;
+        } return false;
+    };
     /* Iinitialize bitset which is used to track data time range days with cases (or controls). */
     _caselessWindows.resize(Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() : 1);
     /* Read records of control file, verifying the expected columns and data type then adding to data structures. */
@@ -997,6 +1007,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                 );
                 continue;
             }
+            if (checkNonLeafWithData(node, count > 0 || population > 0)) continue;
             node->refIntN_C().front() += population;
 			if (sequence_new_data) node->refIntN_C_Seq_New().front() += population;
         } else if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
@@ -1004,7 +1015,10 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
             node->refIntN_C().front() += count;
             if (sequence_new_data) node->refIntN_C_Seq_New().front() += count;
             /* Skip to the next record in data source if not expecting controls column in this file. */
-            if (!bernoulliExpectingControl)	continue;
+            if (!bernoulliExpectingControl) {
+                checkNonLeafWithData(node, count > 0);
+                continue;
+            }
             /* Otherwise read and verify data from controls column. */
             if  (!string_to_numeric_type<int>(dataSource->getValueAt(expectedColumns.size() - 1).c_str(), controls) || controls < 0) {
                 readSuccess = false;
@@ -1016,6 +1030,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                 );
                 continue;
             }
+            if (checkNonLeafWithData(node, count > 0 || controls > 0)) continue;
             node->refIntN_C().front() += controls;
         } else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
             /* First read and verify the days since incidance column - we might not be reading controls from this file. */
@@ -1035,10 +1050,13 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                 );
                 continue;
             }
+            if (checkNonLeafWithData(node, count > 0)) continue;
             node->refIntC_C()[daysSinceIncidence + _zero_translation_additive] += count;
             node->refIntN_C()[daysSinceIncidence + _zero_translation_additive] += count;
             if (count) _caselessWindows.set(daysSinceIncidence + _zero_translation_additive);
         } else if (Parameters::isTemporalScanType(_parameters.getScanType())) {
+            // First check the data on leaves restriction.
+            if (checkNonLeafWithData(node, count > 0)) continue;
             /* Other temporal scan type. */
             if (!readDateColumn(*dataSource, expectedColumns.size() - 1, daysSinceIncidence, filename, time_columnname)) {
                 readSuccess = false;
@@ -1263,8 +1281,20 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
             );
             continue;
         }
+        // Skip record if number of controls is zero - record not important.
+        if (controls == 0) continue;
         /* Now read remainder of data as expected for specific Bernoulli model type.*/
         NodeStructure * node = _Nodes[index.second];
+        if (_parameters.getDataOnlyOnLeaves() && !node->isLeaf()) {
+            readSuccess = false;
+            _print.Printf(
+                "Error: Record %ld in control file references a tree node that is not a leaf.\n"
+                "       Current parameter settings restrict data to only the leaves of the tree.\n",
+                BasePrint::P_READERROR,
+                dataSource->getCurrentRecordIndex()
+            );
+            continue;
+        }
         if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
             node->refIntN_C().front() += controls;
             if (sequence_new_data) node->refIntN_C_Seq_New().front() += controls;

@@ -206,7 +206,8 @@ public:
                                     parents = buffer.str();
                                     return parents;
                                   }
-    Parameters::CutType           getCutType() const {return _cut_type;} 
+    Parameters::CutType           getCutType() const {return _cut_type;}
+    bool                          isLeaf() const { return _Child.empty(); }
     ExpectedContainer_t         & refIntN_C() {
                                     if (_IntN_C.size() == 0) {
                                         _IntN_C.resize(_IntC_C.size(), 0);

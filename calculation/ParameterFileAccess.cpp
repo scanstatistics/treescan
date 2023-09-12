@@ -45,6 +45,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             /* Advanced Input */
             case Parameters::CUT_FILE                : return "cuts filename";
             case Parameters::CUT_TYPE                : return "default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)";
+            case Parameters::DATA_ONLY_ON_LEAVES     : return "allow data only on tree leaves - (y/n)";
             case Parameters::APPLY_RISK_WINDOW_RESTRICTION : return "apply risk window restriction - (y/n)";
             case Parameters::RISK_WINDOW_PERCENTAGE  : return "risk window percentage (0 < x <= 100.0)";
             case Parameters::MINIMUM_CENSOR_TIME     : return "minimum censor time (2 <= x)";
@@ -145,6 +146,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             /* Advanced Input */
             case Parameters::CUT_FILE                 : s = _parameters.getCutsFileName(); return s;
             case Parameters::CUT_TYPE                 : return AsString(s, _parameters.getCutType());
+            case Parameters::DATA_ONLY_ON_LEAVES      : return AsString(s, _parameters.getDataOnlyOnLeaves());
             case Parameters::APPLY_RISK_WINDOW_RESTRICTION : return AsString(s, _parameters.isApplyingRiskWindowRestriction());
             case Parameters::RISK_WINDOW_PERCENTAGE   : return AsString(s, _parameters.getRiskWindowPercentage());
             case Parameters::MINIMUM_CENSOR_TIME      : return AsString(s, _parameters.getMinimumCensorTime());
@@ -343,6 +345,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::CUT_FILE                 : _parameters.setCutsFileName(value.c_str(), true); break;
             case Parameters::CUT_TYPE                 : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::SIMPLE, Parameters::COMBINATORIAL);
                                                         _parameters.setCutType((Parameters::CutType)iValue); break;
+            case Parameters::DATA_ONLY_ON_LEAVES      : _parameters.setDataOnlyOnLeaves(ReadBoolean(value, e)); break;
             case Parameters::APPLY_RISK_WINDOW_RESTRICTION : _parameters.setApplyingRiskWindowRestriction(ReadBoolean(value, e)); break;
             case Parameters::RISK_WINDOW_PERCENTAGE   : _parameters.setRiskWindowPercentage(ReadDouble(value, e)); break;
             case Parameters::MINIMUM_CENSOR_TIME      : _parameters.setMinimumCensorTime(ReadUnsignedInt(value, e)); break;

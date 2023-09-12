@@ -149,6 +149,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public boolean getDefaultsSetForInputOptions() {
         boolean bReturn = true;
         bReturn &= (_cutFileTextField.getText().equals(""));
+        bReturn &= _checkbox_data_leaves_only.isSelected();
         return bReturn;
     }
 
@@ -286,6 +287,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public void saveParameterSettings(Parameters parameters) {
         // Input tab
         parameters.setCutsFileName(_cutFileTextField.getText());
+        parameters.setDataOnlyOnLeaves(_checkbox_data_leaves_only.isSelected());
         parameters.setApplyingRiskWindowRestriction(_apply_risk_window_restriction.isEnabled() && _apply_risk_window_restriction.isSelected());
         parameters.setRiskWindowPercentage(Double.parseDouble(_risk_window_percentage.getText()));
 
@@ -397,6 +399,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * controls pulled these default values from the CParameter class
      */
     private void setDefaultsForAnalysisTabs() {
+        // Inputs tab
+        _cutFileTextField.setText("");
+        _checkbox_data_leaves_only.setSelected(true);
         // Inference tab
         _montCarloReplicationsTextField.setText("999");
         _restrict_evaluated_levels.setSelected(false);
@@ -435,6 +440,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Advanced Input tab
         _cutFileTextField.setText(parameters.getCutsFileName());
         _cutFileTextField.setCaretPosition(0);
+        _checkbox_data_leaves_only.setSelected(parameters.getDataOnlyOnLeaves());
         _apply_risk_window_restriction.setSelected(parameters.isApplyingRiskWindowRestriction());
         _risk_window_percentage.setText(Double.toString(parameters.getRiskWindowPercentage()));
 
@@ -1193,6 +1199,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _cutFileLabel = new javax.swing.JLabel();
         _cutFileTextField = new javax.swing.JTextField();
         _cutFileImportButton = new javax.swing.JButton();
+        _checkbox_data_leaves_only = new javax.swing.JCheckBox();
         _advanced_temporal_window_tab = new javax.swing.JPanel();
         _maxTemporalOptionsGroup = new javax.swing.JPanel();
         _percentageTemporalRadioButton = new javax.swing.JRadioButton();
@@ -1333,21 +1340,22 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _checkbox_data_leaves_only.setSelected(true);
+        _checkbox_data_leaves_only.setText("Only Allow Data on Leaves of Tree");
+
         javax.swing.GroupLayout _advanced_input_tabLayout = new javax.swing.GroupLayout(_advanced_input_tab);
         _advanced_input_tab.setLayout(_advanced_input_tabLayout);
         _advanced_input_tabLayout.setHorizontalGroup(
             _advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_advanced_input_tabLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _advanced_input_tabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_advanced_input_tabLayout.createSequentialGroup()
-                        .addComponent(_cutFileLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(_advanced_input_tabLayout.createSequentialGroup()
-                        .addComponent(_cutFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_cutFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                .addGroup(_advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(_checkbox_data_leaves_only, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_cutFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_cutFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_cutFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         _advanced_input_tabLayout.setVerticalGroup(
             _advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1358,7 +1366,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_cutFileImportButton)
                     .addComponent(_cutFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(358, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_checkbox_data_leaves_only)
+                .addContainerGap(332, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced Input", _advanced_input_tab);
@@ -1510,11 +1520,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 _risk_window_percentage.setEnabled(e.getStateChange() == java.awt.event.ItemEvent.SELECTED);
                 enableSetDefaultsButton();
-            }
-        });
-        _apply_risk_window_restriction.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _apply_risk_window_restrictionActionPerformed(evt);
             }
         });
 
@@ -2916,10 +2921,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void _apply_risk_window_restrictionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__apply_risk_window_restrictionActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event__apply_risk_window_restrictionActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel _advanced_adjustments_tab;
     private javax.swing.JPanel _advanced_inferenece_tab;
@@ -2934,6 +2935,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JCheckBox _apply_risk_window_restriction;
     private javax.swing.JCheckBox _apply_time_range_restrictions;
     private javax.swing.JTextField _attributable_risk_exposed;
+    private javax.swing.JCheckBox _checkbox_data_leaves_only;
     private javax.swing.JLabel _chk_attributable_risk_extra;
     private javax.swing.JCheckBox _chk_rpt_attributable_risk;
     private javax.swing.JButton _closeButton;

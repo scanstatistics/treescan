@@ -511,6 +511,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jint)parameters.getScanRateType());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setDataOnlyOnLeaves", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getDataOnlyOnLeaves());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -922,6 +926,10 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   jni_error::_detectError(Env);
 
   parameters.setScanRateType((Parameters::ScanRateType)getEnumTypeOrdinalIndex(Env, jParameters, "getScanRateType", "Lorg/treescan/app/Parameters$ScanRateType;"));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getDataOnlyOnLeaves", "()Z");
+  parameters.setDataOnlyOnLeaves(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   return parameters;
