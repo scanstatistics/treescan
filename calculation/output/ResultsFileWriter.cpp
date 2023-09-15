@@ -1134,7 +1134,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         ptr_vector<FieldDef> fieldDefinitions;
         CutsRecordWriter::getFieldDefs(fieldDefinitions, parameters, _scanRunner.hasNodeDescriptions());
         std::vector<std::string> children_arrays;
-        for (auto Record : childRecords) {
+        for (auto& Record : childRecords) {
             std::vector<std::string> string_values;
             string_values.push_back(printString(buffer, "'%u_%u'", thisCut.getReportOrder(), children_arrays.size() + 1));
             buffer = Record->GetFieldValue(CutsRecordWriter::NODE_ID_FIELD).AsString();

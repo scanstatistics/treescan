@@ -10,46 +10,54 @@
 #include "boost/thread/mutex.hpp"
 
 class SimulationNode {
-private:
-    NodeStructure::CountContainer_t _IntC_C;
-    NodeStructure::CountContainer_t _BrC_C;
+    private:
+        NodeStructure::CountContainer_t _IntC_C;
+        NodeStructure::CountContainer_t _BrC_C;
+        unsigned int _level;
 
-public:
-    SimulationNode(size_t container_size=1) {
-        _IntC_C.resize(container_size, 0);
-        _BrC_C.resize(container_size, 0);
-    }
+    public:
+        SimulationNode(size_t container_size/*=1*/, unsigned int level) : _level(level) {
+            _IntC_C.resize(container_size, 0);
+            _BrC_C.resize(container_size, 0);
+        }
 
-    void clear() {
-        std::fill(_IntC_C.begin(), _IntC_C.end(), 0);
-        std::fill(_BrC_C.begin(), _BrC_C.end(), 0);
-    }
-    void setCumulative() {
-        TreeScan::cumulative_backward(_IntC_C);
-        TreeScan::cumulative_backward(_BrC_C);
-    }
+        void clear() {
+            std::fill(_IntC_C.begin(), _IntC_C.end(), 0);
+            std::fill(_BrC_C.begin(), _BrC_C.end(), 0);
+        }
+        void setCumulative() {
+            TreeScan::cumulative_backward(_IntC_C);
+            TreeScan::cumulative_backward(_BrC_C);
+        }
 
-    NodeStructure::count_t                     getIntC() const {return _IntC_C.front();}
-    const NodeStructure::CountContainer_t    & getIntC_C() const {return _IntC_C;}
-    NodeStructure::count_t                     getBrC() const {return _BrC_C.front();}
-    const NodeStructure::CountContainer_t    & getBrC_C() const {return _BrC_C;}
+        unsigned int                               getLevel() const { return _level; }
+        NodeStructure::count_t                     getIntC() const {return _IntC_C.front();}
+        const NodeStructure::CountContainer_t    & getIntC_C() const {return _IntC_C;}
+        NodeStructure::count_t                     getBrC() const {return _BrC_C.front();}
+        const NodeStructure::CountContainer_t    & getBrC_C() const {return _BrC_C;}
 
-    NodeStructure::count_t                   & refIntC() {return _IntC_C.front();}
-    NodeStructure::CountContainer_t          & refIntC_C() {return _IntC_C;}
-    NodeStructure::count_t                   & refBrC() {return _BrC_C.front();}
-    NodeStructure::CountContainer_t          & refBrC_C() {return _BrC_C;}
+        NodeStructure::count_t                   & refIntC() {return _IntC_C.front();}
+        NodeStructure::CountContainer_t          & refIntC_C() {return _IntC_C;}
+        NodeStructure::count_t                   & refBrC() {return _BrC_C.front();}
+        NodeStructure::CountContainer_t          & refBrC_C() {return _BrC_C;}
 };
 
 //typedef std::pair<int,int> SimData_t;
 //typedef std::vector<SimData_t> SimDataContainer_t;
 
 class AbstractNodesProxy {
+    protected:
+        bool _data_leaves_only;
+        const ScanRunner::NodeStructureContainer_t & _treeNodes;
+
     public:
-        AbstractNodesProxy() {}
+        AbstractNodesProxy(const ScanRunner::NodeStructureContainer_t& treeNodes, bool data_leaves_only):
+            _treeNodes(treeNodes), _data_leaves_only(data_leaves_only) {}
         virtual ~AbstractNodesProxy() {}
 
         virtual AbstractNodesProxy * clone() = 0;
         virtual size_t   size() const = 0;
+        virtual bool randomized(size_t i) const { return !_data_leaves_only || _treeNodes[i]->isLeaf(); }
         virtual double   getIntN(size_t i) const = 0;
         virtual const NodeStructure::ExpectedContainer_t & getIntN_C(size_t i) const = 0;
         virtual int      getIntC(size_t i) const = 0;
@@ -62,11 +70,11 @@ class AbstractNodesProxy {
 
 class NodesProxy : public AbstractNodesProxy {
     protected:
-        const ScanRunner::NodeStructureContainer_t & _treeNodes;
         const double _event_probability;
 
     public:
-        NodesProxy(const ScanRunner::NodeStructureContainer_t& treeNodes, double event_probability=0) : _treeNodes(treeNodes), _event_probability(event_probability) {}
+        NodesProxy(const ScanRunner::NodeStructureContainer_t& treeNodes, bool data_leaves_only, double event_probability=0):
+            AbstractNodesProxy(treeNodes, data_leaves_only), _event_probability(event_probability) {}
         virtual ~NodesProxy() {}
 
         virtual NodesProxy * clone() {return new NodesProxy(*this);}
@@ -82,11 +90,11 @@ class NodesProxy : public AbstractNodesProxy {
 
 class SequentialNodesProxy : public AbstractNodesProxy {
 protected:
-    const ScanRunner::NodeStructureContainer_t & _treeNodes;
     const double _event_probability;
 
 public:
-    SequentialNodesProxy(const ScanRunner::NodeStructureContainer_t& treeNodes, double event_probability=0) : _treeNodes(treeNodes), _event_probability(event_probability) {}
+    SequentialNodesProxy(const ScanRunner::NodeStructureContainer_t& treeNodes, bool data_leaves_only, double event_probability=0):
+        AbstractNodesProxy(treeNodes, data_leaves_only), _event_probability(event_probability) {}
     virtual ~SequentialNodesProxy() {}
 
     virtual SequentialNodesProxy * clone() { return new SequentialNodesProxy(*this); }
@@ -106,9 +114,9 @@ class AlternativeExpectedNodesProxy : public NodesProxy {
         const RelativeRiskAdjustmentHandler::NodesExpectedContainer_t & _tree_nodes_expected;
 
     public:
-        AlternativeExpectedNodesProxy(const ScanRunner::NodeStructureContainer_t& treeNodes,
+        AlternativeExpectedNodesProxy(const ScanRunner::NodeStructureContainer_t& treeNodes, bool data_leaves_only,
                                       const RelativeRiskAdjustmentHandler::NodesExpectedContainer_t& tree_nodes_expected)
-          : NodesProxy(treeNodes),  _tree_nodes_expected(tree_nodes_expected) {}
+          : NodesProxy(treeNodes, data_leaves_only), _tree_nodes_expected(tree_nodes_expected) {}
         virtual ~AlternativeExpectedNodesProxy() {}
 
         virtual AlternativeExpectedNodesProxy * clone() {return new AlternativeExpectedNodesProxy(*this);}
@@ -122,9 +130,8 @@ class AlternativeProbabilityNodesProxy : public NodesProxy {
         RelativeRiskAdjustmentHandler::NodesAdjustmentsContainer_t _treeNodeProbability;
 
     public:
-        AlternativeProbabilityNodesProxy(const ScanRunner::NodeStructureContainer_t& treeNodes,
-                                         const RelativeRiskAdjustmentHandler& handler,
-                                         double event_probability) : NodesProxy(treeNodes, event_probability) {
+        AlternativeProbabilityNodesProxy(const ScanRunner::NodeStructureContainer_t& treeNodes, bool data_leaves_only, const RelativeRiskAdjustmentHandler& handler, double event_probability)
+            : NodesProxy(treeNodes, data_leaves_only, event_probability) {
             _treeNodeProbability.resize(treeNodes.size(), event_probability);
             handler.getAsProbabilities(_treeNodeProbability, event_probability);
         }

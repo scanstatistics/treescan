@@ -33,13 +33,13 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
                 std::transform(itr->begin(), itr->end(), itr->begin(), std::bind1st(std::multiplies<double>(), adjustN));
             }
         }
-        _nodes_proxy.reset(new AlternativeExpectedNodesProxy(treeNodes, _nodes_IntN_C));
+        _nodes_proxy.reset(new AlternativeExpectedNodesProxy(treeNodes, _parameters.getDataOnlyOnLeaves(), _nodes_IntN_C));
     } else if  (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
-        _nodes_proxy.reset(new AlternativeProbabilityNodesProxy(treeNodes, _alternative_adjustments, _parameters.getProbability()));
+        _nodes_proxy.reset(new AlternativeProbabilityNodesProxy(treeNodes, _parameters.getDataOnlyOnLeaves(), _alternative_adjustments, _parameters.getProbability()));
     } else if  (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::TOTALCASES) {
         /* We won't actually use this NodesProxy instance. The ConditionalBernoulliAlternativeHypothesisRandomizer class will
            contain two different instances of NodesProxy - one for alternative hypothesis nodes, the other for the null hypothesis nodes. */
-        _nodes_proxy.reset(new NodesProxy(treeNodes));
+        _nodes_proxy.reset(new NodesProxy(treeNodes, _parameters.getDataOnlyOnLeaves()));
     } else if ((_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE) ||
                (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES)) {
         size_t daysInDataTimeRange = _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets();
@@ -57,7 +57,7 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
             itr->insert(itr->begin(), 0);
             TreeScan::cumulative_forward<NodeStructure::ExpectedContainer_t>(*itr);
         }
-        _nodes_proxy.reset(new AlternativeExpectedNodesProxy(treeNodes, _nodes_IntN_C));
+        _nodes_proxy.reset(new AlternativeExpectedNodesProxy(treeNodes, _parameters.getDataOnlyOnLeaves(), _nodes_IntN_C));
     } else
         throw prg_exception("Unknown context for alternative hypothesis encountered.", "AlternativeHypothesisRandomizater()");
 }

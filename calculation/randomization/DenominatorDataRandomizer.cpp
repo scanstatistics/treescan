@@ -13,26 +13,58 @@ OrderedSimulationDataWriter::OrderedSimulationDataWriter(const std::string& file
     _sim_stream->open(filename.c_str(), std::ios::ate | std::ios::app);
 }
 
-/* Writes simulation data to text file for gioven simulation while ensuring that simulations written are ordered by ordinal. */
+/* Writes simulation data to text file for given simulation while ensuring that simulations written are ordered by ordinal. */
 void OrderedSimulationDataWriter::write(unsigned int simulation, const SimNodeContainer_t& treeSimNodes) {
     if (_sim_position == simulation) { // If simulation position equals this simulation, write it now.
-        for (size_t i = 0; i < treeSimNodes.size(); ++i)
-            *_sim_stream << treeSimNodes[i].getIntC() << " ";
+        for (auto& node : treeSimNodes)
+            *_sim_stream << node.getIntC() << " ";
         *_sim_stream << std::endl;
         ++_sim_position;
     } else { // Otherwise write this simulation data to cache.
         CacheStream_t _cache_stream(new std::stringstream());
-        for (size_t i = 0; i < treeSimNodes.size(); ++i)
-            *_cache_stream << treeSimNodes[i].getIntC() << " ";
+        for (auto& node : treeSimNodes)
+            *_cache_stream << node.getIntC() << " ";
         *_cache_stream << std::endl;
         _sim_stream_cache.push_back(std::make_pair(simulation, _cache_stream));
         std::sort(_sim_stream_cache.begin(), _sim_stream_cache.end()); // Sort by simulation number ascending.
     }
     // Now write any cached stream(s) which are next in the write sequence.
     size_t numWritten = 0;
-    for(CacheStreamContainer_t::iterator itr= _sim_stream_cache.begin(); itr != _sim_stream_cache.end(); ++itr) {
-        if (_sim_position != itr->first) break;
-        *_sim_stream << itr->second->str();
+    for (auto& cacheStream: _sim_stream_cache) {
+        if (_sim_position != cacheStream.first) break;
+        *_sim_stream << cacheStream.second->str();
+        ++_sim_position;
+        ++numWritten;
+    }
+    if (numWritten) _sim_stream_cache.erase(_sim_stream_cache.begin(), _sim_stream_cache.begin() + numWritten);
+    if (_sim_position > _num_simulations)
+        _sim_stream->close();
+}
+
+/* Writes sequential simulation data to text file for given simulation while ensuring that simulations written are ordered by ordinal. */
+void OrderedSimulationDataWriter::writeSequenceData(unsigned int simulation, const SimNodeContainer_t& treeSimNodes, const boost::dynamic_bitset<>& _restricted_levels) {
+    if (_sim_position == simulation) { // If simulation position equals this simulation, write it now.
+        for (auto node: treeSimNodes) {
+            if (!_restricted_levels.test(node.getLevel())) // skip writing data from nodes that are not evaluated - we're writing branch data
+                *_sim_stream << node.getBrC_C().front() << " ";
+        }
+        *_sim_stream << std::endl;
+        ++_sim_position;
+    } else { // Otherwise write this simulation data to cache.
+        CacheStream_t _cache_stream(new std::stringstream());
+        for (auto& node : treeSimNodes) {
+            if (!_restricted_levels.test(node.getLevel())) // skip writing data from nodes that are not evaluated - we're writing branch data
+                *_cache_stream << node.getBrC_C().front() << " ";
+        }
+        *_cache_stream << std::endl;
+        _sim_stream_cache.push_back(std::make_pair(simulation, _cache_stream));
+        std::sort(_sim_stream_cache.begin(), _sim_stream_cache.end()); // Sort by simulation number ascending.
+    }
+    // Now write any cached stream(s) which are next in the write sequence.
+    size_t numWritten = 0;
+    for (auto& cacheStream : _sim_stream_cache) {
+        if (_sim_position != cacheStream.first) break;
+        *_sim_stream << cacheStream.second->str();
         ++_sim_position;
         ++numWritten;
     }
@@ -54,35 +86,51 @@ FileStreamReadManager::SharedStream_t FileStreamReadManager::getStream(const Abs
 
 ////////////////////////////////////////////////// AbstractDenominatorDataRandomizer ///////////////////////////////////
 
-AbstractDenominatorDataRandomizer::AbstractDenominatorDataRandomizer(const Parameters& parameters, bool multiparents, long lInitialSeed) :
-    AbstractRandomizer(parameters, multiparents, lInitialSeed), _sim_position(1) {}
+AbstractDenominatorDataRandomizer::AbstractDenominatorDataRandomizer(const ScanRunner& scanner, long lInitialSeed) :
+    AbstractRandomizer(scanner.getParameters(), scanner.getMultiParentNodesExist(), lInitialSeed), _scanner(scanner), _sim_position(1) {
+    // Store the un-evaluated levelsin tree for in bitsetfor tree sequential analyses.
+    if (_parameters.isSequentialScanTreeOnly()) {
+        _restricted_levels.resize(scanner.getTreeStatistics()._nodes_per_level.size() + 1);
+        if (_parameters.getRestrictTreeLevels()) {
+            for (auto level : _parameters.getRestrictedTreeLevels())
+                _restricted_levels.set(level);
+        }
+    }
+}
 
 AbstractDenominatorDataRandomizer::~AbstractDenominatorDataRandomizer() {}
 
 int AbstractDenominatorDataRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes) {
-    int TotalSimC = 0;
+    int totalSimC = 0;
+    auto updateTree = [&treeNodes, &treeSimNodes, this]() { // update tree structure by adding counts up the tree
+        for (size_t i = 0; i < treeNodes.size(); i++)
+            addSimC_C(i, i, treeSimNodes[i].getIntC_C(), treeSimNodes, treeNodes);
+    };
+    auto standardWrite = [&treeSimNodes, &mutex, this]() { // standard simulation data write
+        boost::mutex::scoped_lock lock(mutex);
+        write(_write_filename, treeSimNodes);
+    };
     if (_read_data) {
         std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
         boost::mutex::scoped_lock lock(mutex);
-        TotalSimC = read(_read_filename, iSimulation, treeNodes, treeSimNodes, mutex);
+        totalSimC = read(_read_filename, iSimulation, treeNodes, treeSimNodes, mutex);
+        if (_write_data) standardWrite(); // write simulation data to file if requested
+        updateTree();
     } else if (_parameters.isSequentialScanTreeOnly()) {
-        TotalSimC = randomize(iSimulation, SequentialNodesProxy(treeNodes, _parameters.getProbability()), treeSimNodes);
-        if (_read_filename.size()) // Now read stored data set
-            TotalSimC += read(_read_filename, iSimulation, treeNodes, treeSimNodes, mutex);
+        totalSimC = randomize(iSimulation, SequentialNodesProxy(treeNodes, _parameters.getDataOnlyOnLeaves(), _parameters.getProbability()), treeSimNodes);
+        if (_write_data) standardWrite(); // write simulation data to file if requested
+        // update tree now since we will be reading and writing data that has been added up the tree
+        updateTree();
+        if (_read_filename.size()) // add cumulated simulation data from previous look(s)
+            totalSimC += readSequentialData(_read_filename, iSimulation, treeNodes, treeSimNodes, mutex);
         boost::mutex::scoped_lock writelock(mutex);
-        _sim_stream_writer->write(iSimulation, treeSimNodes);
+        _sim_stream_writer->writeSequenceData(iSimulation, treeSimNodes, _restricted_levels);
     } else { // else standard randomization
-        TotalSimC = randomize(iSimulation, NodesProxy(treeNodes, _parameters.getProbability()), treeSimNodes);
+        totalSimC = randomize(iSimulation, NodesProxy(treeNodes, _parameters.getDataOnlyOnLeaves(), _parameters.getProbability()), treeSimNodes);
+        if (_write_data) standardWrite(); // write simulation data to file if requested
+        updateTree();
     }
-    // write simulation data to file if requested
-    if (_write_data) {
-        boost::mutex::scoped_lock lock(mutex);
-        write(_write_filename, treeSimNodes);
-    }
-    //------------------------ UPDATING THE TREE -----------------------------------
-    for (size_t i=0; i < treeNodes.size(); i++)
-        addSimC_C(i, i, treeSimNodes[i].getIntC_C(), treeSimNodes, treeNodes);
-    return TotalSimC;
+    return totalSimC;
 }
 
 /** Reads simulation data from file. */
@@ -96,14 +144,42 @@ int AbstractDenominatorDataRandomizer::read(const std::string& filename, unsigne
     size_t checkNodes = treeSimNodes.size();
     int count, total_sim = 0;
     for (size_t i=0; i < checkNodes; ++i) {
+        auto& node = treeSimNodes[i];
         // check for end of file yet we should have more to read
         if (!(*_sim_stream >> count) && i < checkNodes) {
             if (_sim_stream->eof())
                 throw resolvable_error("Error: Simulated data file does not contain enough data for simulation %d. Expecting %d datum but could only read %d.\n", simulation, checkNodes, i);
             throw resolvable_error("Error: Simulated data file appears to contain invalid data in simulation %d. Datum could not be read as integer for %d element.\n", simulation, i+1);
         }
-        treeSimNodes[i].refIntC() += count;
-        treeSimNodes[i].refBrC() = 0;
+        node.refIntC() += count;
+        node.refBrC() = 0;
+        total_sim += count;
+    }
+    _sim_stream->ignore(1, '\n'); // read trailing newline from current data set line
+    return total_sim;
+}
+
+/** Reads sequential simulation data from file. */
+int AbstractDenominatorDataRandomizer::readSequentialData(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex) {
+    FileStreamReadManager::SharedStream_t _sim_stream = _sim_stream_reader->getStream(this, mutex);
+    // seek line offset from current simulation row to this simulation
+    while (_sim_position < simulation) {
+        _sim_stream->ignore(std::numeric_limits<int>::max(), '\n');
+        ++_sim_position;
+    }
+    size_t checkNodes = treeSimNodes.size();
+    int count, total_sim = 0;
+    for (size_t i = 0; i < checkNodes; ++i) {
+        auto& node = treeSimNodes[i];
+        if (_restricted_levels.test(node.getLevel()))
+            continue; // these nodes were skipped during write process, so skip on read
+                      // check for end of file yet we should have more to read
+        if (!(*_sim_stream >> count) && i < checkNodes) {
+            if (_sim_stream->eof())
+                throw resolvable_error("Error: Simulated data file does not contain enough data for simulation %d. Expecting %d datum but could only read %d.\n", simulation, checkNodes, i);
+            throw resolvable_error("Error: Simulated data file appears to contain invalid data in simulation %d. Datum could not be read as integer for %d element.\n", simulation, i + 1);
+        }
+        node.refBrC() += count; // We're reading branch data, not node data.
         total_sim += count;
     }
     _sim_stream->ignore(1, '\n'); // read trailing newline from current data set line
@@ -129,9 +205,8 @@ void AbstractDenominatorDataRandomizer::write(const std::string& filename, const
     //open output file
     stream.open(filename.c_str(), std::ios::ate|std::ios::app);
     if (!stream) throw resolvable_error("Error: Could not open the simulated data output file '%s'.\n", filename.c_str());
-    for (size_t i=0; i < treeSimNodes.size(); ++i) {
-        stream << treeSimNodes[i].getIntC() << " ";
-    }
+    for (auto& node: treeSimNodes)
+        stream << node.getIntC() << " ";
     stream << std::endl;
     stream.close();
 }

@@ -293,7 +293,7 @@ std::string & getDerivedFilename(const std::string& source, const std::string& s
 
   buffer += suffix;
   _fileName.setFileName(buffer.c_str());
-  _fileName.setExtension(extension.c_str());
+  if (!extension.empty()) _fileName.setExtension(extension.c_str());
 
   // should source name equal destination, update filename again
   if (source == _fileName.getFullPath(destination)) {

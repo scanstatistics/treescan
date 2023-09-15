@@ -86,6 +86,7 @@ BOOST_FIXTURE_TEST_CASE( test_timeonly_power_estimation, timeonly_power_estimati
 BOOST_FIXTURE_TEST_CASE( test_conditional_treetime_power_estimation, treetemporal_power_estimation_fixture ) {
     BOOST_CHECK(_parameters.getScanType() ==  Parameters::TREETIME);
     BOOST_CHECK(_parameters.getConditionalType() ==  Parameters::NODE);
+    _parameters.setDataOnlyOnLeaves(false);
     run_analysis("test", _results_user_directory, _parameters, _print);
 
     // open the power estimation file and confirm expected columns and values match expected for this data set
@@ -159,15 +160,15 @@ BOOST_FIXTURE_TEST_CASE( test_conditional_poisson_power_estimation, poisson_powe
 
         BOOST_CHECK_EQUAL( ha_num, dataRows );
         switch (dataRows) {
-            case 1 : BOOST_REQUIRE_CLOSE( alpha05, 0.045, 0.001 );
-                     BOOST_REQUIRE_CLOSE( alpha01, 0.005, 0.001 );
+            case 1 : BOOST_REQUIRE_CLOSE( alpha05, 0.049, 0.001 );
+                     BOOST_REQUIRE_CLOSE( alpha01, 0.006, 0.001 );
                      BOOST_REQUIRE_CLOSE( alpha001, 0.001, 0.001 ); break;
-            case 2 : BOOST_REQUIRE_CLOSE( alpha05, 0.097, 0.001 );
-                     BOOST_REQUIRE_CLOSE( alpha01, 0.011, 0.001 );
-                     BOOST_REQUIRE_CLOSE( alpha001, 0.002, 0.001 ); break;
-            case 3 : BOOST_REQUIRE_CLOSE( alpha05, 0.966, 0.001 );
-                     BOOST_REQUIRE_CLOSE( alpha01, 0.855, 0.001 );
-                     BOOST_REQUIRE_CLOSE( alpha001, 0.749, 0.001 ); break;
+            case 2 : BOOST_REQUIRE_CLOSE( alpha05, 0.100, 0.001 );
+                     BOOST_REQUIRE_CLOSE( alpha01, 0.012, 0.001 );
+                     BOOST_REQUIRE_CLOSE( alpha001, 0.004, 0.001 ); break;
+            case 3 : BOOST_REQUIRE_CLOSE( alpha05, 0.969, 0.001 );
+                     BOOST_REQUIRE_CLOSE( alpha01, 0.863, 0.001 );
+                     BOOST_REQUIRE_CLOSE( alpha001, 0.766, 0.001 ); break;
             default : break;
         }
         getCSVRow(stream, data);

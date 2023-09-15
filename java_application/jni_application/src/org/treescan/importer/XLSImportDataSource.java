@@ -38,7 +38,7 @@ public class XLSImportDataSource implements ImportDataSource {
         _hasHeader = hasHeader;
         try {
             _input_stream = new FileInputStream(file);
-            if (FileAccess.getExtension(file).equals("xlsx"))
+            if (FileAccess.getExtension(file).equals(".xlsx"))
                 _workbook = new XSSFWorkbook(_input_stream);
             else
                 _workbook = new HSSFWorkbook(_input_stream);

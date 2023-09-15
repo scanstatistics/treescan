@@ -390,20 +390,25 @@ const char * SequentialStatistic::_settings_ext = ".xml";
 const char * SequentialStatistic::_period = ".";
 const char * SequentialStatistic::_period_replace = "-period-";
 
-double SequentialStatistic::getAlphaSpentToDate(const std::string &output_filename) {
+std::string SequentialStatistic::getAlphaSpentToDateStr(const std::string &output_filename) {
     std::string filename, buffer;
     getDerivedFilename(output_filename, _file_suffix, _settings_ext, filename);
-
     using boost::property_tree::ptree;
     ptree pt;
 
     if (!validateFileAccess(filename))
-        return 0.0;
+        return "";
 
     read_xml(filename, pt);
 
     // Read alpha spendings from last looks.
-    buffer = pt.get<std::string>("accumulation.alpha-spending", "0.0");
+    return pt.get<std::string>("accumulation.alpha-spending", "0.0");
+}
+
+double SequentialStatistic::getAlphaSpentToDate(const std::string &output_filename) {
+    // Read alpha spendings from last looks.
+    std::string buffer = getAlphaSpentToDateStr(output_filename);
+    if (buffer.empty()) return 0.0;
     std::vector<double> spending;
     csv_string_to_typelist<double>(buffer.c_str(), spending);
     return std::accumulate(spending.begin(), spending.end(), 0.0);
@@ -466,6 +471,9 @@ SequentialStatistic::SequentialStatistic(const Parameters& parameters, const Sca
     size_t alpha_spending_size = static_cast<size_t>(ceil(static_cast<double>(_parameters.getNumReplicationsRequested() + 1) * _alpha_spending));
     _llr_sims.resize(alpha_spending_size, std::make_pair(0,0));
     _alpha_spendings.push_back(_parameters.getSequentialAlphaSpending());
+    // Now rename primary results file to include look number.
+    remove(_parameters.getOutputFileName().c_str()); // remove the initial parameter filename, which might have been created during parameters validation
+    const_cast<Parameters&>(_parameters).setOutputFileName(getDerivedFilename(_parameters.getOutputFileName(), printString(buffer1, "_look%u", _look_idx), "", buffer2).c_str());
 }
 
 bool SequentialStatistic::addSimulationLLR(double llr, unsigned int simIdx) {
@@ -1864,7 +1872,7 @@ bool ScanRunner::runPowerEvaluations() {
                                                                                           getTotalC(), getTotalControls(),
                                                                                           _parameters.getPowerBaselineProbability(), 
                                                                                           riskAdjustments[t]->get().begin()->second.begin()->getRelativeRisk()/*risk is required to be same for all nodes*/,
-                                                                                          n1, _parameters, getMultiParentNodesExist()));
+                                                                                          n1, *this));
         } else if (Parameters::isTemporalScanType(_parameters.getScanType())) {
             /* Randomization is specialized for the tree-time/time-only scans and power evaluations. */
             core_randomizer.reset(new TemporalAlternativeHypothesisRandomizer(*this));
@@ -2787,6 +2795,7 @@ bool ScanRunner::setupTree() {
     if (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::TOTALCASES) {
         // If performing power calculations with user specified number of cases, override number of cases read from case file.
         // This is ok since this option can not be peformed in conjunction with analysis - so the cases in tree are not used.
+        // Skip this step for sequential scan since we are already conditioning in read process at the look level.
         if (_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES)
             _TotalC = _parameters.getPowerEvaluationTotalCases();
         double adjustN = _TotalC/_TotalN;

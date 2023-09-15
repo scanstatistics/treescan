@@ -165,7 +165,6 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                         BareBonesBrowserLaunch.openURL(resultsFile.replace('\\', '/'));
                     }
                 } else {/* nop */}
-                OutputFileRegister.getInstance().release(_parameters.getOutputFileName());
             }
         });
     }

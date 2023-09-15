@@ -750,9 +750,9 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan is not implemented for the power estimation.\n", BasePrint::P_PARAMERROR);
         }
-        if (_parameters.isWritingSimulationData() || _parameters.isReadingSimulationData()) {
+        if (_parameters.isReadingSimulationData()) {
             bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan is not implemented with the options to read or write simulation data.\n", BasePrint::P_PARAMERROR);
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan is not implemented with the options to read simulation data.\n", BasePrint::P_PARAMERROR);
         }
         if (_parameters.getPerformDayOfWeekAdjustment()) {
             bValid = false;

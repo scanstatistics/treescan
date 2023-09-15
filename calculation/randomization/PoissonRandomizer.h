@@ -11,7 +11,6 @@ protected:
     bool            _conditional;
     int             _total_C;
     double          _total_N;
-	const ScanRunner  & _scanner;
 
     int             BinomialGenerator(int n, double p, bool classic=false);
     int             PoissonGenerator(double lambda);

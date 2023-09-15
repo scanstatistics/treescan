@@ -12,8 +12,7 @@ using boost::uniform_01;
 
 /* constructor */
 UnconditionalBernoulliRandomizer::UnconditionalBernoulliRandomizer(const ScanRunner& scanner, long lInitialSeed)
-                    :AbstractDenominatorDataRandomizer(scanner.getParameters(), scanner.getMultiParentNodesExist(), lInitialSeed), 
-                    _scanner(scanner), _total_C(scanner.getTotalC()), _total_Controls(scanner.getTotalControls()) {
+                    :AbstractDenominatorDataRandomizer(scanner, lInitialSeed), _total_C(scanner.getTotalC()), _total_Controls(scanner.getTotalControls()) {
 	sequentialSetup(_scanner);
 }
 
@@ -27,10 +26,11 @@ int UnconditionalBernoulliRandomizer::randomize(unsigned int iSimulation, const 
 
     int TotalSimC=0;
     for (size_t i=0; i < treeNodes.size(); ++i) {
+        treeSimNodes[i].refBrC() = 0; // Initilazing the branch cases with zero
+        if (!treeNodes.randomized(i)) continue; // skip if not randomized
         int cases = _binomial_generator.GetBinomialDistributedVariable(static_cast<int>(treeNodes.getIntN(i)), static_cast<float>(treeNodes.getProbability(i)), _random_number_generator);
         treeSimNodes[i].refIntC() = cases;
         TotalSimC += cases;
-        treeSimNodes[i].refBrC() = 0; // Initilazing the branch cases with zero
     } // for i
     return TotalSimC;
 }
@@ -38,8 +38,8 @@ int UnconditionalBernoulliRandomizer::randomize(unsigned int iSimulation, const 
 //////////////////// AbstractConditionalBernoulliRandomizer ////////////////////////////
 
 /* constructor */
-AbstractConditionalBernoulliRandomizer::AbstractConditionalBernoulliRandomizer(int TotalC, int TotalControls, const Parameters& parameters, bool multiparents, long lInitialSeed)
-                    :AbstractDenominatorDataRandomizer(parameters, multiparents, lInitialSeed), _total_C(TotalC), _total_Controls(TotalControls) {}
+AbstractConditionalBernoulliRandomizer::AbstractConditionalBernoulliRandomizer(int TotalC, int TotalControls, const ScanRunner& scanner, long lInitialSeed)
+                    :AbstractDenominatorDataRandomizer(scanner, lInitialSeed), _total_C(TotalC), _total_Controls(TotalControls) {}
 
 /** Each of the totalMeasure number of individuals (sum of cases and controls),
     are randomized to either be a case or a control. The output is an array with
@@ -73,17 +73,20 @@ int AbstractConditionalBernoulliRandomizer::_randomize(int cases, int controls, 
 
     TotalSimC = cases;
     for (size_t i=0; i < treeNodes.size(); ++i) {
+        treeSimNodes[treeNodes.getID(i)/*i*/].refBrC() = 0; // Initilazing the branch cases with zero
+        if (!treeNodes.randomized(i)) continue; // skip if not randomized
         nCumMeasure -= static_cast<int>(treeNodes.getIntN(i));
         while (nCumCounts > 0 && randCounts[nCumCounts-1] > nCumMeasure) {
             treeSimNodes[treeNodes.getID(i)/*i*/].refIntC()++;
             nCumCounts--;
         }
-        treeSimNodes[treeNodes.getID(i)/*i*/].refBrC() = 0; // Initilazing the branch cases with zero
     }
     //now reverse everything if Controls < Cases
     if (cases >= controls) {
-        for  (size_t i=0; i < treeNodes.size(); ++i)
+        for (size_t i = 0; i < treeNodes.size(); ++i) {
+            if (!treeNodes.randomized(i)) continue; // skip if not randomized
             treeSimNodes[treeNodes.getID(i)/*i*/].refIntC() = static_cast<int>(treeNodes.getIntN(i)) - treeSimNodes[treeNodes.getID(i)/*i*/].refIntC();
+        }
     }
     return TotalSimC;
 }
@@ -91,8 +94,8 @@ int AbstractConditionalBernoulliRandomizer::_randomize(int cases, int controls, 
 //////////////////// BernoulliTimeRandomizer ////////////////////////////
 
 /* constructor */
-BernoulliTimeRandomizer::BernoulliTimeRandomizer(int TotalC, int TotalControls, const Parameters& parameters, bool multiparents, long lInitialSeed)
-	:AbstractConditionalBernoulliRandomizer(TotalC, TotalControls, parameters, multiparents, lInitialSeed) {}
+BernoulliTimeRandomizer::BernoulliTimeRandomizer(int TotalC, int TotalControls, const ScanRunner& scanner, long lInitialSeed)
+	:AbstractConditionalBernoulliRandomizer(TotalC, TotalControls, scanner, lInitialSeed) {}
 
 /** Distributes cases into simulation case array, where individuals are initially dichotomized into cases and
 controls then each randomly assigned to be a case or a control. Caller is responsible for ensuring that
@@ -105,6 +108,7 @@ int BernoulliTimeRandomizer::randomize(unsigned int iSimulation, const AbstractN
 
 	int TotalSimC = 0;
 	for (size_t i = 0; i < treeNodes.size(); ++i) {
+        if (!treeNodes.randomized(i)) continue; // skip if not randomized
 		SimulationNode& simNode = treeSimNodes[treeNodes.getID(i)];
 		std::vector<int> randCounts;
 		int node_cases = treeNodes.getIntC(i), node_controls = static_cast<int>(treeNodes.getIntN(i));
@@ -136,8 +140,8 @@ int BernoulliTimeRandomizer::randomize(unsigned int iSimulation, const AbstractN
 //////////////////// ConditionalBernoulliRandomizer ////////////////////////////
 
 /* constructor */
-ConditionalBernoulliRandomizer::ConditionalBernoulliRandomizer(int TotalC, int TotalControls, const Parameters& parameters, bool multiparents, long lInitialSeed)
-                    :AbstractConditionalBernoulliRandomizer(TotalC, TotalControls, parameters, multiparents, lInitialSeed) {}
+ConditionalBernoulliRandomizer::ConditionalBernoulliRandomizer(int TotalC, int TotalControls, const ScanRunner& scanner, long lInitialSeed)
+                    :AbstractConditionalBernoulliRandomizer(TotalC, TotalControls, scanner, lInitialSeed) {}
 
 /** Distributes cases into simulation case array, where individuals are initially dichotomized into cases and
     controls then each randomly assigned to be a case or a control. Caller is responsible for ensuring that
@@ -153,13 +157,10 @@ int ConditionalBernoulliRandomizer::randomize(unsigned int iSimulation, const Ab
 //////////////////// ConditionalBernoulliAlternativeHypothesisRandomizer ////////////////////////////
 
 /* constructor */
-ConditionalBernoulliAlternativeHypothesisRandomizer::ConditionalBernoulliAlternativeHypothesisRandomizer(const ScanRunner::NodeStructureContainer_t& treeNodes,
-                                                                                                         const RelativeRiskAdjustmentHandler& adjustments,
-                                                                                                         int TotalC, int TotalControls,
-                                                                                                         double p0, double p1, unsigned int n1,
-                                                                                                         const Parameters& parameters, bool multiparents, long lInitialSeed)
-                    :AbstractConditionalBernoulliRandomizer(TotalC, TotalControls, parameters, multiparents, lInitialSeed), _p0(p0), _p1(p1), _n1(n1) {
-
+ConditionalBernoulliAlternativeHypothesisRandomizer::ConditionalBernoulliAlternativeHypothesisRandomizer(
+    const ScanRunner::NodeStructureContainer_t& treeNodes, const RelativeRiskAdjustmentHandler& adjustments, int TotalC, 
+    int TotalControls, double p0, double p1, unsigned int n1, const ScanRunner& scanner, long lInitialSeed
+): AbstractConditionalBernoulliRandomizer(TotalC, TotalControls, scanner, lInitialSeed), _p0(p0), _p1(p1), _n1(n1) {
     BinomialGenerator bg;
     _A.resize(std::min(static_cast<unsigned int>(TotalC), n1) + 1/* correct, so that we go 0 to total? */, 0.0);
     unsigned int N = static_cast<unsigned int>(TotalC + TotalControls);
@@ -185,14 +186,14 @@ ConditionalBernoulliAlternativeHypothesisRandomizer::ConditionalBernoulliAlterna
         node_set.set(itr->first);
         _alternative_hypothesis_nodes->push_back(treeNodes[itr->first]);
     }
-    _alternative_hypothesis_nodes_proxy.reset(new NodesProxy(*_alternative_hypothesis_nodes));
+    _alternative_hypothesis_nodes_proxy.reset(new NodesProxy(*_alternative_hypothesis_nodes, _parameters.getDataOnlyOnLeaves()));
 
     _null_hypothesis_nodes.reset(new ScanRunner::NodeStructureContainer_t());
     node_set.flip();
     boost::dynamic_bitset<>::size_type p = node_set.find_first();
     for (; p != boost::dynamic_bitset<>::npos; p = node_set.find_next(p))
         _null_hypothesis_nodes->push_back(treeNodes[p]);
-    _null_hypothesis_nodes_proxy.reset(new NodesProxy(*_null_hypothesis_nodes));
+    _null_hypothesis_nodes_proxy.reset(new NodesProxy(*_null_hypothesis_nodes, _parameters.getDataOnlyOnLeaves()));
 }
 
 ConditionalBernoulliAlternativeHypothesisRandomizer::~ConditionalBernoulliAlternativeHypothesisRandomizer() {

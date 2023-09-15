@@ -198,7 +198,7 @@ public class AbstractParameterSettingsFrame extends javax.swing.JInternalFrame i
         // First exclude file types that are not readable - namely, Excel97_2003;
         String extension = FileAccess.getExtension(new File(filepath));
         extension = extension == null ? "" : extension.toLowerCase();
-        if (extension.equals("xls") || extension.equals("xlsx")) {
+        if (extension.equals(".xls") || extension.equals(".xlsx")) {
             return "Excel files (.xls and  xlsx extensions) can only be read directly by TreeScan.\nYou must import this " + verbosename + " file.";
         }
         boolean iss_exists = _input_source_map.containsKey(mapKey);
@@ -208,9 +208,9 @@ public class AbstractParameterSettingsFrame extends javax.swing.JInternalFrame i
             boolean correct_filetype=true;
             InputSourceSettings.SourceDataFileType extensionType=FileSourceWizard.getSourceFileType(filepath);
             switch (inputSourceSettings.getSourceDataFileType()) {
-                case CSV : correct_filetype = !(extension.equals("xls") || extension.equals("xlsx")); break;
+                case CSV : correct_filetype = !(extension.equals(".xls") || extension.equals(".xlsx")); break;
                 case Excel97_2003 :
-                case Excel :  correct_filetype = extension.equals("xls") || extension.equals("xlsx"); break;
+                case Excel :  correct_filetype = extension.equals(".xls") || extension.equals(".xlsx"); break;
                 default:    throw new UnknownEnumException(inputSourceSettings.getSourceDataFileType());
             }
             if (!correct_filetype) {

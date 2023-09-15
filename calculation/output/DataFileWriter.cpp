@@ -72,7 +72,7 @@ unsigned int RecordBuffer::GetFieldIndex(const std::string& sFieldName) const {
 
 unsigned int RecordBuffer::GetFieldIndex(std::initializer_list<std::string> fieldNames) const {
     try {
-        for (auto filename : fieldNames) {
+        for (auto& filename : fieldNames) {
             for (size_t i=0; i < vFieldDefinitions.size(); ++i) {
                 if (!strcmp(vFieldDefinitions[i]->GetName(), filename.c_str())) return i;
             }
@@ -367,8 +367,6 @@ ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& field
 std::string& CutsRecordWriter::getFilename(const Parameters& parameters, std::string& buffer) {
     std::stringstream suffix;
     suffix << CutsRecordWriter::CUT_FILE_SUFFIX;
-    if (parameters.isSequentialScanTreeOnly())
-        suffix << "_look" << parameters.getCurrentLook();
     return getDerivedFilename(parameters.getOutputFileName(), suffix.str().c_str(), CSVDataFileWriter::CSV_FILE_EXT, buffer);
 }
 
@@ -391,7 +389,7 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
             return recordA->GetFieldValue(EXCESS_CASES_FIELD).AsDouble() > recordB->GetFieldValue(EXCESS_CASES_FIELD).AsDouble();
         });
         unsigned int writeIdx = 0;
-        for (auto record : childRecords) {
+        for (auto& record : childRecords) {
             record->GetFieldValue(CUT_NUM_FIELD).AsString() = printString(buffer, "%u_%u", thisCut.getReportOrder(), ++writeIdx);
             _csvWriter->writeRecord(*record);
         }

@@ -21,6 +21,7 @@ class OrderedSimulationDataWriter {
         OrderedSimulationDataWriter(const std::string& filename, unsigned int num_simulations);
 
         void write(unsigned int simulation, const SimNodeContainer_t& treeSimNodes);
+        void writeSequenceData(unsigned int simulation, const SimNodeContainer_t& treeSimNodes, const boost::dynamic_bitset<>& _restricted_levels);
 };
 
 /** Class which manages a std::ifstream associated with a randomizer object. This object can be shared by randomizer objects. */
@@ -55,15 +56,16 @@ class AbstractDenominatorDataRandomizer : public AbstractRandomizer {
     unsigned int        _sim_position;
     SharedSimWriter_t   _sim_stream_writer;
     SharedSimReader_t   _sim_stream_reader;
-
-    //virtual int randomize(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes) = 0;
+    const ScanRunner  & _scanner;
+    boost::dynamic_bitset<> _restricted_levels;
 
     virtual int read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex);
+    int readSequentialData(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex);
 	void sequentialSetup(const ScanRunner& scanner);
     virtual void write(const std::string& filename, const SimNodeContainer_t& treeSimNodes);
 
   public:
-      AbstractDenominatorDataRandomizer(const Parameters& parameters, bool multiparents, long lInitialSeed = RandomNumberGenerator::glDefaultSeed);
+      AbstractDenominatorDataRandomizer(const ScanRunner& scanner, long lInitialSeed = RandomNumberGenerator::glDefaultSeed);
       virtual ~AbstractDenominatorDataRandomizer();
 
     virtual int RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes);

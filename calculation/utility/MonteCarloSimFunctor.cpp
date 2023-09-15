@@ -27,8 +27,8 @@ MCSimSuccessiveFunctor::MCSimSuccessiveFunctor(boost::mutex& mutex,
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     const Parameters& parameters = _scanRunner.getParameters();
     size_t daysInDataTimeRange = Parameters::isTemporalScanType(parameters.getScanType()) ?parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
-    for (size_t t=0; t < _scanRunner.getNodes().size(); ++t)
-        _treeSimNodes.push_back(SimulationNode(daysInDataTimeRange));
+    for (auto node: _scanRunner.getNodes())
+        _treeSimNodes.push_back(SimulationNode(daysInDataTimeRange, node->getLevel()));
     //_treeSimNodes.resize(_scanRunner.getNodes().size(), SimulationNode(daysInDataTimeRange));
     _loglikelihood.reset(AbstractLoglikelihood::getNewLoglikelihood(_scanRunner.getParameters(), _scanRunner.getTotalC(), _scanRunner.getTotalN(), _scanRunner.isCensoredData()));
 
@@ -610,7 +610,7 @@ SequentialMCSimSuccessiveFunctor::SequentialMCSimSuccessiveFunctor(boost::mutex&
     : _mutex(mutex), _scanRunner(scanner), _sequential_writer(writer) {
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     const Parameters& parameters = _scanRunner.getParameters();
-    _treeSimNode.reset(new SimulationNode(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1));
+    _treeSimNode.reset(new SimulationNode(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1, 1));
 
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     DataTimeRange min_max = parameters.getDataTimeRangeSet().getMinMax();

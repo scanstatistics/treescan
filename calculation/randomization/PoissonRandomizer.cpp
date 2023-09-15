@@ -6,8 +6,8 @@
 
 /* constructor */
 PoissonRandomizer::PoissonRandomizer(bool conditional, const ScanRunner& scanner, long lInitialSeed)
-                  : AbstractDenominatorDataRandomizer(scanner.getParameters(), scanner.getMultiParentNodesExist(), lInitialSeed), 
-	               _conditional(conditional), _scanner(scanner), _total_C(scanner.getTotalC()), _total_N(scanner.getTotalN()) {
+                  : AbstractDenominatorDataRandomizer(scanner, lInitialSeed), 
+	               _conditional(conditional), _total_C(scanner.getTotalC()), _total_N(scanner.getTotalN()) {
 	sequentialSetup(_scanner);
 }
 
@@ -28,23 +28,23 @@ int PoissonRandomizer::randomize(unsigned int iSimulation, const AbstractNodesPr
         CasesLeft = _total_C;
         ExpectedLeft = _total_N;
         for (size_t i=0; i < treeNodes.size(); i++) {
+            treeSimNodes[i].refBrC() = 0; // Initilazing the branch cases with zero
+            if (!treeNodes.randomized(i)) continue; // skip if not randomized
             cases = BinomialGenerator(CasesLeft, treeNodes.getIntN(i) / ExpectedLeft);
             //if(cases>0 && Node[i].IntN<0.1) cout << "node=" << i <<  ", CasesLeft=" << CasesLeft << ", c=" << cases << ", exp=" << Node[i].IntN << ", ExpLeft=" << ExpectedLeft << endl;
             treeSimNodes[i].refIntC() = cases; //treeNodes.at(i)->_SimIntC = cases;
             CasesLeft -= cases;
             ExpectedLeft -= treeNodes.getIntN(i);
-            treeSimNodes[i].refBrC() = 0; //treeNodes.at(i)->_SimBrC = 0;  // Initilazing the branch cases with zero
         } // for i
     }  else { // if unconditional
         TotalSimC=0;
-        ExpectedLeft = _total_N;
         for(size_t i=0; i < treeNodes.size(); i++) {
+            treeSimNodes[i].refBrC() = 0; // Initilazing the branch cases with zero
+            if (!treeNodes.randomized(i)) continue; // skip if not randomized
             cases = PoissonGenerator(treeNodes.getIntN(i));
             //if(cases>0 && Node[i].IntN<0.1) cout << "node=" << i <<  ",  c=" << cases << ", exp=" << Node[i].IntN << endl;
             treeSimNodes[i].refIntC() = cases; //treeNodes.at(i)->_SimIntC=cases;
             TotalSimC += cases;
-            ExpectedLeft -= treeNodes.getIntN(i);
-            treeSimNodes[i].refBrC() = 0; //treeNodes.at(i)->_SimBrC = 0; // Initilazing the branch cases with zero
         }
     }
     return TotalSimC;

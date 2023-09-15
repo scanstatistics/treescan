@@ -9,9 +9,15 @@ public class Parameters implements Cloneable {
     static public native String getAlphaSpentToDateString(String filename);
     static public double getAlphaSpentToDate(String filename) {
         String spent = Parameters.getAlphaSpentToDateString(filename);
-        return Double.parseDouble(spent);
+        double alpha = 0.0;
+        for (String val : spent.split(","))
+            if (!val.isEmpty()) alpha += Double.parseDouble(val);
+        return alpha;
     }    
-
+    static public int getLookNumber(String filename) {
+        String spent = Parameters.getAlphaSpentToDateString(filename);
+        return spent.split(",").length;
+    } 
     public enum ResultsFormat {TEXT};
     public enum ModelType {POISSON, BERNOULLI_TREE, UNIFORM, MODEL_NOT_APPLICABLE, BERNOULLI_TIME};
     public enum ScanType {TREEONLY, TREETIME, TIMEONLY};

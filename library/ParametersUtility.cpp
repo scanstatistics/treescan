@@ -73,9 +73,8 @@ JNIEXPORT jstring JNICALL Java_org_treescan_app_Parameters_getAlphaSpentToDateSt
         std::string buffer(sParameterFilename);
         if (iscopy == JNI_TRUE)
             pEnv->ReleaseStringUTFChars(filename, sParameterFilename);
-        std::stringstream stringbuffer;
-        stringbuffer << SequentialStatistic::getAlphaSpentToDate(buffer);
-        return pEnv->NewStringUTF(stringbuffer.str().c_str());
+        std::string valStr(SequentialStatistic::getAlphaSpentToDateStr(buffer));
+        return pEnv->NewStringUTF(valStr.c_str());
     }
     catch (jni_error&) {
         return pEnv->NewStringUTF("-1.0"); // let the Java exception to be handled in the caller of JNI function

@@ -34,54 +34,51 @@ int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesP
 
     if (_parameters.isPerformingDayOfWeekAdjustment()) {
         for (size_t i=0; i < treeNodes.size(); ++i) {
+            if (!treeNodes.randomized(i) || !treeNodes.getIntC(i)) continue; // skip if not randomized or zero node cases
             SimulationNode& simNode(treeSimNodes[i]);
-            if (treeNodes.getIntC(i)) {
-                const NodeStructure::CountContainer_t & counts = treeNodes.getIntC_C(i);
-                for (size_t idx = 0; idx < counts.size(); ++idx) {
-                    NodeStructure::count_t cases = counts[idx] - (idx + 1 == counts.size() ? 0 : counts[idx + 1]);
-                    for (NodeStructure::count_t c = 0; c < cases; ++c) {
-                        // For the associated day of week, by this idx, get the uniformly distributed time index along all of the same week day.
-                        DataTimeRange::index_t idxDay = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(1), static_cast<long>(_day_of_week_indexes[idx % 7].size()), _random_number_generator));
-                        ++(simNode.refIntC_C()[_day_of_week_indexes[idx % 7][idxDay - 1]]);
-                        ++TotalSimC;
-                    }
+            const NodeStructure::CountContainer_t & counts = treeNodes.getIntC_C(i);
+            for (size_t idx = 0; idx < counts.size(); ++idx) {
+                NodeStructure::count_t cases = counts[idx] - (idx + 1 == counts.size() ? 0 : counts[idx + 1]);
+                for (NodeStructure::count_t c = 0; c < cases; ++c) {
+                    // For the associated day of week, by this idx, get the uniformly distributed time index along all of the same week day.
+                    DataTimeRange::index_t idxDay = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(1), static_cast<long>(_day_of_week_indexes[idx % 7].size()), _random_number_generator));
+                    ++(simNode.refIntC_C()[_day_of_week_indexes[idx % 7][idxDay - 1]]);
+                    ++TotalSimC;
                 }
             }
         }
     } else if (_censored_data) {
         for (size_t i=0; i < treeNodes.size(); ++i) {
             NodeStructure::count_t nodeC = treeNodes.getIntC(i);
-            if (nodeC) {
-                const NodeStructure::CensorDist_t& censor_distribution = _node_censors[i];
-                SimulationNode& simNode(treeSimNodes[i]);
-                int censor_count=0;
-                for (NodeStructure::CensorDist_t::const_iterator itr=censor_distribution.begin(); itr != censor_distribution.end(); ++itr) {
-                    for (NodeStructure::count_t c=0; c < itr->second; ++c) {
-                        // Distribute the censored case within the censor period -- data time range start to the censor time, inclusively.
-                        DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(itr->first), _random_number_generator));
-                        ++(simNode.refIntC_C()[idx]);
-                        ++TotalSimC;
-                        ++censor_count;
-                    }
-                }
-                // Now apply any of the cases that were not censored on this node -- they are distributed across entire data time range.
-                for (NodeStructure::count_t c=0; c < nodeC - censor_count; ++c) {
-                    DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(zeroRange.getEnd()), _random_number_generator));
+            if (!treeNodes.randomized(i) || !nodeC) continue; // skip if not randomized or zero node cases
+            const NodeStructure::CensorDist_t& censor_distribution = _node_censors[i];
+            SimulationNode& simNode(treeSimNodes[i]);
+            int censor_count=0;
+            for (NodeStructure::CensorDist_t::const_iterator itr=censor_distribution.begin(); itr != censor_distribution.end(); ++itr) {
+                for (NodeStructure::count_t c=0; c < itr->second; ++c) {
+                    // Distribute the censored case within the censor period -- data time range start to the censor time, inclusively.
+                    DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(itr->first), _random_number_generator));
                     ++(simNode.refIntC_C()[idx]);
                     ++TotalSimC;
+                    ++censor_count;
                 }
+            }
+            // Now apply any of the cases that were not censored on this node -- they are distributed across entire data time range.
+            for (NodeStructure::count_t c=0; c < nodeC - censor_count; ++c) {
+                DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(zeroRange.getEnd()), _random_number_generator));
+                ++(simNode.refIntC_C()[idx]);
+                ++TotalSimC;
             }
         }
     } else {
         for (size_t i=0; i < treeNodes.size(); ++i) {
             NodeStructure::count_t nodeC = treeNodes.getIntC(i);
-            if (nodeC) {
-                SimulationNode& simNode(treeSimNodes[i]);
-                for (NodeStructure::count_t c=0; c < nodeC; ++c) {
-                    DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(zeroRange.getEnd()), _random_number_generator));
-                    ++(simNode.refIntC_C()[idx]);
-                    ++TotalSimC;
-                }
+            if (!treeNodes.randomized(i) || !nodeC) continue; // skip if not randomized or zero node cases
+            SimulationNode& simNode(treeSimNodes[i]);
+            for (NodeStructure::count_t c=0; c < nodeC; ++c) {
+                DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(zeroRange.getEnd()), _random_number_generator));
+                ++(simNode.refIntC_C()[idx]);
+                ++TotalSimC;
             }
         }
     }
@@ -102,7 +99,7 @@ int TemporalRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner
         boost::mutex::scoped_lock lock(mutex);
         TotalSimC = read(_read_filename, iSimulation, treeNodes, treeSimNodes, mutex);
     } else { // else standard randomization
-        TotalSimC = randomize(iSimulation, NodesProxy(treeNodes), treeSimNodes);
+        TotalSimC = randomize(iSimulation, NodesProxy(treeNodes, _parameters.getDataOnlyOnLeaves()), treeSimNodes);
     }
     // write simulation data to file if requested
     if (_write_data) {
@@ -285,22 +282,21 @@ int TemporalAlternativeHypothesisRandomizer::randomize(unsigned int iSimulation,
         /* Iterate through all the nodes and redistribute cases within the same node's intervals. */
         for (size_t i=0; i < treeNodes.size(); ++i) {
             NodeStructure::count_t nodeC = treeNodes.getIntC(i);
-            if (nodeC) { /* Are there cases in this node? */
-                SimulationNode& simNode(treeSimNodes[i]);
-                /* Get adjusted values for this node -- this is the measure array we adjusted from the alternative hypothesis file. */
-                const NodeStructure::ExpectedContainer_t& measure = treeNodes.getIntN_C(i);
-                /* Create a distribution from zero to cumulative maximum in elevated risk array -- for current node. */
-                boost::random::uniform_real_distribution<> distribution(0.0, measure.back());
-                /* For each case, distribute to other interval - by using the adjusted measure array. */
-                for (NodeStructure::count_t c=0; c < nodeC; ++c) {
-                    /* For each case, randomly generate a value between zero and cumulative maximum, then find where that value fails in measure array. */
-                    double rv = distribution(generator);
-                    NodeStructure::ExpectedContainer_t::const_iterator itr = std::upper_bound(measure.begin(), measure.end(), rv);
-                    DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(std::distance(measure.begin(), itr)) - 1;
-                    /* Now we can assign this randomized case and update total. */
-                    ++(simNode.refIntC_C()[idx]);
-                    ++TotalSimC;
-                }
+            if (!treeNodes.randomized(i) || !nodeC) continue; // skip if not randomized or zero node cases
+            SimulationNode& simNode(treeSimNodes[i]);
+            /* Get adjusted values for this node -- this is the measure array we adjusted from the alternative hypothesis file. */
+            const NodeStructure::ExpectedContainer_t& measure = treeNodes.getIntN_C(i);
+            /* Create a distribution from zero to cumulative maximum in elevated risk array -- for current node. */
+            boost::random::uniform_real_distribution<> distribution(0.0, measure.back());
+            /* For each case, distribute to other interval - by using the adjusted measure array. */
+            for (NodeStructure::count_t c=0; c < nodeC; ++c) {
+                /* For each case, randomly generate a value between zero and cumulative maximum, then find where that value fails in measure array. */
+                double rv = distribution(generator);
+                NodeStructure::ExpectedContainer_t::const_iterator itr = std::upper_bound(measure.begin(), measure.end(), rv);
+                DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(std::distance(measure.begin(), itr)) - 1;
+                /* Now we can assign this randomized case and update total. */
+                ++(simNode.refIntC_C()[idx]);
+                ++TotalSimC;
             }
         }
     }

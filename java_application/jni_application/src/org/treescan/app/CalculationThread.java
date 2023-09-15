@@ -1,6 +1,8 @@
 package org.treescan.app;
 
+import java.io.File;
 import org.treescan.gui.AnalysisRunInternalFrame;
+import org.treescan.utils.FileAccess;
 
 /**
  * Thread class for executing analysis through call to Java Native Interface.
@@ -8,7 +10,7 @@ import org.treescan.gui.AnalysisRunInternalFrame;
 public class CalculationThread extends Thread {
 
     private final AnalysisRunInternalFrame AnalysisRun;
-    final private Parameters Parameters;
+    final private Parameters _parameters;
     String gsProgramErrorCallPath = "";
 
     public native int RunAnalysis(Parameters jparameters);
@@ -16,7 +18,7 @@ public class CalculationThread extends Thread {
     public CalculationThread(AnalysisRunInternalFrame AnalysisRun, final Parameters Parameters) {
         super(Parameters.getSourceFileName());
         this.AnalysisRun = AnalysisRun;
-        this.Parameters = Parameters;
+        this._parameters = Parameters;
     }
 
     synchronized private boolean IsCancelled() {
@@ -49,13 +51,22 @@ public class CalculationThread extends Thread {
     @Override
     public void run() {
         try {
-            if (RunAnalysis(Parameters) == 0) {
+            if (RunAnalysis(_parameters) == 0) {
                 if (AnalysisRun.IsJobCanceled()) {
                     //analysis cancelled by user -- acknowledge that engine has terminated
                     AnalysisRun.setTitle("Job cancelled");
                     AnalysisRun.PrintProgressWindow("Job cancelled by user.");
                 } else {
-                    AnalysisRun.LoadFromFile(Parameters.getOutputFileName());
+                    OutputFileRegister.getInstance().release(_parameters.getOutputFileName());
+                    String resultsFilename = _parameters.getOutputFileName();
+                    if (_parameters.isSequentialScanTreeOnly()) {
+                        // The generated output files are created with '_look#', so we need to update output filename.
+                        resultsFilename = FileAccess.changeExtension(
+                            resultsFilename,
+                            "_look" + _parameters.getLookNumber(resultsFilename) + FileAccess.getExtension(new File(resultsFilename))
+                        );
+                    }
+                    AnalysisRun.LoadFromFile(resultsFilename);
                 }
             } else {
                 AnalysisRun.enableEmailButton();

@@ -10,7 +10,6 @@ class UnconditionalBernoulliRandomizer : public AbstractDenominatorDataRandomize
     protected:
         int                 _total_C;
         int                 _total_Controls;
-        const ScanRunner  & _scanner;
 
         virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
 
@@ -32,7 +31,7 @@ class AbstractConditionalBernoulliRandomizer : public AbstractDenominatorDataRan
         virtual int _randomize(int cases, int controls, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
 
     public:
-        AbstractConditionalBernoulliRandomizer(int TotalC, int TotalControls, const Parameters& parameters, bool multiparents, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+        AbstractConditionalBernoulliRandomizer(int TotalC, int TotalControls, const ScanRunner& scanner, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
         virtual ~AbstractConditionalBernoulliRandomizer() {}
 };
 
@@ -42,7 +41,7 @@ class ConditionalBernoulliRandomizer : public AbstractConditionalBernoulliRandom
         virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
 
     public:
-        ConditionalBernoulliRandomizer(int TotalC, int TotalControls, const Parameters& parameters, bool multiparents, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+        ConditionalBernoulliRandomizer(int TotalC, int TotalControls, const ScanRunner& scanner, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
         virtual ~ConditionalBernoulliRandomizer() {}
 
         virtual ConditionalBernoulliRandomizer * clone() const {return new ConditionalBernoulliRandomizer(*this);}
@@ -54,7 +53,7 @@ protected:
 	virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
 
 public:
-	BernoulliTimeRandomizer(int TotalC, int TotalControls, const Parameters& parameters, bool multiparents, long lInitialSeed = RandomNumberGenerator::glDefaultSeed);
+	BernoulliTimeRandomizer(int TotalC, int TotalControls, const ScanRunner& scanner, long lInitialSeed = RandomNumberGenerator::glDefaultSeed);
 	virtual ~BernoulliTimeRandomizer() {}
 
 	virtual BernoulliTimeRandomizer * clone() const { return new BernoulliTimeRandomizer(*this); }
@@ -78,16 +77,10 @@ class ConditionalBernoulliAlternativeHypothesisRandomizer : public AbstractCondi
         virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
 
     public:
-        ConditionalBernoulliAlternativeHypothesisRandomizer(const ScanRunner::NodeStructureContainer_t& treeNodes,
-                                                            const RelativeRiskAdjustmentHandler& adjustments,
-                                                            int TotalC,
-                                                            int TotalControls,
-                                                            double p0,
-                                                            double p1,
-                                                            unsigned int n1,
-                                                            const Parameters& parameters,
-                                                            bool multiparents, 
-                                                            long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+        ConditionalBernoulliAlternativeHypothesisRandomizer(
+            const ScanRunner::NodeStructureContainer_t& treeNodes, const RelativeRiskAdjustmentHandler& adjustments, int TotalC, int TotalControls,
+            double p0, double p1, unsigned int n1, const ScanRunner& scanner, long lInitialSeed=RandomNumberGenerator::glDefaultSeed
+        );
         virtual ~ConditionalBernoulliAlternativeHypothesisRandomizer();
 
         virtual ConditionalBernoulliAlternativeHypothesisRandomizer * clone() const {return new ConditionalBernoulliAlternativeHypothesisRandomizer(*this);}
