@@ -558,7 +558,7 @@ public:
     boost::shared_ptr<AbstractWindowLength> getNewWindowLength() const;
     double get_node_n_time_total_cases(DataTimeRange::index_t start_idx, DataTimeRange::index_t end_idx) const {
         /* Obtain the total number of cases in window range for all nodes. */
-        auto& test = std::make_pair(start_idx, end_idx);
+        auto test = std::make_pair(start_idx, end_idx);
         auto finder = _node_n_time_total_cases_cache.find(test);
         if (finder != _node_n_time_total_cases_cache.end())
             return finder->second;
