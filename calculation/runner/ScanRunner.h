@@ -318,6 +318,8 @@ public:
 class CompareCutsByLoglikelihood {
 public:
     bool operator() (const CutStructure * lhs, const CutStructure * rhs) {
+        if (macro_equal(lhs->getLogLikelihood(), rhs->getLogLikelihood(), DBL_CMP_TOLERANCE))
+            return lhs->getID() < rhs->getID(); // Break ties in a deterministic way.
         return lhs->getLogLikelihood() > rhs->getLogLikelihood();
     }
 };

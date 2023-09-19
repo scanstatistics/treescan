@@ -46,7 +46,7 @@ void OrderedSimulationDataWriter::writeSequenceData(unsigned int simulation, con
     if (_sim_position == simulation) { // If simulation position equals this simulation, write it now.
         for (auto node: treeSimNodes) {
             if (!_restricted_levels.test(node.getLevel())) // skip writing data from nodes that are not evaluated - we're writing branch data
-                *_sim_stream << node.getBrC_C().front() << " ";
+                *_sim_stream << node.getBrC() << " ";
         }
         *_sim_stream << std::endl;
         ++_sim_position;
@@ -54,7 +54,7 @@ void OrderedSimulationDataWriter::writeSequenceData(unsigned int simulation, con
         CacheStream_t _cache_stream(new std::stringstream());
         for (auto& node : treeSimNodes) {
             if (!_restricted_levels.test(node.getLevel())) // skip writing data from nodes that are not evaluated - we're writing branch data
-                *_cache_stream << node.getBrC_C().front() << " ";
+                *_cache_stream << node.getBrC() << " ";
         }
         *_cache_stream << std::endl;
         _sim_stream_cache.push_back(std::make_pair(simulation, _cache_stream));
@@ -138,7 +138,7 @@ int AbstractDenominatorDataRandomizer::read(const std::string& filename, unsigne
     FileStreamReadManager::SharedStream_t _sim_stream = _sim_stream_reader->getStream(this, mutex);
     // seek line offset from current simulation row to this simulation
     while (_sim_position < simulation) {
-        _sim_stream->ignore(std::numeric_limits<int>::max(), '\n');
+        _sim_stream->ignore(std::numeric_limits<int>::max(), _sim_stream->widen('\n'));
         ++_sim_position;
     }
     size_t checkNodes = treeSimNodes.size();
@@ -146,16 +146,12 @@ int AbstractDenominatorDataRandomizer::read(const std::string& filename, unsigne
     for (size_t i=0; i < checkNodes; ++i) {
         auto& node = treeSimNodes[i];
         // check for end of file yet we should have more to read
-        if (!(*_sim_stream >> count) && i < checkNodes) {
-            if (_sim_stream->eof())
-                throw resolvable_error("Error: Simulated data file does not contain enough data for simulation %d. Expecting %d datum but could only read %d.\n", simulation, checkNodes, i);
-            throw resolvable_error("Error: Simulated data file appears to contain invalid data in simulation %d. Datum could not be read as integer for %d element.\n", simulation, i+1);
-        }
+        *_sim_stream >> count;
+        if (_sim_stream->fail()) throw resolvable_error("Error: Simulated data file appears to contain invalid data in simulation %d. Datum could not be read as integer for %d element.\n", simulation, i + 1);
         node.refIntC() += count;
         node.refBrC() = 0;
         total_sim += count;
     }
-    _sim_stream->ignore(1, '\n'); // read trailing newline from current data set line
     return total_sim;
 }
 
@@ -163,8 +159,9 @@ int AbstractDenominatorDataRandomizer::read(const std::string& filename, unsigne
 int AbstractDenominatorDataRandomizer::readSequentialData(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex) {
     FileStreamReadManager::SharedStream_t _sim_stream = _sim_stream_reader->getStream(this, mutex);
     // seek line offset from current simulation row to this simulation
+
     while (_sim_position < simulation) {
-        _sim_stream->ignore(std::numeric_limits<int>::max(), '\n');
+        _sim_stream->ignore(std::numeric_limits<int>::max(), _sim_stream->widen('\n'));
         ++_sim_position;
     }
     size_t checkNodes = treeSimNodes.size();
@@ -174,15 +171,11 @@ int AbstractDenominatorDataRandomizer::readSequentialData(const std::string& fil
         if (_restricted_levels.test(node.getLevel()))
             continue; // these nodes were skipped during write process, so skip on read
                       // check for end of file yet we should have more to read
-        if (!(*_sim_stream >> count) && i < checkNodes) {
-            if (_sim_stream->eof())
-                throw resolvable_error("Error: Simulated data file does not contain enough data for simulation %d. Expecting %d datum but could only read %d.\n", simulation, checkNodes, i);
-            throw resolvable_error("Error: Simulated data file appears to contain invalid data in simulation %d. Datum could not be read as integer for %d element.\n", simulation, i + 1);
-        }
+        *_sim_stream >> count;
+        if (_sim_stream->fail()) throw resolvable_error("Error: Simulated data file appears to contain invalid data in simulation %d. Datum could not be read as integer for %d element.\n", simulation, i + 1);
         node.refBrC() += count; // We're reading branch data, not node data.
         total_sim += count;
     }
-    _sim_stream->ignore(1, '\n'); // read trailing newline from current data set line
     return total_sim;
 }
 
