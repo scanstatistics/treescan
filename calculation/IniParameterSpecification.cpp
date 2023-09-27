@@ -260,7 +260,7 @@ void IniParameterSpecification::Build_2_2_x_ParameterList() {
 
     _parameter_info[Parameters::SCAN_RATE_TYPE] = ParamInfo(Parameters::SCAN_RATE_TYPE, "scan-rate-type", 10, _analysis_section);
     _parameter_info[Parameters::DATA_ONLY_ON_LEAVES] = ParamInfo(Parameters::DATA_ONLY_ON_LEAVES, "data-only-on-leaves", 9, _advanced_input_section);
-	_parameter_info[Parameters::RELAXED_STUDY_DATA_PERIOD_CHECKING] = ParamInfo(Parameters::RELAXED_STUDY_DATA_PERIOD_CHECKING, "relaxed-study-data-period-checking", 10, _advanced_input_section);
+    _parameter_info[Parameters::RELAXED_STUDY_DATA_PERIOD_CHECKING] = ParamInfo(Parameters::RELAXED_STUDY_DATA_PERIOD_CHECKING, "relaxed-study-data-period-checking", 10, _advanced_input_section);
 
     assert(_parameter_info.size() == 76);
 }

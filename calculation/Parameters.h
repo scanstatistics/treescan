@@ -19,7 +19,7 @@ class Parameters {
                         CUT_FILE,
                         CUT_TYPE,
                         DATA_ONLY_ON_LEAVES,
-						RELAXED_STUDY_DATA_PERIOD_CHECKING,
+                        RELAXED_STUDY_DATA_PERIOD_CHECKING,
                         APPLY_RISK_WINDOW_RESTRICTION,
                         RISK_WINDOW_PERCENTAGE,
                         MINIMUM_CENSOR_TIME,
@@ -242,7 +242,7 @@ class Parameters {
     ratio_t                             _probablility_ratio;
     CutType                             _cut_type;
     bool                                _data_only_on_leaves;
-	bool								_relaxed_study_data_period_checking;
+    bool                                _relaxed_study_data_period_checking;
     ScanType                            _scan_type;
     ConditionalType                     _conditional_type;
     ScanRateType                        _scan_rate_type;
@@ -322,8 +322,8 @@ class Parameters {
 
     bool                                getDataOnlyOnLeaves() const { return _data_only_on_leaves; }
     void                                setDataOnlyOnLeaves(bool b) { _data_only_on_leaves = b; }
-	bool								getRelaxedStudyDataPeriodChecking() const { return _relaxed_study_data_period_checking; }
-	void								setRelaxedStudyDataPeriodChecking(bool b) { _relaxed_study_data_period_checking = b; }
+    bool                                getRelaxedStudyDataPeriodChecking() const { return _relaxed_study_data_period_checking; }
+    void                                setRelaxedStudyDataPeriodChecking(bool b) { _relaxed_study_data_period_checking = b; }
     ScanRateType                        getScanRateType() const { return _scan_rate_type; }
     void                                setScanRateType(ScanRateType e) { _scan_rate_type = e; }
     unsigned int                        getMinimumHighRateNodeCases() const { return _minimum_highrate_nodes_cases; }

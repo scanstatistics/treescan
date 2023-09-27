@@ -1048,25 +1048,25 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
             }
             DataTimeRangeSet::rangeset_index_t rangeIdx = _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
             if (rangeIdx.first == false) {
-				if (_parameters.getRelaxedStudyDataPeriodChecking()) {
-					_print.Printf(
-						"Warning: Record %ld in count file references an invalid '%s' value and will be ignored.\n"
-						"       The specified value is not within any of the data time ranges you have defined.",
-						BasePrint::P_WARNING,
-						dataSource->getCurrentRecordIndex(),
-						time_columnname.c_str()
-					);
-				}
-				else {
-					readSuccess = false;
-					_print.Printf(
-						"Error: Record %ld in count file references an invalid '%s' value.\n"
-						"       The specified value is not within any of the data time ranges you have defined.",
-						BasePrint::P_READERROR,
-						dataSource->getCurrentRecordIndex(),
-						time_columnname.c_str()
-					);
-				}  
+                if (_parameters.getRelaxedStudyDataPeriodChecking()) {
+                    _print.Printf(
+                        "Warning: Record %ld in count file references an invalid '%s' value and will be ignored.\n"
+                        "       The specified value is not within any of the data time ranges you have defined.",
+                        BasePrint::P_WARNING,
+                        dataSource->getCurrentRecordIndex(),
+                        time_columnname.c_str()
+                   );
+                }
+                else {
+                    readSuccess = false;
+                    _print.Printf(
+                        "Error: Record %ld in count file references an invalid '%s' value.\n"
+                        "       The specified value is not within any of the data time ranges you have defined.",
+                        BasePrint::P_READERROR,
+                        dataSource->getCurrentRecordIndex(),
+                        time_columnname.c_str()
+                    );
+                }  
                 continue;
             }
             if (checkNonLeafWithData(node, count > 0)) continue;
@@ -1084,25 +1084,25 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
             // check that the 'daysSinceIncidence' is within a defined data time range
             DataTimeRangeSet::rangeset_index_t rangeIdx = _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
             if (rangeIdx.first == false) {
-				if (_parameters.getRelaxedStudyDataPeriodChecking()) {
-					_print.Printf(
-						"Warning: Record %ld in count file references an invalid '%s' value and will be ignored.\n"
-						"       The specified value is not within any of the data time ranges you have defined.",
-						BasePrint::P_WARNING,
-						dataSource->getCurrentRecordIndex(),
-						time_columnname.c_str()
-					);
-				}
-				else {
-					readSuccess = false;
-					_print.Printf(
-						"Error: Record %ld in count file references an invalid '%s' value.\n"
-						"       The specified value is not within any of the data time ranges you have defined.",
-						BasePrint::P_READERROR,
-						dataSource->getCurrentRecordIndex(),
-						time_columnname.c_str()
-					);
-				}
+              if (_parameters.getRelaxedStudyDataPeriodChecking()) {
+                    _print.Printf(
+                        "Warning: Record %ld in count file references an invalid '%s' value and will be ignored.\n"
+                        "       The specified value is not within any of the data time ranges you have defined.",
+                        BasePrint::P_WARNING,
+                        dataSource->getCurrentRecordIndex(),
+                        time_columnname.c_str()
+                    );
+                }
+                else {
+                    readSuccess = false;
+                    _print.Printf(
+                        "Error: Record %ld in count file references an invalid '%s' value.\n"
+                        "       The specified value is not within any of the data time ranges you have defined.",
+                        BasePrint::P_READERROR,
+                        dataSource->getCurrentRecordIndex(),
+                        time_columnname.c_str()
+                    );
+                }
                 continue;
             }
             // If applying exclusion time range and this event is in one of the exclusion ranges, skip this record (TreeTime conditioned on Node/Time only).
@@ -1123,23 +1123,23 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                     }
                     DataTimeRangeSet::rangeset_index_t rangeIdx = _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(censortime);
                     if (rangeIdx.first == false) {
-						if (_parameters.getRelaxedStudyDataPeriodChecking()) {
-							_print.Printf(
-								"Warning: Record %ld in count file references an invalid 'censoring time' value and will be ignored.\n"
-								"       The specified value is not within any of the data time ranges you have defined.",
-								BasePrint::P_WARNING,
-								dataSource->getCurrentRecordIndex()
-							);
-						}
-						else {
-							readSuccess = false;
-							_print.Printf(
-								"Error: Record %ld in count file references an invalid 'censoring time' value.\n"
-								"       The specified value is not within any of the data time ranges you have defined.",
-								BasePrint::P_READERROR,
-								dataSource->getCurrentRecordIndex()
-							);
-						}
+                        if (_parameters.getRelaxedStudyDataPeriodChecking()) {
+                            _print.Printf(
+                                "Warning: Record %ld in count file references an invalid 'censoring time' value and will be ignored.\n"
+                                "       The specified value is not within any of the data time ranges you have defined.",
+                                BasePrint::P_WARNING,
+                                dataSource->getCurrentRecordIndex()
+                            );
+                        }
+                        else {
+                            readSuccess = false;
+                            _print.Printf(
+                                "Error: Record %ld in count file references an invalid 'censoring time' value.\n"
+                                "       The specified value is not within any of the data time ranges you have defined.",
+                                BasePrint::P_READERROR,
+                                dataSource->getCurrentRecordIndex()
+                            );
+                        }
                         continue;
                     }
                     if (censortime < static_cast<int>(_parameters.getMinimumCensorTime())) {
@@ -1341,25 +1341,25 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
             /* Check that the 'daysSinceIncidence' is within a defined data time range. */
             DataTimeRangeSet::rangeset_index_t rangeIdx = _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
             if (rangeIdx.first == false) {
-				if (_parameters.getRelaxedStudyDataPeriodChecking()) {
-					_print.Printf(
-						"Warning: Record %ld in count file references an invalid '%s' value and will be ignored.\n"
-						"       The specified value is not within any of the data time ranges you have defined.",
-						BasePrint::P_WARNING,
-						dataSource->getCurrentRecordIndex(),
-						time_columnname.c_str()
-					);
-				}
-				else {
-					readSuccess = false;
-					_print.Printf(
-						"Error: Record %ld in control file references an invalid '%s' value.\n"
-						"The specified value is not within any of the data time ranges you have defined.",
-						BasePrint::P_READERROR,
-						dataSource->getCurrentRecordIndex(),
-						time_columnname.c_str()
-					);
-				}    
+                if (_parameters.getRelaxedStudyDataPeriodChecking()) {
+                   _print.Printf(
+                  "Warning: Record %ld in count file references an invalid '%s' value and will be ignored.\n"
+                        "       The specified value is not within any of the data time ranges you have defined.",
+                        BasePrint::P_WARNING,
+                        dataSource->getCurrentRecordIndex(),
+                        time_columnname.c_str()
+                    );
+                }
+                else {
+                    readSuccess = false;
+                    _print.Printf(
+                        "Error: Record %ld in control file references an invalid '%s' value.\n"
+                        "The specified value is not within any of the data time ranges you have defined.",
+                        BasePrint::P_READERROR,
+                        dataSource->getCurrentRecordIndex(),
+                        time_columnname.c_str()
+                    );
+                }    
                 continue;
             }
             node->refIntN_C()[daysSinceIncidence + _zero_translation_additive] += controls;
