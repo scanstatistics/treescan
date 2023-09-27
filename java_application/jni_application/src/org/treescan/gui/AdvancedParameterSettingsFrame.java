@@ -150,6 +150,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         boolean bReturn = true;
         bReturn &= (_cutFileTextField.getText().equals(""));
         bReturn &= _checkbox_data_leaves_only.isSelected();
+        bReturn &= _strict_study_data_period_checking.isSelected();
         return bReturn;
     }
 
@@ -288,6 +289,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Input tab
         parameters.setCutsFileName(_cutFileTextField.getText());
         parameters.setDataOnlyOnLeaves(_checkbox_data_leaves_only.isSelected());
+        parameters.setRelaxedStudyDataPeriodChecking(_relaxed_study_data_period_checking.isSelected());
         parameters.setApplyingRiskWindowRestriction(_apply_risk_window_restriction.isEnabled() && _apply_risk_window_restriction.isSelected());
         parameters.setRiskWindowPercentage(Double.parseDouble(_risk_window_percentage.getText()));
 
@@ -392,6 +394,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     private void setDefaultsForInputTab() {
         _cutFileTextField.setText("");
+        _strict_study_data_period_checking.setSelected(true);
     }
 
     /**
@@ -441,6 +444,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _cutFileTextField.setText(parameters.getCutsFileName());
         _cutFileTextField.setCaretPosition(0);
         _checkbox_data_leaves_only.setSelected(parameters.getDataOnlyOnLeaves());
+        _strict_study_data_period_checking.setSelected(!parameters.getRelaxedStudyDataPeriodChecking());
+        _relaxed_study_data_period_checking.setSelected(parameters.getRelaxedStudyDataPeriodChecking());
         _apply_risk_window_restriction.setSelected(parameters.isApplyingRiskWindowRestriction());
         _risk_window_percentage.setText(Double.toString(parameters.getRiskWindowPercentage()));
 
@@ -1194,12 +1199,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         maximumWindowButtonGroup = new javax.swing.ButtonGroup();
         _powerEstimationButtonGroup = new javax.swing.ButtonGroup();
         _temporal_graph_buttongroup = new javax.swing.ButtonGroup();
+        _temporal_data_check_buttongroup = new javax.swing.ButtonGroup();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         _advanced_input_tab = new javax.swing.JPanel();
         _cutFileLabel = new javax.swing.JLabel();
         _cutFileTextField = new javax.swing.JTextField();
         _cutFileImportButton = new javax.swing.JButton();
         _checkbox_data_leaves_only = new javax.swing.JCheckBox();
+        jPanel4 = new javax.swing.JPanel();
+        _strict_study_data_period_checking = new javax.swing.JRadioButton();
+        _relaxed_study_data_period_checking = new javax.swing.JRadioButton();
         _advanced_temporal_window_tab = new javax.swing.JPanel();
         _maxTemporalOptionsGroup = new javax.swing.JPanel();
         _percentageTemporalRadioButton = new javax.swing.JRadioButton();
@@ -1343,18 +1352,61 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _checkbox_data_leaves_only.setSelected(true);
         _checkbox_data_leaves_only.setText("Only Allow Data on Leaves of Tree");
 
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Temporal Data Check"));
+
+        _temporal_data_check_buttongroup.add(_strict_study_data_period_checking);
+        _strict_study_data_period_checking.setSelected(true);
+        _strict_study_data_period_checking.setText("Check to ensure that all cases and controls are within the specified temporal study period.");
+        _strict_study_data_period_checking.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
+            }
+        });
+
+        _temporal_data_check_buttongroup.add(_relaxed_study_data_period_checking);
+        _relaxed_study_data_period_checking.setText("Ignore cases and controls that are outside the specified temporal study period.");
+        _relaxed_study_data_period_checking.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
+            }
+        });
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_strict_study_data_period_checking)
+                    .addComponent(_relaxed_study_data_period_checking))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_strict_study_data_period_checking)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_relaxed_study_data_period_checking)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout _advanced_input_tabLayout = new javax.swing.GroupLayout(_advanced_input_tab);
         _advanced_input_tab.setLayout(_advanced_input_tabLayout);
         _advanced_input_tabLayout.setHorizontalGroup(
             _advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _advanced_input_tabLayout.createSequentialGroup()
+            .addGroup(_advanced_input_tabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_checkbox_data_leaves_only, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_cutFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_cutFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_cutFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(_advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(_advanced_input_tabLayout.createSequentialGroup()
+                        .addGroup(_advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(_checkbox_data_leaves_only, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_cutFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_cutFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_cutFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         _advanced_input_tabLayout.setVerticalGroup(
@@ -1368,7 +1420,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_cutFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_checkbox_data_leaves_only)
-                .addContainerGap(332, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(263, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced Input", _advanced_input_tab);
@@ -3001,6 +3055,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JCheckBox _prospective_evaluation;
     private java.awt.Choice _prospective_frequency;
     private javax.swing.JPanel _prospective_frequency_group;
+    private javax.swing.JRadioButton _relaxed_study_data_period_checking;
     private javax.swing.JCheckBox _reportCriticalValuesCheckBox;
     private javax.swing.JCheckBox _reportLLRResultsAsCsvTable;
     private javax.swing.JCheckBox _reportTemporalGraph;
@@ -3032,11 +3087,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _startRangeStartYearTextField;
     private javax.swing.JLabel _startRangeToLabel;
     private javax.swing.JLabel _startWindowRangeLabel;
+    private javax.swing.JRadioButton _strict_study_data_period_checking;
     private javax.swing.JRadioButton _temporalGraphMostLikely;
     private javax.swing.JRadioButton _temporalGraphMostLikelyX;
     private javax.swing.JTextField _temporalGraphPvalueCutoff;
     private javax.swing.JRadioButton _temporalGraphSignificant;
     private javax.swing.JPanel _temporalWindowDefinitionGroup;
+    private javax.swing.ButtonGroup _temporal_data_check_buttongroup;
     private javax.swing.ButtonGroup _temporal_graph_buttongroup;
     private javax.swing.JPanel _temporal_window_cards;
     private javax.swing.JRadioButton _timeTemporalRadioButton;
@@ -3047,6 +3104,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.ButtonGroup maximumWindowButtonGroup;

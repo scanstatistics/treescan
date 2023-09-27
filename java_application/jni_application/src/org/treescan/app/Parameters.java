@@ -112,6 +112,7 @@ public class Parameters implements Cloneable {
     private double _temporal_graph_report_cutoff=0.05; /* P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY */
     private int _minimum_highrate_nodes_cases=2; /*minimum number of high rate nodes cases*/
     private boolean _data_only_on_leaves=true;
+    private boolean _relaxed_study_data_period_checking=false;
     
     private ArrayList<InputSourceSettings>     _input_sources;
 
@@ -227,10 +228,13 @@ public class Parameters implements Cloneable {
           if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;          
           if(_minimum_highrate_nodes_cases != rhs._minimum_highrate_nodes_cases) return false;
           if (_data_only_on_leaves != rhs._data_only_on_leaves) return false;
+          if (_relaxed_study_data_period_checking != rhs._relaxed_study_data_period_checking) return false;
           
           return true;
     }
 
+    public boolean getRelaxedStudyDataPeriodChecking() { return _relaxed_study_data_period_checking; }
+    public void setRelaxedStudyDataPeriodChecking(boolean b) { _relaxed_study_data_period_checking = b; }
     public boolean getDataOnlyOnLeaves() { return _data_only_on_leaves; }
     public void setDataOnlyOnLeaves(boolean b) { _data_only_on_leaves = b; }
     public ScanRateType getScanRateType() { return _scan_rate_type; }
