@@ -188,8 +188,6 @@ DateStringParser::ParserStatus DateStringParser::Parse(const char * sDateString,
             break;
         default: return INVALID_DATE;
     };
-    if (thisDate < startdate.get())
-        return OUT_OF_RANGE;
     return VALID_DATE;
 }
 

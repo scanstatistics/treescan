@@ -75,7 +75,7 @@ This class adds the ability to have dates separated by any of the characters: '/
 to have dates that are also formatted like: "02/1995" and "02/05/1995" (note that two digit years are not supported in new format). */
 class DateStringParser {
 public:
-    enum                                ParserStatus { VALID_DATE = 0, INVALID_DATE, LESSER_PRECISION, OUT_OF_RANGE };
+    enum                                ParserStatus { VALID_DATE = 0, INVALID_DATE, LESSER_PRECISION };
     enum                                DateFormat { MDY = 0, YMD };
     static const char                 * UNSPECIFIED;
     typedef unsigned long Julian;

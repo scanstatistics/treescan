@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 76;
+const int Parameters::giNumParameters = 77;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -107,6 +107,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_minimum_lowrate_nodes_cases != rhs._minimum_lowrate_nodes_cases) return false;
   if (_scan_rate_type != rhs._scan_rate_type) return false;
   if (_data_only_on_leaves != rhs._data_only_on_leaves) return false;
+  if (_relaxed_study_data_period_checking != rhs._relaxed_study_data_period_checking) return false;
 
   return true;
 }
@@ -250,6 +251,7 @@ void Parameters::copy(const Parameters &rhs) {
     _temporal_graph_report_cutoff = rhs._temporal_graph_report_cutoff;
     _scan_rate_type = rhs._scan_rate_type;
     _data_only_on_leaves = rhs._data_only_on_leaves;
+	_relaxed_study_data_period_checking = rhs._relaxed_study_data_period_checking;
 }
 
 /* Returns the maximum temporal window in data time units. */
@@ -378,6 +380,7 @@ void Parameters::setAsDefaulted() {
     _replications = 999;
     _cut_type = SIMPLE;
     _data_only_on_leaves = true;
+	_relaxed_study_data_period_checking = false;
     _maximum_window_percentage = 50.0;
     _maximum_window_length = 1;
     _maximum_window_type = PERCENTAGE_WINDOW;
