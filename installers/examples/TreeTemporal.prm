@@ -43,6 +43,8 @@ cut-filename=
 cut-type=0
 ;allow data only on tree leaves - (y/n)
 data-only-on-leaves=y
+;relaxed study data period checking - (y/n)
+relaxed-study-data-period-checking=n
 ;minimum censor time (2 <= x)
 minimum-censor-time=50
 ;minimum censor time percentage of study period (0 < x <= 100.0)
