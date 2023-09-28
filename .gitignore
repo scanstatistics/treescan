@@ -8,6 +8,9 @@
 *.o
 build.stderr
 build.stdout
+*.d
+*.a
+*.dylib
 
 # Logs
 logs
@@ -56,3 +59,6 @@ installers/java/jre_x86
 /java_application/jni_application/nbproject/private/private.xml
 /test/results.xml
 /java_application/jni_application/nbproject/private/
+
+zlib/zlib-1.2.7/Win32
+zlib/zlib-1.2.7/x64
