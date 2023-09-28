@@ -391,7 +391,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * Sets default values for Input related tab and respective controls
      */
     private void setDefaultsForInputTab() {
+        // Advanced Inputs tab
         _cutFileTextField.setText("");
+        _checkbox_data_leaves_only.setSelected(true);
         _strict_study_data_period_checking.setSelected(true);
     }
 
@@ -400,9 +402,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * controls pulled these default values from the CParameter class
      */
     private void setDefaultsForAnalysisTabs() {
-        // Inputs tab
-        _cutFileTextField.setText("");
-        _checkbox_data_leaves_only.setSelected(true);
         // Inference tab
         _montCarloReplicationsTextField.setText("999");
         _restrict_evaluated_levels.setSelected(false);
@@ -1335,6 +1334,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _cutFileLabel.setText("Cut File:"); // NOI18N
 
+        _cutFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
         _cutFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
         _cutFileImportButton.setToolTipText("Import cut file ..."); // NOI18N
         _cutFileImportButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1352,6 +1357,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _checkbox_data_leaves_only.setSelected(true);
         _checkbox_data_leaves_only.setText("Only Allow Data on Leaves of Tree");
+        _checkbox_data_leaves_only.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
 
         jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Temporal Data Check"));
 

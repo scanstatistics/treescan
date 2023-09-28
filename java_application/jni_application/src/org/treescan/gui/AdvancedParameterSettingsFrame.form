@@ -124,6 +124,7 @@
             </Component>
             <Component class="javax.swing.JTextField" name="_cutFileTextField">
               <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_cutFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
               </AuxValues>
             </Component>
@@ -143,6 +144,9 @@
                 <Property name="selected" type="boolean" value="true"/>
                 <Property name="text" type="java.lang.String" value="Only Allow Data on Leaves of Tree"/>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_checkbox_data_leaves_only.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+              </AuxValues>
             </Component>
             <Container class="javax.swing.JPanel" name="jPanel4">
               <Properties>
