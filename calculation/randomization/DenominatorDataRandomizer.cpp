@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "DenominatorDataRandomizer.h"
+#include "ZipUtils.h"
 #include <iostream>
 #include <fstream>
 
@@ -42,19 +43,25 @@ void OrderedSimulationDataWriter::write(unsigned int simulation, const SimNodeCo
 }
 
 /* Writes sequential simulation data to text file for given simulation while ensuring that simulations written are ordered by ordinal. */
-void OrderedSimulationDataWriter::writeSequenceData(unsigned int simulation, const SimNodeContainer_t& treeSimNodes, const boost::dynamic_bitset<>& _restricted_levels) {
+void OrderedSimulationDataWriter::writeSequenceData(unsigned int simulation, const SimNodeContainer_t& treeSimNodes, const boost::dynamic_bitset<>& _restricted_levels, const boost::dynamic_bitset<>& writeNodes) {
     if (_sim_position == simulation) { // If simulation position equals this simulation, write it now.
-        for (auto node: treeSimNodes) {
-            if (!_restricted_levels.test(node.getLevel())) // skip writing data from nodes that are not evaluated - we're writing branch data
-                *_sim_stream << node.getBrC() << " ";
+        for (size_t t = 0; t < treeSimNodes.size(); ++t) {
+            const auto& node = treeSimNodes[t];
+            // skip writing data from nodes that are not evaluated or had zero expected cases
+            if (_restricted_levels.test(node.getLevel()) || !writeNodes.test(t))
+                continue;
+            *_sim_stream << node.getBrC() << " ";
         }
         *_sim_stream << std::endl;
         ++_sim_position;
     } else { // Otherwise write this simulation data to cache.
         CacheStream_t _cache_stream(new std::stringstream());
-        for (auto& node : treeSimNodes) {
-            if (!_restricted_levels.test(node.getLevel())) // skip writing data from nodes that are not evaluated - we're writing branch data
-                *_cache_stream << node.getBrC() << " ";
+        for (size_t t = 0; t < treeSimNodes.size(); ++t) {
+            const auto& node = treeSimNodes[t];
+            // skip writing data from nodes that are not evaluated or had zero expected cases
+            if (_restricted_levels.test(node.getLevel()) || !writeNodes.test(t))
+                continue;
+            *_cache_stream << node.getBrC() << " ";
         }
         *_cache_stream << std::endl;
         _sim_stream_cache.push_back(std::make_pair(simulation, _cache_stream));
@@ -124,7 +131,7 @@ int AbstractDenominatorDataRandomizer::RandomizeData(unsigned int iSimulation, c
         if (_read_filename.size()) // add cumulated simulation data from previous look(s)
             totalSimC += readSequentialData(_read_filename, iSimulation, treeNodes, treeSimNodes, mutex);
         boost::mutex::scoped_lock writelock(mutex);
-        _sim_stream_writer->writeSequenceData(iSimulation, treeSimNodes, _restricted_levels);
+        _sim_stream_writer->writeSequenceData(iSimulation, treeSimNodes, _restricted_levels, _scanner.getSequentialTreeNodesToWrite());
     } else { // else standard randomization
         totalSimC = randomize(iSimulation, NodesProxy(treeNodes, _parameters.getDataOnlyOnLeaves(), _parameters.getProbability()), treeSimNodes);
         if (_write_data) standardWrite(); // write simulation data to file if requested
@@ -145,7 +152,6 @@ int AbstractDenominatorDataRandomizer::read(const std::string& filename, unsigne
     int count, total_sim = 0;
     for (size_t i=0; i < checkNodes; ++i) {
         auto& node = treeSimNodes[i];
-        // check for end of file yet we should have more to read
         *_sim_stream >> count;
         if (_sim_stream->fail()) throw resolvable_error("Error: Simulated data file appears to contain invalid data in simulation %d. Datum could not be read as integer for %d element.\n", simulation, i + 1);
         node.refIntC() += count;
@@ -159,18 +165,17 @@ int AbstractDenominatorDataRandomizer::read(const std::string& filename, unsigne
 int AbstractDenominatorDataRandomizer::readSequentialData(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex) {
     FileStreamReadManager::SharedStream_t _sim_stream = _sim_stream_reader->getStream(this, mutex);
     // seek line offset from current simulation row to this simulation
-
     while (_sim_position < simulation) {
         _sim_stream->ignore(std::numeric_limits<int>::max(), _sim_stream->widen('\n'));
         ++_sim_position;
     }
-    size_t checkNodes = treeSimNodes.size();
     int count, total_sim = 0;
-    for (size_t i = 0; i < checkNodes; ++i) {
+    for (size_t i = 0; i < treeSimNodes.size(); ++i) {
         auto& node = treeSimNodes[i];
         if (_restricted_levels.test(node.getLevel()))
-            continue; // these nodes were skipped during write process, so skip on read
-                      // check for end of file yet we should have more to read
+            continue; // this node were skipped during write process, so skip on read
+        if (_scanner.getSequentialTreeNodesToRead().size() && !_scanner.getSequentialTreeNodesToRead().test(i))
+            continue; // skip nodes that were not written on last write
         *_sim_stream >> count;
         if (_sim_stream->fail()) throw resolvable_error("Error: Simulated data file appears to contain invalid data in simulation %d. Datum could not be read as integer for %d element.\n", simulation, i + 1);
         node.refBrC() += count; // We're reading branch data, not node data.
@@ -181,8 +186,14 @@ int AbstractDenominatorDataRandomizer::readSequentialData(const std::string& fil
 
 void AbstractDenominatorDataRandomizer::sequentialSetup(const ScanRunner& scanner) {
 	if (scanner.getParameters().isSequentialScanTreeOnly()) {
-		if (!scanner.getSequentialStatistic().isFirstLook())
-			_read_filename = scanner.getSequentialStatistic().getSimulationDataFilename();
+        if (!scanner.getSequentialStatistic().isFirstLook()) {
+            _read_filename = scanner.getSequentialStatistic().getSimulationDataFilename();
+            // Since the cached simulation data file can be enormous with some analyses, and a sparse matrix at times,
+            // we store the resting file in a zip archive to reduce the burden on the file system.
+            // The archive will contain only a file named _read_filename, which is the previous simulation data.
+            const_cast<ScanRunner&>(scanner).getPrint().Printf("Unpacking sequential scan simulation data cache file ...\n", BasePrint::P_STDOUT);
+            unZip(scanner.getSequentialStatistic().getSimulationDataArchiveName());
+        }
 		_write_filename = scanner.getSequentialStatistic().getWriteSimulationDataFilename();
 		// Create new OrderedSimulationDataWriter in explicit constructor. Since it's a shared pointer, clones will share this class.
 		_sim_stream_writer.reset(new OrderedSimulationDataWriter(_write_filename, scanner.getParameters().getNumReplicationsRequested()));

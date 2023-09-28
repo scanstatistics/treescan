@@ -75,7 +75,6 @@ public class Parameters implements Cloneable {
     private String _temporal_end_range_sclose = "0";
     
     private boolean _generate_llr_results=false;
-    private boolean _report_critical_values=false;
     private double _maximum_window_percentage=50.0;
     private int _maximum_window_length=1;
     private MaximumWindowType _maximum_window_type=MaximumWindowType.PERCENTAGE_WINDOW;
@@ -200,7 +199,6 @@ public class Parameters implements Cloneable {
           if (_report_attributable_risk != rhs._report_attributable_risk) return false;
           if (_attributable_risk_exposed != rhs._attributable_risk_exposed) return false;
           if (_generate_llr_results != rhs._generate_llr_results) return false;
-          if (_report_critical_values != rhs._report_critical_values) return false;
 
           if (_resultsFormat != rhs._resultsFormat) return false;
     	  if (!_sourcefilename.equals(rhs._sourcefilename)) return false;
@@ -266,9 +264,7 @@ public class Parameters implements Cloneable {
     }
 
     public boolean isSequentialScanPoisson() {
-        return _sequential_scan &&
-               _modelType == Parameters.ModelType.POISSON &&
-               _conditionalType == Parameters.ConditionalType.UNCONDITIONAL;
+        return _sequential_scan && _modelType == Parameters.ModelType.POISSON;
     }
     
     public boolean isSequentialScanTreeOnly() {
@@ -320,8 +316,6 @@ public class Parameters implements Cloneable {
     public void setAttributableRiskExposed(int i) {_attributable_risk_exposed = i;}
     public boolean getPerformDayOfWeekAdjustment() {return _dayofweek_adjustment;}
     public void setPerformDayOfWeekAdjustment(boolean b) {_dayofweek_adjustment = b;}
-    public boolean getReportCriticalValues() {return _report_critical_values;}
-    public void setReportCriticalValues(boolean b) {_report_critical_values = b;}
     public boolean getPerformPowerEvaluations() {return _perform_power_evaluations;}
     public void setPerformPowerEvaluations(boolean b) {_perform_power_evaluations = b;}
     public PowerEvaluationType getPowerEvaluationType() {return _power_evaluation_type;}

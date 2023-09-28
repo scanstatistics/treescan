@@ -338,9 +338,15 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getPowerEvaluationAltHypothesisFilename().c_str()));
   jni_error::_detectError(Env);
 
+  /*
+  This option was removed from GUI and is defaulted to true when run from Java application,
+  so don't push over value currently set in CParameters. This is a way of making this
+  option always true from GUI without removing the option from the parameters file.
+
   mid = _getMethodId_Checked(Env, clazz, "setReportCriticalValues", "(Z)V");
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getReportCriticalValues());
   jni_error::_detectError(Env);
+  */
 
   mid = _getMethodId_Checked(Env, clazz, "setPerformDayOfWeekAdjustment", "(Z)V");
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getPerformDayOfWeekAdjustment());
@@ -733,10 +739,6 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   parameters.setPowerEvaluationAltHypothesisFilename(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
-  mid = _getMethodId_Checked(Env, clazz, "getReportCriticalValues", "()Z");
-  parameters.setReportCriticalValues(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
-  jni_error::_detectError(Env);
-
   mid = _getMethodId_Checked(Env, clazz, "getPerformDayOfWeekAdjustment", "()Z");
   parameters.setPerformDayOfWeekAdjustment(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
@@ -859,6 +861,12 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   mid = _getMethodId_Checked(Env, clazz, "getSequentialScan", "()Z");
   parameters.setSequentialScan(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
+
+  /*mid = _getMethodId_Checked(Env, clazz, "getReportCriticalValues", "()Z");
+  parameters.setReportCriticalValues(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);*/
+  // Always report critical values when running from GUI (if not sequentual analysis).
+  parameters.setReportCriticalValues(!parameters.getSequentialScan());
 
   mid = _getMethodId_Checked(Env, clazz, "getSequentialAlphaOverall", "()D");
   parameters.setSequentialAlphaOverall(static_cast<double>(Env.CallDoubleMethod(jParameters, mid)));

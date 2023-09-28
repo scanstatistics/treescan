@@ -61,6 +61,8 @@ typedef std::vector<boost::any> FieldMapContainer_t;
 typedef std::pair<double, double> RecurrenceInterval_t;
 /* require more than 9 replications to report p-values */
 #define MIN_REPLICA_RPT_PVALUE 9
+/* minimmum cut log likelihood of interest */
+#define MIN_CUT_LLR 0.001
 
 /** va_copy not defined on all compilers */
 #if defined (_MSC_VER) || ( defined(__GNUC__) && (__GNUC__ < 3) )

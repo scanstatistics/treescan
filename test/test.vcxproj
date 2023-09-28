@@ -59,12 +59,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;BOOST_ALL_NO_LIB;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>shell32.lib;$(SolutionDir)zlib\zlib-1.2.7\Win32\Debug\zlib32.lib</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
@@ -78,11 +79,12 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;BOOST_ALL_NO_LIB;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
+    	<AdditionalDependencies>shell32.lib;$(SolutionDir)zlib\zlib-1.2.7\Win32\Release\zlib32.lib</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -170,6 +172,7 @@
     <ClCompile Include="..\calculation\utility\RandomNumberGenerator.cpp" />
     <ClCompile Include="..\calculation\utility\TimeStamp.cpp" />
     <ClCompile Include="..\calculation\utility\UtilityFunctions.cpp" />
+    <ClCompile Include="..\calculation\utility\ZipUtils.cpp" />    
     <ClCompile Include="squish54.cpp" />
     <ClCompile Include="squish29.cpp" />
     <ClCompile Include="squish81.cpp" />
@@ -228,6 +231,7 @@
     <ClInclude Include="..\calculation\utility\RandomNumberGenerator.h" />
     <ClInclude Include="..\calculation\utility\TimeStamp.h" />
     <ClInclude Include="..\calculation\utility\UtilityFunctions.h" />
+    <ClInclude Include="..\calculation\utility\ZipUtils.h" />    
     <ClInclude Include="fixture_examples.h" />
     <ClInclude Include="fixture_prm_source.h" />
     <ClInclude Include="test_helper.h" />

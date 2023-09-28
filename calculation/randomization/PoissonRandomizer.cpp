@@ -24,14 +24,13 @@ int PoissonRandomizer::randomize(unsigned int iSimulation, const AbstractNodesPr
     double  ExpectedLeft;
 
     if (_conditional) {
-        TotalSimC = _total_C;
-        CasesLeft = _total_C;
-        ExpectedLeft = _total_N;
+        TotalSimC = _parameters.isSequentialScanPoisson() ? _scanner.getTotalsFromLook().first : _total_C;
+        CasesLeft = TotalSimC;
+        ExpectedLeft = _parameters.isSequentialScanPoisson() ? _scanner.getTotalsFromLook().second : _total_N;
         for (size_t i=0; i < treeNodes.size(); i++) {
             treeSimNodes[i].refBrC() = 0; // Initilazing the branch cases with zero
             if (!treeNodes.randomized(i)) continue; // skip if not randomized
             cases = BinomialGenerator(CasesLeft, treeNodes.getIntN(i) / ExpectedLeft);
-            //if(cases>0 && Node[i].IntN<0.1) cout << "node=" << i <<  ", CasesLeft=" << CasesLeft << ", c=" << cases << ", exp=" << Node[i].IntN << ", ExpLeft=" << ExpectedLeft << endl;
             treeSimNodes[i].refIntC() = cases; //treeNodes.at(i)->_SimIntC = cases;
             CasesLeft -= cases;
             ExpectedLeft -= treeNodes.getIntN(i);
@@ -42,7 +41,6 @@ int PoissonRandomizer::randomize(unsigned int iSimulation, const AbstractNodesPr
             treeSimNodes[i].refBrC() = 0; // Initilazing the branch cases with zero
             if (!treeNodes.randomized(i)) continue; // skip if not randomized
             cases = PoissonGenerator(treeNodes.getIntN(i));
-            //if(cases>0 && Node[i].IntN<0.1) cout << "node=" << i <<  ",  c=" << cases << ", exp=" << Node[i].IntN << endl;
             treeSimNodes[i].refIntC() = cases; //treeNodes.at(i)->_SimIntC=cases;
             TotalSimC += cases;
         }

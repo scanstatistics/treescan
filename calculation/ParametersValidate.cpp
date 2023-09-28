@@ -741,10 +741,10 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
     if (_parameters.getSequentialScan()) {
         if (!((_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES) ||
               (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) ||
-			  (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::UNCONDITIONAL)
+			  _parameters.getModelType() == Parameters::POISSON
 			)) {
             bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nSequential scan is only implemented for the time-only scan conditioned on total cases\nor unconditional Benoulli or unconditional Poisson.\n", BasePrint::P_PARAMERROR);
+            PrintDirection.Printf("Invalid Parameter Setting:\nSequential scan is only implemented for the time-only scan conditioned on total cases\nor unconditional Benoulli.\n", BasePrint::P_PARAMERROR);
         }
         if (_parameters.getPerformPowerEvaluations()) {
             bValid = false;
@@ -772,6 +772,18 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, the minimum number of replications is 999.\n", BasePrint::P_PARAMERROR);
         } else if (_parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getModelType() == Parameters::POISSON) {
+            if (_parameters.getSequentialAlphaOverall() < 1.0 / static_cast<double>(_parameters.getNumReplicationsRequested() + 1) || 0.05 < _parameters.getSequentialAlphaOverall()) {
+                bValid = false;
+                std::string buffer;
+                PrintDirection.Printf(
+                    "Invalid Parameter Setting:\nFor sequential scan, the overal alpha cannot be less than %s with %u replications or greater than 0.05.\n",
+                    BasePrint::P_PARAMERROR,
+                    getRoundAsString(1.0 / static_cast<double>(_parameters.getNumReplicationsRequested() + 1),
+                        buffer, static_cast<unsigned int>(ceil(fabs(log10(_parameters.getNumReplicationsRequested()))))
+                    ).c_str(),
+                    _parameters.getNumReplicationsRequested()
+                );
+            }
             if (_parameters.getSequentialAlphaSpending() < 1.0 / static_cast<double>(_parameters.getNumReplicationsRequested() + 1)) {
                 bValid = false;
                 std::string buffer;
@@ -787,6 +799,11 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
                 bValid = false;
                 PrintDirection.Printf("Invalid Parameter Setting:\nFor sequential scan, alpha spending cannot be greater than alpha overall.\n", BasePrint::P_PARAMERROR);
             }
+        }
+        if (_parameters.getReportCriticalValues()) {
+            // We don't report p-value or critical values at the 0.001, 0.01, and 0.05 for sequential scan.
+            const_cast<Parameters&>(_parameters).setReportCriticalValues(false);
+            PrintDirection.Printf("Parameter Setting Warning:\nThe option to report critical values is not available for sequential scans.\nThe option was disabled.\n", BasePrint::P_WARNING);
         }
     }
     return bValid;

@@ -19,15 +19,18 @@ PRINT          := $(TREESCAN)/calculation/print
 UTILITY        := $(TREESCAN)/calculation/utility
 RANDOMIZER     := $(TREESCAN)/calculation/randomization
 LOGLIKELIHOOD  := $(TREESCAN)/calculation/loglikelihood
+
+ZLIB           := $(TREESCAN)/zlib/zlib-1.2.7
+ZLIB_MINIZIP   := $(TREESCAN)/zlib/zlib-1.2.7/contrib/minizip
 JNI            :=
 JNI_PLAT       :=
 BOOSTDIR    := $(TREESCAN)/../boost/boost_1_46_0
-INCLUDEDIRS := -I$(CALCULATION) -I$(UTILITY) -I$(OUTPUT) -I$(PRINT) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(RUNNER) -I$(BOOSTDIR) -I$(JNI) -I$(JNI_PLAT)
+INCLUDEDIRS := -I$(CALCULATION) -I$(UTILITY) -I$(OUTPUT) -I$(PRINT) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(RUNNER) -I$(BOOSTDIR) -I$(ZLIB) -I$(ZLIB_MINIZIP) -I$(JNI) -I$(JNI_PLAT)
 DEFINES     := -DBOOST_ALL_NO_LIB
 INFOPLIST_FILE :=
 
 CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -std=c++11 -Wno-deprecated -Wall $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE)
-LFLAGS      := $(COMPILATION) -Wl,-Bstatic -lm -Wl,-Bdynamic -lrt -lpthread
+LFLAGS      := $(COMPILATION) -L$(ZLIB) -L$(ZLIB_MINIZIP) -Wl,-Bstatic -lz -lm -Wl,-Bdynamic -lrt -lpthread
 
 # Linux link flags
 L_DLFLAGS   := -shared $(COMPILATION) -Wl,-soname,$(LINUX_LIBRARY).x.x -o $(LINUX_LIBRARY).x.x.0
@@ -36,7 +39,7 @@ L_DLFLAGS   := -shared $(COMPILATION) -Wl,-soname,$(LINUX_LIBRARY).x.x -o $(LINU
 S_DLFLAGS   := -shared $(COMPILATION) -z text -o $(SOLARIS_LIBRARY).x.x.0
 
 # Mac OS X flags
-M_LFLAGS      := $(COMPILATION) -sectcreate __TEXT __info_plist $(INFOPLIST_FILE) -Wl,-dynamic -lstdc++ -lm
+M_LFLAGS      := $(COMPILATION) -sectcreate __TEXT __info_plist $(INFOPLIST_FILE) -L$(ZLIB) -L$(ZLIB_MINIZIP) -Wl,-dynamic -lz -lstdc++ -lm
 M_DLFLAGS     := -shared -sectcreate __TEXT __info_plist $(INFOPLIST_FILE) $(COMPILATION) -install_name $(MAC_LIBRARY)
 
 SRC         := $(RUNNER)/ScanRunner.cpp \
@@ -71,6 +74,7 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(UTILITY)/AsynchronouslyAccessible.cpp \
                $(UTILITY)/AsciiPrintFormat.cpp \
                $(UTILITY)/Ini.cpp \
+               $(UTILITY)/ZipUtils.cpp \
                $(CALCULATION)/Parameters.cpp \
                $(CALCULATION)/ParametersPrint.cpp \
                $(CALCULATION)/ParameterFileAccess.cpp \
@@ -142,13 +146,13 @@ $(MAC_APPLICATION) : $(OBJS) $(APP_OBJS)
 	$(CC) $(OBJS) $(APP_OBJS) $(M_LFLAGS) -o $@
 
 $(LINUX_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(L_DLFLAGS) $(OBJS) $(LIB_OBJS) -lm -lrt -lpthread
+	$(CC) $(L_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(ZLIB) -L$(ZLIB_MINIZIP) -lz -lm -lrt -lpthread
 
 $(SOLARIS_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(S_DLFLAGS) $(OBJS) $(LIB_OBJS) -lm -lrt -lpthread
+	$(CC) $(S_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(ZLIB) -L$(ZLIB_MINIZIP) -lz -lm -lrt -lpthread
 
 $(MAC_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(M_DLFLAGS) $(OBJS) $(LIB_OBJS) -lstdc++ -lm -o $@
+	$(CC) $(M_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(ZLIB) -L$(ZLIB_MINIZIP) -lz -lstdc++ -lm -o $@
 %.o : %.cpp
 	$(CC) $(CFLAGS) $< -o $@
 

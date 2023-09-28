@@ -105,7 +105,6 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
     public boolean getDefaultsSetForOutputOptions() {
         boolean bReturn = true;
         bReturn &= _reportLLRResultsAsCsvTable.isSelected() == false;
-        bReturn &= _reportCriticalValuesCheckBox.isSelected() == false;
         bReturn &= _chk_rpt_attributable_risk.isSelected() == false;
         bReturn &= _attributable_risk_exposed.getText().equals("");
         return bReturn;
@@ -142,8 +141,7 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
         parameters.setGeneratingLLRResults(_reportLLRResultsAsCsvTable.isSelected());
         parameters.setGeneratingNCBIAsnResults(Utils.selected(_generate_ncbi_asn));
         parameters.setGeneratingNewickFile(Utils.selected(_generate_newick));        
-        parameters.setReportCriticalValues(_reportCriticalValuesCheckBox.isSelected());
-        parameters.setReportAttributableRisk(_chk_rpt_attributable_risk.isEnabled() && _chk_rpt_attributable_risk.isSelected());
+       parameters.setReportAttributableRisk(_chk_rpt_attributable_risk.isEnabled() && _chk_rpt_attributable_risk.isSelected());
         parameters.setAttributableRiskExposed(_attributable_risk_exposed.getText().length() > 0 ? Integer.parseInt(_attributable_risk_exposed.getText()): 0);
     }
 
@@ -158,7 +156,6 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
     public void setupInterface(final Parameters parameters) {
         _reportResultsAsHTML.setSelected(parameters.isGeneratingHtmlResults());
         _reportResultsAsCsvTable.setSelected(parameters.isGeneratingTableResults());
-        _reportCriticalValuesCheckBox.setSelected(parameters.getReportCriticalValues());
         _reportLLRResultsAsCsvTable.setSelected(parameters.isGeneratingLLRResults());
         _generate_ncbi_asn.setSelected(parameters.isGeneratingNCBIAsnResults());
         _generate_newick.setSelected(parameters.isGeneratingNewickFile());
@@ -174,7 +171,6 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
         _reportResultsAsHTML.setSelected(false);
         _reportResultsAsCsvTable.setSelected(false);
         _reportLLRResultsAsCsvTable.setSelected(false);
-        _reportCriticalValuesCheckBox.setSelected(false);
         _chk_rpt_attributable_risk.setSelected(false);
         _attributable_risk_exposed.setText("");
     }
@@ -221,8 +217,6 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
         _advanced_output_tab = new javax.swing.JPanel();
         _log_likelihood_ratios_group = new javax.swing.JPanel();
         _reportLLRResultsAsCsvTable = new javax.swing.JCheckBox();
-        _report_critical_values_group = new javax.swing.JPanel();
-        _reportCriticalValuesCheckBox = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
         _chk_rpt_attributable_risk = new javax.swing.JCheckBox();
         _attributable_risk_exposed = new javax.swing.JTextField();
@@ -263,34 +257,6 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
                 .addContainerGap()
                 .addComponent(_reportLLRResultsAsCsvTable)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        _report_critical_values_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Critical Values"));
-
-        _reportCriticalValuesCheckBox.setText("Report critical values for an observed cut to be significant"); // NOI18N
-        _reportCriticalValuesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _reportCriticalValuesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _reportCriticalValuesCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-
-        javax.swing.GroupLayout _report_critical_values_groupLayout = new javax.swing.GroupLayout(_report_critical_values_group);
-        _report_critical_values_group.setLayout(_report_critical_values_groupLayout);
-        _report_critical_values_groupLayout.setHorizontalGroup(
-            _report_critical_values_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_report_critical_values_groupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_reportCriticalValuesCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        _report_critical_values_groupLayout.setVerticalGroup(
-            _report_critical_values_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_report_critical_values_groupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_reportCriticalValuesCheckBox)
-                .addContainerGap(14, Short.MAX_VALUE))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Attributable Risk"));
@@ -393,7 +359,6 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
                 .addContainerGap()
                 .addGroup(_advanced_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_report_critical_values_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -407,9 +372,7 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_report_critical_values_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(26, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
@@ -443,7 +406,7 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -466,11 +429,9 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
     private javax.swing.JCheckBox _generate_newick;
     private javax.swing.JPanel _log_likelihood_ratios_group;
     private javax.swing.ButtonGroup _powerEstimationButtonGroup;
-    private javax.swing.JCheckBox _reportCriticalValuesCheckBox;
     private javax.swing.JCheckBox _reportLLRResultsAsCsvTable;
     private javax.swing.JCheckBox _reportResultsAsCsvTable;
     private javax.swing.JCheckBox _reportResultsAsHTML;
-    private javax.swing.JPanel _report_critical_values_group;
     private javax.swing.JButton _setDefaultButton;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;

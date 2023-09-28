@@ -92,10 +92,11 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>shell32.lib;$(SolutionDir)zlib\zlib-1.2.7\Win32\Debug\zlib32.lib</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
@@ -111,9 +112,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>$(SolutionDir)zlib\zlib-1.2.7\x64\Debug\zlib64.lib</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
     </Link>
@@ -129,12 +131,13 @@
       </PrecompiledHeader>
       <WarningLevel>Level2</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>shell32.lib;$(SolutionDir)zlib\zlib-1.2.7\win32\Release\zlib32.lib</AdditionalDependencies>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -160,17 +163,17 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>shell32.lib;$(SolutionDir)zlib\zlib-1.2.7\x64\Release\zlib64.lib</AdditionalDependencies>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
     </Link>
     <PostBuildEvent>
@@ -224,6 +227,7 @@
     <ClCompile Include="..\calculation\output\DataFileWriter.cpp" />
     <ClCompile Include="..\calculation\output\ResultsFileWriter.cpp" />
     <ClCompile Include="..\calculation\output\ChartGenerator.cpp" />
+    <ClCompile Include="..\calculation\utility\ZipUtils.cpp" />
     <ClCompile Include="..\calculation\IniParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\IniParameterSpecification.cpp" />
     <ClCompile Include="..\calculation\ParameterFileAccess.cpp" />
@@ -305,6 +309,7 @@
     <ClInclude Include="..\calculation\utility\TimeStamp.h" />
     <ClInclude Include="..\calculation\utility\UtilityFunctions.h" />
     <ClInclude Include="..\calculation\utility\Ini.h" />
+    <ClInclude Include="..\calculation\utility\ZipUtils.h" />    
     <ClInclude Include="ParameterProgramOptions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
