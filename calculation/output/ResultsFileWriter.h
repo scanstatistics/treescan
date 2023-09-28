@@ -29,6 +29,7 @@ class ResultsFileWriter {
     std::string   & getRecurranceIntervalAsString(const RecurrenceInterval_t& ri, std::string& buffer) const;
     const char    * getSignalClass(double pval, bool childClass);
     std::string   & encodeForJavascript(std::string & text) const;
+    bool            treeSequentialAnalysisComplete() const;
     NodeSet_t       writeJsTreeNode(std::stringstream & outfile, const NodeStructure& node, const std::map<int, const CutStructure*>& cutMap, int collapseAtLevel);
 
     std::ofstream & openStream(const std::string& outputfile, std::ofstream & outfile, bool overwrite=false) const;

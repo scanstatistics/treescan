@@ -225,6 +225,9 @@
     <ClCompile Include="..\calculation\runner\DataTimeRanges.cpp">
       <Filter>Source Files\calculation\runner</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\utility\ZipUtils.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>    
     <ClCompile Include="..\boost\boost_1_70_0\libs\system\src\error_code.cpp">
       <Filter>Source Files\boost\system</Filter>
     </ClCompile>
@@ -416,6 +419,9 @@
     <ClInclude Include="..\calculation\IniParameterSpecification.h">
       <Filter>Header Files\calculation</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\utility\ZipUtils.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>    
     <ClInclude Include="..\calculation\randomization\BernoulliRandomizer.h">
       <Filter>Header Files\calculation\randomization</Filter>
     </ClInclude>

@@ -4,10 +4,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "treescan", "batch_application\treescan.vcxproj", "{559D1B14-EB9A-473D-9885-4837A937FA0E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{72800D04-C908-4165-9454-8603644190FD} = {72800D04-C908-4165-9454-8603644190FD}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtreescan", "library\libtreescan.vcxproj", "{13AE2879-94B8-4A2F-96B0-AC9C782A296A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{72800D04-C908-4165-9454-8603644190FD} = {72800D04-C908-4165-9454-8603644190FD}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "zlib\zlib-1.2.7\zlib.vcxproj", "{72800D04-C908-4165-9454-8603644190FD}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj", "{10A551F9-DA0E-4CFF-844C-41C753C4F71A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{72800D04-C908-4165-9454-8603644190FD} = {72800D04-C908-4165-9454-8603644190FD}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +44,13 @@ Global
 		{13AE2879-94B8-4A2F-96B0-AC9C782A296A}.Release|Win32.Build.0 = Release|Win32
 		{13AE2879-94B8-4A2F-96B0-AC9C782A296A}.Release|x64.ActiveCfg = Release|x64
 		{13AE2879-94B8-4A2F-96B0-AC9C782A296A}.Release|x64.Build.0 = Release|x64
+		{72800D04-C908-4165-9454-8603644190FD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{72800D04-C908-4165-9454-8603644190FD}.Debug|Win32.Build.0 = Debug|Win32
+		{72800D04-C908-4165-9454-8603644190FD}.Debug|x64.ActiveCfg = Debug|x64
+		{72800D04-C908-4165-9454-8603644190FD}.Debug|x64.Build.0 = Debug|x64
+		{72800D04-C908-4165-9454-8603644190FD}.Release|Win32.ActiveCfg = Release|Win32
+		{72800D04-C908-4165-9454-8603644190FD}.Release|Win32.Build.0 = Release|Win32
+		{72800D04-C908-4165-9454-8603644190FD}.Release|x64.ActiveCfg = Release|x64
 		{10A551F9-DA0E-4CFF-844C-41C753C4F71A}.Debug|Win32.ActiveCfg = Debug|Win32
 		{10A551F9-DA0E-4CFF-844C-41C753C4F71A}.Debug|Win32.Build.0 = Debug|Win32
 		{10A551F9-DA0E-4CFF-844C-41C753C4F71A}.Debug|x64.ActiveCfg = Debug|Win32

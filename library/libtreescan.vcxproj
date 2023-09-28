@@ -95,7 +95,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)jdk\include\win32;$(SolutionDir)jdk\include;$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)jdk\include\win32;$(SolutionDir)jdk\include;$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -113,9 +113,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>$(SolutionDir)zlib\zlib-1.2.7\x64\Debug\zlib64.lib</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
     </Link>
@@ -131,10 +132,11 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)jdk\include\win32;$(SolutionDir)jdk\include;$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)jdk\include\win32;$(SolutionDir)jdk\include;$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>shell32.lib;$(SolutionDir)zlib\zlib-1.2.7\win32\Release\zlib32.lib</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -157,10 +159,11 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)jdk\include;$(SolutionDir)jdk\include\win32;$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)jdk\include;$(SolutionDir)jdk\include\win32;$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_70_0;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>shell32.lib;$(SolutionDir)zlib\zlib-1.2.7\x64\Release\zlib64.lib</AdditionalDependencies>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -205,6 +208,7 @@
     <ClCompile Include="..\calculation\output\DataFileWriter.cpp" />
     <ClCompile Include="..\calculation\output\ResultsFileWriter.cpp" />
     <ClCompile Include="..\calculation\output\ChartGenerator.cpp" />
+    <ClCompile Include="..\calculation\utility\ZipUtils.cpp" />
     <ClCompile Include="..\calculation\IniParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\IniParameterSpecification.cpp" />
     <ClCompile Include="..\calculation\ParameterFileAccess.cpp" />
@@ -288,6 +292,7 @@
     <ClInclude Include="..\calculation\utility\TimeStamp.h" />
     <ClInclude Include="..\calculation\utility\UtilityFunctions.h" />
     <ClInclude Include="..\calculation\utility\Ini.h" />
+    <ClInclude Include="..\calculation\utility\ZipUtils.h" />
     <ClInclude Include="JNIException.h" />
     <ClInclude Include="org_treescan_app_AppConstants.h" />
     <ClInclude Include="org_treescan_app_CalculationThread.h" />

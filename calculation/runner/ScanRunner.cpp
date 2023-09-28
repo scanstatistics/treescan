@@ -8,6 +8,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
+#include <boost/filesystem.hpp>
 #include <locale>
 
 #include "ScanRunner.h"
@@ -28,6 +29,7 @@
 #include "Toolkit.h"
 #include "ParameterFileAccess.h"
 #include "ChartGenerator.h"
+#include "ZipUtils.h"
 
 double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
     const Parameters& parameters = scanner.getParameters();
@@ -421,8 +423,7 @@ SequentialStatistic::SequentialStatistic(const Parameters& parameters, const Sca
 	if (_parameters.isSequentialScanBernoulli())
 		getDerivedFilename(_parameters.getOutputFileName(), _file_suffix, _accumulated_control_ext, _controls_filename);
     getDerivedFilename(_parameters.getOutputFileName(), _file_suffix, _accumulated_sim_ext, _simulations_filename);
-    GetTemporaryFilename(_write_simulations_filename);
-    GetTemporaryFilename(_write_llr_filename);
+    GetTemporaryFilename(_write_simulations_filename, _parameters.getOutputFileName().c_str());
     getDerivedFilename(_parameters.getOutputFileName(), _file_suffix, _settings_ext, _settings_filename);
     // If case file doesn't exist yet, this is the first look of sequential statistic.
     _look_idx = validateFileAccess(_counts_filename) == true ? 2 : 1; // store look count in settings?
@@ -624,23 +625,57 @@ void SequentialStatistic::write(const std::string &casefilename, const std::stri
     }
 
     writeSettings(_settings_filename);
-    // add case file to case accumulation.
-    std::ifstream latest_cases(casefilename.c_str(), std::ios_base::binary);
-    std::ofstream accumulated_cases(_counts_filename.c_str(), std::ios_base::app | std::ios_base::binary);
-    accumulated_cases << latest_cases.rdbuf() << accumulated_cases.widen('\n');
-	if (_parameters.isSequentialScanBernoulli()) {
+    // add case data to case file accumulation.
+    std::string delimiter(","), groupby("\"");
+    if (_parameters.getModelType() == Parameters::POISSON) {
+        // When conditioning on the total cases, the population (expected) have been conditioned based on totals in the look.
+        // We're preserving that conditioned data during this write to the accumulated cases.
+        std::ofstream accumulated_cases(_counts_filename.c_str(), std::ios_base::trunc | std::ios_base::binary);
+        int cases, index; double population;
+        for (auto node : _scanner.getNodes()) {
+            cases = node->refIntC_C().front();
+            population = node->refIntN_C().front();
+            if (cases || population) {
+                index = node->getIdentifier().find(groupby.front());
+                if (index != std::string::npos) accumulated_cases << groupby;
+                accumulated_cases << node->getIdentifier();
+                if (index != std::string::npos) accumulated_cases << groupby;
+                accumulated_cases << delimiter << cases << delimiter << std::fixed << std::setprecision(12) << population << accumulated_cases.widen('\n');
+            }
+        }
+        accumulated_cases.close();
+    } else if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
 		// add control file to control accumulation.
-		std::ifstream latest_controls(controlfilename.c_str(), std::ios_base::binary);
-		std::ofstream accumulated_controls(_controls_filename.c_str(), std::ios_base::app | std::ios_base::binary);
-		accumulated_controls << latest_controls.rdbuf() << accumulated_controls.widen('\n');
+        std::ofstream accumulated_cases(_counts_filename.c_str(), std::ios_base::trunc | std::ios_base::binary);
+		std::ofstream accumulated_controls(_controls_filename.c_str(), std::ios_base::trunc | std::ios_base::binary);
+        int cases, controls, index;
+        for (auto node : _scanner.getNodes()) {
+            cases = node->refIntC_C().front();
+            controls = node->refIntN_C().front() - cases;
+            index = node->getIdentifier().find(groupby.front());
+            if (cases) {
+                if (index != std::string::npos) accumulated_cases << groupby;
+                accumulated_cases << node->getIdentifier();
+                if (index != std::string::npos) accumulated_cases << groupby;
+                accumulated_cases << delimiter << cases << accumulated_cases.widen('\n');
+            }
+            if (controls) {
+                if (index != std::string::npos) accumulated_controls << groupby;
+                accumulated_controls << node->getIdentifier();
+                if (index != std::string::npos) accumulated_controls << groupby;
+                accumulated_controls << delimiter << controls << accumulated_controls.widen('\n');
+            }
+        }
+        accumulated_cases.close();
+        accumulated_controls.close();
 	}
-    // Overwrite simulations file.
-    std::ifstream latest_simulations(_write_simulations_filename.c_str(), std::ios_base::binary);
-    std::ofstream accumulated_simulations(_simulations_filename.c_str(), std::ios_base::trunc | std::ios_base::binary);
-    accumulated_simulations << latest_simulations.rdbuf();
-    accumulated_simulations.close();
-    latest_simulations.close();
-    remove(_write_simulations_filename.c_str());
+    // Overwrite the current simulation data cache file.
+    boost::filesystem::remove(_simulations_filename.c_str()); // delete current
+    boost::filesystem::rename(_write_simulations_filename, _simulations_filename); // rename temp file
+    // Compress the simulation data cache file into archive.
+    boost::filesystem::remove(getSimulationDataArchiveName());
+    addZip(getSimulationDataArchiveName(), _simulations_filename, false);
+    boost::filesystem::remove(_simulations_filename.c_str()); // delete the file that was just added to zip
 }
 
 ////////////////////////// ScanRunner ////////////////////////////////////////
@@ -701,7 +736,7 @@ unsigned int ScanRunner::addCN_C(const NodeStructure& sourceNode, NodeStructure&
     // add source node's data to destination nodes branch totals
     std::transform(sourceNode.getIntC_C().begin(), sourceNode.getIntC_C().end(), destinationNode.refBrC_C().begin(), destinationNode.refBrC_C().begin(), std::plus<NodeStructure::count_t>());
     std::transform(sourceNode.getIntN_C().begin(), sourceNode.getIntN_C().end(), destinationNode.refBrN_C().begin(), destinationNode.refBrN_C().begin(), std::plus<NodeStructure::expected_t>());
-
+    std::transform(sourceNode.getIntN_Seq_New_C().begin(), sourceNode.getIntN_Seq_New_C().end(), destinationNode.refBrN_Seq_New_C().begin(), destinationNode.refBrN_Seq_New_C().begin(), std::plus<NodeStructure::expected_t>());
     destinationNode.setMinCensoredBr(std::min(sourceNode.getMinCensoredBr(), destinationNode.getMinCensoredBr()));
 
     // continue walking up the tree
@@ -921,7 +956,12 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
     long countIdx = _parameters.getScanType() == Parameters::TIMEONLY ? 0 : 1;
     DataTimeRange::index_t censortimetotal = 0;
     std::string filename("count"), time_columnname(_parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "day since incidence" : "occurance date");
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(srcfilename, _parameters.getInputSource(Parameters::COUNT_FILE)));
+    // Determine the InputSource for this count file. Typically we just want that defined through the Parameters, but when we're
+    // reading accumulated case data in a sequentual scan, the format of the stored data is fixed as CSV.
+    Parameters::InputSource csvSource(CSV, FieldMapContainer_t());
+    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(
+        srcfilename, (_parameters.isSequentialScanTreeOnly() && !sequence_new_data ? &csvSource : _parameters.getInputSource(Parameters::COUNT_FILE))
+    ));
 
     /* In TreeScan version 2.0, we switched to a separate control data file and removed the control column from counts file.
        But to keep backwards compatibility, expect controls in count file if user has not specified a control file with a 
@@ -1273,7 +1313,12 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
         _print.Printf("Reading control file ...\n", BasePrint::P_STDOUT);
     bool readSuccess = true;
     std::string filename("control"), time_columnname(_parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "day since incidence" : "occurance date");
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(srcfilename, _parameters.getInputSource(Parameters::CONTROL_FILE)));
+    // Determine the InputSource for this control file. Typically we just want that defined through the Parameters, but when we're
+    // reading accumulated control data in a sequentual scan, the format of the stored data is fixed as CSV.
+    Parameters::InputSource csvSource(CSV, FieldMapContainer_t());
+    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(
+        srcfilename, (_parameters.isSequentialScanTreeOnly() && !sequence_new_data ? &csvSource : _parameters.getInputSource(Parameters::CONTROL_FILE))
+    ));
     int controls = 0, daysSinceIncidence = 0, expectedColumns = (_parameters.getScanType() == Parameters::TREETIME ? 3 : 2);
     long identifierIdx = _parameters.getScanType() == Parameters::TIMEONLY ? -1 : 0;
     long controlIdx = _parameters.getScanType() == Parameters::TIMEONLY ? 0 : 1;
@@ -1753,19 +1798,34 @@ bool ScanRunner::run() {
     if (!_parameters.getControlFileName().empty() && (_parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getModelType() == Parameters::BERNOULLI_TIME))
         if (!readControls(_parameters.getControlFileName(), true))
             throw resolvable_error("\nProblem encountered when reading the data from the control file.");
-
-    if (_parameters.isSequentialScanTreeOnly() && !_sequential_statistic->isFirstLook()) {
-        if (!readCounts(_sequential_statistic->getCountDataFilename(), false))
-            throw resolvable_error("\nProblem encountered when reading the sequential case data file.");
-        if (_parameters.isSequentialScanBernoulli() && !readControls(_sequential_statistic->getControlDataFilename(), false))
-            throw resolvable_error("\nProblem encountered when reading the sequential control data file.");
-        if (_print.GetIsCanceled()) return false;
+    if (_parameters.isSequentialScanTreeOnly()) {
+        // Record the total cases and expected for the current look - we'll need this to condition expected, during randomization, and summary data.
+        for (NodeStructureContainer_t::iterator itr = _Nodes.begin(); itr != _Nodes.end(); ++itr) {
+            _totals_in_look.first += (*itr)->refIntC_C().front();
+            _totals_in_look.second += (*itr)->refIntN_C().front();
+        }
+        if (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::TOTALCASES) {
+            // Now condition the expected on the values from this look.
+            double ratio = static_cast<double>(_totals_in_look.first) / _totals_in_look.second;
+            _totals_in_look.second = 0.0;
+            for (NodeStructureContainer_t::iterator itr = _Nodes.begin(); itr != _Nodes.end(); ++itr) {
+                (*itr)->refIntN_C().front() *= ratio;
+                (*itr)->refIntN_C_Seq_New().front() *= ratio;
+                _totals_in_look.second += (*itr)->refIntN_C().front();
+            }
+        }
+        // Read the count data from previous looks if this is not the first.
+        if (!_sequential_statistic->isFirstLook()) {
+            if (!readCounts(_sequential_statistic->getCountDataFilename(), false))
+                throw resolvable_error("\nProblem encountered when reading the sequential case data file.");
+            if (_parameters.isSequentialScanBernoulli() && !readControls(_sequential_statistic->getControlDataFilename(), false))
+                throw resolvable_error("\nProblem encountered when reading the sequential control data file.");
+            if (_print.GetIsCanceled()) return false;
+        }
     }
-
     if (!setupTree())
        throw resolvable_error("\nProblem encountered when setting up tree.");
     if (_print.GetIsCanceled()) return false;
-
     if (_parameters.isSequentialScanPurelyTemporal() && static_cast<unsigned int>(_TotalC) > _parameters.getSequentialMaximumSignal()) {
         // The sequential scan reached target number of cases. Don't continue analysis - instead report such in results file.
         _parameters.setReportCriticalValues(false);
@@ -1773,12 +1833,11 @@ bool ScanRunner::run() {
         if (!reportResults(gStartTime, gEndTime)) return false;
         return true;
     }
-
     // Track critical values if requested or we're performing power evaluations and we're actually calculating the critical values.
     if (_parameters.getReportCriticalValues() || (_parameters.getPerformPowerEvaluations() && _parameters.getCriticalValuesType() == Parameters::CV_MONTECARLO)) {
         _critical_values.reset(new CriticalValues(_parameters.getNumReplicationsRequested()));
     }
-
+    // Scan real data.
     if (!_parameters.getPerformPowerEvaluations() || (_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         bool scan_success=false;
         bool t = (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.isPerformingDayOfWeekAdjustment());
@@ -1795,10 +1854,10 @@ bool ScanRunner::run() {
             scan_success = scanTreeTemporalConditionNodeCensored();
         else
             scan_success = scanTree();
-
-        if (scan_success) {
+        // Perform simulations if cuts were found in real data or if this is a tree sequential analysis - in which can we need the simulated data for the following looks.
+        if (scan_success || _parameters.isSequentialScanTreeOnly()) {
             if (_print.GetIsCanceled()) return false;
-            if (!(_parameters.getNumReplicationsRequested() == 0 || _Cut.size() == 0)) {
+            if (_parameters.getNumReplicationsRequested()) {
                 _print.Printf("Doing the %d Monte Carlo simulations ...\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
                 boost::shared_ptr<AbstractRandomizer> randomizer(AbstractRandomizer::getNewRandomizer(*this));
                 if (_parameters.isReadingSimulationData())
@@ -1813,23 +1872,18 @@ bool ScanRunner::run() {
             }
         }
     }
-
     if (_print.GetIsCanceled()) return false;
     if (_parameters.getPerformPowerEvaluations()) {
         if (!runPowerEvaluations()) return false;
     }
-
     if (_print.GetIsCanceled()) return false;
-
     time(&gEndTime); //get end time
     if (!reportResults(gStartTime, gEndTime)) return false;
-
     // create SequentialStatistic object if tree-only sequential scan
 	if (_parameters.isSequentialScanTreeOnly()) {
 		_print.Printf("Writing sequential scan data to cache files ...\n", BasePrint::P_STDOUT);
 		_sequential_statistic->write(_parameters.getCountFileName(), _parameters.getControlFileName());
 	}
-
     return true;
 }
 
@@ -2633,8 +2687,9 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, 
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN, BrC_All, BrN_All);
     else
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN);
-    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD && !(_parameters.isSequentialScanTreeOnly() && getSequentialStatistic().testCutSignaled(static_cast<int>(node_index)) != 0))
-        // Exclude this cut if log likelihood is unset -- unless we're sequential scannig and this cut has signalled in prior looks.
+    if ((loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD || loglikelihood < MIN_CUT_LLR) &&
+        !(_parameters.isSequentialScanTreeOnly() && getSequentialStatistic().testCutSignaled(static_cast<int>(node_index)) != 0))
+        // Exclude this cut if log likelihood is unset or zero -- unless we're tree sequential scanning and this cut has signalled in prior looks.
         return 0;
 
     std::auto_ptr<CutStructure> cut(new CutStructure());
@@ -2653,7 +2708,7 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int C, double N, int 
     // Skip calculation if branch count does not meet evaluation minimum,
     if (BrC < _node_evaluation_minimum) return 0;
     double loglikelihood = logCalculator->LogLikelihood(C, N, BrC, BrN);
-    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) return 0;
+    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD || loglikelihood < MIN_CUT_LLR) return 0;
     std::auto_ptr<CutStructure> cut(new CutStructure());
     cut->setLogLikelihood(loglikelihood);
     cut->setID(static_cast<int>(node_index));
@@ -2830,7 +2885,7 @@ bool ScanRunner::setupTree() {
     }
 
     // Calculates the expected counts for each node and the total.
-    if (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::TOTALCASES) {
+    if (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::TOTALCASES && !_parameters.getSequentialScan()) {
         // If performing power calculations with user specified number of cases, override number of cases read from case file.
         // This is ok since this option can not be peformed in conjunction with analysis - so the cases in tree are not used.
         // Skip this step for sequential scan since we are already conditioning in read process at the look level.
@@ -2873,7 +2928,6 @@ bool ScanRunner::setupTree() {
             }
         } // for i
     }
-
     // Now we can set the data structures of NodeStructure to cumulative -- only relevant for temporal model since other models have one element arrays.
     // We can now set each nodes calculated level in tree structure.
     std::for_each(_Nodes.begin(), _Nodes.end(), std::mem_fun(&NodeStructure::assignLevel));
@@ -2882,6 +2936,17 @@ bool ScanRunner::setupTree() {
         if ((*itr)->assignLevel() == 1)
             _rootNodes.push_back((*itr));
     }
-
+    // If tree sequential scan, determine which nodes are read from and/or written to the simulation data cache.
+    if (_parameters.getSequentialScan()) {
+        if (!_sequential_statistic->isFirstLook()) _sequential_read_nodes.resize(_Nodes.size()); // nothing to read on first look
+        _sequential_write_nodes.resize(_Nodes.size());
+        for (size_t i = 0; i < _Nodes.size(); ++i) {
+            const auto& node = _Nodes[i];
+            // reading node if any previous look(s) had expected (branch count minus current looks branch data)
+            if (_sequential_read_nodes.size()) _sequential_read_nodes.set(i, (node->getBrN() - node->getBrN_Seq_New()) > 0);
+            // writing node if any look(s) have expected
+            _sequential_write_nodes.set(i, node->getBrN() > 0);
+        }
+    }
     return true;
 }

@@ -250,10 +250,17 @@ std::string & GetUserTemporaryDirectory(std::string& s) {
     return s;
 }
 
-std::string & GetTemporaryFilename(std::string& s) {
-    GetUserTemporaryDirectory(s);
-    s += boost::filesystem::path::preferred_separator;
+// Obtains a temporary filename either from user temp directory or specified path.
+std::string & GetTemporaryFilename(std::string& s, const char * atLocation) {
+    if (atLocation) {
+        FileName filename(atLocation);
+        filename.getLocation(s);
+    } else {
+        GetUserTemporaryDirectory(s);
+        s += boost::filesystem::path::preferred_separator;
+    }
     s += boost::filesystem::unique_path().string();
+    s += ".tmp";
     return s;
 }
 

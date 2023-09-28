@@ -50,6 +50,13 @@ std::ofstream & ResultsFileWriter::openStream(const std::string& outputfile, std
     return outfile;
 }
 
+/* Returns whether alpha spending is complete and the sequential analysis is over. */
+bool ResultsFileWriter::treeSequentialAnalysisComplete() const {
+    return _scanRunner.getParameters().isSequentialScanTreeOnly() && macro_less_than_or_equal(
+        _scanRunner.getParameters().getSequentialAlphaOverall(), _scanRunner.getSequentialStatistic().getAlphaSpending(), DBL_CMP_TOLERANCE
+    );
+}
+
 /* Writes results of analysis to primary text file. */
 bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     std::ofstream outfile;
@@ -66,46 +73,10 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     PrintFormat.PrintNonRightMarginedDataString(outfile, getAnalysisSuccinctStatement(buffer), false);
     PrintFormat.SetMarginsAsSummarySection();
     PrintFormat.PrintSectionSeparatorString(outfile);
-    outfile << std::endl << "SUMMARY OF DATA" << std::endl << std::endl;
-    if (parameters.isSequentialScanTreeOnly()) {
-        PrintFormat.PrintSectionLabel(outfile, "Look", false);
-        std::stringstream stringbuffer;
-        stringbuffer << _scanRunner.getSequentialStatistic().getLook();
-        PrintFormat.PrintAlignedMarginsDataString(outfile, stringbuffer.str().c_str());
-    }
-    if (!parameters.getPerformPowerEvaluations() || 
-        !(parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_ONLY_CASEFILE && parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
-        PrintFormat.PrintSectionLabel(outfile, "Total Cases", false);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getTotalC()));
-        if (_scanRunner.isCensoredData()) {
-            PrintFormat.PrintSectionLabel(outfile, "Total Censored Cases", false);
-            PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getNumCensoredCases()));
-            PrintFormat.PrintSectionLabel(outfile, "Average Censoring Time", false);
-            PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getAvgCensorTime()));
-        }
-    }
-    if (parameters.isApplyingExclusionTimeRanges()) {
-        PrintFormat.PrintSectionLabel(outfile, "Total Cases Excluded", false);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getNumExcludedCases()));
-    }
-    if (parameters.getModelType() == Parameters::POISSON) {
-        PrintFormat.PrintSectionLabel(outfile, "Total Expected", false);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getTotalN(), buffer, 1));
-    }
-    if (parameters.getModelType() == Parameters::BERNOULLI_TREE || parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-        PrintFormat.PrintSectionLabel(outfile, "Total Observations", false);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", static_cast<int>(_scanRunner.getTotalN())));
-    }
-    if (Parameters::isTemporalScanType(parameters.getScanType())) {
-        PrintFormat.PrintSectionLabel(outfile, "Data Time Range", false);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, parameters.getDataTimeRangeSet().toString(buffer, parameters.getDatePrecisionType()));
-    }
-    if (parameters.isApplyingExclusionTimeRanges()) {
-        PrintFormat.PrintSectionLabel(outfile, "Excluded Time Ranges", false);
-        PrintFormat.PrintAlignedMarginsDataString(outfile, parameters.getExclusionTimeRangeSet().toString(buffer, parameters.getDatePrecisionType()));
-    }
+    outfile << std::endl << "SUMMARY STATISTICS" << std::endl << std::endl;
     if (parameters.getScanType() != Parameters::TIMEONLY) {
-        const TreeStatistics& treestats =  _scanRunner.getTreeStatistics();
+        outfile << "Tree:" << std::endl;
+        const TreeStatistics& treestats = _scanRunner.getTreeStatistics();
         PrintFormat.PrintSectionLabel(outfile, "Number of Nodes", false);
         PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", treestats._num_nodes));
         PrintFormat.PrintSectionLabel(outfile, "Number of Root Nodes", false);
@@ -118,23 +89,85 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", treestats._nodes_per_level.size()));
         PrintFormat.PrintSectionLabel(outfile, "Nodes per Levels", false);
         std::stringstream stringbuffer;
-        for (TreeStatistics::NodesLevel_t::const_iterator itr=treestats._nodes_per_level.begin(); itr != treestats._nodes_per_level.end(); ++itr) {
+        for (TreeStatistics::NodesLevel_t::const_iterator itr = treestats._nodes_per_level.begin(); itr != treestats._nodes_per_level.end(); ++itr) {
             stringbuffer << itr->second << (itr->first == treestats._nodes_per_level.size() ? "" : ", ");
         }
         PrintFormat.PrintAlignedMarginsDataString(outfile, stringbuffer.str().c_str());
     }
     if (parameters.isSequentialScanTreeOnly()) {
         const SequentialStatistic & sequentialStatistic = _scanRunner.getSequentialStatistic();
-
+        outfile << std::endl << "Present Look:" << std::endl;
+        PrintFormat.PrintSectionLabel(outfile, "Look", false);
         std::stringstream stringbuffer;
-        stringbuffer << "Alpha Spent To Date";
-        PrintFormat.PrintSectionLabel(outfile, stringbuffer.str().c_str(), false);
-
-        stringbuffer.str("");
-        stringbuffer << sequentialStatistic.getAlphaSpending() << " (" << parameters.getSequentialAlphaOverall() << " alpha overall)";
+        stringbuffer << _scanRunner.getSequentialStatistic().getLook();
         PrintFormat.PrintAlignedMarginsDataString(outfile, stringbuffer.str().c_str());
+        PrintFormat.PrintSectionLabel(outfile, "Alpha This Look", false);
+        stringbuffer.str("");
+        stringbuffer << parameters.getSequentialAlphaSpending();
+        PrintFormat.PrintAlignedMarginsDataString(outfile, stringbuffer.str().c_str());
+        PrintFormat.PrintSectionLabel(outfile, "Total Cases", false);
+        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getTotalsFromLook().first));
+        if (parameters.getModelType() == Parameters::POISSON) {
+            PrintFormat.PrintSectionLabel(outfile, "Total Expected", false);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getTotalsFromLook().second, buffer, 1));
+        }
+        if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
+            PrintFormat.PrintSectionLabel(outfile, "Total Observations", false);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", static_cast<int>(_scanRunner.getTotalsFromLook().second)));
+        }
+        PrintFormat.PrintSectionLabel(outfile, "Critical Value To Reject", false);
+        outfile << _scanRunner.getSequentialStatistic().getCriticalValue() << std::endl;
+        if (_scanRunner.getSequentialStatistic().getLook() > 1) {
+            outfile << std::endl << "Cumulative Look:" << std::endl;
+            PrintFormat.PrintSectionLabel(outfile, "Alpha Spent To Date", false);
+            stringbuffer.str("");
+            stringbuffer << sequentialStatistic.getAlphaSpending();
+            PrintFormat.PrintAlignedMarginsDataString(outfile, stringbuffer.str().c_str());
+            PrintFormat.PrintSectionLabel(outfile, "Total Cases", false);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getTotalC()));
+            if (parameters.getModelType() == Parameters::POISSON) {
+                PrintFormat.PrintSectionLabel(outfile, "Total Expected", false);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getTotalN(), buffer, 1));
+            }
+            if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
+                PrintFormat.PrintSectionLabel(outfile, "Total Observations", false);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", static_cast<int>(_scanRunner.getTotalN())));
+            }
+        }
+    } else {
+        outfile << "Data Summary:" << std::endl;
+        if (!parameters.getPerformPowerEvaluations() ||
+            !(parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_ONLY_CASEFILE && parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
+            PrintFormat.PrintSectionLabel(outfile, "Total Cases", false);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getTotalC()));
+            if (_scanRunner.isCensoredData()) {
+                PrintFormat.PrintSectionLabel(outfile, "Total Censored Cases", false);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getNumCensoredCases()));
+                PrintFormat.PrintSectionLabel(outfile, "Average Censoring Time", false);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getAvgCensorTime()));
+            }
+        }
+        if (parameters.isApplyingExclusionTimeRanges()) {
+            PrintFormat.PrintSectionLabel(outfile, "Total Cases Excluded", false);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getNumExcludedCases()));
+        }
+        if (parameters.getModelType() == Parameters::POISSON) {
+            PrintFormat.PrintSectionLabel(outfile, "Total Expected", false);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getTotalN(), buffer, 1));
+        }
+        if (parameters.getModelType() == Parameters::BERNOULLI_TREE || parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+            PrintFormat.PrintSectionLabel(outfile, "Total Observations", false);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", static_cast<int>(_scanRunner.getTotalN())));
+        }
+        if (Parameters::isTemporalScanType(parameters.getScanType())) {
+            PrintFormat.PrintSectionLabel(outfile, "Data Time Range", false);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, parameters.getDataTimeRangeSet().toString(buffer, parameters.getDatePrecisionType()));
+        }
+        if (parameters.isApplyingExclusionTimeRanges()) {
+            PrintFormat.PrintSectionLabel(outfile, "Excluded Time Ranges", false);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, parameters.getExclusionTimeRangeSet().toString(buffer, parameters.getDatePrecisionType()));
+        }
     }
-
     PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
 
     if (Parameters::isTemporalScanType(parameters.getScanType())) {
@@ -152,8 +185,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     if (parameters.isSequentialScanPurelyTemporal() && static_cast<unsigned int>(_scanRunner.getTotalC()) > parameters.getSequentialMaximumSignal()) {
         outfile << "Note: The sequential scan reached or exceeded the specified maximum cases." << std::endl << "      The sequential analysis is over." << std::endl;
     } else if (!parameters.getPerformPowerEvaluations() || (parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
-
-        if (parameters.isSequentialScanTreeOnly() && macro_less_than_or_equal(parameters.getSequentialAlphaOverall(), _scanRunner.getSequentialStatistic().getAlphaSpending(), DBL_CMP_TOLERANCE))
+        if (treeSequentialAnalysisComplete())
             outfile << "Note: The alpha spending for sequential scan reached the specified alpha overall." << std::endl << "      The sequential analysis is over." << std::endl << std::endl;
         if (_scanRunner.getCuts().size() == 0 || !_scanRunner.reportableCut(*_scanRunner.getCuts()[0])) {
             outfile << "No cuts were found." << std::endl;
@@ -363,7 +395,6 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         }
         outfile << std::endl;
     }
-
     // print power estimation values
     if (parameters.getPerformPowerEvaluations()) {
         // sanity check
@@ -729,53 +760,68 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<body>" << std::endl;
     buffer = AppToolkit::getToolkit().GetWebSite();
     outfile << "<div class='hr' style='margin-top: 5px;'></div><div class='program-info'>" << std::endl;
-    outfile << getAnalysisSuccinctStatement(buffer);
-    outfile << "<table style='text-align: left;'><tbody>" << std::endl;
-    if (parameters.isSequentialScanTreeOnly()) {
-        outfile << "<tr><th>Look</th><td>" << _scanRunner.getSequentialStatistic().getLook() << "</td></tr>" << std::endl;
-    }
-    if (!parameters.getPerformPowerEvaluations() || 
-        !(parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_ONLY_CASEFILE && parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
-        outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
-        if (_scanRunner.isCensoredData()) {
-            outfile << "<tr><th>Total Censored Cases:</th><td>" << _scanRunner.getNumCensoredCases() << "</td></tr>" << std::endl;
-            outfile << "<tr><th>Average Censoring Time:</th><td>" << _scanRunner.getAvgCensorTime() << "</td></tr>" << std::endl;
-        }
-    }
-    if (parameters.isApplyingExclusionTimeRanges()) {
-        outfile << "<tr><th>Total Cases Excluded:</th><td>" << _scanRunner.getNumExcludedCases() << "</td></tr>" << std::endl;
-    }
-    if (parameters.getModelType() == Parameters::POISSON) {
-        outfile << "<tr><th>Total Expected:</th><td>" << getValueAsString(_scanRunner.getTotalN(), buffer, 1).c_str() << "</td></tr>" << std::endl;
-    }
-    if (parameters.getModelType() == Parameters::BERNOULLI_TREE || parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-        outfile << "<tr><th>Total Observations:</th><td>" << static_cast<int>(_scanRunner.getTotalN()) << "</td></tr>" << std::endl;
-    }
-    if (Parameters::isTemporalScanType(parameters.getScanType())) {
-        outfile << "<tr><th>Data Time Range:</th><td>" 
-                << parameters.getDataTimeRangeSet().toString(buffer, parameters.getDatePrecisionType()).c_str() << "</td></tr>" << std::endl;
-    }
-    if (parameters.isApplyingExclusionTimeRanges()) {
-        outfile << "<tr><th>Excluded Time Ranges:</th><td>" 
-                << parameters.getExclusionTimeRangeSet().toString(buffer, parameters.getDatePrecisionType()).c_str() << "</td></tr>" << std::endl;
-    }
+    outfile << "<p style='font-size:15px;font-weight:bold;'>" << getAnalysisSuccinctStatement(buffer) << "</p>";
+    outfile << "<h2 style='font-size:15px;margin: 8px 0 5px 0;font-weight:bold;'>SUMMARY STATISTICS</h2>" << std::endl;    
+
+    outfile << "<table class='analysis-summary'><tbody>" << std::endl;
     if (parameters.getScanType() != Parameters::TIMEONLY) {
-        const TreeStatistics& treestats =  _scanRunner.getTreeStatistics();
+        const TreeStatistics& treestats = _scanRunner.getTreeStatistics();
+        outfile << "<tr><th class='section-caption'><span>Tree</span></th><td></td></tr>" << std::endl;
         outfile << "<tr><th>Number of Nodes:</th><td>" << treestats._num_nodes << "</td></tr>" << std::endl;
         outfile << "<tr><th>Number of Root Nodes:</th><td>" << treestats._num_root << "</td></tr>" << std::endl;
         outfile << "<tr><th>Number of Nodes with Children:</th><td>" << treestats._num_parent << "</td></tr>" << std::endl;
         outfile << "<tr><th>Number of Leaf Nodes:</th><td>" << treestats._num_leaf << "</td></tr>" << std::endl;
         outfile << "<tr><th>Number of Levels in Tree:</th><td>" << treestats._nodes_per_level.size() << "</td></tr>" << std::endl;
         std::stringstream stringbuffer;
-        for (TreeStatistics::NodesLevel_t::const_iterator itr=treestats._nodes_per_level.begin(); itr != treestats._nodes_per_level.end(); ++itr) {
+        for (TreeStatistics::NodesLevel_t::const_iterator itr = treestats._nodes_per_level.begin(); itr != treestats._nodes_per_level.end(); ++itr)
             stringbuffer << itr->second << (itr->first == treestats._nodes_per_level.size() ? "" : ", ");
-        }
         outfile << "<tr><th>Nodes per Levels:</th><td>" << stringbuffer.str().c_str() << "</td></tr>" << std::endl;
     }
     if (parameters.isSequentialScanTreeOnly()) {
         const SequentialStatistic & sequentialStatistic = _scanRunner.getSequentialStatistic();
-        outfile << "<tr><th>Alpha Spent To Date:</th>";
-        outfile << "<td>" << sequentialStatistic.getAlphaSpending() << " (" << parameters.getSequentialAlphaOverall() << " alpha overall)</td></tr>" << std::endl;
+        outfile << "<tr><th class='section-caption'><span>Present Look</span></th><td></td></tr>" << std::endl;
+        outfile << "<tr><th>Look:</th><td>" << _scanRunner.getSequentialStatistic().getLook() << "</td></tr>" << std::endl;
+        outfile << "<tr><th>Alpha This Look:</th><td>" << parameters.getSequentialAlphaSpending() << "</td></tr>" << std::endl;
+        outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalsFromLook().first << "</td></tr>" << std::endl;
+        if (parameters.getModelType() == Parameters::POISSON)
+            outfile << "<tr><th>Total Expected:</th><td>" << getValueAsString(_scanRunner.getTotalsFromLook().second, buffer, 1) << "</td></tr>" << std::endl;
+        if (parameters.getModelType() == Parameters::BERNOULLI_TREE)
+            outfile << "<tr><th>Total Observations:</th><td>" << static_cast<int>(_scanRunner.getTotalsFromLook().second) << "</td></tr>" << std::endl;
+        outfile << "<tr><th>Critical Value To Reject:</th><td>" << _scanRunner.getSequentialStatistic().getCriticalValue() << "</td></tr>" << std::endl;
+        if (_scanRunner.getSequentialStatistic().getLook() > 1) {
+            outfile << "<tr><th class='section-caption'><span>Cumulative Look</span></th><td></td></tr>" << std::endl;
+            outfile << "<tr><th>Alpha Spent To Date:</th><td>" << sequentialStatistic.getAlphaSpending() << "</td></tr>" << std::endl;
+            outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
+            if (parameters.getModelType() == Parameters::POISSON)
+                outfile << "<tr><th>Total Expected:</th><td>" << getValueAsString(_scanRunner.getTotalN(), buffer, 1) << "</td></tr>" << std::endl;
+            if (parameters.getModelType() == Parameters::BERNOULLI_TREE)
+                outfile << "<tr><th>Total Observations:</th><td>" << static_cast<int>(_scanRunner.getTotalN()) << "</td></tr>" << std::endl;
+        }
+    } else {
+        outfile << "<tr><th class='section-caption'><span>Data Summary</span></th><td></td></tr>" << std::endl;
+        if (!parameters.getPerformPowerEvaluations() ||
+            !(parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_ONLY_CASEFILE && parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
+            outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
+            if (_scanRunner.isCensoredData()) {
+                outfile << "<tr><th>Total Censored Cases:</th><td>" << _scanRunner.getNumCensoredCases() << "</td></tr>" << std::endl;
+                outfile << "<tr><th>Average Censoring Time:</th><td>" << _scanRunner.getAvgCensorTime() << "</td></tr>" << std::endl;
+            }
+        }
+        if (parameters.isApplyingExclusionTimeRanges())
+            outfile << "<tr><th>Total Cases Excluded:</th><td>" << _scanRunner.getNumExcludedCases() << "</td></tr>" << std::endl;
+        if (parameters.getModelType() == Parameters::POISSON)
+            outfile << "<tr><th>Total Expected:</th><td>" << getValueAsString(_scanRunner.getTotalN(), buffer, 1).c_str() << "</td></tr>" << std::endl;
+        if (parameters.getModelType() == Parameters::BERNOULLI_TREE || parameters.getModelType() == Parameters::BERNOULLI_TIME)
+            outfile << "<tr><th>Total Observations:</th><td>" << static_cast<int>(_scanRunner.getTotalN()) << "</td></tr>" << std::endl;
+        if (Parameters::isTemporalScanType(parameters.getScanType()))
+            outfile << "<tr><th>Data Time Range:</th><td>" << parameters.getDataTimeRangeSet().toString(buffer, parameters.getDatePrecisionType()).c_str() << "</td></tr>" << std::endl;
+        if (parameters.isApplyingExclusionTimeRanges())
+            outfile << "<tr><th>Excluded Time Ranges:</th><td>" << parameters.getExclusionTimeRangeSet().toString(buffer, parameters.getDatePrecisionType()).c_str() << "</td></tr>" << std::endl;
+        if (parameters.isSequentialScanTreeOnly()) {
+            const SequentialStatistic & sequentialStatistic = _scanRunner.getSequentialStatistic();
+            outfile << "<tr><th>Alpha Spent To Date:</th>";
+            outfile << "<td>" << sequentialStatistic.getAlphaSpending() << " (" << parameters.getSequentialAlphaOverall() << " alpha overall)</td></tr>" << std::endl;
+        }
     }
     outfile << "</tbody></table></div>" << std::endl;
 
@@ -783,10 +829,8 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     if (parameters.isSequentialScanPurelyTemporal() && static_cast<unsigned int>(_scanRunner.getTotalC()) > parameters.getSequentialMaximumSignal()) {
         outfile << "<div class=\"warning\">Note: The sequential scan reached or exceeded the specified maximum cases. The sequential analysis is over.</div><div class=\"hr\"></div>";
     } else if (!parameters.getPerformPowerEvaluations() || (parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
-
-        if (parameters.isSequentialScanTreeOnly() && macro_less_than_or_equal(parameters.getSequentialAlphaOverall(), _scanRunner.getSequentialStatistic().getAlphaSpending(), DBL_CMP_TOLERANCE))
+        if (treeSequentialAnalysisComplete())
             outfile << "<div class=\"warning\">Note: The alpha spending for sequential scan reached the specified alpha overall. The sequential analysis is over.</div><div class=\"hr\"></div>";
-
         outfile << "<div id=\"cuts\">" << std::endl;
         if (_scanRunner.getCuts().size() == 0 || !_scanRunner.reportableCut(*_scanRunner.getCuts()[0])) {
             outfile << "<h3>No cuts were found.</h3>" << std::endl;
@@ -950,6 +994,12 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             outfile << "<div>... 0.05: " <<  alpha05.second << "</div>" << std::endl;
         }
         outfile << "</div>" << std::endl;
+    }
+    // Report critical value for tree-only sequentual scans.
+    if (parameters.isSequentialScanTreeOnly()) {
+        outfile << "<div class=\"program-info\">" << std::endl;
+        outfile << "<div>Critical value for look: " << _scanRunner.getSequentialStatistic().getCriticalValue() << std::endl;
+        outfile << "</div></div>" << std::endl;
     }
 
     // print power estimation values

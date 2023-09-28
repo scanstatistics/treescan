@@ -53,7 +53,7 @@ std::string                   & getValueAsString(double value, std::string& s, u
 std::string                   & getRoundAsString(double value, std::string& s, unsigned int precision, bool localize=false);
 std::string                   & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath);
 std::string                   & GetUserTemporaryDirectory(std::string& s);
-std::string                   & GetTemporaryFilename(std::string& s);
+std::string                   & GetTemporaryFilename(std::string& s, const char * atLocation=0);
 bool                            getlinePortable(std::ifstream& readstream, std::string& line);
 std::string                   & htmlencode(std::string& text);
 template <typename T>           bool string_to_numeric_type(const char * s, T& t, bool test_finite=true) {

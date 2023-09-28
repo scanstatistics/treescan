@@ -98,7 +98,8 @@ private:
     CountContainer_t        _IntC_C;            // Number of true and simulated cases internal to the node, respectively.
     CountContainer_t        _BrC_C;             // Number of true and simulated cases in the node and all decendants (children, grandchildren etc.)
     ExpectedContainer_t     _IntN_C;            // Expected number of cases internal to the node.
-    ExpectedContainer_t     _IntN_C_Seq_New;    // Expected number cases in new sequential data set.
+    ExpectedContainer_t     _IntN_C_Seq_New;    // Expected number of cases in current look sequential data set.
+    ExpectedContainer_t     _BrN_C_Seq_New;     // Expected number of cases in current look sequential data set, with all decendants.
     ExpectedContainer_t     _BrN_C;             // Expected number of cases internal to the node and with all decendants.
     ChildContainer_t         _Child;             // List of node IDs of the children and parents
     ParentContainer_t       _Parent;
@@ -126,6 +127,7 @@ private:
         if (parameters.isSequentialScanTreeOnly()) {
             // Also initialize structures used to store existing data from previous sequential scans.
             _IntN_C_Seq_New.resize(container_size);
+            _BrN_C_Seq_New.resize(container_size);
         }
     }
 
@@ -194,6 +196,8 @@ public:
     count_t                       getMinCensoredBr() const { return _min_censored_Br; }
     double                        getIntN() const {return _IntN_C.front();}
     double                        getIntN_Seq_New() const { return _IntN_C_Seq_New.front(); }
+    const ExpectedContainer_t   & getIntN_Seq_New_C() const { return _IntN_C_Seq_New; }
+    double                        getBrN_Seq_New() const { return _BrN_C_Seq_New.front(); }
     const ExpectedContainer_t   & getIntN_C() const {return _IntN_C;}
     double                        getBrN() const {return _BrN_C.front();}
     const ExpectedContainer_t   & getBrN_C() const {return _BrN_C;}
@@ -220,6 +224,12 @@ public:
                                     }
                                     return _IntN_C_Seq_New;
                                  }
+    ExpectedContainer_t         & refBrN_Seq_New_C() {
+                                    if (_BrN_C_Seq_New.size() == 0) {
+                                        _BrN_C_Seq_New.resize(_IntC_C.size(), 0);
+                                    }
+                                    return _BrN_C_Seq_New;
+                                }
     CountContainer_t            & refIntC_C() {return _IntC_C;}
     CountContainer_t            & refBrC_C() {return _BrC_C;}
     ExpectedContainer_t         & refBrN_C() {
@@ -227,7 +237,7 @@ public:
                                         _BrN_C.resize(_IntC_C.size(), 0);
                                     }
                                     return _BrN_C;
-                                  }
+                                }
     ChildContainer_t            & refChildren() {return _Child;}
 
     const CountContainer_t      & getIntC_Censored() const { return _IntC_Censored; }
@@ -380,7 +390,6 @@ class SequentialStatistic {
         std::string                 _controls_filename;
         std::string                 _simulations_filename;
         std::string                 _write_simulations_filename;
-        std::string                 _write_llr_filename;
         std::string                 _settings_filename;
         boost::dynamic_bitset<>     _alpha_simulations;
         signalled_cuts_container_t  _cuts_signaled;
@@ -405,7 +414,13 @@ class SequentialStatistic {
         bool                        isMarkedSimulation(unsigned int simIdx) const { return _alpha_simulations.test(simIdx - 1); }
         const std::string         & getCountDataFilename() const { return _counts_filename; }
         const std::string         & getControlDataFilename() const { return _controls_filename; }
+        double                      getCriticalValue() const { return _llr_sims.back().first; }
         const std::string         & getSimulationDataFilename() const { return _simulations_filename; }
+        std::string                 getSimulationDataArchiveName() const {
+            std::string archivename(_simulations_filename);
+            archivename += ".zip";
+            return archivename;
+        }
         const std::string         & getWriteSimulationDataFilename() const { return _write_simulations_filename; }
         void                        setCutSignaled(size_t cutIdx) {
             if (_cuts_signaled.find(static_cast<unsigned int>(cutIdx)) == _cuts_signaled.end())
@@ -419,12 +434,7 @@ class SequentialStatistic {
             size_t max_rank_to_signal = static_cast<unsigned int>(ceil(static_cast<double>(_parameters.getNumReplicationsRequested() + 1) * _alpha_spending));
             return rank <= max_rank_to_signal;
         }
-        bool                        testSignallingLLR(double llr) const {
-            return llr >= _llr_sims.back().first;
-            //llr_sim_t add_llr_sim(llr, 0/*not applicable*/);
-            //llr_sim_container_t::const_iterator itr=std::upper_bound(_llr_sims.begin(), _llr_sims.end(), add_llr_sim, compare_llr_sim_t());
-            //return itr != _llr_sims.end();
-        }
+        bool                        testSignallingLLR(double llr) const { return llr >= getCriticalValue(); }
         void                        write(const std::string &casefilename, const std::string &controlfilename);
 };
 
@@ -453,6 +463,7 @@ protected:
     int                                 _TotalC;
     int                                 _TotalControls;
     double                              _TotalN;
+    std::pair<int, double>              _totals_in_look; // Total cases/ population(expected) in this look.
     SimulationVariables                 _simVars;
     Parameters                          _parameters;
     DataTimeRange::index_t              _zero_translation_additive;
@@ -469,6 +480,8 @@ protected:
     NodeStructure::count_t              _num_cases_excluded;
     unsigned int                        _node_evaluation_minimum;
     mutable SequentialStatistic_t       _sequential_statistic;
+    boost::dynamic_bitset<>             _sequential_read_nodes; // node indexes which were previously written to simulations cache
+    boost::dynamic_bitset<>             _sequential_write_nodes; // node indexes which will be written to simulations cache
     // cache for storing total cases in time window
     mutable std::map<std::pair<DataTimeRange::index_t, DataTimeRange::index_t>, double> _node_n_time_total_cases_cache;
 
@@ -526,10 +539,13 @@ public:
     BasePrint                        & getPrint() {return _print;}
     SequentialStatistic              & refSequentialStatistic() { return *_sequential_statistic; }
     const SequentialStatistic        & getSequentialStatistic() const { return *_sequential_statistic; }
+    const boost::dynamic_bitset<>    & getSequentialTreeNodesToRead() const { return _sequential_read_nodes; }
+    const boost::dynamic_bitset<>    & getSequentialTreeNodesToWrite() const { return _sequential_write_nodes; }
     SimulationVariables              & getSimulationVariables() {return _simVars;}
     int                                getTotalC() const {return _TotalC;}
     int                                getTotalControls() const {return _TotalControls;}
     double                             getTotalN() const {return _TotalN;}
+    std::pair<int, double>             getTotalsFromLook() const { return _totals_in_look; }
     const TreeStatistics             & getTreeStatistics() const;
     DataTimeRange::index_t             getZeroTranslationAdditive() const {return _zero_translation_additive;}
     bool                               isEvaluated(const NodeStructure& node) const;

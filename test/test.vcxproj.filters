@@ -183,6 +183,9 @@
     <ClCompile Include="..\calculation\utility\Ini.cpp">
       <Filter>Source Files\source\calculation\utility</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\utility\ZipUtils.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>        
     <ClCompile Include="..\calculation\loglikelihood\CriticalValues.cpp">
       <Filter>Source Files\source\calculation\loglikelihood</Filter>
     </ClCompile>
@@ -464,6 +467,9 @@
     <ClInclude Include="..\calculation\utility\Ini.h">
       <Filter>Header Files\source\calculation\utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\utility\ZipUtils.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>        
     <ClInclude Include="..\calculation\loglikelihood\CriticalValues.h">
       <Filter>Header Files\source\calculation\loglikelihood</Filter>
     </ClInclude>

@@ -195,7 +195,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public boolean getDefaultsSetForOutputOptions() {
         boolean bReturn = true;
         bReturn &= _reportLLRResultsAsCsvTable.isSelected() == false;
-        bReturn &= _reportCriticalValuesCheckBox.isSelected() == false;
         bReturn &= _chk_rpt_attributable_risk.isSelected() == false;
         bReturn &= _attributable_risk_exposed.getText().equals("");
         bReturn &= _reportTemporalGraph.isSelected() == false;
@@ -356,7 +355,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         // Additional Output tab
         parameters.setGeneratingLLRResults(_reportLLRResultsAsCsvTable.isSelected());
-        parameters.setReportCriticalValues(_reportCriticalValuesCheckBox.isSelected());
         parameters.setReportAttributableRisk(_chk_rpt_attributable_risk.isEnabled() && _chk_rpt_attributable_risk.isSelected());
         parameters.setAttributableRiskExposed(_attributable_risk_exposed.getText().length() > 0 ? Integer.parseInt(_attributable_risk_exposed.getText()): 0);
         parameters.setOutputTemporalGraphFile(_reportTemporalGraph.isEnabled() && _reportTemporalGraph.isSelected());
@@ -504,7 +502,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         */
 
         // Additional Output tab
-        _reportCriticalValuesCheckBox.setSelected(parameters.getReportCriticalValues());
         _reportLLRResultsAsCsvTable.setSelected(parameters.isGeneratingLLRResults());
         _chk_rpt_attributable_risk.setSelected(parameters.getReportAttributableRisk());
         _attributable_risk_exposed.setText(parameters.getAttributableRiskExposed() > 0 ? Integer.toString(parameters.getAttributableRiskExposed()) : "");
@@ -642,7 +639,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     private void setDefaultsForOutputTab() {
         _reportLLRResultsAsCsvTable.setSelected(false);
-        _reportCriticalValuesCheckBox.setSelected(false);
         _chk_rpt_attributable_risk.setSelected(false);
         _attributable_risk_exposed.setText("");
     }
@@ -681,11 +677,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             } else {
                 double alpha = Double.parseDouble(_sequentual_alpha_overall.getText());
                 double alpha_spending = Double.parseDouble(_sequential_alpha_spending.getText());
+                double test = 1.0 / (Double.parseDouble(_montCarloReplicationsTextField.getText()) + 1.0);
+                if (alpha < test || 0.05 < alpha)
+                    throw new AdvFeaturesExpection(
+                        "For sequential scan, alpha cannot be less than " + Double.toString(test) + 
+                        " with " + _montCarloReplicationsTextField.getText() + " replications or greater than 0.05.", 
+                        FocusedTabSet.ANALYSIS, (Component) _sequentual_alpha_overall
+                    );
                 if (alpha_spending > alpha)
                     throw new AdvFeaturesExpection("For sequential scan, alpha spending cannot be greater than alpha.", 
                         FocusedTabSet.ANALYSIS, (Component) _sequential_analysis_file
                     );
-                double test = 1.0 / (Double.parseDouble(_montCarloReplicationsTextField.getText()) + 1.0);
                 if (alpha_spending < test)
                     throw new AdvFeaturesExpection(
                         "For sequential scan, alpha spending cannot be less than " + Double.toString(test) + 
@@ -1146,10 +1148,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         //boolean bEnableGroup = true; scanType == Parameters.ScanType.TIMEONLY;
         boolean bEnableGroup = (
-		    scanType == Parameters.ScanType.TREEONLY &&
-            (modelType == Parameters.ModelType.BERNOULLI_TREE || modelType == Parameters.ModelType.POISSON) &&
-            conditionType == Parameters.ConditionalType.UNCONDITIONAL
-	    );
+            scanType == Parameters.ScanType.TREEONLY &&
+            ((modelType == Parameters.ModelType.BERNOULLI_TREE && conditionType == Parameters.ConditionalType.UNCONDITIONAL) ||
+              modelType == Parameters.ModelType.POISSON
+            )
+	);
         _sequential_analysis_group.setEnabled(bEnableGroup);
         _perform_sequential_scan.setEnabled(bEnableGroup);
 
@@ -1288,8 +1291,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _advanced_output_tab = new javax.swing.JPanel();
         _log_likelihood_ratios_group = new javax.swing.JPanel();
         _reportLLRResultsAsCsvTable = new javax.swing.JCheckBox();
-        _report_critical_values_group = new javax.swing.JPanel();
-        _reportCriticalValuesCheckBox = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
         _chk_rpt_attributable_risk = new javax.swing.JCheckBox();
         _attributable_risk_exposed = new javax.swing.JTextField();
@@ -2366,34 +2367,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _report_critical_values_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Critical Values"));
-
-        _reportCriticalValuesCheckBox.setText("Report critical values for an observed cut to be significant"); // NOI18N
-        _reportCriticalValuesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _reportCriticalValuesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _reportCriticalValuesCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-
-        javax.swing.GroupLayout _report_critical_values_groupLayout = new javax.swing.GroupLayout(_report_critical_values_group);
-        _report_critical_values_group.setLayout(_report_critical_values_groupLayout);
-        _report_critical_values_groupLayout.setHorizontalGroup(
-            _report_critical_values_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_report_critical_values_groupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_reportCriticalValuesCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 625, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        _report_critical_values_groupLayout.setVerticalGroup(
-            _report_critical_values_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_report_critical_values_groupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_reportCriticalValuesCheckBox)
-                .addContainerGap(14, Short.MAX_VALUE))
-        );
-
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Attributable Risk"));
 
         _chk_rpt_attributable_risk.setText("Report attributable risk based on ");
@@ -2591,7 +2564,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addGroup(_advanced_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_report_critical_values_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_graphOutputGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -2604,10 +2576,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_report_critical_values_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(91, Short.MAX_VALUE))
+                .addContainerGap(134, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
@@ -3056,10 +3026,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private java.awt.Choice _prospective_frequency;
     private javax.swing.JPanel _prospective_frequency_group;
     private javax.swing.JRadioButton _relaxed_study_data_period_checking;
-    private javax.swing.JCheckBox _reportCriticalValuesCheckBox;
     private javax.swing.JCheckBox _reportLLRResultsAsCsvTable;
     private javax.swing.JCheckBox _reportTemporalGraph;
-    private javax.swing.JPanel _report_critical_values_group;
     private javax.swing.JCheckBox _restrictTemporalRangeCheckBox;
     private javax.swing.JCheckBox _restrict_evaluated_levels;
     private javax.swing.JTextField _restricted_levels;

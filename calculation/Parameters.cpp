@@ -312,7 +312,7 @@ bool Parameters::isSequentialScanBernoulli() const{
 }
 
 bool Parameters::isSequentialScanPoisson() const {
-	return _sequential_scan && _modelType == Parameters::POISSON && _conditional_type == Parameters::UNCONDITIONAL;
+	return _sequential_scan && _modelType == Parameters::POISSON;
 }
 
 bool Parameters::isSequentialScanTreeOnly() const {
