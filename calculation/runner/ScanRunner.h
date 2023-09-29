@@ -488,6 +488,7 @@ protected:
     unsigned int                addCN_C(const NodeStructure& sourceNode, NodeStructure& destinationNode, boost::dynamic_bitset<>& ancestor_nodes);
     size_t                      calculateCutsCount() const;
 
+    void                        rankCutsAndReportMostly();
     bool                        readRelativeRisksAdjustments(const std::string& srcfilename, RiskAdjustmentsContainer_t& rrAdjustments, bool consolidate);
     bool                        readCounts(const std::string& srcfilename, bool sequence_new_data);
     bool                        readControls(const std::string& srcfilename, bool sequence_new_data);

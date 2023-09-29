@@ -744,7 +744,7 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
 			  _parameters.getModelType() == Parameters::POISSON
 			)) {
             bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nSequential scan is only implemented for the time-only scan conditioned on total cases\nor unconditional Benoulli.\n", BasePrint::P_PARAMERROR);
+            PrintDirection.Printf("Invalid Parameter Setting:\nSequential scan is only implemented for the time-only scan conditioned on total cases, unconditional Benoulli, and Poisson.\n", BasePrint::P_PARAMERROR);
         }
         if (_parameters.getPerformPowerEvaluations()) {
             bValid = false;

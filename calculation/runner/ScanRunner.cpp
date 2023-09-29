@@ -1302,6 +1302,25 @@ bool ScanRunner::readDateColumn(DataSource& source, size_t columnIdx, int& dateI
     return true;
 }
 
+/* Ranks cuts then removes those with lesser LLR values, then reports most likely. */
+void ScanRunner::rankCutsAndReportMostly() {
+    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
+    if (_Cut.size()) {
+        // Sort collection of cuts by log-likelihood.
+        std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
+        // Retain only cuts with a log-likelihood ratio >= the minimum LLR of interest or those which previously signalled (if tree sequential).
+        for (size_t t = 0; t < _Cut.size();) {
+            if (!(macro_less_than(MIN_CUT_LLR, calcLogLikelihood->LogLikelihoodRatio(_Cut[t]->getLogLikelihood()), DBL_CMP_TOLERANCE) ||
+                (_parameters.isSequentialScanTreeOnly() && getSequentialStatistic().testCutSignaled(static_cast<int>(_Cut[t]->getID())))))
+                _Cut.kill(_Cut.begin() + t);
+            else ++t;
+        }
+    }
+    if (_Cut.size())
+        _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.front()->getLogLikelihood()));
+
+}
+
 /* Reads control data from passed file for Bernoulli models. 
     We currently have two ways for control data to be read from data files. Earlier versions of TreeScan had the case and control data is the
     count file only. With the addition of the Bernoulli Time model, it became apparent breaking cases and controls into two files made more sense.
@@ -2216,10 +2235,7 @@ bool ScanRunner::scanTree() {
             }
         }
     }
-    if (_Cut.size()) {
-        std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
-        _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut[0]->getLogLikelihood()));
-    }
+    rankCutsAndReportMostly();
     return _Cut.size() != 0;
 }
 
@@ -2357,10 +2373,7 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
             }
         }
     }
-    if (_Cut.size()) {
-        std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
-        _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut[0]->getLogLikelihood()));
-    }
+    rankCutsAndReportMostly();
     return _Cut.size() != 0;
 }
 
@@ -2519,10 +2532,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
             }
         }
     }
-    if (_Cut.size()) {
-        std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
-        _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut[0]->getLogLikelihood()));
-    }
+    rankCutsAndReportMostly();
     return _Cut.size() != 0;
 }
 
@@ -2664,10 +2674,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
             }
         }
     }
-    if (_Cut.size()) {
-        std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
-        _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut[0]->getLogLikelihood()));
-    }
+    rankCutsAndReportMostly();
     return _Cut.size() != 0;
 }
 
@@ -2687,9 +2694,9 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, 
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN, BrC_All, BrN_All);
     else
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN);
-    if ((loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD || loglikelihood < MIN_CUT_LLR) &&
+    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD &&
         !(_parameters.isSequentialScanTreeOnly() && getSequentialStatistic().testCutSignaled(static_cast<int>(node_index)) != 0))
-        // Exclude this cut if log likelihood is unset or zero -- unless we're tree sequential scanning and this cut has signalled in prior looks.
+        // Exclude this cut if log likelihood is unset -- unless we're tree sequential scanning and this cut has signalled in prior looks.
         return 0;
 
     std::auto_ptr<CutStructure> cut(new CutStructure());
@@ -2708,7 +2715,7 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int C, double N, int 
     // Skip calculation if branch count does not meet evaluation minimum,
     if (BrC < _node_evaluation_minimum) return 0;
     double loglikelihood = logCalculator->LogLikelihood(C, N, BrC, BrN);
-    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD || loglikelihood < MIN_CUT_LLR) return 0;
+    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) return 0;
     std::auto_ptr<CutStructure> cut(new CutStructure());
     cut->setLogLikelihood(loglikelihood);
     cut->setID(static_cast<int>(node_index));
@@ -2885,10 +2892,10 @@ bool ScanRunner::setupTree() {
     }
 
     // Calculates the expected counts for each node and the total.
-    if (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::TOTALCASES && !_parameters.getSequentialScan()) {
+    if (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::TOTALCASES && !_parameters.isSequentialScanTreeOnly()) {
         // If performing power calculations with user specified number of cases, override number of cases read from case file.
         // This is ok since this option can not be peformed in conjunction with analysis - so the cases in tree are not used.
-        // Skip this step for sequential scan since we are already conditioning in read process at the look level.
+        // Skip this step for tree sequential scan since we are already conditioning in read process at the look level.
         if (_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES)
             _TotalC = _parameters.getPowerEvaluationTotalCases();
         double adjustN = _TotalC/_TotalN;
@@ -2937,7 +2944,7 @@ bool ScanRunner::setupTree() {
             _rootNodes.push_back((*itr));
     }
     // If tree sequential scan, determine which nodes are read from and/or written to the simulation data cache.
-    if (_parameters.getSequentialScan()) {
+    if (_parameters.isSequentialScanTreeOnly()) {
         if (!_sequential_statistic->isFirstLook()) _sequential_read_nodes.resize(_Nodes.size()); // nothing to read on first look
         _sequential_write_nodes.resize(_Nodes.size());
         for (size_t i = 0; i < _Nodes.size(); ++i) {

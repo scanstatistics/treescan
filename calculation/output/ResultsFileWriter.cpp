@@ -340,7 +340,11 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 } else {
                     PrintFormat.PrintSectionLabel(outfile, "Log Likelihood Ratio", true);
                 }
-                printString(buffer, "%.6lf", calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood()));
+                double llr = calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood());
+                if (parameters.isSequentialScanTreeOnly() && !macro_less_than(MIN_CUT_LLR, llr, DBL_CMP_TOLERANCE))
+                    buffer = "Not Applicable"; // It's possible that this cut signalled in prior look but now it's llr is not significant.
+                else
+                    printString(buffer, "%.6lf", llr);
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                 if (_scanRunner.reportablePValue(thisCut)) {
                     PrintFormat.PrintSectionLabel(outfile, "P-value", true);
@@ -1149,9 +1153,16 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
     outfile << "<td>" << getValueAsString(thisCut.getRelativeRisk(_scanRunner), buffer) << "</td>";
     outfile << "<td>" << getValueAsString(thisCut.getExcessCases(_scanRunner), buffer) << "</td>";
     if (parameters.getReportAttributableRisk()) {
-        outfile << "<td>" << AttributableRiskAsString(thisCut.getAttributableRisk(_scanRunner), buffer) << "</td>";
+        double ar = thisCut.getAttributableRisk(_scanRunner);
+        outfile << "<td data-order="<< ar << ">" << AttributableRiskAsString(ar, buffer) << "</td>";
     }
-    outfile << "<td>" << printString(buffer, "%.6lf", calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood())).c_str() << "</td>";
+    double llr = calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood());
+    if (parameters.isSequentialScanTreeOnly() && !macro_less_than(MIN_CUT_LLR, llr, DBL_CMP_TOLERANCE))
+        outfile << "<td data-order=0>Not Applicable</td>"; 
+    else {
+        printString(buffer, "%.6lf", llr);
+        outfile << "<td data-order=" << buffer << ">" << buffer << "</td>";
+    }
     // write p-value
     if (_scanRunner.reportablePValue(thisCut)) {
         outfile << "<td>" << printString(buffer, format.c_str(), (double)thisCut.getRank() / (parameters.getNumReplicationsRequested() + 1)) << "</td>";
@@ -1169,7 +1180,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
     if (parameters.isSequentialScanTreeOnly()) {
         /* Hack - this is dependent on the ResultsFileWriter::writeASCII being called first. */
         unsigned int signalInLook = _scanRunner.getSequentialStatistic().testCutSignaled(static_cast<size_t>(thisCut.getID()));
-        outfile << "<td>";
+        outfile << "<td data-order=" << signalInLook << ">";
         if (signalInLook != 0)
             outfile << "Look " << signalInLook;
         else
