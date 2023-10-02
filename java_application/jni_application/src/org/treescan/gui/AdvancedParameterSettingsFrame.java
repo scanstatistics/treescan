@@ -1414,11 +1414,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableSetDefaultsButton();
             }
         });
-        _checkbox_data_leaves_only.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _checkbox_data_leaves_onlyActionPerformed(evt);
-            }
-        });
 
         _checkbox_disallow_multi_parent_nodes.setSelected(true);
         _checkbox_disallow_multi_parent_nodes.setText("Disallow Multiple Parents for the Same Node");
@@ -3010,10 +3005,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void _checkbox_data_leaves_onlyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__checkbox_data_leaves_onlyActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event__checkbox_data_leaves_onlyActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel _advanced_adjustments_tab;
