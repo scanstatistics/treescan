@@ -524,6 +524,14 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getRelaxedStudyDataPeriodChecking());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setDisallowMultiParentNodes", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getDisallowMultiParentNodes());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setDisallowMultipleRoots", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getDisallowMultipleRoots());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -945,6 +953,14 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
 
   mid = _getMethodId_Checked(Env, clazz, "getRelaxedStudyDataPeriodChecking", "()Z");
   parameters.setRelaxedStudyDataPeriodChecking(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getDisallowMultiParentNodes", "()Z");
+  parameters.setDisallowMultiParentNodes(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getDisallowMultipleRoots", "()Z");
+  parameters.setDisallowMultipleRoots(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   return parameters;

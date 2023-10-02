@@ -1562,13 +1562,25 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
         node->addAsParent(*_Nodes[index.second], record_value.empty() ? "1" : record_value);
         nodesWithParents.set(node->getID());
         // Detect nodes with multiple parents.
-        _has_multi_parent_nodes |= node->getParents().size() > 1;
+        if (node->getParents().size() > 1) {
+            _has_multi_parent_nodes = true;
+            if (_parameters.getDisallowMultiParentNodes()) {
+                readSuccess = false;
+                _print.Printf("Error: Record %ld in tree file defines a node that is already defined with a different parent.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
+                continue;
+            }
+        }
     }
 
-    // confirm that there exists at least one root node
-    if (nodesWithParents.count() == nodesWithParents.size()) {
+    // confirm that there exists exactly one root node
+    int rootCount = nodesWithParents.size() - nodesWithParents.count();
+    if (rootCount == 0) {
         readSuccess = false;
         _print.Printf("Error: The tree file must contain at least one node which does not have a parent.\n", BasePrint::P_READERROR);
+    }
+    if (_parameters.getDisallowMultipleRoots() && rootCount > 1) {
+        readSuccess = false;
+        _print.Printf("Error: The tree file contains more than one node which does not have a parent.\n", BasePrint::P_READERROR);
     }
 
     return readSuccess;

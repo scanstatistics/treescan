@@ -112,6 +112,8 @@ public class Parameters implements Cloneable {
     private int _minimum_highrate_nodes_cases=2; /*minimum number of high rate nodes cases*/
     private boolean _data_only_on_leaves=true;
     private boolean _relaxed_study_data_period_checking=false;
+    private boolean _disallow_multi_parent_nodes=true;
+    private boolean _disallow_multiple_roots=true;
     
     private ArrayList<InputSourceSettings>     _input_sources;
 
@@ -227,10 +229,16 @@ public class Parameters implements Cloneable {
           if(_minimum_highrate_nodes_cases != rhs._minimum_highrate_nodes_cases) return false;
           if (_data_only_on_leaves != rhs._data_only_on_leaves) return false;
           if (_relaxed_study_data_period_checking != rhs._relaxed_study_data_period_checking) return false;
+          if (_disallow_multi_parent_nodes != rhs._disallow_multi_parent_nodes) return false;
+          if (_disallow_multiple_roots != rhs._disallow_multiple_roots) return false;
           
           return true;
     }
 
+    public boolean getDisallowMultipleRoots() { return _disallow_multiple_roots; }
+    public void setDisallowMultipleRoots(boolean b) { _disallow_multiple_roots = b; }
+    public boolean getDisallowMultiParentNodes() { return _disallow_multi_parent_nodes; }
+    public void setDisallowMultiParentNodes(boolean b) { _disallow_multi_parent_nodes = b; }
     public boolean getRelaxedStudyDataPeriodChecking() { return _relaxed_study_data_period_checking; }
     public void setRelaxedStudyDataPeriodChecking(boolean b) { _relaxed_study_data_period_checking = b; }
     public boolean getDataOnlyOnLeaves() { return _data_only_on_leaves; }

@@ -20,6 +20,8 @@ class Parameters {
                         CUT_TYPE,
                         DATA_ONLY_ON_LEAVES,
                         RELAXED_STUDY_DATA_PERIOD_CHECKING,
+                        DISALLOW_MULTI_PARENT_NODES,
+                        DISALLOW_MULTIPLE_ROOTS,
                         APPLY_RISK_WINDOW_RESTRICTION,
                         RISK_WINDOW_PERCENTAGE,
                         MINIMUM_CENSOR_TIME,
@@ -243,6 +245,8 @@ class Parameters {
     CutType                             _cut_type;
     bool                                _data_only_on_leaves;
     bool                                _relaxed_study_data_period_checking;
+    bool                                _disallow_multi_parent_nodes;
+    bool                                _disallow_multiple_roots;
     ScanType                            _scan_type;
     ConditionalType                     _conditional_type;
     ScanRateType                        _scan_rate_type;
@@ -324,6 +328,10 @@ class Parameters {
     void                                setDataOnlyOnLeaves(bool b) { _data_only_on_leaves = b; }
     bool                                getRelaxedStudyDataPeriodChecking() const { return _relaxed_study_data_period_checking; }
     void                                setRelaxedStudyDataPeriodChecking(bool b) { _relaxed_study_data_period_checking = b; }
+    bool                                getDisallowMultiParentNodes() const { return _disallow_multi_parent_nodes; }
+    void                                setDisallowMultiParentNodes(bool b) { _disallow_multi_parent_nodes = b; }
+    bool                                getDisallowMultipleRoots() const { return _disallow_multiple_roots; }
+    void                                setDisallowMultipleRoots(bool b) { _disallow_multiple_roots = b; }
     ScanRateType                        getScanRateType() const { return _scan_rate_type; }
     void                                setScanRateType(ScanRateType e) { _scan_rate_type = e; }
     unsigned int                        getMinimumHighRateNodeCases() const { return _minimum_highrate_nodes_cases; }
