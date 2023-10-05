@@ -381,8 +381,8 @@ void IniParameterFileAccess::WriteAdvancedInputSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, Parameters::CUT_TYPE, GetParameterString(Parameters::CUT_TYPE, s).c_str(), GetParameterComment(Parameters::CUT_TYPE));
         WriteIniParameter(WriteFile, Parameters::DATA_ONLY_ON_LEAVES, GetParameterString(Parameters::DATA_ONLY_ON_LEAVES, s).c_str(), GetParameterComment(Parameters::DATA_ONLY_ON_LEAVES));
         WriteIniParameter(WriteFile, Parameters::RELAXED_STUDY_DATA_PERIOD_CHECKING, GetParameterString(Parameters::RELAXED_STUDY_DATA_PERIOD_CHECKING, s).c_str(), GetParameterComment(Parameters::RELAXED_STUDY_DATA_PERIOD_CHECKING));
-        WriteIniParameter(WriteFile, Parameters::DISALLOW_MULTI_PARENT_NODES, GetParameterString(Parameters::DISALLOW_MULTI_PARENT_NODES, s).c_str(), GetParameterComment(Parameters::DISALLOW_MULTI_PARENT_NODES));
-        WriteIniParameter(WriteFile, Parameters::DISALLOW_MULTIPLE_ROOTS, GetParameterString(Parameters::DISALLOW_MULTIPLE_ROOTS, s).c_str(), GetParameterComment(Parameters::DISALLOW_MULTIPLE_ROOTS));
+        WriteIniParameter(WriteFile, Parameters::ALLOW_MULTI_PARENT_NODES, GetParameterString(Parameters::ALLOW_MULTI_PARENT_NODES, s).c_str(), GetParameterComment(Parameters::ALLOW_MULTI_PARENT_NODES));
+        WriteIniParameter(WriteFile, Parameters::ALLOW_MULTIPLE_ROOTS, GetParameterString(Parameters::ALLOW_MULTIPLE_ROOTS, s).c_str(), GetParameterComment(Parameters::ALLOW_MULTIPLE_ROOTS));
         WriteIniParameter(WriteFile, Parameters::MINIMUM_CENSOR_TIME, GetParameterString(Parameters::MINIMUM_CENSOR_TIME, s).c_str(), GetParameterComment(Parameters::MINIMUM_CENSOR_TIME));
         WriteIniParameter(WriteFile, Parameters::MINIMUM_CENSOR_PERCENTAGE, GetParameterString(Parameters::MINIMUM_CENSOR_PERCENTAGE, s).c_str(), GetParameterComment(Parameters::MINIMUM_CENSOR_PERCENTAGE));
         WriteIniParameter(WriteFile, Parameters::RSK_WND_CENSOR, GetParameterString(Parameters::RSK_WND_CENSOR, s).c_str(), GetParameterComment(Parameters::RSK_WND_CENSOR));

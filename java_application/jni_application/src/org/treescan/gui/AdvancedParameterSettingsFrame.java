@@ -150,8 +150,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         boolean bReturn = true;
         bReturn &= (_cutFileTextField.getText().equals(""));
         bReturn &= _checkbox_data_leaves_only.isSelected();
-        bReturn &= _checkbox_disallow_multi_parent_nodes.isSelected();
-        bReturn &= _checkbox_disallow_multiple_roots.isSelected();
+        bReturn &= _checkbox_allow_multi_parent_nodes.isSelected();
+        bReturn &= _checkbox_allow_multiple_roots.isSelected();
         bReturn &= _strict_study_data_period_checking.isSelected();
         return bReturn;
     }
@@ -290,8 +290,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Input tab
         parameters.setCutsFileName(_cutFileTextField.getText());
         parameters.setDataOnlyOnLeaves(_checkbox_data_leaves_only.isSelected());
-        parameters.setDisallowMultiParentNodes(_checkbox_disallow_multi_parent_nodes.isSelected());
-        parameters.setDisallowMultipleRoots(_checkbox_disallow_multiple_roots.isSelected());
+        parameters.setAllowMultiParentNodes(_checkbox_allow_multi_parent_nodes.isSelected());
+        parameters.setAllowMultipleRoots(_checkbox_allow_multiple_roots.isSelected());
         parameters.setRelaxedStudyDataPeriodChecking(_relaxed_study_data_period_checking.isSelected());
         parameters.setApplyingRiskWindowRestriction(_apply_risk_window_restriction.isEnabled() && _apply_risk_window_restriction.isSelected());
         parameters.setRiskWindowPercentage(Double.parseDouble(_risk_window_percentage.getText()));
@@ -398,8 +398,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Advanced Inputs tab
         _cutFileTextField.setText("");
         _checkbox_data_leaves_only.setSelected(true);
-        _checkbox_disallow_multi_parent_nodes.setSelected(true);
-        _checkbox_disallow_multiple_roots.setSelected(true);
+        _checkbox_allow_multi_parent_nodes.setSelected(false);
+        _checkbox_allow_multiple_roots.setSelected(true);
         _strict_study_data_period_checking.setSelected(true);
     }
 
@@ -447,8 +447,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _cutFileTextField.setText(parameters.getCutsFileName());
         _cutFileTextField.setCaretPosition(0);
         _checkbox_data_leaves_only.setSelected(parameters.getDataOnlyOnLeaves());
-        _checkbox_disallow_multi_parent_nodes.setSelected(parameters.getDisallowMultiParentNodes());
-        _checkbox_disallow_multiple_roots.setSelected(parameters.getDisallowMultipleRoots());
+        _checkbox_allow_multi_parent_nodes.setSelected(parameters.getAllowMultiParentNodes());
+        _checkbox_allow_multiple_roots.setSelected(parameters.getAllowMultipleRoots());
         _strict_study_data_period_checking.setSelected(!parameters.getRelaxedStudyDataPeriodChecking());
         _relaxed_study_data_period_checking.setSelected(parameters.getRelaxedStudyDataPeriodChecking());
         _apply_risk_window_restriction.setSelected(parameters.isApplyingRiskWindowRestriction());
@@ -1220,8 +1220,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _relaxed_study_data_period_checking = new javax.swing.JRadioButton();
         jPanel6 = new javax.swing.JPanel();
         _checkbox_data_leaves_only = new javax.swing.JCheckBox();
-        _checkbox_disallow_multi_parent_nodes = new javax.swing.JCheckBox();
-        _checkbox_disallow_multiple_roots = new javax.swing.JCheckBox();
+        _checkbox_allow_multi_parent_nodes = new javax.swing.JCheckBox();
+        _checkbox_allow_multiple_roots = new javax.swing.JCheckBox();
         _advanced_temporal_window_tab = new javax.swing.JPanel();
         _maxTemporalOptionsGroup = new javax.swing.JPanel();
         _percentageTemporalRadioButton = new javax.swing.JRadioButton();
@@ -1415,17 +1415,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _checkbox_disallow_multi_parent_nodes.setSelected(true);
-        _checkbox_disallow_multi_parent_nodes.setText("Disallow Multiple Parents for the Same Node");
-        _checkbox_disallow_multi_parent_nodes.addItemListener(new java.awt.event.ItemListener() {
+        _checkbox_allow_multi_parent_nodes.setText("Allow Multiple Parents for the Same Node");
+        _checkbox_allow_multi_parent_nodes.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableSetDefaultsButton();
             }
         });
 
-        _checkbox_disallow_multiple_roots.setSelected(true);
-        _checkbox_disallow_multiple_roots.setText("Disallow Multiple Root Nodes");
-        _checkbox_disallow_multiple_roots.addItemListener(new java.awt.event.ItemListener() {
+        _checkbox_allow_multiple_roots.setSelected(true);
+        _checkbox_allow_multiple_roots.setText("Allow Multiple Root Nodes");
+        _checkbox_allow_multiple_roots.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableSetDefaultsButton();
             }
@@ -1438,8 +1437,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addComponent(_checkbox_data_leaves_only, javax.swing.GroupLayout.DEFAULT_SIZE, 645, Short.MAX_VALUE)
             .addGroup(jPanel6Layout.createSequentialGroup()
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_checkbox_disallow_multi_parent_nodes, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_checkbox_disallow_multiple_roots, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_checkbox_allow_multi_parent_nodes, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_checkbox_allow_multiple_roots, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel6Layout.setVerticalGroup(
@@ -1448,9 +1447,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addComponent(_checkbox_data_leaves_only)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_checkbox_disallow_multi_parent_nodes)
+                .addComponent(_checkbox_allow_multi_parent_nodes)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_checkbox_disallow_multiple_roots)
+                .addComponent(_checkbox_allow_multiple_roots)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -3020,9 +3019,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JCheckBox _apply_risk_window_restriction;
     private javax.swing.JCheckBox _apply_time_range_restrictions;
     private javax.swing.JTextField _attributable_risk_exposed;
+    private javax.swing.JCheckBox _checkbox_allow_multi_parent_nodes;
+    private javax.swing.JCheckBox _checkbox_allow_multiple_roots;
     private javax.swing.JCheckBox _checkbox_data_leaves_only;
-    private javax.swing.JCheckBox _checkbox_disallow_multi_parent_nodes;
-    private javax.swing.JCheckBox _checkbox_disallow_multiple_roots;
     private javax.swing.JLabel _chk_attributable_risk_extra;
     private javax.swing.JCheckBox _chk_rpt_attributable_risk;
     private javax.swing.JButton _closeButton;

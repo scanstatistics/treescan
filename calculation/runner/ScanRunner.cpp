@@ -1564,9 +1564,10 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
         // Detect nodes with multiple parents.
         if (node->getParents().size() > 1) {
             _has_multi_parent_nodes = true;
-            if (_parameters.getDisallowMultiParentNodes()) {
+            if (!_parameters.getAllowMultiParentNodes()) {
                 readSuccess = false;
-                _print.Printf("Error: Record %ld in tree file defines a node that is already defined with a different parent.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
+                _print.Printf("Error: Record %ld in tree file defines a node that is already defined with a different parent.\n"
+                              "       Set 'Allow Multiple Parents for the Same Node' in advanced input parameters if this is intended.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
                 continue;
             }
         }
@@ -1578,9 +1579,10 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
         readSuccess = false;
         _print.Printf("Error: The tree file must contain at least one node which does not have a parent.\n", BasePrint::P_READERROR);
     }
-    if (_parameters.getDisallowMultipleRoots() && rootCount > 1) {
+    if (!_parameters.getAllowMultipleRoots() && rootCount > 1) {
         readSuccess = false;
-        _print.Printf("Error: The tree file contains more than one node which does not have a parent.\n", BasePrint::P_READERROR);
+        _print.Printf("Error: The tree file contains more than one node which does not have a parent.\n"
+                      "       Set 'Allow Multiple Root Nodes' in advanced input parameters if this is intended.\n", BasePrint::P_READERROR);
     }
 
     return readSuccess;

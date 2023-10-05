@@ -213,8 +213,8 @@
                       <Component id="_checkbox_data_leaves_only" pref="645" max="32767" attributes="0"/>
                       <Group type="102" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_checkbox_disallow_multi_parent_nodes" max="32767" attributes="0"/>
-                              <Component id="_checkbox_disallow_multiple_roots" max="32767" attributes="0"/>
+                              <Component id="_checkbox_allow_multi_parent_nodes" max="32767" attributes="0"/>
+                              <Component id="_checkbox_allow_multiple_roots" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -226,9 +226,9 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_checkbox_data_leaves_only" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="_checkbox_disallow_multi_parent_nodes" min="-2" max="-2" attributes="0"/>
+                          <Component id="_checkbox_allow_multi_parent_nodes" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="_checkbox_disallow_multiple_roots" min="-2" max="-2" attributes="0"/>
+                          <Component id="_checkbox_allow_multiple_roots" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
@@ -244,22 +244,21 @@
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_checkbox_data_leaves_only.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
-                <Component class="javax.swing.JCheckBox" name="_checkbox_disallow_multi_parent_nodes">
+                <Component class="javax.swing.JCheckBox" name="_checkbox_allow_multi_parent_nodes">
                   <Properties>
-                    <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="Disallow Multiple Parents for the Same Node"/>
+                    <Property name="text" type="java.lang.String" value="Allow Multiple Parents for the Same Node"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_checkbox_disallow_multi_parent_nodes.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_checkbox_allow_multi_parent_nodes.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
-                <Component class="javax.swing.JCheckBox" name="_checkbox_disallow_multiple_roots">
+                <Component class="javax.swing.JCheckBox" name="_checkbox_allow_multiple_roots">
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="Disallow Multiple Root Nodes"/>
+                    <Property name="text" type="java.lang.String" value="Allow Multiple Root Nodes"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_checkbox_disallow_multiple_roots.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_checkbox_allow_multiple_roots.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
               </SubComponents>

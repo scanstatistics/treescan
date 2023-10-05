@@ -261,8 +261,8 @@ void IniParameterSpecification::Build_2_2_x_ParameterList() {
     _parameter_info[Parameters::SCAN_RATE_TYPE] = ParamInfo(Parameters::SCAN_RATE_TYPE, "scan-rate-type", 10, _analysis_section);
     _parameter_info[Parameters::DATA_ONLY_ON_LEAVES] = ParamInfo(Parameters::DATA_ONLY_ON_LEAVES, "data-only-on-leaves", 9, _advanced_input_section);
     _parameter_info[Parameters::RELAXED_STUDY_DATA_PERIOD_CHECKING] = ParamInfo(Parameters::RELAXED_STUDY_DATA_PERIOD_CHECKING, "relaxed-study-data-period-checking", 10, _advanced_input_section);
-    _parameter_info[Parameters::DISALLOW_MULTI_PARENT_NODES] = ParamInfo(Parameters::DISALLOW_MULTI_PARENT_NODES, "disallow-multi-parent-nodes", 11, _advanced_input_section);
-    _parameter_info[Parameters::DISALLOW_MULTIPLE_ROOTS] = ParamInfo(Parameters::DISALLOW_MULTIPLE_ROOTS, "disallow-multiple-roots", 12, _advanced_input_section);
+    _parameter_info[Parameters::ALLOW_MULTI_PARENT_NODES] = ParamInfo(Parameters::ALLOW_MULTI_PARENT_NODES, "allow-multi-parent-nodes", 11, _advanced_input_section);
+    _parameter_info[Parameters::ALLOW_MULTIPLE_ROOTS] = ParamInfo(Parameters::ALLOW_MULTIPLE_ROOTS, "allow-multiple-roots", 12, _advanced_input_section);
 
     assert(_parameter_info.size() == 78);
 }
