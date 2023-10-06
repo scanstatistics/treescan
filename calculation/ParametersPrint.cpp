@@ -198,6 +198,8 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdvancedInputParameter
         settings.push_back(std::make_pair("Cut File",_parameters.getCutsFileName()));
     settings.push_back(std::make_pair("Only Allow Data on Leaves of Tree", (_parameters.getDataOnlyOnLeaves() ? "Yes" : "No")));
     settings.push_back(std::make_pair("Relaxed Study Data Period Checking", (_parameters.getRelaxedStudyDataPeriodChecking() ? "Yes" : "No")));
+    settings.push_back(std::make_pair("Allow Multiple Parents for the Same Node", (_parameters.getAllowMultiParentNodes() ? "Yes" : "No")));
+    settings.push_back(std::make_pair("Allow Multiple Root Nodes", (_parameters.getAllowMultipleRoots() ? "Yes" : "No")));
     if (_parameters.getScanType() != Parameters::TIMEONLY && _parameters.getTreeFileNames().size() > 1) {
         for (Parameters::FileNameContainer_t::const_iterator itr=_parameters.getTreeFileNames().begin()+1; itr != _parameters.getTreeFileNames().end(); ++itr)
             settings.push_back(std::make_pair("Tree File", *itr));

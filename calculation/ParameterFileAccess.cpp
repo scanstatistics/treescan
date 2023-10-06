@@ -47,6 +47,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::CUT_TYPE                : return "default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)";
             case Parameters::DATA_ONLY_ON_LEAVES     : return "allow data only on tree leaves - (y/n)";
             case Parameters::RELAXED_STUDY_DATA_PERIOD_CHECKING: return "ignore cases outside study period - (y/n)";
+            case Parameters::ALLOW_MULTI_PARENT_NODES: return "allow multi-parent nodes - (y/n)";
+            case Parameters::ALLOW_MULTIPLE_ROOTS    : return "allow multiple root nodes - (y/n)";
             case Parameters::APPLY_RISK_WINDOW_RESTRICTION : return "apply risk window restriction - (y/n)";
             case Parameters::RISK_WINDOW_PERCENTAGE  : return "risk window percentage (0 < x <= 100.0)";
             case Parameters::MINIMUM_CENSOR_TIME     : return "minimum censor time (2 <= x)";
@@ -149,6 +151,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::CUT_TYPE                 : return AsString(s, _parameters.getCutType());
             case Parameters::DATA_ONLY_ON_LEAVES      : return AsString(s, _parameters.getDataOnlyOnLeaves());
             case Parameters::RELAXED_STUDY_DATA_PERIOD_CHECKING: return AsString(s, _parameters.getRelaxedStudyDataPeriodChecking());
+            case Parameters::ALLOW_MULTI_PARENT_NODES : return AsString(s, _parameters.getAllowMultiParentNodes());
+            case Parameters::ALLOW_MULTIPLE_ROOTS     : return AsString(s, _parameters.getAllowMultipleRoots());
             case Parameters::APPLY_RISK_WINDOW_RESTRICTION : return AsString(s, _parameters.isApplyingRiskWindowRestriction());
             case Parameters::RISK_WINDOW_PERCENTAGE   : return AsString(s, _parameters.getRiskWindowPercentage());
             case Parameters::MINIMUM_CENSOR_TIME      : return AsString(s, _parameters.getMinimumCensorTime());
@@ -349,6 +353,8 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
                                                         _parameters.setCutType((Parameters::CutType)iValue); break;
             case Parameters::DATA_ONLY_ON_LEAVES      : _parameters.setDataOnlyOnLeaves(ReadBoolean(value, e)); break;
             case Parameters::RELAXED_STUDY_DATA_PERIOD_CHECKING: _parameters.setRelaxedStudyDataPeriodChecking(ReadBoolean(value, e)); break;
+            case Parameters::ALLOW_MULTI_PARENT_NODES : _parameters.setAllowMultiParentNodes(ReadBoolean(value, e)); break;
+            case Parameters::ALLOW_MULTIPLE_ROOTS     : _parameters.setAllowMultipleRoots(ReadBoolean(value, e)); break;
             case Parameters::APPLY_RISK_WINDOW_RESTRICTION : _parameters.setApplyingRiskWindowRestriction(ReadBoolean(value, e)); break;
             case Parameters::RISK_WINDOW_PERCENTAGE   : _parameters.setRiskWindowPercentage(ReadDouble(value, e)); break;
             case Parameters::MINIMUM_CENSOR_TIME      : _parameters.setMinimumCensorTime(ReadUnsignedInt(value, e)); break;

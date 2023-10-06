@@ -45,6 +45,10 @@ cut-type=0
 data-only-on-leaves=y
 ;relaxed study data period checking - (y/n)
 relaxed-study-data-period-checking=n
+;allow multiple parents for the same node - (y/n)
+allow-multi-parent-nodes=n
+;allow multiple root nodes - (y/n)
+allow-multiple-roots=y
 ;minimum censor time (2 <= x)
 minimum-censor-time=50
 ;minimum censor time percentage of study period (0 < x <= 100.0)
