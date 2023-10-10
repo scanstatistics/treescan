@@ -145,12 +145,6 @@
       <TargetMachine>MachineX86</TargetMachine>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
     </Link>
-    <PostBuildEvent>
-      <Command>$(SolutionDir)signbinary.bat $(OutDir)treescan32.exe</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Digitally Sign Executable</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -176,12 +170,6 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
     </Link>
-    <PostBuildEvent>
-      <Command>$(SolutionDir)signbinary.bat $(OutDir)treescan64.exe</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Digitally Sign Executable</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\codecvt_error_category.cpp" />

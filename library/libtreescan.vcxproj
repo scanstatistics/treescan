@@ -143,10 +143,6 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
-    <PostBuildEvent>
-      <Command>$(SolutionDir)signbinary.bat $(OutDir)$(TargetName)$(TargetExt)</Command>
-      <Message>Digitally Sign Library</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -170,10 +166,6 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>$(SolutionDir)signbinary.bat $(OutDir)$(TargetName)$(TargetExt)</Command>
-      <Message>Digitally Sign Library</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\codecvt_error_category.cpp" />

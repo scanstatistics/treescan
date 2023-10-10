@@ -1,1 +1,0 @@
-P:\imsadmin\code.sign.cert.ms.auth\signtool.exe sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 /f P:\imsadmin\code.sign.cert.ms.auth\ims.pfx /p "&4L(JyhyOmwF)$Z" %1

@@ -8,14 +8,17 @@ set fileshare=\\oriole-03-int
 
 set treescanversion=2.2
 set treescanversionf=2_2
-set treescanexe=%fileshare%\treescan\build\treescan\java_application\jni_application\dist\TreeScan.exe
+set treescan32exe=%fileshare%\treescan\build\treescan\batch_application\Win32\Release\treescan32.exe
+set treescan32dll=%fileshare%\treescan\build\treescan\library\Win32\Release\treescan32.dll
+set treescan64exe=%fileshare%\treescan\build\treescan\batch_application\x64\Release\treescan64.exe
+set treescan64dll=%fileshare%\treescan\build\treescan\library\x64\Release\treescan64.dll
+set treescanguiexe=%fileshare%\treescan\build\treescan\java_application\jni_application\dist\TreeScan.exe
 set treescaninstaller=%fileshare%\treescan\installers\v.%treescanversion%.x\install-%treescanversionf%_windows.exe
 
 set javajdkx64=%fileshare%\treescan\build\packages\java\jdk-17.0.5+8_windows_x64
 set runtimeoutputx64=%fileshare%\treescan\build\treescan\installers\java\jre_x64
 set javajdkx86=%fileshare%\treescan\build\packages\java\jdk-17.0.5+8_windows_x86
 set runtimeoutputx86=%fileshare%\treescan\build\treescan\installers\java\jre_x86
-
 
 set innosetup="C:\Program Files (x86)\Inno Setup 6\iscc.exe"
 set innoiss=%fileshare%\treescan\build\treescan\installers\inno-setup\treescan.iss
@@ -25,12 +28,30 @@ set certificate=%fileshare%\imsadmin\code.sign.cert.ms.auth\ims.pfx
 set timestamp=http://timestamp.digicert.com/
 set password="&4L(JyhyOmwF)$Z"
 
+REM Codesigning 32-bit command-line exe.
+%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %treescan32exe%
+REM Verify signiture
+%signtool% verify /pa /v %treescan32exe%
 
-REM Codesigning a GUI exe file.
-%fileshare%\treescan\build\treescan\installers\izpack\sign4j\sign4j.exe --verbose %signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %treescanexe%
+REM Codesigning 32-bit dll.
+%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %treescan32dll%
+REM Verify signiture
+%signtool% verify /pa /v %treescan32dll%
 
-REM Verify the GUI exe file is codesigned correctly.
-%signtool% verify /pa /v %treescanexe%
+REM Codesigning 64-bit command-line exe.
+%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %treescan64exe%
+REM Verify signiture
+%signtool% verify /pa /v %treescan64exe%
+
+REM Codesigning 64-bit dll.
+%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %treescan64dll%
+REM Verify signiture
+%signtool% verify /pa /v %treescan64dll%
+
+REM Codesigning the GUI exe.
+%fileshare%\treescan\build\treescan\installers\sign4j\sign4j.exe --verbose %signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %treescanguiexe%
+REM Verify signiture
+%signtool% verify /pa /v %treescanguiexe%
 
 REM Create Java 64-bit runtime
 if exist %runtimeoutputx64% rmdir %runtimeoutputx64% /s /q
