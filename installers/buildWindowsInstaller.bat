@@ -1,7 +1,6 @@
 @echo off
 
 REM Script which code signs TreeScan executable then builds TreeScan installer and finally code signs that installer.
-REM This steps can't be executed from build environment -- currently Linux.
 
 REM script definitions
 set fileshare=\\oriole-03-int

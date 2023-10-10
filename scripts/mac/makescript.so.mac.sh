@@ -1,11 +1,11 @@
 #!/bin/sh
 
 # Check for minimum number of arguments.
-REQUIRED_ARGS=7 # Script requires 7 arguments.
+REQUIRED_ARGS=10 # Script requires 10 arguments.
 if [ $# -lt "$REQUIRED_ARGS" ]
 then
   echo "Usage: `basename $0` <make target name> <treescan source directory> <boost source directory> <compilation flag> <optimization flag> <g++ compiler> <gcc compiler> <arch> <minimum os version> <processor flag> (optional)[<pthread>])"
-  echo "   example: `basename $0` ../treescan_linux_8.0_gcc3.3.5_x86_64_32bit /prj/treescan/source /prj/boost/source -m32 -03 /usr/local/gcc3.3.5/bin/g++-3.3.5 -j2"
+  echo "   example: `basename $0` ../libtreescan.jnilib /prj/treescan/source /prj/boost/source -m32 -03 /usr/local/gcc3.3.5/bin/g++-3.3.5 -j2"
   exit 1
 fi
 

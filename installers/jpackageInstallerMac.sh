@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# https://pwvault.imsweb.com/SecretServer/app/#/secret/26122/general
+# Secret Server #26122 (treescan)
 if [[ $# -gt 0 ]]; then
   PASSWORD=$1
 else

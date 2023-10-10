@@ -21,16 +21,16 @@ lib_target="libtreescan.linux.so"
 
 rm -f $binaries/*
 
-echo building TreeScan for 32-bit system using gcc3.4.4
+echo building TreeScan for 32-bit system using gcc
 ./makescript.sh $binaries/treescan32 $treescan_src $boost_src -m32 -O3 $cpp_compiler $c_compiler $processors $pthread
 
-echo building TreeScan shared object for 32-bit system using gcc3.4.4
+echo building TreeScan shared object for 32-bit system using gcc
 ./makescript.so.sh $lib_target $binaries/libtreescan32.so $treescan_src $boost_src -m32 -O3 $cpp_compiler $c_compiler $processors $pthread
 
-echo building TreeScan for 64-bit system using gcc3.4.4
+echo building TreeScan for 64-bit system using gcc
 ./makescript.sh $binaries/treescan64 $treescan_src $boost_src -m64 -O3 $cpp_compiler $c_compiler $processors $pthread
 
-echo building TreeScan shared object for 64-bit system using gcc3.4.4
+echo building TreeScan shared object for 64-bit system using gcc
 ./makescript.so.sh $lib_target $binaries/libtreescan64.so $treescan_src $boost_src -m64 -O3 $cpp_compiler $c_compiler $processors $pthread
 
 ) 1> build.stdout 2> build.stderr
