@@ -2,6 +2,12 @@
 
 REM Script which code signs TreeScan executable then builds TreeScan installer and finally code signs that installer.
 
+if  "%1" == "" (
+  REM Secret Server #26118 - Note maybe need to escape characters on command-line (https://www.robvanderwoude.com/escapechars.php).
+	echo "Missing code signing certificate password."
+	exit /b 1
+)
+
 REM script definitions
 set fileshare=\\oriole-03-int
 
@@ -25,7 +31,7 @@ set innoiss=%fileshare%\treescan\build\treescan\installers\inno-setup\treescan.i
 set signtool=%fileshare%\imsadmin\code.sign.cert.ms.auth\signtool.exe
 set certificate=%fileshare%\imsadmin\code.sign.cert.ms.auth\ims.pfx
 set timestamp=http://timestamp.digicert.com/
-set password="&4L(JyhyOmwF)$Z"
+set password="%1"
 
 REM Codesigning 32-bit command-line exe.
 %signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %treescan32exe%
