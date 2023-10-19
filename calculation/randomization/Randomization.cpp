@@ -16,15 +16,15 @@ AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const ScanRunner& scan
             switch (parameters.getConditionalType()) {
                 case Parameters::UNCONDITIONAL :
                     if (parameters.getModelType() == Parameters::POISSON)
-                        return new PoissonRandomizer(false, scanner);
+                        return new PoissonRandomizer(false, scanner, parameters.getRandomizationSeed());
                     if (parameters.getModelType() == Parameters::BERNOULLI_TREE)
-                        return new UnconditionalBernoulliRandomizer(scanner);
+                        return new UnconditionalBernoulliRandomizer(scanner, parameters.getRandomizationSeed());
                     throw prg_error("Cannot determine randomizer: tree-only, unconditonal, model (%d).", "getNewRandomizer()", parameters.getModelType());
                 case Parameters::TOTALCASES :
                     if (parameters.getModelType() == Parameters::POISSON)
-                        return new PoissonRandomizer(true, scanner);
+                        return new PoissonRandomizer(true, scanner, parameters.getRandomizationSeed());
                     if (parameters.getModelType() == Parameters::BERNOULLI_TREE)
-                        return new ConditionalBernoulliRandomizer(scanner.getTotalC(), scanner.getTotalControls(), scanner);
+                        return new ConditionalBernoulliRandomizer(scanner.getTotalC(), scanner.getTotalControls(), scanner, parameters.getRandomizationSeed());
                     throw prg_error("Cannot determine randomizer: tree-only, total-cases, model (%d).", "getNewRandomizer()", parameters.getModelType());
                 default: throw prg_error("Cannot determine randomizer: tree-only, condition type (%d).", "getNewRandomizer()", parameters.getConditionalType());
             }
@@ -34,13 +34,13 @@ AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const ScanRunner& scan
             switch (parameters.getConditionalType()) {
                 case Parameters::NODE :
                     if (parameters.getModelType() == Parameters::UNIFORM)
-                        return new TemporalRandomizer(scanner);
+                        return new TemporalRandomizer(scanner, parameters.getRandomizationSeed());
 					else if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
-						return new BernoulliTimeRandomizer(scanner.getTotalC(), scanner.getTotalControls(), scanner);
+						return new BernoulliTimeRandomizer(scanner.getTotalC(), scanner.getTotalControls(), scanner, parameters.getRandomizationSeed());
                     throw prg_error("Cannot determine randomizer: tree-time, node, model (%d).", "getNewRandomizer()", parameters.getModelType());
                 case Parameters::NODEANDTIME :
                     if (parameters.getModelType() == Parameters::MODEL_NOT_APPLICABLE)
-                        return new ConditionalTemporalRandomizer(scanner);
+                        return new ConditionalTemporalRandomizer(scanner, parameters.getRandomizationSeed());
                     throw prg_error("Cannot determine randomizer: tree-time, node-time, model (%d).", "getNewRandomizer()", parameters.getModelType());
                 default: throw prg_error("Cannot determine randomizer: tree-time, condition type (%d).", "getNewRandomizer()", parameters.getConditionalType());
             }
@@ -50,9 +50,9 @@ AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const ScanRunner& scan
             switch (parameters.getConditionalType()) {
                 case Parameters::TOTALCASES :
                     if (parameters.getModelType() == Parameters::UNIFORM)
-                        return new TemporalRandomizer(scanner);
+                        return new TemporalRandomizer(scanner, parameters.getRandomizationSeed());
 					else if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
-						return new BernoulliTimeRandomizer(scanner.getTotalC(), scanner.getTotalControls(), scanner);
+						return new BernoulliTimeRandomizer(scanner.getTotalC(), scanner.getTotalControls(), scanner, parameters.getRandomizationSeed());
                     throw prg_error("Cannot determine randomizer: time-only, total-cases, model (%d).", "getNewRandomizer()", parameters.getModelType());
                 default: throw prg_error("Cannot determine randomizer: time-only, condition type (%d).", "getNewRandomizer()", parameters.getConditionalType());
             }

@@ -1997,15 +1997,15 @@ bool ScanRunner::runPowerEvaluations() {
                                                                                           getTotalC(), getTotalControls(),
                                                                                           _parameters.getPowerBaselineProbability(), 
                                                                                           riskAdjustments[t]->get().begin()->second.begin()->getRelativeRisk()/*risk is required to be same for all nodes*/,
-                                                                                          n1, *this));
+                                                                                          n1, *this, _parameters.getRandomizationSeed()));
         } else if (Parameters::isTemporalScanType(_parameters.getScanType())) {
             /* Randomization is specialized for the tree-time/time-only scans and power evaluations. */
-            core_randomizer.reset(new TemporalAlternativeHypothesisRandomizer(*this));
+            core_randomizer.reset(new TemporalAlternativeHypothesisRandomizer(*this, _parameters.getRandomizationSeed()));
         } else {
             /* Use the same randomizer as the null hypothesis randomization. */
             core_randomizer.reset(AbstractRandomizer::getNewRandomizer(*this));
         }
-        boost::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, *riskAdjustments[t], _parameters, _TotalC, _has_multi_parent_nodes));
+        boost::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, *riskAdjustments[t], _parameters, _TotalC, _has_multi_parent_nodes, _parameters.getRandomizationSeed()));
         if (_parameters.isWritingSimulationData()) {
             if (t == 0 && _parameters.getCriticalValuesType() == Parameters::CV_POWER_VALUES)
                 // if we didn't perform monte carlo simulations, truncate simulations write file on first power simulation
