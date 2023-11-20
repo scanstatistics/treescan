@@ -2,9 +2,13 @@
 
 REM Script which code signs TreeScan executable then builds TreeScan installer and finally code signs that installer.
 
-if  "%1" == "" (
+set argCount=0
+for %%x in (%*) do (
+   set /A argCount+=1
+)
+if %argCount% NEQ 1 (
   REM Secret Server #26118 - Note maybe need to escape characters on command-line (https://www.robvanderwoude.com/escapechars.php).
-	echo "Missing code signing certificate password."
+	echo Missing code signing certificate password in double-quotes.
 	exit /b 1
 )
 
@@ -31,30 +35,29 @@ set innoiss=%fileshare%\treescan\build\treescan\installers\inno-setup\treescan.i
 set signtool=%fileshare%\imsadmin\code.sign.cert.ms.auth\signtool.exe
 set certificate=%fileshare%\imsadmin\code.sign.cert.ms.auth\ims.pfx
 set timestamp=http://timestamp.digicert.com/
-set password="%1"
 
 REM Codesigning 32-bit command-line exe.
-%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %treescan32exe%
+%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %1 %treescan32exe%
 REM Verify signiture
 %signtool% verify /pa /v %treescan32exe%
 
 REM Codesigning 32-bit dll.
-%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %treescan32dll%
+%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %1 %treescan32dll%
 REM Verify signiture
 %signtool% verify /pa /v %treescan32dll%
 
 REM Codesigning 64-bit command-line exe.
-%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %treescan64exe%
+%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %1 %treescan64exe%
 REM Verify signiture
 %signtool% verify /pa /v %treescan64exe%
 
 REM Codesigning 64-bit dll.
-%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %treescan64dll%
+%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %1 %treescan64dll%
 REM Verify signiture
 %signtool% verify /pa /v %treescan64dll%
 
 REM Codesigning the GUI exe.
-%fileshare%\treescan\build\treescan\installers\sign4j\sign4j.exe --verbose %signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %treescanguiexe%
+%fileshare%\treescan\build\treescan\installers\sign4j\sign4j.exe --verbose %signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %1 %treescanguiexe%
 REM Verify signiture
 %signtool% verify /pa /v %treescanguiexe%
 
@@ -70,7 +73,7 @@ REM Build InnoSetup installer.
 %innosetup% %innoiss%
 
 REM Codesign installer exe file.
-%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %password% %treescaninstaller%
+%signtool% sign /tr %timestamp% /td sha256 /fd sha256 /f %certificate% /p %1 %treescaninstaller%
 
 REM Verify the installer exe file is codesigned correctly.
 %signtool% verify /pa /v %treescaninstaller%
