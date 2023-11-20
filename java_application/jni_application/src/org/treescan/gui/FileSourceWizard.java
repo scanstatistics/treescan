@@ -138,7 +138,6 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             JOptionPane.showMessageDialog(this, "TreeScan Variable(s) selected.", "Note", JOptionPane.WARNING_MESSAGE);
             return true;            
         }
-        
         StringBuilder message = new StringBuilder();
         ArrayList<ImportVariable> missing = new ArrayList<>();
         for (ImportVariable variable : _import_variables) {
@@ -150,7 +149,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         }
         // Display a message indicating which variables are not mapped to an source field.
         if (missing.size() > 0) {
-            message.append("For the " + getInputFileTypeString());
+            message.append("For the ").append(getInputFileTypeString());
             message.append(", the following TreeScan Variable(s) are required\nand an Source File Variable must");
             message.append(" be selected for each before import can proceed.\n\nTreeScan Variable(s): ");
             for (int t = 0; t < missing.size(); ++t) {
@@ -159,6 +158,16 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             }
             JOptionPane.showMessageDialog(this, message.toString(), "Note", JOptionPane.WARNING_MESSAGE);
             return true;
+        }
+        if (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Tree) {
+          ImportVariable distanceVar = _import_variables.get(2);
+          ImportVariable nameVar = _import_variables.get(3);
+          if (nameVar.isMappedToSourceField() && !distanceVar.isMappedToSourceField()) {
+              message.append("When the ").append(nameVar.getVariableName()).append(" variable is selected to be imported, \nthe ");
+              message.append(distanceVar.getVariableName()).append(" variable becomes required.\n ");
+            JOptionPane.showMessageDialog(this, message.toString(), "Note", JOptionPane.WARNING_MESSAGE);
+            return true;              
+          }
         }
         return false;
     }
@@ -359,7 +368,6 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
     /** Builds html which details the expected format of the input file type. */
     private String getFileExpectedFormatParagraphs() {
-        String heplID="";
         StringBuilder builder = new StringBuilder();
         builder.append("<p style=\"margin-top: 0;\">The expected format of the ");
         builder.append(FileSelectionDialog.getFileTypeAsString(_input_source_settings.getInputFileType()).toLowerCase()).append(" file");
@@ -367,7 +375,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         switch (_input_source_settings.getInputFileType()) {
             case Tree :
                 builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
-                builder.append("&lt;Node ID&gt;&#44;  &lt;Node Parent ID&gt;&#44; &lt;Distance Between&gt;(optional)");
+                builder.append("&lt;Node ID&gt;&#44;  &lt;Node Parent ID&gt;&#44; &lt;Distance Between&gt;(optional) &lt;Name&gt;(optional)");
                 break;
             case Counts:
                 /* build statement indicating the current parameter settings in main windows */
@@ -898,6 +906,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _import_variables.add(new ImportVariable("Node ID", 0, true, null, null));
         _import_variables.add(new ImportVariable("Node Parent ID", 1, true, null, null));
         _import_variables.add(new ImportVariable("Distance Between", 2, false, null, null));
+        _import_variables.add(new ImportVariable("Name", 3, false, null, null));
     }
 
     /** Setup field descriptors for counts file. */
@@ -1272,7 +1281,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         _main_content_panel.add(_fileSourceSettingsPanel, "source-settings");
 
-        jLabel1.setText("Sampling of File Contents:"); // NOI18N
+        jLabel1.setText("Sample of File Contents:"); // NOI18N
 
         _fileContentsTextArea.setEditable(false);
         _fileContentsTextArea.setColumns(20);
@@ -1446,7 +1455,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setBorder(null);
 
-        _displayVariablesLabel.setText("Display TreeScan Variables For:"); // NOI18N
+        _displayVariablesLabel.setText("Import TreeScan Variables For Analysis Using:"); // NOI18N
 
         _displayVariablesComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         _displayVariablesComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -1476,7 +1485,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     .addGroup(_dataMappingTopPanelLayout.createSequentialGroup()
                         .addComponent(_displayVariablesLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_displayVariablesComboBox, 0, 340, Short.MAX_VALUE))
+                        .addComponent(_displayVariablesComboBox, 0, 241, Short.MAX_VALUE))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 465, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_clearSelectionButton))
@@ -1533,7 +1542,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             _dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_dataMappingPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)
+                .addComponent(jSplitPane1)
                 .addContainerGap())
         );
         _dataMappingPanelLayout.setVerticalGroup(

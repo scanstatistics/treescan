@@ -219,7 +219,7 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="jLabel1">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Sampling of File Contents:" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Sample of File Contents:" noResource="true"/>
                   </Properties>
                 </Component>
                 <Container class="javax.swing.JScrollPane" name="jScrollPane1">
@@ -457,7 +457,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jSplitPane1" pref="530" max="32767" attributes="0"/>
+                          <Component id="jSplitPane1" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -499,7 +499,7 @@
                                       <Group type="102" attributes="0">
                                           <Component id="_displayVariablesLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_displayVariablesComboBox" pref="340" max="32767" attributes="0"/>
+                                          <Component id="_displayVariablesComboBox" pref="241" max="32767" attributes="0"/>
                                       </Group>
                                       <Component id="jScrollPane2" alignment="1" pref="465" max="32767" attributes="0"/>
                                   </Group>
@@ -528,7 +528,7 @@
                       <SubComponents>
                         <Component class="javax.swing.JLabel" name="_displayVariablesLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Display TreeScan Variables For:" noResource="true"/>
+                            <Property name="text" type="java.lang.String" value="Import TreeScan Variables For Analysis Using:" noResource="true"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JComboBox" name="_displayVariablesComboBox">
