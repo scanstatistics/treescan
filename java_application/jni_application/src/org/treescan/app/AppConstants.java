@@ -13,10 +13,11 @@ import java.util.Properties;
  */
 public final class AppConstants {
 
-    private final static String APP_TITLE = "TreeScan";
+    private final static String APP_TITLE = "TreeScan - Software for the Tree-Based Scan Statistic";
     public static final int VERSION_MAJOR = 2;
     public static final int VERSION_MINOR = 2;
     public static final int VERSION_RELEASE = 0;
+    public static final String VERSION_PHASE = "";
 
     public static final int MIN_YEAR = 1753;
     public static final int MAX_YEAR = 9999;
@@ -31,6 +32,7 @@ public final class AppConstants {
         StringBuilder version = new StringBuilder();
         version.append(VERSION_MAJOR).append(".").append(VERSION_MINOR);
         if (VERSION_RELEASE > 0) version.append(".").append(VERSION_RELEASE);
+        if (VERSION_PHASE.length() > 0) version.append(" ").append(VERSION_PHASE);
         return version.toString();
     }
     
