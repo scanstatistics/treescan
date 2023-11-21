@@ -459,7 +459,30 @@ SequentialStatistic::SequentialStatistic(const Parameters& parameters, const Sca
                 AbtractParameterFileAccess::AsString(buffer2, _statistic_parameters.getSequentialAlphaOverall()).c_str());
         if (getTreeHash(buffer1) != _tree_hash)
             throw resolvable_error("Error: The tree file and/or cut file are not the same as prior sequential scan(s). The tree structure must remain the same for each look.");
-
+        if (_parameters.getScanType() != _statistic_parameters.getScanType())
+            throw resolvable_error("Error: The scan type (%d) does match setting in previous sequential scan (%d).",
+                (int)_parameters.getScanType(), (int)_statistic_parameters.getScanType()
+            );
+        if (_parameters.getModelType() != _statistic_parameters.getModelType())
+            throw resolvable_error("Error: The probability model type (%d) does match setting in previous sequential scan (%d).",
+                (int)_parameters.getModelType(), (int)_statistic_parameters.getModelType()
+            );
+        if (_parameters.getConditionalType() != _statistic_parameters.getConditionalType())
+            throw resolvable_error("Error: The condition type type (%d) does match setting in previous sequential scan (%d).",
+                (int)_parameters.getConditionalType(), (int)_statistic_parameters.getConditionalType()
+            );
+        if (_parameters.getScanRateType() != _statistic_parameters.getScanRateType())
+            throw resolvable_error("Error: The scan rate (%d) does match setting in previous sequential scan (%d).",
+                (int)_parameters.getScanRateType(), (int)_statistic_parameters.getScanRateType()
+            );
+        if (_parameters.getDataOnlyOnLeaves() != _statistic_parameters.getDataOnlyOnLeaves())
+            throw resolvable_error("Error: The data on leaves only setting (%s) does match setting in previous sequential scan (%s).",
+                (_parameters.getDataOnlyOnLeaves() ? "y" : "n"), (_statistic_parameters.getDataOnlyOnLeaves() ? "y" : "n")
+            );
+        if (_parameters.getScanRateType() != Parameters::LOWRATE && _parameters.getMinimumHighRateNodeCases() != _statistic_parameters.getMinimumHighRateNodeCases())
+            throw resolvable_error("Error: The minimum high rates cases setting (%u) does match setting in previous sequential scan (%u).",
+                _parameters.getMinimumHighRateNodeCases(), _statistic_parameters.getMinimumHighRateNodeCases()
+            );
         // Calculate the size of _llr_sims based upon this looks alpha spending.
         for (boost::dynamic_bitset<>::size_type i = 0; i < _alpha_simulations.size(); ++i) {
             // Test whether simulation was marked in last look as being within previous alpha spending.
@@ -537,6 +560,12 @@ void SequentialStatistic::readSettings(const std::string &filename) {
 			Parameters::ratio_t(pt.get<unsigned int>("parameters.event-probability-numerator", _parameters.getProbabilityRatio().first),
                                 pt.get<unsigned int>("parameters.event-probability-denominator", _parameters.getProbabilityRatio().second))
     );
+    _statistic_parameters.setScanType((Parameters::ScanType)pt.get<unsigned int>("parameters.scan-type", static_cast<unsigned int>(_parameters.getScanType())));
+    _statistic_parameters.setModelType((Parameters::ModelType)pt.get<unsigned int>("parameters.probability-model-type", static_cast<unsigned int>(_parameters.getModelType())));
+    _statistic_parameters.setConditionalType((Parameters::ConditionalType)pt.get<unsigned int>("parameters.conditional-type", static_cast<unsigned int>(_parameters.getConditionalType())));
+    _statistic_parameters.setScanRateType((Parameters::ScanRateType)pt.get<unsigned int>("parameters.scan-rate", static_cast<unsigned int>(Parameters::HIGHRATE)));
+    _statistic_parameters.setDataOnlyOnLeaves(pt.get<bool>("parameters.data-leaves-only", _parameters.getDataOnlyOnLeaves()));
+    _statistic_parameters.setMinimumHighRateNodeCases(pt.get<unsigned int>("parameters.minimum-high-rate-cases", _parameters.getMinimumHighRateNodeCases()));
     _statistic_parameters.setRestrictTreeLevels(pt.get<bool>("parameters.restrict-tree-levels", false));
     buffer = pt.get<std::string>("parameters.restricted-tree-levels", "");
     Parameters::RestrictTreeLevels_t restricted_tree_levels;
@@ -585,6 +614,12 @@ void SequentialStatistic::writeSettings(const std::string &filename) {
 		pt.put("parameters.event-probability-numerator", _parameters.getProbabilityRatio().first);
 		pt.put("parameters.event-probability-denominator", _parameters.getProbabilityRatio().second);
 	}
+    pt.put("parameters.scan-type", static_cast<unsigned int>(_parameters.getScanType()));
+    pt.put("parameters.probability-model-type", static_cast<unsigned int>(_parameters.getModelType()));
+    pt.put("parameters.conditional-type", static_cast<unsigned int>(_parameters.getConditionalType()));
+    pt.put("parameters.scan-rate", static_cast<unsigned int>(_parameters.getScanRateType()));
+    pt.put("parameters.data-leaves-only", _parameters.getDataOnlyOnLeaves());
+    pt.put("parameters.minimum-high-rate-cases", _parameters.getMinimumHighRateNodeCases());
     pt.put("parameters.restrict-tree-levels", _parameters.getRestrictTreeLevels());
     typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), buffer);
     pt.put("parameters.restricted-tree-levels", buffer);
