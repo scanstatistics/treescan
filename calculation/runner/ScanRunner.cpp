@@ -1483,10 +1483,10 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
 
     /* Report to user if any days in the data time range do not contains cases or controls. */
     _caselessWindows.flip(); // flip so that windows without cases/controls are on instead of off
-    if (Parameters::isTemporalScanType(_parameters.getScanType()) && _caselessWindows.count() > 0) {
+    if (readSuccess && Parameters::isTemporalScanType(_parameters.getScanType()) && _caselessWindows.count() > 0) {
         std::string buffer;
         _print.Printf(
-            "Warning: The following %s in the data time range do not have cases or controls: %s\n",
+            "Warning: The following %s in the data time range do not have cases or controls:\n%s\n",
             BasePrint::P_WARNING, 
             (_parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "days" : "dates"),
             getCaselessWindowsAsString(buffer).c_str()
