@@ -8,6 +8,10 @@
 #include "ScanRunner.h"
 #include <iostream>
 
+#if defined(_MSC_VER)
+#pragma warning( disable : 4800 )
+#endif
+
 /** Reads parameters from file 'filename' in C++ code and sets class members of Java JParameters class. */
 JNIEXPORT jboolean JNICALL Java_org_treescan_app_Parameters_Read(JNIEnv * pEnv, jobject jParameters, jstring filename) {
   Parameters parameters;
@@ -822,7 +826,7 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
       jni_error::_detectError(Env);
 
       mid = _getMethodId_Checked(Env, issclazz, "getFirstRowHeader", "()Z");
-      inputsource.setFirstRowHeader(Env.CallBooleanMethod(iss_object, mid));
+      inputsource.setFirstRowHeader(static_cast<bool>(Env.CallBooleanMethod(iss_object, mid)));
       jni_error::_detectError(Env);
 
       unsigned int idx;
@@ -926,7 +930,7 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getOutputTemporalGraphFile", "()Z");
-  parameters.setOutputTemporalGraphFile(Env.CallBooleanMethod(jParameters, mid));
+  parameters.setOutputTemporalGraphFile(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   parameters.setTemporalGraphReportType((Parameters::TemporalGraphReportType)getEnumTypeOrdinalIndex(Env, jParameters, "getTemporalGraphReportType", "Lorg/treescan/app/Parameters$TemporalGraphReportType;"));
@@ -948,19 +952,19 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getDataOnlyOnLeaves", "()Z");
-  parameters.setDataOnlyOnLeaves(Env.CallBooleanMethod(jParameters, mid));
+  parameters.setDataOnlyOnLeaves(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getRelaxedStudyDataPeriodChecking", "()Z");
-  parameters.setRelaxedStudyDataPeriodChecking(Env.CallBooleanMethod(jParameters, mid));
+  parameters.setRelaxedStudyDataPeriodChecking(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getAllowMultiParentNodes", "()Z");
-  parameters.setAllowMultiParentNodes(Env.CallBooleanMethod(jParameters, mid));
+  parameters.setAllowMultiParentNodes(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getAllowMultipleRoots", "()Z");
-  parameters.setAllowMultipleRoots(Env.CallBooleanMethod(jParameters, mid));
+  parameters.setAllowMultipleRoots(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   return parameters;

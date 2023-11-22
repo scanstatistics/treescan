@@ -34,7 +34,7 @@ std::ofstream & ResultsFileWriter::openStream(const std::string& outputfile, std
     if (!outfile) {
         print.Printf("Unable to create specified output file: %s\n", BasePrint::P_READERROR, outputfile.c_str());
         FileName currFilename(outputfile.c_str()), documentsfile(outputfile.c_str());
-        std::string buffer, temp;
+        std::string temp;
         documentsfile.setLocation(GetUserDocumentsDirectory(buffer, currFilename.getLocation(temp)).c_str());
         documentsfile.getFullPath(buffer);
         print.Printf("Trying to create file in documents directory ...\n", BasePrint::P_STDOUT);
@@ -171,7 +171,6 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
 
     if (Parameters::isTemporalScanType(parameters.getScanType())) {
-        std::string buffer;
         _scanRunner.getCaselessWindowsAsString(buffer);
         if (buffer.size()) {
             outfile << "Warning: The following " 
@@ -513,7 +512,7 @@ bool ResultsFileWriter::writeNCBIAsn() const {
     outfile << "BioTreeContainer ::= {" << std::endl << "fdict {" << std::endl;
     outfile << "{ id 0, name \"label\" }," << std::endl << "{ id 1, name \"dist\" }," << std::endl << "{ id 2, name \"" << DataRecordWriter::NODE_ID_FIELD << "\" }";
     if (_scanRunner.hasNodeDescriptions()) outfile << "," << std::endl << "{ id 3, name \"" << DataRecordWriter::NODE_NAME_FIELD << "\" }";
-    size_t fid = (_scanRunner.hasNodeDescriptions() ? 4 : 3), nfields(fieldDefinitions.size());
+    size_t fid = (_scanRunner.hasNodeDescriptions() ? 4 : 3);
     std::string cutField(DataRecordWriter::CUT_NUM_FIELD), idField(DataRecordWriter::NODE_ID_FIELD), nameField(DataRecordWriter::NODE_NAME_FIELD);
     for(auto const field: fieldDefinitions) {
         if (cutField == field->GetName() || idField == field->GetName() || nameField == field->GetName()) continue;
@@ -576,7 +575,7 @@ std::stringstream & ResultsFileWriter::getNCBIAsnDefinition(const NodeStructure&
     if (nodeCut != nodeCuts.end()) {
         RecordBuffer Record(fieldDefinitions);
         CutsRecordWriter::getRecordForCut(Record, *(nodeCut->second), _scanRunner);
-        size_t fid = (_scanRunner.hasNodeDescriptions() ? 4 : 3), nfields(fieldDefinitions.size());
+        size_t fid = (_scanRunner.hasNodeDescriptions() ? 4 : 3);
         std::string cutField(DataRecordWriter::CUT_NUM_FIELD), idField(DataRecordWriter::NODE_ID_FIELD), 
             nameField(DataRecordWriter::NODE_NAME_FIELD), parentField(DataRecordWriter::PARENT_NODE_FLD);
         for (auto const field : fieldDefinitions) {
@@ -742,10 +741,10 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << " { text:{name:\"Root\"}";
         std::stringstream  rootstream;
         unsigned int root_counter = 0;
-        for (NodeStructure::ChildContainer_t::const_iterator itr = _scanRunner.getRootNodes().begin(); itr != _scanRunner.getRootNodes().end(); ++itr) {
+        for (const auto& rootNode: _scanRunner.getRootNodes()) {
             // For each root node, walk down tree looking for significant nodes.
             std::stringstream  nodestream;
-            NodeSet_t test = writeJsTreeNode(nodestream, *(*itr), node_cut_map, 2);
+            NodeSet_t test = writeJsTreeNode(nodestream, *rootNode, node_cut_map, 2);
             // If the best p-value for this node or down along descendent's branch meets threshold, then include branch in nodes. Otherwise exclude entire branch.
             BestCutSet_t best_branch(sequentialTreeOnly ? std::max(test.get<0>().get<0>(), test.get<1>().get<0>()) : std::min(test.get<0>().get<0>(), test.get<1>().get<0>()),
                                      std::max(test.get<0>().get<1>(), test.get<1>().get<1>()));
@@ -1192,8 +1191,6 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
     if (parameters.getScanType() != Parameters::TIMEONLY && subrows && childRecords.size() > 0) {
         // Now write records for each direct child of this cut/node. This process is slightly brittle and relies on the columns in csv matching html table.
         std::string not_applicable("'-'");
-        ptr_vector<FieldDef> fieldDefinitions;
-        CutsRecordWriter::getFieldDefs(fieldDefinitions, parameters, _scanRunner.hasNodeDescriptions());
         std::vector<std::string> children_arrays;
         for (auto& Record : childRecords) {
             std::vector<std::string> string_values;

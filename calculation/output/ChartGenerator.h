@@ -26,11 +26,11 @@ class ChartSeries {
         std::string _name;
         std::string _color;
         std::string _symbol;
+        unsigned int _y_axis;
+        bool         _visible;
         std::string _opacity;
         std::string _dashstyle;
 		std::string _stack;
-        unsigned int _y_axis;
-        bool _visible;
         std::stringstream _data_stream;
 
     public:

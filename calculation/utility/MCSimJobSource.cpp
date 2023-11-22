@@ -100,7 +100,7 @@ unsigned int MCSimJobSource::GetSuccessfullyCompletedJobCount() const
   if (AutoAbortConditionExists())
      uiResult = grRunner.getSimulationVariables().get_sim_count();
   else
-    uiResult += (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) - gvExceptions.size();
+    uiResult += static_cast<unsigned int>(gbsUnregisteredJobs.size() - gbsUnregisteredJobs.count() - gvExceptions.size());
   return uiResult;
 }
 
@@ -108,13 +108,13 @@ unsigned int MCSimJobSource::GetSuccessfullyCompletedJobCount() const
 //been registered?
 unsigned int MCSimJobSource::GetUnregisteredJobCount() const
 {
-  return gbsUnregisteredJobs.count();
+  return static_cast<unsigned int>(gbsUnregisteredJobs.count());
 }
 
 std::deque<unsigned int> MCSimJobSource::GetUnregisteredJobs() const
 {
   std::deque<unsigned int> seqResult;
-  for (unsigned int ui=guiUnregisteredJobLowerBound, uiCurr=0, uiEnd=gbsUnregisteredJobs.size(); uiCurr < uiEnd; ++ui,++uiCurr)
+  for (unsigned int ui=guiUnregisteredJobLowerBound, uiCurr=0, uiEnd=static_cast<unsigned int>(gbsUnregisteredJobs.size()); uiCurr < uiEnd; ++ui,++uiCurr)
     if (gbsUnregisteredJobs.test(uiCurr))
       seqResult.push_back(ui);
   return seqResult;
@@ -123,7 +123,7 @@ std::deque<unsigned int> MCSimJobSource::GetUnregisteredJobs() const
 //From how many jobs were exceptions caught?
 unsigned int MCSimJobSource::GetExceptionCount() const
 {
-  return gvExceptions.size();
+  return static_cast<unsigned int>(gvExceptions.size());
 }
 
 MCSimJobSource::exception_sequence_type MCSimJobSource::GetExceptions() const
@@ -306,9 +306,9 @@ void MCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, para
     ++guiJobsReported;
 
     //if appropriate, estimate time required to complete all jobs and report it.
-    unsigned int uiJobsProcessedCount = (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) + guiUnregisteredJobLowerBound; //this one hasn't been reset in gbsUnregisteredJobs yet.
+    size_t uiJobsProcessedCount = (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) + static_cast<size_t>(guiUnregisteredJobLowerBound); //this one hasn't been reset in gbsUnregisteredJobs yet.
     grPrintDirection.Printf(gszReplicationFormatString, BasePrint::P_STDOUT, guiJobsReported, guiJobCount, llr_result);
-    if (uiJobsProcessedCount==10) {
+    if (uiJobsProcessedCount == 10) {
       ::ReportTimeEstimate(gConstructionTime, guiJobCount, rParam, &grPrintDirection);
       TreeScan::Timestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
       grPrintDirection.SetThresholdPolicy(TimedReleaseThresholdPolicy(tsReleaseTime));

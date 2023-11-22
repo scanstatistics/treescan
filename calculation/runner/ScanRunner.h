@@ -47,7 +47,7 @@ private:
     CutChildContainer_t    _cut_children;   // optional collection of children indexes
 
 public:
-    CutStructure() : _ID(0), _C(0), _N(0), _LogLikelihood(-std::numeric_limits<double>::max()), _rank(1), _start_idx(0), _end_idx(1), _report_order(0), _branch_order(0) {}
+    CutStructure() : _ID(0), _C(0), _N(0), _LogLikelihood(-std::numeric_limits<double>::max()), _rank(1), _report_order(0), _branch_order(0), _start_idx(0), _end_idx(1) {}
 
     void                    addCutChild(int cutID, bool clear=false) {if (clear) _cut_children.clear(); _cut_children.push_back(cutID);}
     int                     getC() const {return _C; /* Observed */}
@@ -172,14 +172,14 @@ public:
         const CountContainer_t& censored = getIntC_Censored();
         for (size_t z=0; z < censored.size(); ++z) {
             if (censored[z]) {
-                censor_distribution.push_back(std::make_pair(z, censored[z]));
+                censor_distribution.push_back(std::make_pair(static_cast<int>(z), censored[z]));
                 nodeCensored += censored[z];
                 if (nodeCensored == nodeCount) break;
             }
         }
 
         if (nodeCount - nodeCensored)
-            censor_distribution.push_back(std::make_pair(this->_IntC_C.size() - 1, nodeCount - nodeCensored));
+            censor_distribution.push_back(std::make_pair(static_cast<int>(_IntC_C.size()) - 1, nodeCount - nodeCensored));
 
         return censor_distribution;
     }
@@ -287,7 +287,7 @@ public:
         }
         _cumulative_status = CUMULATIVE;
     }
-    void getAncestoryString(std::stringstream& s, int padding) const {
+    void getAncestoryString(std::stringstream& s, size_t padding) const {
         if (_Parent.size() == 0) {
             s << std::setfill('0') << std::setw(padding) << getLevel() << "-" << getIdentifier();
             return;

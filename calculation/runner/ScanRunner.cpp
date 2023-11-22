@@ -188,7 +188,7 @@ double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, 
 /* Calculates the attributable risk per person for cut. */
 double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
     const Parameters& parameters = scanner.getParameters();
-    double C = static_cast<double>(_C), totalC = static_cast<double>(scanner.getTotalC());
+    double C = static_cast<double>(_C);
 
     switch (parameters.getScanType()) {
         case Parameters::TREEONLY: {
@@ -212,7 +212,7 @@ double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, dou
                     // EHA = Expected * O/Eout
                     double eha = exp * o_eout;
                     // RR = CasesInWindow / EHA
-                    double rr = C / eha;
+                    //double rr = C / eha;
                     // EC = CasesInWindow – EHA 
                     double ec = C - eha;
                     return ec / static_cast<double>(parameters.getAttributableRiskExposed());
@@ -488,7 +488,7 @@ SequentialStatistic::SequentialStatistic(const Parameters& parameters, const Sca
             // Test whether simulation was marked in last look as being within previous alpha spending.
             if (_alpha_simulations.test(i))
                 // Once a simulation is marked, it remains marked. So add to list with max double as LLR.
-                _llr_sims.push_back(std::make_pair(std::numeric_limits<double>::max(), i + 1));
+                _llr_sims.push_back(std::make_pair(std::numeric_limits<double>::max(), static_cast<unsigned int>(i) + 1));
         }
     }
     _alpha_simulations.resize(_parameters.getNumReplicationsRequested());
@@ -580,7 +580,7 @@ void SequentialStatistic::readSettings(const std::string &filename) {
     _statistic_parameters.setSequentialAlphaSpending(std::accumulate(_alpha_spendings.begin(), _alpha_spendings.end(), 0.0));
 
     // better determination of look iteration through alpha spending collection
-    _look_idx = _alpha_spendings.size() + 1;
+    _look_idx = static_cast<unsigned int>(_alpha_spendings.size()) + 1;
 
     // Read collection of simulation indexes that were in alpha spending from previous looks and store in class variable.
     std::vector<unsigned int> indexes;
@@ -597,7 +597,7 @@ void SequentialStatistic::readSettings(const std::string &filename) {
         ScanRunner::Index_t index = _scanner.getNodeIndex(keyEscapeXML(buffer, _period, _period_replace));
         if (!index.first)
             throw resolvable_error("Unknown node identifier in sequential configuration file: '%s'", buffer.c_str());
-        _cuts_signaled.insert(std::make_pair(index.second, it->second.get_value<unsigned int>()));
+        _cuts_signaled.insert(std::make_pair(static_cast<unsigned int>(index.second), it->second.get_value<unsigned int>()));
     }
 }
 
@@ -633,9 +633,9 @@ void SequentialStatistic::writeSettings(const std::string &filename) {
     pt.put("accumulation.alpha-spending", buffer);
 
     // Write simulation indexes that were in alpha spending for this and previous looks.
-    std::vector<unsigned int> indexes;
+    std::vector<size_t> indexes;
     for (size_t t = 0; t < _alpha_simulations.size(); ++t) if (_alpha_simulations.test(t)) indexes.push_back(t + 1);
-    typelist_csv_string<unsigned int>(indexes, buffer);
+    typelist_csv_string<size_t>(indexes, buffer);
     pt.put("accumulation.alpha-simulations", buffer);
 
     // Write collection of cuts that signalled in this and previous looks.
@@ -666,7 +666,7 @@ void SequentialStatistic::write(const std::string &casefilename, const std::stri
         // When conditioning on the total cases, the population (expected) have been conditioned based on totals in the look.
         // We're preserving that conditioned data during this write to the accumulated cases.
         std::ofstream accumulated_cases(_counts_filename.c_str(), std::ios_base::trunc | std::ios_base::binary);
-        int cases, index; double population;
+        int cases; double population; size_t index;
         for (auto node : _scanner.getNodes()) {
             cases = node->refIntC_C().front();
             population = node->refIntN_C().front();
@@ -683,10 +683,10 @@ void SequentialStatistic::write(const std::string &casefilename, const std::stri
 		// add control file to control accumulation.
         std::ofstream accumulated_cases(_counts_filename.c_str(), std::ios_base::trunc | std::ios_base::binary);
 		std::ofstream accumulated_controls(_controls_filename.c_str(), std::ios_base::trunc | std::ios_base::binary);
-        int cases, controls, index;
+        int cases, controls; size_t index;
         for (auto node : _scanner.getNodes()) {
             cases = node->refIntC_C().front();
-            controls = node->refIntN_C().front() - cases;
+            controls = static_cast<int>(node->refIntN_C().front()) - cases;
             index = node->getIdentifier().find(groupby.front());
             if (cases) {
                 if (index != std::string::npos) accumulated_cases << groupby;
@@ -717,8 +717,8 @@ void SequentialStatistic::write(const std::string &casefilename, const std::stri
 
 /** class constructor */
 ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : 
-    _parameters(parameters), _print(print), _TotalC(0), _TotalControls(0), _TotalN(0),_has_multi_parent_nodes(false), 
-    _censored_data(false), _num_censored_cases(0), _avg_censor_time(0), _num_cases_excluded(0), _has_node_descriptions(false){
+    _print(print), _TotalC(0), _TotalControls(0), _TotalN(0), _parameters(parameters), _has_multi_parent_nodes(false),
+    _censored_data(false), _has_node_descriptions(false), _num_censored_cases(0), _avg_censor_time(0), _num_cases_excluded(0){
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     DataTimeRange min_max = Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getMinMax() : DataTimeRange(0,0);
     // translate to ensure zero based additive
@@ -728,7 +728,7 @@ ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) :
         _day_of_week_indexes.resize(7);
         size_t daysInDataTimeRange = _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1;
         for (size_t idx=0; idx < daysInDataTimeRange; ++idx) {
-            _day_of_week_indexes[idx % 7].push_back(idx);
+            _day_of_week_indexes[idx % 7].push_back(static_cast<unsigned int>(idx));
         }
     }
     // Potentially force censored execution.
@@ -1080,7 +1080,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
         NodeStructure * node = _Nodes[index.second];
         if (_parameters.getModelType() == Parameters::POISSON) {
             node->refIntC_C().front() += count;
-            if  (!string_to_numeric_type<double>(dataSource->getValueAt(expectedColumns.size() - 1).c_str(), population) || population < 0) {
+            if  (!string_to_numeric_type<double>(dataSource->getValueAt(static_cast<long>(expectedColumns.size()) - 1).c_str(), population) || population < 0) {
                 readSuccess = false;
                 _print.Printf(
                     "Error: Record %ld in count file references an invalid population.\n"
@@ -1103,7 +1103,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                 continue;
             }
             /* Otherwise read and verify data from controls column. */
-            if  (!string_to_numeric_type<int>(dataSource->getValueAt(expectedColumns.size() - 1).c_str(), controls) || controls < 0) {
+            if  (!string_to_numeric_type<int>(dataSource->getValueAt(static_cast<long>(expectedColumns.size()) - 1).c_str(), controls) || controls < 0) {
                 readSuccess = false;
                 _print.Printf(
                     "Error: Record %ld in count file references an invalid number of controls.\n"
@@ -1199,12 +1199,12 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
             // If the probably model is uniform, there is possibly another column - censored time.
             if (_parameters.getModelType() == Parameters::UNIFORM) {
                 // If this column is missing or blank, just ignore the column in this record.
-                if ((dataSource->getNumValues() == expectedColumns.size() + 1) && dataSource->getValueAt(expectedColumns.size()).size() != 0) {
+                if ((dataSource->getNumValues() == expectedColumns.size() + 1) && dataSource->getValueAt(static_cast<long>(expectedColumns.size())).size() != 0) {
                     if (!readDateColumn(*dataSource, expectedColumns.size(), censortime, filename, "censoring time")) {
                         readSuccess = false;
                         continue;
                     }
-                    DataTimeRangeSet::rangeset_index_t rangeIdx = _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(censortime);
+                    rangeIdx = _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(censortime);
                     if (rangeIdx.first == false) {
                         if (_parameters.getRelaxedStudyDataPeriodChecking()) {
                             if (!censorDateWarningDisplayed) {
@@ -1249,7 +1249,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                         );
                         continue;
                     }
-                    DataTimeRange::index_t positive_range_days = minmax.numDaysInPositiveRange();
+                    DataTimeRange::index_t positive_range_days = static_cast<DataTimeRange::index_t>(minmax.numDaysInPositiveRange());
                     if (censortime < positive_range_days * (static_cast<double>(_parameters.getMinimumCensorPercentage()) / 100.0)) {
                         _print.Printf(
                             "Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
@@ -1329,7 +1329,7 @@ bool ScanRunner::readDateColumn(DataSource& source, size_t columnIdx, int& dateI
         throw prg_error("readDateColumn() should nor be called with date precision of NONE.", "readControls()");
 
     DateStringParser::ParserStatus eStatus = DateStringParser(_parameters.getDatePrecisionType()).Parse(
-        source.getValueAt(columnIdx).c_str(), dateIdx, _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart()
+        source.getValueAt(static_cast<long>(columnIdx)).c_str(), dateIdx, _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart()
     );
     switch (eStatus) {
         case  DateStringParser::LESSER_PRECISION:
@@ -1643,7 +1643,7 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
     }
 
     // confirm that there exists exactly one root node
-    int rootCount = nodesWithParents.size() - nodesWithParents.count();
+    size_t rootCount = nodesWithParents.size() - nodesWithParents.count();
     if (rootCount == 0) {
         readSuccess = false;
         _print.Printf("Error: The tree file must contain at least one node which does not have a parent.\n", BasePrint::P_READERROR);
@@ -1798,7 +1798,7 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
             // Sort by ancestry string and update cuts.
             std::sort(_Cut.begin(), _Cut.end(), CompareCutsByAncestoryString(*this));
             i = 1;
-            for (CutStructureContainer_t::iterator itr = _Cut.begin(); itr != _Cut.end(); ++itr, ++i)
+            for (itr = _Cut.begin(); itr != _Cut.end(); ++itr, ++i)
                 (*itr)->setBranchOrder(i);
             // Now return to report order.
             std::sort(_Cut.begin(), _Cut.end(), CompareCutsByReportOrder());
@@ -1923,7 +1923,6 @@ bool ScanRunner::run() {
     // Scan real data.
     if (!_parameters.getPerformPowerEvaluations() || (_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         bool scan_success=false;
-        bool t = (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.isPerformingDayOfWeekAdjustment());
         if ((_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) ||
             (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.isPerformingDayOfWeekAdjustment()) ||
             (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE && _parameters.isPerformingDayOfWeekAdjustment()))
@@ -2199,7 +2198,7 @@ size_t ScanRunner::calculateCutsCount() const {
             case Parameters::SIMPLE : ++cuts; break;
             case Parameters::ORDINAL: cuts += z * (z - 1)/2 - 1; break;
             case Parameters::PAIRS: cuts += z * (z - 1)/2; break;
-            case Parameters::TRIPLETS: cuts += z * (z - 1)/2 + static_cast<size_t>(getNumCombinations(z, 3)); break;
+            case Parameters::TRIPLETS: cuts += z * (z - 1)/2 + static_cast<size_t>(getNumCombinations(static_cast<unsigned int>(z), 3)); break;
             //case Parameters::COMBINATORIAL: cuts += std::pow(2.0,z) - z - 2.0; break;
             default: throw prg_error("Unknown cut type (%d).", "scanTree()", cutType);
         };
@@ -2284,7 +2283,7 @@ bool ScanRunner::scanTree() {
                             for (size_t k=i+1; k < j; ++k) {
                                 const NodeStructure& middleChildNode(*(thisNode.getChildren()[k]));
                                 //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
-                                CutStructure * cut = calculateCut(n, startChildNode.getBrC() + middleChildNode.getBrC() + stopChildNode.getBrC(), startChildNode.getBrN() + middleChildNode.getBrN() + stopChildNode.getBrN(), calcLogLikelihood);
+                                cut = calculateCut(n, startChildNode.getBrC() + middleChildNode.getBrC() + stopChildNode.getBrC(), startChildNode.getBrN() + middleChildNode.getBrN() + stopChildNode.getBrN(), calcLogLikelihood);
                                 if (cut) {
                                     cut->addCutChild(startChildNode.getID(), true);
                                     cut->addCutChild(middleChildNode.getID());
@@ -2721,7 +2720,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                                         NodeStructure::count_t middleBranchWindow = middleChildNode.getBrC_C()[iWindowStart] - middleChildNode.getBrC_C()[iWindowEnd + 1];
                                         NodeStructure::expected_t middleBranchExpected = middleChildNode.getBrN_C()[iWindowStart] - middleChildNode.getBrN_C()[iWindowEnd + 1];
                                         //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
-                                        CutStructure * cut = calculateCut(n, startBranchWindow + middleBranchWindow + stopBranchWindow, startBranchExpected + middleBranchExpected + stopBranchExpected, calcLogLikelihood, iWindowStart, iWindowEnd);
+                                        cut = calculateCut(n, startBranchWindow + middleBranchWindow + stopBranchWindow, startBranchExpected + middleBranchExpected + stopBranchExpected, calcLogLikelihood, iWindowStart, iWindowEnd);
                                         if (cut) {
                                             cut->addCutChild(startChildNode.getID(), true);
                                             cut->addCutChild(middleChildNode.getID());
@@ -2745,7 +2744,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
 /* Calculates the log likelihood of the cut over evaluation currently, then updates collection of best cuts by node. */
 CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx, int BrC_All, double BrN_All) {
     // Skip calculation if branch count does not meet evaluation minimum,
-    if (BrC < _node_evaluation_minimum) return 0;
+    if (BrC < static_cast<int>(_node_evaluation_minimum)) return 0;
 
     double loglikelihood = 0;
     if ((_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) ||
@@ -2777,7 +2776,7 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, 
 /* Calculates the log likelihood of the cut over evaluation currently, then updates collection of best cuts by node. */
 CutStructure * ScanRunner::calculateCut(size_t node_index, int C, double N, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx) {
     // Skip calculation if branch count does not meet evaluation minimum,
-    if (BrC < _node_evaluation_minimum) return 0;
+    if (BrC < static_cast<int>(_node_evaluation_minimum)) return 0;
     double loglikelihood = logCalculator->LogLikelihood(C, N, BrC, BrN);
     if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) return 0;
     std::auto_ptr<CutStructure> cut(new CutStructure());

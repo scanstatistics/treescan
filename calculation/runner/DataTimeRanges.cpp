@@ -195,7 +195,7 @@ DateStringParser::ParserStatus DateStringParser::Parse(const char * sDateString,
    mm/dd/yyyy with all lesser precisions (i.e. yyyy/mm or yyyy). This funciton also permits the date string use separators '/', '-', '.', '*'. */
 DateStringParser::ParserStatus DateStringParser::GetInParts(const char * s,  unsigned int& iYear, unsigned int& iMonth, unsigned int& iDay, DataTimeRange::DatePrecisionType& ePrecision) {
     //determine precision
-    unsigned int iLength, iCount = 1;
+    size_t iLength, iCount = 1;
     std::string sFormat("%u");
     const char * ptr = s;
     while ((iLength = strcspn(ptr, "/-.*")) < strlen(ptr)) {

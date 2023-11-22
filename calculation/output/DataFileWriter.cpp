@@ -74,7 +74,7 @@ unsigned int RecordBuffer::GetFieldIndex(std::initializer_list<std::string> fiel
     try {
         for (auto& filename : fieldNames) {
             for (size_t i=0; i < vFieldDefinitions.size(); ++i) {
-                if (!strcmp(vFieldDefinitions[i]->GetName(), filename.c_str())) return i;
+                if (!strcmp(vFieldDefinitions[i]->GetName(), filename.c_str())) return static_cast<unsigned int>(i);
             }
         }
         throw prg_error("Field name not found in the field vector.", "GetFieldIndex()");

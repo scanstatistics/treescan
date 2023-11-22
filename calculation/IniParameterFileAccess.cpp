@@ -400,7 +400,8 @@ void IniParameterFileAccess::WriteAdvancedInputSettings(IniFile& WriteFile) {
                 printString(s, "%s%i", sBaseKey, t + 1);
                 printString(sComment, " tree filename (additional %i)", t + 1);
                 WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), _parameters.getTreeFileNames()[t].c_str(), sComment.c_str());
-                if (_parameters.getTreeFileNames()[t].size()) WriteInputSource(WriteFile, *(WriteFile.GetSection(sSectionName)), s, _parameters.getInputSource(Parameters::TREE_FILE, t+1));
+                if (_parameters.getTreeFileNames()[t].size())
+                    WriteInputSource(WriteFile, *(WriteFile.GetSection(sSectionName)), s, _parameters.getInputSource(Parameters::TREE_FILE, static_cast<unsigned int>(t) + 1));
             }
         }
     } catch (prg_exception& x) {

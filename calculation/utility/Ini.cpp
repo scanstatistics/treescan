@@ -235,7 +235,7 @@ const char * IniSection::GetName() const {
 
 //Returns the number of IniLines in the Section
 long IniSection::GetNumLines() const {
-  return (gaIniLines.size());
+  return static_cast<long>(gaIniLines.size());
 }
 
 //Get the entry (right side of = ) for sKey
@@ -513,7 +513,7 @@ bool IniFile::GetIsModified() const {
 
 //Number of sections in file (not number loaded)
 long IniFile::GetNumSections() const {
-   return (gaSections.size());
+   return static_cast<long>(gaSections.size());
 }
 
 //GetSection returns a pointer to the Section, creating section if it does not exist

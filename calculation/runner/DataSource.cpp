@@ -31,7 +31,7 @@ DataSource * DataSource::getNewDataSourceObject(const std::string& sSourceFilena
 
 /** constructor */
 CSVFileDataSource::CSVFileDataSource(const std::string& sSourceFilename, const std::string& delimiter, const std::string& grouper, unsigned long skip, bool firstRowHeaders)
-                  :DataSource(), _readCount(0), _delimiter(delimiter), _grouper(grouper), _skip(skip), _ignore_empty_fields(false), _firstRowHeaders(firstRowHeaders), _grouper_escape("þæ"){
+                  :DataSource(), _readCount(0), _delimiter(delimiter), _grouper(grouper), _grouper_escape("þæ"), _skip(skip), _firstRowHeaders(firstRowHeaders), _ignore_empty_fields(false){
     // special processing for 'whitespace' delimiter string
     if (_delimiter == "" || _delimiter == " ") {
         _delimiter = "\t\v\f\r\n ";
@@ -107,7 +107,7 @@ bool CSVFileDataSource::readRecord() {
     std::string readbuffer;
 
     // skip records as necessary
-    for (long i=_readCount; i < _skip; ++i) {
+    for (unsigned long i=static_cast<unsigned long>(_readCount); i < _skip; ++i) {
         getlinePortable(_sourceFile, readbuffer);
         ++_readCount;
     }

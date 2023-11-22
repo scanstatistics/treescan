@@ -77,7 +77,7 @@ class MinimumMeasureList : public AbstractMeasureList {
                     }
                 }
                 /* Calculate LLR for remaining half - trick not valid when number of cases is greater than or equal half. */
-                list_container_t::size_type i=std::max(iHalfListSize, static_cast<list_container_t::size_type>(_scanRunner.getParameters().getMinimumHighRateNodeCases()));
+                i=std::max(iHalfListSize, static_cast<list_container_t::size_type>(_scanRunner.getParameters().getMinimumHighRateNodeCases()));
                 for (; i <= iListSize; ++i) {
                     if (measure[i] != 0.0 && static_cast<double>(i) * total_measure > measure[i] * static_cast<double>(iListSize)) {
                         simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(static_cast<int>(i), measure[i]));
@@ -92,7 +92,7 @@ class MinimumMeasureList : public AbstractMeasureList {
                     }
                 }
                 /* Calculate LLR for remaining half - trick not valid when number of cases is greater than or equal half. */
-                list_container_t::size_type i=std::max(iHalfListSize, static_cast<list_container_t::size_type>(_scanRunner.getParameters().getMinimumHighRateNodeCases()));
+                i=std::max(iHalfListSize, static_cast<list_container_t::size_type>(_scanRunner.getParameters().getMinimumHighRateNodeCases()));
                 for (; i <= iListSize; ++i) {
                     if (measure[i] != 0.0 && static_cast<double>(i) > measure[i]) {
                         simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(static_cast<int>(i), measure[i]));
@@ -123,7 +123,7 @@ public:
         initializeMeasure(*_max_measure);
     }
     virtual double loglikelihood() {
-        double simLogLikelihood = -std::numeric_limits<double>::max(), max_excess(0);
+        double simLogLikelihood = -std::numeric_limits<double>::max();
         list_container_t::size_type iListSize = static_cast<list_container_t::size_type>(_scanRunner.getTotalC());
         /* Don't want to consider simulations with cases less than minimum. */
         list_container_t::size_type i = static_cast<list_container_t::size_type>(_scanRunner.getParameters().getMinimumLowRateNodeCases());

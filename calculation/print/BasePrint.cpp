@@ -6,7 +6,7 @@
 #include "PrjException.h"
 
 /** constructor */
-BasePrint::BasePrint(bool bSuppressWarnings) : gbSuppressWarnings(bSuppressWarnings), giMaximumReadErrors(75) {
+BasePrint::BasePrint(bool bSuppressWarnings) : giMaximumReadErrors(75), gbSuppressWarnings(bSuppressWarnings) {
    SetImpliedInputFileType(CASEFILE);
 #ifdef _MSC_VER
    gsMessage.resize(MSC_VSNPRINTF_DEFAULT_BUFFER_SIZE);

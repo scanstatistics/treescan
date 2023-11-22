@@ -165,20 +165,17 @@ ConditionalBernoulliAlternativeHypothesisRandomizer::ConditionalBernoulliAlterna
     _A.resize(std::min(static_cast<unsigned int>(TotalC), n1) + 1/* correct, so that we go 0 to total? */, 0.0);
     unsigned int N = static_cast<unsigned int>(TotalC + TotalControls);
     double sum=0.0;
-    size_t k = static_cast<size_t>(std::max((int)0, TotalC - static_cast<int>(N - n1)));
-    for (; k < _A.size(); ++k) {
-        double d1 = bg.getBinomialDistributionProbability(k, n1, p1);
+    for (size_t k = static_cast<size_t>(std::max((int)0, TotalC - static_cast<int>(N - n1))); k < _A.size(); ++k) {
+        double d1 = bg.getBinomialDistributionProbability(static_cast<unsigned int>(k), n1, p1);
         double d2 = 0.0;
         /* We need to guard around the situation where the number of trials is less than the number of expected successes. */
         if (N - n1 >= static_cast<unsigned int>(TotalC) - k)
-            d2 = bg.getBinomialDistributionProbability(static_cast<unsigned int>(TotalC) - k, N - n1, p0);
+            d2 = bg.getBinomialDistributionProbability(static_cast<unsigned int>(TotalC) - static_cast<unsigned int>(k), N - n1, p0);
         _A[k] = d1 * d2;
         sum += _A[k];
     }
-    for (size_t k=0; k < _A.size(); ++k) {
+    for (size_t k=0; k < _A.size(); ++k)
         _A[k] = (k == 0 ? 0.0 : _A[k - 1]) + _A[k]/sum;
-    }
-
     // We need to create 2 groups of  tree nodes: those nodes in the alternative hypothesis and those still under the null hypothesis.
     boost::dynamic_bitset<> node_set(treeNodes.size());
     _alternative_hypothesis_nodes.reset(new ScanRunner::NodeStructureContainer_t());

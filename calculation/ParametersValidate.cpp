@@ -198,7 +198,10 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
                 bool exists = checkFileExists(*itr, "tree", PrintDirection);
                 bValid &= exists;
                 if (exists) {
-                    bValid &= ValidateInputSource(_parameters.getInputSource(Parameters::TREE_FILE, std::distance(_parameters.getTreeFileNames().begin(), itr) + 1), *itr, "tree", PrintDirection);
+                    bValid &= ValidateInputSource(
+                        _parameters.getInputSource(Parameters::TREE_FILE, static_cast<unsigned int>(std::distance(_parameters.getTreeFileNames().begin(), itr)) + 1),
+                        *itr, "tree", PrintDirection
+                    );
                 }
             }
         }

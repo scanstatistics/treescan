@@ -5,6 +5,10 @@
 #include "JNIPrintWindow.h"
 #include "JNIException.h"
 
+#if defined(_MSC_VER)
+#pragma warning( disable : 4800 )
+#endif
+
 /** Constructor */
 JNIPrintWindow::JNIPrintWindow(JNIEnv& JNI_Env, jobject& ProgressWindowObj, bool bSuppressWarnings)
                :BasePrint(bSuppressWarnings), gJNI_Env(JNI_Env) /*, gProgressWindowObj(ProgressWindowObj)*/ {

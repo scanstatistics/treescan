@@ -168,27 +168,25 @@ void FileName::setFullPath(const char* sFileName) {
 #endif
   trimString(sWorkPath);
   // parse the extension (everything after the last ".", unless there is a special character
-  long lPosition = sWorkPath.rfind('.');   // find last "."
+  size_t lPosition = sWorkPath.rfind('.');   // find last "."
   // if found, make sure no special character in extension
-  for (long i=lPosition; i < (long)sWorkPath.size() && (lPosition >= 0); i++)
+  for (size_t i=lPosition; i < sWorkPath.size() && (lPosition != std::string::npos); ++i)
      if (isSpecialCharacter(sWorkPath[i]))
-       lPosition = -1;
+       lPosition = std::string::npos;
   // set extension if one exists
-  if (lPosition >= 0) {
+  if (lPosition != std::string::npos) {
     setExtension(sWorkPath.substr(lPosition).c_str());
     sWorkPath.erase(lPosition);  // remove the extension
-  }
-  else
+  } else
     setExtension("");
    // Parse the filename
    lPosition = sWorkPath.rfind(getPathSeparator());
-   if (lPosition < 0)  // not found
+   if (lPosition == std::string::npos)  // not found
      lPosition = sWorkPath.rfind(':');
-   if (lPosition >= 0) { // found slash or :
+   if (lPosition != std::string::npos) { // found slash or :
      setFileName(sWorkPath.substr(++lPosition).c_str());
      sWorkPath.erase(lPosition);  // remove the filename
-   }
-   else {
+   } else {
      setFileName(sWorkPath.c_str());
      sWorkPath = "";    // no drive or directory, so clear the filename
    }
@@ -207,23 +205,21 @@ void FileName::setLocation(const char* sLocation) {
   trimString(sWorkPath);
   // Parse the drive
   if (sWorkPath.find(UNC_TAG) == 0) {// UNC name
-    long lPosition = sWorkPath.find("\\", 2);
-    if (lPosition < 1)  // drive must be at least 1 character
+    size_t lPosition = sWorkPath.find("\\", 2);
+    if (lPosition == std::string::npos || lPosition < 1)  // drive must be at least 1 character
       throw prg_error("Invalid UNC name","setLocation");
     //goto next slash to get full sharename
-    long lPosition2 = sWorkPath.find("\\", 2 + lPosition + 1);
-    if (lPosition2 < 1)  // share name must be at least 1 character
+    size_t lPosition2 = sWorkPath.find("\\", 2 + lPosition + 1);
+    if (lPosition2 == std::string::npos || lPosition2 < 1)  // share name must be at least 1 character
       throw prg_error("Invalid UNC name","setLocation");
     setDrive(sWorkPath.substr(0, lPosition2).c_str());
     sWorkPath.erase(0, lPosition2);  // remove the drive name
-  }
-  else  {// DOS Name
-    long lPosition = sWorkPath.find(":");
+  } else  {// DOS Name
+    size_t lPosition = sWorkPath.find(":");
     if (lPosition == 1) { // drives are 1 character long
       setDrive(sWorkPath.substr(0, 2).c_str());
       sWorkPath.erase(0, 2);
-    }
-    else
+    } else
       setDrive("");
   }
   setDirectory(sWorkPath.c_str()); // set the directory to what is left

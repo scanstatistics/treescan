@@ -16,7 +16,10 @@
 #include <Windows.h>
 #endif
 
-#ifndef _WINDOWS_
+#ifdef _WINDOWS_
+#define stricmp _stricmp
+#define strnicmp _strnicmp
+#else
   #define stricmp strcasecmp
   #define strnicmp strncasecmp
 #endif

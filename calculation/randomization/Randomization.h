@@ -52,7 +52,7 @@ class AbstractNodesProxy {
 
     public:
         AbstractNodesProxy(const ScanRunner::NodeStructureContainer_t& treeNodes, bool data_leaves_only):
-            _treeNodes(treeNodes), _data_leaves_only(data_leaves_only) {}
+            _data_leaves_only(data_leaves_only), _treeNodes(treeNodes) {}
         virtual ~AbstractNodesProxy() {}
 
         virtual AbstractNodesProxy * clone() = 0;
@@ -176,7 +176,7 @@ class AbstractRandomizer {
 
     public:
         AbstractRandomizer(const Parameters& parameters, bool multiparents, long lInitialSeed=RandomNumberGenerator::glDefaultSeed) 
-            : _parameters(parameters), _random_number_generator(lInitialSeed), _read_data(false), _write_data(false), _multiparents(multiparents) {}
+            : _random_number_generator(lInitialSeed), _parameters(parameters), _read_data(false), _write_data(false), _multiparents(multiparents) {}
         virtual ~AbstractRandomizer() {}
 
         virtual AbstractRandomizer * clone() const = 0;

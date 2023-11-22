@@ -40,7 +40,7 @@ namespace TreeScan {
 }
 
 
-double                          getNumCombinations(size_t total, size_t choose);
+double                          getNumCombinations(unsigned int total, unsigned int choose);
 unsigned int                    GetNumSystemProcessors();
 void                            ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection);
 boost::posix_time::ptime        GetCurrentTime_HighResolution();

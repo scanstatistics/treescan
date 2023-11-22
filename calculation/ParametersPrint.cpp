@@ -173,7 +173,6 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(
     std::string buffer;
     settings.clear();
     if (Parameters::isTemporalScanType(_parameters.getScanType()) && _parameters.getModelType() != Parameters::BERNOULLI_TIME) {
-        std::string buffer;
         switch (_parameters.getConditionalType()) {
             case Parameters::TOTALCASES: // this is the time-only scan
             case Parameters::NODE: buffer = "Perform Day-of-Week Adjustment"; break;

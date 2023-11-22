@@ -53,10 +53,10 @@ class AbstractDenominatorDataRandomizer : public AbstractRandomizer {
     typedef boost::shared_ptr<FileStreamReadManager> SharedSimReader_t;
 
     BinomialGenerator   _binomial_generator;
+    const ScanRunner  & _scanner;
     unsigned int        _sim_position;
     SharedSimWriter_t   _sim_stream_writer;
     SharedSimReader_t   _sim_stream_reader;
-    const ScanRunner  & _scanner;
     boost::dynamic_bitset<> _restricted_levels;
 
     virtual int read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex);

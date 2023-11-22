@@ -296,11 +296,7 @@ const char * Parameters::getRelativeToParameterName(const FileName& fParameterNa
   FileName      fInputFilename(sFilename.c_str());
   std::string   buffer, buffer2;
 
-  #if defined(_WINDOWS_)
-  if (!_stricmp(fInputFilename.getLocation(buffer).c_str(), fParameterName.getLocation(buffer2).c_str()))
-  #else
   if (!stricmp(fInputFilename.getLocation(buffer).c_str(), fParameterName.getLocation(buffer2).c_str()))
-  #endif
     sValue = fInputFilename.getFileName() + fInputFilename.getExtension();
   else
     sValue = sFilename.c_str();

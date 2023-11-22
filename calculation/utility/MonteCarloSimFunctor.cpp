@@ -103,11 +103,11 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTree(
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
     int sumBranchC = 0, sumBranchC2 = 0;
     double simLogLikelihood = -std::numeric_limits<double>::max(), minimum_cases = _scanRunner.getNodeEvaluationMinimum(), sumBranchN=0.0;
-    for (size_t i=0; i < nodes.size(); ++i) {
-        const NodeStructure& thisNode(*(nodes[i]));
-        if (isEvaluated(thisNode, _treeSimNodes[i])) {
+    for (size_t n=0; n < nodes.size(); ++n) {
+        const NodeStructure& thisNode(*(nodes[n]));
+        if (isEvaluated(thisNode, _treeSimNodes[n])) {
             // always do simple cut
-            simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(_treeSimNodes[i].getBrC(), nodes[i]->getBrN()));
+            simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(_treeSimNodes[n].getBrC(), nodes[n]->getBrN()));
 
             Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
             switch (cutType) {
@@ -190,9 +190,9 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
     int branchSum = 0, branchSum2 = 0;
     double simLogLikelihood = -std::numeric_limits<double>::max(), minimum_cases = _scanRunner.getNodeEvaluationMinimum();
-    for (size_t i=0; i < nodes.size(); ++i) {
-        const NodeStructure& thisNode(*(nodes[i]));
-        const SimulationNode& thisSimNode(_treeSimNodes[i]);
+    for (size_t n=0; n < nodes.size(); ++n) {
+        const NodeStructure& thisNode(*(nodes[n]));
+        const SimulationNode& thisSimNode(_treeSimNodes[n]);
         if (isEvaluated(thisNode, thisSimNode)) {
 
             // always do simple cut
@@ -329,9 +329,9 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
     int branchWindowSum = 0, branchWindowSum2 = 0;
     double simLogLikelihood = -std::numeric_limits<double>::max(), minimum_cases = _scanRunner.getNodeEvaluationMinimum();
-    for (size_t i = 0; i < nodes.size(); ++i) {
-        const NodeStructure& thisNode(*(nodes[i]));
-        const SimulationNode& thisSimNode(_treeSimNodes[i]);
+    for (size_t n = 0; n < nodes.size(); ++n) {
+        const NodeStructure& thisNode(*(nodes[n]));
+        const SimulationNode& thisSimNode(_treeSimNodes[n]);
         if (isEvaluated(thisNode, thisSimNode)) {
 
             // always do simple cut
@@ -489,9 +489,9 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
 
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
-    for (size_t i=0; i < nodes.size(); ++i) {
-        const NodeStructure& thisNode(*(nodes[i]));
-        const SimulationNode& thisSimNode(_treeSimNodes[i]);
+    for (size_t n=0; n < nodes.size(); ++n) {
+        const NodeStructure& thisNode(*(nodes[n]));
+        const SimulationNode& thisSimNode(_treeSimNodes[n]);
         if (isEvaluated(thisNode, thisSimNode)) {
 
             // always do simple cut

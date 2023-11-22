@@ -566,7 +566,7 @@ void TemporalChartGenerator::generateChart() const {
 /* Calculates the best fit graph groupings for this cluster. */
 TemporalChartGenerator::intervalGroups TemporalChartGenerator::getIntervalGroups(const CutStructure& cluster) const {
     intervalGroups groups;
-    int intervals = _scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets();
+    int intervals = static_cast<int>(_scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
 
     if (intervals <= MAX_INTERVALS) {
         // number of groups equals the number of intervals
@@ -605,7 +605,7 @@ std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CutStructure&
     std::pair<int, int> groupClusterIdx(std::numeric_limits<int>::max(), std::numeric_limits<int>::min());
     bool isUniformTime = parameters.getModelType() == Parameters::UNIFORM && !(parameters.isPerformingDayOfWeekAdjustment() || _scanner.isCensoredData());
     double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-    int intervals = parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1;
+    int intervals = static_cast<int>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets()) + 1;
     std::vector<int> pcases(intervals, 0); // number of cases by time interval for all nodes
     std::vector<double> pmeasure(intervals, 0); // expected cases by time interval for all nodes
 
