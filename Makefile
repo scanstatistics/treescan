@@ -29,7 +29,7 @@ INCLUDEDIRS := -I$(CALCULATION) -I$(UTILITY) -I$(OUTPUT) -I$(PRINT) -I$(UTILITY)
 DEFINES     := -DBOOST_ALL_NO_LIB
 INFOPLIST_FILE :=
 
-CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -std=c++11 -Wno-deprecated -Wall $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE)
+CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -std=c++11 -Wno-deprecated -Wno-unknown-pragmas -Wall $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE)
 LFLAGS      := $(COMPILATION) -L$(ZLIB) -L$(ZLIB_MINIZIP) -Wl,-Bstatic -lz -lm -Wl,-Bdynamic -lrt -lpthread
 
 # Linux link flags

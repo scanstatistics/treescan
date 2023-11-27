@@ -67,13 +67,8 @@ int PoissonRandomizer::PoissonGenerator(double lambda) {
  Returns a uniform random number in the interval [0,1].
  Should be replaced by a better random number generator.
  */
-double PoissonRandomizer::RandomUniform(bool classic) {
-    //double rand_num = static_cast<double>(rand());
-    //double return_value = (rand_num + 0.5) / static_cast<double>(RAND_MAX+1);
-    //cout << "return_value " << return_value << endl;
-    //return return_value;
-
-    return classic ? double(rand()+0.5)/(RAND_MAX+1) : _random_number_generator.GetRandomDouble();
+double PoissonRandomizer::RandomUniform() {
+    return _random_number_generator.GetRandomDouble();
 }
 
 /*

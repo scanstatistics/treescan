@@ -14,7 +14,7 @@ protected:
 
     int             BinomialGenerator(int n, double p, bool classic=false);
     int             PoissonGenerator(double lambda);
-    double          RandomUniform(bool classic=false);
+    double          RandomUniform();
 
     virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
 

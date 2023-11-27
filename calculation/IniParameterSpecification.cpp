@@ -100,14 +100,12 @@ void IniParameterSpecification::setup(Parameters::CreationVersion version) {
 Parameters::CreationVersion IniParameterSpecification::getIniVersion(const IniFile& SourceFile) {
     long lSectionIndex, lKeyIndex;
     Parameters::CreationVersion  version;
-    bool bHasVersionKey=false;
 
     // search ini for version setting
     if ((lSectionIndex = SourceFile.GetSectionIndex(System)) > -1) {
         const IniSection * pSection = SourceFile.GetSection(lSectionIndex);
         if ((lKeyIndex = pSection->FindKey("parameters-version")) > -1) {
             sscanf(pSection->GetLine(lKeyIndex)->GetValue(), "%u.%u.%u", &version.iMajor, &version.iMinor, &version.iRelease);
-            bHasVersionKey = true;
         }
     }
     return version;

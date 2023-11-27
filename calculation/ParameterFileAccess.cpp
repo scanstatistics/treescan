@@ -27,7 +27,7 @@ void ParameterAccessCoordinator::write(const std::string& filename, BasePrint& p
 
 /** constructor */
 AbtractParameterFileAccess::AbtractParameterFileAccess(Parameters& Parameters, BasePrint& PrintDirection, bool bWriteBooleanAsDigit)
-                           :_parameters(Parameters), _read_error(false), gPrintDirection(PrintDirection), _write_boolean_as_digit(bWriteBooleanAsDigit) {}
+                           :_parameters(Parameters), gPrintDirection(PrintDirection), _read_error(false), _write_boolean_as_digit(bWriteBooleanAsDigit) {}
 
 /** destructor */
 AbtractParameterFileAccess::~AbtractParameterFileAccess() {}

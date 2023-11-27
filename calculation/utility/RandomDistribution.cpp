@@ -75,9 +75,9 @@ long BinomialGenerator::GetBinomialDistributedVariable(long n, float pp, RandomN
    //       determined to be unneccesary as results of continuous calls
    //       ,whether static or not, produced identical results.
    double      pold = -1;
-   double      pc;
-   double      plog;
-   double      pclog;
+   double      pc=0;
+   double      plog=0;
+   double      pclog=0;
    double      en;
    double      oldg;
    int         nold = -1;

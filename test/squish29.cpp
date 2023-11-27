@@ -56,6 +56,7 @@ BOOST_FIXTURE_TEST_CASE( test_node_levels, poisson_multiple_trees_fixture ) {
     // set results file to the user document directory
     std::stringstream filename;
     filename << GetUserTemporaryDirectory(_results_user_directory).c_str() << "\\test.txt";
+    _parameters.setAllowMultiParentNodes(true);
     _parameters.setOutputFileName(filename.str().c_str());
 
 	testRunner(_parameters, _print).read_tree_file_test_counts();

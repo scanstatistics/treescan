@@ -108,7 +108,7 @@ double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _
 
 double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
     const Parameters& parameters = scanner.getParameters();
-    double C = static_cast<double>(_C), totalC = static_cast<double>(scanner.getTotalC());
+    double totalC = static_cast<double>(scanner.getTotalC());
     switch (parameters.getScanType()) {
         case Parameters::TREEONLY: {
             switch (parameters.getConditionalType()) {
@@ -788,7 +788,7 @@ ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) cons
     if (itr != _Nodes.end() && (*itr)->getIdentifier() == node.get()->getIdentifier()) {
         size_t tt = std::distance(_Nodes.begin(), itr);
         // sanity check
-        if (tt != (*itr)->getID())
+        if (tt != static_cast<size_t>((*itr)->getID()))
             throw prg_error("Calculated index (%u) does not match node ID (%u).", "RelativeRiskAdjustmentHandler::getAsProbabilities()", tt, (*itr)->getID());
         return std::make_pair(true, std::distance(_Nodes.begin(), itr));
     } else
@@ -1042,7 +1042,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
             _print.Printf(
                 "Error: Record %ld in count file %s. Expecting %s%s but found %ld value%s.\n",
                 BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(),
-                (static_cast<int>(dataSource->getNumValues()) > expectedColumns.size()) ? "has extra data" : "is missing data",
+                (dataSource->getNumValues() > expectedColumns.size()) ? "has extra data" : "is missing data",
                 buffer.c_str(),
                 (_parameters.getModelType() == Parameters::UNIFORM ? ", <censor time>" : ""),
                 dataSource->getNumValues(), 
@@ -1385,7 +1385,7 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(
         srcfilename, (_parameters.isSequentialScanTreeOnly() && !sequence_new_data ? &csvSource : _parameters.getInputSource(Parameters::CONTROL_FILE))
     ));
-    int controls = 0, daysSinceIncidence = 0, expectedColumns = (_parameters.getScanType() == Parameters::TREETIME ? 3 : 2);
+    int controls = 0, daysSinceIncidence = 0; size_t expectedColumns = (_parameters.getScanType() == Parameters::TREETIME ? 3 : 2);
     long identifierIdx = _parameters.getScanType() == Parameters::TIMEONLY ? -1 : 0;
     long controlIdx = _parameters.getScanType() == Parameters::TIMEONLY ? 0 : 1;
     /* Read records of control file, verifying the expected columns and data type then adding to data structures. */
@@ -1395,7 +1395,7 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
             _print.Printf(
                 "Error: Record %ld in control file %s. Expecting %s<controls>%s but found %ld value%s.\n",
                 BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(),
-                (static_cast<int>(dataSource->getNumValues()) > expectedColumns) ? "has extra data" : "is missing data",
+                (dataSource->getNumValues() > expectedColumns) ? "has extra data" : "is missing data",
                 (_parameters.getScanType() == Parameters::TIMEONLY ? "" : "<identifier>, "),
                 (Parameters::isTemporalScanType(_parameters.getScanType()) ? ", <time>" : ""),
                 dataSource->getNumValues(), 
@@ -1544,9 +1544,7 @@ std::string & ScanRunner::getCaselessWindowsAsString(std::string& s) const {
 
 /* Reads tree structure from passed file. */
 bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal) {
-    // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     size_t daysInDataTimeRange = Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
-
     // tree only does not read the tree structure file, aggregate all data into one node
     if (_parameters.getScanType() == Parameters::TIMEONLY) {
         std::auto_ptr<NodeStructure> node(new NodeStructure("All", _parameters, daysInDataTimeRange));
@@ -1719,11 +1717,8 @@ bool ScanRunner::reportableRecurrenceInterval(const CutStructure& cut) const {
 RecurrenceInterval_t ScanRunner::getRecurrenceInterval(const CutStructure& cut) const {
     //if (!parameters.GetIsProspectiveAnalysis())
     //   throw prg_error("GetRecurrenceInterval() called for non-prospective analysis.", "GetRecurrenceInterval()");
-
     //if (!reportableCut(cut))
     //    throw prg_error("Recurrence Interval cannot be obtained for this cut.", "getRecurrenceInterval()");
-
-    size_t daysInDataTimeRange = Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
     double p_value = (double)cut.getRank() / (_parameters.getNumReplicationsRequested() + 1);
     // Determine the number of units in occurrence per user selection.
     double dUnitsInOccurrence = std::max(static_cast<double>(_parameters.getProspectiveFrequency()) / p_value, 1.0);
@@ -2917,7 +2912,6 @@ bool ScanRunner::setupTree() {
                     }
                 }
                 if (_parameters.isPerformingDayOfWeekAdjustment()) {
-                    double daysInDataTimeRange = static_cast<double>(_parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1);
                     for (size_t n=0; n < _Nodes.size(); ++n) {
                         if (totalcases_by_node[n]) {
                             NodeStructure::ExpectedContainer_t& nodeExpected = _Nodes[n]->refIntN_C();

@@ -160,7 +160,7 @@ int ConditionalBernoulliRandomizer::randomize(unsigned int iSimulation, const Ab
 ConditionalBernoulliAlternativeHypothesisRandomizer::ConditionalBernoulliAlternativeHypothesisRandomizer(
     const ScanRunner::NodeStructureContainer_t& treeNodes, const RelativeRiskAdjustmentHandler& adjustments, int TotalC, 
     int TotalControls, double p0, double p1, unsigned int n1, const ScanRunner& scanner, long lInitialSeed
-): AbstractConditionalBernoulliRandomizer(TotalC, TotalControls, scanner, lInitialSeed), _p0(p0), _p1(p1), _n1(n1) {
+): AbstractConditionalBernoulliRandomizer(TotalC, TotalControls, scanner, lInitialSeed), _n1(n1), _p0(p0), _p1(p1) {
     BinomialGenerator bg;
     _A.resize(std::min(static_cast<unsigned int>(TotalC), n1) + 1/* correct, so that we go 0 to total? */, 0.0);
     unsigned int N = static_cast<unsigned int>(TotalC + TotalControls);

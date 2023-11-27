@@ -7,16 +7,16 @@
 
 //constructor
 MCSimJobSource::MCSimJobSource(boost::posix_time::ptime CurrentTime, PrintQueue & rPrintDirection, const char * szReplicationFormatString, ScanRunner & rRunner, unsigned int num_replica, bool isPowerStep, unsigned int iteration)
- : guiNextJobParam(1)
+ : guiJobCount(num_replica)
+ , guiNextJobParam(1)
  , guiUnregisteredJobLowerBound(1)
+ , guiNextProcessingJobId(1)
+ , guiJobsReported(0)
  , gfnRegisterResult(&MCSimJobSource::RegisterResult_AutoAbort)//initialize to the most feature-laden
  , gConstructionTime(CurrentTime)
  , grPrintDirection(rPrintDirection)
  , gszReplicationFormatString(szReplicationFormatString)
  , grRunner(rRunner)
- , guiJobCount(num_replica)
- , guiNextProcessingJobId(1)
- , guiJobsReported(0)
  , _isPowerStep(isPowerStep)
 {
   if (false/*rParameters.GetTerminateSimulationsEarly()*/) {

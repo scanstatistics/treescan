@@ -555,7 +555,6 @@ void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, Parameters::Pa
     try {
         if (source) {
             if (GetSpecifications().GetParameterIniInfo(eParameterType, &sSectionName, &sKey)) {
-                IniSection * pSection = WriteFile.GetSection(sSectionName);
                 WriteInputSource(WriteFile, *(WriteFile.GetSection(sSectionName)), sKey, source);
             }
         }
