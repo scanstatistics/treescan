@@ -26,7 +26,7 @@ JNI            :=
 JNI_PLAT       :=
 BOOSTDIR    := $(TREESCAN)/../boost/boost_1_46_0
 INCLUDEDIRS := -I$(CALCULATION) -I$(UTILITY) -I$(OUTPUT) -I$(PRINT) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(RUNNER) -I$(BOOSTDIR) -I$(ZLIB) -I$(ZLIB_MINIZIP) -I$(JNI) -I$(JNI_PLAT)
-DEFINES     := -DBOOST_ALL_NO_LIB
+DEFINES     := -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF $(PLAT_DEFINES)
 INFOPLIST_FILE :=
 
 CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -std=c++11 -Wno-deprecated -Wno-unknown-pragmas -Wall $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE)
@@ -84,23 +84,11 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(CALCULATION)/IniParameterSpecification.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/once.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/thread.cpp \
-               $(BOOSTDIR)/libs/regex/src/c_regex_traits.cpp \
-               $(BOOSTDIR)/libs/regex/src/cpp_regex_traits.cpp \
-               $(BOOSTDIR)/libs/regex/src/cregex.cpp \
-               $(BOOSTDIR)/libs/regex/src/fileiter.cpp \
-               $(BOOSTDIR)/libs/regex/src/icu.cpp \
-               $(BOOSTDIR)/libs/regex/src/instances.cpp \
                $(BOOSTDIR)/libs/regex/src/posix_api.cpp \
                $(BOOSTDIR)/libs/regex/src/regex.cpp \
                $(BOOSTDIR)/libs/regex/src/regex_debug.cpp \
-               $(BOOSTDIR)/libs/regex/src/regex_raw_buffer.cpp \
-               $(BOOSTDIR)/libs/regex/src/regex_traits_defaults.cpp \
                $(BOOSTDIR)/libs/regex/src/static_mutex.cpp \
-               $(BOOSTDIR)/libs/regex/src/usinstances.cpp \
-               $(BOOSTDIR)/libs/regex/src/w32_regex_traits.cpp \
-               $(BOOSTDIR)/libs/regex/src/wc_regex_traits.cpp \
                $(BOOSTDIR)/libs/regex/src/wide_posix_api.cpp \
-               $(BOOSTDIR)/libs/regex/src/winstances.cpp \
                $(BOOSTDIR)/libs/program_options/src/cmdline.cpp \
                $(BOOSTDIR)/libs/program_options/src/config_file.cpp \
                $(BOOSTDIR)/libs/program_options/src/convert.cpp \
@@ -112,6 +100,8 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(BOOSTDIR)/libs/program_options/src/variables_map.cpp \
                $(BOOSTDIR)/libs/system/src/error_code.cpp \
                $(BOOSTDIR)/libs/filesystem/src/codecvt_error_category.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/directory.cpp \
+               $(BOOSTDIR)/libs/filesystem/src/exception.cpp \
                $(BOOSTDIR)/libs/filesystem/src/operations.cpp \
                $(BOOSTDIR)/libs/filesystem/src/path.cpp \
                $(BOOSTDIR)/libs/filesystem/src/path_traits.cpp \

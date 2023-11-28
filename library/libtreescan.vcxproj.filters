@@ -113,7 +113,7 @@
     <ClCompile Include="..\calculation\utility\contractor.cpp">
       <Filter>Source Files\calculation\utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\thread\src\win32\thread.cpp">
+    <ClCompile Include="..\boost\boost_1_81_0\libs\thread\src\win32\thread.cpp">
       <Filter>Source Files\boost\threads</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\utility\MonteCarloSimFunctor.cpp">
@@ -188,16 +188,12 @@
     <ClCompile Include="..\calculation\randomization\PoissonRandomizer.cpp">
       <Filter>Source Files\calculation\randomization</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\system\src\error_code.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\calculation\runner\DataTimeRanges.cpp">
       <Filter>Source Files\calculation\runner</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\utility\ZipUtils.cpp">
       <Filter>Source Files\calculation\utility</Filter>
-    </ClCompile>    
-    
+    </ClCompile>
     <ClCompile Include="..\calculation\randomization\TemporalRandomizer.cpp">
       <Filter>Source Files\calculation\randomization</Filter>
     </ClCompile>
@@ -213,83 +209,56 @@
     <ClCompile Include="..\calculation\ParametersValidate.cpp">
       <Filter>Source Files\calculation</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\codecvt_error_category.cpp">
+    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\codecvt_error_category.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\operations.cpp">
+    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\directory.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\path.cpp">
+    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\exception.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\path_traits.cpp">
+    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\operations.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\portability.cpp">
+    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\path.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\unique_path.cpp">
+    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\path_traits.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\utf8_codecvt_facet.cpp">
+    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\portability.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\filesystem\src\windows_file_codecvt.cpp">
+    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\unique_path.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\c_regex_traits.cpp">
+    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\utf8_codecvt_facet.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\windows_file_codecvt.cpp">
+      <Filter>Source Files\boost\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\posix_api.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\cpp_regex_traits.cpp">
+    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\regex.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\cregex.cpp">
+    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\regex_debug.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\fileiter.cpp">
+    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\static_mutex.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\icu.cpp">
+    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\wide_posix_api.cpp">
       <Filter>Source Files\boost\regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\instances.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\posix_api.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\regex.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\regex_debug.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\regex_raw_buffer.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\regex_traits_defaults.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\static_mutex.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\usinstances.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\w32_regex_traits.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\wc_regex_traits.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\wide_posix_api.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_70_0\libs\regex\src\winstances.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>    
     <ClCompile Include="..\calculation\randomization\PermutationDataRandomizer.cpp">
       <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\boost\boost_1_81_0\libs\system\src\error_code.cpp">
+      <Filter>Source Files\boost\system</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -418,7 +387,7 @@
     </ClInclude>
     <ClInclude Include="..\calculation\utility\ZipUtils.h">
       <Filter>Header Files\calculation\utility</Filter>
-    </ClInclude>     
+    </ClInclude>
     <ClInclude Include="..\calculation\randomization\BernoulliRandomizer.h">
       <Filter>Header Files\calculation\randomization</Filter>
     </ClInclude>
