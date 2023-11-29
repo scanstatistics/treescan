@@ -345,7 +345,7 @@ double CutStructure::getAttributableRisk(const ScanRunner& scanner) const {
 }
 
 /** Returns the attributable risk as formatted string. */
-std::string & CutStructure::getAttributableRiskAsString(const ScanRunner& scanner, std::string& s) {
+std::string & CutStructure::getAttributableRiskAsString(const ScanRunner& scanner, std::string& s) const {
     std::stringstream ss;
     double ar = getAttributableRisk(scanner);
     if (ar >= 0.001) {
@@ -1725,7 +1725,7 @@ RecurrenceInterval_t ScanRunner::getRecurrenceInterval(const CutStructure& cut) 
     // Now calculate recurrance interval as years and days based on frequency.
     switch (_parameters.getProspectiveFrequencyType()) {
         case Parameters::YEARLY: return std::make_pair(dUnitsInOccurrence, std::max(dUnitsInOccurrence * AVERAGE_DAYS_IN_YEAR, 1.0));
-        case Parameters::QUARTERLY: std::make_pair(dUnitsInOccurrence / 4.0, std::max((dUnitsInOccurrence / 4.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
+        case Parameters::QUARTERLY: return std::make_pair(dUnitsInOccurrence / 4.0, std::max((dUnitsInOccurrence / 4.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
         case Parameters::MONTHLY: return std::make_pair(dUnitsInOccurrence / 12.0, std::max((dUnitsInOccurrence / 12.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
         case Parameters::WEEKLY:  return std::make_pair(dUnitsInOccurrence / 52.0, std::max((dUnitsInOccurrence / 52.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
         case Parameters::DAILY: return std::make_pair(dUnitsInOccurrence / AVERAGE_DAYS_IN_YEAR, std::max(dUnitsInOccurrence, 1.0));

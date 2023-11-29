@@ -13,6 +13,7 @@
 #define VERSION_DATE    "Not Released"
 
 #if defined(_MSC_VER)
+#define NOMINMAX
 #include <Windows.h>
 #endif
 
@@ -20,21 +21,21 @@
 #define stricmp _stricmp
 #define strnicmp _strnicmp
 #else
-  #define stricmp strcasecmp
-  #define strnicmp strncasecmp
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
 #endif
 
 #include <cstdlib>
 #include <stdio.h>
 
 #ifdef _WINDOWS_
-  #include <io.h>
+#include <io.h>
 #else
-  #include <unistd.h>
+#include <unistd.h>
 #endif
 #ifdef _MSC_VER
-  /** default string buffer size for vsnprintf call */
-  #define MSC_VSNPRINTF_DEFAULT_BUFFER_SIZE 1000
+/** default string buffer size for vsnprintf call */
+#define MSC_VSNPRINTF_DEFAULT_BUFFER_SIZE 1000
 #endif
 #define DATE_TIME_INLINE
 #include "boost/date_time/posix_time/ptime.hpp"
@@ -69,9 +70,9 @@ typedef std::pair<double, double> RecurrenceInterval_t;
 
 /** va_copy not defined on all compilers */
 #if defined (_MSC_VER) || ( defined(__GNUC__) && (__GNUC__ < 3) )
-  #define macro_va_copy(dst,src) dst = src
+#define macro_va_copy(dst,src) dst = src
 #else
-  #define macro_va_copy(dst,src) va_copy(dst,src);
+#define macro_va_copy(dst,src) va_copy(dst,src);
 #endif
 
 namespace TreeScan {

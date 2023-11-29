@@ -53,7 +53,7 @@ public:
     int                     getC() const {return _C; /* Observed */}
     const CutChildContainer_t & getCutChildren() const {return _cut_children;}
     double                  getAttributableRisk(const ScanRunner& scanner) const;
-    std::string           & getAttributableRiskAsString(const ScanRunner& scanner, std::string& s);
+    std::string           & getAttributableRiskAsString(const ScanRunner& scanner, std::string& s) const;
     int                     getID() const {return _ID;}
     double                  getLogLikelihood() const {return _LogLikelihood;}
     double                  getN() const {return _N;}

@@ -591,7 +591,7 @@ std::stringstream & ResultsFileWriter::getNCBIAsnDefinition(const NodeStructure&
     destination << " } }," << std::endl;
     // Recursively write child nodes.
     for (const auto child : node.getChildren())
-        getNCBIAsnDefinition(*child, fieldDefinitions, idoffset, nodeCuts, destination).rdbuf();
+        getNCBIAsnDefinition(*child, fieldDefinitions, idoffset, nodeCuts, destination);
     return destination;
 }
 

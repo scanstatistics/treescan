@@ -87,7 +87,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -125,7 +125,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
@@ -148,7 +148,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
