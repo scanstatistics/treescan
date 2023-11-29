@@ -1,20 +1,20 @@
 #!/bin/sh
 
-# Check for minimum number of arguments.
-REQUIRED_ARGS=1 # Script requires 3 argument
-if [ $# -lt "$REQUIRED_ARGS" ]
-then
-  echo "Usage: `basename $0` <treescan_src directory> <boost directory> <binaries output directory>])"
-  echo "   example: `basename $0` /prj/treescan/build/treescan /prj/treescan/build/boost/boost_1_70_0 /prj/treescan/build/binaries/linux"
-  exit 1
-fi
+### # Check for minimum number of arguments.
+### REQUIRED_ARGS=1 # Script requires 3 argument
+### if [ $# -lt "$REQUIRED_ARGS" ]
+### then
+###   echo "Usage: `basename $0` <treescan_src directory> <boost directory> <binaries output directory>])"
+###   echo "   example: `basename $0` /prj/treescan/build/treescan /prj/treescan/build/boost/boost_1_81_0 /prj/treescan/build/binaries/linux"
+###   exit 1
+### fi
 
 (
 cpp_compiler="/usr/bin/g++"
 c_compiler="/usr/bin/gcc"
-binaries="$3"
-treescan_src="$1"
-boost_src="$2"
+binaries="${3:-/prj/treescan/build/binaries/linux}"
+treescan_src="${1:-/prj/treescan/build/treescan}"
+boost_src="${2:-/prj/treescan/build/boost/boost_1_81_0}"
 processors="-j8"
 pthread="-pthread"
 lib_target="libtreescan.linux.so"

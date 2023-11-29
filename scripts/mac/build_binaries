@@ -1,21 +1,21 @@
 #!/bin/sh
 
-# Check for minimum number of arguments.
-REQUIRED_ARGS=1 # Script requires 3 argument
-if [ $# -lt "$REQUIRED_ARGS" ]
-then
-  echo "Usage: `basename $0` <treescan_src directory> <boost directory> <binaries output directory>])"
-  echo "   example: `basename $0` /Users/treescan/prj/treescan.development/treescan /Users/treescan/prj/boost/boost_1_70_0 /Users/treescan/prj/treescan.development/binaries/mac"
-  exit 1
-fi
+### # Check for minimum number of arguments.
+### REQUIRED_ARGS=1 # Script requires 3 argument
+### if [ $# -lt "$REQUIRED_ARGS" ]
+### then
+###   echo "Usage: `basename $0` <treescan_src directory> <boost directory> <binaries output directory>])"
+###   echo "   example: `basename $0` /Users/treescan/prj/treescan.development/treescan /Users/treescan/prj/boost/boost_1_81_0 /Users/treescan/prj/treescan.development/binaries/mac"
+###   exit 1
+### fi
 
 (
 cpp_compiler="/usr/bin/g++"
 c_compiler="/usr/bin/gcc"
 osx_min_version="-mmacosx-version-min=10.13"
-binaries="$3"
-treescan_src="$1"
-boost_src="$2"
+binaries="${3:-/Users/treescan/prj/treescan.development/binaries/mac}"
+treescan_src="${1:-/Users/treescan/prj/treescan.development/treescan}"
+boost_src="${2:-/Users/treescan/prj/boost/boost_1_81_0}"
 processors="-j2"
 
 rm -f $binaries/*
