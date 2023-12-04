@@ -151,7 +151,7 @@ inline bool Timestamp::ValuesIndicateValidDate ( unsigned short uwYear, unsigned
       sRawDate[5] = ( uwMonth % 10 ) + '0';
       sRawDate[6] = ( uwDay / 10 ) + '0';
       sRawDate[7] = ( uwDay % 10 ) + '0';
-      sRawDate[DATE_FLD_LEN] = 0;//null terminate
+      sRawDate[DATE_FLD_LEN] = 0; // null terminate
 
       bRetVal = IsValidDate(sRawDate);
       }
@@ -159,9 +159,9 @@ inline bool Timestamp::ValuesIndicateValidDate ( unsigned short uwYear, unsigned
    return bRetVal;
 }
 
-//Every year divisible by 4 is a leap year.
-//However, every year divisible by 100 is not a leap year.
-//However, every year divisible by 400 is a leap year after all.
+/** Every year divisible by 4 is a leap year.
+    However, every year divisible by 100 is not a leap year.
+    However, every year divisible by 400 is a leap year after all. */
 inline bool Timestamp::IsLeapYear(unsigned short uwYear)
 {
    return !(uwYear % 4) && ( (uwYear % 100) || !(uwYear %400) );
@@ -177,13 +177,13 @@ inline Timestamp::Timestamp ( const Timestamp &rhs )
    strcpy ( gsStamp, rhs.gsStamp );
 }
 
-// Returns the milliseconds stored in the time.
+/** Returns the milliseconds stored in the time. */
 inline unsigned short Timestamp::GetMillisecond() const
 {
    return (unsigned short)((long)gsStamp[14] * 100 + (long)gsStamp[15] * 10 + (long)gsStamp[16] - 111 * (long)'0' );
 }
 
-// Returns the year stored in the date.
+/** Returns the year stored in the date. */
 inline unsigned short Timestamp::GetYear() const
 {
    return (unsigned short)((long)gsStamp[0] * 1000 + (long)gsStamp[1] * 100

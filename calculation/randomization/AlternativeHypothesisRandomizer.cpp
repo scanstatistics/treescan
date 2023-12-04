@@ -37,8 +37,8 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
     } else if  (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
         _nodes_proxy.reset(new AlternativeProbabilityNodesProxy(treeNodes, _parameters.getDataOnlyOnLeaves(), _alternative_adjustments, _parameters.getProbability()));
     } else if  (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::TOTALCASES) {
-        /* We won't actually use this NodesProxy instance. The ConditionalBernoulliAlternativeHypothesisRandomizer class will
-           contain two different instances of NodesProxy - one for alternative hypothesis nodes, the other for the null hypothesis nodes. */
+        /** We won't actually use this NodesProxy instance. The ConditionalBernoulliAlternativeHypothesisRandomizer class will
+            contain two different instances of NodesProxy - one for alternative hypothesis nodes, the other for the null hypothesis nodes. */
         _nodes_proxy.reset(new NodesProxy(treeNodes, _parameters.getDataOnlyOnLeaves()));
     } else if ((_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE) ||
                (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES)) {

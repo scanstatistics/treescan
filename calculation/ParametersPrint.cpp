@@ -15,33 +15,33 @@ void ParametersPrint::Print(std::ostream& out) const {
     out << "PARAMETER SETTINGS" << std::endl;
 
     SettingContainer_t settings;
-    //print 'Input' tab settings
+    // print 'Input' tab settings
     WriteSettingsContainer(getInputParameters(settings), "Input", out);
     // print 'Analysis' tab settings
     WriteSettingsContainer(getAnalysisParameters(settings), "Analysis", out);
-    //print 'Output' tab settings
+    // print 'Output' tab settings
     WriteSettingsContainer(getOutputParameters(settings), "Output", out);
-    //print 'Advanced Input' tab settings
+    // print 'Advanced Input' tab settings
     WriteSettingsContainer(getAdvancedInputParameters(settings), "Advanced Input", out);
-    //print 'Temporal Window' tab settings
+    // print 'Temporal Window' tab settings
     WriteSettingsContainer(getTemporalWindowParameters(settings), "Temporal Window", out);
     // print 'Adjustments' tab settings
     WriteSettingsContainer(getAdjustmentsParameters(settings), "Adjustments", out);
-    //print 'Inference' tab settings
+    // print 'Inference' tab settings
     WriteSettingsContainer(getInferenceParameters(settings), "Inference", out);
-    //print 'Sequential Analysis' tab settings
+    // print 'Sequential Analysis' tab settings
     WriteSettingsContainer(getSequentialScanParameters(settings), "Sequential Analysis", out);
-    //print 'Power Evaluations' tab settings
+    // print 'Power Evaluations' tab settings
     WriteSettingsContainer(getPowerEvaluationsParameters(settings), "Power Evaluations", out);
     // print 'Miscellaneous' tab settings
     WriteSettingsContainer(getMiscellaneousAnalysisParameters(settings), "Miscellaneous", out);
-    //print 'Additional Output' tab settings
+    // print 'Additional Output' tab settings
     WriteSettingsContainer(getAdditionalOutputParameters(settings), "Additional Output", out);
-    //print 'Power Simulations' tab settings
+    // print 'Power Simulations' tab settings
     WriteSettingsContainer(getPowerSimulationsParameters(settings), "Power Simulations", out);
-    //print 'RunOptions' settings
+    // print 'RunOptions' settings
     WriteSettingsContainer(getRunOptionsParameters(settings), "Run Options", out);
-    //print 'System' parameters
+    // print 'System' parameters
     WriteSettingsContainer(getSystemParameters(settings), "System", out);
     AsciiPrintFormat::PrintSectionSeparatorString(out, 0, 1);
 }
@@ -50,33 +50,33 @@ void ParametersPrint::Print(std::ostream& out) const {
 void ParametersPrint::PrintHTML(std::ostream& out) const {
     SettingContainer_t settings;
     out << "<div id=\"parameter-settings\"><h4>Parameter Settings</h4>" << std::endl;
-    //print 'Input' tab settings
+    // print 'Input' tab settings
     WriteSettingsContainerHTML(getInputParameters(settings), "Input", out);
     // print 'Analysis' tab settings
     WriteSettingsContainerHTML(getAnalysisParameters(settings), "Analysis", out);
-    //print 'Output' tab settings
+    // print 'Output' tab settings
     WriteSettingsContainerHTML(getOutputParameters(settings), "Output", out);
-    //print 'Advanced Input' tab settings
+    // print 'Advanced Input' tab settings
     WriteSettingsContainerHTML(getAdvancedInputParameters(settings), "Advanced Input", out);
-    //print 'Temporal Window' tab settings
+    // print 'Temporal Window' tab settings
     WriteSettingsContainerHTML(getTemporalWindowParameters(settings), "Temporal Window", out);
     // print 'Adjustments' tab settings
     WriteSettingsContainerHTML(getAdjustmentsParameters(settings), "Adjustments", out);
-    //print 'Inference' tab settings
+    // print 'Inference' tab settings
     WriteSettingsContainerHTML(getInferenceParameters(settings), "Inference", out);
-    //print 'Sequential Analysis' tab settings
+    // print 'Sequential Analysis' tab settings
     WriteSettingsContainerHTML(getSequentialScanParameters(settings), "Sequential Analysis", out);
-    //print 'Power Evaluations' tab settings
+    // print 'Power Evaluations' tab settings
     WriteSettingsContainerHTML(getPowerEvaluationsParameters(settings), "Power Evaluations", out);
     // print 'Miscellaneous' tab settings
     WriteSettingsContainerHTML(getMiscellaneousAnalysisParameters(settings), "Miscellaneous", out);
-    //print 'Additional Output' tab settings
+    // print 'Additional Output' tab settings
     WriteSettingsContainerHTML(getAdditionalOutputParameters(settings), "Additional Output", out);
-    //print 'Power Simulations' tab settings
+    // print 'Power Simulations' tab settings
     WriteSettingsContainerHTML(getPowerSimulationsParameters(settings), "Power Simulations", out);
-    //print 'RunOptions' settings
+    // print 'RunOptions' settings
     WriteSettingsContainerHTML(getRunOptionsParameters(settings), "Run Options", out);
-    //print 'System' parameters
+    // print 'System' parameters
     WriteSettingsContainerHTML(getSystemParameters(settings), "System", out);
     out << std::endl << "</div>" << std::endl;
 }
@@ -477,7 +477,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParamete
 void ParametersPrint::WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, std::ostream& out) const {
     try {
         if (!settings.size()) return;
-        //print section label
+        // print section label
         out << std::endl;
         out << section;
         out << std::endl;
@@ -485,11 +485,11 @@ void ParametersPrint::WriteSettingsContainer(const SettingContainer_t& settings,
             out << "-";
         out << std::endl;
         SettingContainer_t::const_iterator itr=settings.begin();
-        //first calculate maximum label length
+        // first calculate maximum label length
         size_t tMaxLabel=0;
         for (; itr != settings.end(); ++itr)
             tMaxLabel = std::max(tMaxLabel, itr->first.size());
-        //print settings
+        // print settings
         for (itr=settings.begin(); itr != settings.end(); ++itr) {
             out << "  ";
             out << itr->first;
@@ -509,11 +509,11 @@ void ParametersPrint::WriteSettingsContainer(const SettingContainer_t& settings,
 void ParametersPrint::WriteSettingsContainerHTML(const SettingContainer_t& settings, const std::string& section, std::ostream& out) const {
     try {
         if (!settings.size()) return;
-        //print section label
+        // print section label
         out << "<div class=\"parameter-section\">" << std::endl;
         out << "<h4>" << section << "</h4>" << std::endl << "<table><tbody>" << std::endl;
         SettingContainer_t::const_iterator itr=settings.begin();
-        //print settings
+        // print settings
         for (itr=settings.begin(); itr != settings.end(); ++itr)
             out << "<tr><th>" << itr->first << " :</th><td>" << itr->second << "</td></tr>" << std::endl;
         out << std::endl << "</tbody></table></div>";

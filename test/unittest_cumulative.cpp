@@ -4,7 +4,7 @@
 using namespace boost::assign;
 #include "UtilityFunctions.h"
 
-/* Test Suite for the TreeScan::cumulative_backward templated function. */
+/** Test Suite for the TreeScan::cumulative_backward templated function. */
 BOOST_AUTO_TEST_SUITE( test_cumulative_backward_function_suite )
 
 BOOST_AUTO_TEST_CASE( test1_cumulative_backward_function ) {
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE( test5_cumulative_backward_function ) {
 
 BOOST_AUTO_TEST_SUITE_END()
 
-/* Test Suite for the TreeScan::cumulative_forward templated function. */
+/** Test Suite for the TreeScan::cumulative_forward templated function. */
 BOOST_AUTO_TEST_SUITE( test_cumulative_forward_function_suite )
 
 BOOST_AUTO_TEST_CASE( test1_cumulative_forward_function ) {

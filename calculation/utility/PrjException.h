@@ -69,12 +69,12 @@ public:
    const TYPE &operator* () const                    { return gCarried; }
 };
 
-// Constructor. Makes a copy of copyMe to be carried with the exception.
+/** Constructor. Makes a copy of copyMe to be carried with the exception. */
 template <typename TYPE>
 inline CarrierException<TYPE>::CarrierException(const TYPE &copyMe, const char * message, const char * method)
                               :prg_exception(message, method), gCarried(copyMe) {};
 
-// Constructor. Makes a copy of copyMe to be carried with the exception.
+/** Constructor. Makes a copy of copyMe to be carried with the exception. */
 template <typename TYPE>
 inline CarrierException<TYPE>::CarrierException(TYPE &copyMe, const char * message, const char * method)
                               :prg_exception(message, method), gCarried(copyMe) {};
@@ -82,7 +82,7 @@ inline CarrierException<TYPE>::CarrierException(TYPE &copyMe, const char * messa
 template <typename TYPE>
 CarrierException<TYPE>::~CarrierException() throw() {}
 
-/** memory cache should system run out of memory, released when prg_new_handler() is invoked. */
+/** Memory cache should system run out of memory, released when prg_new_handler() is invoked. */
 extern char * out_of_memory_cache;
 extern void reserve_memory_cache();
 extern void release_memory_cache();

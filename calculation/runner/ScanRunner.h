@@ -92,25 +92,25 @@ public:
     typedef std::list<std::pair<int, count_t> > CensorDist_t;
 
 private:
-    std::string             _identifier;        // node identidier as read from input file
+    std::string             _identifier;        // node identifier as read from input file
     std::string             _name;              // node name, for ease of use and quicker understanding of the output
     int                     _ID;                // The node ID.
     CountContainer_t        _IntC_C;            // Number of true and simulated cases internal to the node, respectively.
-    CountContainer_t        _BrC_C;             // Number of true and simulated cases in the node and all decendants (children, grandchildren etc.)
+    CountContainer_t        _BrC_C;             // Number of true and simulated cases in the node and all descendants (children, grandchildren etc.)
     ExpectedContainer_t     _IntN_C;            // Expected number of cases internal to the node.
     ExpectedContainer_t     _IntN_C_Seq_New;    // Expected number of cases in current look sequential data set.
-    ExpectedContainer_t     _BrN_C_Seq_New;     // Expected number of cases in current look sequential data set, with all decendants.
-    ExpectedContainer_t     _BrN_C;             // Expected number of cases internal to the node and with all decendants.
-    ChildContainer_t         _Child;             // List of node IDs of the children and parents
+    ExpectedContainer_t     _BrN_C_Seq_New;     // Expected number of cases in current look sequential data set, with all descendants.
+    ExpectedContainer_t     _BrN_C;             // Expected number of cases internal to the node and with all descendants.
+    ChildContainer_t         _Child;            // List of node IDs of the children and parents
     ParentContainer_t       _Parent;
     Parameters::CutType     _cut_type;
     CumulativeStatus        _cumulative_status;
     unsigned int            _level;             // calculated node level
 
-    CountContainer_t        _IntC_Censored;     // Number of censored cases internal to the ndoe.
+    CountContainer_t        _IntC_Censored;     // Number of censored cases internal to the node.
     count_t                 _min_censored_Br;   // minimum censored on branch
 
-    Ancestors_t             _ancestors;     // nodes which have this node in tree branch
+    Ancestors_t             _ancestors;         // nodes which have this node in tree branch
 
     void initialize_containers(const Parameters& parameters, size_t container_size) {
         _IntC_C.resize(container_size);
@@ -131,14 +131,14 @@ private:
         }
     }
 
-    /* Obtain the level of this node - giving consideration for multiple trees and potential for multiple parents.
-       If multiple parents, use the shortest distance (https://www.squishlist.com/ims/treescan/29/). */
+    /** Obtain the level of this node - giving consideration for multiple trees and potential for multiple parents.
+        If multiple parents, use the shortest distance (https://www.squishlist.com/ims/treescan/29/). */
     static unsigned int getLevel(const NodeStructure& node) {
-        /* If level already calculated, just return that level. */
+        // If level already calculated, just return that level.
         if (node.getLevel()) 
             return node.getLevel();
 
-        /* If node doesn't have parents, then level is one. */
+        // If node doesn't have parents, then level is one.
         if (node.getParents().empty()) return 1;
 
         unsigned int parent_level=std::numeric_limits<unsigned int>::max();
@@ -263,17 +263,17 @@ public:
                 "\nProblem encountered when reading the data from the tree file.\nDistance from node '%s' to parent '%s' conflicts in tree file.\n",
                 getIdentifier().c_str(), itrParent->first->getIdentifier().c_str()
             );
-        // and add this node as child in parents collection
+        // and add this node as child in parent's collection
         if (parent.refChildren().end() == std::find(parent.refChildren().begin(), parent.refChildren().end(), this))
             parent.refChildren().push_back(this);
     }
     unsigned int assignLevel() {
-        /* Warning - this method could cause infinite loop if check for circular dependency is not first performed. */
+        // Warning - this method could cause infinite loop if check for circular dependency is not first performed.
         _level = getLevel(*this);
         return _level;
     }
     void setAncestors(boost::dynamic_bitset<>& ancestor_nodes) {
-        /* convert ON bits in set to indexes stored in _ancestors container */
+        // convert ON bits in set to indexes stored in _ancestors container
         _ancestors.clear();
         for (boost::dynamic_bitset<>::size_type p=ancestor_nodes.find_first(); p != ancestor_nodes.npos; p = ancestor_nodes.find_next(p))
             _ancestors.push_back(static_cast<unsigned int>(p));
@@ -463,7 +463,7 @@ protected:
     int                                 _TotalC;
     int                                 _TotalControls;
     double                              _TotalN;
-    std::pair<int, double>              _totals_in_look; // Total cases/ population(expected) in this look.
+    std::pair<int, double>              _totals_in_look; // Total cases / population (expected) in this look.
     SimulationVariables                 _simVars;
     Parameters                          _parameters;
     DataTimeRange::index_t              _zero_translation_additive;
@@ -576,7 +576,7 @@ public:
 
     boost::shared_ptr<AbstractWindowLength> getNewWindowLength() const;
     double get_node_n_time_total_cases(DataTimeRange::index_t start_idx, DataTimeRange::index_t end_idx) const {
-        /* Obtain the total number of cases in window range for all nodes. */
+        // Obtain the total number of cases in window range for all nodes.
         auto test = std::make_pair(start_idx, end_idx);
         auto finder = _node_n_time_total_cases_cache.find(test);
         if (finder != _node_n_time_total_cases_cache.end())

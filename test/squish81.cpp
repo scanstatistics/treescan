@@ -33,10 +33,10 @@ struct timeonly_power_estimation_fixture : prm_testset_fixture {
     std::string _results_user_directory;
 };
 
-/* Test Suite for the power estimation data file write. */
+/** Test Suite for the power estimation data file write. */
 BOOST_AUTO_TEST_SUITE( power_estimation_suite )
 
-/* Tests the expected values of the power estimation data file writer for time-only conditioned on total cases. */
+/** Tests the expected values of the power estimation data file writer for time-only conditioned on total cases. */
 BOOST_FIXTURE_TEST_CASE( test_timeonly_power_estimation, timeonly_power_estimation_fixture ) {
     BOOST_CHECK(_parameters.getScanType() ==  Parameters::TIMEONLY);
     BOOST_CHECK(_parameters.getConditionalType() ==  Parameters::TOTALCASES);
@@ -82,7 +82,7 @@ BOOST_FIXTURE_TEST_CASE( test_timeonly_power_estimation, timeonly_power_estimati
     stream.close();
 }
 
-/* Tests the expected values of the power estimation data file writer for tree-time conditioned on node. */
+/** Tests the expected values of the power estimation data file writer for tree-time conditioned on node. */
 BOOST_FIXTURE_TEST_CASE( test_conditional_treetime_power_estimation, treetemporal_power_estimation_fixture ) {
     BOOST_CHECK(_parameters.getScanType() ==  Parameters::TREETIME);
     BOOST_CHECK(_parameters.getConditionalType() ==  Parameters::NODE);
@@ -129,7 +129,7 @@ BOOST_FIXTURE_TEST_CASE( test_conditional_treetime_power_estimation, treetempora
     stream.close();
 }
 
-/* Tests the expected values of the power estimation data file writer for condtional poisson. */
+/** Tests the expected values of the power estimation data file writer for condtional poisson. */
 BOOST_FIXTURE_TEST_CASE( test_conditional_poisson_power_estimation, poisson_power_estimation_fixture ) {
     _parameters.setConditionalType(Parameters::TOTALCASES);
     run_analysis("test", _results_user_directory, _parameters, _print);
@@ -177,7 +177,7 @@ BOOST_FIXTURE_TEST_CASE( test_conditional_poisson_power_estimation, poisson_powe
     stream.close();
 }
 
-/* Tests the expected values of the power estimation data file writer for uncondtional poisson. */
+/** Tests the expected values of the power estimation data file writer for uncondtional poisson. */
 BOOST_FIXTURE_TEST_CASE( test_unconditional_poisson_power_estimation, poisson_power_estimation_fixture ) {
     _parameters.setConditionalType(Parameters::UNCONDITIONAL);
     run_analysis("test", _results_user_directory, _parameters, _print);
@@ -225,7 +225,7 @@ BOOST_FIXTURE_TEST_CASE( test_unconditional_poisson_power_estimation, poisson_po
     stream.close();
 }
 
-/* Tests the expected values of the power estimation data file writer for condtional bernoulli. */
+/** Tests the expected values of the power estimation data file writer for condtional bernoulli. */
 BOOST_FIXTURE_TEST_CASE( test_conditional_bernoulli_power_estimation, bernoulli_power_estimation_fixture ) {
     _parameters.setConditionalType(Parameters::TOTALCASES);
     run_analysis("test", _results_user_directory, _parameters, _print);
@@ -273,7 +273,7 @@ BOOST_FIXTURE_TEST_CASE( test_conditional_bernoulli_power_estimation, bernoulli_
     stream.close();
 }
 
-/* Tests the expected values of the power estimation data file writer for uncondtional bernoulli. */
+/** Tests the expected values of the power estimation data file writer for uncondtional bernoulli. */
 BOOST_FIXTURE_TEST_CASE( test_unconditional_bernoulli_power_estimation, bernoulli_power_estimation_fixture ) {
     _parameters.setConditionalType(Parameters::UNCONDITIONAL);
     run_analysis("test", _results_user_directory, _parameters, _print);

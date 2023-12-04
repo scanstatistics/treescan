@@ -5,7 +5,7 @@
 
 double AbstractLoglikelihood::UNSET_LOGLIKELIHOOD = -std::numeric_limits<double>::max();
 
-/** returns new randomizer given parameter settings. */
+/** Returns new randomizer given parameter settings. */
 AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Parameters& parameters, int TotalC, double TotalN, bool censored_data) {
     switch (parameters.getScanType()) {
         case Parameters::TREEONLY: {
@@ -27,7 +27,7 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
                 default: throw prg_error("Unknown model type (%d).", "getNewLoglikelihood()", parameters.getModelType());
             }
         } break;
-        /* TODO:
+        /** TODO:
            For the likelihood formula, I would like to try two different ones. Eventually we will only have one, unknown which,
            but I would like to have both available for my own use as a hidden feature in the parameter file.
 
@@ -42,7 +42,7 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
             switch (parameters.getModelType()) {
                 case Parameters::UNIFORM :
                     if (parameters.isPerformingDayOfWeekAdjustment()) {
-                        /* TODO: Martin said to stub this log-likelihood for now. He needs to work through the correct function. */
+                        // TODO: Martin said to stub this log-likelihood for now. He needs to work through the correct function.
                         return new PoissonLoglikelihood(TotalC, TotalN, parameters);
                     }
                     if (censored_data) {

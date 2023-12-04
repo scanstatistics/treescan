@@ -8,10 +8,10 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign;
 
-/* Test Suite for the ability to restrict evaluated levels in tree -- https://www.squishlist.com/ims/treescan/122/. */
+/** Test Suite for the ability to restrict evaluated levels in tree -- https://www.squishlist.com/ims/treescan/122/. */
 BOOST_AUTO_TEST_SUITE( restrict_tree_levels_suite )
 
-/* Tests the expected values of the attributable risk data  with conditional Poisson model. */
+/** Tests the expected values of the attributable risk data  with conditional Poisson model. */
 BOOST_FIXTURE_TEST_CASE( test_restrict_tree_levels, poisson_fixture ) {
     _parameters.setGeneratingTableResults(true);
     _parameters.setPrintColumnHeaders(true);

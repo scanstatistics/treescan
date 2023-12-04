@@ -10,7 +10,7 @@
 
     NOTE: The values of the static variables are somewhat determined
           empirically. The code has been written to be tested to be adjustable
-          only in repects to expanding the width of the output area. */
+          only in respect to expanding the width of the output area. */
 class AsciiPrintFormat {
    private:
      unsigned int               giLeftMargin;

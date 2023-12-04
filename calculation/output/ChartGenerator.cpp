@@ -341,11 +341,11 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
             </div> \n \
          </div></div> \n";
 
-/** constructor */
+/** Constructor */
 TemporalChartGenerator::TemporalChartGenerator(const ScanRunner& scanner, const SimulationVariables& simVars)
     :_scanner(scanner), _simVars(simVars) {}
 
-/* TODO: It might be better to use a true template/generator library. Some possibilities are: 
+/** TODO: It might be better to use a true template/generator library. Some possibilities are: 
    http://stackoverflow.com/questions/355650/c-html-template-framework-templatizing-library-html-generator-library 
 */
 
@@ -360,7 +360,7 @@ void TemporalChartGenerator::generateChart() const {
         getFilename(fileName);
 
         std::ofstream HTMLout;
-        //open output file
+        // open output file
         HTMLout.open(fileName.getFullPath(buffer).c_str());
         if (!HTMLout) throw resolvable_error("Error: Could not open file '%s'.\n", fileName.getFullPath(buffer).c_str());
         if (_scanner.getCuts().size() == 0 || !_scanner.reportableCut(*_scanner.getCuts()[0])) {
@@ -378,7 +378,7 @@ void TemporalChartGenerator::generateChart() const {
         templateReplace(html, "--body--", TEMPLATE_BODY);
         // site resource link path
         templateReplace(html, "--resource-path--", AppToolkit::getToolkit().GetWebSite());
-        // site resource link path
+        // tech support link path
         templateReplace(html, "--tech-support-email--", AppToolkit::getToolkit().GetTechnicalSupportEmail());
 
         // set margin bottom according to time precision
@@ -541,7 +541,7 @@ void TemporalChartGenerator::generateChart() const {
             templateReplace(html, "--main-content--", cluster_sections.str());
         } else {
             printString(buffer2, "<h3 style=\"text-align:center;\">No significant clusters to graph. All clusters had a p-value greater than %lf.</h3>",
-                0.05 /*_dataHub.GetParameters().getTemporalGraphSignificantCutoff()*/
+                0.05 // _dataHub.GetParameters().getTemporalGraphSignificantCutoff()
             );
             templateReplace(html, "--main-content--", buffer2.c_str());
         }
@@ -563,7 +563,7 @@ void TemporalChartGenerator::generateChart() const {
     }
 }
 
-/* Calculates the best fit graph groupings for this cluster. */
+/** Calculates the best fit graph groupings for this cluster. */
 TemporalChartGenerator::intervalGroups TemporalChartGenerator::getIntervalGroups(const CutStructure& cluster) const {
     intervalGroups groups;
     int intervals = static_cast<int>(_scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
@@ -583,7 +583,7 @@ TemporalChartGenerator::intervalGroups TemporalChartGenerator::getIntervalGroups
         } else {
             // we can show entire cluster intervals but compressed -- plus a few before and after
             int compressed_interval_length = static_cast<int>(ceil(static_cast<double>(endIdx - startIdx)/static_cast<double>(MAX_INTERVALS)));
-            // Note: This rough calculation of a compressed interval means that the clusters last interval might not fall cleanly onto a interval boundary.
+            // Note: This rough calculation of a compressed interval means that the clusters last interval might not fall cleanly onto an interval boundary.
             int extra_intervals = compressed_interval_length * 5;
             for (int i=std::max(0, startIdx - extra_intervals); i < std::min(intervals, endIdx + extra_intervals); i=i+compressed_interval_length)
                 groups.addGroup(i, i + compressed_interval_length);
@@ -592,7 +592,7 @@ TemporalChartGenerator::intervalGroups TemporalChartGenerator::getIntervalGroups
     return groups;
 }
 
-/* Calculates the series values in a purely temporal context. */
+/** Calculates the series values in a purely temporal context. */
 std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CutStructure& cluster,const intervalGroups& groups, size_t dataSetIdx,
                                                              std::stringstream& categories, ChartSeries * clusterSeries,
                                                              ChartSeries& observedSeries, ChartSeries& expectedSeries,
@@ -609,7 +609,7 @@ std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CutStructure&
     std::vector<int> pcases(intervals, 0); // number of cases by time interval for all nodes
     std::vector<double> pmeasure(intervals, 0); // expected cases by time interval for all nodes
 
-    if (isUniformTime) {// Expected is constant for uniform time and not adjustments.
+    if (isUniformTime) { // Expected is constant for uniform time and not adjustments.
         std::fill(pmeasure.begin(), pmeasure.end() - 1, static_cast<double>(_scanner.getTotalC()) / T);
         TreeScan::cumulative_backward(pmeasure);
     }
@@ -662,15 +662,15 @@ std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CutStructure&
             expected -= cluster_expected;
             if (macro_equal(0.0, expected, DBL_CMP_TOLERANCE)) expected = 0;
             if (cluster_odeSeries) {
-                // For the Bernoulli model, this represents the ratio of cases / (cases + controls) inside the cluster.
-                // For the Poisson/Exponential models, this represents the ratio of observed / expected inside the cluster.
+                /** For the Bernoulli model, this represents the ratio of cases / (cases + controls) inside the cluster.
+                For the Poisson/Exponential models, this represents the ratio of observed / expected inside the cluster. */
                 getValueAsString(cluster_expected ? static_cast<double>(cluster_observed)/cluster_expected : 0, buffer, 2);
                 cluster_odeSeries->datastream() <<  (itrGrp==groups.getGroups().begin() ? "" : ",") <<  buffer.c_str();
             }
         }
         if (odeSeries) {
-            // For the Bernoulli model, this represents the ratio of cases / (cases + controls) inside the cluster.
-            // For the Poisson/Exponential models, this represents the ratio of observed / expected inside the cluster.
+            /** For the Bernoulli model, this represents the ratio of cases / (cases + controls) inside the cluster.
+            For the Poisson/Exponential models, this represents the ratio of observed / expected inside the cluster. */
             getValueAsString(expected ? static_cast<double>(observed)/expected : 0, buffer, 2);
             odeSeries->datastream() << (itrGrp==groups.getGroups().begin() ? "" : ",") <<  buffer.c_str();
         }
@@ -716,7 +716,7 @@ std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CutStructure&
     return groupClusterIdx;
 }
 
-/** Alters pass Filename to include suffix and extension. */
+/** Alters passed filename to include suffix and extension. */
 FileName& TemporalChartGenerator::getFilename(FileName& filename) {
     std::string buffer;
     printString(buffer, "%s%s", filename.getFileName().c_str(), FILE_SUFFIX_EXT);

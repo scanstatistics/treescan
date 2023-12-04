@@ -2,10 +2,10 @@
 #pragma hdrstop
 #include "PrintScreen.h"
 
-/** constructor */
+/** Constructor */
 PrintScreen::PrintScreen(bool bSuppressWarnings) : BasePrint(bSuppressWarnings) {}
 
-/** destructor */
+/** Destructor */
 PrintScreen::~PrintScreen() {}
 
 

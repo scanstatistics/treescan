@@ -35,7 +35,7 @@ class IniSection {
 
   private:
     ptr_vector<IniLine>         gaIniLines;
-    CommentContainer_t          gvCommentLineVectors;//vector of vectors of "comment" lines: gvCommentLineVectors[0] contains the lines that precede gaIniLines[0].  gCommentLineVectors[gaIniLines.size()] contains the lines that follow gaIniLines[gaIniLines.size() - 1] (the last non-comment line).
+    CommentContainer_t          gvCommentLineVectors; // vector of vectors of "comment" lines: gvCommentLineVectors[0] contains the lines that precede gaIniLines[0].  gCommentLineVectors[gaIniLines.size()] contains the lines that follow gaIniLines[gaIniLines.size() - 1] (the last non-comment line).
     std::string                 gsSectionName;
     mutable bool                gbModified;
 

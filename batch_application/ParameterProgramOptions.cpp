@@ -19,7 +19,7 @@ const char * ParameterProgramOptions::getOption(Parameters::ParameterType e, boo
     return sKey;
 }
 
-/** Returns program options for CParameter class. All program options are defiend as std::string we that we can have reading and errors
+/** Returns program options for CParameter class. All program options are defined as std::string we that we can have reading and errors
     between program options and file based parameter reading. */
 ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptions(ParamOptContainer_t& opt_descriptions) {
     const char * OPT_FORMAT = "%s options";
@@ -43,7 +43,7 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         opt_descriptions.back()->get<0>().add_options()(buffer.c_str(), po::value<std::string>(), GetParameterComment(itr->_type));
     }
 
-    /* multiple tree files (hidden) tab options */
+    // multiple tree files (hidden) tab options
     opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, "Additional Tree Files"), LINE_WIDTH, LINE_WIDTH/2),false,std::string())));
     for (size_t t=0; t < ADDITIONAL_TREEFILES; ++t) {
         opt_descriptions.back()->get<0>().add_options()
@@ -53,7 +53,7 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
     return opt_descriptions;
 }
 
-/** Overrides settigs  */
+/** Overrides settings  */
 bool ParameterProgramOptions::setParameterOverrides(const po::variables_map& vm) {
     IniParameterSpecification::ParameterInfoCollection_t parameter_collection;
     _specifications.getParameterInfoCollection(parameter_collection);
@@ -64,7 +64,7 @@ bool ParameterProgramOptions::setParameterOverrides(const po::variables_map& vm)
     }
 
     std::string buffer;
-    /* manually scan for multiple tree file parameters */
+    // manually scan for multiple tree file parameters
     for (size_t t=0; t < ADDITIONAL_TREEFILES; ++t) {
         printString(buffer, "%s%d", getOption(Parameters::TREE_FILE), t+2);
         if (vm.count(buffer.c_str())) {

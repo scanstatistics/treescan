@@ -103,7 +103,7 @@ class MinimumMeasureList : public AbstractMeasureList {
         }
 };
 
-/** Scan for areas with less than expected cases. */
+/** Scan for areas with fewer than expected cases. */
 class MaximumMeasureList : public AbstractMeasureList {
 protected:
     list_t _max_measure;
@@ -125,7 +125,7 @@ public:
     virtual double loglikelihood() {
         double simLogLikelihood = -std::numeric_limits<double>::max();
         list_container_t::size_type iListSize = static_cast<list_container_t::size_type>(_scanRunner.getTotalC());
-        /* Don't want to consider simulations with cases less than minimum. */
+        /** Don't want to consider simulations with cases less than minimum. */
         list_container_t::size_type i = static_cast<list_container_t::size_type>(_scanRunner.getParameters().getMinimumLowRateNodeCases());
 
         list_container_t& measure = (*_max_measure);
@@ -175,16 +175,16 @@ public:
         double simLogLikelihood = -std::numeric_limits<double>::max(), max_excess(0);
         list_container_t::size_type i, iListSize = static_cast<list_container_t::size_type>(_scanRunner.getTotalC()),
                                     iHalfListSize = static_cast<list_container_t::size_type>(iListSize / 2);
-        //Start case index at specified minimum number of cases.
+        // Start case index at specified minimum number of cases.
         list_container_t::size_type iH = static_cast<list_container_t::size_type>(_scanRunner.getParameters().getMinimumHighRateNodeCases());
         list_container_t::size_type iL = static_cast<list_container_t::size_type>(_scanRunner.getParameters().getMinimumLowRateNodeCases());
 
         list_container_t& maxmeasure = (*_max_measure), & minmeasure = (*_min_measure);
         if (_scanRunner.getParameters().getModelType() == Parameters::BERNOULLI_TREE) {
             double total_measure(_scanRunner.getTotalN()), risk(static_cast<double>(_scanRunner.getTotalC()) / _scanRunner.getTotalN());
-            //Calculating the LLR for less than half the cases can use a trick where the
-            //calculation is performed only if the excess exceeds any previous excess. But
-            //note that this trick is not valid for low rates, which use same process regardless.
+            // Calculating the LLR for less than half the cases can use a trick where the
+            // calculation is performed only if the excess exceeds any previous excess. But
+            // note that this trick is not valid for low rates, which use same process regardless.
             for (i=std::min(iL, iH); i < iHalfListSize; ++i) {
                 if (i >= iH && static_cast<double>(i) - minmeasure[i] * risk > max_excess) {
                     max_excess = static_cast<double>(i) - minmeasure[i] * risk;
@@ -194,7 +194,7 @@ public:
                     simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(static_cast<int>(i), maxmeasure[i]));
                 }
             }
-            //Calculate LLR for remaining half - trick not valid when number of cases is greater than or equal half.
+            // Calculate LLR for remaining half - trick not valid when number of cases is greater than or equal half.
             for (i = std::max(std::min(iL, iH), iHalfListSize); i <= iListSize; ++i) {
                 if (i >= iH && minmeasure[i] != 0 && static_cast<double>(i) * total_measure > minmeasure[i] * static_cast<double>(iListSize)) {
                     simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(static_cast<int>(i), minmeasure[i]));
@@ -204,9 +204,9 @@ public:
                 }
             }
         } else {
-            //Calculating the LLR for less than half the cases can use a trick where the
-            //calculation is performed only if the excess exceeds any previous excess. But
-            //note that this trick is not valid for low rates, which use same process regardless.
+            // Calculating the LLR for less than half the cases can use a trick where the
+            // calculation is performed only if the excess exceeds any previous excess. But
+            // note that this trick is not valid for low rates, which use same process regardless.
             for (i = std::min(iL, iH); i < iHalfListSize; ++i) {
                 if (i >= iH && static_cast<double>(i) - minmeasure[i] > max_excess) {
                     max_excess = static_cast<double>(i) - minmeasure[i];
@@ -216,7 +216,7 @@ public:
                     simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(static_cast<int>(i), maxmeasure[i]));
                 }
             }
-            //Calculate LLR for remaining half - trick not valid when number of cases is greater than or equal half.
+            // Calculate LLR for remaining half - trick not valid when number of cases is greater than or equal half.
             for (i = std::max(std::min(iL, iH), iHalfListSize); i <= iListSize; ++i) {
                 if (i >= iH && minmeasure[i] != 0 && static_cast<double>(i) > minmeasure[i]) {
                     simLogLikelihood = std::max(simLogLikelihood, _loglikelihood->LogLikelihood(static_cast<int>(i), minmeasure[i]));
@@ -231,7 +231,7 @@ public:
 };
 
 
-//runs jobs for the "successive" algorithm
+/** Runs jobs for the "successive" algorithm */
 class MCSimSuccessiveFunctor {
 public:
     typedef unsigned int param_type;
@@ -260,7 +260,7 @@ public:
     result_type operator() (param_type const & param);
 };
 
-//runs jobs for the "successive" algorithm for the sequential purely temporal scan
+/** Runs jobs for the "successive" algorithm for the sequential purely temporal scan */
 class SequentialMCSimSuccessiveFunctor {
 public:
     typedef unsigned int param_type;
@@ -272,7 +272,7 @@ private:
     boost::shared_ptr<SimulationNode> _treeSimNode;
    Loglikelihood_t _loglikelihood;
     const ScanRunner & _scanRunner;
-    RandomNumberGenerator _random_number_generator;  /** generates random numbers */
+    RandomNumberGenerator _random_number_generator;  // generates random numbers
     DataTimeRange _range;
     DataTimeRange _startWindow;
     DataTimeRange _endWindow;
@@ -286,7 +286,7 @@ public:
 
 class SequentialFileDataSource;
 
-//runs jobs for the "successive" algorithm for the sequential purely temporal scan
+/** Runs jobs for the "successive" algorithm for the sequential purely temporal scan */
 class SequentialReadMCSimSuccessiveFunctor {
 public:
     typedef unsigned int param_type;

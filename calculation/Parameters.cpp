@@ -131,12 +131,12 @@ void Parameters::assignMissingPath(std::string & sInputFilename, bool bCheckWrit
         return ch;
     });
     #endif
-    //Assume that if slashes exist, then this is a complete file path, so
-    //we'll make no attempts to determine what path might be otherwise.
+    // Assume that if slashes exist, then this is a complete file path, so
+    // we'll make no attempts to determine what path might be otherwise.
     if (sInputFilename.find(FileName::getPathSeparator()) == sInputFilename.npos) {
         FileName fParameterFilename, fFilename;
         std::string buffer;
-        //If no slashes, then this file is assumed to be in same directory as parameters file.
+        // If no slashes, then this file is assumed to be in same directory as parameters file.
         fParameterFilename.setFullPath(getSourceFileName().c_str());
         fFilename.setFullPath(sInputFilename.c_str());
         fFilename.setLocation(fParameterFilename.getLocation(buffer).c_str());
@@ -258,7 +258,7 @@ void Parameters::copy(const Parameters &rhs) {
     _allow_multiple_roots = rhs._allow_multiple_roots;
 }
 
-/* Returns the maximum temporal window in data time units. */
+/** Returns the maximum temporal window in data time units. */
 unsigned int Parameters::getMaximumWindowInTimeUnits() const {
     switch (_maximum_window_type) {
         case Parameters::PERCENTAGE_WINDOW :
@@ -278,10 +278,10 @@ unsigned int Parameters::getNumParallelProcessesToExecute() const {
   unsigned int  iNumProcessors;
 
   if (_numRequestedParallelProcesses <= 0)
-    //parameter of zero or less indicates that we want all available processors
+    // parameter of zero or less indicates that we want all available processors
     iNumProcessors = GetNumSystemProcessors();
   else
-    //else parameter indicates the maximum number of processors to use
+    // else parameter indicates the maximum number of processors to use
     iNumProcessors = std::min(_numRequestedParallelProcesses, GetNumSystemProcessors());
     //iNumProcessors = giNumRequestedParallelProcesses;
 
@@ -328,8 +328,8 @@ void Parameters::setCountFileName(const char * sCountFileName, bool bCorrectForR
 }
 
 /** Sets control data file name.
-If bCorrectForRelativePath is true, an attempt is made to modify filename
-to path relative to executable. This is only attempted if current file does not exist. */
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file does not exist. */
 void Parameters::setControlFileName(const char * sControlFileName, bool bCorrectForRelativePath) {
     _controlFileName = sControlFileName;
     if (bCorrectForRelativePath) assignMissingPath(_controlFileName);
@@ -359,7 +359,7 @@ void Parameters::setTreeFileName(const char * sTreeFileName, bool bCorrectForRel
 }
 
 
-/** initializes global variables to default values */
+/** Initializes global variables to default values */
 void Parameters::setAsDefaulted() {
     _treeFileNames.resize(1);
     _treeFileNames.front() = "";
@@ -499,7 +499,7 @@ void Parameters::setPowerEvaluationAltHypothesisFilename(const char * s, bool bC
 
 /** Sets filename of file used to load parameters. */
 void Parameters::setSourceFileName(const char * sParametersSourceFileName) {
-  //Use FileName class to ensure that a relative path is expanded to absolute path.
+  // Use FileName class to ensure that a relative path is expanded to absolute path.
   std::string buffer;
   _parametersSourceFileName = FileName(sParametersSourceFileName).getFullPath(buffer);
 }

@@ -14,7 +14,7 @@ OrderedSimulationDataWriter::OrderedSimulationDataWriter(const std::string& file
     _sim_stream->open(filename.c_str(), std::ios::ate | std::ios::app);
 }
 
-/* Writes simulation data to text file for given simulation while ensuring that simulations written are ordered by ordinal. */
+/** Writes simulation data to text file for given simulation while ensuring that simulations written are ordered by ordinal. */
 void OrderedSimulationDataWriter::write(unsigned int simulation, const SimNodeContainer_t& treeSimNodes) {
     if (_sim_position == simulation) { // If simulation position equals this simulation, write it now.
         for (auto& node : treeSimNodes)
@@ -42,7 +42,7 @@ void OrderedSimulationDataWriter::write(unsigned int simulation, const SimNodeCo
         _sim_stream->close();
 }
 
-/* Writes sequential simulation data to text file for given simulation while ensuring that simulations written are ordered by ordinal. */
+/** Writes sequential simulation data to text file for given simulation while ensuring that simulations written are ordered by ordinal. */
 void OrderedSimulationDataWriter::writeSequenceData(unsigned int simulation, const SimNodeContainer_t& treeSimNodes, const boost::dynamic_bitset<>& _restricted_levels, const boost::dynamic_bitset<>& writeNodes) {
     if (_sim_position == simulation) { // If simulation position equals this simulation, write it now.
         for (size_t t = 0; t < treeSimNodes.size(); ++t) {
@@ -95,7 +95,7 @@ FileStreamReadManager::SharedStream_t FileStreamReadManager::getStream(const Abs
 
 AbstractDenominatorDataRandomizer::AbstractDenominatorDataRandomizer(const ScanRunner& scanner, long lInitialSeed) :
     AbstractRandomizer(scanner.getParameters(), scanner.getMultiParentNodesExist(), lInitialSeed), _scanner(scanner), _sim_position(1) {
-    // Store the un-evaluated levelsin tree for in bitsetfor tree sequential analyses.
+    // Store the un-evaluated levels in tree for in bitset for tree sequential analyses.
     if (_parameters.isSequentialScanTreeOnly()) {
         _restricted_levels.resize(scanner.getTreeStatistics()._nodes_per_level.size() + 1);
         if (_parameters.getRestrictTreeLevels()) {
@@ -173,7 +173,7 @@ int AbstractDenominatorDataRandomizer::readSequentialData(const std::string& fil
     for (size_t i = 0; i < treeSimNodes.size(); ++i) {
         auto& node = treeSimNodes[i];
         if (_restricted_levels.test(node.getLevel()))
-            continue; // this node were skipped during write process, so skip on read
+            continue; // this node was skipped during write process, so skip on read
         if (_scanner.getSequentialTreeNodesToRead().size() && !_scanner.getSequentialTreeNodesToRead().test(i))
             continue; // skip nodes that were not written on last write
         *_sim_stream >> count;
@@ -188,9 +188,9 @@ void AbstractDenominatorDataRandomizer::sequentialSetup(const ScanRunner& scanne
 	if (scanner.getParameters().isSequentialScanTreeOnly()) {
         if (!scanner.getSequentialStatistic().isFirstLook()) {
             _read_filename = scanner.getSequentialStatistic().getSimulationDataFilename();
-            // Since the cached simulation data file can be enormous with some analyses, and a sparse matrix at times,
-            // we store the resting file in a zip archive to reduce the burden on the file system.
-            // The archive will contain only a file named _read_filename, which is the previous simulation data.
+            /** Since the cached simulation data file can be enormous with some analyses, and a sparse matrix at times,
+                we store the resting file in a zip archive to reduce the burden on the file system.
+                The archive will contain only a file named _read_filename, which is the previous simulation data. */
             const_cast<ScanRunner&>(scanner).getPrint().Printf("Unpacking sequential scan simulation data cache file ...\n", BasePrint::P_STDOUT);
             unZip(scanner.getSequentialStatistic().getSimulationDataArchiveName());
         }

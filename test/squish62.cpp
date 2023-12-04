@@ -6,10 +6,10 @@
 #include "DataFileWriter.h"
 #include "DataSource.h"
 
-/* Test Suite for the sequential scan. */
+/** Test Suite for the sequential scan. */
 BOOST_AUTO_TEST_SUITE( sequential_scan_suite )
 
-/* Tests the contents of the sequential scan file are consistent given the same settings. */
+/** Tests the contents of the sequential scan file are consistent given the same settings. */
 BOOST_FIXTURE_TEST_CASE( test_sequential_file_output, time_only_fixture ) {
     BOOST_CHECK(_parameters.getScanType() ==  Parameters::TIMEONLY);
     BOOST_CHECK(_parameters.getConditionalType() ==  Parameters::TOTALCASES);
@@ -51,7 +51,7 @@ BOOST_FIXTURE_TEST_CASE( test_sequential_file_output, time_only_fixture ) {
     }
 }
 
-/* Tests that sequential scans must user the same parameter settings for subsequent scans. */
+/** Tests that sequential scans must user the same parameter settings for subsequent scans. */
 BOOST_FIXTURE_TEST_CASE( test_select_parameters_cannot_change, time_only_fixture ) {
     BOOST_CHECK(_parameters.getScanType() ==  Parameters::TIMEONLY);
     BOOST_CHECK(_parameters.getConditionalType() ==  Parameters::TOTALCASES);

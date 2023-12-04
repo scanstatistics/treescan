@@ -22,12 +22,12 @@ const unsigned int AsciiPrintFormat::giRightMargin                   = 80;
 /** width of version header section */
 const unsigned int AsciiPrintFormat::giVersionHeaderWidth            = 29;
 
-/** constructor */
+/** Constructor */
 AsciiPrintFormat::AsciiPrintFormat(bool bOneDataSet) : gbOneDataSet(bOneDataSet) {
   SetMarginsAsOverviewSection();
 }
 
-/** destructor */
+/** Destructor */
 AsciiPrintFormat::~AsciiPrintFormat() {}
 
 /** Prints data supplied by sDataString parameter to file in a manner
@@ -42,20 +42,20 @@ void AsciiPrintFormat::PrintAlignedMarginsDataString(std::ostream& out, const st
   unsigned int  iStart, iScan, iPrint, iDataPrintWidth;
 
   iStart = 0;
-  //calculate number of characters in the data print area
+  // calculate number of characters in the data print area
   iDataPrintWidth = giRightMargin - giDataLeftMargin;
-  //if data string is wider than print area then cause it to wrap
+  // if data string is wider than print area then cause it to wrap
   while (iStart + iDataPrintWidth < sDataString.size()) {
-      //scan backwards from iStart + iDataPrintWidth, looking for blank to replace
+      // scan backwards from iStart + iDataPrintWidth, looking for blank to replace
       iScan = iStart + iDataPrintWidth;
       while (iScan > iStart) {
            if (sDataString[iScan] == ' ' || sDataString[iScan] == '\n') {
-             //found insertion point - first print characters up to iScan
+             // found insertion point - first print characters up to iScan
              for (iPrint=iStart; iPrint < iScan; ++iPrint)
                out << sDataString[iPrint]; //putChar(sDataString[iPrint], fp);
-             //print newline character - wrap
+             // print newline character - wrap
              out << std::endl; 
-             //pad with blanks to align data
+             // pad with blanks to align data
              for (iPrint=0; iPrint < giDataLeftMargin; ++iPrint)
                out << " ";
              iStart = iScan + 1/*replaced blank character*/;
@@ -63,23 +63,23 @@ void AsciiPrintFormat::PrintAlignedMarginsDataString(std::ostream& out, const st
            }
            iScan--;
       }
-      //no blank found, so cause data to wrap at right margin
+      // no blank found, so cause data to wrap at right margin
       if (iScan == iStart) {
-        //print characters up to iDataPrintWidth
+        // print characters up to iDataPrintWidth
         for (iPrint=iStart; iPrint < iStart + iDataPrintWidth; ++iPrint)
-           out << sDataString[iPrint]; //putChar(sDataString[iPrint], fp);
-        //print newline - wrap
+           out << sDataString[iPrint]; // putChar(sDataString[iPrint], fp);
+        // print newline - wrap
         out << std::endl;
-        //pad with blanks to align data
+        // pad with blanks to align data
         for (iPrint=0; iPrint < giDataLeftMargin; ++iPrint)
            out << " ";
         iStart += iDataPrintWidth;
       }
   }
-  //print remaining characters of sDataString
+  // print remaining characters of sDataString
   for (iPrint=iStart; iPrint < sDataString.size(); ++iPrint)
      out << sDataString[iPrint];
-  //append newlines as requested
+  // append newlines as requested
   while (iPostNewlines-- > 0)
      out << std::endl;
 }
@@ -88,14 +88,14 @@ void AsciiPrintFormat::PrintAlignedMarginsDataString(std::ostream& out, const st
 void AsciiPrintFormat::PrintNonRightMarginedDataString(std::ostream& out, const std::string& sDataString, bool bPadLeftMargin, unsigned int iPostNewlines) const {
   unsigned int  iPrint;
 
-  //pad with blanks to align data
+  // pad with blanks to align data
   for (iPrint=0; bPadLeftMargin && iPrint < giDataLeftMargin; ++iPrint)
      out << " ";
 
   for (iPrint=0; iPrint < sDataString.size(); ++iPrint)
        out << sDataString[iPrint];
 
-  //append newlines as requested
+  // append newlines as requested
   while (iPostNewlines-- > 0)
      out << std::endl;
 }
@@ -105,27 +105,27 @@ void AsciiPrintFormat::PrintSectionLabel(std::ostream& out, const char * sText, 
   unsigned int   iStringLength, iFillLength, iPad=0;
 
   iStringLength = 0;
-  //add left margin spacing if requested
+  // add left margin spacing if requested
   while (bPadLeftMargin && iPad++ < giLeftMargin) {
        out << ' ';
        ++iStringLength;
   }
-  //add label
+  // add label
   out << sText;
-  iStringLength += static_cast<unsigned int>(strlen(sText)); //+= fprintf(fp, sText);
+  iStringLength += static_cast<unsigned int>(strlen(sText)); // += fprintf(fp, sText);
 
-  //check that created label isn't greater than defined maximum width of label
+  // check that created label isn't greater than defined maximum width of label
   if (iStringLength > (bPadLeftMargin ? giLabelWidth + giLeftMargin : giLabelWidth))
     throw prg_error("Label text has length of %u, but defined max length is %u.\n", "PrintSectionLabel()",
                     iStringLength, (bPadLeftMargin ? giLabelWidth + giLeftMargin : giLabelWidth));
-  //calculate fill length
+  // calculate fill length
   iFillLength = (bPadLeftMargin ? giLeftMargin + giLabelWidth : giLabelWidth);
-  //fill remaining label space with '.'
+  // fill remaining label space with '.'
   while (iStringLength < iFillLength) {
        out << ".";
        ++iStringLength;
   }
-  //append label colon
+  // append label colon
   out << ": ";
   ++iStringLength;
 }
@@ -150,7 +150,7 @@ void AsciiPrintFormat::PrintVersionHeader(std::ostream& out) {
   unsigned int  iSeparatorsMargin, iTextMargin, iPrint;
   std::string   buffer;
 
-  //calculate padding to center separators
+  // calculate padding to center separators
   iSeparatorsMargin = (giRightMargin - giVersionHeaderWidth)/2;
 
   iPrint=0;
@@ -191,7 +191,7 @@ void AsciiPrintFormat::SetMarginsAsCutSection(unsigned int iNumber) {
       ++giLeftMargin;
       n = (int)floor(((double)n)/10);
   }
-  //set margin for data print
+  // set margin for data print
   giDataLeftMargin = (gbOneDataSet ? giOneDataSetCutLabelWidth : giMultiDataSetCutLabelWidth) + giLeftMargin + static_cast<unsigned int>(strlen(": "));
   giLabelWidth = (gbOneDataSet ? giOneDataSetCutLabelWidth : giMultiDataSetCutLabelWidth);
 }
@@ -199,7 +199,7 @@ void AsciiPrintFormat::SetMarginsAsCutSection(unsigned int iNumber) {
 /** Adjusts margins for run overview section. The overview section contains
     no labels, only text. */
 void AsciiPrintFormat::SetMarginsAsOverviewSection() {
-  //no labels in overview section - purely wrapping text
+  // no labels in overview section - purely wrapping text
   giLeftMargin = giDataLeftMargin = giLabelWidth = 0;
 }
 

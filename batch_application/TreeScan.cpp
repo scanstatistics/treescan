@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
     try {
         __TreeScanInit(argv[0]);
 
-        /* general options */
+        // general options
         po::options_description application("", 200);
         application.add_options()
             ("parameter-file,f", po::value<std::string>(), "parameter file")
@@ -100,15 +100,15 @@ int main(int argc, char* argv[]) {
             return 1;
         }
 
-        /* hidden options */
+        // hidden options
         bool force_censored_algorithm = false;
         po::options_description hidden("Hidden options", 200);
         hidden.add_options()("force-censor-algorithm,k", po::bool_switch(&force_censored_algorithm), "Force Censor Algorithm");
 
-        /* positional options */
+        // positional options
         po::positional_options_description pd; 
         pd.add("parameter-file", 1);
-        /* parse program options */
+        // parse program options
         po::options_description cmdline_options;
         // define parameter options based upon determined version
         ParameterProgramOptions parameterOptions(parameters, opts_version, console);
@@ -131,32 +131,32 @@ int main(int argc, char* argv[]) {
             return 1;
         }
 
-        /* program options processing */
+        // program options processing
         if (vm.count("help")) {usage_message(argv[0], application, parameterOptions, opt_descriptions, false, console); return 0;}
         if (vm.count("version")) {console.Printf("TreeScan %s.%s.%s %s.\n", BasePrint::P_STDOUT, VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE, VERSION_PHASE); return 0;}
         if (vm.count("display-parameters")) {usage_message(argv[0], application, parameterOptions, opt_descriptions, true, console); return 0;}
-        /* read parameter file */
+        // read parameter file
         if (vm.count("parameter-file")) {
             if (!ParameterAccessCoordinator(parameters).read(vm["parameter-file"].as<std::string>().c_str(), console))
                 throw resolvable_error("\nThe parameter settings that prevent TreeScan from continuing.\n"
                                        "Please review above message(s) and modify parameter settings accordingly.");
         }
 
-        /* apply parameter overrides*/
+        // apply parameter overrides
         if (!parameterOptions.setParameterOverrides(vm)) {
             throw resolvable_error("\nThe parameter settings that prevent TreeScan from continuing.\n"
                                    "Please review above message(s) and modify parameter settings accordingly.");
         }
-        /* write parameters to file, if requested */
+        // write parameters to file, if requested
         if (vm.count("write-parameters")) {
             ParameterAccessCoordinator(parameters).write(vm["write-parameters"].as<std::string>().c_str(), console);
         }
         if (force_censored_algorithm) parameters.setForcedCensoredAlgorithm(true);
-        /* validate parameters - print errors to console */
+        // validate parameters - print errors to console
         if (!ParametersValidate(parameters).Validate(console))
             throw resolvable_error("\nThe parameter file contains incorrect settings that prevent TreeScan from continuing. "
                                    "Please review above message(s) and modify parameter settings accordingly.");
-        /* additional program options processing */
+        // additional program options processing
         if (printParameters) {ParametersPrint(parameters).Print(std::cout); return 0;}
         if (verifyParameters) {console.Printf("Parameters verified, no setting errors detected.\n", BasePrint::P_STDOUT); return 0;}
 

@@ -25,24 +25,24 @@ void ParameterAccessCoordinator::write(const std::string& filename, BasePrint& p
 
 //////////////////// AbtractParameterFileAccess ////////////////////////////////
 
-/** constructor */
+/** Constructor */
 AbtractParameterFileAccess::AbtractParameterFileAccess(Parameters& Parameters, BasePrint& PrintDirection, bool bWriteBooleanAsDigit)
                            :_parameters(Parameters), gPrintDirection(PrintDirection), _read_error(false), _write_boolean_as_digit(bWriteBooleanAsDigit) {}
 
-/** destructor */
+/** Destructor */
 AbtractParameterFileAccess::~AbtractParameterFileAccess() {}
 
 /** Returns constant char pointer to parameters comment string. */
 const char * AbtractParameterFileAccess::GetParameterComment(Parameters::ParameterType e) const {
     try {
         switch (e) {
-            /* Input */
+            // Input
             case Parameters::TREE_FILE               : return "tree structure filename";
             case Parameters::COUNT_FILE              : return "count data filename";
             case Parameters::CONTROL_FILE            : return "control data filename";
             case Parameters::DATE_PRECISION          : return "date precision type (NONE=0, GENERIC=1, YEAR=2, MONTH=3, DAY=4)";
             case Parameters::DATA_TIME_RANGES        : return "data time ranges: [integer,integer] or [yyyy/mm/dd,yyyy/mm/dd]";
-            /* Advanced Input */
+            // Advanced Input
             case Parameters::CUT_FILE                : return "cuts filename";
             case Parameters::CUT_TYPE                : return "default cuts type (SIMPLE=0, PAIRS=1, TRIPLETS=2, ORDINAL=3, COMBINATORIAL=4)";
             case Parameters::DATA_ONLY_ON_LEAVES     : return "allow data only on tree leaves - (y/n)";
@@ -55,7 +55,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::MINIMUM_CENSOR_PERCENTAGE : return "minimum censor time percentage of study period (0 < x <= 100.0)";
             case Parameters::RSK_WND_CENSOR          : return "apply risk window restriction due to censoring - (y/n)";
             case Parameters::RSK_WND_ALT_CENSOR_DENOM: return "risk window alternative censor denominator (integer)";
-            /* Analysis */
+            // Analysis
             case Parameters::SCAN_TYPE               : return "scan type (TREEONLY=0, TREETIME=1, TIMEONLY=2)";
             case Parameters::CONDITIONAL_TYPE        : return "conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)";
             case Parameters::MODEL_TYPE              : return "probability model type (POISSON=0, BERNOULLI_TREE=1, UNIFORM=2, Not-Applicable=3)";
@@ -67,7 +67,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::START_DATA_TIME_RANGE   : return "start data time range: [integer,integer] or [yyyy/mm/dd,yyyy/mm/dd]";
             case Parameters::END_DATA_TIME_RANGE     : return "end data time range: [integer,integer] or [yyyy/mm/dd,yyyy/mm/dd]";
             case Parameters::SCAN_RATE_TYPE          : return "scan rate type (HIGHRATE=0, LOWRATE=1, HIGHORLOWRATE=2)";
-            /* Advanced Analysis - Temporal Window */
+            // Advanced Analysis - Temporal Window
             case Parameters::MAXIMUM_WINDOW_PERCENTAGE : return "maximum temporal size as percentage of data time range (0 < x <= 50.0)";
             case Parameters::MAXIMUM_WINDOW_FIXED    : return "maximum temporal size as fixed time length (integer)";
             case Parameters::MAXIMUM_WINDOW_TYPE     : return "maximum temporal size selection (PERCENTAGE_WINDOW=0, FIXED_LENGTH=1)";
@@ -77,24 +77,24 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::SEQUENTIAL_FILE         : return "sequential scan filename";
             case Parameters::SEQUENTIAL_ALPHA_OVERALL: return "sequential alpha overall";
             case Parameters::SEQUENTIAL_ALPHA_SPENDING: return "sequential alpha spending";
-            /* Advanced Analysis - Adjustments */
+            // Advanced Analysis - Adjustments
             case Parameters::DAYOFWEEK_ADJUSTMENT    : return "perform day of week adjustments (y/n)";
             case Parameters::APPLY_EXCLUSION_RANGES  : return "apply exclusion time ranges (y/n)";
             case Parameters::EXCLUSION_RANGES        : return "exclusion time ranges (semi-colon separated list of ranges: [integer,integer];[integer,integer] or [yyyy/mm/dd,yyyy/mm/dd];[yyyy/mm/dd,yyyy/mm/dd])";
-                /* Advanced Analysis - Inference */
+            // Advanced Analysis - Inference
             case Parameters::REPLICATIONS            : return "number of simulation replications (0, 9, 999, n999)";
             case Parameters::RANDOMIZATION_SEED      : return "randomization seed (integer)";
             case Parameters::RANDOMLY_GENERATE_SEED  : return "generate randomization seed (y/n)";
             case Parameters::RESTRICT_TREE_LEVELS    : return "restrict tree levels evaluated (y/n)";
             case Parameters::RESTRICTED_TREE_LEVELS  : return "tree levels excluded from evaluation (csv list of unsigned integers, root level is 1)";
             case Parameters::MINIMUM_CASES_NODE      : return "minimum number of cases in a node (integer)";
-                /* Output */
+            // Output
             case Parameters::RESULTS_FILE            : return "results filename";
             case Parameters::RESULTS_HTML            : return "create HTML results (y/n)";
             case Parameters::RESULTS_CSV             : return "create CSV results (y/n)";
             case Parameters::RESULTS_ASN             : return "create NCBI Asn results (y/n)";
             case Parameters::RESULTS_NWK             : return "create Newick File (y/n)";
-            /* Advanced Output - Additional Output */
+            // Advanced Output - Additional Output
             case Parameters::RESULTS_LLR             : return "create LLR results (y/n)";
             case Parameters::REPORT_CRITICAL_VALUES  : return "report critical values (y/n)";
             case Parameters::REPORT_ATTR_RISK        : return "report attributable risk (y/n)";
@@ -103,7 +103,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::TEMPORAL_GRAPH_REPORT_TYPE: return "temporal graph cluster reporting type (0=Only most likely cluster, 1=X most likely clusters, 2=Only significant clusters)";
             case Parameters::TEMPORAL_GRAPH_MLC_COUNT: return "number of most likely clusters to report in temporal graph (positive integer)";
             case Parameters::TEMPORAL_GRAPH_CUTOFF   : return "significant clusters p-value cutoff to report in temporal graph (0.000-1.000)";
-            /* Power Evaluations */
+            // Power Evaluations
             case Parameters::POWER_EVALUATIONS       : return "perform power evaluations (y/n)";
             case Parameters::POWER_EVALUATION_TYPE   : return "power evaluation type (0=Analysis And Power Evaluation Together, 1=Only Power Evaluation With Count File, 2=Only Power Evaluation With Defined Total Cases)";
             case Parameters::CRITICAL_VALUES_TYPE    : return "critical values type (0=Monte Carlo, 1=User Specified Values)";
@@ -115,14 +115,14 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::POWER_EVALUATIONS_FILE : return "power evaluation alternative hypothesis filename";
             case Parameters::POWER_BASELINE_PROBABILITY : return "power baseline probability (integer/integer)";
             case Parameters::POWER_Z                 : return "power z value (0 < z <= 0.01)";
-                /* Power Simulations */
+            // Power Simulations
             case Parameters::READ_SIMULATIONS        : return "input simulation data (y/n)";
             case Parameters::INPUT_SIM_FILE          : return "input simulation filename";
             case Parameters::WRITE_SIMULATIONS       : return "output simulation data (y/n)";
             case Parameters::OUTPUT_SIM_FILE         : return "output simulation filename";
-            /* Runtime Options */
+            // Runtime Options
             case Parameters::PARALLEL_PROCESSES      : return "number of parallel processes to execute (0=All Processors, x=At Most X Processors)";
-            /* System */
+            // System
             case Parameters::CREATION_VERSION        : return "parameters version - do not modify";
             case Parameters::PROSPECTIVE_FREQ_TYPE   : return "frequency of prospective analyses type (0=Daily, 1=Weekly, 2=Monthy, 3=Quarterly, 4=Yearly)";
             case Parameters::PROSPECTIVE_FREQ        : return "frequency of prospective (integer)";
@@ -140,13 +140,13 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
 
     try {
         switch (e) {
-            /* Input */
+            // Input
             case Parameters::TREE_FILE                : s = _parameters.getTreeFileNames().front(); return s;
             case Parameters::COUNT_FILE               : s = _parameters.getCountFileName(); return s;
             case Parameters::CONTROL_FILE             : s = _parameters.getControlFileName(); return s;
             case Parameters::DATE_PRECISION           : return AsString(s, _parameters.getDatePrecisionType());
             case Parameters::DATA_TIME_RANGES         : s =  _parameters.getDataTimeRangeStr(); return s;
-            /* Advanced Input */
+            // Advanced Input
             case Parameters::CUT_FILE                 : s = _parameters.getCutsFileName(); return s;
             case Parameters::CUT_TYPE                 : return AsString(s, _parameters.getCutType());
             case Parameters::DATA_ONLY_ON_LEAVES      : return AsString(s, _parameters.getDataOnlyOnLeaves());
@@ -159,7 +159,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::MINIMUM_CENSOR_PERCENTAGE: return AsString(s, _parameters.getMinimumCensorPercentage());
             case Parameters::RSK_WND_CENSOR: return AsString(s, _parameters.isApplyingRiskWindowRestrictionCensored());
             case Parameters::RSK_WND_ALT_CENSOR_DENOM : return AsString(s, _parameters.getRiskWindowAltCensorDenominator());
-            /* Analysis */
+            // Analysis
             case Parameters::SCAN_TYPE                : return AsString(s, _parameters.getScanType());
             case Parameters::CONDITIONAL_TYPE         : return AsString(s, _parameters.getConditionalType());
             case Parameters::MODEL_TYPE               : return AsString(s, _parameters.getModelType());
@@ -175,30 +175,30 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::START_DATA_TIME_RANGE    : return s = _parameters.getTemporalStartRangeStr(); return s;
             case Parameters::END_DATA_TIME_RANGE      : return s = _parameters.getTemporalEndRangeStr(); return s;
             case Parameters::SCAN_RATE_TYPE           : return AsString(s, _parameters.getScanRateType());
-            /* Advanced Analysis - Temporal Window */
+            // Advanced Analysis - Temporal Window
             case Parameters::MAXIMUM_WINDOW_PERCENTAGE: return AsString(s, _parameters.getMaximumWindowPercentage());
             case Parameters::MAXIMUM_WINDOW_FIXED     : return AsString(s, _parameters.getMaximumWindowLength());
             case Parameters::MAXIMUM_WINDOW_TYPE      : return AsString(s, _parameters.getMaximumWindowType());
             case Parameters::MINIMUM_WINDOW_FIXED     : return AsString(s, _parameters.getMinimumWindowLength());
             case Parameters::PROSPECTIVE_ANALYSIS     : return AsString(s, _parameters.getIsProspectiveAnalysis());
-            /* Advanced Analysis - Adjustments */
+            // Advanced Analysis - Adjustments
             case Parameters::DAYOFWEEK_ADJUSTMENT     : return AsString(s, _parameters.getPerformDayOfWeekAdjustment());
             case Parameters::APPLY_EXCLUSION_RANGES   : return AsString(s, _parameters.isApplyingExclusionTimeRanges());
             case Parameters::EXCLUSION_RANGES         : s = _parameters.getExclusionTimeRangeStr(); return s;
-            /* Advanced Analysis - Inference */
+            // Advanced Analysis - Inference
             case Parameters::REPLICATIONS             : return AsString(s, _parameters.getNumReplicationsRequested());
             case Parameters::RANDOMIZATION_SEED       : return AsString(s, static_cast<unsigned int>(_parameters.getRandomizationSeed()));
             case Parameters::RANDOMLY_GENERATE_SEED   : return AsString(s, _parameters.isRandomlyGeneratingSeed());
             case Parameters::RESTRICT_TREE_LEVELS     : return AsString(s, _parameters.getRestrictTreeLevels());
             case Parameters::RESTRICTED_TREE_LEVELS   : typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), s); return s;
             case Parameters::MINIMUM_CASES_NODE       : return AsString(s, _parameters.getMinimumHighRateNodeCases());
-            /* Output */
+            // Output
             case Parameters::RESULTS_FILE             : s = _parameters.getOutputFileName(); return s;
             case Parameters::RESULTS_HTML             : return AsString(s, _parameters.isGeneratingHtmlResults());
             case Parameters::RESULTS_CSV              : return AsString(s, _parameters.isGeneratingTableResults());
             case Parameters::RESULTS_ASN              : return AsString(s, _parameters.isGeneratingNCBIAsnResults());
             case Parameters::RESULTS_NWK              : return AsString(s, _parameters.isGeneratingNewickFile());
-                /* Advanced Output - Additional Output */
+            // Advanced Output - Additional Output
             case Parameters::RESULTS_LLR              : return AsString(s, _parameters.isGeneratingLLRResults());
             case Parameters::REPORT_CRITICAL_VALUES   : return AsString(s, _parameters.getReportCriticalValues());
             case Parameters::REPORT_ATTR_RISK         : return AsString(s, _parameters.getReportAttributableRisk());
@@ -207,7 +207,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::TEMPORAL_GRAPH_REPORT_TYPE: return AsString(s, _parameters.getTemporalGraphReportType());
             case Parameters::TEMPORAL_GRAPH_MLC_COUNT: return AsString(s, _parameters.getTemporalGraphMostLikelyCount());
             case Parameters::TEMPORAL_GRAPH_CUTOFF: return AsString(s, _parameters.getTemporalGraphSignificantCutoff());
-            /* Power Evaluations */
+            // Power Evaluations
             case Parameters::POWER_EVALUATIONS        : return AsString(s, _parameters.getPerformPowerEvaluations());
             case Parameters::POWER_EVALUATION_TYPE    : return AsString(s, _parameters.getPowerEvaluationType());
             case Parameters::CRITICAL_VALUES_TYPE     : return AsString(s, _parameters.getCriticalValuesType());
@@ -219,14 +219,14 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::POWER_EVALUATIONS_FILE    : s = _parameters.getPowerEvaluationAltHypothesisFilename(); return s;
             case Parameters::POWER_BASELINE_PROBABILITY : return AsString(s, _parameters.getPowerBaselineProbabilityRatio());
             case Parameters::POWER_Z                   : return AsString(s, _parameters.getPowerZ());
-                /* Power Simulations */
+            // Power Simulations
             case Parameters::READ_SIMULATIONS         : return AsString(s, _parameters.isReadingSimulationData());
             case Parameters::INPUT_SIM_FILE           : s = _parameters.getInputSimulationsFilename(); return s;
             case Parameters::WRITE_SIMULATIONS        : return AsString(s, _parameters.isWritingSimulationData());
             case Parameters::OUTPUT_SIM_FILE          : s = _parameters.getOutputSimulationsFilename(); return s;
-            /* Runtime Options */
+            // Runtime Options
             case Parameters::PARALLEL_PROCESSES       : return AsString(s, _parameters.getNumRequestedParallelProcesses());
-            /* System */
+            // System
             case Parameters::CREATION_VERSION         : printString(s, "%s.%s.%s", VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE); return s;
             case Parameters::PROSPECTIVE_FREQ_TYPE: return AsString(s, _parameters.getProspectiveFrequencyType());
             case Parameters::PROSPECTIVE_FREQ: return AsString(s, _parameters.getProspectiveFrequency());
@@ -340,14 +340,14 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
 
     try {
         switch (e) {
-            /* Input */
+            // Input
             case Parameters::TREE_FILE                : _parameters.setTreeFileName(value.c_str(), true); break;
             case Parameters::COUNT_FILE               : _parameters.setCountFileName(value.c_str(), true); break;
             case Parameters::CONTROL_FILE             : _parameters.setControlFileName(value.c_str(), true); break;
             case Parameters::DATE_PRECISION           : iValue = ReadEnumeration(ReadInt(value, e), e, DataTimeRange::NONE, DataTimeRange::DAY);
                                                         _parameters.setDatePrecisionType((DataTimeRange::DatePrecisionType)iValue); break;
             case Parameters::DATA_TIME_RANGES         : _parameters.setDataTimeRangeStr(value.c_str()); break;
-            /* Advanced Input */
+            // Advanced Input
             case Parameters::CUT_FILE                 : _parameters.setCutsFileName(value.c_str(), true); break;
             case Parameters::CUT_TYPE                 : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::SIMPLE, Parameters::COMBINATORIAL);
                                                         _parameters.setCutType((Parameters::CutType)iValue); break;
@@ -361,7 +361,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::MINIMUM_CENSOR_PERCENTAGE: _parameters.setMinimumCensorPercentage(ReadUnsignedInt(value, e)); break;
             case Parameters::RSK_WND_CENSOR           : _parameters.setApplyingRiskWindowRestrictionCensored(ReadBoolean(value, e)); break;
             case Parameters::RSK_WND_ALT_CENSOR_DENOM : _parameters.setRiskWindowAltCensorDenominator(ReadDouble(value, e)); break;
-            /* Analysis */
+            // Analysis
             case Parameters::SCAN_TYPE                : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::TREEONLY, Parameters::TIMEONLY);
                                                         _parameters.setScanType((Parameters::ScanType)iValue); break;
             case Parameters::CONDITIONAL_TYPE         : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::UNCONDITIONAL, Parameters::NODEANDTIME);
@@ -381,18 +381,18 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::END_DATA_TIME_RANGE      : _parameters.setTemporalEndRangeStr(value.c_str()); break;
             case Parameters::SCAN_RATE_TYPE           : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::HIGHRATE, Parameters::HIGHORLOWRATE);
                                                         _parameters.setScanRateType((Parameters::ScanRateType)iValue); break;
-            /* Advanced Analysis - Temporal Window */
+            // Advanced Analysis - Temporal Window
             case Parameters::MAXIMUM_WINDOW_PERCENTAGE: _parameters.setMaximumWindowPercentage(ReadDouble(value, e)); break;
             case Parameters::MAXIMUM_WINDOW_FIXED     : _parameters.setMaximumWindowLength(ReadUnsignedInt(value, e)); break;
             case Parameters::MAXIMUM_WINDOW_TYPE      : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::PERCENTAGE_WINDOW, Parameters::FIXED_LENGTH);
                                                         _parameters.setMaximumWindowType((Parameters::MaximumWindowType)iValue); break;
             case Parameters::MINIMUM_WINDOW_FIXED     : _parameters.setMinimumWindowLength(ReadUnsignedInt(value, e)); break;
             case Parameters::PROSPECTIVE_ANALYSIS     : _parameters.setIsProspectiveAnalysis(ReadBoolean(value, e)); break;
-            /* Advanced Analysis - Adjustments */
+            // Advanced Analysis - Adjustments
             case Parameters::DAYOFWEEK_ADJUSTMENT     : _parameters.setPerformDayOfWeekAdjustment(ReadBoolean(value, e)); break;
             case Parameters::APPLY_EXCLUSION_RANGES   : _parameters.setApplyingExclusionTimeRanges(ReadBoolean(value, e)); break;
             case Parameters::EXCLUSION_RANGES         : _parameters.setExclusionTimeRangeStr(value); break;
-            /* Advanced Analysis Inference */
+            // Advanced Analysis Inference
             case Parameters::REPLICATIONS             : _parameters.setNumReplications(ReadUnsignedInt(value, e)); break;
             case Parameters::RANDOMIZATION_SEED       : _parameters.setRandomizationSeed(static_cast<long>(ReadInt(value, e))); break;
             case Parameters::RANDOMLY_GENERATE_SEED   : _parameters.setRandomlyGeneratingSeed(ReadBoolean(value, e)); break;
@@ -405,13 +405,13 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
                                                         }
                                                         break;
             case Parameters::MINIMUM_CASES_NODE       : return _parameters.setMinimumHighRateNodeCases(ReadUnsignedInt(value, e)); break;
-            /* Output */
+            // Output
             case Parameters::RESULTS_FILE             : _parameters.setOutputFileName(value.c_str(), true); break;
             case Parameters::RESULTS_HTML             : _parameters.setGeneratingHtmlResults(ReadBoolean(value, e)); break;
             case Parameters::RESULTS_CSV              : _parameters.setGeneratingTableResults(ReadBoolean(value, e)); break;
             case Parameters::RESULTS_ASN              : _parameters.setGeneratingNCBIAsnResults(ReadBoolean(value, e)); break;
             case Parameters::RESULTS_NWK              : _parameters.setGeneratingNewickFile(ReadBoolean(value, e)); break;
-                /* Advanced Output - Additional Output */
+            // Advanced Output - Additional Output
             case Parameters::RESULTS_LLR              : _parameters.setGeneratingLLRResults(ReadBoolean(value, e)); break;
             case Parameters::REPORT_CRITICAL_VALUES   : _parameters.setReportCriticalValues(ReadBoolean(value, e)); break;
             case Parameters::REPORT_ATTR_RISK         : _parameters.setReportAttributableRisk(ReadBoolean(value, e)); break;
@@ -421,7 +421,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
                                                          _parameters.setTemporalGraphReportType((Parameters::TemporalGraphReportType)iValue); break;
             case Parameters::TEMPORAL_GRAPH_MLC_COUNT : _parameters.setTemporalGraphMostLikelyCount(ReadUnsignedInt(value, e)); break;
             case Parameters::TEMPORAL_GRAPH_CUTOFF    : _parameters.setTemporalGraphSignificantCutoff(ReadDouble(value, e)); break;
-            /* Power Evaluations */
+            // Power Evaluations
             case Parameters::POWER_EVALUATIONS        : _parameters.setPerformPowerEvaluations(ReadBoolean(value, e)); break;
             case Parameters::POWER_EVALUATION_TYPE    : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::PE_WITH_ANALYSIS, Parameters::PE_ONLY_SPECIFIED_CASES);
                                                         _parameters.setPowerEvaluationType((Parameters::PowerEvaluationType)iValue); break;
@@ -435,14 +435,14 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::POWER_EVALUATIONS_FILE   : _parameters.setPowerEvaluationAltHypothesisFilename(value.c_str(), true); break;
             case Parameters::POWER_BASELINE_PROBABILITY : _parameters.setPowerBaselineProbabilityRatio(ReadRatio(value)); break;
             case Parameters::POWER_Z                  : _parameters.setPowerZ(ReadDouble(value, e)); break;
-                /* Power Simulations */
+            // Power Simulations
             case Parameters::READ_SIMULATIONS         : _parameters.setReadingSimulationData(ReadBoolean(value, e)); break;
             case Parameters::INPUT_SIM_FILE           : _parameters.setInputSimulationsFilename(value.c_str(), true); break;
             case Parameters::WRITE_SIMULATIONS        : _parameters.setWritingSimulationData(ReadBoolean(value, e)); break;
             case Parameters::OUTPUT_SIM_FILE          : _parameters.setOutputSimulationsFilename(value.c_str(), true); break;
-            /* Run Options */
+            // Run Options
             case Parameters::PARALLEL_PROCESSES       : _parameters.setNumProcesses(ReadUnsignedInt(value, e)); break;
-            /* System */
+            // System
             case Parameters::CREATION_VERSION         : _parameters.setVersion(ReadVersion(value)); break;
             case Parameters::PROSPECTIVE_FREQ_TYPE    : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::DAILY, Parameters::YEARLY);
                                                         _parameters.setProspectiveFrequencyType((Parameters::ProspectiveFrequency)iValue); break;

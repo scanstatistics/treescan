@@ -5,7 +5,7 @@
 #include "Parameters.h"
 #include "PrjException.h"
 
-/* Abstract base log likelihood class. */
+/** Abstract base log likelihood class. */
 class AbstractLoglikelihood {
 public:
     typedef bool (AbstractLoglikelihood::*SCANRATE_FUNCPTR) (int, double, int, double) const;
@@ -89,7 +89,7 @@ public:
 
 typedef boost::shared_ptr<AbstractLoglikelihood> Loglikelihood_t;
 
-/* Log likelihood class for conditional Poisson. */
+/** Log likelihood class for conditional Poisson. */
 class PoissonLoglikelihood : public AbstractLoglikelihood {
 protected:
     const int       _totalC;
@@ -106,7 +106,7 @@ public:
     }
     virtual ~PoissonLoglikelihood(){}
 
-    /* Calculates the conditional Poisson loglikelihood. */
+    /** Calculates the conditional Poisson log likelihood. */
     virtual double LogLikelihood(int c, double n) const {
         if (!(this->*_of_interest)(c, n, _totalC, _totalN)) return UNSET_LOGLIKELIHOOD;
         if (c == _totalC) return c * log(c/n);
@@ -119,7 +119,7 @@ public:
     }
 };
 
-/* Log likelihood class for conditional Poisson using censored data. */
+/** Log likelihood class for conditional Poisson using censored data. */
 class PoissonCensoredLoglikelihood : public AbstractLoglikelihood {
 public:
     PoissonCensoredLoglikelihood(const Parameters& parameters) : AbstractLoglikelihood(parameters) {
@@ -132,12 +132,12 @@ public:
     }
     virtual ~PoissonCensoredLoglikelihood() {}
 
-    /* Calculates the conditional Poisson loglikelihood. */
+    /** Calculates the conditional Poisson log likelihood. */
     virtual double  LogLikelihood(int c, double n, int bc, double bn) const {
-        /* c = cases in the window for the branch under consideration */
-        /* n = expected cases in the window for the branch under consideration */
-        /* bc = total cases for the branch under consideration, inside and outside the window */
-        /* bn = total expected cases for the branch under consideration, inside and outside the window */
+        // c = cases in the window for the branch under consideration
+        // n = expected cases in the window for the branch under consideration
+        // bc = total cases for the branch under consideration, inside and outside the window
+        // bn = total expected cases for the branch under consideration, inside and outside the window
         if (!(this->*_of_interest)(c, n, bc, bn)) return UNSET_LOGLIKELIHOOD;
         if (c == bc) return c * log(c / n);
         if (c == 0) return bc * log(bc / (bn - n));
@@ -149,7 +149,7 @@ public:
     }
 };
 
-/* Log likelihood class for unconditional Poisson. */
+/** Log likelihood class for unconditional Poisson. */
 class UnconditionalPoissonLoglikelihood : public AbstractLoglikelihood {
 public:
     UnconditionalPoissonLoglikelihood(const Parameters& parameters) : AbstractLoglikelihood(parameters)  {
@@ -162,7 +162,7 @@ public:
     }
     virtual ~UnconditionalPoissonLoglikelihood(){}
 
-    /* Calculates the unconditional Poisson loglikelihood */
+    /** Calculates the unconditional Poisson log likelihood. */
     virtual double  LogLikelihood(int c, double n) const {
         if (!(this->*_uncond_of_interest)(c, n)) return UNSET_LOGLIKELIHOOD;
         return (n - c) + c * log(c/n);
@@ -190,7 +190,7 @@ public:
     }
     virtual ~BernoulliLoglikelihood(){}
 
-    /* Calculates the conditional Bernoulli loglikelihood. */
+    /** Calculates the conditional Bernoulli log likelihood. */
     virtual double  LogLikelihood(int c, double n) const {
         if (!(this->*_of_interest)(c, n, _totalC, _totalN)) return UNSET_LOGLIKELIHOOD;
         double nLL_A = 0.0, nLL_B = 0.0, nLL_C = 0.0, nLL_D = 0.0;
@@ -210,7 +210,7 @@ public:
     }
 };
 
-/* Log likelihood class for unconditional Bernoulli. */
+/** Log likelihood class for unconditional Bernoulli. */
 class UnconditionalBernoulliLogLoglikelihood : public AbstractLoglikelihood {
 protected:
     double _event_probability;
@@ -226,7 +226,7 @@ public:
     }
     virtual ~UnconditionalBernoulliLogLoglikelihood(){}
 
-    /* Calculates the unconditional Bernoulli loglikelihood */
+    /** Calculates the unconditional Bernoulli log likelihood. */
     virtual double  LogLikelihood(int c, double n) const {
         if (!(this->*_prob_of_interest)(c, n, _event_probability)) return UNSET_LOGLIKELIHOOD;
         double dLogLikelihood=0;
@@ -245,7 +245,7 @@ public:
     }
 };
 
-/* Log likelihood class for conditional Bernoulli time model. */
+/** Log likelihood class for conditional Bernoulli time model. */
 class BernoulliTimeLoglikelihood : public AbstractLoglikelihood {
 public:
 	BernoulliTimeLoglikelihood(const Parameters& parameters) : AbstractLoglikelihood(parameters) {
@@ -258,12 +258,12 @@ public:
     }
 	virtual ~BernoulliTimeLoglikelihood() {}
 
-	/* Calculates the conditional Bernoulli loglikelihood. */
+	/** Calculates the conditional Bernoulli log likelihood. */
 	virtual double LogLikelihood(int c, double n, int C, double N) const {
-		/* c = cases in the window for the branch under consideration */
-		/* n = cases and controls in the window for the branch under consideration */
-		/* C = total cases for the branch under consideration, inside and outside the window */
-		/* N = total cases and controls for the branch under consideration, inside and outside the window */
+		// c = cases in the window for the branch under consideration
+        // n = cases and controls in the window for the branch under consideration
+        // C = total cases for the branch under consideration, inside and outside the window
+        // N = total cases and controls for the branch under consideration, inside and outside the window
         if (!(this->*_of_interest)(c, n, C, N)) return UNSET_LOGLIKELIHOOD;
         double nLL_A = 0.0, nLL_B = 0.0, nLL_C = 0.0, nLL_D = 0.0;
         if (c != 0)
@@ -283,7 +283,7 @@ public:
 	}
 };
 
-/* Log likelihood class for conditional uniform time model. */
+/** Log likelihood class for conditional uniform time model. */
 class TemporalLoglikelihood : public AbstractLoglikelihood {
 protected:
     const int       _totalC;
@@ -311,10 +311,10 @@ public:
     }
     virtual ~TemporalLoglikelihood(){}
 
-    /* Calculates the conditional temporal loglikelihood. */
+    /** Calculates the conditional temporal log likelihood. */
     virtual double  LogLikelihood(int c, double n, size_t windowLength) const {
-        /* c = cases in the window for the branch under consideration, c>=0 */ 
-        /* n = total cases for the branch under consideration, inside and outside the window, n>=c */
+        // c = cases in the window for the branch under consideration, c>=0
+        // n = total cases for the branch under consideration, inside and outside the window, n>=c
         double r = static_cast<double>(windowLength) / static_cast<double>(_totalDaysInRange);
         if (!(this->*_win_of_interest)(c, n, r)) return UNSET_LOGLIKELIHOOD;
         double loglikelihood = 0;
@@ -329,7 +329,7 @@ public:
     }
     virtual double  LogLikelihoodRatio(double logLikelihood) const {
         if (logLikelihood == UNSET_LOGLIKELIHOOD) return 0.0;
-        // The full loglikelihood ratio is calculated in LogLikelihood() call.
+        // The full log likelihood ratio is calculated in LogLikelihood() call.
         return logLikelihood;
     }
 };

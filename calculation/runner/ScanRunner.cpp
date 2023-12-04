@@ -59,14 +59,14 @@ double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _
                 default: throw prg_error("Cannot calculate excess cases: tree-only, condition type (%d).", "getExcessCases()", parameters.getConditionalType());
             }
         }
-        case Parameters::TIMEONLY: /* time-only, condtioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
+        case Parameters::TIMEONLY: // time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node
         case Parameters::TREETIME: {
             switch (parameters.getConditionalType()) {
-                case Parameters::TOTALCASES: /* this option is really only for time-only */
-                case Parameters::NODE:       /* this option is really only for tree-time */
+                case Parameters::TOTALCASES: // this option is really only for time-only
+                case Parameters::NODE:       // this option is really only for tree-time
                     if (parameters.getModelType() == Parameters::UNIFORM) {
                         if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
-                            //Obs - Exp * [ (NodeCases-Obs) / (NodeCases-Exp) ]
+                            // Obs - Exp * [ (NodeCases-Obs) / (NodeCases-Exp) ]
                             double exp = getExpectedFor(scanner, nodeID, _C, _N, _start_idx, _end_idx);
                             double NodeCases = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
                             return C - exp * ((NodeCases - C) / (NodeCases - exp));
@@ -82,13 +82,12 @@ double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _
                     }
                     throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getExcessCases()", parameters.getModelType());
                 case Parameters::NODEANDTIME: {
-                    /* c = cases in detected cluster
-                    C = total cases in the whole tree
-                    C(n)=total cases in the cluster node, summed over the whole study time period
-                    C(t)=total cases in the cluster time window, summed over all the nodes
-                    Let E2 = (C(n)-c)*(C(t)-c) / (C-C(n)-C(t)+c) -- this is an alternative method for calculating expected counts
-                    Excess Cases = c-E2
-                    */
+                    /** c = cases in detected cluster
+                        C = total cases in the whole tree
+                        C(n)=total cases in the cluster node, summed over the whole study time period
+                        C(t)=total cases in the cluster time window, summed over all the nodes
+                        Let E2 = (C(n)-c)*(C(t)-c) / (C-C(n)-C(t)+c) -- this is an alternative method for calculating expected counts
+                        Excess Cases = c-E2 */
                     double Cn = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
                     double Ct = scanner.get_node_n_time_total_cases(_start_idx, _end_idx);
                     double denominator = totalC - Cn - Ct + C;
@@ -134,11 +133,10 @@ double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, 
                         if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
                             return _N;
                         } else {
-                            /*  (N*W/T)
-                            N = number of cases in the node, through the whole time period (below, all 0604 cases)
-                            W = number of days in the temporal cluster (below, 11-6=5)
-                            T = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used)
-                            */
+                            /** (N*W/T)
+                                N = number of cases in the node, through the whole time period (below, all 0604 cases)
+                                W = number of days in the temporal cluster (below, 11-6=5)
+                                T = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used) */
                             double W = static_cast<double>(_end_idx - _start_idx + 1.0);
                             double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
                             return _N * W / T;
@@ -156,18 +154,17 @@ double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, 
                 default: throw prg_error("Cannot determine expected cases: tree-time, condition type (%d).", "getExpected()", parameters.getConditionalType());
             }
         }
-        case Parameters::TIMEONLY: { /* time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
+        case Parameters::TIMEONLY: { // time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node
             switch (parameters.getConditionalType()) {
                 case Parameters::TOTALCASES:
                     if (parameters.getModelType() == Parameters::UNIFORM) {
                         if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
                             return _N;
                         } else {
-                            /*  (N*W/T)
-                            N = number of cases in the node, through the whole time period (below, all 0604 cases)
-                            W = number of days in the temporal cluster (below, 11-6=5)
-                            T = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used)
-                            */
+                            /** (N*W/T)
+                                N = number of cases in the node, through the whole time period (below, all 0604 cases)
+                                W = number of days in the temporal cluster (below, 11-6=5)
+                                T = number of days for which cases were recorded (e.g. D=56 if a 1-56 time interval was used) */
                             double W = static_cast<double>(_end_idx - _start_idx + 1.0);
                             double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
                             return _N * W / T;
@@ -185,7 +182,7 @@ double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, 
     }
 }
 
-/* Calculates the attributable risk per person for cut. */
+/** Calculates the attributable risk per person for cut. */
 double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
     const Parameters& parameters = scanner.getParameters();
     double C = static_cast<double>(_C);
@@ -198,11 +195,11 @@ double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, dou
                 default: throw prg_error("Cannot calculate attributable risk: tree-only, condition type (%d).", "getAttributableRiskFor()", parameters.getConditionalType());
             }
         }
-        case Parameters::TIMEONLY: /* time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
+        case Parameters::TIMEONLY: // time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node
         case Parameters::TREETIME: {
             switch (parameters.getConditionalType()) {
-                case Parameters::TOTALCASES: /* this option is really only for time-only */
-                case Parameters::NODE:       /* this option is really only for tree-time */
+                case Parameters::TOTALCASES: // this option is really only for time-only
+                case Parameters::NODE:       // this option is really only for tree-time
                     return getExcessCasesFor(scanner, nodeID, _C, _N, _start_idx, _end_idx) / static_cast<double>(parameters.getAttributableRiskExposed());
                 case Parameters::NODEANDTIME: {
                     double exp = getExpectedFor(scanner, nodeID, _C, _N, _start_idx, _end_idx);
@@ -265,11 +262,11 @@ double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double 
                     default: throw prg_error("Cannot calculate relative risk: tree-only, condition type (%d).", "getRelativeRisk()", parameters.getConditionalType());
                 }
             }
-            case Parameters::TIMEONLY: /* time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node */
+            case Parameters::TIMEONLY: // time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node
             case Parameters::TREETIME: {
                 switch (parameters.getConditionalType()) {
-                case Parameters::TOTALCASES: /* this option is really only for time-only */
-                case Parameters::NODE:       /* this option is really only for tree-time */
+                case Parameters::TOTALCASES: // this option is really only for time-only
+                case Parameters::NODE:       // this option is really only for tree-time
                     if (parameters.getModelType() == Parameters::UNIFORM) {
                         if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
                             // (Obs/Exp) / [ (NodeCases-Obs) / (NodeCases-Exp) ]
@@ -300,13 +297,12 @@ double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double 
                     }
                     throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getRelativeRisk()", parameters.getModelType());
                 case Parameters::NODEANDTIME: {
-                    /* c = cases in detected cluster
-                    C = total cases in the whole tree
-                    C(n)=total cases in the cluster node, summed over the whole study time period
-                    C(t)=total cases in the cluster time window, summed over all the nodes
-                    Let E2 = (C(n)-c)*(C(t)-c) / (C-C(n)-C(t)+c) -- this is an alternative method for calculating expected counts
-                    RR = c/E2
-                    */
+                    /** c = cases in detected cluster
+                        C = total cases in the whole tree
+                        C(n)=total cases in the cluster node, summed over the whole study time period
+                        C(t)=total cases in the cluster time window, summed over all the nodes
+                        Let E2 = (C(n)-c)*(C(t)-c) / (C-C(n)-C(t)+c) -- this is an alternative method for calculating expected counts
+                        RR = c/E2 */
                     double Cn = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
                     double Ct = scanner.get_node_n_time_total_cases(_start_idx, _end_idx);
                     double denominator = totalC - Cn - Ct + C;
@@ -314,7 +310,7 @@ double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double 
                         return std::numeric_limits<double>::quiet_NaN();
                     double e2 = (Cn - C) * (Ct - C) / denominator;
                     if (e2 == 0.0) // C == 0.0 will never happen when looking for clusters with high rates.
-                        return C == 0.0 ? std::numeric_limits<double>::quiet_NaN() : std::numeric_limits<double>::infinity()/*This will happen now and then.*/;
+                        return C == 0.0 ? std::numeric_limits<double>::quiet_NaN() : std::numeric_limits<double>::infinity(); // This will happen now and then.
                     return C / e2;
                 }
                 default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getRelativeRisk()", parameters.getConditionalType());
@@ -339,7 +335,7 @@ std::string & AttributableRiskAsString(double ar, std::string& s) {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/* Calculates the attributable risk per person for cut. */
+/** Calculates the attributable risk per person for cut. */
 double CutStructure::getAttributableRisk(const ScanRunner& scanner) const {
     return getAttributableRiskFor(scanner, _ID, _C, _N, _start_idx, _end_idx);
 }
@@ -357,7 +353,7 @@ std::string & CutStructure::getAttributableRiskAsString(const ScanRunner& scanne
     return s;
 }
 
-/* Calculates the excess number of cases. See user guide for formula explanation. */
+/** Calculates the excess number of cases. See user guide for formula explanation. */
 double CutStructure::getExcessCases(const ScanRunner& scanner) const {
     return getExcessCasesFor(scanner, _ID, _C, _N, _start_idx, _end_idx);
 }
@@ -434,7 +430,7 @@ SequentialStatistic::SequentialStatistic(const Parameters& parameters, const Sca
 		const_cast<ScanRunner&>(scanner).getPrint().Printf("Reading sequential scan data from cache files ...\n", BasePrint::P_STDOUT);
         readSettings(_settings_filename);
         parameters.setCurrentLook(_look_idx);
-        // Read calculate the look index.
+        // Read the look index.
         _alpha_spending += _statistic_parameters.getSequentialAlphaSpending();
         if (_parameters.getNumReplicationsRequested() != _statistic_parameters.getNumReplicationsRequested())
             throw resolvable_error("Error: Number of replications requested (%u) does match setting in previous sequential scan (%u).",
@@ -520,7 +516,7 @@ std::string& SequentialStatistic::keyEscapeXML(std::string& key, const std::stri
 	return key;
 }
 
-/* Creates a hash of the structure -- does not include data. */
+/** Creates a hash of the structure -- does not include data. */
 std::string & SequentialStatistic::getTreeHash(std::string& treehash) const {
     md5 hash;
     md5::digest_type digest;
@@ -715,7 +711,7 @@ void SequentialStatistic::write(const std::string &casefilename, const std::stri
 
 ////////////////////////// ScanRunner ////////////////////////////////////////
 
-/** class constructor */
+/** Constructor */
 ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : 
     _print(print), _TotalC(0), _TotalControls(0), _TotalN(0), _parameters(parameters), _has_multi_parent_nodes(false),
     _censored_data(false), _has_node_descriptions(false), _num_censored_cases(0), _avg_censor_time(0), _num_cases_excluded(0){
@@ -755,14 +751,12 @@ boost::shared_ptr<AbstractWindowLength> ScanRunner::getNewWindowLength() const {
     return boost::shared_ptr<AbstractWindowLength>(new WindowLength(_parameters, static_cast<int>(_parameters.getMinimumWindowLength()) - 1, static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1));
 }
 
-/*
- Adds cases and measure through the tree from each node through the tree to all its parents, and so on, to all its ancestors as well.
- If a node is a decendant to an ancestor in more than one way, the cases and measure is only added once to that ancestor.
- */
+/** Adds cases and measure through the tree from each node through the tree to all its parents, and so on, to all its ancestors as well.
+    If a node is a decendant to an ancestor in more than one way, the cases and measure is only added once to that ancestor. */
 unsigned int ScanRunner::addCN_C(const NodeStructure& sourceNode, NodeStructure& destinationNode, boost::dynamic_bitset<>& ancestor_nodes) {
     unsigned int source_count=(sourceNode.getID() == destinationNode.getID() ? 1 : 0);
 
-    /* Test corresponding bit set to see if destination node already includes data from the source node. Sets it if wasn't previously. */
+    // Test corresponding bit set to see if destination node already includes data from the source node. Sets it if wasn't previously.
     if (_has_multi_parent_nodes && ancestor_nodes.test_set(destinationNode.getID())) {
         //printf("'%s' already has data from '%s'\n", destinationNode.getIdentifier().c_str(), sourceNode.getIdentifier().c_str());
         return source_count;
@@ -781,7 +775,7 @@ unsigned int ScanRunner::addCN_C(const NodeStructure& sourceNode, NodeStructure&
     return source_count;
 }
 
-/* Returns pair<bool,size_t> - first value indicates node existance, second is index into class vector _Nodes. */
+/** Returns pair<bool,size_t> - first value indicates node existence, second is index into class vector _Nodes. */
 ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) const {
     std::auto_ptr<NodeStructure> node(new NodeStructure(identifier));
     NodeStructureContainer_t::const_iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
@@ -795,7 +789,7 @@ ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) cons
         return std::make_pair(false, 0);
 }
 
-/* Returns tree statistics information. */
+/** Returns tree statistics information. */
 const TreeStatistics& ScanRunner::getTreeStatistics() const {
     if (_tree_statistics.get()) return *_tree_statistics.get();
     _tree_statistics.reset(new TreeStatistics());
@@ -817,7 +811,7 @@ const TreeStatistics& ScanRunner::getTreeStatistics() const {
     return *_tree_statistics.get();
 }
 
-/* Returns true if NodeStructure is evaluated in scanning processing. */
+/** Returns true if NodeStructure is evaluated in scanning processing. */
 bool ScanRunner::isEvaluated(const NodeStructure& node) const {
     // If the node branch does not have the minimum number of cases in branch, it is not evaluated.
     if (static_cast<unsigned int>(node.getBrC()) < _node_evaluation_minimum) return false;
@@ -865,7 +859,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& srcfilename, Ri
             dataSource->clearBlankRecordFlag();
         }
         bEmpty=false;
-        //read node identifier
+        // read node identifier
         if (_parameters.getScanType() != Parameters::TIMEONLY) {
             nodeId = dataSource->getValueAt(nodeIdIdx);
             if (lowerString(nodeId) != "all") {
@@ -877,7 +871,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& srcfilename, Ri
                 }
             }
         }
-        //read alternative hypothesis value
+        // read alternative hypothesis value
         double alternative_hypothesis;
         if (dataSource->getValueAt(uAdjustmentIndex).size() < 1) {
             _print.Printf("Error: Record %ld of alternative hypothesis file missing %s.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(),
@@ -889,7 +883,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& srcfilename, Ri
             if (!string_to_numeric_type<double>(dataSource->getValueAt(uAdjustmentIndex).c_str(), alternative_hypothesis) || alternative_hypothesis < 0.0 || alternative_hypothesis > 1.0) {
                 bValid = false;
                 _print.Printf("Error: Record %ld in alternative hypothesis file references an invalid case probability for node '%s'.\n"
-                              "       The event probability must be a numeric value between zero and one (inclusive).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
+                              "The event probability must be a numeric value between zero and one (inclusive).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
                 continue;
             } else if (_parameters.getConditionalType() == Parameters::UNCONDITIONAL && alternative_hypothesis < _parameters.getProbability()) {
                 _print.Printf("%s: Record %ld in alternative hypothesis file references a case probability of %g, which is less than standard case probability of %g.\n",
@@ -901,7 +895,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& srcfilename, Ri
             if (!string_to_numeric_type<double>(dataSource->getValueAt(uAdjustmentIndex).c_str(), alternative_hypothesis) || alternative_hypothesis < 0) {
                 bValid = false;
                 _print.Printf("Error: Record %ld in alternative hypothesis file references an invalid relative risk for node '%s'.\n"
-                              "       The relative risk must be a numeric value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
+                              "The relative risk must be a numeric value greater than or equal to zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(nodeIdIdx).c_str());
                 continue;
             }
         }
@@ -954,11 +948,11 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& srcfilename, Ri
         }
     }
 
-    //if invalid at this point then read encountered problems with data format,
-    //inform user of section to refer to in user guide for assistance
+    // if invalid at this point then read encountered problems with data format,
+    // inform user of section to refer to in user guide for assistance
     if (!bValid)
       _print.Printf("Please see the 'Alternative Hypothesis File' section in the user guide for help.\n", BasePrint::P_ERROR);
-    //print indication if file contained no data
+    // print indication if file contained no data
     else if (bEmpty) {
       _print.Printf("Error: Alternative hypothesis file contains no data.\n", BasePrint::P_ERROR);
       bValid = false;
@@ -971,9 +965,9 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& srcfilename, Ri
     return bValid;
 }
 
-/* Reads count, control and population data from passed file. */
+/** Reads count, control and population data from passed file. */
 bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_data) {
-    /* Special Case: We won't actually read the counts file in this situation but define the total from user specificied value. */
+    // Special Case: We won't actually read the counts file in this situation but define the total from user specificied value.
     if (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES && 
         _parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES) {
         _Nodes.front()->refIntC_C().front() = _parameters.getPowerEvaluationTotalCases();
@@ -998,7 +992,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
         srcfilename, (_parameters.isSequentialScanTreeOnly() && !sequence_new_data ? &csvSource : _parameters.getInputSource(Parameters::COUNT_FILE))
     ));
 
-    /* In TreeScan version 2.0, we switched to a separate control data file and removed the control column from counts file.
+    /** In TreeScan version 2.0, we switched to a separate control data file and removed the control column from counts file.
        But to keep backwards compatibility, expect controls in count file if user has not specified a control file with a 
        tree-only scan (not including sequential). */
     bool bernoulliExpectingControl = _parameters.getControlFileName().empty();
@@ -1023,15 +1017,15 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
             readSuccess = false;
             _print.Printf(
                 "Error: Record %ld in count file references a tree node that is not a leaf.\n"
-                "       Current parameter settings restrict data to only the leaves of the tree.\n",
+                "Current parameter settings restrict data to only the leaves of the tree.\n",
                 BasePrint::P_READERROR, dataSource->getCurrentRecordIndex()
             );
             return true;
         } return false;
     };
-    /* Iinitialize bitset which is used to track data time range days with cases (or controls). */
+    // Initialize bitset which is used to track data time range days with cases (or controls).
     _caselessWindows.resize(Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() : 1);
-    /* Read records of control file, verifying the expected columns and data type then adding to data structures. */
+    // Read records of control file, verifying the expected columns and data type then adding to data structures.
     while (dataSource->readRecord()) {
         // Note: The uniform model has an optional column - censor time.
         if (!(dataSource->getNumValues() == expectedColumns.size() || 
@@ -1050,7 +1044,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
             );
             continue;
         }
-        /* Read and verifiy identifier column - if not time-only scan type. */
+        // Read and verifiy identifier column - if not time-only scan type.
         ScanRunner::Index_t index(true, 0);
         if (_parameters.getScanType() != Parameters::TIMEONLY) {
             index = getNodeIndex(dataSource->getValueAt(identifierIdx));
@@ -1065,12 +1059,12 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                 continue;
             }
         }
-        /* Read and verify number of cases column. */
+        // Read and verify number of cases column.
         if  (!string_to_numeric_type<int>(dataSource->getValueAt(countIdx).c_str(), count) || count < 0) {
             readSuccess = false;
             _print.Printf(
                 "Error: Record %ld in count file references an invalid number of cases.\n"
-                "       The number of cases must be an integer value greater than or equal to zero.\n", 
+                "The number of cases must be an integer value greater than or equal to zero.\n", 
                 BasePrint::P_READERROR, 
                 dataSource->getCurrentRecordIndex()
             );
@@ -1084,7 +1078,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                 readSuccess = false;
                 _print.Printf(
                     "Error: Record %ld in count file references an invalid population.\n"
-                    "       The population must be a numeric value greater than or equal to zero.\n", 
+                    "The population must be a numeric value greater than or equal to zero.\n", 
                     BasePrint::P_READERROR, 
                     dataSource->getCurrentRecordIndex()
                 );
@@ -1097,17 +1091,17 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
             node->refIntC_C().front() += count;
             node->refIntN_C().front() += count;
             if (sequence_new_data) node->refIntN_C_Seq_New().front() += count;
-            /* Skip to the next record in data source if not expecting controls column in this file. */
+            // Skip to the next record in data source if not expecting controls column in this file.
             if (!bernoulliExpectingControl) {
                 checkNonLeafWithData(node, count > 0);
                 continue;
             }
-            /* Otherwise read and verify data from controls column. */
+            // Otherwise read and verify data from controls column.
             if  (!string_to_numeric_type<int>(dataSource->getValueAt(static_cast<long>(expectedColumns.size()) - 1).c_str(), controls) || controls < 0) {
                 readSuccess = false;
                 _print.Printf(
                     "Error: Record %ld in count file references an invalid number of controls.\n"
-                    "       The controls must be an integer value greater than or equal to zero.\n", 
+                    "The controls must be an integer value greater than or equal to zero.\n", 
                     BasePrint::P_READERROR, 
                     dataSource->getCurrentRecordIndex()
                 );
@@ -1116,7 +1110,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
             if (checkNonLeafWithData(node, count > 0 || controls > 0)) continue;
             node->refIntN_C().front() += controls;
         } else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-            /* First read and verify the days since incidance column - we might not be reading controls from this file. */
+            // First read and verify the days since incidence column - we might not be reading controls from this file.
             if (!readDateColumn(*dataSource, expectedColumns.size() - 1, daysSinceIncidence, filename, time_columnname)) {
                 readSuccess = false;
                 continue;
@@ -1127,7 +1121,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                     if (!countDateWarningDisplayed) {
                         _print.Printf(
                             "Warning: Some records in the count file are outside the specified study period.\n"
-                            "       These will be ignored in the analysis.\n",
+                            "These will be ignored in the analysis.\n",
                             BasePrint::P_WARNING,
                             dataSource->getCurrentRecordIndex(),
                             time_columnname.c_str()
@@ -1140,7 +1134,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                     readSuccess = false;
                     _print.Printf(
                         "Error: Record %ld in count file references an invalid '%s' value.\n"
-                        "       The specified value is not within any of the data time ranges you have defined.\n",
+                        "The specified value is not within any of the data time ranges you have defined.\n",
                         BasePrint::P_READERROR,
                         dataSource->getCurrentRecordIndex(),
                         time_columnname.c_str()
@@ -1155,7 +1149,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
         } else if (Parameters::isTemporalScanType(_parameters.getScanType())) {
             // First check the data on leaves restriction.
             if (checkNonLeafWithData(node, count > 0)) continue;
-            /* Other temporal scan type. */
+            // Other temporal scan type.
             if (!readDateColumn(*dataSource, expectedColumns.size() - 1, daysSinceIncidence, filename, time_columnname)) {
                 readSuccess = false;
                 continue;
@@ -1167,7 +1161,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                   if (!countDateWarningDisplayed) {
                       _print.Printf(
                           "Warning: Some records in the count file are outside the specified study period.\n"
-                          "       These will be ignored in the analysis.\n",
+                          "These will be ignored in the analysis.\n",
                           BasePrint::P_WARNING,
                           dataSource->getCurrentRecordIndex(),
                           time_columnname.c_str()
@@ -1180,7 +1174,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                     readSuccess = false;
                     _print.Printf(
                         "Error: Record %ld in count file references an invalid '%s' value.\n"
-                        "       The specified value is not within any of the data time ranges you have defined.\n",
+                        "The specified value is not within any of the data time ranges you have defined.\n",
                         BasePrint::P_READERROR,
                         dataSource->getCurrentRecordIndex(),
                         time_columnname.c_str()
@@ -1210,7 +1204,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                             if (!censorDateWarningDisplayed) {
                                 _print.Printf(
                                     "Warning: Some records in the count file have a 'censoring time' value outside the specified study period.\n"
-                                    "       These will be ignored in the analysis.\n",
+                                    "These will be ignored in the analysis.\n",
                                     BasePrint::P_WARNING,
                                     dataSource->getCurrentRecordIndex()
                                 );
@@ -1222,7 +1216,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                             readSuccess = false;
                             _print.Printf(
                                 "Error: Record %ld in count file references an invalid 'censoring time' value.\n"
-                                "       The specified value is not within any of the data time ranges you have defined.\n",
+                                "The specified value is not within any of the data time ranges you have defined.\n",
                                 BasePrint::P_READERROR,
                                 dataSource->getCurrentRecordIndex()
                             );
@@ -1232,7 +1226,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                     if (censortime < static_cast<int>(_parameters.getMinimumCensorTime())) {
                         _print.Printf(
                             "Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
-                            "         The censoring time is less than user specified minimum of %u. This observation will be ignored.",
+                            "The censoring time is less than user specified minimum of %u. This observation will be ignored.",
                             BasePrint::P_WARNING, 
                             dataSource->getCurrentRecordIndex(), 
                             _parameters.getMinimumCensorTime()
@@ -1243,7 +1237,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                     if (censortime == minmax.getStart()) {
                         _print.Printf(
                             "Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
-                            "         The censoring time is not allowed to equal the data time range start. This observation will be ignored.",
+                            "The censoring time is not allowed to equal the data time range start. This observation will be ignored.",
                             BasePrint::P_WARNING, 
                             dataSource->getCurrentRecordIndex()
                         );
@@ -1253,7 +1247,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                     if (censortime < positive_range_days * (static_cast<double>(_parameters.getMinimumCensorPercentage()) / 100.0)) {
                         _print.Printf(
                             "Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
-                            "         The censoring time is less than the %d%% of the positive data time range - which is %d units long. This observation will be ignored.",
+                            "The censoring time is less than the %d%% of the positive data time range - which is %d units long. This observation will be ignored.",
                             BasePrint::P_WARNING, 
                             dataSource->getCurrentRecordIndex(), 
                             _parameters.getMinimumCensorPercentage(), 
@@ -1264,7 +1258,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                     if (censortime < daysSinceIncidence) {
                         _print.Printf(
                             "Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
-                            "         The censoring time is less than the 'day since incidence' value. This observation will be ignored.",
+                            "The censoring time is less than the 'day since incidence' value. This observation will be ignored.",
                             BasePrint::P_WARNING, 
                             dataSource->getCurrentRecordIndex()
                         );
@@ -1302,7 +1296,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
         } else throw prg_error("Unknown condition encountered: scan (%d), model (%d).", "readCounts()", _parameters.getScanType(), _parameters.getModelType());
     }
 
-    /* Report to user if any days in the data time range do not contains cases (or controls). */
+    // Report to user if any days in the data time range do not contains cases (or controls).
     if (readSuccess && Parameters::isTemporalScanType(_parameters.getScanType()) && !((_parameters.getModelType() == Parameters::BERNOULLI_TIME) && bernoulliExpectingControl == false)) {
         _caselessWindows.flip(); // flip so that windows without cases are on instead of off
         if (_caselessWindows.count() > 0) {
@@ -1317,13 +1311,13 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
         }
     }
 
-    /* Now that all case data has been read, calculate the average censor time for censored data. */
+    // Now that all case data has been read, calculate the average censor time for censored data.
     if (_censored_data) _avg_censor_time = censortimetotal / std::max(1, _num_censored_cases);
 
     return readSuccess;
 }
 
-/* Reads input column from source based on user date precision. */
+/** Reads input column from source based on user date precision. */
 bool ScanRunner::readDateColumn(DataSource& source, size_t columnIdx, int& dateIdx, const std::string& file_name, const std::string& column_name) const {
     if (_parameters.getDatePrecisionType() == DataTimeRange::NONE)
         throw prg_error("readDateColumn() should nor be called with date precision of NONE.", "readControls()");
@@ -1349,7 +1343,7 @@ bool ScanRunner::readDateColumn(DataSource& source, size_t columnIdx, int& dateI
     return true;
 }
 
-/* Ranks cuts then removes those with lesser LLR values, then reports most likely. */
+/** Ranks cuts then removes those with lesser LLR values, then reports most likely. */
 void ScanRunner::rankCutsAndReportMostly() {
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
     if (_Cut.size()) {
@@ -1368,10 +1362,10 @@ void ScanRunner::rankCutsAndReportMostly() {
 
 }
 
-/* Reads control data from passed file for Bernoulli models. 
+/** Reads control data from passed file for Bernoulli models. 
     We currently have two ways for control data to be read from data files. Earlier versions of TreeScan had the case and control data is the
     count file only. With the addition of the Bernoulli Time model, it became apparent breaking cases and controls into two files made more sense.
-    To keep backward compatability, we're maintaining both options. */
+    To keep backward compatibility, we're maintaining both options. */
 bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_data) {
     if (!sequence_new_data)
         _print.Printf("Reading control data from prior analyses ...\n", BasePrint::P_STDOUT);
@@ -1380,7 +1374,7 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
     bool readSuccess = true, controlDateWarningDisplayed = false;
     std::string filename("control"), time_columnname(_parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "day since incidence" : "occurance date");
     // Determine the InputSource for this control file. Typically we just want that defined through the Parameters, but when we're
-    // reading accumulated control data in a sequentual scan, the format of the stored data is fixed as CSV.
+    // reading accumulated control data in a sequential scan, the format of the stored data is fixed as CSV.
     Parameters::InputSource csvSource(CSV, FieldMapContainer_t());
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(
         srcfilename, (_parameters.isSequentialScanTreeOnly() && !sequence_new_data ? &csvSource : _parameters.getInputSource(Parameters::CONTROL_FILE))
@@ -1388,7 +1382,7 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
     int controls = 0, daysSinceIncidence = 0; size_t expectedColumns = (_parameters.getScanType() == Parameters::TREETIME ? 3 : 2);
     long identifierIdx = _parameters.getScanType() == Parameters::TIMEONLY ? -1 : 0;
     long controlIdx = _parameters.getScanType() == Parameters::TIMEONLY ? 0 : 1;
-    /* Read records of control file, verifying the expected columns and data type then adding to data structures. */
+    // Read records of control file, verifying the expected columns and data type then adding to data structures.
     while (dataSource->readRecord()) {
         if (!(dataSource->getNumValues() == expectedColumns)) {
             readSuccess = false;
@@ -1421,7 +1415,7 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
             readSuccess = false;
             _print.Printf(
                 "Error: Record %ld in control file references an invalid number of controls.\n"
-                "       The controls must be an integer value greater than or equal to zero.\n",
+                "The controls must be an integer value greater than or equal to zero.\n",
                 BasePrint::P_READERROR,
                 dataSource->getCurrentRecordIndex()
             );
@@ -1429,13 +1423,13 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
         }
         // Skip record if number of controls is zero - record not important.
         if (controls == 0) continue;
-        /* Now read remainder of data as expected for specific Bernoulli model type.*/
+        // Now read remainder of data as expected for specific Bernoulli model type.
         NodeStructure * node = _Nodes[index.second];
         if (_parameters.getDataOnlyOnLeaves() && !node->isLeaf()) {
             readSuccess = false;
             _print.Printf(
                 "Error: Record %ld in control file references a tree node that is not a leaf.\n"
-                "       Current parameter settings restrict data to only the leaves of the tree.\n",
+                "Current parameter settings restrict data to only the leaves of the tree.\n",
                 BasePrint::P_READERROR,
                 dataSource->getCurrentRecordIndex()
             );
@@ -1449,14 +1443,14 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
                 readSuccess = false;
                 continue;
             }
-            /* Check that the 'daysSinceIncidence' is within a defined data time range. */
+            // Check that the 'daysSinceIncidence' is within a defined data time range.
             DataTimeRangeSet::rangeset_index_t rangeIdx = _parameters.getDataTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
             if (rangeIdx.first == false) {
                 if (_parameters.getRelaxedStudyDataPeriodChecking()) {
                     if (!controlDateWarningDisplayed) {
                         _print.Printf(
                             "Warning: Some records in control file are outside the specified study period.\n"
-                            "       These will be ignored in the analysis.\n",
+                            "These will be ignored in the analysis.\n",
                             BasePrint::P_WARNING,
                             dataSource->getCurrentRecordIndex(),
                             time_columnname.c_str()
@@ -1481,7 +1475,7 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
         } else throw prg_error("Unknown condition encountered: scan (%d), model (%d).", "readControls()", _parameters.getScanType(), _parameters.getModelType());
     }
 
-    /* Report to user if any days in the data time range do not contains cases or controls. */
+    // Report to user if any days in the data time range do not contains cases or controls.
     _caselessWindows.flip(); // flip so that windows without cases/controls are on instead of off
     if (readSuccess && Parameters::isTemporalScanType(_parameters.getScanType()) && _caselessWindows.count() > 0) {
         std::string buffer;
@@ -1542,7 +1536,7 @@ std::string & ScanRunner::getCaselessWindowsAsString(std::string& s) const {
     return s;
 }
 
-/* Reads tree structure from passed file. */
+/** Reads tree structure from passed file. */
 bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal) {
     size_t daysInDataTimeRange = Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
     // tree only does not read the tree structure file, aggregate all data into one node
@@ -1573,10 +1567,10 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
             _Nodes.insert(itr, node.release());
     }
 
-    // stop reading tree file if we're already determined there are problems in the file.
+    // stop reading tree file if we've already determined there are problems in the file.
     if (!readSuccess) return readSuccess;
 
-    //reset node identifiers to ordinal position in vector -- this is to keep the original algorithm intact since it uses vector indexes heavily
+    // reset node identifiers to ordinal position in vector -- this is to keep the original algorithm intact since it uses vector indexes heavily
     for (size_t i=0; i < _Nodes.size(); ++i) _Nodes[i]->setID(static_cast<int>(i));
 
     // create bitset which will help determine if there exists at least one root node
@@ -1620,7 +1614,7 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
                 readSuccess = false;
                 _print.Printf(
                     "Error: Record %ld in tree file references an invalid distance between nodes.\n"
-                    "       The distance must be a value greater than zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex()
+                    "The distance must be a value greater than zero.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex()
                 );
                 continue;
             }
@@ -1634,7 +1628,7 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
             if (!_parameters.getAllowMultiParentNodes()) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in tree file defines a node that is already defined with a different parent.\n"
-                              "       Set 'Allow Multiple Parents for the Same Node' in advanced input parameters if this is intended.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
+                              "Set 'Allow Multiple Parents for the Same Node' in advanced input parameters if this is intended.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex());
                 continue;
             }
         }
@@ -1649,15 +1643,13 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
     if (!_parameters.getAllowMultipleRoots() && rootCount > 1) {
         readSuccess = false;
         _print.Printf("Error: The tree file contains more than one node which does not have a parent.\n"
-                      "       Set 'Allow Multiple Root Nodes' in advanced input parameters if this is intended.\n", BasePrint::P_READERROR);
+                      "Set 'Allow Multiple Root Nodes' in advanced input parameters if this is intended.\n", BasePrint::P_READERROR);
     }
 
     return readSuccess;
 }
 
-/*
- Reads tree node cuts from passed file. The file format is: <node identifier>, <parent node identifier 1>, <parent node identifier 2>, ... <parent node identifier N>
- */
+/** Reads tree node cuts from passed file. The file format is: <node identifier>, <parent node identifier 1>, <parent node identifier 2>, ... <parent node identifier N> */
 bool ScanRunner::readCuts(const std::string& filename) {
     if (_parameters.getScanType() == Parameters::TIMEONLY) return true; // time only does not read the tree structure file
 
@@ -1722,7 +1714,7 @@ RecurrenceInterval_t ScanRunner::getRecurrenceInterval(const CutStructure& cut) 
     double p_value = (double)cut.getRank() / (_parameters.getNumReplicationsRequested() + 1);
     // Determine the number of units in occurrence per user selection.
     double dUnitsInOccurrence = std::max(static_cast<double>(_parameters.getProspectiveFrequency()) / p_value, 1.0);
-    // Now calculate recurrance interval as years and days based on frequency.
+    // Now calculate recurrence interval as years and days based on frequency.
     switch (_parameters.getProspectiveFrequencyType()) {
         case Parameters::YEARLY: return std::make_pair(dUnitsInOccurrence, std::max(dUnitsInOccurrence * AVERAGE_DAYS_IN_YEAR, 1.0));
         case Parameters::QUARTERLY: return std::make_pair(dUnitsInOccurrence / 4.0, std::max((dUnitsInOccurrence / 4.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
@@ -1739,7 +1731,7 @@ boost::logic::tribool ScanRunner::isSignificant(const CutStructure& cut) const {
     if (reportableRecurrenceInterval(cut)) {
         significance = isSignificant(getRecurrenceInterval(cut), _parameters);
     } else if (reportablePValue(cut)) {
-        // p-value  less than 0.05 is significant
+        // p-value less than 0.05 is significant
         significance = ((double)cut.getRank() / (double)(_parameters.getNumReplicationsRequested() + 1)) < 0.05;
     } //else {// If both recurrence interval and p-value are not reportable, so we do not have information to say whether this cluster is significant or not.}
     return significance;
@@ -1758,11 +1750,11 @@ bool ScanRunner::isSignificant(const RecurrenceInterval_t& ri, const Parameters&
     }
 }
 
-/* REPORT RESULTS */
+/** REPORT RESULTS */
 bool ScanRunner::reportResults(time_t start, time_t end) {
     ResultsFileWriter resultsWriter(*this);
 
-    // Assign the report order for each cut -- this allows use to sort in different ways during reporting, yet return to the
+    // Assign the report order for each cut -- this allows user to sort in different ways during reporting, yet return to the
     // order reported in the main results file. 
     unsigned int i = 1;
     for (CutStructureContainer_t::iterator itr = _Cut.begin(); itr != _Cut.end(); ++itr, ++i)
@@ -1773,11 +1765,11 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
         return false;
 
     if (_parameters.isGeneratingHtmlResults() || _parameters.isGeneratingTableResults()) {
-        /* First widdle the cut list down to those that are reportable. */
+        /* First whittle the cut list down to those that are reportable. */
         CutStructureContainer_t::iterator itr = _Cut.begin();
         for (; itr != _Cut.end(); ++itr) {
             if (!reportableCut(*(*itr))) {
-                break; // Found first cut that was is not reportable. Remove cuts here and after.
+                break; // Found first cut that is not reportable. Remove cuts here and after.
             }
         }
         // Move non-reportable cuts to separate vector. We'll need to reference these trimmed cuts in a different way in the html output.
@@ -1837,7 +1829,7 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
     return true;
 }
 
-/* Run Scan. */
+/** Run Scan. */
 bool ScanRunner::run() {
     time_t gStartTime, gEndTime;
     time(&gStartTime); //get start time
@@ -1931,7 +1923,7 @@ bool ScanRunner::run() {
             scan_success = scanTreeTemporalConditionNodeCensored();
         else
             scan_success = scanTree();
-        // Perform simulations if cuts were found in real data or if this is a tree sequential analysis - in which can we need the simulated data for the following looks.
+        // Perform simulations if cuts were found in real data or if this is a tree sequential analysis - in which case we need the simulated data for the following looks.
         if (scan_success || _parameters.isSequentialScanTreeOnly()) {
             if (_print.GetIsCanceled()) return false;
             if (_parameters.getNumReplicationsRequested()) {
@@ -1954,7 +1946,7 @@ bool ScanRunner::run() {
         if (!runPowerEvaluations()) return false;
     }
     if (_print.GetIsCanceled()) return false;
-    time(&gEndTime); //get end time
+    time(&gEndTime); // get end time
     if (!reportResults(gStartTime, gEndTime)) return false;
     // create SequentialStatistic object if tree-only sequential scan
 	if (_parameters.isSequentialScanTreeOnly()) {
@@ -1964,11 +1956,11 @@ bool ScanRunner::run() {
     return true;
 }
 
-/* Runs power evaluations. */
+/** Runs power evaluations. */
 bool ScanRunner::runPowerEvaluations() {
     switch (_parameters.getCriticalValuesType()) {
         case Parameters::CV_MONTECARLO:
-            // if simulations not already done is analysis stage, perform them now
+            // if simulations not already done in analysis stage, perform them now
             if (!_simVars.get_sim_count()) {
                 _print.Printf("Doing the %d Monte Carlo simulations ...\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
                 boost::shared_ptr<AbstractRandomizer> randomizer(AbstractRandomizer::getNewRandomizer(*this));
@@ -2005,7 +1997,7 @@ bool ScanRunner::runPowerEvaluations() {
         _print.Printf("\nDoing the alternative replications for power set %d\n", BasePrint::P_STDOUT, t+1);
         boost::shared_ptr<AbstractRandomizer> core_randomizer;
         if (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::TOTALCASES) {
-            /* Randomization is specialized for the conditional Bernoulli and power evaluations. */
+            // Randomization is specialized for the conditional Bernoulli and power evaluations.
             // calculate the number of individuals in the nodes with an excess risk
             unsigned int n1=0;
             const AdjustmentsContainer_t& adj = riskAdjustments[t]->get();
@@ -2019,7 +2011,7 @@ bool ScanRunner::runPowerEvaluations() {
             if (macro_less_than(adj.begin()->second.begin()->getRelativeRisk(), _parameters.getPowerBaselineProbability(), DBL_CMP_TOLERANCE))
                 throw resolvable_error("The relative risks in power set %d, of the alternative hypothesis file, is less than the baseline event probability.", t+1);
 
-            /* Check that values for p0, p1 and total cases is reasonable in terms of actual data. */
+            // Check that values for p0, p1 and total cases is reasonable in terms of actual data.
             double z = _parameters.getPowerZ();
             double C = getTotalC();
             double N = static_cast<double>(getTotalC() + getTotalControls());
@@ -2043,10 +2035,10 @@ bool ScanRunner::runPowerEvaluations() {
                                                                                           riskAdjustments[t]->get().begin()->second.begin()->getRelativeRisk()/*risk is required to be same for all nodes*/,
                                                                                           n1, *this, _parameters.getRandomizationSeed()));
         } else if (Parameters::isTemporalScanType(_parameters.getScanType())) {
-            /* Randomization is specialized for the tree-time/time-only scans and power evaluations. */
+            // Randomization is specialized for the tree-time/time-only scans and power evaluations.
             core_randomizer.reset(new TemporalAlternativeHypothesisRandomizer(*this, _parameters.getRandomizationSeed()));
         } else {
-            /* Use the same randomizer as the null hypothesis randomization. */
+            // Use the same randomizer as the null hypothesis randomization.
             core_randomizer.reset(AbstractRandomizer::getNewRandomizer(*this));
         }
         boost::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, *riskAdjustments[t], _parameters, _TotalC, _has_multi_parent_nodes, _parameters.getRandomizationSeed()));
@@ -2066,7 +2058,7 @@ bool ScanRunner::runPowerEvaluations() {
     return true;
 }
 
-/* DOING THE MONTE CARLO SIMULATIONS */
+/** DOING THE MONTE CARLO SIMULATIONS */
 bool ScanRunner::runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep, unsigned int iteration) {
     const char * sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %lf\n";
     unsigned long ulParallelProcessCount = std::min(_parameters.getNumParallelProcessesToExecute(), num_relica);
@@ -2083,7 +2075,7 @@ bool ScanRunner::runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer
             _randomizers.push_back(boost::shared_ptr<AbstractRandomizer>(randomizer->clone()));
         }
 
-        //run threads:
+        // run threads:
         boost::thread_group tg;
         boost::mutex        thread_mutex;
         for (unsigned u=0; u < ulParallelProcessCount; ++u) {
@@ -2106,7 +2098,7 @@ bool ScanRunner::runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer
         }
         tg.join_all();
 
-        //propagate exceptions if needed
+        // propagate exceptions if needed
         theContractor.throw_unhandled_exception();
         jobSource.Assert_NoExceptionsCaught();
         if (jobSource.GetUnregisteredJobCount() > 0)
@@ -2118,7 +2110,7 @@ bool ScanRunner::runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer
     return true;
 }
 
-/* DOING THE MONTE CARLO SIMULATIONS */
+/** DOING THE MONTE CARLO SIMULATIONS */
 bool ScanRunner::runsequentialsimulations(unsigned int num_relica) {
     const char * sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %lf\n";
     unsigned long ulParallelProcessCount = std::min(_parameters.getNumParallelProcessesToExecute(), num_relica);
@@ -2141,7 +2133,7 @@ bool ScanRunner::runsequentialsimulations(unsigned int num_relica) {
             sequential_writer.reset(new SequentialScanLoglikelihoodRatioWriter(*this));
         }
 
-        //run threads:
+        // run threads:
         boost::thread_group tg;
         boost::mutex thread_mutex;
         for (unsigned u=0; u < ulParallelProcessCount; ++u) {
@@ -2169,7 +2161,7 @@ bool ScanRunner::runsequentialsimulations(unsigned int num_relica) {
         }
         tg.join_all();
 
-        //propagate exceptions if needed
+        // propagate exceptions if needed
         theContractor.throw_unhandled_exception();
         jobSource.Assert_NoExceptionsCaught();
         if (jobSource.GetUnregisteredJobCount() > 0)
@@ -2181,7 +2173,7 @@ bool ScanRunner::runsequentialsimulations(unsigned int num_relica) {
     return true;
 }
 
-/* Determines number of cuts in all nodes, given each nodes cut type. */
+/** Determines number of cuts in all nodes, given each node's cut type. */
 size_t ScanRunner::calculateCutsCount() const {
     size_t cuts = 0;
     for (NodeStructureContainer_t::const_iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
@@ -2202,7 +2194,7 @@ size_t ScanRunner::calculateCutsCount() const {
     return cuts;
 }
 
-/* SCANNING THE TREE */
+/** SCANNING THE TREE */
 bool ScanRunner::scanTree() {
     _print.Printf("Scanning the tree ...\n", BasePrint::P_STDOUT);
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
@@ -2297,7 +2289,7 @@ bool ScanRunner::scanTree() {
     return _Cut.size() != 0;
 }
 
-/* SCANNING THE TREE for temporal model */
+/** SCANNING THE TREE for temporal model */
 bool ScanRunner::scanTreeTemporalConditionNode() {
     _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
@@ -2330,7 +2322,7 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
             //if (thisNode.getChildren().size() == 0) continue;
             Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
             switch (cutType) {
-                case Parameters::SIMPLE: break;// already done, regardless of specified node cut
+                case Parameters::SIMPLE: break; // already done, regardless of specified node cut
                 case Parameters::ORDINAL: {
                     // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
                     CutStructure::CutChildContainer_t currentChildren;
@@ -2436,7 +2428,7 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
 }
 
 
-/* SCANNING THE TREE for temporal model conditioned on node and censored. */
+/** SCANNING THE TREE for temporal model conditioned on node and censored. */
 bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
     _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
@@ -2471,7 +2463,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
             //if (thisNode.getChildren().size() == 0) continue;
             Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
             switch (cutType) {
-            case Parameters::SIMPLE: break;// already done, regardless of specified node cut
+            case Parameters::SIMPLE: break; // already done, regardless of specified node cut
             case Parameters::ORDINAL: {
                 // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
                 CutStructure::CutChildContainer_t currentChildren;
@@ -2631,7 +2623,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
             //if (thisNode.getChildren().size() == 0) continue;
             Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
             switch (cutType) {
-                case Parameters::SIMPLE: break;// already done, regardless of specified node cut
+                case Parameters::SIMPLE: break; // already done, regardless of specified node cut
                 case Parameters::ORDINAL: {
                     // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
                     CutStructure::CutChildContainer_t currentChildren;
@@ -2736,9 +2728,9 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
     return _Cut.size() != 0;
 }
 
-/* Calculates the log likelihood of the cut over evaluation currently, then updates collection of best cuts by node. */
+/** Calculates the log likelihood of the cut over evaluation currently, then updates collection of best cuts by node. */
 CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx, int BrC_All, double BrN_All) {
-    // Skip calculation if branch count does not meet evaluation minimum,
+    // Skip calculation if branch count does not meet evaluation minimum.
     if (BrC < static_cast<int>(_node_evaluation_minimum)) return 0;
 
     double loglikelihood = 0;
@@ -2768,9 +2760,9 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, 
     return updateCut(cut);
 }
 
-/* Calculates the log likelihood of the cut over evaluation currently, then updates collection of best cuts by node. */
+/** Calculates the log likelihood of the cut over evaluation currently, then updates collection of best cuts by node. */
 CutStructure * ScanRunner::calculateCut(size_t node_index, int C, double N, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx) {
-    // Skip calculation if branch count does not meet evaluation minimum,
+    // Skip calculation if branch count does not meet evaluation minimum.
     if (BrC < static_cast<int>(_node_evaluation_minimum)) return 0;
     double loglikelihood = logCalculator->LogLikelihood(C, N, BrC, BrN);
     if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) return 0;
@@ -2799,7 +2791,7 @@ CutStructure * ScanRunner::updateCut(std::auto_ptr<CutStructure>& cut) {
         if (!(itr != _Cut.end() && (*itr)->getID() == cut->getID()))
             return *(_Cut.insert(itr, cut.release()));
     }
-    // at this point, we're replacing a cut with better log likeloihood cut
+    // at this point, we're replacing a cut with better log likelihood cut
     if (cut->getLogLikelihood() > (*itr)->getLogLikelihood()) {
         size_t idx = std::distance(_Cut.begin(), itr);
         delete _Cut[idx]; _Cut[idx] = 0;
@@ -2809,11 +2801,11 @@ CutStructure * ScanRunner::updateCut(std::auto_ptr<CutStructure>& cut) {
     return 0;
 }
 
-/* SETTING UP THE TREE */
+/** SETTING UP THE TREE */
 bool ScanRunner::setupTree() {
     _print.Printf("Setting up the tree ...\n", BasePrint::P_STDOUT);
 
-    // Initialize variables and calculates the total number of cases
+    // Initialize variables and calculate the total number of cases
     _TotalC = 0; _TotalN = 0;
     for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
         std::fill((*itr)->refBrC_C().begin(), (*itr)->refBrC_C().end(), 0);
@@ -2821,9 +2813,9 @@ bool ScanRunner::setupTree() {
         _TotalC = std::accumulate((*itr)->refIntC_C().begin(), (*itr)->refIntC_C().end(), _TotalC);
     }
 
-    // If executing sequential scan and the number of cases in counts file is less than user specified total seqnential cases.
+    // If executing sequential scan and the number of cases in counts file is less than user specified total sequential cases.
     if (_parameters.isSequentialScanPurelyTemporal() && static_cast<unsigned int>(_TotalC) > _parameters.getSequentialMaximumSignal()) {
-        /* abort this analysis -- return true so that returned to function won't think that an error occurred. */
+        /** abort this analysis -- return true so that returned to function won't think that an error occurred. */
 
         //_print.Printf("Error: For the sequential scan, the number of cases in the count file must be less than or equal to the total sequential cases.\n"
         //              "       The count file defines %i cases while the specified number of sequential cases is %u.", BasePrint::P_ERROR, _TotalC, _parameters.getSequentialMaximumSignal());
@@ -2951,7 +2943,7 @@ bool ScanRunner::setupTree() {
     // Calculates the expected counts for each node and the total.
     if (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::TOTALCASES && !_parameters.isSequentialScanTreeOnly()) {
         // If performing power calculations with user specified number of cases, override number of cases read from case file.
-        // This is ok since this option can not be peformed in conjunction with analysis - so the cases in tree are not used.
+        // This is ok since this option cannot be peformed in conjunction with analysis - so the cases in tree are not used.
         // Skip this step for tree sequential scan since we are already conditioning in read process at the look level.
         if (_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES)
             _TotalC = _parameters.getPowerEvaluationTotalCases();
@@ -2960,8 +2952,7 @@ bool ScanRunner::setupTree() {
             std::transform((*itr)->getIntN_C().begin(), (*itr)->getIntN_C().end(), (*itr)->refIntN_C().begin(), std::bind1st(std::multiplies<double>(), adjustN)); // (*itr)->refIntN() *= adjustN;
         _TotalN = _TotalC;
     }
-    /* For each node, calculates the observed and expected number of cases for that
-       node together with all of its children, grandchildren, etc. */
+    // For each node, calculate the observed and expected number of cases for that node together with all of its children, grandchildren, etc.
     boost::dynamic_bitset<> ancestor_nodes(_has_multi_parent_nodes ? _Nodes.size() : 0);
     for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr < _Nodes.end(); ++itr) {
         ancestor_nodes.reset();
@@ -2979,7 +2970,7 @@ bool ScanRunner::setupTree() {
         (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) ||
         (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.isPerformingDayOfWeekAdjustment()) ||
         (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE && _parameters.isPerformingDayOfWeekAdjustment())) {
-        // Checks that no node has negative expected cases or that a node with zero expected has observed cases.
+        // Check that no node has negative expected cases or that a node with zero expected has observed cases.
         for (size_t i=0; i < _Nodes.size(); ++i) {
             // cout << "Node=" << i << ", BrC=" << Node[i].BrC << ", BrN=" << Node[i].BrN << endl;
             if (_Nodes[i]->getBrN() < 0 ) {

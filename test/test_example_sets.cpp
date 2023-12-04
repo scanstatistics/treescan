@@ -5,12 +5,12 @@
 #include "DataFileWriter.h"
 #include <boost/any.hpp>
 
-/* Tests the expected results of the example data sets */
+/** Tests the expected results of the example data sets */
 
-/* Test Suite for the Poisson example data set. */
+/** Test Suite for the Poisson example data set. */
 BOOST_FIXTURE_TEST_SUITE( poisson_example_suite, poisson_fixture )
 
-/* Tests the expected values of the data file writer with the unconditional Poisson model. */
+/** Tests the expected values of the data file writer with the unconditional Poisson model. */
 BOOST_AUTO_TEST_CASE( test_poisson_unconditional ) {
     // set parameters to report csv data file
     _parameters.setConditionalType(Parameters::UNCONDITIONAL);
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE( test_poisson_unconditional ) {
     stream.close();
 }
 
-/* Tests the expected values of the data file writer with the conditional Poisson model. */
+/** Tests the expected values of the data file writer with the conditional Poisson model. */
 BOOST_AUTO_TEST_CASE( test_poisson_conditional ) {
     // set parameters to report csv data file
     _parameters.setConditionalType(Parameters::TOTALCASES);
@@ -140,10 +140,10 @@ BOOST_AUTO_TEST_CASE( test_poisson_conditional ) {
 
 BOOST_AUTO_TEST_SUITE_END()
 
-/* Test Suite for the Bernoulli example data set. */
+/** Test Suite for the Bernoulli example data set. */
 BOOST_FIXTURE_TEST_SUITE( bernoulli_example_suite, bernoulli_fixture )
 
-/* Tests the expected values of the data file writer with the unconditional Poisson model. */
+/** Tests the expected values of the data file writer with the unconditional Poisson model. */
 BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
     // set parameters to report csv data file
     _parameters.setConditionalType(Parameters::UNCONDITIONAL);
@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
     stream.close();
 }
 
-/* Tests the expected values of the data file writer with the conditional Bernoulli model. */
+/** Tests the expected values of the data file writer with the conditional Bernoulli model. */
 BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
     // set parameters to report csv data file
     _parameters.setConditionalType(Parameters::TOTALCASES);
@@ -351,10 +351,10 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
 
 BOOST_AUTO_TEST_SUITE_END()
 
-/* Test Suite for the tree-time scan example data set. */
+/** Test Suite for the tree-time scan example data set. */
 BOOST_FIXTURE_TEST_SUITE( tree_time_example_suite, tree_temporal_fixture )
 
-/* Tests the expected values of the data file writer with the tree-time scan conditioned on node. */
+/** Tests the expected values of the data file writer with the tree-time scan conditioned on node. */
 BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
     // set parameters to report csv data file
     _parameters.setConditionalType(Parameters::NODE);
@@ -460,7 +460,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
     stream.close();
 }
 
-/* Tests the expected values of the data file writer with the tree-time scan conditioned on node, with day of week adjustment. */
+/** Tests the expected values of the data file writer with the tree-time scan conditioned on node, with day of week adjustment. */
 BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
     // set parameters to report csv data file
     _parameters.setConditionalType(Parameters::NODE);
@@ -567,7 +567,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
     stream.close();
 }
 
-/* Tests the expected values of the data file writer with the tree-time scan conditioned on node. */
+/** Tests the expected values of the data file writer with the tree-time scan conditioned on node. */
 BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
     // set parameters to report csv data file
     _parameters.setConditionalType(Parameters::NODEANDTIME);
@@ -672,7 +672,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
     stream.close();
 }
 
-/* Tests the expected values of the data file writer with the tree-time scan conditioned on node, with day of week adjustment. */
+/** Tests the expected values of the data file writer with the tree-time scan conditioned on node, with day of week adjustment. */
 BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustment ) {
     // set parameters to report csv data file
     _parameters.setConditionalType(Parameters::NODEANDTIME);
@@ -780,10 +780,10 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
 
 BOOST_AUTO_TEST_SUITE_END()
 
-/* Test Suite for the time only scan example data set. */
+/** Test Suite for the time only scan example data set. */
 BOOST_FIXTURE_TEST_SUITE( time_only_example_suite, time_only_fixture )
 
-/* Tests the expected values of the data file writer with the time only scan conditioned on total cases. */
+/** Tests the expected values of the data file writer with the time only scan conditioned on total cases. */
 BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases ) {
     // set parameters to report csv data file
     _parameters.setScanType(Parameters::TIMEONLY);
@@ -879,7 +879,7 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases ) {
     stream.close();
 }
 
-/* Tests the expected values of the data file writer with the time only scan conditioned on total cases, w/ day of week adjustment. */
+/** Tests the expected values of the data file writer with the time only scan conditioned on total cases, w/ day of week adjustment. */
 BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases_day_of_week_adjustment ) {
     // set parameters to report csv data file
     _parameters.setScanType(Parameters::TIMEONLY);

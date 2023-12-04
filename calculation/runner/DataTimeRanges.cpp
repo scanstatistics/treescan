@@ -10,8 +10,8 @@
 
 /////////////////////////////////// DataTimeRange //////////////////////////////////////////////
 
-/* Parses date time range from string - using DataTimeRange::DatePrecisionType to determine how to parse. 
-   If parameter gregorian_start_date is defined, uses that date as base date when translating to time index. */
+/** Parses date time range from string - using DataTimeRange::DatePrecisionType to determine how to parse. 
+    If parameter gregorian_start_date is defined, uses that date as base date when translating to time index. */
 DataTimeRange DataTimeRange::parse(const std::string& from, DataTimeRange::DatePrecisionType precision, boost::optional<boost::gregorian::date> dataRangeStart) {
     std::string fromMod = from;
     fromMod.erase(std::remove(fromMod.begin(), fromMod.end(), ' '), fromMod.end());
@@ -65,7 +65,7 @@ DataTimeRange DataTimeRange::parse(const std::string& from, DataTimeRange::DateP
     return DataTimeRange(indexes.front(), indexes.back(), dataRangeStart);
 }
 
-/* Returns data index as formatted data string. */
+/** Returns data index as formatted data string. */
 std::string DataTimeRange::rangeIdxToGregorianString(index_t idx, DatePrecisionType precision) const {
     boost::gregorian::date translatedDate;
     switch (precision) {
@@ -83,7 +83,7 @@ std::string DataTimeRange::rangeIdxToGregorianString(index_t idx, DatePrecisionT
     return DateStringParser::gregorianToString(translatedDate);
 }
 
-/* Returns string pair that is the formatted dates for passed start and end date indexes. */
+/** Returns string pair that is the formatted dates for passed start and end date indexes. */
 std::pair<std::string, std::string> DataTimeRange::rangeToGregorianStrings(int startIdx, int endIdx, DatePrecisionType precision) const {
     boost::gregorian::date translatedStart, translatedEnd;
     switch (precision) {
@@ -125,10 +125,10 @@ const unsigned int DateStringParser::DEFAULT_DAY = 1;
 const unsigned int DateStringParser::DEFAULT_MONTH = 1;
 const char * DateStringParser::UNSPECIFIED = "unspecified";
 
-/** constructor */
+/** Constructor */
 DateStringParser::DateStringParser(DataTimeRange::DatePrecisionType eTimePrecision) : geTimePrecision(eTimePrecision) {}
 
-/* Converts boost::gregorian::date object to string in format yyy/mm/dd. */
+/** Converts boost::gregorian::date object to string in format yyy/mm/dd. */
 std::string DateStringParser::gregorianToString(boost::gregorian::date dateObj) {
     const std::locale fmt(std::locale::classic(), new boost::gregorian::date_facet("%Y/%m/%d"));
     std::ostringstream os;
@@ -137,7 +137,7 @@ std::string DateStringParser::gregorianToString(boost::gregorian::date dateObj) 
     return os.str();
 }
 
-/* Attempts convert string to boost::gregorian::date object. */
+/** Attempts convert string to boost::gregorian::date object. */
 boost::gregorian::date DateStringParser::gregorianFromString(const std::string& s) {
     unsigned int month, day, year;
     if (sscanf(s.c_str(), "%u/%u/%u", &year, &month, &day) < 3)
@@ -191,10 +191,10 @@ DateStringParser::ParserStatus DateStringParser::Parse(const char * sDateString,
     return VALID_DATE;
 }
 
-/* Parses passed string into date components, noting the determined precision and format. This function supports dates of formats: yyyy/mm/dd or
-   mm/dd/yyyy with all lesser precisions (i.e. yyyy/mm or yyyy). This funciton also permits the date string use separators '/', '-', '.', '*'. */
+/** Parses passed string into date components, noting the determined precision and format. This function supports dates of formats: yyyy/mm/dd or
+    mm/dd/yyyy with all lesser precisions (i.e. yyyy/mm or yyyy). This funciton also permits the date string use separators '/', '-', '.', '*'. */
 DateStringParser::ParserStatus DateStringParser::GetInParts(const char * s,  unsigned int& iYear, unsigned int& iMonth, unsigned int& iDay, DataTimeRange::DatePrecisionType& ePrecision) {
-    //determine precision
+    // determine precision
     size_t iLength, iCount = 1;
     std::string sFormat("%u");
     const char * ptr = s;
@@ -207,7 +207,7 @@ DateStringParser::ParserStatus DateStringParser::GetInParts(const char * s,  uns
         ptr += 1;
     }
     ePrecision = (DataTimeRange::DatePrecisionType)(iCount + 1);
-    //scan into parts - determined by precision
+    // scan into parts - determined by precision
     switch (ePrecision) {
         case DataTimeRange::YEAR: 
             if (sscanf(s, sFormat.c_str(), &iYear) != 1) return INVALID_DATE;

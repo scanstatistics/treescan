@@ -11,17 +11,17 @@
 #include "Toolkit.h"
 #include "DataFileWriter.h"
 
-/* Returns filename of html output. */
+/** Returns filename of html output. */
 std::string& ResultsFileWriter::getHtmlFilename(const Parameters& parameters, std::string& buffer) {
   return getDerivedFilename(parameters.getOutputFileName(), "", ".html", buffer);
 }
 
-/* Returns filename of NCBI Asn1 output. */
+/** Returns filename of NCBI Asn1 output. */
 std::string & ResultsFileWriter::getAsnFilename(const Parameters& parameters, std::string& buffer) {
     return getDerivedFilename(parameters.getOutputFileName(), "_ncbi", ".asn", buffer);
 }
 
-/* Returns filename of Newick output. */
+/** Returns filename of Newick output. */
 std::string & ResultsFileWriter::getNewickFilename(const Parameters& parameters, std::string& buffer) {
     return getDerivedFilename(parameters.getOutputFileName(), "", ".nwk", buffer);
 }
@@ -50,14 +50,14 @@ std::ofstream & ResultsFileWriter::openStream(const std::string& outputfile, std
     return outfile;
 }
 
-/* Returns whether alpha spending is complete and the sequential analysis is over. */
+/** Returns whether alpha spending is complete and the sequential analysis is over. */
 bool ResultsFileWriter::treeSequentialAnalysisComplete() const {
     return _scanRunner.getParameters().isSequentialScanTreeOnly() && macro_less_than_or_equal(
         _scanRunner.getParameters().getSequentialAlphaOverall(), _scanRunner.getSequentialStatistic().getAlphaSpending(), DBL_CMP_TOLERANCE
     );
 }
 
-/* Writes results of analysis to primary text file. */
+/** Writes results of analysis to primary text file. */
 bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     std::ofstream outfile;
     openStream(_scanRunner.getParameters().getOutputFileName(), outfile, true);
@@ -341,7 +341,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 }
                 double llr = calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood());
                 if (parameters.isSequentialScanTreeOnly() && !macro_less_than(MIN_CUT_LLR, llr, DBL_CMP_TOLERANCE))
-                    buffer = "Not Applicable"; // It's possible that this cut signalled in prior look but now it's llr is not significant.
+                    buffer = "Not Applicable"; // It's possible that this cut signalled in prior look but now its llr is not significant.
                 else
                     printString(buffer, "%.6lf", llr);
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
@@ -435,7 +435,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     return true;
 }
 
-/** Returns a string which is details primary analysis settings. */
+/** Returns a string which details primary analysis settings. */
 std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buffer) const {
     const Parameters& parameters = _scanRunner.getParameters();
     std::string scanrate("\nlooking for ");
@@ -499,7 +499,7 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buff
     return buffer;
 }
 
-/* Writes tree structure and results of analysis to NCBI ASN1 file. */
+/** Writes tree structure and results of analysis to NCBI ASN1 file. */
 bool ResultsFileWriter::writeNCBIAsn() const {
     // Create output filename.
     std::string buffer;
@@ -542,10 +542,10 @@ bool ResultsFileWriter::writeNCBIAsn() const {
     return true;
 }
 
-/* Collects asn node definition for this node and children. */
+/** Collects asn node definition for this node and children. */
 std::stringstream & ResultsFileWriter::getNCBIAsnDefinition(const NodeStructure& node, const ptr_vector<FieldDef>& fieldDefinitions, bool idoffset, const std::map<int, const CutStructure*>& nodeCuts, std::stringstream& destination) const {
     std::string buffer, buffer2;
-    // First write the current node - including additional information if there is a cut for the node.
+    // First write the current node, including additional information if there is a cut for the node.
     auto const& nodeCut = nodeCuts.find(node.getID());
     destination << "{ id " << (node.getID() + (idoffset ? 1 : 0)) << ", ";
     std::string distance = "1";
@@ -595,7 +595,7 @@ std::stringstream & ResultsFileWriter::getNCBIAsnDefinition(const NodeStructure&
     return destination;
 }
 
-/* Writes tree structure to Newick formatted file. */
+/** Writes tree structure to Newick formatted file. */
 bool ResultsFileWriter::writeNewick() const {
     Parameters& parameters(const_cast<Parameters&>(_scanRunner.getParameters()));
     std::string buffer;
@@ -615,7 +615,7 @@ bool ResultsFileWriter::writeNewick() const {
     return true;
 }
 
-/* Collects Newick node definition for this node and children. */
+/** Collects Newick node definition for this node and children. */
 std::stringstream & ResultsFileWriter::getNewickDefinition(const NodeStructure& node, std::stringstream& destination) const {
     size_t nchild(node.getChildren().size());
     if (nchild) destination << "(";
@@ -643,7 +643,7 @@ std::string & ResultsFileWriter::getTotalRunningTime(time_t start, time_t end, s
     return buffer;
 }
 
-/* Encodes text for javascript id reference by replacing symbols/punctuation with underscore. */
+/** Encodes text for javascript id reference by replacing symbols/punctuation with underscore. */
 std::string & ResultsFileWriter::encodeForJavascript(std::string & text) const {
     // Now replace HTML number characters that would interfere in javascript.
     std::transform(text.begin(), text.end(), text.begin(), [](char& ch) {
@@ -654,7 +654,7 @@ std::string & ResultsFileWriter::encodeForJavascript(std::string & text) const {
     return text;
 }
 
-/* Encodes string for Newick format (https://en.wikipedia.org/wiki/Newick_format). */
+/** Encodes string for Newick format (https://en.wikipedia.org/wiki/Newick_format). */
 std::string & ResultsFileWriter::encodeForNewick(std::string & text) const {
     std::stringstream buffer;
     buffer << '\''; // Always enclosing in single quotes - just in case there are characters which conflict with reserved characters.
@@ -669,7 +669,7 @@ std::string & ResultsFileWriter::encodeForNewick(std::string & text) const {
     return text;
 }
 
-/* Encodes string characters for ASN.1 format used in Genome Workbench and NCBI's Tree Viewer. */
+/** Encodes string characters for ASN.1 format used in Genome Workbench and NCBI's Tree Viewer. */
 std::string & ResultsFileWriter::encodeForASN(std::string & text) const {
     std::stringstream buffer;
     for (auto ch : text) {
@@ -708,9 +708,9 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<script src=\"https://www.treescan.org/libs/bootstrap.4.1.1/popper.4.1.1.js\" type=\"text/javascript\"></script>" << std::endl;
     outfile << "<script src=\"https://www.treescan.org/libs/bootstrap.4.1.1/bootstrap.4.1.1.js\" type=\"text/javascript\"></script>" << std::endl;
 
-    /* Determine if we should show the tree visualization. 
+    /** Determine if we should show the tree visualization. 
        - Since we're pruning the tree by minimum p-value of 0.05, we can't possibly have any significant nodes if the number of replications
-         is less than 19 -- which impies the necessary rank out of 20 is 1 to meet at most 0.05. 
+         is less than 19 -- which implies the necessary rank out of 20 is 1 to meet at most 0.05. 
        - If this is a sequential scan and we haven't reached the maximum cases, we will report cuts.
        - If this is a power evaluation with an analysis, we will report cuts.
        - There needs to be at least one reportable cut.
@@ -734,7 +734,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         ScanRunner::CutStructureContainer_t::const_iterator itr = _scanRunner.getCuts().begin(), enditr = _scanRunner.getCuts().end();
         for (; itr != enditr; ++itr)
             node_cut_map[(*itr)->getID()] = (*itr);
-        // Add the trimmed cuts as well.
+        // add the trimmed cuts as well
         enditr = _scanRunner.getTrimmedCuts().end();
         for (itr = _scanRunner.getTrimmedCuts().begin(); itr != enditr; ++itr)
             node_cut_map[(*itr)->getID()] = (*itr);
@@ -1048,7 +1048,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     return true;
 }
 
-/* Write table row for cut. */
+/** Write table row for cut. */
 std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Loglikelihood_t & calcLogLikelihood, const std::string& format, std::ofstream& outfile, std::stringstream * subrows) {
     const Parameters& parameters = _scanRunner.getParameters();
     const NodeStructure& thisNode = *(_scanRunner.getNodes()[thisCut.getID()]);
@@ -1277,7 +1277,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
     return outfile;
 }
 
-/* Convert the p-value to class name to be used in html/javascript. */
+/** Convert the p-value to class name to be used in html/javascript. */
 const char * ResultsFileWriter::getPvalueClass(double pval, bool childClass) {
     if (pval <= 0.001)
         return (childClass ? "pvalue-001-children " : "pvalue-001 ");
@@ -1289,7 +1289,7 @@ const char * ResultsFileWriter::getPvalueClass(double pval, bool childClass) {
         return (childClass ? "pvalue-less-children " : "pvalue-less ");
 }
 
-/* Convert the relative risk to class name to be used in html/javascript. */
+/** Convert the relative risk to class name to be used in html/javascript. */
 const char * ResultsFileWriter::getRelativeRiskClass(double rr, bool childClass) {
     if (rr >= 8)
         return (childClass ? "rr-8-children " : "rr-8 ");
@@ -1324,7 +1324,7 @@ std::string& ResultsFileWriter::getRecurranceIntervalAsString(const RecurrenceIn
     return buffer;
 }
 
-/* Convert the signall to class name to be used in html/javascript. */
+/** Convert the signal to class name to be used in html/javascript. */
 const char * ResultsFileWriter::getSignalClass(double pval, bool childClass) {
     if (pval > 0.0)
         return (childClass ? "signalled-children " : "signalled ");
@@ -1405,7 +1405,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
         std::vector<NodeSet_t> childrenNodesets;
         // Iterate over children recursively obtain branch stream and p-value/relative risk by node and best child.
         std::vector<boost::shared_ptr<std::stringstream> >::iterator itrStream = childNodestreams.begin();
-        // Copy the children and sort by identified.
+        // Copy the children and sort by identifier
         NodeStructure::ChildContainer_t childrenCopy = node.getChildren();
         std::sort(childrenCopy.begin(), childrenCopy.end(), CompareNodeStructureByIdentifier());
         NodeStructure::ChildContainer_t::const_iterator itrChild = childrenCopy.begin();
@@ -1420,12 +1420,12 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
                 ++significantBranches;
         }
         if (nodesignificant || significantChildNodes > 0 || significantBranches > 0) {
-            // There exist significant child nodes and/or significant descendents, so we're including at least some children of this node.
+            // There exist significant child nodes and/or significant descendents, so we're including at least some children of this node
             if (static_cast<int>(node.getLevel()) >= collapseAtLevel) childrenstream << ", collapsed : true ";
             childrenstream << ", children: [" << std::endl;
             if (nodesignificant || significantChildNodes > 0) {
-                // Rule 1a - Include child nodes if this node is significant - so at least one level below significant nodes are displayed.
-                // Rule 1b - Include child node if it or one off it's siblings are significant. This means we're including all children if we're including one.
+                // Rule 1a - Include child nodes if this node is significant - so at least one level below significant nodes is displayed.
+                // Rule 1b - Include child node if it or one of its siblings are significant. This means we're including all children if we're including one.
                 std::vector<NodeSet_t>::iterator itrNodeSets = childrenNodesets.begin();
                 for (itrStream = childNodestreams.begin(); itrStream != childNodestreams.end(); ++itrStream, ++itrNodeSets) {
                     childrenstream << (*itrStream)->str();

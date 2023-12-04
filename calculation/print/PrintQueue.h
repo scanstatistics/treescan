@@ -16,9 +16,9 @@ public:
       virtual ~threshold_policy_i() {}
 
       virtual threshold_policy_i * Clone() const = 0;
-      virtual long GetRecommendedThresholdValue_OnConstruction() = 0;//called on PrintQueue construction
+      virtual long GetRecommendedThresholdValue_OnConstruction() = 0; // called on PrintQueue construction
       virtual long GetRecommendedThresholdValue(long lCurrentThreshold, long lCurrentSize) = 0;
-      virtual long GetRecommendedThresholdValue_OnDestruction(long lCurrentThreshold, long lCurrentSize) = 0;//called on PrintQueue destruction
+      virtual long GetRecommendedThresholdValue_OnDestruction(long lCurrentThreshold, long lCurrentSize) = 0; // called on PrintQueue destruction
    };
 
    class default_threshold_policy : public threshold_policy_i
@@ -34,7 +34,7 @@ public:
 private:
    BasePrint & gTarget;
    std::auto_ptr<PrintQueue::threshold_policy_i> gpThresholdPolicy;
-   std::deque< std::pair<BasePrint::PrintType, std::string> > gOutputLines;//holds lines, along with an indicator that tells whether or not the line is a "warning" line (true==is).
+   std::deque< std::pair<BasePrint::PrintType, std::string> > gOutputLines; // holds lines, along with an indicator that tells whether or not the line is a "warning" line (true==is).
    long glThreshold;
 
    void PrintWarningQualifiedLine(BasePrint::PrintType, const char * s);
@@ -55,25 +55,22 @@ public:
    inline bool GetIsCanceled() const { const_cast<PrintQueue&>(*this).UpdateThreshold(); return gTarget.GetIsCanceled(); }
 
    long GetThreshold() const { return glThreshold; }
-   void SetThreshold(long lNewThreshold);//ensure: GetThreshold() == lNewThreshold;
-   void Release() { SetThreshold(0); }//ensure: GetThreshold() == 0;
-   void Hold() { SetThreshold(std::numeric_limits<long>::max()); }//ensure: GetThreshold() == std::numeric_limits<long>::max;
+   void SetThreshold(long lNewThreshold); // ensure: GetThreshold() == lNewThreshold;
+   void Release() { SetThreshold(0); } // ensure: GetThreshold() == 0;
+   void Hold() { SetThreshold(std::numeric_limits<long>::max()); } // ensure: GetThreshold() == std::numeric_limits<long>::max;
    void SetThresholdPolicy(threshold_policy_i const & NewThresholdPolicy) { gpThresholdPolicy.reset(NewThresholdPolicy.Clone()); UpdateThreshold(); }
 };
 
 
-//ClassDesc TimedReleaseThresholdPolicy
-// On construction, a Timestamp, release_time, is passed.
-// Until systemtime >= release_time, the recommended threshold value is
-// the maximum (virtually infinite).  Thereafter is is 0 (i.e. the queue is
-// released.
-//
-//ClassDesc End TimedReleaseThresholdPolicy
-
+/** On construction, a Timestamp, release_time, is passed.
+    Until systemtime >= release_time, the recommended threshold value is
+    the maximum (virtually infinite). Thereafter it is 0 (i.e. the queue is
+    released).
+*/
 class TimedReleaseThresholdPolicy : public PrintQueue::threshold_policy_i
 {
 private:
-   TreeScan::Timestamp gtsReleaseTime;//the time after which the RecommendedThresholdValue goes to 0.
+   TreeScan::Timestamp gtsReleaseTime; // the time after which the RecommendedThresholdValue goes to 0.
 
 public:
    TimedReleaseThresholdPolicy(TreeScan::Timestamp tsReleaseTime) : gtsReleaseTime(tsReleaseTime) {  }

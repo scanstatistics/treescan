@@ -12,13 +12,13 @@ using namespace boost::math;
 #include <locale>
 #include <boost/regex.hpp>
 
-/* returns number of combinations, given 'total' to choose from, choosing 'choose'; where order does not matter and repetition not allowed. */
+/** Returns number of combinations, given 'total' to choose from, choosing 'choose'; where order does not matter and repetition not allowed. */
 double getNumCombinations(unsigned int total, unsigned int choose) {
     if (total < choose) return 0.0;
     return (total == choose) ? 1.0 : factorial<double>(total)/(factorial<double>(choose) * factorial<double>(total - choose));
 }
 
-//What is the current time? (UTC | Coordinated Universal Time)
+/** What is the current time? (UTC | Coordinated Universal Time) */
 #ifdef _WINDOWS_
 boost::posix_time::ptime GetCurrentTime_HighResolution()
 {
@@ -63,9 +63,9 @@ void ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, in
   boost::posix_time::ptime StopTime(GetCurrentTime_HighResolution());
   double dSecondsElapsed;
 
-  //nothing to report if number of repetitions less than 2 or none have been completed
+  // nothing to report if number of repetitions less than 2 or none have been completed
   if (nRepetitions <= 1 || nRepsCompleted <= 0) return;
-  //nothing to report if start time greater than stop time -- error?
+  // nothing to report if start time greater than stop time -- error?
   if (StartTime > StopTime) return;
 
   boost::posix_time::time_duration ElapsedTime = StopTime - StartTime;
@@ -75,7 +75,7 @@ void ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, in
   dSecondsElapsed += ElapsedTime.hours() * 60 * 60;
   double dEstimatedSecondsRemaining = dSecondsElapsed/nRepsCompleted * (nRepetitions - nRepsCompleted);
 
-  //print an estimation only if estimated time will be 30 seconds or more
+  // print an estimation only if estimated time will be 30 seconds or more
   if (dEstimatedSecondsRemaining >= 30) {
     if (dEstimatedSecondsRemaining < 60.0)
         pPrintDirection->Printf(".... this will take approximately %.0lf seconds.\n", BasePrint::P_STDOUT, dEstimatedSecondsRemaining);
@@ -131,7 +131,7 @@ std::string& lowerString(std::string &source) {
   return source;
 }
 
-/** assigns formatted strng to destination */
+/** Assigns formatted strng to destination */
 std::string& printString(std::string& destination, const char * format, ...) {
   try {
 #ifdef _MSC_VER
@@ -161,16 +161,16 @@ std::string& printString(std::string& destination, const char * format, ...) {
   return destination;
 }
 
-/* Get printf precision format specifer given passed value. 
-   Returns a minimum of 'iSignificant' significant decimal digits. */
+/** Get printf precision format specifer given passed value. 
+    Returns a minimum of 'iSignificant' significant decimal digits. */
 unsigned int getFormatPrecision(double value, unsigned int iSignificant) {
     unsigned int iPrecision = iSignificant;
 
     if (value == 0.0) return 0;
 
     if (fabs(value) < 1.0) {
-        //If value less than 1.0, we can use log10 to determine what is the 10 power.
-        //ex. value = 0.0023:
+        // If value less than 1.0, we can use log10 to determine what is the 10 power.
+        // ex. value = 0.0023:
         //   log10(0.0023) = log10(10^-3) + log10(2.3)
         //   log10(0.0023) = -3 + 0.36172783601759287886777711225119
         //   log10(0.0023) = -2.6382721639824071211322228877488
@@ -181,8 +181,7 @@ unsigned int getFormatPrecision(double value, unsigned int iSignificant) {
 }
 
 /** Returns value as string with number of 'iSignificant' significant decimals.
-    The 'g' format specifier might have sufficed but Martin wanted this format.
-*/
+    The 'g' format specifier might have sufficed but Martin wanted this format. */
 std::string& getValueAsString(double value, std::string& s, unsigned int iSignificant) {
     if (std::isinf(value))
         s = "infinity";
@@ -197,8 +196,7 @@ std::string& getValueAsString(double value, std::string& s, unsigned int iSignif
     return s;
 }
 
-/** Returns double as string with specified decimal precision.
-*/
+/** Returns double as string with specified decimal precision. */
 std::string & getRoundAsString(double value, std::string& s, unsigned int precision, bool localize) {
     std::stringstream buffer;
     if (localize) {
@@ -250,7 +248,7 @@ std::string & GetUserTemporaryDirectory(std::string& s) {
     return s;
 }
 
-// Obtains a temporary filename either from user temp directory or specified path.
+/** Obtains a temporary filename either from user temp directory or specified path. */
 std::string & GetTemporaryFilename(std::string& s, const char * atLocation) {
     if (atLocation) {
         FileName filename(atLocation);
@@ -272,20 +270,20 @@ bool getlinePortable(std::ifstream& readstream, std::string& line) {
 
   while (!readstream.eof()) {
 
-	  if (!readstream.get(nextChar)) {//Does reading next char bring us to end of file?
+	  if (!readstream.get(nextChar)) { // Does reading next char bring us to end of file?
          break;
       }
       if (nextChar == readstream.widen('\r')) {
           // could be either DOS or Mac 9 end of line -- peek at next char
           nextChar = readstream.peek();
           if (nextChar == readstream.widen('\n')) {
-		      //DOS end of line characters -- read it.
+		      // DOS end of line characters -- read it.
               readstream.get(nextChar);
           }
           break;
       }
       if (nextChar == readstream.widen('\n')) {
-	      //UNIX or Mac OS X end of line character.
+	      // UNIX or Mac OS X end of line character.
           break;
       }
       readStream << nextChar;
@@ -326,7 +324,7 @@ const char * getOrdinalSuffix(unsigned int ordinal) {
     return "th";
 }
 
-/* HTML encodes text - replacing symbols/punctuation with html codes. */
+/** HTML encodes text - replacing symbols/punctuation with html codes. */
 std::string& htmlencode(std::string& text) {
     std::stringstream ss;
     for (size_t pos = 0; pos != text.size(); ++pos) {
@@ -339,7 +337,7 @@ std::string& htmlencode(std::string& text) {
     return text;
 }
 
-/* Returns string representation of MD5 digest. */
+/** Returns string representation of MD5 digest. */
 std::string toString(const md5::digest_type &digest) {
     const char * charDigest = reinterpret_cast<const char *>(&digest);
     std::string result;

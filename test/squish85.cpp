@@ -5,8 +5,8 @@
 #include "Toolkit.h"
 #include "DataFileWriter.h"
 
-/* Regression unit test for issue https://www.squishlist.com/ims/treescan/85/.
-   Unconditional Poisson analysis with zero cases in count file -- performing power estimation.
+/** Regression unit test for issue https://www.squishlist.com/ims/treescan/85/.
+    Unconditional Poisson analysis with zero cases in count file -- performing power estimation.
 */
 
 struct squish85_fixture : prm_testset_fixture {
@@ -16,10 +16,10 @@ struct squish85_fixture : prm_testset_fixture {
     std::string _results_user_directory;
 };
 
-/* Test Suite for the squish 85 regression. */
+/** Test Suite for the squish 85 regression. */
 BOOST_FIXTURE_TEST_SUITE( squish85_suite, squish85_fixture )
 
-/* Tests the expected power estimation values for unconditional Poisson with zero counts defined. */
+/** Tests the expected power estimation values for unconditional Poisson with zero counts defined. */
 BOOST_AUTO_TEST_CASE( test_unconditional_poison_power_estimation ) {
     _parameters.setDataOnlyOnLeaves(false);
     run_analysis("test", _results_user_directory, _parameters, _print);
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE( test_unconditional_poison_power_estimation ) {
     stream.close();
 }
 
-/* Tests that conditional Poisson, with zero counts defined, fails to run. */
+/** Tests that conditional Poisson, with zero counts defined, fails to run. */
 BOOST_AUTO_TEST_CASE( test_conditional_poison_power_estimation ) {
     _parameters.setConditionalType(Parameters::TOTALCASES);
     BOOST_REQUIRE_THROW(run_analysis("test", _results_user_directory, _parameters, _print), resolvable_error);

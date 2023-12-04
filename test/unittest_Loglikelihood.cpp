@@ -3,7 +3,7 @@
 
 #include "Loglikelihood.h"
 
-/* Test Suite for the AbstractLoglikelihood class. */
+/** Test Suite for the AbstractLoglikelihood class. */
 BOOST_AUTO_TEST_SUITE( test_abstract_loglikelihood )
 
 BOOST_AUTO_TEST_CASE( test_get_newloglikelihood_treeonly_scan_poisson_model ) {
@@ -108,10 +108,10 @@ BOOST_AUTO_TEST_CASE( test_get_newloglikelihood_timeonly_scan ) {
 }
 BOOST_AUTO_TEST_SUITE_END()
 
-/* Test Suite for the PoissonLoglikelihood class. */
+/** Test Suite for the PoissonLoglikelihood class. */
 BOOST_AUTO_TEST_SUITE( test_poisson_loglikelihood )
 
-/* Tests PoissonLoglikelihood::LogLikelihood with equal observed and expected. */
+/** Tests PoissonLoglikelihood::LogLikelihood with equal observed and expected. */
 BOOST_AUTO_TEST_CASE( test_equal_observed_expected ) {
     Parameters parameters;
     PoissonLoglikelihood l(100, 100.0, parameters);
@@ -122,25 +122,25 @@ BOOST_AUTO_TEST_CASE( test_equal_observed_expected ) {
     BOOST_CHECK_EQUAL( l.LogLikelihood(100, 100.0), AbstractLoglikelihood::UNSET_LOGLIKELIHOOD );
 }
 
-/* Tests PoissonLoglikelihood::LogLikelihood with more observed than expected. */
+/** Tests PoissonLoglikelihood::LogLikelihood with more observed than expected. */
 BOOST_AUTO_TEST_CASE( test_more_observed_than_expected ) {
     Parameters parameters;
     BOOST_CHECK_CLOSE( PoissonLoglikelihood(100, 100.0, parameters).LogLikelihood(12, 5.35), 3.2830035, 0.0001 );
 }
 
-/* Tests PoissonLoglikelihood::LogLikelihood with less observed than expected. */
+/** Tests PoissonLoglikelihood::LogLikelihood with less observed than expected. */
 BOOST_AUTO_TEST_CASE( test_less_observed_than_expected ) {
     Parameters parameters;
     BOOST_CHECK_EQUAL( PoissonLoglikelihood(100, 100.0, parameters).LogLikelihood(12, 15.35), AbstractLoglikelihood::UNSET_LOGLIKELIHOOD );
 }
 
-/* Tests PoissonLoglikelihood::LogLikelihood with observed equal to total cases. */
+/** Tests PoissonLoglikelihood::LogLikelihood with observed equal to total cases. */
 BOOST_AUTO_TEST_CASE( test_observed_equal_totalcases ) {
     Parameters parameters;
     BOOST_CHECK_CLOSE( PoissonLoglikelihood(100, 100.0, parameters).LogLikelihood(100, 50.0), 69.314718, 0.0001 );
 }
 
-/* Tests PoissonLoglikelihood::LogLikelihoodRatio. */
+/** Tests PoissonLoglikelihood::LogLikelihoodRatio. */
 BOOST_AUTO_TEST_CASE( test_loglikelihoodratio ) {
     Parameters parameters;
     PoissonLoglikelihood l(100, 100.0, parameters);
@@ -150,10 +150,10 @@ BOOST_AUTO_TEST_CASE( test_loglikelihoodratio ) {
 
 BOOST_AUTO_TEST_SUITE_END()
 
-/* Test Suite for the UnconditionalPoissonLoglikelihood class. */
+/** Test Suite for the UnconditionalPoissonLoglikelihood class. */
 BOOST_AUTO_TEST_SUITE( test_unconditional_poisson_loglikelihood )
 
-/* Tests PoissonLoglikelihood::LogLikelihood with equal observed and expected. */
+/** Tests PoissonLoglikelihood::LogLikelihood with equal observed and expected. */
 BOOST_AUTO_TEST_CASE( test_equal_observed_expected ) {
     Parameters parameters;
     UnconditionalPoissonLoglikelihood l(parameters);
@@ -164,25 +164,25 @@ BOOST_AUTO_TEST_CASE( test_equal_observed_expected ) {
     BOOST_CHECK_EQUAL( l.LogLikelihood(100, 100.0), AbstractLoglikelihood::UNSET_LOGLIKELIHOOD );
 }
 
-/* Tests PoissonLoglikelihood::LogLikelihood with more observed than expected. */
+/** Tests PoissonLoglikelihood::LogLikelihood with more observed than expected. */
 BOOST_AUTO_TEST_CASE( test_more_observed_than_expected ) {
     Parameters parameters;
     BOOST_CHECK_CLOSE( UnconditionalPoissonLoglikelihood(parameters).LogLikelihood(12, 5.35), 3.043721, 0.0001 );
 }
 
-/* Tests PoissonLoglikelihood::LogLikelihood with less observed than expected. */
+/** Tests PoissonLoglikelihood::LogLikelihood with less observed than expected. */
 BOOST_AUTO_TEST_CASE( test_less_observed_than_expected ) {
     Parameters parameters;
     BOOST_CHECK_EQUAL( UnconditionalPoissonLoglikelihood(parameters).LogLikelihood(12, 15.35), AbstractLoglikelihood::UNSET_LOGLIKELIHOOD );
 }
 
-/* Tests PoissonLoglikelihood::LogLikelihood with observed equal to total cases. */
+/** Tests PoissonLoglikelihood::LogLikelihood with observed equal to total cases. */
 BOOST_AUTO_TEST_CASE( test_observed_equal_totalcases ) {
     Parameters parameters;
     BOOST_CHECK_CLOSE( UnconditionalPoissonLoglikelihood(parameters).LogLikelihood(100, 50.0), 19.314718, 0.0001 );
 }
 
-/* Tests PoissonLoglikelihood::LogLikelihoodRatio. */
+/** Tests PoissonLoglikelihood::LogLikelihoodRatio. */
 BOOST_AUTO_TEST_CASE( test_loglikelihoodratio ) {
     Parameters parameters;
     UnconditionalPoissonLoglikelihood l(parameters);
@@ -193,10 +193,10 @@ BOOST_AUTO_TEST_CASE( test_loglikelihoodratio ) {
 
 BOOST_AUTO_TEST_SUITE_END()
 
-/* Test Suite for the BernoulliLoglikelihood class. */
+/** Test Suite for the BernoulliLoglikelihood class. */
 BOOST_AUTO_TEST_SUITE( test_bernoulli_loglikelihood )
 
-/* Tests BernoulliLoglikelihood::LogLikelihood with equal observed and expected. */
+/** Tests BernoulliLoglikelihood::LogLikelihood with equal observed and expected. */
 BOOST_AUTO_TEST_CASE( test_equal_observed_expected ) {
     Parameters parameters;
     BernoulliLoglikelihood l(100, 500.0, parameters);
@@ -207,25 +207,25 @@ BOOST_AUTO_TEST_CASE( test_equal_observed_expected ) {
     BOOST_CHECK_EQUAL( l.LogLikelihood(100, 100.0), 0.0 );
 }
 
-/* Tests BernoulliLoglikelihood::LogLikelihood with less observed than expected. */
+/** Tests BernoulliLoglikelihood::LogLikelihood with less observed than expected. */
 BOOST_AUTO_TEST_CASE( test_less_observed_than_expected ) {
     Parameters parameters;
     BOOST_CHECK_CLOSE( BernoulliLoglikelihood(100, 500.0, parameters).LogLikelihood(12, 15.35), -237.667492, 0.0001 );
 }
 
-/* Tests BernoulliLoglikelihood::LogLikelihood with less observed than expected. */
+/** Tests BernoulliLoglikelihood::LogLikelihood with less observed than expected. */
 BOOST_AUTO_TEST_CASE( test_less_rate_than_set_totals ) {
     Parameters parameters;
     BOOST_CHECK_EQUAL( BernoulliLoglikelihood(100, 500.0, parameters).LogLikelihood(1, 7.0), AbstractLoglikelihood::UNSET_LOGLIKELIHOOD );
 }
 
-/* Tests BernoulliLoglikelihood::LogLikelihood with observed equal to total cases. */
+/** Tests BernoulliLoglikelihood::LogLikelihood with observed equal to total cases. */
 BOOST_AUTO_TEST_CASE( test_observed_equal_totalcases ) {
     Parameters parameters;
     BOOST_CHECK_CLOSE( BernoulliLoglikelihood(100, 500.0, parameters).LogLikelihood(100, 150.0), -95.477125, 0.0001 );
 }
 
-/* Tests BernoulliLoglikelihood::LogLikelihoodRatio. */
+/** Tests BernoulliLoglikelihood::LogLikelihoodRatio. */
 BOOST_AUTO_TEST_CASE( test_loglikelihoodratio ) {
     Parameters parameters;
     BernoulliLoglikelihood l(100, 500.0, parameters);
@@ -235,10 +235,10 @@ BOOST_AUTO_TEST_CASE( test_loglikelihoodratio ) {
 
 BOOST_AUTO_TEST_SUITE_END()
 
-/* Test Suite for the UnconditionalBernoulliLogLoglikelihood class. */
+/** Test Suite for the UnconditionalBernoulliLogLoglikelihood class. */
 BOOST_AUTO_TEST_SUITE( test_unconditional_bernoulli_loglikelihood )
 
-/* Tests UnconditionalBernoulliLogLoglikelihood::LogLikelihood with equal observed and expected. */
+/** Tests UnconditionalBernoulliLogLoglikelihood::LogLikelihood with equal observed and expected. */
 BOOST_AUTO_TEST_CASE( test_equal_observed_expected ) {
     Parameters parameters;
     UnconditionalBernoulliLogLoglikelihood l(parameters);
@@ -250,25 +250,25 @@ BOOST_AUTO_TEST_CASE( test_equal_observed_expected ) {
     BOOST_CHECK_CLOSE( l.LogLikelihood(100, 100.0), 69.314718, 0.0001 );
 }
 
-/* Tests UnconditionalBernoulliLogLoglikelihood::LogLikelihood with less observed than expected. */
+/** Tests UnconditionalBernoulliLogLoglikelihood::LogLikelihood with less observed than expected. */
 BOOST_AUTO_TEST_CASE( test_less_observed_than_expected ) {
     Parameters parameters;
     BOOST_CHECK_CLOSE( UnconditionalBernoulliLogLoglikelihood(parameters).LogLikelihood(12, 15.35), 2.586083, 0.0001 );
 }
 
-/* Tests UnconditionalBernoulliLogLoglikelihood::LogLikelihood with less observed than expected. */
+/** Tests UnconditionalBernoulliLogLoglikelihood::LogLikelihood with less observed than expected. */
 BOOST_AUTO_TEST_CASE( test_less_rate_than_set_totals ) {
     Parameters parameters;
     BOOST_CHECK_EQUAL( UnconditionalBernoulliLogLoglikelihood(parameters).LogLikelihood(1, 7.0), AbstractLoglikelihood::UNSET_LOGLIKELIHOOD );
 }
 
-/* Tests UnconditionalBernoulliLogLoglikelihood::LogLikelihood with observed equal to total cases. */
+/** Tests UnconditionalBernoulliLogLoglikelihood::LogLikelihood with observed equal to total cases. */
 BOOST_AUTO_TEST_CASE( test_observed_equal_totalcases ) {
     Parameters parameters;
     BOOST_CHECK_CLOSE( UnconditionalBernoulliLogLoglikelihood(parameters).LogLikelihood(100, 150.0), 8.494951, 0.0001 );
 }
 
-/* Tests UnconditionalBernoulliLogLoglikelihood::LogLikelihoodRatio. */
+/** Tests UnconditionalBernoulliLogLoglikelihood::LogLikelihoodRatio. */
 BOOST_AUTO_TEST_CASE( test_loglikelihoodratio ) {
     Parameters parameters;
     UnconditionalBernoulliLogLoglikelihood l(parameters);
@@ -278,10 +278,10 @@ BOOST_AUTO_TEST_CASE( test_loglikelihoodratio ) {
 
 BOOST_AUTO_TEST_SUITE_END()
 
-/* Test Suite for the PoissonCensoredLoglikelihood class. */
+/** Test Suite for the PoissonCensoredLoglikelihood class. */
 BOOST_AUTO_TEST_SUITE(test_poission_censored_loglikelihood)
 
-/* Tests results with TemporalLoglikelihood with PoissonCensoredLoglikelihood. */
+/** Tests results with TemporalLoglikelihood with PoissonCensoredLoglikelihood. */
 BOOST_AUTO_TEST_CASE( test_loglikelihood_to_temporal ) {
     Parameters parameters;
     parameters.setDataTimeRangeSet(DataTimeRangeSet("[1,28]", parameters.getDatePrecisionType(), boost::optional<boost::gregorian::date>()));
@@ -290,11 +290,11 @@ BOOST_AUTO_TEST_CASE( test_loglikelihood_to_temporal ) {
     TemporalLoglikelihood temporal(98, 98.0, parameters);
     PoissonCensoredLoglikelihood censored(parameters);
 
-    /* For this test situation, there were 98 total cases, time period 1-28, 21 cases in window, 46 on node. */
+    // For this test situation, there were 98 total cases, time period 1-28, 21 cases in window, 46 on node.
     BOOST_CHECK_CLOSE(temporal.LogLikelihood(21, 46, 2), censored.LogLikelihood(21, 46.0/28.0 * 2.0, 46, 46), 0.0001);
 }
 
-/* Tests PoissonCensoredLoglikelihood::LogLikelihoodRatio. */
+/** Tests PoissonCensoredLoglikelihood::LogLikelihoodRatio. */
 BOOST_AUTO_TEST_CASE(test_loglikelihoodratio) {
     Parameters parameters;
     PoissonCensoredLoglikelihood l(parameters);

@@ -9,13 +9,13 @@
 class Parameters {
   public:
     typedef std::pair<unsigned int,unsigned int> ratio_t;
-    enum ParameterType {/* Input */
+    enum ParameterType {// Input
                         TREE_FILE=1,
                         COUNT_FILE,
                         CONTROL_FILE,
                         DATE_PRECISION,
                         DATA_TIME_RANGES,
-                        /* Advanced Input */
+                        // Advanced Input
                         CUT_FILE,
                         CUT_TYPE,
                         DATA_ONLY_ON_LEAVES,
@@ -28,7 +28,7 @@ class Parameters {
                         MINIMUM_CENSOR_PERCENTAGE,
                         RSK_WND_ALT_CENSOR_DENOM,
                         RSK_WND_CENSOR,
-                        /* Analysis */
+                        // Analysis
                         SCAN_TYPE,
                         CONDITIONAL_TYPE,
                         MODEL_TYPE,
@@ -45,38 +45,38 @@ class Parameters {
                         START_DATA_TIME_RANGE,
                         END_DATA_TIME_RANGE,
                         SCAN_RATE_TYPE,
-                        /* Advanced Analysis - Temporal Window */
+                        // Advanced Analysis - Temporal Window
                         MAXIMUM_WINDOW_PERCENTAGE,
                         MAXIMUM_WINDOW_FIXED,
                         MAXIMUM_WINDOW_TYPE,
                         MINIMUM_WINDOW_FIXED,
-                        /* Advanced Analysis - Adjustments */
+                        // Advanced Analysis - Adjustments
                         DAYOFWEEK_ADJUSTMENT,
                         APPLY_EXCLUSION_RANGES,
                         EXCLUSION_RANGES,
-                        /* Advanced Analysis - Inference */
+                        // Advanced Analysis - Inference
                         REPLICATIONS,
                         RANDOMIZATION_SEED,
                         RANDOMLY_GENERATE_SEED,
                         RESTRICT_TREE_LEVELS,
                         RESTRICTED_TREE_LEVELS,
                         MINIMUM_CASES_NODE,
-                        /* Output */
+                        // Output
                         RESULTS_FILE,
                         RESULTS_HTML,
                         RESULTS_CSV,
                         RESULTS_ASN,
                         RESULTS_NWK,
-                        /* Advanced Output - Additional Output */
+                        // Advanced Output - Additional Output
                         RESULTS_LLR,
                         REPORT_CRITICAL_VALUES,
                         REPORT_ATTR_RISK,
                         ATTR_RISK_NUM_EXPOSED,
-                        OUTPUT_TEMPORAL_GRAPH,          /* generate temporal graph output file */
-                        TEMPORAL_GRAPH_REPORT_TYPE,     /* which clusters to generate temporal graph (enum)*/
-                        TEMPORAL_GRAPH_MLC_COUNT,       /* number of most likely clusters to generate temporal graph (integer)*/
-                        TEMPORAL_GRAPH_CUTOFF,          /* p-value cutoff for signicant clusters when generating temporal graph (numeric)*/
-                        /* Advanced Analysis - power evaluations */
+                        OUTPUT_TEMPORAL_GRAPH,          // generate temporal graph output file
+                        TEMPORAL_GRAPH_REPORT_TYPE,     // which clusters to generate temporal graph (enum)
+                        TEMPORAL_GRAPH_MLC_COUNT,       // number of most likely clusters to generate temporal graph (integer)
+                        TEMPORAL_GRAPH_CUTOFF,          // p-value cutoff for signicant clusters when generating temporal graph (numeric)
+                        // Advanced Analysis - power evaluations
                         POWER_EVALUATIONS,
                         POWER_EVALUATION_TYPE,
                         CRITICAL_VALUES_TYPE,
@@ -88,19 +88,19 @@ class Parameters {
                         POWER_EVALUATIONS_FILE,
                         POWER_BASELINE_PROBABILITY,
                         POWER_Z,
-                        /* power simulations */
+                        // power simulations
                         READ_SIMULATIONS,
                         INPUT_SIM_FILE,
                         WRITE_SIMULATIONS,
                         OUTPUT_SIM_FILE,
-                        PROSPECTIVE_FREQ_TYPE,          /* frequency of prospective analysis type */
-                        PROSPECTIVE_FREQ,                /* frequency of prospective analysis type */
-                        /* Run Options */
+                        PROSPECTIVE_FREQ_TYPE,          // frequency of prospective analysis type
+                        PROSPECTIVE_FREQ,               // frequency of prospective analysis type
+                        // Run Options
                         PARALLEL_PROCESSES,
-                        /* System */
+                        // System
                         CREATION_VERSION
     };
-    /** frequency of prospective analyses */
+    /** Frequency of prospective analyses */
     enum ProspectiveFrequency {
         DAILY=0,
         WEEKLY,
@@ -108,25 +108,25 @@ class Parameters {
         QUARTERLY,
         YEARLY
     };
-    /** power evaluation method */
+    /** Power evaluation method */
     enum PowerEvaluationType
     {
-        PE_WITH_ANALYSIS=0,             /* execute standard analysis and power evaluation together */
-        PE_ONLY_CASEFILE,               /* execute only power evaluation, using total cases from case file */
-        PE_ONLY_SPECIFIED_CASES         /* execute only power evaluation, using user specified total cases */
+        PE_WITH_ANALYSIS=0,             // execute standard analysis and power evaluation together
+        PE_ONLY_CASEFILE,               // execute only power evaluation, using total cases from case file
+        PE_ONLY_SPECIFIED_CASES         // execute only power evaluation, using user specified total cases
     };
-    /** critical values calculation type */
+    /** Critical values calculation type */
     enum CriticalValuesType
     {
-        CV_MONTECARLO=0,                /* standard monte carlo */
-        CV_POWER_VALUES                 /* user specified values */
+        CV_MONTECARLO=0,                // standard monte carlo
+        CV_POWER_VALUES                 // user specified values
     };
-    /** temporal graph reporting type */
+    /** Temporal graph reporting type */
     enum TemporalGraphReportType
     {
-        MLC_ONLY = 0,                  /* generate a temporal graph for the most likley cluster only */
-        X_MCL_ONLY,                    /* generate a temporal graph for the first X likley clusters */
-        SIGNIFICANT_ONLY               /* generate a temporal graph for significant clusters only */
+        MLC_ONLY = 0,                  // generate a temporal graph for the most likley cluster only
+        X_MCL_ONLY,                    // generate a temporal graph for the first X likley clusters
+        SIGNIFICANT_ONLY               // generate a temporal graph for significant clusters only
     };
     enum ResultsFormat {TEXT=0};
     enum ParametersFormat {XML=0, JSON};
@@ -207,7 +207,7 @@ class Parameters {
     };
 
   public:
-    typedef std::pair<ParameterType, unsigned int> InputSourceKey_t; // ParameterType , index
+    typedef std::pair<ParameterType, unsigned int> InputSourceKey_t; // ParameterType, index
     typedef std::map<InputSourceKey_t, InputSource> InputSourceContainer_t;
     typedef std::vector<unsigned int> RestrictTreeLevels_t;
 
@@ -263,11 +263,11 @@ class Parameters {
     bool                                _perform_power_evaluations;
     PowerEvaluationType                 _power_evaluation_type;
     CriticalValuesType                  _critical_values_type;
-    double                              _critical_value_05;  /* user specified critical value at .05 */
-    double                              _critical_value_01;  /* user specified critical value at .01 */
-    double                              _critical_value_001; /* user specified critical value at .001 */
+    double                              _critical_value_05;  // user specified critical value at .05
+    double                              _critical_value_01;  // user specified critical value at .01
+    double                              _critical_value_001; // user specified critical value at .001
     int                                 _power_evaluation_totalcases;
-    unsigned int                        _power_replica; /** number of replicas in power step  of power evaluation */
+    unsigned int                        _power_replica; // number of replicas in power step  of power evaluation
     std::string                         _power_alt_hypothesis_filename;
     ratio_t                             _power_baseline_probablility_ratio;
     bool                                _dayofweek_adjustment;
@@ -303,11 +303,11 @@ class Parameters {
     unsigned int                        _minimum_highrate_nodes_cases;
     unsigned int                        _minimum_lowrate_nodes_cases;
 
-    /* temporal clusters graph */
-    bool                                _output_temporal_graph;                 /** generate temporal graph output file */
-    TemporalGraphReportType             _temporal_graph_report_type;            /* which clusters to report in temporal graph */
-    int                                 _temporal_graph_report_count;           /* number of MLC clusters to graph with TemporalGraphReportType.X_MCL_ONLY */
-    double                              _temporal_graph_report_cutoff;          /* P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY */
+    /** Temporal clusters graph */
+    bool                                _output_temporal_graph;                 // generate temporal graph output file
+    TemporalGraphReportType             _temporal_graph_report_type;            // which clusters to report in temporal graph
+    int                                 _temporal_graph_report_count;           // number of MLC clusters to graph with TemporalGraphReportType.X_MCL_ONLY
+    double                              _temporal_graph_report_cutoff;          // P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY
 
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
@@ -318,7 +318,7 @@ class Parameters {
     Parameters(const Parameters &other) {setAsDefaulted(); copy(other);}
     ~Parameters() {}
 
-    static const int                    giNumParameters; /** number enumerated parameters */
+    static const int                    giNumParameters; // number enumerated parameters
 
     Parameters                        & operator=(const Parameters &rhs)  {if (this != &rhs) copy(rhs); return (*this);}
     bool                                operator==(const Parameters& rhs) const;

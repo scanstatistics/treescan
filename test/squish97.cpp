@@ -5,8 +5,8 @@
 #include "Toolkit.h"
 #include "DataFileWriter.h"
 
-/* Regression unit test for issue https://www.squishlist.com/ims/treescan/97/.
-   Temporal scan statistic with censoring.
+/** Regression unit test for issue https://www.squishlist.com/ims/treescan/97/.
+    Temporal scan statistic with censoring.
 */
 
 struct squish97_TreeTemporal_censordata_fixture : prm_testset_fixture {
@@ -23,10 +23,10 @@ struct squish97_TreeTemporal_timeonly_censordata_fixture : prm_testset_fixture {
     std::string _results_user_directory;
 };
 
-/* Test Suite for the squish 97 regression. */
+/** Test Suite for the squish 97 regression. */
 BOOST_AUTO_TEST_SUITE( squish97_suite )
 
-/* Tests time tree analysis w/ censored data. */
+/** Tests time tree analysis w/ censored data. */
 BOOST_AUTO_TEST_CASE( test_treetime_censored ) {
     squish97_TreeTemporal_censordata_fixture censore_fixture;
     censore_fixture._parameters.setGeneratingTableResults(true);
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE( test_treetime_censored ) {
     stream.close();
 }
 
-/* Tests time only analysis w/ censored data. */
+/** Tests time only analysis w/ censored data. */
 BOOST_AUTO_TEST_CASE(test_timeonly_censored) {
     squish97_TreeTemporal_timeonly_censordata_fixture censore_fixture;
     censore_fixture._parameters.setGeneratingTableResults(true);

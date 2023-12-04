@@ -20,7 +20,7 @@ AbstractMeasureList * AbstractMeasureList::getNewMeasureList(const ScanRunner& s
     }
 }
 
-/* constructor */
+/* Constructor */
 MCSimSuccessiveFunctor::MCSimSuccessiveFunctor(boost::mutex& mutex,
                                                boost::shared_ptr<AbstractRandomizer> randomizer,
                                                const ScanRunner& scanRunner) : _mutex(mutex), _randomizer(randomizer), _scanRunner(scanRunner) {
@@ -83,7 +83,7 @@ MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuc
     return temp_result;
 }
 
-/* Returns true if NodeStructure/SimulationNode is evaluated in scanning processing. */
+/** Returns true if NodeStructure/SimulationNode is evaluated in scanning processing. */
 bool MCSimSuccessiveFunctor::isEvaluated(const NodeStructure& node, const SimulationNode& simNode) const {
     // If the node branch does not have the minimum number of cases in branch, it is not evaluated.
     if (static_cast<unsigned int>(simNode.getBrC()) < _scanRunner.getNodeEvaluationMinimum()) return false;
@@ -94,9 +94,9 @@ bool MCSimSuccessiveFunctor::isEvaluated(const NodeStructure& node, const Simula
     return true;
 }
 
-/* This function randomizes data and scans tree for either the Poisson or Bernoulli model. */
+/** This function randomizes data and scans tree for either the Poisson or Bernoulli model. */
 MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTree(MCSimSuccessiveFunctor::param_type const & param) {
-    //randomize data
+    // randomize data
     int TotalSimC = _randomizer.get()->RandomizeData(param, _scanRunner.getNodes(), _mutex, _treeSimNodes);
 
     //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
@@ -173,9 +173,9 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTree(
     return std::make_pair(simLogLikelihood,TotalSimC);
 }
 
-/* This function randomizes data and scans tree for either the temporal model. */
+/** This function randomizes data and scans tree for either the temporal model. */
 MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeTemporalConditionNode(MCSimSuccessiveFunctor::param_type const & param) {
-    //randomize data
+    // randomize data
     int TotalSimC = _randomizer.get()->RandomizeData(param, _scanRunner.getNodes(), _mutex, _treeSimNodes);
 
     //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
@@ -310,9 +310,9 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
 }
 
 
-/* This function randomizes data and scans tree for either the temporal model. */
+/** This function randomizes data and scans tree for either the temporal model. */
 MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeTemporalConditionNodeCensored(MCSimSuccessiveFunctor::param_type const & param) {
-    //randomize data
+    // randomize data
     int TotalSimC = _randomizer.get()->RandomizeData(param, _scanRunner.getNodes(), _mutex, _treeSimNodes);
 
     //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
@@ -472,9 +472,9 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
     return std::make_pair(simLogLikelihood, TotalSimC);
 }
 
-/* This function randomizes data and scans tree for either the temporal model. */
+/** This function randomizes data and scans tree for either the temporal model. */
 MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeTemporalConditionNodeTime(MCSimSuccessiveFunctor::param_type const & param) {
-    //randomize data
+    // randomize data
     int TotalSimC = _randomizer.get()->RandomizeData(param, _scanRunner.getNodes(), _mutex, _treeSimNodes);
     _measure_list->initialize();
 
@@ -605,7 +605,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
 
 /////////////////////////// SequentialMCSimSuccessiveFunctor //////////////////////////////////////
 
-/* constructor */
+/* Constructor */
 SequentialMCSimSuccessiveFunctor::SequentialMCSimSuccessiveFunctor(boost::mutex& mutex, const ScanRunner& scanner, boost::shared_ptr<SequentialScanLoglikelihoodRatioWriter> writer) 
     : _mutex(mutex), _scanRunner(scanner), _sequential_writer(writer) {
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
@@ -705,7 +705,7 @@ SequentialMCSimSuccessiveFunctor::result_type SequentialMCSimSuccessiveFunctor::
 
 /////////////////////////// SequentialReadMCSimSuccessiveFunctor //////////////////////////////////////
 
-/* constructor */
+/** Constructor */
 SequentialReadMCSimSuccessiveFunctor::SequentialReadMCSimSuccessiveFunctor(boost::mutex& mutex, const ScanRunner& scanner, boost::shared_ptr<SequentialFileDataSource> source) 
     : _mutex(mutex), _scanRunner(scanner), _source(source) {}
 
@@ -713,7 +713,7 @@ SequentialReadMCSimSuccessiveFunctor::result_type SequentialReadMCSimSuccessiveF
     result_type temp_result;
 
     try {
-        /* read next log likelihood from the data source */
+        // read next log likelihood from the data source
         boost::optional<double> simLogLikelihood = _source->nextLLR();
         if (simLogLikelihood) {
             temp_result.dSuccessfulResult = std::make_pair(simLogLikelihood.get(), _scanRunner.getTotalC());

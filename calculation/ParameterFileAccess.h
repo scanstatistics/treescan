@@ -23,8 +23,8 @@ class AbtractParameterFileAccess {
     Parameters & _parameters;
 
     BasePrint                 & gPrintDirection;
-    std::vector<int>            _missing_defaulted;      /** collection of missing ParameterTypes on read from file */
-    bool                        _read_error;             /** marker of errors encountered while reading parameters from file */
+    std::vector<int>            _missing_defaulted;      // collection of missing ParameterTypes on read from file
+    bool                        _read_error;             // marker of errors encountered while reading parameters from file
     bool                        _write_boolean_as_digit;
 
   public:

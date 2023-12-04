@@ -34,7 +34,7 @@ class testRunner : public ScanRunner {
 			for (size_t t=0; t < levels.size(); ++t) {
 				BOOST_CHECK_EQUAL(levels[t], _Nodes[t]->getLevel());
 
-				/* check that  level matches smallest parents level */
+				// check that  level matches smallest parents level
 				if (_Nodes[t]->getParents().size()) {
 					unsigned int parent_level = std::numeric_limits<unsigned int>::max();
 					for (size_t s=0; s < _Nodes[t]->getParents().size(); ++s) {
@@ -48,10 +48,10 @@ class testRunner : public ScanRunner {
 		}
 };
 
-/* Test Suite for the multiple trees testing. */
+/** Test Suite for the multiple trees testing. */
 BOOST_AUTO_TEST_SUITE( multiple_trees_suite )
 
-/* Tests that node levels are calculated to expected values given multiple trees and multiple parents. */
+/** Tests that node levels are calculated to expected values given multiple trees and multiple parents. */
 BOOST_FIXTURE_TEST_CASE( test_node_levels, poisson_multiple_trees_fixture ) {
     // set results file to the user document directory
     std::stringstream filename;

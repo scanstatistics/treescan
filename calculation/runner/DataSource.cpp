@@ -15,7 +15,7 @@ using namespace boost;
 
 /** Static method which returns newly allocated DataSource object. */
 DataSource * DataSource::getNewDataSourceObject(const std::string& sSourceFilename, const Parameters::InputSource * source) {
-    // if a InputSource is not defined, default to space delimited ascii source
+    // if an InputSource is not defined, default to space delimited ascii source
     if (!source)
         return new CSVFileDataSource(sSourceFilename, ",", "\"", 0, false);
     // return data source object by input source type
@@ -29,7 +29,7 @@ DataSource * DataSource::getNewDataSourceObject(const std::string& sSourceFilena
 }
 
 
-/** constructor */
+/** Constructor */
 CSVFileDataSource::CSVFileDataSource(const std::string& sSourceFilename, const std::string& delimiter, const std::string& grouper, unsigned long skip, bool firstRowHeaders)
                   :DataSource(), _delimiter(delimiter), _grouper(grouper), _grouper_escape("þæ"), _skip(skip), _firstRowHeaders(firstRowHeaders), _readCount(0), _ignore_empty_fields(false){
     // special processing for 'whitespace' delimiter string
@@ -43,8 +43,7 @@ CSVFileDataSource::CSVFileDataSource(const std::string& sSourceFilename, const s
     // Get the byte-order mark, if there is one
     unsigned char bom[4];
     _sourceFile.read(reinterpret_cast<char*>(bom), 4);
-    //Since we don't know what the endian was on the machine that created the file we
-    //are reading, we'll need to check both ways.
+    // Since we don't know what the endian was on the machine that created the file we are reading, we'll need to check both ways.
     if ((bom[0] == 0xef && bom[1] == 0xbb && bom[2] == 0xbf) ||             // utf-8
         (bom[0] == 0 && bom[1] == 0 && bom[2] == 0xfe && bom[3] == 0xff) || // UTF-32, big-endian
         (bom[0] == 0xff && bom[1] == 0xfe && bom[2] == 0 && bom[3] == 0) || // UTF-32, little-endian
@@ -69,10 +68,10 @@ void CSVFileDataSource::gotoFirstRecord() {
     }
 }
 
-/** sets current parsing string -- returns indication of whether string contains any words. */
+/** Sets current parsing string -- returns indication of whether string contains any words. */
 bool CSVFileDataSource::parse(std::string& s, std::vector<std::string>& read_values, bool ignore_empty_fields, const std::string& delimiter, const std::string& grouper) {
-    /* The default escape character with boost is the backslash - to mimic C style escaping. But that style doesn't align with common software like Excel,
-       where doubling the group character the escape sequence. So we're going force mimcing the common software here - which requires a hack. */
+    /** The default escape character with boost is the backslash - to mimic C style escaping. But that style doesn't align with common software like Excel,
+        where doubling the group character is the escape sequence. So we're going force mimicing the common software here - which requires a hack. */
     std::stringstream escaped_group_seq;
     escaped_group_seq << grouper << grouper; // Typical way to escape the grouping character is to escape with itself.
     boost::replace_all(s, escaped_group_seq.str(), _grouper_escape); // Replace escaped group sequence in parsing string.
@@ -83,7 +82,7 @@ bool CSVFileDataSource::parse(std::string& s, std::vector<std::string>& read_val
         read_values.push_back(*itr);
         // Replace the escaped grouping sequence - now that token has been parsed.
         boost::replace_all(read_values.back(), _grouper_escape, grouper);
-        //trim any whitespace around value
+        // trim any whitespace around value
         boost::trim(read_values.back());
         // ignore empty values if delimiter is whitespace -- boost::escaped_list_separator does not consume adjacent whitespace delimiters
         if (!read_values.back().size() && ignore_empty_fields)
@@ -158,7 +157,7 @@ void CSVFileDataSource::throwUnicodeException() {
 
 //////////////////////////// SequentialFileDataSource //////////////////////////////////////////////
 
-/** constructor */
+/** Constructor */
 SequentialFileDataSource::SequentialFileDataSource(const std::string& sSourceFilename, const Parameters& parameters) :
     CSVFileDataSource(sSourceFilename, ",", "\"", 1, true) {
     std::string currentparameters, sourceparameters;

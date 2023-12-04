@@ -41,9 +41,9 @@ class ConditionalTemporalRandomizer : public TemporalRandomizer, public Abstract
         virtual void AssignRandomizedData(const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
         virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
             setSeed(iSimulation);
-            //assign random numbers to permuted attribute and sort
+            // assign random numbers to permuted attribute and sort
             SortPermutedAttribute(_random_number_generator);
-            //re-assign dataset's simulation data
+            // re-assign dataset's simulation data
             AssignRandomizedData(treeNodes, treeSimNodes);
             return _total_C;
         }

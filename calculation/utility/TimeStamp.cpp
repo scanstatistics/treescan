@@ -14,7 +14,7 @@ const unsigned short  TreeScan::Timestamp::mguwDays[12] = {31,29,31,30,31,30,31,
 // Number of days before a given month
 const unsigned short  TreeScan::Timestamp::mguwJulianDaysUpToMonth[12] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
 
-// Adds uwAmt hours to the current time. Note that this may change the date.
+/** Adds uwAmt hours to the current time. Note that this may change the date. */
 void TreeScan::Timestamp::AddHours ( long lAmt )
 {
    long   lHours; // Current hour
@@ -46,7 +46,7 @@ void TreeScan::Timestamp::AddHours ( long lAmt )
       }
 }
 
-// Adds uwAmt milliseconds to the time.
+/** Adds uwAmt milliseconds to the time. */
 void TreeScan::Timestamp::AddMilliseconds ( long lAmt )
 {
    long   lMillis; // Current milliseconds
@@ -78,7 +78,7 @@ void TreeScan::Timestamp::AddMilliseconds ( long lAmt )
       }
 }
 
-// Adds uwAmt minutes to the time.
+/** Adds uwAmt minutes to the time. */
 void TreeScan::Timestamp::AddMinutes ( long lAmt )
 {
    long   lMins; // Current milliseconds
@@ -110,8 +110,8 @@ void TreeScan::Timestamp::AddMinutes ( long lAmt )
       }
 }
 
-// Adds uwAmt months to the date. Note that this may cause both the year AND the
-// _day_ to change.
+/** Adds uwAmt months to the date. Note that this may cause both the year AND the
+    _day_ to change. */
 void TreeScan::Timestamp::AddMonths ( long lAmt )
 {
    long   lMonth; // Current month
@@ -150,7 +150,7 @@ void TreeScan::Timestamp::AddMonths ( long lAmt )
       }
 }
 
-// Adds uwAmt milliseconds to the time.
+/** Adds uwAmt milliseconds to the time. */
 void TreeScan::Timestamp::AddSeconds ( long lAmt )
 {
    long   lSecs; // Current milliseconds
@@ -182,7 +182,7 @@ void TreeScan::Timestamp::AddSeconds ( long lAmt )
       }
 }
 
-// Adds uwAmt years to the date. Month and day are unchanged.
+/** Adds uwAmt years to the date. Month and day are unchanged. */
 void TreeScan::Timestamp::AddYears ( long lAmt )
 {
    long lYear;  // The new year
@@ -203,7 +203,7 @@ void TreeScan::Timestamp::AddYears ( long lAmt )
       }
 }
 
-// Returns the day of the week for the date.
+/** Returns the day of the week for the date. */
 unsigned short TreeScan::Timestamp::GetDayOfWeek() const
 {
    unsigned short uwAdjYear;  // The adjusted year
@@ -235,7 +235,7 @@ unsigned short TreeScan::Timestamp::GetDayOfWeek() const
    return uwRetVal;
 }
 
-// Returns the current time as a fraction of a day
+/** Returns the current time as a fraction of a day */
 double TreeScan::Timestamp::GetFractionalDay() const
 {
    double dRetVal;
@@ -257,9 +257,9 @@ double TreeScan::Timestamp::GetFractionalDay() const
    return dRetVal;
 }
 
-// Returns the julian date. Standard julian dates are reckoned from January 1,
-// 4713 BC at noon. Thus, the start of our calendar is at 1721424.5 in this
-// system
+/** Returns the julian date. Standard julian dates are reckoned from January 1,
+    4713 BC at noon. Thus, the start of our calendar is at 1721424.5 in this
+    system */
 double TreeScan::Timestamp::GetJulianDate() const
 {
    double   dRetVal;
@@ -278,9 +278,9 @@ double TreeScan::Timestamp::GetJulianDate() const
    return dRetVal;
 }
 
-// Returns the julian date from January 1st,1 at midnight. This is to
-// coincide with Borland's concept of a Julian date. Other functions are
-// provided to get "real" Julian dates.
+/** Returns the julian date from January 1st,1 at midnight. This is to
+    coincide with Borland's concept of a Julian date. Other functions are
+    provided to get "real" Julian dates. */
 double TreeScan::Timestamp::GetJulianDateFromCalendarStart() const
 {
    double   dRetVal;
@@ -299,8 +299,8 @@ double TreeScan::Timestamp::GetJulianDateFromCalendarStart() const
    return dRetVal;
 }
 
-// Returns the number of days from January 1st, 1. ( The initial day is
-// included, so January 1st,1 is 1. )
+/** Returns the number of days from January 1st, 1. (The initial day is
+    included, so January 1st,b1 is 1.) */
 unsigned long TreeScan::Timestamp::GetJulianDayFromCalendarStart() const
 {
    unsigned short uwLeapYearYear; // The "leap year year", starts at 03/01
@@ -313,7 +313,7 @@ unsigned long TreeScan::Timestamp::GetJulianDayFromCalendarStart() const
       ulRetVal += mguwJulianDaysUpToMonth[GetMonth()-1];
       ulRetVal += ( (unsigned long)GetYear() - 1 ) * 365;
 
-      // LeapYearYear starts on march 1st
+      // LeapYearYear starts on March 1st
       uwLeapYearYear = GetYear();
 
       if ( GetMonth() < 3 )
@@ -332,9 +332,9 @@ unsigned long TreeScan::Timestamp::GetJulianDayFromCalendarStart() const
    return ulRetVal;
 }
 
-// Returns the modified Julian date. Modified Julian dates are reckoned from
-// November 17th, 1858 at midnight. Thus, the start of our calendar is
-// -678576 as a modified Julian dates.
+/** Returns the modified Julian date. Modified Julian dates are reckoned from
+    November 17th, 1858 at midnight. Thus, the start of our calendar is
+    -678576 as a modified Julian dates. */
 double TreeScan::Timestamp::GetModifiedJulianDate() const
 {
    double   dRetVal;
@@ -353,7 +353,7 @@ double TreeScan::Timestamp::GetModifiedJulianDate() const
    return dRetVal;
 }
 
-// Returns the time of day in milliseconds since midnight
+/** Returns the time of day in milliseconds since midnight */
 unsigned long TreeScan::Timestamp::GetTimeInMilliseconds() const
 {
    unsigned long ulRetVal;
@@ -532,7 +532,7 @@ void TreeScan::Timestamp::MakeUniversalTime()
 
 }
 
-// Sets the time to the current UTC.
+/** Sets the time to the current UTC. */
 void TreeScan::Timestamp::Now ( bool bNoMilli )
 {
    struct timeval   tmStruct;
@@ -558,8 +558,8 @@ void TreeScan::Timestamp::Now ( bool bNoMilli )
 }
 #endif
 
-// Checks to see if the day entered is a valid one and
-// then replaces the current day with the new one.
+/** Checks to see if the day entered is a valid one and
+    then replaces the current day with the new one. */
 void TreeScan::Timestamp::SetDay(unsigned short uwDay)
 {
      try
@@ -577,7 +577,7 @@ void TreeScan::Timestamp::SetDay(unsigned short uwDay)
         }
 }
 
-// Sets the hour of the time field.
+/** Sets the hour of the time field. */
 void TreeScan::Timestamp::SetHour(unsigned short uwHour)
 {
    try
@@ -595,8 +595,8 @@ void TreeScan::Timestamp::SetHour(unsigned short uwHour)
       }
 }
 
-// Sets the timestamp using the julian day dTime. dTime is considered to be the
-// total number of days since January 1st, 4713 BC 12:00pm
+/** Sets the timestamp using the julian day dTime. dTime is considered to be the
+    total number of days since January 1st, 4713 BC 12:00pm */
 void TreeScan::Timestamp::SetJulianDate ( double dTime )
 {
    try
@@ -612,8 +612,8 @@ void TreeScan::Timestamp::SetJulianDate ( double dTime )
       }
 }
 
-// Sets the timestamp using the julian day dTime. dTime is considered to be the
-// total number of days since January 1st, 1 12:00am.
+/** Sets the timestamp using the julian day dTime. dTime is considered to be the
+    total number of days since January 1st, 1 12:00am. */
 void TreeScan::Timestamp::SetJulianDateFromCalendarStart ( double dTime )
 {
    try
@@ -664,7 +664,7 @@ void TreeScan::Timestamp::SetJulianDayFromCalendarStart ( unsigned long ulJulian
       ++uwYear;
 
       uwDay = static_cast<unsigned short> ( ulJulian );
-      uwDay++;//shift from 0-based Julian day-of-year to 1-based day-of-month
+      uwDay++; // shift from 0-based Julian day-of-year to 1-based day-of-month
       uwMonth = 0;
       // Figure out if it is a leap year
       if ( bIsLeapYear )
@@ -701,7 +701,7 @@ void TreeScan::Timestamp::SetJulianDayFromCalendarStart ( unsigned long ulJulian
       }
 }
 
-// Sets the minute
+/** Sets the minute */
 void TreeScan::Timestamp::SetMinute(unsigned short uwMin)
 {
    try
@@ -737,8 +737,8 @@ void TreeScan::Timestamp::SetMillisecond( unsigned short uwMilli )
       }
 }
 
-// Sets the timestamp using the julian day dTime. dTime is considered to be the
-// total number of days since November 17th, 1858 at midnight.
+/** Sets the timestamp using the julian day dTime. dTime is considered to be the
+    total number of days since November 17th, 1858 at midnight. */
 void TreeScan::Timestamp::SetModifiedJulianDate ( double dTime )
 {
    try
@@ -754,8 +754,8 @@ void TreeScan::Timestamp::SetModifiedJulianDate ( double dTime )
       }
 }
 
-// Sets the month to the indicated value. If the current day is larger than the
-// maximum day for a month, the day is reset to the last valid day of the month.
+/** Sets the month to the indicated value. If the current day is larger than the
+    maximum day for a month, the day is reset to the last valid day of the month. */
 void TreeScan::Timestamp::SetMonth(unsigned short uwMonth)
 {
     try
@@ -776,7 +776,7 @@ void TreeScan::Timestamp::SetMonth(unsigned short uwMonth)
         }
 }
 
-// Sets the current second
+/** Sets the current second */
 void TreeScan::Timestamp::SetSecond(unsigned short uwSec)
 {
    try
@@ -794,7 +794,7 @@ void TreeScan::Timestamp::SetSecond(unsigned short uwSec)
       }
 }
 
-// Sets the time of day in milliseconds since midnight
+/** Sets the time of day in milliseconds since midnight */
 void TreeScan::Timestamp::SetTimeInMilliseconds( unsigned long ulMilli )
 {
    try
@@ -817,8 +817,8 @@ void TreeScan::Timestamp::SetTimeInMilliseconds( unsigned long ulMilli )
       }
 }
 
-// Sets the year. If the old date was set to leap day and the new year is not a
-// leap year, the date will be changed to 2/28.
+/** Sets the year. If the old date was set to leap day and the new year is not a
+    leap year, the date will be changed to 2/28. */
 void TreeScan::Timestamp::SetYear(unsigned short uwYear)
 {
     try

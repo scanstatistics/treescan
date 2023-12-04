@@ -151,7 +151,7 @@ class AlternativeProbabilityNodesProxy : public NodesProxy {
 
 typedef std::vector<SimulationNode> SimNodeContainer_t;
 
-/* abstract data randomizer base class */
+/* Abstract data randomizer base class */
 class AbstractRandomizer {
     friend class AlternativeHypothesisRandomizater;
 
@@ -160,7 +160,7 @@ class AbstractRandomizer {
         void _addSimC_C_recursive(size_t id, const NodeStructure::CountContainer_t& c, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes);
 
     protected:
-        RandomNumberGenerator _random_number_generator;  /** generates random numbers */
+        RandomNumberGenerator _random_number_generator;  // generates random numbers
         const Parameters& _parameters;
         bool _read_data;
         std::string _read_filename;

@@ -18,7 +18,7 @@
  **********************************************************************/
 
 /** Lehmer generator which returns a pseudo-random real number uniformly
-    distributed between 0 and 1.                                         */
+    distributed between 0 and 1. */
 double RandomNumberGenerator::GetRandomDouble() {
   long  t;
 
@@ -31,7 +31,7 @@ double RandomNumberGenerator::GetRandomDouble() {
 }
 
 /** Lehmer generator which returns a pseudo-random real number uniformly
-    distributed between 0 and 1.                                         */
+    distributed between 0 and 1. */
 float RandomNumberGenerator::GetRandomFloat() {
   long  t;
 
@@ -51,9 +51,9 @@ void RandomNumberGenerator::SetSeed(long lSeed) {
 /** Set the seed -- checking that casted value is within numeric limits considering offset from initial seed. */
 void RandomNumberGenerator::SetSeedOffset(unsigned int offset) {
     try {
-        //calculate seed as unsigned long
+        // calculate seed as unsigned long
         unsigned long ulSeed = static_cast<unsigned long>(GetInitialSeed()) + static_cast<unsigned long>(offset);
-        //compare to max seed(declared as positive signed long)
+        // compare to max seed (declared as positive signed long)
         if (ulSeed >= static_cast<unsigned long>(GetMaxSeed()))
             throw prg_error("Calculated seed for offset %u exceeds defined limit of %i.", "setSeed()", offset, GetMaxSeed());
         SetSeed(static_cast<long>(ulSeed));

@@ -6,10 +6,10 @@
 #include "DataFileWriter.h"
 #include "ParametersValidate.h"
 
-/* Test Suite for the attributable risk data write -- https://www.squishlist.com/ims/treescan/54/. */
+/** Test Suite for the attributable risk data write -- https://www.squishlist.com/ims/treescan/54/. */
 BOOST_AUTO_TEST_SUITE( attributable_risk_suite )
 
-/* Tests the expected values of the attributable risk data  with unconditional Poisson model. */
+/** Tests the expected values of the attributable risk data  with unconditional Poisson model. */
 BOOST_FIXTURE_TEST_CASE( test_attributable_risk_unconditional_poisson, poisson_fixture ) {
     _parameters.setGeneratingTableResults(true);
     _parameters.setConditionalType(Parameters::UNCONDITIONAL);
@@ -36,7 +36,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_unconditional_poisson, poisson_f
     stream.close();
 }
 
-/* Tests the expected values of the attributable risk data  with conditional Poisson model. */
+/** Tests the expected values of the attributable risk data  with conditional Poisson model. */
 BOOST_FIXTURE_TEST_CASE( test_attributable_risk_conditional_poisson, poisson_fixture ) {
     _parameters.setGeneratingTableResults(true);
     _parameters.setConditionalType(Parameters::TOTALCASES);
@@ -81,7 +81,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_conditional_poisson, poisson_fix
     stream.close();
 }
 
-/* Tests the expected values of the attributable risk data  with unconditional Bernoulli model. */
+/** Tests the expected values of the attributable risk data  with unconditional Bernoulli model. */
 BOOST_FIXTURE_TEST_CASE( test_attributable_risk_unconditional_bernoulli, bernoulli_fixture ) {
     _parameters.setGeneratingTableResults(true);
     _parameters.setConditionalType(Parameters::UNCONDITIONAL);
@@ -126,7 +126,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_unconditional_bernoulli, bernoul
     stream.close();
 }
 
-/* Tests the expected values of the attributable risk data with unconditional Bernoulli model and self control design. */
+/** Tests the expected values of the attributable risk data with unconditional Bernoulli model and self control design. */
 BOOST_FIXTURE_TEST_CASE( test_attributable_risk_unconditional_bernoulli_self_control_design, bernoulli_fixture ) {
     _parameters.setGeneratingTableResults(true);
     _parameters.setConditionalType(Parameters::UNCONDITIONAL);
@@ -180,7 +180,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_unconditional_bernoulli_self_con
     stream.close();
 }
 
-/* Tests the expected values of the attributable risk data  with conditional Bernoulli model. */
+/** Tests the expected values of the attributable risk data  with conditional Bernoulli model. */
 BOOST_FIXTURE_TEST_CASE( test_attributable_risk_conditional_bernoulli, bernoulli_fixture ) {
     _parameters.setGeneratingTableResults(true);
     _parameters.setConditionalType(Parameters::TOTALCASES);
@@ -225,7 +225,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_conditional_bernoulli, bernoulli
     stream.close();
 }
 
-/* Tests the expected values of the attributable risk data  with time-only scan. */
+/** Tests the expected values of the attributable risk data  with time-only scan. */
 BOOST_FIXTURE_TEST_CASE( test_attributable_risk_time_only_scan, time_only_fixture ) {
     _parameters.setGeneratingTableResults(true);
     _parameters.setReportAttributableRisk(true);
@@ -262,7 +262,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_time_only_scan, time_only_fixtur
     stream.close();
 }
 
-/* Tests the expected values of the attributable risk data  with time-only scan w/ day of week adjustment. */
+/** Tests the expected values of the attributable risk data  with time-only scan w/ day of week adjustment. */
 BOOST_FIXTURE_TEST_CASE( test_attributable_risk_time_only_scan_w_dow, time_only_fixture ) {
     _parameters.setGeneratingTableResults(true);
     _parameters.setPerformDayOfWeekAdjustment(true);
@@ -300,7 +300,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_time_only_scan_w_dow, time_only_
     stream.close();
 }
 
-/* Tests the expected values of the attributable risk data  with tree-time scan. */
+/** Tests the expected values of the attributable risk data with tree-time scan. */
 BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node, tree_temporal_fixture ) {
     _parameters.setGeneratingTableResults(true);
     _parameters.setReportAttributableRisk(true);
@@ -344,7 +344,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node, t
     stream.close();
 }
 
-/* Tests the expected values of the attributable risk data  with tree-time scan. */
+/** Tests the expected values of the attributable risk data with tree-time scan. */
 BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node_w_dow, tree_temporal_fixture ) {
     _parameters.setPerformDayOfWeekAdjustment(true);
     _parameters.setGeneratingTableResults(true);
@@ -391,7 +391,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node_w_
     stream.close();
 }
 
-/* Tests the expected values of the attributable risk data  with tree-time scan. */
+/** Tests the expected values of the attributable risk data with tree-time scan. */
 BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_nodetime, tree_temporal_fixture ) {
     _parameters.setConditionalType(Parameters::NODEANDTIME);
     _parameters.setGeneratingTableResults(true);
@@ -436,7 +436,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_nodetim
     stream.close();
 }
 
-/* Tests the expected values of the attributable risk data  with tree-time scan. */
+/** Tests the expected values of the attributable risk data with tree-time scan. */
 BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_nodetime_w_dow, tree_temporal_fixture ) {
     _parameters.setConditionalType(Parameters::NODEANDTIME);
     _parameters.setPerformDayOfWeekAdjustment(true);

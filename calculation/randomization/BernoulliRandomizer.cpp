@@ -10,7 +10,7 @@ using boost::uniform_01;
 
 //////////////////// UnconditionalBernoulliRandomizer //////////////////////////
 
-/* constructor */
+/** Constructor */
 UnconditionalBernoulliRandomizer::UnconditionalBernoulliRandomizer(const ScanRunner& scanner, long lInitialSeed)
                     :AbstractDenominatorDataRandomizer(scanner, lInitialSeed), _total_C(scanner.getTotalC()), _total_Controls(scanner.getTotalControls()) {
 	sequentialSetup(_scanner);
@@ -19,14 +19,14 @@ UnconditionalBernoulliRandomizer::UnconditionalBernoulliRandomizer(const ScanRun
 /** Distributes cases into simulation case array. Caller is responsible for ensuring that
     passed array pointers are allocated and dimensions match that of passed tract and locations variables. */
 int UnconditionalBernoulliRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
-    //reset seed of random number generator
+    // reset seed of random number generator
     setSeed(iSimulation);
     // reset simData
     std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
 
     int TotalSimC=0;
     for (size_t i=0; i < treeNodes.size(); ++i) {
-        treeSimNodes[i].refBrC() = 0; // Initilazing the branch cases with zero
+        treeSimNodes[i].refBrC() = 0; // initializing the branch cases with zero
         if (!treeNodes.randomized(i)) continue; // skip if not randomized
         int cases = _binomial_generator.GetBinomialDistributedVariable(static_cast<int>(treeNodes.getIntN(i)), static_cast<float>(treeNodes.getProbability(i)), _random_number_generator);
         treeSimNodes[i].refIntC() = cases;
@@ -37,15 +37,15 @@ int UnconditionalBernoulliRandomizer::randomize(unsigned int iSimulation, const 
 
 //////////////////// AbstractConditionalBernoulliRandomizer ////////////////////////////
 
-/* constructor */
+/* Constructor */
 AbstractConditionalBernoulliRandomizer::AbstractConditionalBernoulliRandomizer(int TotalC, int TotalControls, const ScanRunner& scanner, long lInitialSeed)
                     :AbstractDenominatorDataRandomizer(scanner, lInitialSeed), _total_C(TotalC), _total_Controls(TotalControls) {}
 
 /** Each of the totalMeasure number of individuals (sum of cases and controls),
     are randomized to either be a case or a control. The output is an array with
     the indices of the TotalCounts number of cases. For example, if there are
-    20 cases and 80 controls, the output is an array the the indices between
-    0 and 99 that correspond to the randomized cases. (MK Oct 27, 2003)         */
+    20 cases and 80 controls, the output is an array of the indices between
+    0 and 99 that correspond to the randomized cases. (MK Oct 27, 2003) */
 void AbstractConditionalBernoulliRandomizer::MakeDataB(int tTotalCounts, double tTotalMeasure, std::vector<int>& RandCounts) {
   int nCumCounts=0;
   double x, ratio;
@@ -73,7 +73,7 @@ int AbstractConditionalBernoulliRandomizer::_randomize(int cases, int controls, 
 
     TotalSimC = cases;
     for (size_t i=0; i < treeNodes.size(); ++i) {
-        treeSimNodes[treeNodes.getID(i)/*i*/].refBrC() = 0; // Initilazing the branch cases with zero
+        treeSimNodes[treeNodes.getID(i)/*i*/].refBrC() = 0; // initializing the branch cases with zero
         if (!treeNodes.randomized(i)) continue; // skip if not randomized
         nCumMeasure -= static_cast<int>(treeNodes.getIntN(i));
         while (nCumCounts > 0 && randCounts[nCumCounts-1] > nCumMeasure) {
@@ -81,7 +81,7 @@ int AbstractConditionalBernoulliRandomizer::_randomize(int cases, int controls, 
             nCumCounts--;
         }
     }
-    //now reverse everything if Controls < Cases
+    // now reverse everything if Controls < Cases
     if (cases >= controls) {
         for (size_t i = 0; i < treeNodes.size(); ++i) {
             if (!treeNodes.randomized(i)) continue; // skip if not randomized
@@ -93,7 +93,7 @@ int AbstractConditionalBernoulliRandomizer::_randomize(int cases, int controls, 
 
 //////////////////// BernoulliTimeRandomizer ////////////////////////////
 
-/* constructor */
+/** Constructor */
 BernoulliTimeRandomizer::BernoulliTimeRandomizer(int TotalC, int TotalControls, const ScanRunner& scanner, long lInitialSeed)
 	:AbstractConditionalBernoulliRandomizer(TotalC, TotalControls, scanner, lInitialSeed) {}
 
@@ -101,7 +101,7 @@ BernoulliTimeRandomizer::BernoulliTimeRandomizer(int TotalC, int TotalControls, 
 controls then each randomly assigned to be a case or a control. Caller is responsible for ensuring that
 passed array pointers are allocated and dimensions match that of passed tract and locations variables. */
 int BernoulliTimeRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
-	//reset seed of random number generator
+	// reset seed of random number generator
 	setSeed(iSimulation);
 	// reset simData
 	std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
@@ -129,7 +129,7 @@ int BernoulliTimeRandomizer::randomize(unsigned int iSimulation, const AbstractN
 			}
 		}
 		simNode.setCumulative();
-		//now reverse everything if Controls < Cases
+		// now reverse everything if Controls < Cases
 		if (node_cases >= node_controls)
 			for (int idx = 0; idx < intervals; ++idx)
 				simNode.refIntC_C()[idx] = (treeNodes.getIntC_C(i)[idx] + static_cast<int>(treeNodes.getIntN_C(i)[idx])) - simNode.refIntC_C()[idx];
@@ -139,7 +139,7 @@ int BernoulliTimeRandomizer::randomize(unsigned int iSimulation, const AbstractN
 
 //////////////////// ConditionalBernoulliRandomizer ////////////////////////////
 
-/* constructor */
+/** Constructor */
 ConditionalBernoulliRandomizer::ConditionalBernoulliRandomizer(int TotalC, int TotalControls, const ScanRunner& scanner, long lInitialSeed)
                     :AbstractConditionalBernoulliRandomizer(TotalC, TotalControls, scanner, lInitialSeed) {}
 
@@ -147,7 +147,7 @@ ConditionalBernoulliRandomizer::ConditionalBernoulliRandomizer(int TotalC, int T
     controls then each randomly assigned to be a case or a control. Caller is responsible for ensuring that
     passed array pointers are allocated and dimensions match that of passed tract and locations variables. */
 int ConditionalBernoulliRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
-    //reset seed of random number generator
+    // reset seed of random number generator
     setSeed(iSimulation);
     // reset simData
     std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
@@ -156,7 +156,7 @@ int ConditionalBernoulliRandomizer::randomize(unsigned int iSimulation, const Ab
 
 //////////////////// ConditionalBernoulliAlternativeHypothesisRandomizer ////////////////////////////
 
-/* constructor */
+/** Constructor */
 ConditionalBernoulliAlternativeHypothesisRandomizer::ConditionalBernoulliAlternativeHypothesisRandomizer(
     const ScanRunner::NodeStructureContainer_t& treeNodes, const RelativeRiskAdjustmentHandler& adjustments, int TotalC, 
     int TotalControls, double p0, double p1, unsigned int n1, const ScanRunner& scanner, long lInitialSeed
@@ -168,7 +168,7 @@ ConditionalBernoulliAlternativeHypothesisRandomizer::ConditionalBernoulliAlterna
     for (size_t k = static_cast<size_t>(std::max((int)0, TotalC - static_cast<int>(N - n1))); k < _A.size(); ++k) {
         double d1 = bg.getBinomialDistributionProbability(static_cast<unsigned int>(k), n1, p1);
         double d2 = 0.0;
-        /* We need to guard around the situation where the number of trials is less than the number of expected successes. */
+        // We need to guard around the situation where the number of trials is less than the number of expected successes.
         if (N - n1 >= static_cast<unsigned int>(TotalC) - k)
             d2 = bg.getBinomialDistributionProbability(static_cast<unsigned int>(TotalC) - static_cast<unsigned int>(k), N - n1, p0);
         _A[k] = d1 * d2;
@@ -176,7 +176,7 @@ ConditionalBernoulliAlternativeHypothesisRandomizer::ConditionalBernoulliAlterna
     }
     for (size_t k=0; k < _A.size(); ++k)
         _A[k] = (k == 0 ? 0.0 : _A[k - 1]) + _A[k]/sum;
-    // We need to create 2 groups of  tree nodes: those nodes in the alternative hypothesis and those still under the null hypothesis.
+    // We need to create two groups of tree nodes: those nodes in the alternative hypothesis and those still under the null hypothesis.
     boost::dynamic_bitset<> node_set(treeNodes.size());
     _alternative_hypothesis_nodes.reset(new ScanRunner::NodeStructureContainer_t());
     for (AdjustmentsContainer_t::const_iterator itr = adjustments.get().begin(); itr != adjustments.get().end(); ++itr) {
@@ -202,14 +202,14 @@ ConditionalBernoulliAlternativeHypothesisRandomizer::~ConditionalBernoulliAltern
     controls then each randomly assigned to be a case or a control. Caller is responsible for ensuring that
     passed array pointers are allocated and dimensions match that of passed tract and locations variables. */
 int ConditionalBernoulliAlternativeHypothesisRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
-    //reset seed of random number generator
+    // reset seed of random number generator
     setSeed(iSimulation);
     // reset simData
     std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
 
     mt19937 generator(iSimulation);
     Probabilities_t::iterator itr=std::lower_bound(_A.begin(), _A.end(), uniform_01<mt19937>(generator)());
-    // random number of cases among n1 indivduals in the nodes w/ excess risk
+    // random number of cases among n1 individuals in the nodes w/ excess risk
     unsigned int X1 = (itr == _A.end() ? static_cast<unsigned int>(0) : static_cast<unsigned int>(std::distance(_A.begin(), itr)));
     return _randomize(X1, _n1 - X1, *_alternative_hypothesis_nodes_proxy, treeSimNodes) +
            _randomize(_total_C - X1, (_total_C + _total_Controls) - _n1 - (_total_C - X1), *_null_hypothesis_nodes_proxy, treeSimNodes);

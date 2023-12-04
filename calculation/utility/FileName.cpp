@@ -11,13 +11,13 @@ const char * FileName::UNC_TAG = "\\\\";
 const char FileName::BACKSLASH = '\\';
 const char FileName::FORWARDSLASH = '/';
 
-// The constructor will break up sName into four parts by calling SetFullName().  If NULL is passed
-// in, zero length strings are stored in the data members.
+/** The constructor will break up sName into four parts by calling SetFullName().  If NULL is passed
+    in, zero length strings are stored in the data members. */
 FileName::FileName(const char* sName) {
   setFullPath(sName);
 }
 
-// Copy Constructor
+/** Copy Constructor */
 FileName::FileName(const FileName &rhs) {
   *this = rhs;
 }
@@ -32,7 +32,7 @@ FileName &FileName::operator=(const FileName &rhs) {
   return (*this);
 }
 
-//Overloaded equality operator
+/** Overloaded equality operator */
 bool FileName::operator==(const FileName& rhs) const {
   if (gsDrive != rhs.gsDrive) return false;
   if (gsDirectory != rhs.gsDirectory) return false;
@@ -41,7 +41,7 @@ bool FileName::operator==(const FileName& rhs) const {
   return true;
 }
 
-// Returns the platform file path separator character.
+/** Returns the platform file path separator character. */
 char FileName::getPathSeparator() {
 #ifdef _WINDOWS_
     return BACKSLASH;
@@ -51,9 +51,9 @@ char FileName::getPathSeparator() {
 }
 
 
-// This function converts the name stored in this FileName into a filename
-// with an absolute path. ( i.e. the path will not have ".", ".." or any
-// symbolic links in it ).
+/** This function converts the name stored in this FileName into a filename
+    with an absolute path. (i.e. the path will not have ".", ".." or any
+    symbolic links in it). */
 void FileName::convertToAbsolutePath() {
   std::string fullPath;
 
@@ -67,7 +67,7 @@ void FileName::convertToAbsolutePath() {
      setFullPath(sBuffer);
 }
 
-// This function returns the current working directory.
+/** This function returns the current working directory. */
 const char* FileName::getCurDirectory(std::string& theDirectory) {
 #ifdef _WINDOWS_
       theDirectory = FileName("test.ini").getDirectory();
@@ -77,7 +77,7 @@ const char* FileName::getCurDirectory(std::string& theDirectory) {
    return theDirectory.c_str();
 }
 
-// This function returns the current working drive.
+/** This function returns the current working drive. */
 const char* FileName::getCurDrive(std::string & theDrive) {
 #ifdef _WINDOWS_
       theDrive = FileName("test.ini").getDrive();
@@ -87,19 +87,19 @@ const char* FileName::getCurDrive(std::string & theDrive) {
    return theDrive.c_str();
 }
 
-// This function returns the fully qualified file name.
+/** This function returns the fully qualified file name. */
 std::string & FileName::getFullPath(std::string& fullPath) const {
    fullPath = gsDrive + gsDirectory + gsFileName + gsExtension;
    return fullPath;
 }
 
-// Returns the location of the file. ( i.e. <drive>:\<directory> )
+/** Returns the location of the file. ( i.e. <drive>:\<directory> ) */
 std::string & FileName::getLocation(std::string& location) const {
    location = gsDrive + gsDirectory;
    return location;
 }
 
-//these are Windows reserved special characters - this will have to be ifndef'd in
+/** These are Windows reserved special characters - this will have to be ifndef'd in */
 bool FileName::isSpecialCharacter(char c) const {
 #ifdef _WINDOWS_
    return (c=='<' || c=='>' || c==':' || c=='"' || c=='/' || c=='\\' || c=='|');
@@ -108,7 +108,7 @@ bool FileName::isSpecialCharacter(char c) const {
 #endif
 }
 
-// This function will set the directory.
+/** This function will set the directory. */
 void FileName::setDirectory(const char * sNewDirectory) {
   if (!sNewDirectory) return;
   // copy directory and append slash
@@ -127,7 +127,7 @@ void FileName::setDrive(const char * sNewDrive) {
       gsDrive += ":";
 }
 
-// This function will set the extension.
+/**  This function will set the extension. */
 void FileName::setExtension(const char* sNewExtension) {
   if (!sNewExtension) return;
   gsExtension = sNewExtension;
@@ -141,13 +141,13 @@ void FileName::setFileName(const char* sNewFile) {
   gsFileName = sNewFile;
 }
 
-// This function will assign the class to this file name.  This function will
-// parse the filename according to the following rules:
-//#   An extension is set after the last '.' in sFileName.
-//#   A filename is set after the last slash and before the extension (if any)
-//#   The drive is set from the start of sFileName to the first slash.  UNC is allowed.
-//#     For a UNC name the drive would be the entire share (i.e. \\nfsc\imsdev)
-//#   The directory is set to the string between the drive and the filename.
+/** This function will assign the class to this file name.  This function will
+    parse the filename according to the following rules:
+    #   An extension is set after the last '.' in sFileName.
+    #   A filename is set after the last slash and before the extension (if any)
+    #   The drive is set from the start of sFileName to the first slash.  UNC is allowed.
+    #     For a UNC name the drive would be the entire share (i.e. \\nfsc\imsdev)
+    #   The directory is set to the string between the drive and the filename. */
 void FileName::setFullPath(const char* sFileName) {
   if (!sFileName) return;
 
@@ -158,7 +158,7 @@ void FileName::setFullPath(const char* sFileName) {
   char sFullName[MAX_PATH];
 
   sFullName[0] = '\0';
-  //This will add on the drive and directory if not already specified
+  // This will add on the drive and directory if not already specified
   if (sFileName[0])
     if (!GetFullPathName((LPCTSTR)sFileName, MAX_PATH, (LPTSTR)sFullName, (LPTSTR*)&pTrash))
       throw prg_error("Could not get full path name", "setFullPath");
@@ -193,28 +193,28 @@ void FileName::setFullPath(const char* sFileName) {
    setLocation(sWorkPath.c_str());
 }
 
-// This function will assign the class to this file name.  This function will
-// parse the filename according to the following rules:
-//#   The drive is set from the start of sFileName to the first slash.  UNC is allowed.
-//#     For a UNC name the drive would be the entire share (i.e. \\nfsc\imsdev)
-//#   The directory is set to the string following the drive.
+/** This function will assign the class to this file name.  This function will
+    parse the filename according to the following rules:
+    #   The drive is set from the start of sFileName to the first slash.  UNC is allowed.
+    #     For a UNC name the drive would be the entire share (i.e. \\nfsc\imsdev)
+    #   The directory is set to the string following the drive. */
 void FileName::setLocation(const char* sLocation) {
   if (!sLocation) return;
 
   std::string  sWorkPath = sLocation;
   trimString(sWorkPath);
   // Parse the drive
-  if (sWorkPath.find(UNC_TAG) == 0) {// UNC name
+  if (sWorkPath.find(UNC_TAG) == 0) { // UNC name
     size_t lPosition = sWorkPath.find("\\", 2);
-    if (lPosition == std::string::npos || lPosition < 1)  // drive must be at least 1 character
+    if (lPosition == std::string::npos || lPosition < 1) // drive must be at least 1 character
       throw prg_error("Invalid UNC name","setLocation");
-    //goto next slash to get full sharename
+    // goto next slash to get full sharename
     size_t lPosition2 = sWorkPath.find("\\", 2 + lPosition + 1);
-    if (lPosition2 == std::string::npos || lPosition2 < 1)  // share name must be at least 1 character
+    if (lPosition2 == std::string::npos || lPosition2 < 1) // share name must be at least 1 character
       throw prg_error("Invalid UNC name","setLocation");
     setDrive(sWorkPath.substr(0, lPosition2).c_str());
-    sWorkPath.erase(0, lPosition2);  // remove the drive name
-  } else  {// DOS Name
+    sWorkPath.erase(0, lPosition2); // remove the drive name
+  } else  { // DOS Name
     size_t lPosition = sWorkPath.find(":");
     if (lPosition == 1) { // drives are 1 character long
       setDrive(sWorkPath.substr(0, 2).c_str());

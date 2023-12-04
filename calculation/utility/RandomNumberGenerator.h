@@ -21,8 +21,8 @@
 
 class RandomNumberGenerator {
   private:
-    long                glSeed;                         /** current randomization seed */
-    long                glInitialSeed;                  /** initial seed at construction  */
+    long                glSeed;                         // current randomization seed
+    long                glInitialSeed;                  // initial seed at construction
 
     void                SetInitialSeed(long lSeed);
 
@@ -30,10 +30,10 @@ class RandomNumberGenerator {
     RandomNumberGenerator(long lInitialSeed=glDefaultSeed) {SetInitialSeed(lInitialSeed);}
     ~RandomNumberGenerator() {}
 
-    static const long   glDefaultSeed = 12345678;       /** default seed                  */
-    static const long   glCheck       = 399268537;      /** value to check test against   */
-    static const long   glM           = 2147483647;     /** fixed prime modulus, 2^31 - 1 */
-    static const long   glA           = 48271;          /** multiplier                    */
+    static const long   glDefaultSeed = 12345678;       // default seed
+    static const long   glCheck       = 399268537;      // value to check test against
+    static const long   glM           = 2147483647;     // fixed prime modulus, 2^31 - 1
+    static const long   glA           = 48271;          // multiplier
 
     long                GetInitialSeed() const {return glInitialSeed;}
     long                GetMaxSeed() const {return glM;}

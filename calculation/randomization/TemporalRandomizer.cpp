@@ -8,14 +8,14 @@
 
 using boost::mt19937;
 
-/* constructor */
+/** Constructor */
 TemporalRandomizer::TemporalRandomizer(const ScanRunner& scanner, long lInitialSeed)
     : AbstractRandomizer(scanner.getParameters(), scanner.getMultiParentNodesExist(), lInitialSeed),
      _total_C(scanner.getTotalC()), _total_N(scanner.getTotalN()), _time_range_sets(scanner.getParameters().getDataTimeRangeSet()), _day_of_week_indexes(scanner.getDayOfWeekIndexes()) {
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     DataTimeRange min_max = _time_range_sets.getMinMax();
     _zero_translation_additive = (min_max.getStart() <= 0) ? std::abs(min_max.getStart()) : min_max.getStart() * -1;
-    /* If data is censored, store censor distibution for each node so randomizations are quicker. */
+    // If data is censored, store censor distibution for each node so randomizations are quicker.
     _censored_data = scanner.isCensoredData();
     if (scanner.isCensoredData()) {
         _node_censors.resize(scanner.getNodes().size());
@@ -88,7 +88,7 @@ int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesP
     return _total_C;
 }
 
-/** Creates randomized under the null hypothesis for Poisson model, assigning data to DataSet objects structures.
+/** Creates randomized data under the null hypothesis for Poisson model, assigning data to DataSet objects structures.
     Random number generator seed initialized based upon 'iSimulation' index. */
 int TemporalRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes) {
     // clear simulation data
@@ -122,7 +122,7 @@ int TemporalRandomizer::read(const std::string& filename, unsigned int simulatio
 
     int count, total=0;
 
-    //seek line offset for reading iSimulation'th simulation data
+    // seek line offset for reading iSimulation'th simulation data
     unsigned int skip = static_cast<unsigned int>((simulation - 1) * treeSimNodes.size());
     for (unsigned int i=0; i < skip; ++i)
         stream.ignore(std::numeric_limits<int>::max(), '\n');
@@ -158,7 +158,7 @@ int TemporalRandomizer::read(const std::string& filename, unsigned int simulatio
 void TemporalRandomizer::write(const std::string& filename, const SimNodeContainer_t& treeSimNodes) {
     std::ofstream stream;
 
-    //open output file
+    // open output file
     stream.open(filename.c_str(), std::ios::ate|std::ios::app);
     if (!stream) throw resolvable_error("Error: Could not open the simulated data output file '%s'.\n", filename.c_str());
     for (size_t i=0; i < treeSimNodes.size(); ++i) {
@@ -195,9 +195,9 @@ ConditionalTemporalRandomizer::ConditionalTemporalRandomizer(const ScanRunner& s
             }
             NodeStructure::count_t num_cases = counts[timeIdx] -  (timeIdx + 1 >= counts.size() ? 0 : counts[timeIdx + 1]);
             for (NodeStructure::count_t c=0; c < num_cases; ++c) {
-                //add stationary values
+                // add stationary values
                 stationaryItr->push_back(ConditionalTemporalStationary_t((*itr)->getID()));
-                //add permutated value
+                // add permutated value
                 permutedItr->push_back(ConditionalTemporalPermuted_t(timeIdx));
             }
         }
@@ -225,7 +225,7 @@ void ConditionalTemporalRandomizer::AssignRandomizedData(const AbstractNodesProx
 
 //////////////////////////////// TemporalAlternativeHypothesisRandomizer //////////////////////////////////////////
 
-/* constructor */
+/** Constructor */
 TemporalAlternativeHypothesisRandomizer::TemporalAlternativeHypothesisRandomizer(const ScanRunner& scanner, long lInitialSeed) : TemporalRandomizer(scanner, lInitialSeed) {}
 
 /** Creates randomized under the null hypothesis for Poisson model, assigning data to DataSet objects structures.
@@ -279,22 +279,22 @@ int TemporalAlternativeHypothesisRandomizer::randomize(unsigned int iSimulation,
         //    }
         //}
     } else {
-        /* Iterate through all the nodes and redistribute cases within the same node's intervals. */
+        /** Iterate through all the nodes and redistribute cases within the same node's intervals. */
         for (size_t i=0; i < treeNodes.size(); ++i) {
             NodeStructure::count_t nodeC = treeNodes.getIntC(i);
             if (!treeNodes.randomized(i) || !nodeC) continue; // skip if not randomized or zero node cases
             SimulationNode& simNode(treeSimNodes[i]);
-            /* Get adjusted values for this node -- this is the measure array we adjusted from the alternative hypothesis file. */
+            // Get adjusted values for this node -- this is the measure array we adjusted from the alternative hypothesis file.
             const NodeStructure::ExpectedContainer_t& measure = treeNodes.getIntN_C(i);
-            /* Create a distribution from zero to cumulative maximum in elevated risk array -- for current node. */
+            // Create a distribution from zero to cumulative maximum in elevated risk array -- for current node.
             boost::random::uniform_real_distribution<> distribution(0.0, measure.back());
-            /* For each case, distribute to other interval - by using the adjusted measure array. */
+            // For each case, distribute to other interval - by using the adjusted measure array.
             for (NodeStructure::count_t c=0; c < nodeC; ++c) {
-                /* For each case, randomly generate a value between zero and cumulative maximum, then find where that value fails in measure array. */
+                // For each case, randomly generate a value between zero and cumulative maximum, then find where that value fails in measure array.
                 double rv = distribution(generator);
                 NodeStructure::ExpectedContainer_t::const_iterator itr = std::upper_bound(measure.begin(), measure.end(), rv);
                 DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(std::distance(measure.begin(), itr)) - 1;
-                /* Now we can assign this randomized case and update total. */
+                // Now we can assign this randomized case and update total.
                 ++(simNode.refIntC_C()[idx]);
                 ++TotalSimC;
             }

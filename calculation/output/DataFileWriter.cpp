@@ -7,7 +7,7 @@
 #include "ScanRunner.h"
 #include "IniParameterFileAccess.h"
 
-/** class constructor */
+/** Class constructor */
 RecordBuffer::RecordBuffer(const ptr_vector<FieldDef>& vFields) : vFieldDefinitions(vFields) {
   for (size_t t=0; t < vFieldDefinitions.size(); ++t) {
      gvFieldValues.push_back(FieldValue(vFieldDefinitions[t]->GetType()));
@@ -15,15 +15,15 @@ RecordBuffer::RecordBuffer(const ptr_vector<FieldDef>& vFields) : vFieldDefiniti
   }
 }
 
-/** class destructor */
+/** Class destructor */
 RecordBuffer::~RecordBuffer() {}
 
-/** FieldDef definition for field with name. */
+/** FieldDef definition for field with name */
 const FieldDef & RecordBuffer::GetFieldDefinition(const std::string& sFieldName) const {
   return *vFieldDefinitions[GetFieldIndex(sFieldName)];
 }
 
-/** FieldDef definition for field at index. */
+/** FieldDef definition for field at index */
 const FieldDef & RecordBuffer::GetFieldDefinition(unsigned int iFieldIndex) const {
   try {
     if (iFieldIndex >= vFieldDefinitions.size())
@@ -36,9 +36,9 @@ const FieldDef & RecordBuffer::GetFieldDefinition(unsigned int iFieldIndex) cons
   return *vFieldDefinitions[iFieldIndex];
 }
 
-// returns whether or not the field at iFieldNumber should be blank
-// pre : none
-// post : returns true is field should be blank
+/** Returns whether or not the field at iFieldNumber should be blank.
+pre : none
+post : returns true if field should be blank */
 bool RecordBuffer::GetFieldIsBlank(unsigned int iFieldNumber) const {
   try {
     if (iFieldNumber >= gvBlankFields.size())
@@ -167,7 +167,7 @@ CSVDataFileWriter::CSVDataFileWriter(std::ofstream& outfile, const ptr_vector<Fi
         if (!_outfile.is_open())
             throw resolvable_error("std::ofstream is not open.");
 
-        //write column headers when requested
+        // write column headers when requested
         if (printHeaders) {
             ptr_vector<FieldDef>::const_iterator itr=vFieldDefs.begin(), itr_end=vFieldDefs.end();
             for  (; itr != itr_end; ++itr) {
@@ -182,7 +182,7 @@ CSVDataFileWriter::CSVDataFileWriter(std::ofstream& outfile, const ptr_vector<Fi
     }
 }
 
-/* Creates a formatted string for field value suitable for use in csv string. */
+/** Creates a formatted string for field value suitable for use in csv string. */
 std::string& CSVDataFileWriter::encodeForCSV(std::string& sValue, const FieldDef& FieldDef, const FieldValue& fv) {
     std::string temp;
     switch(fv.GetType()) {
@@ -343,7 +343,7 @@ ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& field
             (params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODE && params.isPerformingDayOfWeekAdjustment())) {
             // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
             CreateField(fields, TEST_STATISTIC_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
-            //CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
+            // CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
         } else {
             CreateField(fields, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
         }
@@ -399,7 +399,7 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
     }
 }
 
-/* Populates the RecordBuffer for NodeStructure of this CutStructure per analysis settings. */
+/** Populates the RecordBuffer for NodeStructure of this CutStructure per analysis settings. */
 RecordBuffer& CutsRecordWriter::getRecordForCut(RecordBuffer& Record, const CutStructure& thisCut, const ScanRunner& scanner) {
     const Parameters& params = scanner.getParameters();
     std::string buffer;
@@ -488,7 +488,7 @@ RecordBuffer& CutsRecordWriter::getRecordForCut(RecordBuffer& Record, const CutS
         if (params.getScanType() != Parameters::TIMEONLY) {
             cutNode.getParentIndentifiers(Record.GetFieldValue(PARENT_NODE_FLD).AsString(), true);
             if (scanner.hasNodeDescriptions()) {
-                // If defining node names and parent node names are different that parent node IDs.
+                // If defining node names and parent node names are different than parent node IDs.
                 cutNode.getParentIndentifiers(buffer, false);
                 if (buffer != Record.GetFieldValue(PARENT_NODE_FLD).AsString())
                     Record.GetFieldValue(PARENT_NODE_NAME_FLD).AsString() = buffer;
@@ -507,7 +507,7 @@ RecordBuffer& CutsRecordWriter::getRecordForCut(RecordBuffer& Record, const CutS
     return Record;
 }
 
-/* Populates the RecordBuffer for child NodeStructure of this CutStructure per analysis settings. */
+/** Populates the RecordBuffer for child NodeStructure of this CutStructure per analysis settings. */
 RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const CutStructure& thisCut, const NodeStructure& childNode, size_t subIndex, const ScanRunner& scanner) {
     std::string buffer;
     const Parameters& params = scanner.getParameters();
@@ -519,7 +519,7 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
         Record.GetFieldValue(P_LEVEL_FLD).AsDouble() = static_cast<int>(childNode.getLevel());
         childNode.getParentIndentifiers(Record.GetFieldValue(PARENT_NODE_FLD).AsString(), true);
         if (scanner.hasNodeDescriptions()) {
-            // If defining node names and parent node names are different that parent node IDs.
+            // If defining node names and parent node names are different than parent node IDs.
             childNode.getParentIndentifiers(buffer, false);
             if (buffer != Record.GetFieldValue(PARENT_NODE_FLD).AsString())
                 childNode.getParentIndentifiers(Record.GetFieldValue(PARENT_NODE_NAME_FLD).AsString(), false);
@@ -619,7 +619,7 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
 
 const char * PowerEstimationRecordWriter::POWER_FILE_SUFFIX                            = "_power";
 
-/* constructor: defines data filefields and allocates csv data file writer. */
+/** Constructor: defines data filefields and allocates csv data file writer. */
 PowerEstimationRecordWriter::PowerEstimationRecordWriter(const ScanRunner& scanRunner) : _scanner(scanRunner) {
     unsigned short uwOffset=0;
     std::string    buffer;
@@ -646,12 +646,12 @@ PowerEstimationRecordWriter::~PowerEstimationRecordWriter() {
     } catch (...) { }
 }
 
-/* Returns the filename which alternative hypothesis are written. The filename is a derivative of the main results filename. */
+/** Returns the filename to which alternative hypotheses are written. The filename is a derivative of the main results filename. */
 std::string& PowerEstimationRecordWriter::getFilename(const Parameters& parameters, std::string& buffer) {
     return getDerivedFilename(parameters.getOutputFileName(), PowerEstimationRecordWriter::POWER_FILE_SUFFIX, CSVDataFileWriter::CSV_FILE_EXT, buffer);
 }
 
-/* Writes power estimation values for all alternative hypothesis iterations to csv file. */
+/** Writes power estimation values for all alternative hypothesis iterations to csv file. */
 void PowerEstimationRecordWriter::write() const {
     RecordBuffer  Record(_dataFieldDefinitions);
 

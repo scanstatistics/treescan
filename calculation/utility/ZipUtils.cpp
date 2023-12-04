@@ -1,4 +1,4 @@
-/*
+/**
   Derived from zlib contribution minizip ... see below.
 
    minizip.c
@@ -95,7 +95,7 @@ uLong filetime(const char *f, tm_zip *tmzip, uLong *dt) {
 uLong filetime(const char *f, tm_zip *tmzip, uLong *dt)
 {
   int ret=0;
-  struct stat s;        /* results of stat() */
+  struct stat s;        // results of stat()
   struct tm* filedate;
   time_t tm_t=0;
 
@@ -107,12 +107,12 @@ uLong filetime(const char *f, tm_zip *tmzip, uLong *dt)
       len = MAXFILENAME;
 
     strncpy(name, f,MAXFILENAME-1);
-    /* strncpy doesnt append the trailing NULL, of the string is too long. */
+    // strncpy doesnt append the trailing NULL, of the string is too long.
     name[ MAXFILENAME ] = '\0';
 
     if (name[len - 1] == '/')
       name[len - 1] = '\0';
-    /* not all systems allow stat'ing a file with / appended */
+    // not all systems allow stat'ing a file with / appended
     if (stat(name,&s)==0)
     {
       tm_t = s.st_mtime;
@@ -164,7 +164,7 @@ int isLargeFile(const char* filename) {
     return largeFile;
 }
 
-/* Creates or updates zip archive to add file. */
+/** Creates or updates zip archive to add file. */
 int addZip(const std::string& filename_try, const std::string& add_filename, bool append) {
     int opt_overwrite=0;
     int opt_compress_level=Z_DEFAULT_COMPRESSION;
@@ -177,7 +177,7 @@ int addZip(const std::string& filename_try, const std::string& add_filename, boo
     buf = (void*)malloc(size_buf);
     if (buf==NULL) throw memory_exception("Failed to allocate buffer for zip file buffer.");
     opt_overwrite = append ? 2 : 0;
-    if (opt_overwrite==2) { /* if the file don't exist, we not append file */
+    if (opt_overwrite==2) { // if the file don't exist, we not append file
         if (check_exist_file(filename_try.c_str())==0)
             opt_overwrite=1;
     }
@@ -207,13 +207,13 @@ int addZip(const std::string& filename_try, const std::string& add_filename, boo
         zi.external_fa = 0;
         filetime(filenameinzip,&zi.tmz_date,&zi.dosDate);
         zip64 = isLargeFile(filenameinzip);
-        /* The path name saved, should not include a leading slash. */
-        /*if it did, windows/xp and dynazip couldn't read the zip file. */
+        // The path name saved, should not include a leading slash.
+        // if it did, windows/xp and dynazip couldn't read the zip file.
         savefilenameinzip = filenameinzip;
         while( savefilenameinzip[0] == '\\' || savefilenameinzip[0] == '/' ) {
             savefilenameinzip++;
         }
-        /*should the zip file contain any path at all?*/
+        // should the zip file contain any path at all?
         if( opt_exclude_path ) {
             const char *tmpptr;
             const char *lastslash = 0;
@@ -267,7 +267,7 @@ int addZip(const std::string& filename_try, const std::string& add_filename, boo
     return 0;
 }
 
-/*
+/**
 Derived from zlib contribution minizip ... see below.
 
 miniunz.c
@@ -326,11 +326,11 @@ void do_extract_currentfile(unzFile uf, const std::string& extractTo) {
                 throw prg_error("error %d with zipfile in unzCloseCurrentFile\n", "do_extract_currentfile()", err);
             }
         } else
-            unzCloseCurrentFile(uf); /* don't lose the error */
+            unzCloseCurrentFile(uf); // don't lose the error
     free(buf);
 }
 
-/* Unzips archive contents for same directory as archive. */
+/** Unzips archive contents for same directory as archive. */
 void unZip(const std::string& filename_try) {
     unz_global_info64 gi;
 #ifdef USEWIN32IOAPI

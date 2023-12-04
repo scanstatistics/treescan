@@ -9,7 +9,7 @@
 
 class DataTimeRange {
     public:
-        /** date precision units */
+        /** Date precision units */
         enum DatePrecisionType { NONE = 0, GENERIC, YEAR, MONTH, DAY };
         typedef int index_t;
         typedef std::pair<index_t, index_t> range_t;
@@ -70,9 +70,9 @@ class DataTimeRange {
 };
 
 /** This class provides functionality for parsing strings that represent dates that are formatted in ways TreeScan claims to accept
-and returns Julian date equivalence. Any errors parsing string into date are indicated by return type DateStringParser::ParserStatus.
-This class adds the ability to have dates separated by any of the characters: '/', '-', '*' and '.'. This class also adds the ability
-to have dates that are also formatted like: "02/1995" and "02/05/1995" (note that two digit years are not supported in new format). */
+    and returns Julian date equivalence. Any errors parsing string into date are indicated by return type DateStringParser::ParserStatus.
+    This class adds the ability to have dates separated by any of the characters: '/', '-', '*' and '.'. This class also adds the ability
+    to have dates that are also formatted like: "02/1995" and "02/05/1995" (note that two digit years are not supported in new format). */
 class DateStringParser {
 public:
     enum                                ParserStatus { VALID_DATE = 0, INVALID_DATE, LESSER_PRECISION };

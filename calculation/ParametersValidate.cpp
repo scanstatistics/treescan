@@ -34,7 +34,7 @@ bool ParametersValidate::checkFileExists(const std::string& filename, const std:
 }
 
 /** Validates that given current state of settings, parameters and their relationships
-    with other parameters are correct. Errors are sent to print direction and*/
+    with other parameters are correct. Errors are sent to print direction and returns whether values are valid. */
 bool ParametersValidate::Validate(BasePrint& printDirection) const {
     bool bValid=true;
 
@@ -144,7 +144,7 @@ bool ParametersValidate::ValidateInputSource(const Parameters::InputSource * sou
 
     std::string extension(file.getExtension());
     lowerString(extension);
-    // First exclude file types that are not readable - namely, Excel;
+    // First exclude file types that are not readable - namely, Excel.
     if (extension == ".xls" || extension == ".xlsx") {
         PrintDirection.Printf("%s:\nThe Excel file '%s' cannot be read as an input file.\n.TreeScan cannot read directly from Excel files.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, filename.c_str());
         return false;
@@ -433,7 +433,7 @@ bool ParametersValidate::ValidateAnalysisParameters(BasePrint& PrintDirection) c
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree and Time' can either be conditioned on each node or on each node plus time.\n", BasePrint::P_PARAMERROR);
                 }
-                // if conditioning on both node and time, their isn't a model type the user can select
+                // if conditioning on both node and time, there isn't a model type the user can select
                 if (bValid && _parameters.getConditionalType() == Parameters::NODEANDTIME) {
                     const_cast<Parameters&>(_parameters).setModelType(Parameters::MODEL_NOT_APPLICABLE);
                 }
@@ -481,7 +481,7 @@ bool ParametersValidate::ValidateAnalysisParameters(BasePrint& PrintDirection) c
 bool ParametersValidate::ValidateOutputParameters(BasePrint & PrintDirection) const {
     bool bValid=true;
     try {
-        //validate output file
+        // validate output file
         if (_parameters.getOutputFileName().empty()) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nNo results file specified.\n", BasePrint::P_PARAMERROR);
@@ -504,7 +504,7 @@ bool ParametersValidate::ValidateOutputParameters(BasePrint & PrintDirection) co
 bool ParametersValidate::ValidateAdditionalOutputParameters(BasePrint & PrintDirection) const {
     bool bValid=true;
     try {
-        //validate output file
+        // validate output file
         if (_parameters.getReportAttributableRisk()) {
             if (_parameters.getAttributableRiskExposed() == 0) {
                 bValid = false;
@@ -669,7 +669,7 @@ bool ParametersValidate::ValidateTemporalWindowParameters(BasePrint & PrintDirec
 }
 
 /** Validates parameters parameters related to randomization seed.
-    Prints errors to print direction and returns whether values are vaild. */
+    Prints errors to print direction and returns whether values are valid. */
 bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) const {
   if (!_parameters.getNumReplicationsRequested()) return true;
 
@@ -679,19 +679,19 @@ bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) co
       const_cast<Parameters&>(_parameters).setRandomizationSeed(boost::uniform_int<>(1,static_cast<int>(dMaxSeed))(generator));
       return true;
   }
-  //validate hidden parameter which specifies randomization seed
+  // validate hidden parameter which specifies randomization seed
   if (!(0 < _parameters.getRandomizationSeed() && _parameters.getRandomizationSeed() < RandomNumberGenerator::glM)) {
       PrintDirection.Printf("Invalid Parameter Setting:\nRandomization seed out of range [1 - %ld].\n",
                             BasePrint::P_PARAMERROR, RandomNumberGenerator::glM - 1);
       return false;
   }
-  //validate that generated seeds during randomization will not exceed defined range
+  // validate that generated seeds during randomization will not exceed defined range
   double dMaxRandomizationSeed = (double)_parameters.getRandomizationSeed() + (double)_parameters.getNumReplicationsRequested();
   if (dMaxRandomizationSeed >= static_cast<double>(RandomNumberGenerator::glM)) {
-      //case #1 - glRandomizationSeed == RandomNumberGenerator::glDefaultSeed
-      //    In this case, it is assumed that user accepted default - at this time
-      //    changing the initial seed through parameter settings is a 'hidden' parameter;
-      //    so no direction should be given regarding the alteration of seed value.
+      /** case #1 - glRandomizationSeed == RandomNumberGenerator::glDefaultSeed
+            In this case, it is assumed that user accepted default - at this time
+            changing the initial seed through parameter settings is a 'hidden' parameter;
+            so no direction should be given regarding the alteration of seed value. */
       if (_parameters.getRandomizationSeed() == RandomNumberGenerator::glDefaultSeed) {
         double dMaxReplications = (double)RandomNumberGenerator::glM - (double)_parameters.getRandomizationSeed();
         dMaxReplications = (floor((dMaxReplications)/1000) - 1)  * 1000 + 999;
@@ -699,29 +699,29 @@ bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) co
                               "Maximum number of replications is %.0lf.\n", BasePrint::P_PARAMERROR, dMaxReplications);
         return false;
       }
-      //case #2 - user specified alternate randomization seed
-      //    This alternate seed or the number of requested replications could be the problem.
-      //    User has two options, either pick a lesser seed or request less replications.
-      //calculate maximum seed for requested number of replications
+      /** case #2 - user specified alternate randomization seed
+            This alternate seed or the number of requested replications could be the problem.
+            User has two options, either pick a lesser seed or request fewer replications. */
+      // calculate maximum seed for requested number of replications
       double dMaxSeed = (double)RandomNumberGenerator::glM - (double)_parameters.getNumReplicationsRequested();
-      //calculate maximum number of replications for requested seed
+      // calculate maximum number of replications for requested seed
       double dMaxReplications = (double)RandomNumberGenerator::glM - (double)_parameters.getRandomizationSeed();
       dMaxReplications = (floor((dMaxReplications)/1000) - 1)  * 1000 + 999;
-      //check whether specified combination of seed and requested number of replications fights each other
+      // check whether specified combination of seed and requested number of replications fights each other
       if (dMaxReplications < 9 && (dMaxSeed <= 0 || dMaxSeed > RandomNumberGenerator::glM)) {
         PrintDirection.Printf("Invalid Parameter Setting:\nRandomization seed will exceed defined limit. "
                               "The specified initial seed, in conjunction with the number of replications, "
                               "contend for numerical range in defined limits. Please modify the specified "
                               "initial seed and/or lessen the number of replications and try again.\n", BasePrint::P_PARAMERROR);
       }
-      //check that randomization seed is not so large that we can't run any replications
+      // check that randomization seed is not so large that we can't run any replications
       else if (dMaxReplications < 9) {
         PrintDirection.Printf("Invalid Parameter Setting:\nRandomization seed will exceed defined limit. "
                               "The intial seed specified prevents any replications from being performed. "
                               "With %ld replications, the initial seed can be [0 - %.0lf].\n",
                               BasePrint::P_PARAMERROR, _parameters.getNumReplicationsRequested(), dMaxSeed);
       }
-      //check that number of replications isn't too large
+      // check that number of replications isn't too large
       else if (dMaxSeed <= 0 || dMaxSeed > RandomNumberGenerator::glM) {
         PrintDirection.Printf("Invalid Parameter Setting:\nRequested number of replications causes randomization seed to exceed defined limit. "
                               "With initial seed of %i, maximum number of replications is %.0lf.\n",

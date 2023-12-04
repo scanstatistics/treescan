@@ -9,12 +9,12 @@
 #include <fstream>
 #include "boost/thread/mutex.hpp"
 
-/** Collection of field values for buffering records of additional output files.*/
+/** Collection of field values for buffering records of additional output files. */
 class RecordBuffer {
    private:
-      const ptr_vector<FieldDef>      & vFieldDefinitions;  /** field definitions */
-      std::vector<FieldValue>           gvFieldValues;      /** record buffer of field values */
-      std::vector<bool>                 gvBlankFields;      /** indicators whether relative field is blank */
+      const ptr_vector<FieldDef>      & vFieldDefinitions;  // field definitions
+      std::vector<FieldValue>           gvFieldValues;      // record buffer of field values
+      std::vector<bool>                 gvBlankFields;      // indicators whether relative field is blank
 
    public:
       RecordBuffer(const ptr_vector<FieldDef>& vFields);
@@ -71,7 +71,7 @@ class DataRecordWriter {
     static const char         * HA_ALPHA001_FIELD;
 
   protected:
-    ptr_vector<FieldDef>        _dataFieldDefinitions;       /** field definitions              */
+    ptr_vector<FieldDef>        _dataFieldDefinitions;       // field definitions
 
 
   public:
@@ -104,9 +104,9 @@ class CSVDataFileWriter {
       virtual void         writeRecord(const RecordBuffer& Record);
 };
 
-class ScanRunner; /* forward class declaration */
-class CutStructure; /* forward class declaration */
-class NodeStructure; /* forward class declaration */
+class ScanRunner; /** forward class declaration */
+class CutStructure; /** forward class declaration */
+class NodeStructure; /** forward class declaration */
 class CutsRecordWriter : public DataRecordWriter {
   public:
     static const char         * CUT_FILE_SUFFIX;
@@ -128,7 +128,7 @@ class CutsRecordWriter : public DataRecordWriter {
        void                  write(const CutStructure& thisCut) const;
 };
 
-/* Data file writer for the power estimation. */
+/** Data file writer for the power estimation. */
 class PowerEstimationRecordWriter : public DataRecordWriter {
   public:
     static const char         * POWER_FILE_SUFFIX;
@@ -147,7 +147,7 @@ class PowerEstimationRecordWriter : public DataRecordWriter {
        void                  write() const;
 };
 
-/** Loglikelihood ratio data file writer. */
+/** Log likelihood ratio data file writer. */
 class LoglikelihoodRatioWriter : public DataRecordWriter {
     protected:
         static const char * LLR_FILE_SUFFIX;
@@ -171,7 +171,7 @@ class LoglikelihoodRatioWriter : public DataRecordWriter {
         void write(double llr, unsigned int simulation) const;
 };
 
-/** Sequential Scan - Loglikelihood ratio data file writer. */
+/** Sequential Scan - log likelihood ratio data file writer. */
 class SequentialScanLoglikelihoodRatioWriter : public LoglikelihoodRatioWriter {
     public:
         typedef std::vector<Parameters::ParameterType> ParametersList_t;

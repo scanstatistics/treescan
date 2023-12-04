@@ -10,7 +10,7 @@
       Equilikely(a, b)    [a,b]     (a+b)/2      ((b-a+1)*(b-a+1)-1)/12
  **********************************************************************/
 
-/*#define PI 3.141592654*/
+// #define PI 3.141592654
 #define PI 3.1415926535897932384626433832795028841972  /*KR-7/11/97*/
 
 /**********************************************************************
@@ -22,14 +22,14 @@ long Bernoulli(float p, RandomNumberGenerator & rng)
    if (rng.GetRandomDouble() < (1 - p))
       return 0;
    return 1;
-} /* Bernoulli() */
+}
 
 /**********************************************************************
  Gamma function as used by the Binomial random generator function
  **********************************************************************/
 
-//double /*floatKR-7/11/97*/ gammln(xx)
-//double /*floatKR-7/11/97*/ xx;
+// double /*floatKR-7/11/97*/ gammln(xx)
+// double /*floatKR-7/11/97*/ xx;
 double gammln(double xx)
 {
    double x,tmp,ser;
@@ -46,25 +46,21 @@ double gammln(double xx)
       ser += cof[j]/x;
    }
    return -tmp+log(2.50662827465*ser);
-} /* Gammln() */
+}
 
 
-/**********************************************************************
- Returns integers uniformly distributed from a to b, inclusive
- **********************************************************************/
+/** Returns integers uniformly distributed from a to b, inclusive */
 long Equilikely(long a, long b, RandomNumberGenerator & rng)
 {
    return a + (long) floor((b - a + 1) * rng.GetRandomDouble());
-} /* Equilikely() */
+}
 
-/**********************************************************************
- Returns double uniformly distributed from a to b, inclusive
- **********************************************************************/
+/** Returns double uniformly distributed from a to b, inclusive */
 double Equilikely(double a, double b, RandomNumberGenerator & rng)
 {
    //return a + floor((b - a) * rng.GetRandomDouble());
    return a + (b - a) * rng.GetRandomDouble();
-} /* Equilikely() */
+}
 
 /** Returns binomial(n, p) distributed variable. */
 long BinomialGenerator::GetBinomialDistributedVariable(long n, float pp, RandomNumberGenerator & rng) {
@@ -72,8 +68,8 @@ long BinomialGenerator::GetBinomialDistributedVariable(long n, float pp, RandomN
    double       am,em,g,angle,p,bnl,sq,t,y;
 
    // NOTE: these variables were defined as static at one time - that was
-   //       determined to be unneccesary as results of continuous calls
-   //       ,whether static or not, produced identical results.
+   //       determined to be unneccesary as results of continuous calls,
+   //       whether static or not, produced identical results.
    double      pold = -1;
    double      pc=0;
    double      plog=0;

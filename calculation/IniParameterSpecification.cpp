@@ -28,21 +28,21 @@ const char * IniParameterSpecification::SourceFieldMap          = "SourceFieldMa
 const char * IniParameterSpecification::SourceFirstRowHeader    = "SourceFirstRowHeader";
 
 
-/** constructor -- builds specification for write process */
+/** Constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
     // default to current version
     Parameters::CreationVersion  version;
     setup(version);
 }
 
-/** constructor -- builds specification for read process */
+/** Constructor -- builds specification for read process */
 IniParameterSpecification::IniParameterSpecification(const IniFile& SourceFile, Parameters& Parameters) {
     Parameters::CreationVersion version = getIniVersion(SourceFile);
     Parameters.setVersion(version);
     setup(version);
 }
 
-/** constructor - builds specification to version specified in argument */
+/** Constructor - builds specification to version specified in argument */
 IniParameterSpecification::IniParameterSpecification(Parameters::CreationVersion version, Parameters& Parameters) {
     Parameters.setVersion(version);
     setup(version);
@@ -62,7 +62,7 @@ IniParameterSpecification::IniParameterSpecification(const IniFile& SourceFile, 
     setup(version);
 }
 
-/** define ini sections and section parameters base on passed version */
+/** Define ini sections and section parameters based on passed version */
 void IniParameterSpecification::setup(Parameters::CreationVersion version) {
     // define sections in which parameters belong
     _input_section = SectionInfo(Input, 100);
@@ -96,7 +96,7 @@ void IniParameterSpecification::setup(Parameters::CreationVersion version) {
         Build_2_2_x_ParameterList();
 }
 
-/* Returns ini version setting or default. */
+/** Returns ini version setting or default. */
 Parameters::CreationVersion IniParameterSpecification::getIniVersion(const IniFile& SourceFile) {
     long lSectionIndex, lKeyIndex;
     Parameters::CreationVersion  version;

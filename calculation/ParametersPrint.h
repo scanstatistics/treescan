@@ -7,7 +7,7 @@
 #include <iostream>
 #include <fstream>
 
-class DataSetHandler; /* forward class declaration */
+class DataSetHandler; // forward class declaration
 
 /** Provides methods to print Parameters in an organized manner to the main output
     file of an analysis. */

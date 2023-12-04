@@ -26,7 +26,7 @@ bool BasePrint::GetMaximumReadErrorsPrinted() const {
   return (iter == gInputFileWarningsMap.end() ? false : iter->second == giMaximumReadErrors);
 }
 
-/** Directs message to appropriate output based  upon PrintType. */
+/** Directs message to appropriate output based upon PrintType. */
 void BasePrint::Print(const char * sMessage, PrintType ePrintType) {
    switch (ePrintType) {
      case P_STDOUT    : PrintStandard(sMessage); break;
@@ -74,12 +74,12 @@ void BasePrint::Printf(const char * sMessage, PrintType ePrintType, ...) {
   Print(&gsMessage[0], ePrintType);
 }
 
-// function for printing out input file warning messages, this function will print out MAX_READ_ERRORS
-// number of input file messages from each input file type, then will print a warning telling the user to check the
-// input file format
-// pre : none
-// post : increments the counter in the global map for the message type (or starts a new counter if not found) and
-//       if the number of messages for that file type is less than the maximum then it just prints as normal
+/** Function for printing out input file warning messages. This function will print out MAX_READ_ERRORS
+    number of input file messages from each input file type, and then will print a warning telling the user to check the
+    input file format.
+    pre : none
+    post : increments the counter in the global map for the message type (or starts a new counter if not found) and
+           if the number of messages for that file type is less than the maximum then it just prints as normal */
 void BasePrint::PrintReadError(const char * sMessage) {
    bool bPrintAsNormal(true);
    std::map<eInputFileType, int>::iterator iter = gInputFileWarningsMap.find(geInputFileType);
@@ -88,7 +88,7 @@ void BasePrint::PrintReadError(const char * sMessage) {
       gInputFileWarningsMap.insert(std::make_pair(geInputFileType, 1));
    else {
      iter->second++;
-     // print the excessive warning message on the MAX_READ_ERRORS time - else print nothing past -- AJV
+     // print the excessive warning message on the MAX_READ_ERRORS time - else print nothing past
      if (iter->second == giMaximumReadErrors) {
        bPrintAsNormal = false;
        std::string message;

@@ -20,7 +20,7 @@ class UnconditionalBernoulliRandomizer : public AbstractDenominatorDataRandomize
         virtual UnconditionalBernoulliRandomizer * clone() const {return new UnconditionalBernoulliRandomizer(*this);}
 };
 
-/** abstract conditional Bernoulli randomizer for null hypothesis. */
+/** Abstract conditional Bernoulli randomizer for null hypothesis. */
 class AbstractConditionalBernoulliRandomizer : public AbstractDenominatorDataRandomizer {
     protected:
         int             _total_C;
@@ -35,7 +35,7 @@ class AbstractConditionalBernoulliRandomizer : public AbstractDenominatorDataRan
         virtual ~AbstractConditionalBernoulliRandomizer() {}
 };
 
-/** conditional Bernoulli randomizer for null hypothesis. */
+/** Conditional Bernoulli randomizer for null hypothesis. */
 class ConditionalBernoulliRandomizer : public AbstractConditionalBernoulliRandomizer {
     protected:
         virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
@@ -59,7 +59,7 @@ public:
 	virtual BernoulliTimeRandomizer * clone() const { return new BernoulliTimeRandomizer(*this); }
 };
 
-/** conditional Bernoulli randomizer for alternative hypothesis. */
+/** Conditional Bernoulli randomizer for alternative hypothesis. */
 class ConditionalBernoulliAlternativeHypothesisRandomizer : public AbstractConditionalBernoulliRandomizer {
     protected:
         typedef std::vector<double> Probabilities_t;

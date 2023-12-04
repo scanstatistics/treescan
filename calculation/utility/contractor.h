@@ -33,7 +33,7 @@ private:
   typedef std::pair<typename JobSource::job_id_type, typename JobSource::param_type> job_info_type;
   typedef std::vector<std::pair<void const *, typename JobSource::job_id_type> > current_subcontracts_type;
 
-  current_subcontracts_type m_current_subcontracts;//first: subcontractors who have acquired a job and haven't yet registered results for it; second: job id
+  current_subcontracts_type m_current_subcontracts; // first: subcontractors who have acquired a job and haven't yet registered results for it; second: job id
   JobSource & m_jobs;
   mutable access_mutex_t m_access_mutex;
 
@@ -43,7 +43,7 @@ public:
 public:
   contractor(JobSource & jobs)
    : m_jobs(jobs)
-  {// setup();
+  { // setup();
    m_unhandled_exception.bUnExceptional = true;
   }
 
@@ -77,7 +77,7 @@ public:
   bool job_acquired(SubcontractorType const & subcontractor, job_param_type & job_param)
   { access_mutex_t::scoped_lock lcl_lock(m_access_mutex);
 
-    {//check to make sure subcontractor doesn't have an uncompleted job:
+    { //check to make sure subcontractor doesn't have an uncompleted job:
       typename current_subcontracts_type::const_iterator itr = m_current_subcontracts.begin();
       typename current_subcontracts_type::const_iterator itrend = m_current_subcontracts.end();
       for (; (itr != itrend) && (itr->first != &subcontractor); ++itr) {}
@@ -101,7 +101,7 @@ public:
   { access_mutex_t::scoped_lock lcl_lock(m_access_mutex);
 
     typename current_subcontracts_type::iterator itr = m_current_subcontracts.begin();
-    {//check to make sure subcontractor has an uncompleted job:
+    { //check to make sure subcontractor has an uncompleted job:
       typename current_subcontracts_type::const_iterator itrend = m_current_subcontracts.end();
       for (; (itr != itrend) && (itr->first != &subcontractor); ++itr) {}
       if (itr == m_current_subcontracts.end())

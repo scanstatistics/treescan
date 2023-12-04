@@ -101,11 +101,11 @@ class FieldValue {
 
    inline virtual FieldValue * Clone() const                                 { return new FieldValue(*this); }
 
-   //assignment operator
+   // assignment operator
    inline FieldValue & operator= (const FieldValue & rhs)                  { Copy(rhs); return *this; }
-   //comparison
+   // comparison
    virtual bool IsLessThan(const FieldValue & rhs) const;
-   //equality
+   // equality
    virtual bool IsEqualTo(const FieldValue & rhs) const { return (!IsLessThan(rhs)) && (!rhs.IsLessThan(*this)); }
    virtual int  ComparedTo(const FieldValue & rhs) const;
 

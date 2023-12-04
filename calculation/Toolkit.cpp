@@ -7,7 +7,7 @@
 #include "FileName.h"
 #include "PrjException.h"
 
-/** debug file name */
+/** Debug file name */
 const char * AppToolkit::gsDebugFileName = "_debug_";
 
 /** Default website. */
@@ -26,7 +26,7 @@ void AppToolkit::ToolKitDestroy() {
   try {delete AppToolkit::gpToolKit; AppToolkit::gpToolKit=0;}catch(...){}
 }
 
-/** constructor */
+/** Constructor */
 AppToolkit::AppToolkit(const char * sApplicationFullPath) : gpDebugLog(0) {
   try {
     Setup(sApplicationFullPath);
@@ -37,7 +37,7 @@ AppToolkit::AppToolkit(const char * sApplicationFullPath) : gpDebugLog(0) {
   }
 }
 
-/** destructor */
+/** Destructor */
 AppToolkit::~AppToolkit() {
   try {
     closeDebugFile();
@@ -60,7 +60,7 @@ const char * AppToolkit::GetAcknowledgment(std::string & Acknowledgment) const {
   return Acknowledgment.c_str();
 }
 
-/** Returns applications full path */
+/** Returns applications full path. */
 const char * AppToolkit::GetApplicationFullPath() const {
   return gsApplicationFullPath.c_str();
 }
@@ -107,13 +107,13 @@ FILE * AppToolkit::openDebugFile() {
 }
 
 
-/** internal setup */
+/** Internal setup */
 void AppToolkit::Setup(const char * sApplicationFullPath) {
   try {
     gbRunUpdateOnTerminate = false;
-    //set application full path
+    // set application full path
     gsApplicationFullPath = sApplicationFullPath;
-    //Set system ini located at same directory as executable.
+    // Set system ini located at same directory as executable.
     printString(gsVersion, "%s.%s%s%s%s%s", VERSION_MAJOR, VERSION_MINOR,
                           (!strcmp(VERSION_RELEASE, "0") ? "" : "."),
                           (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE),

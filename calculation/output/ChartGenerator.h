@@ -7,7 +7,7 @@
 #include "SimulationVariables.h"
 #include <fstream>
 
-/* abstract base class for chart generation. */
+/** Abstract base class for chart generation */
 class AbstractChartGenerator {
     protected:
         static const char * HTML_FILE_EXT;
@@ -58,7 +58,7 @@ class ChartSeries {
 class ScanRunner;
 class CutStructure;
 
-/* generator for temporal chart */
+/** Generator for temporal chart */
 class TemporalChartGenerator : public AbstractChartGenerator {
     public:
         static const char * FILE_SUFFIX_EXT;

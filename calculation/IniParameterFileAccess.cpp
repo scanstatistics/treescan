@@ -5,11 +5,11 @@
 #include "IniParameterFileAccess.h"
 #include "RandomNumberGenerator.h"
                                                                        
-/** constructor */
+/** Constructor */
 IniParameterFileAccess::IniParameterFileAccess(Parameters& Parameters, BasePrint& PrintDirection)
                        :AbtractParameterFileAccess(Parameters, PrintDirection), gpSpecifications(0) {}
 
-/** destructor */
+/** Destructor */
 IniParameterFileAccess::~IniParameterFileAccess() {
     try {
         delete gpSpecifications;
@@ -52,7 +52,7 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
         ReadAdditionalTreeFileNameSettings(SourceFile);
         ReadInputSourceSettings(SourceFile);
 
-        /* In version 2.0.x we moved the temporal window settings to the advanced tab and added an option to toggle this window restriction - default off.
+        /** In version 2.0.x we moved the temporal window settings to the advanced tab and added an option to toggle this window restriction - default off.
            To keep the behavior of the prior versions, we need to toggle this feature on. */
         if (_parameters.getCreationVersion().iMajor < 2) {
             if (Parameters::isTemporalScanType(_parameters.getScanType())) {
@@ -79,7 +79,7 @@ std::vector<std::string>& IniParameterFileAccess::ReadIniParameter(const IniFile
 
     vParameters.clear();
     if (GetSpecifications().GetMultipleParameterIniInfo(eParameterType, &sSectionName, &sKey)) {
-        //read possibly other dataset case source
+        // read possibly other dataset case source
         if ((lSectionIndex = SourceFile.GetSectionIndex(sSectionName)) > -1) {
             const IniSection  * pSection = SourceFile.GetSection(lSectionIndex);
             printString(sNextKey, "%s%i", sKey, iSuffixIndex);
@@ -126,7 +126,7 @@ void IniParameterFileAccess::ReadIniParameter(const IniFile& SourceFile, Paramet
     }
 }
 
-/* Reads optional input source settings. */
+/** Reads optional input source settings. */
 void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) {
     const char * section, * advancedinput, * key;
     std::string buffer;
@@ -181,7 +181,7 @@ void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) 
     }
 }
 
-/* Reads key/values in passed source section. */
+/** Reads key/values in passed source section. */
 bool IniParameterFileAccess::ReadInputSourceSection(const IniFile& SourceFile, const char* sectionName, const char* keyPrefix, Parameters::InputSource& source) {
     long lSectionIndex, lKeyIndex=-1;
     std::string key, buffer;
