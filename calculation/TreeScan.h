@@ -59,7 +59,7 @@
 // determines whether number x is less than number y given some tolerance
 #define macro_less_than_or_equal(x,y,tolerance) (macro_less_than(x,y,tolerance) || macro_equal(x,y,tolerance))
 // DateSource types */
-enum SourceType {CSV=0, EXCEL}; // TODO -- add EXCEL
+enum SourceType {CSV=0, EXCEL};
 // data source fields map container typedef
 typedef std::vector<boost::any> FieldMapContainer_t;
 typedef std::pair<double, double> RecurrenceInterval_t;

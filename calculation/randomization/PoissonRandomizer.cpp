@@ -69,19 +69,7 @@ double PoissonRandomizer::RandomUniform() {
     return _random_number_generator.GetRandomDouble();
 }
 
-/** Returns a binomial(n,p) distributed random variable
-    Note: TreeScan has a faster way of doing this.
-*/
-int PoissonRandomizer::BinomialGenerator(int n, double p, bool classic) {
-    if (!classic) return _binomial_generator.GetBinomialDistributedVariable(n, static_cast<float>(p), _random_number_generator);
-
-    int     j;
-    int     binomial;
-
-    if(p==0) return 0;
-    binomial=0;
-    for (j=1;j<=n;j++) {
-        if (RandomUniform() < p) binomial += 1;
-    }
-    return binomial;
+/** Returns a binomial(n,p) distributed random variable. */
+int PoissonRandomizer::BinomialGenerator(int n, double p) {
+    return _binomial_generator.GetBinomialDistributedVariable(n, static_cast<float>(p), _random_number_generator);
 }

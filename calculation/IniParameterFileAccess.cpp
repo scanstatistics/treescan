@@ -118,8 +118,6 @@ void IniParameterFileAccess::ReadIniParameter(const IniFile& SourceFile, Paramet
                     SetParameter(e, std::string(pSection->GetLine(lKeyIndex)->GetValue()), gPrintDirection);
             }
         }
-        //if (lKeyIndex == -1)
-        //  MarkAsMissingDefaulted(e, gPrintDirection);
     } catch (prg_exception& x) {
         x.addTrace("ReadIniParameter()","IniParameterFileAccess");
         throw;

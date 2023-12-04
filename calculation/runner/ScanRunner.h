@@ -132,7 +132,7 @@ private:
     }
 
     /** Obtain the level of this node - giving consideration for multiple trees and potential for multiple parents.
-        If multiple parents, use the shortest distance (https://www.squishlist.com/ims/treescan/29/). */
+        If multiple parents, use the shortest distance (https://squishlist.com/ims-ext/treescan/29/). */
     static unsigned int getLevel(const NodeStructure& node) {
         // If level already calculated, just return that level.
         if (node.getLevel()) 

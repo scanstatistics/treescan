@@ -599,7 +599,6 @@ void SequentialStatistic::readSettings(const std::string &filename) {
 
 void SequentialStatistic::writeSettings(const std::string &filename) {
     using boost::property_tree::ptree;
-    //using boost::property_tree::xml_writer_settings;
     ptree pt;
     std::string buffer;
     std::stringstream streambuffer;
@@ -1707,10 +1706,10 @@ bool ScanRunner::reportableRecurrenceInterval(const CutStructure& cut) const {
 }
 
 RecurrenceInterval_t ScanRunner::getRecurrenceInterval(const CutStructure& cut) const {
-    //if (!parameters.GetIsProspectiveAnalysis())
-    //   throw prg_error("GetRecurrenceInterval() called for non-prospective analysis.", "GetRecurrenceInterval()");
-    //if (!reportableCut(cut))
-    //    throw prg_error("Recurrence Interval cannot be obtained for this cut.", "getRecurrenceInterval()");
+    if (!_parameters.getIsProspectiveAnalysis())
+       throw prg_error("getRecurrenceInterval() called for non-prospective analysis.", "getRecurrenceInterval()");
+    if (!reportableCut(cut))
+        throw prg_error("Recurrence Interval cannot be obtained for this cut.", "getRecurrenceInterval()");
     double p_value = (double)cut.getRank() / (_parameters.getNumReplicationsRequested() + 1);
     // Determine the number of units in occurrence per user selection.
     double dUnitsInOccurrence = std::max(static_cast<double>(_parameters.getProspectiveFrequency()) / p_value, 1.0);
@@ -2199,17 +2198,11 @@ bool ScanRunner::scanTree() {
     _print.Printf("Scanning the tree ...\n", BasePrint::P_STDOUT);
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
 
-    //std::string buffer;
-    //int hits=0;
     for (size_t n=0; n < _Nodes.size(); ++n) {
         const NodeStructure& thisNode(*_Nodes[n]);
         if (isEvaluated(thisNode)) {
-
             // Always do simple cut for each node
-            //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
             calculateCut(n, thisNode.getBrC(), thisNode.getBrN(), calcLogLikelihood);
-            //++hits; printf("hits %d\n", hits);
-
             //if (thisNode.getChildren().size() == 0) continue;
             Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
             switch (cutType) {
@@ -2221,22 +2214,17 @@ bool ScanRunner::scanTree() {
                         const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
                         currentChildren.clear();
                         currentChildren.push_back(firstChildNode.getID());
-                        //buffer = firstChildNode.getIdentifier().c_str();
                         int sumBranchC=firstChildNode.getBrC();
                         double sumBranchN=firstChildNode.getBrN();
                         for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
                             const NodeStructure& childNode(*(thisNode.getChildren()[j]));
                             currentChildren.push_back(childNode.getID());
-                            //buffer += ",";
-                            //buffer += childNode.getIdentifier();
                             sumBranchC += childNode.getBrC();
                             sumBranchN += childNode.getBrN();
-                            //printf("Evaluating cut [%s]\n", buffer.c_str());
                             CutStructure * cut = calculateCut(n, sumBranchC, sumBranchN, calcLogLikelihood);
                             if (cut) {
                                 cut->setCutChildren(currentChildren);
                             }
-                            //++hits; printf("hits %d\n", hits);
                         }
                     }
                 } break;
@@ -2246,7 +2234,6 @@ bool ScanRunner::scanTree() {
                         const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
                         for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
                             const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
-                            //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                             CutStructure * cut = calculateCut(n, startChildNode.getBrC() + stopChildNode.getBrC(), startChildNode.getBrN() + stopChildNode.getBrN(), calcLogLikelihood);
                             if (cut) {
                                 cut->addCutChild(startChildNode.getID(), true);
@@ -2260,13 +2247,11 @@ bool ScanRunner::scanTree() {
                         const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
                         for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
                             const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
-                            //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                             CutStructure * cut = calculateCut(n, startChildNode.getBrC() + stopChildNode.getBrC(), startChildNode.getBrN() + stopChildNode.getBrN(), calcLogLikelihood);
                             if (cut) {
                                 cut->addCutChild(startChildNode.getID(), true);
                                 cut->addCutChild(stopChildNode.getID());
                             }
-                            //++hits;printf("hits %d\n", hits);
                             for (size_t k=i+1; k < j; ++k) {
                                 const NodeStructure& middleChildNode(*(thisNode.getChildren()[k]));
                                 //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
@@ -2276,7 +2261,6 @@ bool ScanRunner::scanTree() {
                                     cut->addCutChild(middleChildNode.getID());
                                     cut->addCutChild(stopChildNode.getID());
                                 }
-                                //++hits; printf("hits %d\n", hits);
                             }
                         }
                     } break;
@@ -2299,16 +2283,12 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                   endWindow(temporalEndRange().getStart() + _zero_translation_additive, temporalEndRange().getEnd() + _zero_translation_additive);
     // Define the minimum and maximum window lengths.
     boost::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
-    int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
+    int iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
 
-    //std::string buffer;
-    //int hits=0;
     for (size_t n=0; n < _Nodes.size(); ++n) {
         if (isEvaluated(*_Nodes[n])) {
             const NodeStructure& thisNode(*(_Nodes[n]));
-
             // always do simple cut
-            //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
             iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
             for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
                 window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
@@ -2317,8 +2297,6 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                     calculateCut(n, thisNode.getBrC_C()[iWindowStart] - thisNode.getBrC_C()[iWindowEnd + 1], static_cast<NodeStructure::expected_t>(thisNode.getBrC()), calcLogLikelihood, iWindowStart, iWindowEnd);
                 }
             }
-            //++hits; printf("hits %d\n", hits);
-
             //if (thisNode.getChildren().size() == 0) continue;
             Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
             switch (cutType) {
@@ -2334,22 +2312,17 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                                 const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
                                 currentChildren.clear();
                                 currentChildren.push_back(firstChildNode.getID());
-                                //buffer = firstChildNode.getIdentifier().c_str();
                                 NodeStructure::count_t branchWindow = firstChildNode.getBrC_C()[iWindowStart] - firstChildNode.getBrC_C()[iWindowEnd + 1];
                                 NodeStructure::expected_t branchSum = static_cast<NodeStructure::expected_t>(firstChildNode.getBrC());
                                 for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
                                     const NodeStructure& childNode(*(thisNode.getChildren()[j]));
                                     currentChildren.push_back(childNode.getID());
-                                    //buffer += ",";
-                                    //buffer += childNode.getIdentifier();
                                     branchWindow += childNode.getBrC_C()[iWindowStart] - childNode.getBrC_C()[iWindowEnd + 1];
                                     branchSum += static_cast<NodeStructure::expected_t>(childNode.getBrC());
-                                    //printf("Evaluating cut [%s]\n", buffer.c_str());
                                     CutStructure * cut = calculateCut(n, branchWindow, branchSum, calcLogLikelihood, iWindowStart, iWindowEnd);
                                     if (cut) {
                                         cut->setCutChildren(currentChildren);
                                     }
-                                    //++hits; printf("hits %d\n", hits);
                                 }
                             }
                         }
@@ -2367,7 +2340,6 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                                 NodeStructure::expected_t startBranchSum = static_cast<NodeStructure::expected_t>(startChildNode.getBrC());
                                 for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
                                     const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
-                                    //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                     NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
                                     NodeStructure::expected_t stopBranchSum = static_cast<NodeStructure::expected_t>(stopChildNode.getBrC());
                                     CutStructure * cut = calculateCut(n, startBranchWindow + stopBranchWindow, startBranchSum + stopBranchSum, calcLogLikelihood, iWindowStart, iWindowEnd);
@@ -2375,7 +2347,6 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                                         cut->addCutChild(startChildNode.getID(), true);
                                         cut->addCutChild(stopChildNode.getID());
                                     }
-                                    //++hits; printf("hits %d\n", hits);
                                 }
                             }
                         }
@@ -2392,7 +2363,6 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                                 NodeStructure::expected_t startBranchSum = static_cast<NodeStructure::expected_t>(startChildNode.getBrC());
                                 for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
                                     const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
-                                    //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                     NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
                                     NodeStructure::expected_t stopBranchSum = static_cast<NodeStructure::expected_t>(stopChildNode.getBrC());
                                     CutStructure * cut = calculateCut(n, startBranchWindow + stopBranchWindow, startBranchSum + stopBranchSum, calcLogLikelihood, iWindowStart, iWindowEnd);
@@ -2400,19 +2370,16 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                                         cut->addCutChild(startChildNode.getID(), true);
                                         cut->addCutChild(stopChildNode.getID());
                                     }
-                                    //++hits;printf("hits %d\n", hits);
                                     for (size_t k=i+1; k < j; ++k) {
                                         const NodeStructure& middleChildNode(*(thisNode.getChildren()[k]));
                                         NodeStructure::count_t middleBranchWindow = middleChildNode.getBrC_C()[iWindowStart] - middleChildNode.getBrC_C()[iWindowEnd + 1];
                                         NodeStructure::expected_t middleBranchSum = static_cast<NodeStructure::expected_t>(middleChildNode.getBrC());
-                                        //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                         CutStructure * cut = calculateCut(n, startBranchWindow + middleBranchWindow + stopBranchWindow, startBranchSum + middleBranchSum + stopBranchSum, calcLogLikelihood, iWindowStart, iWindowEnd);
                                         if (cut) {
                                             cut->addCutChild(startChildNode.getID(), true);
                                             cut->addCutChild(middleChildNode.getID());
                                             cut->addCutChild(stopChildNode.getID());
                                         }
-                                        //++hits; printf("hits %d\n", hits);
                                     }
                                 }
                             }
@@ -2438,28 +2405,20 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
                   endWindow(temporalEndRange().getStart() + _zero_translation_additive, temporalEndRange().getEnd() + _zero_translation_additive);
     // Define the minimum and maximum window lengths.
     boost::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
-    int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
-
-    //std::string buffer;
-    //int hits=0;
+    int iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
     for (size_t n = 0; n < _Nodes.size(); ++n) {
         if (isEvaluated(*_Nodes[n])) {
             const NodeStructure& thisNode(*(_Nodes[n]));
-
             // always do simple cut
-            //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
             iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
             for (iWindowEnd = endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
                 window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart, thisNode.getMinCensoredBr());
                 for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
-                    //_print.Printf("%d to %d\n", BasePrint::P_STDOUT,iWindowStart, iWindowEnd);
                     calculateCut(n, thisNode.getBrC_C()[iWindowStart] - thisNode.getBrC_C()[iWindowEnd + 1], 
                                     thisNode.getBrN_C()[iWindowStart] - thisNode.getBrN_C()[iWindowEnd + 1], 
                                     thisNode.getBrC(), thisNode.getBrN(), calcLogLikelihood, iWindowStart, iWindowEnd);
                 }
             }
-            //++hits; printf("hits %d\n", hits);
-
             //if (thisNode.getChildren().size() == 0) continue;
             Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
             switch (cutType) {
@@ -2475,7 +2434,6 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
                             const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
                             currentChildren.clear();
                             currentChildren.push_back(firstChildNode.getID());
-                            //buffer = firstChildNode.getIdentifier().c_str();
                             NodeStructure::count_t branchWindow = firstChildNode.getBrC_C()[iWindowStart] - firstChildNode.getBrC_C()[iWindowEnd + 1];
                             NodeStructure::expected_t branchSum = firstChildNode.getBrN_C()[iWindowStart] - firstChildNode.getBrN_C()[iWindowEnd + 1];
                             NodeStructure::count_t branchCTotal = firstChildNode.getBrC();
@@ -2483,18 +2441,14 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
                             for (size_t j = i + 1; j < thisNode.getChildren().size(); ++j) {
                                 const NodeStructure& childNode(*(thisNode.getChildren()[j]));
                                 currentChildren.push_back(childNode.getID());
-                                //buffer += ",";
-                                //buffer += childNode.getIdentifier();
                                 branchWindow += childNode.getBrC_C()[iWindowStart] - childNode.getBrC_C()[iWindowEnd + 1];
                                 branchSum += childNode.getBrN_C()[iWindowStart] - childNode.getBrN_C()[iWindowEnd + 1];
                                 branchCTotal += childNode.getBrC();
                                 branchNTotal += childNode.getBrN();
-                                //printf("Evaluating cut [%s]\n", buffer.c_str());
                                 CutStructure * cut = calculateCut(n, branchWindow, branchSum, branchCTotal, branchNTotal, calcLogLikelihood, iWindowStart, iWindowEnd);
                                 if (cut) {
                                     cut->setCutChildren(currentChildren);
                                 }
-                                //++hits; printf("hits %d\n", hits);
                             }
                         }
                     }
@@ -2514,7 +2468,6 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
                             NodeStructure::expected_t startBranchTotalN = startChildNode.getBrN();
                             for (size_t j = i + 1; j < thisNode.getChildren().size(); ++j) {
                                 const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
-                                //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                 NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
                                 NodeStructure::expected_t stopBranchSum = stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1];
                                 CutStructure * cut = calculateCut(n, startBranchWindow + stopBranchWindow, startBranchSum + stopBranchSum, 
@@ -2524,7 +2477,6 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
                                     cut->addCutChild(startChildNode.getID(), true);
                                     cut->addCutChild(stopChildNode.getID());
                                 }
-                                //++hits; printf("hits %d\n", hits);
                             }
                         }
                     }
@@ -2543,7 +2495,6 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
                             NodeStructure::expected_t startBranchTotalN = startChildNode.getBrN();
                             for (size_t j = i + 1; j < thisNode.getChildren().size(); ++j) {
                                 const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
-                                //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                 NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
                                 NodeStructure::expected_t stopBranchSum = stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1];
                                 NodeStructure::count_t stopBranchTotalC = stopChildNode.getBrC();
@@ -2555,14 +2506,12 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
                                     cut->addCutChild(startChildNode.getID(), true);
                                     cut->addCutChild(stopChildNode.getID());
                                 }
-                                //++hits;printf("hits %d\n", hits);
                                 for (size_t k = i + 1; k < j; ++k) {
                                     const NodeStructure& middleChildNode(*(thisNode.getChildren()[k]));
                                     NodeStructure::count_t middleBranchWindow = middleChildNode.getBrC_C()[iWindowStart] - middleChildNode.getBrC_C()[iWindowEnd + 1];
                                     NodeStructure::expected_t middleBranchSum = middleChildNode.getBrN_C()[iWindowStart] - middleChildNode.getBrN_C()[iWindowEnd + 1];
                                     NodeStructure::count_t middleBranchTotalC = middleChildNode.getBrC();
                                     NodeStructure::expected_t middleBranchTotalN = middleChildNode.getBrN();
-                                    //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                     CutStructure * cut = calculateCut(n, startBranchWindow + middleBranchWindow + stopBranchWindow, startBranchSum + middleBranchSum + stopBranchSum, 
                                                                       startBranchTotalC + middleBranchTotalC + stopBranchTotalC, startBranchTotalN + middleBranchTotalN + stopBranchTotalN,
                                                                       calcLogLikelihood, iWindowStart, iWindowEnd);
@@ -2571,7 +2520,6 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
                                         cut->addCutChild(middleChildNode.getID());
                                         cut->addCutChild(stopChildNode.getID());
                                     }
-                                    //++hits; printf("hits %d\n", hits);
                                 }
                             }
                         }
@@ -2599,15 +2547,10 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
     // Define the minimum and maximum window lengths.
     boost::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
-
-    //std::string buffer;
-    //int hits=0;
     for (size_t n=0; n < _Nodes.size(); ++n) {
         if (isEvaluated(*_Nodes[n])) {
             const NodeStructure& thisNode(*(_Nodes[n]));
-
             // always do simple cut
-            //printf("Evaluating cut [%s]\n", thisNode.getIdentifier().c_str());
             iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
             for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
                 window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
@@ -2618,8 +2561,6 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                                   calcLogLikelihood, iWindowStart, iWindowEnd);
                 }
             }
-            //++hits; printf("hits %d\n", hits);
-
             //if (thisNode.getChildren().size() == 0) continue;
             Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
             switch (cutType) {
@@ -2635,22 +2576,17 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                                 const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
                                 currentChildren.clear();
                                 currentChildren.push_back(firstChildNode.getID());
-                                //buffer = firstChildNode.getIdentifier().c_str();
                                 NodeStructure::count_t branchWindow = firstChildNode.getBrC_C()[iWindowStart] - firstChildNode.getBrC_C()[iWindowEnd + 1];
                                 NodeStructure::expected_t branchExpected = firstChildNode.getBrN_C()[iWindowStart] - firstChildNode.getBrN_C()[iWindowEnd + 1];
                                 for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
                                     const NodeStructure& childNode(*(thisNode.getChildren()[j]));
                                     currentChildren.push_back(childNode.getID());
-                                    //buffer += ",";
-                                    //buffer += childNode.getIdentifier();
                                     branchWindow += childNode.getBrC_C()[iWindowStart] - childNode.getBrC_C()[iWindowEnd + 1];
                                     branchExpected += childNode.getBrN_C()[iWindowStart] - childNode.getBrN_C()[iWindowEnd + 1];
-                                    //printf("Evaluating cut [%s]\n", buffer.c_str());
                                     CutStructure * cut = calculateCut(n, branchWindow, branchExpected, calcLogLikelihood, iWindowStart, iWindowEnd);
                                     if (cut) {
                                         cut->setCutChildren(currentChildren);
                                     }
-                                    //++hits; printf("hits %d\n", hits);
                                 }
                             }
                         }
@@ -2668,7 +2604,6 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                                 NodeStructure::expected_t startBranchExpected = startChildNode.getBrN_C()[iWindowStart] - startChildNode.getBrN_C()[iWindowEnd + 1];
                                 for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
                                     const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
-                                    //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                     NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
                                     NodeStructure::expected_t stopBranchExpected = stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1];
                                     CutStructure * cut = calculateCut(n, startBranchWindow + stopBranchWindow, startBranchExpected + stopBranchExpected, calcLogLikelihood, iWindowStart, iWindowEnd);
@@ -2676,7 +2611,6 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                                         cut->addCutChild(startChildNode.getID(), true);
                                         cut->addCutChild(stopChildNode.getID());
                                     }
-                                    //++hits; printf("hits %d\n", hits);
                                 }
                             }
                         }
@@ -2693,7 +2627,6 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                                 NodeStructure::expected_t startBranchExpected = startChildNode.getBrN_C()[iWindowStart] - startChildNode.getBrN_C()[iWindowEnd + 1];
                                 for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
                                     const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
-                                    //printf("Evaluating cut [%s,%s]\n", startChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                     NodeStructure::count_t stopBranchWindow = stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
                                     NodeStructure::expected_t stopBranchExpected = stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1];
                                     CutStructure * cut = calculateCut(n, startBranchWindow + stopBranchWindow, startBranchExpected + stopBranchExpected, calcLogLikelihood, iWindowStart, iWindowEnd);
@@ -2701,7 +2634,6 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                                         cut->addCutChild(startChildNode.getID(), true);
                                         cut->addCutChild(stopChildNode.getID());
                                     }
-                                    //++hits;printf("hits %d\n", hits);
                                     for (size_t k=i+1; k < j; ++k) {
                                         const NodeStructure& middleChildNode(*(thisNode.getChildren()[k]));
                                         NodeStructure::count_t middleBranchWindow = middleChildNode.getBrC_C()[iWindowStart] - middleChildNode.getBrC_C()[iWindowEnd + 1];
@@ -2713,7 +2645,6 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                                             cut->addCutChild(middleChildNode.getID());
                                             cut->addCutChild(stopChildNode.getID());
                                         }
-                                        //++hits; printf("hits %d\n", hits);
                                     }
                                 }
                             }

@@ -12,7 +12,7 @@ using boost::mt19937;
 TemporalRandomizer::TemporalRandomizer(const ScanRunner& scanner, long lInitialSeed)
     : AbstractRandomizer(scanner.getParameters(), scanner.getMultiParentNodesExist(), lInitialSeed),
      _total_C(scanner.getTotalC()), _total_N(scanner.getTotalN()), _time_range_sets(scanner.getParameters().getDataTimeRangeSet()), _day_of_week_indexes(scanner.getDayOfWeekIndexes()) {
-    // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
+    // This will need refactoring if we ever implement multiple data time ranges.
     DataTimeRange min_max = _time_range_sets.getMinMax();
     _zero_translation_additive = (min_max.getStart() <= 0) ? std::abs(min_max.getStart()) : min_max.getStart() * -1;
     // If data is censored, store censor distibution for each node so randomizations are quicker.
@@ -27,8 +27,8 @@ TemporalRandomizer::TemporalRandomizer(const ScanRunner& scanner, long lInitialS
 
 int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
     setSeed(iSimulation);
-    // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
-    const DataTimeRange& range = _time_range_sets.getDataTimeRangeSets().front(); // TODO: for now, only take the first
+    // This will need refactoring if we ever implement multiple data time ranges.
+    const DataTimeRange& range = _time_range_sets.getDataTimeRangeSets().front();
     DataTimeRange zeroRange(range.getStart() + _zero_translation_additive, range.getEnd() + _zero_translation_additive);
     int TotalSimC = 0;
 
@@ -235,8 +235,8 @@ int TemporalAlternativeHypothesisRandomizer::randomize(unsigned int iSimulation,
     // clear simulation data
     std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
 
-    // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
-    const DataTimeRange& range = _time_range_sets.getDataTimeRangeSets().front(); // TODO: for now, only take the first
+    // This will need refactoring if we ever implement multiple data time ranges.
+    const DataTimeRange& range = _time_range_sets.getDataTimeRangeSets().front();
     DataTimeRange zeroRange(range.getStart() + _zero_translation_additive, range.getEnd() + _zero_translation_additive);
     int TotalSimC = 0;
 

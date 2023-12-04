@@ -345,10 +345,6 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
 TemporalChartGenerator::TemporalChartGenerator(const ScanRunner& scanner, const SimulationVariables& simVars)
     :_scanner(scanner), _simVars(simVars) {}
 
-/** TODO: It might be better to use a true template/generator library. Some possibilities are: 
-   http://stackoverflow.com/questions/355650/c-html-template-framework-templatizing-library-html-generator-library 
-*/
-
 /** Creates HighCharts graph for purely temporal cluster. */
 void TemporalChartGenerator::generateChart() const {
     std::string nodeName, nodeShortName, buffer, buffer2;

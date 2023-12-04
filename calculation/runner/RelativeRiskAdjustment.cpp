@@ -119,17 +119,6 @@ void RelativeRiskAdjustmentHandler::apply(NodesExpectedContainer_t& nodeExpected
             }
         }
     }
-
-    /*for (AdjustmentsContainer_t::const_iterator itr=_adjustments.begin(); itr != _adjustments.end(); ++itr) {
-        NodeStructure::ExpectedContainer_t::iterator itrB = nodeExpected.at(itr->first).begin(), itrE = nodeExpected.at(itr->first).end();
-        for (; itrB != itrE; ++itrB) {
-            RelativeRiskContainer_t::const_iterator itrR = itr->second.begin(), itrRE = itr->second.end();
-            for (; itrR != itrRE; ++itrR) {
-                double rr = itrR->getRelativeRisk();
-                *itrB *= itrR->getRelativeRisk();
-            }
-        }
-    }*/
 }
 
 /** Gets the alternative hypothesis values as event probabilities. */
@@ -163,7 +152,6 @@ RelativeRiskContainerIterator_t RelativeRiskAdjustmentHandler::GetMaxPeriodIndex
 /** Prints all defined adjustments to text file. */
 void RelativeRiskAdjustmentHandler::print() {
 /*
-
   AdjustmentsIterator_t                 itr;
   TractContainerIteratorConst_t         itr_deque;
   std::string                           sStart, sEnd;
@@ -183,7 +171,6 @@ void RelativeRiskAdjustmentHandler::print() {
      fprintf(pFile, "\n\n");
   }
   if (pFile) fclose(pFile);
-
 */
 }
 

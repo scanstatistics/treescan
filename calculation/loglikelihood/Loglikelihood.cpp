@@ -27,13 +27,11 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
                 default: throw prg_error("Unknown model type (%d).", "getNewLoglikelihood()", parameters.getModelType());
             }
         } break;
-        /** TODO:
-           For the likelihood formula, I would like to try two different ones. Eventually we will only have one, unknown which,
-           but I would like to have both available for my own use as a hidden feature in the parameter file.
-
-           The first one will be the Poisson likelihood function, that we use for the Poisson model, but using the expected
-           counts that I sent in the prior email. The second one will be a hypergeometric for the conditional tree-temporal scan.
-           I need to work out the exact formulas for that, as well as for the ones adjusted for day-of-week.
+        /** Martin's comments: 
+            For the likelihood formula, I would like to try two different ones. Eventually we will only have one, unknown which.
+            The first one will be the Poisson likelihood function, that we use for the Poisson model. 
+            The second one will be a hypergeometric for the conditional tree-temporal scan. I need to work out the exact formulas
+            for that, as well as for the ones adjusted for day-of-week (note second was never worked on).
         */
         case Parameters::TREETIME:
             if (parameters.getConditionalType() == Parameters::NODEANDTIME)
@@ -42,7 +40,7 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
             switch (parameters.getModelType()) {
                 case Parameters::UNIFORM :
                     if (parameters.isPerformingDayOfWeekAdjustment()) {
-                        // TODO: Martin said to stub this log-likelihood for now. He needs to work through the correct function.
+                        // Martin said to stub this log-likelihood for now. He needs to work through the correct function.
                         return new PoissonLoglikelihood(TotalC, TotalN, parameters);
                     }
                     if (censored_data) {

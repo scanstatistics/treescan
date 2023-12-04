@@ -12,7 +12,7 @@ protected:
     int             _total_C;
     double          _total_N;
 
-    int             BinomialGenerator(int n, double p, bool classic=false);
+    int             BinomialGenerator(int n, double p);
     int             PoissonGenerator(double lambda);
     double          RandomUniform();
 
