@@ -5,12 +5,9 @@
 #include <iostream>
 #include <fstream>
 
-/** Print formatter for aiding in the process of creating the primary ASCII
-    results output file.
-
-    NOTE: The values of the static variables are somewhat determined
-          empirically. The code has been written to be tested to be adjustable
-          only in respect to expanding the width of the output area. */
+/** Print formatter for aiding in the process of creating the primary ASCII results output file.
+    NOTE: The values of the static variables are somewhat determined empirically. The code has been written
+    to be tested to be adjustable only in respect to expanding the width of the output area. */
 class AsciiPrintFormat {
    private:
      unsigned int               giLeftMargin;

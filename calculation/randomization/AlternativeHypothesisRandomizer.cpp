@@ -4,6 +4,7 @@
 #include <numeric>
 #include "AlternativeHypothesisRandomizer.h"
 
+/** Constructor */
 AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanRunner::NodeStructureContainer_t& treeNodes,
                                                                      boost::shared_ptr<AbstractRandomizer> randomizer,
                                                                      const RelativeRiskAdjustmentHandler& adjustments,
@@ -62,6 +63,7 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
         throw prg_exception("Unknown context for alternative hypothesis encountered.", "AlternativeHypothesisRandomizater()");
 }
 
+/** Internal method to randomize data through actual randomizer object. */
 int AlternativeHypothesisRandomizater::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
     return _randomizer->randomize(iSimulation, treeNodes, treeSimNodes);
 }
@@ -73,9 +75,7 @@ int AlternativeHypothesisRandomizater::RandomizeData(unsigned int iSimulation, c
         boost::mutex::scoped_lock lock(mutex);
         totalCases = read(_read_filename, iSimulation, treeNodes, treeSimNodes, mutex);
     }
-
     totalCases = randomize(iSimulation, *_nodes_proxy, treeSimNodes);
-
     // write simulation data to file if requested
     if (_write_data) {
         boost::mutex::scoped_lock lock(mutex);
@@ -87,10 +87,12 @@ int AlternativeHypothesisRandomizater::RandomizeData(unsigned int iSimulation, c
     return totalCases;
 }
 
+/** Reads simulation data from file through actual randomizer. */
 int AlternativeHypothesisRandomizater::read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex) {
     return _randomizer->read(filename, simulation, treeNodes, treeSimNodes, mutex);
 }
 
+/** Writes simulation data to file through actual randomizer. */
 void AlternativeHypothesisRandomizater::write(const std::string& filename, const SimNodeContainer_t& treeSimNodes) {
     _randomizer->write(filename, treeSimNodes);
 }

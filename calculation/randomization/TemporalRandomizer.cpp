@@ -25,6 +25,7 @@ TemporalRandomizer::TemporalRandomizer(const ScanRunner& scanner, long lInitialS
     }
 }
 
+/** Internal method to perform the randomization. */
 int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
     setSeed(iSimulation);
     // This will need refactoring if we ever implement multiple data time ranges.

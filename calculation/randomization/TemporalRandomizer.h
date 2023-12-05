@@ -6,7 +6,7 @@
 #include "RandomDistribution.h"
 #include "PermutationDataRandomizer.h"
 
-/** Abstraction for Poisson data randomizers */
+/** Data randomizer for uniform tree-time scan. */
 class TemporalRandomizer : public AbstractRandomizer {
 protected:
     typedef std::list<std::pair<int, NodeStructure::count_t> > censor_distribution_t;
@@ -35,7 +35,7 @@ public:
 typedef StationaryAttribute<int> ConditionalTemporalStationary_t; // node Id
 typedef PermutedAttribute<size_t> ConditionalTemporalPermuted_t;  // time index
 
-/** Tree temporal scan that conditions on the number of cases on each branch and on the total number of cases on each day summed over all the leaves */
+/** Data randomizer for tree-time scan that conditions on the number of cases on each branch and on the total number of cases on each day summed over all the leaves */
 class ConditionalTemporalRandomizer : public TemporalRandomizer, public AbstractPermutedDataRandomizer<ConditionalTemporalStationary_t, ConditionalTemporalPermuted_t> {
     protected:
         virtual void AssignRandomizedData(const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
@@ -54,16 +54,16 @@ class ConditionalTemporalRandomizer : public TemporalRandomizer, public Abstract
         virtual ConditionalTemporalRandomizer * clone() const {return new ConditionalTemporalRandomizer(*this);}
 };
 
-/** Tree temporal randomizer for alternative hypothesis in power estimations. */
+/** Data randomizer for time-only and tree-time scans in power evaluations. */
 class TemporalAlternativeHypothesisRandomizer : public TemporalRandomizer {
-protected:
-    virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
+    protected:
+        virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
 
-public:
-    TemporalAlternativeHypothesisRandomizer(const ScanRunner& scanner, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
-    virtual ~TemporalAlternativeHypothesisRandomizer() {}
+    public:
+        TemporalAlternativeHypothesisRandomizer(const ScanRunner& scanner, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+        virtual ~TemporalAlternativeHypothesisRandomizer() {}
 
-    virtual TemporalAlternativeHypothesisRandomizer * clone() const {return new TemporalAlternativeHypothesisRandomizer(*this);}
+        virtual TemporalAlternativeHypothesisRandomizer * clone() const {return new TemporalAlternativeHypothesisRandomizer(*this);}
 };
 //******************************************************************************
 #endif

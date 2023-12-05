@@ -5,7 +5,7 @@
 #include "DenominatorDataRandomizer.h"
 #include <boost/cast.hpp>
 
-/** Unconditional Bernoulli randomizer for null hypothesis. */
+/** Data randomizer for unconditioned Bernoulli tree scan. */
 class UnconditionalBernoulliRandomizer : public AbstractDenominatorDataRandomizer {
     protected:
         int                 _total_C;
@@ -20,7 +20,7 @@ class UnconditionalBernoulliRandomizer : public AbstractDenominatorDataRandomize
         virtual UnconditionalBernoulliRandomizer * clone() const {return new UnconditionalBernoulliRandomizer(*this);}
 };
 
-/** Abstract conditional Bernoulli randomizer for null hypothesis. */
+/** Abstract data randomizer class for conditioned Bernoulli scan. */
 class AbstractConditionalBernoulliRandomizer : public AbstractDenominatorDataRandomizer {
     protected:
         int             _total_C;
@@ -35,7 +35,7 @@ class AbstractConditionalBernoulliRandomizer : public AbstractDenominatorDataRan
         virtual ~AbstractConditionalBernoulliRandomizer() {}
 };
 
-/** Conditional Bernoulli randomizer for null hypothesis. */
+/** Data randomizer for Bernoulli tree scan, conditioned on total cases. */
 class ConditionalBernoulliRandomizer : public AbstractConditionalBernoulliRandomizer {
     protected:
         virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
@@ -47,7 +47,7 @@ class ConditionalBernoulliRandomizer : public AbstractConditionalBernoulliRandom
         virtual ConditionalBernoulliRandomizer * clone() const {return new ConditionalBernoulliRandomizer(*this);}
 };
 
-/** Randomizer for Bernoulli Time model. */
+/** Data randomizer for Bernoulli tree-time scan. */
 class BernoulliTimeRandomizer : public AbstractConditionalBernoulliRandomizer {
 protected:
 	virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
@@ -59,7 +59,7 @@ public:
 	virtual BernoulliTimeRandomizer * clone() const { return new BernoulliTimeRandomizer(*this); }
 };
 
-/** Conditional Bernoulli randomizer for alternative hypothesis. */
+/** Data randomizer for Bernoulli tree scans, conditioned on total cases, during power evalautions. */
 class ConditionalBernoulliAlternativeHypothesisRandomizer : public AbstractConditionalBernoulliRandomizer {
     protected:
         typedef std::vector<double> Probabilities_t;

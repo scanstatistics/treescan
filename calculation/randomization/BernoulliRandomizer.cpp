@@ -16,8 +16,7 @@ UnconditionalBernoulliRandomizer::UnconditionalBernoulliRandomizer(const ScanRun
 	sequentialSetup(_scanner);
 }
 
-/** Distributes cases into simulation case array. Caller is responsible for ensuring that
-    passed array pointers are allocated and dimensions match that of passed tract and locations variables. */
+/** Internal method to distribute cases into treeSimNodes container. */
 int UnconditionalBernoulliRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
     // reset seed of random number generator
     setSeed(iSimulation);
@@ -41,10 +40,8 @@ int UnconditionalBernoulliRandomizer::randomize(unsigned int iSimulation, const 
 AbstractConditionalBernoulliRandomizer::AbstractConditionalBernoulliRandomizer(int TotalC, int TotalControls, const ScanRunner& scanner, long lInitialSeed)
                     :AbstractDenominatorDataRandomizer(scanner, lInitialSeed), _total_C(TotalC), _total_Controls(TotalControls) {}
 
-/** Each of the totalMeasure number of individuals (sum of cases and controls),
-    are randomized to either be a case or a control. The output is an array with
-    the indices of the TotalCounts number of cases. For example, if there are
-    20 cases and 80 controls, the output is an array of the indices between
+/** Each of the totalMeasure number of individuals (sum of cases and controls), are randomized to either be a case or a control. The output is an array with
+    the indices of the TotalCounts number of cases. For example, if there are 20 cases and 80 controls, the output is an array of the indices between
     0 and 99 that correspond to the randomized cases. (MK Oct 27, 2003) */
 void AbstractConditionalBernoulliRandomizer::MakeDataB(int tTotalCounts, double tTotalMeasure, std::vector<int>& RandCounts) {
   int nCumCounts=0;
@@ -62,8 +59,7 @@ void AbstractConditionalBernoulliRandomizer::MakeDataB(int tTotalCounts, double 
 }
 
 /** Distributes cases into simulation case array, where individuals are initially dichotomized into cases and
-    controls then each randomly assigned to be a case or a control. Caller is responsible for ensuring that
-    passed array pointers are allocated and dimensions match that of passed tract and locations variables. */
+    controls then each randomly assigned to be a case or a control. */
 int AbstractConditionalBernoulliRandomizer::_randomize(int cases, int controls, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
     std::vector<int> randCounts;
     int nCumCounts = cases < controls ? cases : controls;
@@ -97,9 +93,8 @@ int AbstractConditionalBernoulliRandomizer::_randomize(int cases, int controls, 
 BernoulliTimeRandomizer::BernoulliTimeRandomizer(int TotalC, int TotalControls, const ScanRunner& scanner, long lInitialSeed)
 	:AbstractConditionalBernoulliRandomizer(TotalC, TotalControls, scanner, lInitialSeed) {}
 
-/** Distributes cases into simulation case array, where individuals are initially dichotomized into cases and
-controls then each randomly assigned to be a case or a control. Caller is responsible for ensuring that
-passed array pointers are allocated and dimensions match that of passed tract and locations variables. */
+/** Distributes cases into simulation case array, where individuals are initially dichotomized into cases and controls then each randomly
+    assigned to be a case or a control. */
 int BernoulliTimeRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
 	// reset seed of random number generator
 	setSeed(iSimulation);
@@ -144,8 +139,7 @@ ConditionalBernoulliRandomizer::ConditionalBernoulliRandomizer(int TotalC, int T
                     :AbstractConditionalBernoulliRandomizer(TotalC, TotalControls, scanner, lInitialSeed) {}
 
 /** Distributes cases into simulation case array, where individuals are initially dichotomized into cases and
-    controls then each randomly assigned to be a case or a control. Caller is responsible for ensuring that
-    passed array pointers are allocated and dimensions match that of passed tract and locations variables. */
+    controls then each randomly assigned to be a case or a control. */
 int ConditionalBernoulliRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
     // reset seed of random number generator
     setSeed(iSimulation);
@@ -199,8 +193,7 @@ ConditionalBernoulliAlternativeHypothesisRandomizer::~ConditionalBernoulliAltern
 }
 
 /** Distributes cases into simulation case array, where individuals are initially dichotomized into cases and
-    controls then each randomly assigned to be a case or a control. Caller is responsible for ensuring that
-    passed array pointers are allocated and dimensions match that of passed tract and locations variables. */
+    controls then each randomly assigned to be a case or a control. */
 int ConditionalBernoulliAlternativeHypothesisRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
     // reset seed of random number generator
     setSeed(iSimulation);

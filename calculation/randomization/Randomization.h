@@ -9,6 +9,7 @@
 #include "PrjException.h"
 #include "boost/thread/mutex.hpp"
 
+/** A class to contain simulated data for a node. */
 class SimulationNode {
     private:
         NodeStructure::CountContainer_t _IntC_C;
@@ -42,9 +43,7 @@ class SimulationNode {
         NodeStructure::CountContainer_t          & refBrC_C() {return _BrC_C;}
 };
 
-//typedef std::pair<int,int> SimData_t;
-//typedef std::vector<SimData_t> SimDataContainer_t;
-
+/** An abtract base class to define api used to access tree nodes during randomization. */
 class AbstractNodesProxy {
     protected:
         bool _data_leaves_only;
@@ -68,6 +67,7 @@ class AbstractNodesProxy {
         virtual int getID(size_t i) const = 0;
 };
 
+/** Standard tree nodes proxy class - just calls down to ScanRunner::NodeStructureContainer_t collection. */
 class NodesProxy : public AbstractNodesProxy {
     protected:
         const double _event_probability;
@@ -88,27 +88,28 @@ class NodesProxy : public AbstractNodesProxy {
         virtual int getID(size_t i) const {return _treeNodes[i]->getID();}
 };
 
+/** Tree nodes proxy class for Poisson and Bernoulli tree-sequential scans. */
 class SequentialNodesProxy : public AbstractNodesProxy {
-protected:
-    const double _event_probability;
+    protected:
+        const double _event_probability;
 
-public:
-    SequentialNodesProxy(const ScanRunner::NodeStructureContainer_t& treeNodes, bool data_leaves_only, double event_probability=0):
-        AbstractNodesProxy(treeNodes, data_leaves_only), _event_probability(event_probability) {}
-    virtual ~SequentialNodesProxy() {}
+    public:
+        SequentialNodesProxy(const ScanRunner::NodeStructureContainer_t& treeNodes, bool data_leaves_only, double event_probability=0):
+            AbstractNodesProxy(treeNodes, data_leaves_only), _event_probability(event_probability) {}
+        virtual ~SequentialNodesProxy() {}
 
-    virtual SequentialNodesProxy * clone() { return new SequentialNodesProxy(*this); }
-    virtual size_t  size() const { return _treeNodes.size(); }
-    virtual double  getIntN(size_t i) const { return _treeNodes[i]->getIntN_Seq_New(); }
-    virtual const NodeStructure::ExpectedContainer_t & getIntN_C(size_t i) const { throw prg_error("NodesProxy::getIntN_C(size_t) not implemented.", "getIntN_C(size_t)"); }
-    virtual int     getIntC(size_t i) const { throw prg_error("SequentialNodesProxy::getIntC(size_t) not implemented.", "getIntC(size_t)"); }
-    virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const { throw prg_error("SequentialNodesProxy::getIntC_C(size_t) not implemented.", "getIntC_C(size_t)"); }
-    virtual int     getBrC(size_t i) const { throw prg_error("SequentialNodesProxy::getBrC(size_t) not implemented.", "getBrC(size_t)"); }
-    virtual double  getProbability(size_t i) const { return _event_probability; }
-    virtual int getID(size_t i) const { return _treeNodes[i]->getID(); }
+        virtual SequentialNodesProxy * clone() { return new SequentialNodesProxy(*this); }
+        virtual size_t  size() const { return _treeNodes.size(); }
+        virtual double  getIntN(size_t i) const { return _treeNodes[i]->getIntN_Seq_New(); }
+        virtual const NodeStructure::ExpectedContainer_t & getIntN_C(size_t i) const { throw prg_error("NodesProxy::getIntN_C(size_t) not implemented.", "getIntN_C(size_t)"); }
+        virtual int     getIntC(size_t i) const { throw prg_error("SequentialNodesProxy::getIntC(size_t) not implemented.", "getIntC(size_t)"); }
+        virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const { throw prg_error("SequentialNodesProxy::getIntC_C(size_t) not implemented.", "getIntC_C(size_t)"); }
+        virtual int     getBrC(size_t i) const { throw prg_error("SequentialNodesProxy::getBrC(size_t) not implemented.", "getBrC(size_t)"); }
+        virtual double  getProbability(size_t i) const { return _event_probability; }
+        virtual int getID(size_t i) const { return _treeNodes[i]->getID(); }
 };
 
-
+/** Tree nodes proxy class used with power evaluations. */
 class AlternativeExpectedNodesProxy : public NodesProxy {
     protected:
         const RelativeRiskAdjustmentHandler::NodesExpectedContainer_t & _tree_nodes_expected;
@@ -125,6 +126,7 @@ class AlternativeExpectedNodesProxy : public NodesProxy {
         virtual double  getProbability(size_t i) const {throw prg_error("AlternativeExpectedNodesProxy::getProbability(size_t) not implemented.","getProbability(size_t)");}
 };
 
+/** Tree nodes proxy class used with power evaluations. */
 class AlternativeProbabilityNodesProxy : public NodesProxy {
     protected:
         RelativeRiskAdjustmentHandler::NodesAdjustmentsContainer_t _treeNodeProbability;
@@ -151,7 +153,7 @@ class AlternativeProbabilityNodesProxy : public NodesProxy {
 
 typedef std::vector<SimulationNode> SimNodeContainer_t;
 
-/* Abstract data randomizer base class */
+/* Abstract data randomizer base class. */
 class AbstractRandomizer {
     friend class AlternativeHypothesisRandomizater;
 

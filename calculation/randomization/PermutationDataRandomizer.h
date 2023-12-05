@@ -4,7 +4,7 @@
 //******************************************************************************
 #include "Randomization.h"
 
-/** class representing the stationary attribute in a permuted randomization. */
+/** Class representing the stationary attribute in a permuted randomization. */
 template <class T>
 class StationaryAttribute {
     protected:
@@ -19,7 +19,7 @@ class StationaryAttribute {
         inline const T & GetStationaryVariable() const {return gStationaryVariable;}
 };
 
-/** class representing the permuted attribute in a permuted randomization. */
+/** Class representing the permuted attribute in a permuted randomization. */
 template <class T>
 class PermutedAttribute {
     protected:
@@ -66,7 +66,7 @@ inline void AssignPermutedAttribute<T>::operator() (T& Attribute) {
 
 // ******************************************************************************************************
 
-/** abstract permutation randomizer class */
+/** Abstract permutation randomizer class */
 template <class S, class P>
 class AbstractPermutedDataRandomizer /*: public AbstractRandomizer*/ {
     protected:

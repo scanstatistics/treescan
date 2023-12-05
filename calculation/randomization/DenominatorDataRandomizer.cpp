@@ -105,8 +105,6 @@ AbstractDenominatorDataRandomizer::AbstractDenominatorDataRandomizer(const ScanR
     }
 }
 
-AbstractDenominatorDataRandomizer::~AbstractDenominatorDataRandomizer() {}
-
 int AbstractDenominatorDataRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes) {
     int totalSimC = 0;
     auto updateTree = [&treeNodes, &treeSimNodes, this]() { // update tree structure by adding counts up the tree
