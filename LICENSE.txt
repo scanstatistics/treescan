@@ -1,0 +1,11 @@
+Copyright (c) 2023 Martin Kulldorff <kulldorff@treescan.org>
+
+Without warranty of any kind, permission is hereby granted to any person to copy,
+publish, distribute, and share all or portions of this open-source TreeScan
+Software; to use, modify, merge, adapt, and build upon the Software; and to
+publish and distribute derivates of the Software, so long as
+(i) attribution is given to the creator,
+(ii) the above copyright and this permission notice is included with all copies
+of the Software and portions of the Software, and 
+(iii) any published, distributed or shared modification, adaption or derivative
+of the Software must be shared under identical licensing and permission terms.
