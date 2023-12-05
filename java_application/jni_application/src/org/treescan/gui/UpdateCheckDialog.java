@@ -82,7 +82,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         return new File(System.getProperty("java.io.tmpdir"));
     }
 
-    /* Retutns users 'Download' directory or user home directory. s*/
+    /* Retutns users 'Download' directory or user home directory. */
     public static File getUserDownloadDirectory() {
         File test = new File(System.getProperty("user.home") + File.separator + "Downloads");
         return test.exists() ? test : new File(System.getProperty("user.home"));
@@ -119,7 +119,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
         }
     }
 
-    /** returns full path of download file */
+    /** Returns full path of download file */
     private File getFile(String fileName) {
         try {
             return File.createTempFile("TreeScan", fileName, getDownloadTempDirectory());
@@ -639,7 +639,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                 _runUpdateOnTerminate = true;
             }
             waitCursor.restore();
-            setVisible(false); //message about restart!!!???
+            setVisible(false); // message about restart?
         }
     }
     class InstallerDownloadTask extends SwingWorker<Void, Void> {

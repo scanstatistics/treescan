@@ -77,7 +77,7 @@ public class CSVImportDataSource implements ImportDataSource {
     }
 
     /** 
-     * @return Returns column names
+     * @return column names
      */
     @Override
     public Object[] getColumnNames() {

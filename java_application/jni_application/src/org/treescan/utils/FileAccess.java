@@ -41,7 +41,7 @@ public class FileAccess {
         return bAccessible;
     }   
     
-    /* Get the extension of a file. */
+    /** Get the extension of a file. */
     public static String getExtension(File f) {
         String ext = "";
         String s = f.getName();
@@ -59,5 +59,5 @@ public class FileAccess {
         } else {
             return originalName + newExtension;
         }
-    }//end changeExtension
+    } // end changeExtension
 }

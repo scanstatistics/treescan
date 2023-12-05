@@ -25,9 +25,9 @@ public class EmailClientLauncher {
     }
 
     public String getSystemInfo() {
-        //append environment variables
+        // append environment variables
         StringBuilder info = new StringBuilder("System Information:\n");
-        try { //JNI library might not be available.
+        try { // JNI library might not be available.
             info.append("TreeScan Application Version").append(" : ").append(AppConstants.getGraphicalVersion()).append("\n");
             info.append("TreeScan Engine Version").append(" : ").append(AppConstants.getVersion()).append("\n");
             info.append("TreeScan Version Id").append(" : ").append(AppConstants.getVersionId()).append("\n");
@@ -40,7 +40,7 @@ public class EmailClientLauncher {
     }
     
     /**
-     * Launches default emial application
+     * Launches default email application
      */
     public boolean launchDefaultClientEmail(String mailTo, String subject, String body) {        
         try {
@@ -49,8 +49,8 @@ public class EmailClientLauncher {
 
             URI uriMailTo = null;            
             String _text =  "Please provide any additional information regarding the problem you are experiencing:\n\n" + getSystemInfo() + body;
-            //There appears to be a limitation either in the Java API or with Outlook (assuming most users use Outlook)
-            //with passing body text; empirically noted that limit is in the region of > 1500 characters ...
+            // There appears to be a limitation either in the Java API or with Outlook (assuming most users use Outlook)
+            // with passing body text; empirically noted that limit is in the region of > 1500 characters ...
             if (_text != null && System.getProperties().getProperty("os.name").toLowerCase().startsWith("windows")) {
                 _text = _text.substring(0, Math.min(MAX_BODY_LEN, _text.length()));
             }
@@ -72,7 +72,7 @@ public class EmailClientLauncher {
     }
 
     /**
-     * Launches default emial application.
+     * Launches default email application.
      */
     public boolean launchDefaultClientEmail(String mailTo, String subject) {
         try {

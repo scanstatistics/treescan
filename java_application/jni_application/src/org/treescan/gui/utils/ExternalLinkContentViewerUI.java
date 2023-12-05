@@ -13,7 +13,7 @@ import javax.swing.JComponent;
 import javax.swing.event.HyperlinkEvent;
 
 /**
-  *a UI subclass that will open external links (website or mail links) in an external browser
+  * A UI subclass that will open external links (website or mail links) in an external browser
 */
 public class ExternalLinkContentViewerUI extends BasicContentViewerUI{
     public ExternalLinkContentViewerUI(JHelpContentViewer x){

@@ -79,7 +79,7 @@ public class PreviewTableModel extends AbstractTableModel {
         return getNonSuffixedColumnName(idx);
     }
 
-    /* Returns the number of columns in data source. */
+    /** Returns the number of columns in data source. */
     public int getDataSourceColumnNameCount() {
         return _data_source.getColumnNames().length;
     }
@@ -95,7 +95,7 @@ public class PreviewTableModel extends AbstractTableModel {
         return _data_source.getColumnIndex(name);
     }
     
-    /* Adds row to table cache and fires table date change event. */
+    /** Adds row to table cache and fires table date change event. */
     public void addRow(Object[] row) {
         if (row != null) {
             _previewData.add(row);

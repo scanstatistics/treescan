@@ -87,7 +87,7 @@ public class HelpLinkedTitledBorder implements Border, MouseListener, MouseMotio
 	g.translate(x, y);
         g.setColor(b.getEtchType() == EtchedBorder.LOWERED? b.getShadowColor(c) : b.getHighlightColor(c));
 
-        //Instead if drawing rectangle("g.drawRect(0, 0, w-2, h-2);"), draw in line segments.
+        // Instead if drawing rectangle("g.drawRect(0, 0, w-2, h-2);"), draw in line segments.
         int stringWidth = g.getFontMetrics().stringWidth(((JLabel)comp).getText());
         int xx = 0;
         int yy = 0;

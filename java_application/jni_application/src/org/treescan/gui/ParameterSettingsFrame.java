@@ -53,12 +53,12 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         initComponents();
     }
 
-    /* Returns reference to associated advanced parameters frame. */
+    /** Returns reference to associated advanced parameters frame. */
     private AdvancedParameterSettingsFrame getAdvancedParameterInternalFrame() {
         return _advancedParametersSetting;
     }
 
-    /* enables correct advanced settings button on Analysis and Output tabs */
+    /** Enables correct advanced settings button on Analysis and Output tabs */
     public void enableAdvancedButtons() {
         // Input tab Advanced button
         if (!getAdvancedParameterInternalFrame().getDefaultsSetForInputOptions()) {
@@ -80,7 +80,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         }
     }
 
-    /* sets precision of times type control for DatePrecisionType */
+    /** Sets precision of times type control for DatePrecisionType */
     public void setPrecisionOfTimesControl(Parameters.DatePrecisionType eDatePrecisionType) {
         switch (eDatePrecisionType) {
             case YEAR:
@@ -101,7 +101,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         }
     }    
     
-    /* returns precision of time type for precision control index */
+    /** Returns precision of time type for precision control index */
     public Parameters.DatePrecisionType getPrecisionOfTimesControlType() {
         Parameters.DatePrecisionType eReturn = null;
         if (_timePrecisionNone.isSelected() == true) {
@@ -137,7 +137,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         getAdvancedParameterInternalFrame().enableAdjustmentsOptions();
     }    
     
-    /* enabled study period and prospective date precision based on time interval unit */
+    /** Enables study period and prospective date precision based on time interval unit */
     private void enableDatesByTimePrecisionUnits() {
         CardLayout cl = (CardLayout)(_studyPeriodGroup.getLayout());
         switch (getPrecisionOfTimesControlType()) {
@@ -167,14 +167,14 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         getAdvancedParameterInternalFrame().enableDatesByTimePrecisionUnits();
     }    
 
-    /* enables or disables the study period group for generic date/day controls */
+    /** Enables or disables the study period group for generic date/day controls */
     private void enableStudyPeriodGeneric(boolean enableStart, boolean enableEnd) {
         _studyPeriodStartDateGenericTextField.setEnabled(enableStart);
         _studyPeriodEndDateGenericTextField.setEnabled(enableEnd);        
     }    
-    /* enables or disables the study period group controls */
+    /** Enables or disables the study period group controls */
     private void enableStudyPeriodDates(boolean enableYear, boolean enableMonth, boolean enableDay) {
-        //enable study period year controls
+        // enable study period year controls
         _studyPeriodStartDateYearTextField.setEnabled(enableYear);
         _studyPeriodEndDateYearTextField.setEnabled(enableYear);
         
@@ -213,15 +213,15 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             _endDateComponentsGroup.setDay(31);
         }
         
-        //enable study period month controls
+        // enable study period month controls
         _studyPeriodStartDateMonthTextField.setEnabled(enableMonth);
         _studyPeriodEndDateMonthTextField.setEnabled(enableMonth);
-        //enable study period day controls
+        // enable study period day controls
         _studyPeriodStartDateDayTextField.setEnabled(enableDay);
         _studyPeriodEndDateDayTextField.setEnabled(enableDay);
     }    
     
-    /* If necessary, removes from from iconized state and brings to front. */
+    /** If necessary, removes from iconized state and brings to front. */
     public void focusWindow() {
         if (this.isIcon()) {
             try {
@@ -233,7 +233,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         toFront();
     }
 
-    /* Determines whether window can be closed by comparing parameter settings contained in window verse initial parameter settings. */
+    /** Determines whether window can be closed by comparing parameter settings contained in window versus initial parameter settings. */
     public boolean queryWindowCanClose() {
         boolean bReturn = true;
 
@@ -258,9 +258,9 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         return bReturn;
     }
 
-    /* Verifies that input settings are valid in the context of all parameter settings. */
+    /** Verifies that input settings are valid in the context of all parameter settings. */
     private void CheckInputSettings() {
-        //validate the tree file
+        // validate the tree file
         if (!_timeonlyScanType.isSelected()) {
             if (_treelFileTextField.getText().length() == 0)
                 throw new SettingsException("Please specify a tree file.", (Component) _treelFileTextField);
@@ -270,13 +270,13 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             if (validationString != null) throw new SettingsException(validationString, (Component) _treelFileTextField);
         }
 
-        //validate the case file
+        // validate the case file
         if (_countFileTextField.getText().length() == 0)
             throw new SettingsException("Please specify a count file.", (Component) _countFileTextField);
         if (!FileAccess.ValidateFileAccess(_countFileTextField.getText(), false))
             throw new SettingsException("The count file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", (Component) _countFileTextField);
         
-        //validate the control file
+        // validate the control file
         if ((getModelType() == Parameters.ModelType.BERNOULLI_TIME || getModelType() == Parameters.ModelType.BERNOULLI_TREE)) {
             if (_controlFileTextField.getText().length() == 0)
                 throw new SettingsException("Please specify a control file.", (Component) _controlFileTextField);
@@ -295,12 +295,12 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         }        
     }
 
-    /* Returns the number of time units in the specified data time range. */
+    /** Returns the number of time units in the specified data time range. */
     public int getNumUnitsInRange() {
         return Utils.getUnitsBetween(getPrecisionOfTimesControlType(), getDataTimeRangeStartDate(), getDataTimeRangeEndDate());
     }
 
-    /* Verifies that analysis settings are valid in the context of all parameter settings. */
+    /** Verifies that analysis settings are valid in the context of all parameter settings. */
     private void CheckAnalysisSettings() {
         if (Utils.selected(_BernoulliButton)) {
             int eventProbNumerator = Integer.parseInt(_eventProbabiltyNumerator.getText().trim());
@@ -311,7 +311,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         }
     }
 
-    /* Verifies that output settings are valid in the context of all parameter settings. */
+    /** Verifies that output settings are valid in the context of all parameter settings. */
     private void CheckOutputSettings() {
         if (_outputFileTextField.getText().length() == 0) {
             throw new SettingsException("Please specify a results file.", (Component) _outputFileTextField);
@@ -322,7 +322,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         }
     }
 
-    /* Verifies that settings are valid in the context of all other parameter settings. */
+    /** Verifies that settings are valid in the context of all other parameter settings. */
     public boolean CheckSettings() {
         try {
             CheckAnalysisSettings();
@@ -346,7 +346,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         return true;
     }
 
-    /* returns scan rate type for control group */
+    /** Returns scan rate type for control group */
     public Parameters.ScanRateType getScanRateControlType() {
         Parameters.ScanRateType eReturn = null;
 
@@ -362,7 +362,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         return eReturn;
     }    
     
-    /* setup interface from parameter settings */
+    /** Setup interface from parameter settings */
     @Override
     protected void setupInterface(final Parameters parameters) {
         _startDateComponentsGroup = new DateComponentsGroup(undo,_studyPeriodStartDateYearTextField,_studyPeriodStartDateMonthTextField,_studyPeriodStartDateDayTextField, 2000, 1, 1, false);
@@ -424,7 +424,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         onCountTimePrecisionChange();
     }
 
-    /* Sets the settings on Analysis tab for Parameters.ScanType, Parameters.ConditionalType and Parameters.ModelType. */
+    /** Sets the settings on Analysis tab for Parameters.ScanType, Parameters.ConditionalType and Parameters.ModelType. */
     public void setControlsForAnalysisOptions(Parameters.ScanType s, Parameters.ConditionalType c, Parameters.ModelType m) {
         _treeOnlyScanType.setSelected(s == Parameters.ScanType.TREEONLY);
         _treetimeScanType.setSelected(s == Parameters.ScanType.TREETIME);
@@ -439,7 +439,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _bernoulliTimeButton.setSelected(m == Parameters.ModelType.BERNOULLI_TIME);
     }
 
-    /* sets Parameters class with settings in form */
+    /** Sets Parameters class with settings in form */
     protected void saveParameterSettings(Parameters parameters) {
         setTitle(parameters.getSourceFileName());
         parameters.setPrecisionOfTimesType(getPrecisionOfTimesControlType().ordinal());        
@@ -595,7 +595,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _advancedParametersSetting.enableMinimumCasesGroup();
     }
 
-    /* Returns the data time range start date as LocalDate. */
+    /** Returns the data time range start date as LocalDate. */
     public LocalDate getDataTimeRangeStartDate()  {
         return Utils.getLocalDate(
             getPrecisionOfTimesControlType(),
@@ -606,7 +606,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         );
     }
     
-    /* Returns the data time range end date as LocalDate. */
+    /** Returns the data time range end date as LocalDate. */
     public LocalDate getDataTimeRangeEndDate() {
         return Utils.getLocalDate(
             getPrecisionOfTimesControlType(),

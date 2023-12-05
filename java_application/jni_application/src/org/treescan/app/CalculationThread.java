@@ -53,7 +53,7 @@ public class CalculationThread extends Thread {
         try {
             if (RunAnalysis(_parameters) == 0) {
                 if (AnalysisRun.IsJobCanceled()) {
-                    //analysis cancelled by user -- acknowledge that engine has terminated
+                    // analysis cancelled by user -- acknowledge that engine has terminated
                     AnalysisRun.setTitle("Job cancelled");
                     AnalysisRun.PrintProgressWindow("Job cancelled by user.");
                 } else {

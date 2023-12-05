@@ -17,12 +17,12 @@ public class ImportUtils {
      * @return string group markers removed
      */
     private static String trimGroupMarkers(String sLine, String sOpenGroupMarker, String sCloseGroupMarker) {
-        //starts at either end, then chews its way toward the center, until a non-whitespace, non-groupmarker is encountered.
+        // starts at either end, then chews its way toward the center, until a non-whitespace, non-groupmarker is encountered.
         int iStart;
         int iEnd;
         int iPositionInMarker;
 
-        //at beginning of string
+        // at beginning of string
         iStart = 0;
         iPositionInMarker = 0;
 
@@ -39,8 +39,7 @@ public class ImportUtils {
             iStart++;
         }
 
-        //now shift to end of string
-
+        // now shift to end of string
         iPositionInMarker = sCloseGroupMarker.length() - 1;
         iEnd = sLine.length();
 
@@ -102,26 +101,26 @@ public class ImportUtils {
     public static ArrayList<String> parseLine(String sLine, String sDelimiter, String sOpenGroupMarker, String sCloseGroupMarker,
             boolean bTrimWhitespace, boolean bStripGroupMarkers) {
 
-        //because we accept strings as delimiter and grouping markers, we have to do overlapping compares
-        //to find matches.  We step through the length of sLine character by character.
+        // because we accept strings as delimiter and grouping markers, we have to do overlapping compares
+        // to find matches.  We step through the length of sLine character by character.
 
         ArrayList<String> vList = new ArrayList<String>();
-        StringBuffer buffer = new StringBuffer(""); //contains the text of our working cell
+        StringBuffer buffer = new StringBuffer(""); // contains the text of our working cell
 
-        boolean bGroupOpen = false; //indicates whether we're currently building a group (true
-        //if we've found an instance of sOpenGroupMarker and are looking
-        //for sCloseGroupMarker).
+        boolean bGroupOpen = false; // indicates whether we're currently building a group (true
+        // if we've found an instance of sOpenGroupMarker and are looking
+        // for sCloseGroupMarker).
 
         int iPosition = 0;
 
         String s;
 
         sLine = StringUtils.strip(sLine);
-        //if the delimiter is a single whitespace character, pre-process the line
+        // if the delimiter is a single whitespace character, pre-process the line
         if (sDelimiter.length() == 1 && Character.isWhitespace(sDelimiter.charAt(0))) {
             StringBuilder temp = new StringBuilder();
             boolean lastIsWhiteSpace = false;
-            //replace whitespace with single space character and compress contiguous whitespace
+            // replace whitespace with single space character and compress contiguous whitespace
             for (int i = 0; i < sLine.length(); ++i) {
                 if (Character.isWhitespace(sLine.charAt(i))) {
                     if (!lastIsWhiteSpace) {
@@ -138,29 +137,29 @@ public class ImportUtils {
 
         while (iPosition < sLine.length()) {
 
-            if (!bGroupOpen) { //we don't have a group open, so we're looking for either a delimiter or an open group marker
-                //first check whether sOpenGroupMarker occurs at our current position in sLine.
+            if (!bGroupOpen) { // we don't have a group open, so we're looking for either a delimiter or an open group marker
+                // first check whether sOpenGroupMarker occurs at our current position in sLine.
 
                 if (sLine.regionMatches(iPosition, sOpenGroupMarker, 0, sOpenGroupMarker.length())) {
 
-                    //if we found sOpenGroupMarker, increment iPosition by its length and append
-                    //the string to our buffer (we'll have the option to trim it later)
+                    // if we found sOpenGroupMarker, increment iPosition by its length and append
+                    // the string to our buffer (we'll have the option to trim it later)
                     iPosition += sOpenGroupMarker.length();
 //               buffer.append( sLine.substring( iOldPosition , iPosition ) );
                     buffer.append(sOpenGroupMarker);
 
                     bGroupOpen = true;
 
-                //otherwise, if we didn't find sOpenGroupMarker check whether sDelimiter occurs at our current Position
-                //of the line.
+                // otherwise, if we didn't find sOpenGroupMarker check whether sDelimiter occurs at our current Position
+                // of the line.
                 } else if (sLine.regionMatches(iPosition, sDelimiter, 0, sDelimiter.length())) {
 
-                    //if we found sDelimiter, increment iPosition by sDelimiter's length.
+                    // if we found sDelimiter, increment iPosition by sDelimiter's length.
                     iPosition += sDelimiter.length();
                     s = buffer.toString();
 
-                    //next convert buffer's contents to a String.  Strip whitespace and
-                    //group markers if requested.
+                    // next convert buffer's contents to a String.  Strip whitespace and
+                    // group markers if requested.
                     if (bStripGroupMarkers) {
                         s = trimGroupMarkers(s, sOpenGroupMarker, sCloseGroupMarker);
                     }
@@ -169,23 +168,23 @@ public class ImportUtils {
                         s = s.trim();
                     }
 
-                    //add s to our ArrayList of cells and initialize buffer with a new, empty
-                    //string.
+                    // add s to our ArrayList of cells and initialize buffer with a new, empty
+                    // string.
                     vList.add(s);
                     buffer = new StringBuffer("");
 
                 } else {
-                    //if we didn't find either sOpenGroupMarker or sDelimiter, increment
-                    //iPosition.
-                    //Append the character at iPosition to buffer.
+                    // if we didn't find either sOpenGroupMarker or sDelimiter, increment
+                    // iPosition.
+                    // Append the character at iPosition to buffer.
                     buffer.append(sLine.charAt(iPosition));
 
                     iPosition++;
                 }
 
             } else {
-                //we have a group open, so now we're only looking for sCloseGroupMarker.
-                //sDelimiter is ignored.
+                // we have a group open, so now we're only looking for sCloseGroupMarker.
+                // sDelimiter is ignored.
 
                 if (sLine.regionMatches(iPosition, sCloseGroupMarker, 0, sCloseGroupMarker.length())) {
                     iPosition += sCloseGroupMarker.length();
@@ -193,7 +192,7 @@ public class ImportUtils {
 
                     bGroupOpen = false;
 
-                } else { //if we didn't find sCloseGroupMarker, append char at iPosition to buffer.
+                } else { // if we didn't find sCloseGroupMarker, append char at iPosition to buffer.
                     buffer.append(sLine.charAt(iPosition));
 
                     iPosition++;
@@ -201,7 +200,7 @@ public class ImportUtils {
             }
         }
 
-        //add remaining buffer to list
+        // add remaining buffer to list
         s = buffer.toString();
 
         if (bStripGroupMarkers) {

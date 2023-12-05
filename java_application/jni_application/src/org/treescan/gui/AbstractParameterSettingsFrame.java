@@ -48,8 +48,8 @@ public class AbstractParameterSettingsFrame extends javax.swing.JInternalFrame i
         _parameters = parameters;
 
         setupInterface(_parameters);
-        //Save orginal parameter settings to compare against when window closes but
-        //first save what the interface has produced for the settings read from file.
+        // Save orginal parameter settings to compare against when window closes but
+        // first save what the interface has produced for the settings read from file.
         saveParameterSettings(_parameters);
         _initialParameters = (Parameters) _parameters.clone();
     }
@@ -92,7 +92,7 @@ public class AbstractParameterSettingsFrame extends javax.swing.JInternalFrame i
 
     /**
      * Determines whether window can be closed by comparing parameter settings
-     * contained in window verse initial parameter settings.
+     * contained in window versus initial parameter settings.
      */
     public boolean queryWindowCanClose() {
         boolean bReturn = true;
@@ -148,7 +148,7 @@ public class AbstractParameterSettingsFrame extends javax.swing.JInternalFrame i
     }
 
     /**
-     * launches 'save as' dialog to permit user saving current settings to
+     * Launches 'save as' dialog to permit user saving current settings to
      * parameter file
      */
     public boolean SaveAs() {
@@ -277,8 +277,7 @@ public class AbstractParameterSettingsFrame extends javax.swing.JInternalFrame i
         //throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /* Exception class that notes the Component that caused the exceptional situation. */
-
+    /** Exception class that notes the Component that caused the exceptional situation. */
     public class SettingsException extends RuntimeException {
 
         private static final long serialVersionUID = 1L;
@@ -305,8 +304,8 @@ public class AbstractParameterSettingsFrame extends javax.swing.JInternalFrame i
         }
 
         /**
-         * recursively searches Container objects contained in 'rootComponent'
-         * for for 'searchComponent'.
+         * Recursively searches Container objects contained in 'rootComponent'
+         * for 'searchComponent'.
          */
         boolean isContainedComponent(Component rootComponent, Component searchComponent) {
             if (rootComponent == searchComponent) {

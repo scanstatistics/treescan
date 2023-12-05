@@ -64,8 +64,9 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
         _sequential_alpha_spending.setText(Double.toString(parameters.getSequentialAlphaSpending()));
     }
 
-    /** setup interface from parameter settings
-     * @param parameters */
+    /** Setup interface from parameter settings
+     * @param parameters 
+     */
     @Override
     protected void setupInterface(final Parameters parameters) {
         _advancedParametersSetting = new AdvancedParameterSettingsSequentialFrame(_rootPane, this/*, parameters*/);
@@ -93,7 +94,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
     }
 
     /**
-     * sets CParameters class with settings in form
+     * Sets CParameters class with settings in form
      */
     protected void saveParameterSettings(Parameters parameters) {
         setTitle(parameters.getSourceFileName());
@@ -125,7 +126,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
     }    
     
     /**
-     * enables correct advanced settings button on Analysis and Output tabs
+     * Enables correct advanced settings button on Analysis and Output tabs
      */
     public void enableAdvancedButtons() {
         // Output tab Advanced button
@@ -136,7 +137,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
         }
     }    
     
-    /* Returns indication as to whether this trimmed down version should be shown instead of the full setting window. */
+    /** Returns indication as to whether this trimmed down version should be shown instead of the full setting window. */
     static boolean shouldShowWindow(Parameters parameters) {
         boolean shouldShow = true;
         // Is this a sequential bernoulli model scan?
@@ -162,7 +163,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
                 if (!FileAccess.ValidateFileAccess(_controlFileTextField.getText(), false))
                     throw new SettingsException("The control file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", (Component) _controlFileTextField);
             }
-            /* Check output settings */
+            // Check output settings
         } catch (SettingsException e) {
             focusWindow();
             JOptionPane.showInternalMessageDialog(this, e.getMessage());

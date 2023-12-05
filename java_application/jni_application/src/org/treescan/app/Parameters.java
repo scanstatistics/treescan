@@ -105,11 +105,11 @@ public class Parameters implements Cloneable {
     private DatePrecisionType _date_precision_type=DatePrecisionType.NONE;
     private boolean _prospective_analysis = false;
     private ProspectiveFrequency _prospective_frequency_type = ProspectiveFrequency.DAILY;
-    private boolean _output_temporal_graph=false; /* report temporal graph file */
-    private TemporalGraphReportType _temporal_graph_report_type=TemporalGraphReportType.MLC_ONLY; /* which clusters to report in temporal graph */
-    private int _temporal_graph_report_count=1; /* number of MLC clusters to graph with TemporalGraphReportType.X_MCL_ONLY */
-    private double _temporal_graph_report_cutoff=0.05; /* P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY */
-    private int _minimum_highrate_nodes_cases=2; /*minimum number of high rate nodes cases*/
+    private boolean _output_temporal_graph=false; // report temporal graph file
+    private TemporalGraphReportType _temporal_graph_report_type=TemporalGraphReportType.MLC_ONLY; // which clusters to report in temporal graph
+    private int _temporal_graph_report_count=1; // number of MLC clusters to graph with TemporalGraphReportType.X_MCL_ONLY
+    private double _temporal_graph_report_cutoff=0.05; // P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY
+    private int _minimum_highrate_nodes_cases=2; // minimum number of high rate nodes cases
     private boolean _data_only_on_leaves=true;
     private boolean _relaxed_study_data_period_checking=false;
     private boolean _allow_multi_parent_nodes=false;

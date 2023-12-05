@@ -44,7 +44,7 @@ public class ModalInternalFrame extends javax.swing.JInternalFrame {
      * Positions window in the center of root pane.
      */
     public void positionRootPaneCenter() {
-        //position the window in the center of the rootpane
+        // position the window in the center of the rootpane
         setLocation(_rootPane.getWidth() / 2 - getWidth() / 2, _rootPane.getHeight() / 2 - getHeight() / 2);
     }
 

@@ -341,7 +341,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         return _destinationFile == null ? "" : _destinationFile.getAbsolutePath();
     }
 
-    /** Returned whether the user chose to execute import now -- creating an imported file. */
+    /** Returns whether the user chose to execute import now -- creating an imported file. */
     public boolean getExecutedImport() {
         return _executed_import;
     }
@@ -378,7 +378,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 builder.append("&lt;Node ID&gt;&#44;  &lt;Node Parent ID&gt;&#44; &lt;Distance Between&gt;(optional) &lt;Name&gt;(optional)");
                 break;
             case Counts:
-                /* build statement indicating the current parameter settings in main windows */
+                // build statement indicating the current parameter settings in main windows
                 if (_startingscantype == Parameters.ScanType.TREEONLY) {
                     builder.append(" using the tree-only scan and ");
                     builder.append((_startingconditionaltype == Parameters.ConditionalType.UNCONDITIONAL ? "unconditional" : "conditional"));
@@ -564,7 +564,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         return builder.toString();
     }
 
-    /** Returned whether the user chose execute import later. */
+    /** Returns whether the user chose execute import later. */
     public boolean getNeedsImportSourceSave() {
         return _needs_import_save;
     }
@@ -790,10 +790,10 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
     /** Opening source as specified by file type. */
     private void previewSource() throws Exception {
-        //set the import tables mapping_model to default until we have an instance of the native mapping_model avaiable
+        // set the import tables mapping_model to default until we have an instance of the native mapping_model avaiable
         _source_data_table.setModel(new DefaultTableModel());
 
-        //create the table mapping_model
+        // create the table mapping_model
         File file = new File(getSourceFilename());
         if (file.exists()) {
             if (_preview_table_model != null) {_preview_table_model.close(); _preview_table_model=null;}
@@ -809,13 +809,13 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 _preview_table_model = new PreviewTableModel(source);
             }
         }
-        //now assign mapping_model to table object
+        // now assign mapping_model to table object
         if (_preview_table_model != null) {
             _source_data_table.setModel(_preview_table_model);
         }
 
         int widthTotal = 0;
-        //calculate the column widths to fit header/data
+        // calculate the column widths to fit header/data
         ArrayList<Integer> colWidths = new ArrayList<Integer>();
         for (int c=0; c < _source_data_table.getColumnCount(); ++c) {
             colWidths.add(AutofitTableColumns.getMaxColumnWidth(_source_data_table, c, true, 20));
@@ -845,7 +845,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         }
     }
 
-    /**Invoked when task'variableIdx progress property changes. */
+    /** Invoked when task variableIdx progress property changes. */
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getNewValue() instanceof Integer) {
             _progressBar.setValue(((Integer) evt.getNewValue()).intValue());
@@ -857,7 +857,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _fileContentsTextArea.setText("");
         _errorSamplingSourceFile = false;
 
-        //Attempt to open source file reader...
+        // Attempt to open source file reader...
         FileReader fileSample = null;
         try {
             fileSample = new FileReader(getSourceFilename());
@@ -870,7 +870,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             _fileContentsTextArea.append("* File permissions deny read access. *");
             _errorSamplingSourceFile = true;
         }
-        //Attempt to read the first X lines of file and add to sample text area
+        // Attempt to read the first X lines of file and add to sample text area
         try {
             BufferedReader buffer = new BufferedReader(fileSample);
             for (int i = 0; i < _sourceFileLineSample; ++i) {
@@ -888,7 +888,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             _fileContentsTextArea.append("* Unable to view source file. *");
             _errorSamplingSourceFile = true;
         }
-        //Indicate whether the source file had any data...
+        // Indicate whether the source file had any data...
         if (_fileContentsTextArea.getLineCount() == 0) {
             _fileContentsTextArea.append("* Source file contains no data. *");
             _errorSamplingSourceFile = true;
@@ -1042,7 +1042,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 _import_variables.get(0).setShowing(_displayVariablesComboBox.getSelectedIndex() != 6/* Time-Only*/);
                 model.setShowing(_import_variables.get(0));
 
-                /* start and end dates are only for temporal scans*/
+                // start and end dates are only for temporal scans
                 _import_variables.get(2).setShowing(_displayVariablesComboBox.getSelectedIndex() == 6 /* Time-Only */ ||
                                                     _displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */ ||
                                                     _displayVariablesComboBox.getSelectedIndex() == 7 /* Tree-time, Bernoulli */ ||
@@ -1904,7 +1904,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private javax.swing.JButton previousButtonOutSettings;
     // End of variables declaration//GEN-END:variables
 
-    /** Table mapping_model used to assign import variables to source file fields.  */
+    /** Table mapping_model used to assign import variables to source file fields. */
     class VariableMappingTableModel extends AbstractTableModel {
 
         private static final long serialVersionUID = 1L;
@@ -2064,7 +2064,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             return null;
         }
 
-        /*
+        /**
          * Executed in event dispatching thread
          */
         @Override

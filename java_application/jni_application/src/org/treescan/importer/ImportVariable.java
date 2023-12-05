@@ -50,7 +50,7 @@ public class ImportVariable implements Cloneable {
     }
 
     /**
-     * @return whether to show variable is showing in wizard dialog
+     * @return whether variable is showing in wizard dialog
      */
     public boolean getShowing() {
         return _showing;

@@ -51,7 +51,7 @@ public class AutofitTableColumns {
         int tableWidth = 0;
 
         Dimension cellSpacing = aTable.getIntercellSpacing();
-        if (columnCount > 0) {// must have columns !
+        if (columnCount > 0) { // must have columns!
             // STEP ONE : Work out the column widths
             int columnWidth[] = new int[columnCount];
             for (int i = 0; i < columnCount; i++) {

@@ -96,7 +96,7 @@ public class JHyperLink extends JLabel {
             // really all this size stuff below only needs to be recalculated if font or text changes
             Rectangle2D textBounds =  getFontMetrics(getFont()).getStringBounds(getText(), g);
             
-            //this layout stuff assumes the icon is to the left, or null
+            // this layout stuff assumes the icon is to the left, or null
             int y = getHeight()/2 + (int)(textBounds.getHeight()/2);
             int w = (int) textBounds.getWidth();
             int x = getIcon()==null ? 0 : getIcon().getIconWidth() + getIconTextGap();

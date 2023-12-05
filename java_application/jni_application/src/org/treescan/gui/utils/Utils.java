@@ -27,22 +27,22 @@ import org.treescan.app.Parameters;
  */
 public class Utils {
 
-    /* Returns whether JToggleButton control is enabled and selected. */
+    /** Returns whether JToggleButton control is enabled and selected. */
     public static boolean selected(JToggleButton component) {
         return component.isEnabled() && component.isSelected();
     }
     
-    /* If JToggleButton is enabled, returns whether select state matches expected value. Otherwise returns true. */
+    /** If JToggleButton is enabled, returns whether select state matches expected value. Otherwise returns true. */
     public static boolean selected(JToggleButton component, boolean expected_value) {
         return component.isEnabled() ? component.isSelected() == expected_value : true;
     }    
     
-    /* If JTextComponent is enabled, returns whether text matches expected value. Otherwise returns true. */
+    /** If JTextComponent is enabled, returns whether text matches expected value. Otherwise returns true. */
     public static boolean textIs(JTextComponent component, String expected_value) {
         return component.isEnabled() ? component.getText().equals(expected_value) : true;
     }     
     
-    /* If JTextComponent is enabled, returns whether text as Double matches expected value. Otherwise returns true. */
+    /** If JTextComponent is enabled, returns whether text as Double matches expected value. Otherwise returns true. */
     public static boolean doubleIs(JTextComponent component, Double expected_value) {
         try {
         return component.isEnabled() ? Double.valueOf(component.getText()).equals(expected_value) : true;
@@ -51,7 +51,7 @@ public class Utils {
         }
     }       
 
-    /* If JTextComponent is enabled, returns whether text as Integer matches expected value. Otherwise returns true. */
+    /** If JTextComponent is enabled, returns whether text as Integer matches expected value. Otherwise returns true. */
     public static boolean integerIs(JTextComponent component, Integer expected_value) {
         try {
         return component.isEnabled() ? Integer.valueOf(component.getText()).equals(expected_value) : true;
@@ -60,17 +60,17 @@ public class Utils {
         }        
     }       
 
-    /* If Choice is enabled, returns whether the selected index matches expected value. Otherwise returns true. */
+    /** If Choice is enabled, returns whether the selected index matches expected value. Otherwise returns true. */
     public static boolean selectionIs(Choice component, int expected_value) {
         return component.isEnabled() ? component.getSelectedIndex() == expected_value : true;
     }       
     
-    /* If JList is enabled, returns whether model size matches expected value. Otherwise returns true. */
+    /** If JList is enabled, returns whether model size matches expected value. Otherwise returns true. */
     public static boolean sizeIs(JList component, int expected_value) {
         return component.isEnabled() ? component.getModel().getSize() == expected_value : true;
     }         
     
-    /* Validates that key typed is a positive integer or back space; otherwise consumes key. */
+    /** Validates that key typed is a positive integer or back space; otherwise consumes key. */
     public static void validatePostiveNumericKeyTyped(JTextField thisField, java.awt.event.KeyEvent e, int maxFieldLength) {
         if (!Character.isDigit(e.getKeyChar()) && e.getKeyCode() != java.awt.event.KeyEvent.VK_BACK_SPACE) {
             e.consume();
@@ -80,7 +80,7 @@ public class Utils {
         }
     }
 
-    /* Validates that key typed is an integer or back space; otherwise consumes key. */
+    /** Validates that key typed is an integer or back space; otherwise consumes key. */
     public static void validateNumericKeyTyped(JTextField thisField, java.awt.event.KeyEvent e, int maxFieldLength) {
         if (!(Character.isDigit(e.getKeyChar()) || e.getKeyChar() == java.awt.event.KeyEvent.VK_BACK_SPACE || e.getKeyChar() == '-')) {
             e.consume();
@@ -91,7 +91,7 @@ public class Utils {
         }
     }
 
-    /* Validates that key typed is a positive integer, period or back space; otherwise consumes key. */
+    /** Validates that key typed is a positive integer, period or back space; otherwise consumes key. */
     public static void validatePostiveFloatKeyTyped(JTextField thisField, java.awt.event.KeyEvent e, int maxFieldLength) {
         if (!(Character.isDigit(e.getKeyChar()) || e.getKeyChar() == '\b' || e.getKeyChar() == '.')) {
             e.consume();
@@ -102,7 +102,7 @@ public class Utils {
         }
     }
 
-    /* Validates that key typed is a positive integer, period, minus or back space; otherwise consumes key. */
+    /** Validates that key typed is a positive integer, period, minus or back space; otherwise consumes key. */
     public static void validateFloatKeyTyped(JTextField thisField, java.awt.event.KeyEvent e, int maxFieldLength) {
         if (!(Character.isDigit(e.getKeyChar()) || e.getKeyChar() == '\b' || e.getKeyChar() == '-' || e.getKeyChar() == '.')) {
             e.consume();
@@ -113,7 +113,7 @@ public class Utils {
         }
     }    
 
-    /* Validates that generic date value is within allowable ranges. */
+    /** Validates that generic date value is within allowable ranges. */
     public static void validateGenericDateField(JTextField genericControl, UndoManager undo) {
         if (genericControl.getText().length() == 0) {
             if (undo.canUndo()) {
@@ -122,7 +122,7 @@ public class Utils {
                 genericControl.setText(Integer.toString(AppConstants.MAX_GENERIC));
             }
         } else {
-            //set value to a valid setting if out of valid range
+            // set value to a valid setting if out of valid range
             if (Integer.parseInt(genericControl.getText()) < AppConstants.MIN_GENERIC) {
                 genericControl.setText(Integer.toString(AppConstants.MIN_GENERIC));
             } else if (Integer.parseInt(genericControl.getText()) > AppConstants.MAX_GENERIC) {
@@ -132,20 +132,20 @@ public class Utils {
 
     }   
     
-    /* validates date controls represented by three passed edit controls - prevents an invalid date */
+    /** validates date controls represented by three passed edit controls - prevents an invalid date */
     public static void validateDateControlGroup(JTextField YearControl, JTextField MonthControl, JTextField DayControl, UndoManager undo) {
         GregorianCalendar thisCalender = new GregorianCalendar();
 
-        //first check year
+        // first check year
         if (YearControl.getText().length() == 0) {
             if (undo.canUndo()) {
                 undo.undo();
             } else {
                 YearControl.setText(Integer.toString(AppConstants.MAX_YEAR));
             }
-        }//YearControl.Undo();
+        } // YearControl.Undo();
         else {
-            //set year to a valid setting if out of valid range
+            // set year to a valid setting if out of valid range
             if (Integer.parseInt(YearControl.getText()) < AppConstants.MIN_YEAR) {
                 YearControl.setText(Integer.toString(AppConstants.MIN_YEAR));
             } else if (Integer.parseInt(YearControl.getText()) > AppConstants.MAX_YEAR) {
@@ -153,16 +153,16 @@ public class Utils {
             }
         }
         thisCalender.set(Calendar.YEAR, Integer.parseInt(YearControl.getText()));
-        //now check month
+        // now check month
         if (MonthControl.getText().length() == 0) {
             if (undo.canUndo()) {
                 undo.undo();
             } else {
                 MonthControl.setText(Integer.toString(12));
             }
-        }//MonthControl.Undo();
+        } // MonthControl.Undo();
         else {
-            //set month to a valid setting if out of valid range
+            // set month to a valid setting if out of valid range
             if (Integer.parseInt(MonthControl.getText()) < 1) {
                 MonthControl.setText(Integer.toString(1));
             } else if (Integer.parseInt(MonthControl.getText()) > 12) {
@@ -170,7 +170,7 @@ public class Utils {
             }
         }
         thisCalender.set(Calendar.MONTH, Integer.parseInt(MonthControl.getText()) - 1);
-        //now check day
+        // now check day
         int iDaysInMonth = thisCalender.getActualMaximum(Calendar.DAY_OF_MONTH);
         if (DayControl.getText().length() == 0) {
             if (undo.canUndo()) {
@@ -178,9 +178,9 @@ public class Utils {
             } else {
                 DayControl.setText(Integer.toString(iDaysInMonth));
             }
-        }//DayControl.Undo();
+        } // DayControl.Undo();
         else {
-            //set month to a valid setting if out of valid range
+            // set month to a valid setting if out of valid range
             if (Integer.parseInt(DayControl.getText()) < 1) {
                 DayControl.setText(Integer.toString(1));
             } else if (Integer.parseInt(DayControl.getText()) > iDaysInMonth) {
@@ -189,8 +189,8 @@ public class Utils {
         }
     }
     
-    /* Returns LocalDate object for passed input precision and control text. For precision of YEAR or MONTH,  this function assumes 
-       that date inputs have been maintained correctly using DateComponentsGroup object. */
+    /** Returns LocalDate object for passed input precision and control text. For precision of YEAR or MONTH,  this function assumes 
+        that date inputs have been maintained correctly using DateComponentsGroup object. */
     public static LocalDate getLocalDate(final Parameters.DatePrecisionType precision, final String year, final String month, final String day, final String generic) {
         switch (precision) {
             case YEAR:
@@ -201,7 +201,7 @@ public class Utils {
         }
     }    
     
-    /* Returns the number of time units in date range. */
+    /** Returns the number of time units in date range. */
     public static int getUnitsBetween(final Parameters.DatePrecisionType precision, LocalDate rangeStart, LocalDate rangeEnd) {
         if (rangeStart.isAfter(rangeEnd)) return 0;
         switch (precision) {
@@ -217,7 +217,7 @@ public class Utils {
         }        
     }
     
-    /* Parses date string and validates integer range. */
+    /** Parses date string and validates integer range. */
     public static void parseDateStringToControl(String sDateString, JTextField genericControl) {
         try {
             Integer iGeneric = Integer.parseInt(sDateString);
@@ -234,13 +234,13 @@ public class Utils {
 
     /** parses up a date string and places it into the given month, day, year
      * interface text control (TEdit *). Defaults prospective survallience start
-     * date to months/days to like study period end date.                       */
+     * date to months/days to like study period end date. */
     public static void parseDateStringToControls(String sDateString, JTextField Year, JTextField Month, JTextField Day, boolean bEndDate) {
         String[] dateParts = sDateString.split("/");
 
         try {
             int iYear = 0, iMonth = 0, iDay = 0;
-            //set values only if valid, prevent interface from having invalid date when first loaded.
+            // set values only if valid, prevent interface from having invalid date when first loaded.
             if (dateParts.length > 0) {
                 switch (dateParts.length) {
                     case 1:

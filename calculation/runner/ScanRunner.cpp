@@ -2534,7 +2534,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
     return _Cut.size() != 0;
 }
 
-/* SCANNING THE TREE for temporal model -- conditioned on the total cases across nodes and time. */
+/** SCANNING THE TREE for temporal model -- conditioned on the total cases across nodes and time. */
 bool ScanRunner::scanTreeTemporalConditionNodeTime() {
     _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));

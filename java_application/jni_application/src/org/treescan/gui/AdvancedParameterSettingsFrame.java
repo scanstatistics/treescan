@@ -71,8 +71,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * recursively searches Container objects contained in 'rootComponent' for
-     * for 'searchComponent'.
+     * Recursively searches Container objects contained in 'rootComponent' for
+     * 'searchComponent'.
      */
     boolean isContainedComponent(Component rootComponent, Component searchComponent) {
         if (rootComponent == searchComponent) {
@@ -96,9 +96,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * Sets tab set visible and attempts to set focus on 'focusComponent'.
      */
     public void setVisible(FocusedTabSet focusedTabSet, Component focusComponent) {
-        //set tab set visible
+        // set tab visible
         setVisible(true, focusedTabSet);
-        //find focus component and request focus
+        // find focus component and request focus
         for (int i = 0; i < jTabbedPane1.getTabCount(); ++i) {
             if (isContainedComponent(jTabbedPane1.getComponentAt(i), focusComponent)) {
                 jTabbedPane1.setSelectedIndex(i);
@@ -108,11 +108,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /** */
+    /** 
+     * Sets tab set visibility.
+     */
     public void setVisible(boolean value, FocusedTabSet focusedTabSet) {
         if (value == false) {
             _closeButton.requestFocus();
-        } //cause any text controls to loose focus
+        } // cause any text controls to lose focus
         super.setVisible(value);
         if (value) {
             startModal(focusedTabSet);
@@ -124,7 +126,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * enables 'Set Defaults' button
+     * Enables 'Set Defaults' button
      */
     private void enableSetDefaultsButton() {
         // update enable/disable of Set Defaults button
@@ -142,8 +144,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * Checks to determine if only default values are set in the dialog Returns
-     * true if only default values are set Returns false if user specified a
+     * Checks to determine if only default values are set in the dialog. Returns
+     * true if only default values are set. Returns false if user specified a
      * value other than a default
      */
     public boolean getDefaultsSetForInputOptions() {
@@ -284,7 +286,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * sets Parameters class with settings in form
+     * Sets Parameters class with settings in form
      */
     public void saveParameterSettings(Parameters parameters) {
         // Input tab
@@ -526,7 +528,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableProspectiveFrequencyGroup();
     }
 
-    /* enabled study period date precision based on time interval unit */
+    /* Enables study period date precision based on time interval unit */
     public void enableDatesByTimePrecisionUnits() {
         CardLayout cl_flexible = (CardLayout) (_temporal_window_cards.getLayout());
         switch (_settings_window.getPrecisionOfTimesControlType()) {
@@ -577,7 +579,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 break;
         }
 
-        //enable generic ranges
+        // enable generic ranges
         _startRangeStartGenericTextField.setEnabled(restrictedWindow);
         _startRangeEndGenericTextField.setEnabled(restrictedWindow);
         _endRangeStartGenericTextField.setEnabled(restrictedWindow);
@@ -587,7 +589,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _endGenericWindowRangeLabel.setEnabled(restrictedWindow);
         _endGenericRangeToLabel.setEnabled(restrictedWindow);
                 
-        //enable start range dates
+        // enable start range dates
         _startWindowRangeLabel.setEnabled(restrictedWindow);        
         _startRangeToLabel.setEnabled(restrictedWindow);
         _endWindowRangeLabel.setEnabled(restrictedWindow);
@@ -650,7 +652,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _attributable_risk_exposed.setText("");
     }
 
-    /* Verifies that settings are valid in the context of all other parameter settings. */
+    /** Verifies that settings are valid in the context of all other parameter settings. */
     public void CheckSettings() {
         CheckInferenceSettings();
         CheckTemporalWindowSettings();
@@ -662,7 +664,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         CheckAdditionalOutputOptions();
     }
     
-    /* Verifies that sequential scan settings are valid in the context of all parameter settings. */
+    /** Verifies that sequential scan settings are valid in the context of all parameter settings. */
     private void CheckSequentialAnalysisSettings() {
         if (_perform_sequential_scan.isEnabled() && _perform_sequential_scan.isSelected()) {
             Parameters.ScanType scanType = _settings_window.getScanType();
@@ -705,7 +707,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /* Verifies that power evaluation settings are valid in the context of all parameter settings. */
+    /** Verifies that power evaluation settings are valid in the context of all parameter settings. */
     private void CheckPowerEvaluationSettings() {
         if (_performPowerEvaluations.isEnabled() && _performPowerEvaluations.isSelected()) {
             if (_powerEvaluationWithSpecifiedCases.isSelected()) {
@@ -774,14 +776,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /* Verifies that input settings are valid in the context of all parameter settings. */
+    /** Verifies that input settings are valid in the context of all parameter settings. */
     private void CheckInputSettings() {
         //validate the cuts file
         if (_settings_window.getScanType() !=  Parameters.ScanType.TIMEONLY && _cutFileTextField.getText().length() > 0 && !FileAccess.ValidateFileAccess(_cutFileTextField.getText(), false))
             throw new AdvFeaturesExpection("The cuts file could not be opened for reading.\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.", FocusedTabSet.INPUT, (Component) _cutFileTextField);
     }
 
-    /* Verifies that temporal window settings are valid in the context of all parameter settings. */
+    /** Verifies that temporal window settings are valid in the context of all parameter settings. */
     private void CheckTemporalWindowSize() {
         if (!_maxTemporalOptionsGroup.isEnabled()) return; // skip if group is disabled.
         double maximumUnitsTemporalSize = 0;
@@ -847,7 +849,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /* Returns the number of time units in the specified temporal window. */
+    /** Returns the number of time units in the specified temporal window. */
     public int getNumUnitsInTemporalWindow() {
         return Utils.getUnitsBetween(
             _settings_window.getPrecisionOfTimesControlType(), 
@@ -856,7 +858,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         );
     }
 
-    /* Returns the number of time units in the shortest period of specified temporal window. */
+    /** Returns the number of time units in the shortest period of specified temporal window. */
     public int getNumUnitsInShortestTemporalWindow() {
         LocalDate StartRangeEnd = getTemporalStartRangeEnd();
         LocalDate EndRangeBegin = getTemporalEndRangeBegin();
@@ -869,7 +871,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         );        
     }    
     
-    /* Verifies that additional output settings are valid in the context of all parameter settings. */
+    /** Verifies that additional output settings are valid in the context of all parameter settings. */
     private void CheckAdditionalOutputOptions() throws NumberFormatException, AdvFeaturesExpection {
         if (_chk_rpt_attributable_risk.isEnabled() && _chk_rpt_attributable_risk.isSelected()) {
             if (_attributable_risk_exposed.getText().trim().length() == 0)
@@ -879,7 +881,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /* Verifies that inference settings are valid in the context of all parameter settings. */
+    /** Verifies that inference settings are valid in the context of all parameter settings. */
     private void CheckInferenceSettings() {
         int dNumReplications;
         if (_montCarloReplicationsTextField.getText().trim().length() == 0) {
@@ -902,7 +904,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /* Verifies that adjustment options are valid. */
+    /** Verifies that adjustment options are valid. */
     private void CheckAdjustmentSettings() {
         if (_apply_time_range_restrictions.isEnabled() && _apply_time_range_restrictions.isSelected()) {
             if (_time_range_restrictions.getText().trim().length() == 0)
@@ -921,20 +923,20 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    /* Enables or disables the advanced inputs group controls. */
+    /** Enables or disables the advanced inputs group controls. */
     public void enableAdvancedInputsSettings(boolean enableCutFile) {
         _cutFileLabel.setEnabled(enableCutFile);
         _cutFileTextField.setEnabled(enableCutFile);
         _cutFileImportButton.setEnabled(enableCutFile);
     }
 
-    /* Validates scanning window range settings - throws exception. */
+    /** Validates scanning window range settings - throws exception. */
     private void CheckTemporalWindowSettings() {
         if (Utils.selected(_restrictTemporalRangeCheckBox)) {
             LocalDate DataRangeStart = _settings_window.getDataTimeRangeStartDate(), DataRangeEnd = _settings_window.getDataTimeRangeEndDate();
             LocalDate StartRangeBegin = getTemporalStartRangeBegin(), StartRangeEnd = getTemporalStartRangeEnd();
             LocalDate EndRangeBegin = getTemporalEndRangeBegin(), EndRangeEnd = getTemporalEndRangeEnd();
-            //check that scanning ranges are within study period
+            // check that scanning ranges are within study period
             if (StartRangeBegin.isBefore(DataRangeStart) || StartRangeBegin.isAfter(DataRangeEnd))
                 throw new AdvFeaturesExpection("The temporal window start range does not occur within the data time range.",
                         FocusedTabSet.ANALYSIS, (Component) _startRangeStartYearTextField
@@ -1004,7 +1006,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
     
     /**
-     * enables or disables options on the temporal tab
+     * Enables or disables options on the temporal tab
      */
     public void enableTemporalOptionGroups(boolean bEnable) {
         _maxTemporalOptionsGroup.setEnabled(bEnable);
@@ -1026,7 +1028,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * enables controls of 'Temporal Graphs' groups
+     * Enables controls of 'Temporal Graphs' groups
      */
     public void enableTemporalGraphsGroup(boolean enable) {
         _graphOutputGroup.setEnabled(enable);
@@ -1042,7 +1044,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _temporalGraphPvalueCutoff.setEnabled(enable && _reportTemporalGraph.isSelected() && _temporalGraphSignificant.isSelected());
     }    
     
-    /** enables options of the Adjustments tab */
+    /** Enables options of the Adjustments tab */
     public void enableAdjustmentsOptions() {
         _perform_dayofweek_adjustments.setEnabled(
                 (_settings_window.getScanType() == Parameters.ScanType.TREETIME || _settings_window.getScanType() == Parameters.ScanType.TIMEONLY) 
@@ -1136,7 +1138,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _label_restrict_cuts2.setEnabled(bEnableGroup);
     }    
     
-    /* Enables the prospective frequency controls. */
+    /** Enables the prospective frequency controls. */
     public void enableProspectiveFrequencyGroup() {
         _prospective_frequency_group.setEnabled(Utils.selected(_prospective_evaluation));
         _label_prospective_frequency.setEnabled(_prospective_frequency_group.isEnabled());
@@ -1144,7 +1146,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }    
     
     /**
-     * Enabled the sequential analysis group based upon current settings.
+     * Enables the sequential analysis group based upon current settings.
      */
     public void enableSequentialAnalysisGroup() {
         Parameters.ScanType scanType = _settings_window.getScanType();

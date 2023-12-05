@@ -30,7 +30,7 @@ public class DBaseImportDataSource implements ImportDataSource {
     private final DBFReader _reader;
     private int _currentRowNumber = 0;
     private boolean _formatDates;
-    private final String _libDateFormat = "EEE MMM dd HH:mm:ss z yyyy"; //"Fri Aug 30 00:00:00 EDT 2002"
+    private final String _libDateFormat = "EEE MMM dd HH:mm:ss z yyyy"; // "Fri Aug 30 00:00:00 EDT 2002"
     private ArrayList<Object> _column_names = new ArrayList<Object>();    
 
     /** Creates a new instance of DBaseImportDataSource */
@@ -78,7 +78,7 @@ public class DBaseImportDataSource implements ImportDataSource {
         }
     }
 
-    /* Returns whether column at index is a numeric field. */
+    /** Returns whether column at index is a numeric field. */
     public boolean isColumnNumeric(int iColumn) {
         try {
             return _reader.getField(iColumn).getType() == DBFDataType.NUMERIC;
@@ -119,10 +119,10 @@ public class DBaseImportDataSource implements ImportDataSource {
                 return null;
             }
             for (int i=0; i < record.length; ++i) {
-                if (record[i] == null) {//replace null values with empty string
+                if (record[i] == null) { // replace null values with empty string
                     values.add("");
                 } else if (isColumnDate(i + 2)) {
-                    //reformat date to format that we want either YYYYMMDD or YYYY/MM/DD
+                    // reformat date to format that we want either YYYYMMDD or YYYY/MM/DD
                     GregorianCalendar date = new GregorianCalendar();
                     date.setTime(new SimpleDateFormat(_libDateFormat).parse(record[i].toString()));
                     StringBuilder str = new StringBuilder();
@@ -145,13 +145,13 @@ public class DBaseImportDataSource implements ImportDataSource {
                     str.append(day);
                     values.add(str.toString());
                 } else if (isColumnNumeric(i + 2)) {
-                    //reformat numeric fields with zero precision to have no decimal
+                    // reformat numeric fields with zero precision to have no decimal
                     String value = record[i].toString();
                     if (_reader.getField(i).getDecimalCount() == 0 && value.indexOf('.') != -1) {
                         value = value.substring(0, value.indexOf('.'));
                     }
                     values.add(value);
-                } else {//otherwise, accept value as it is
+                } else { // otherwise, accept value as it is
                     values.add(record[i].toString());
                 }
             }

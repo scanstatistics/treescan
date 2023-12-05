@@ -6,8 +6,7 @@
 package org.treescan.app;
 
 /**
- * Exception class that note the component and containing that 
- * that caused exception.
+ * Exception class that notes the component that caused exception.
  */
 public class RegionFeaturesException extends RuntimeException {
 

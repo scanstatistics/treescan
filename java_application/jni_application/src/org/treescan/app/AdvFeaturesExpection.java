@@ -4,8 +4,7 @@ import java.awt.Component;
 import org.treescan.gui.AdvancedParameterSettingsFrame;
 
 /**
- * Exception class that note the component and containing that 
- * that caused exception.
+ * Exception class that notes the component that caused exception.
  */
 public class AdvFeaturesExpection extends RuntimeException {
 

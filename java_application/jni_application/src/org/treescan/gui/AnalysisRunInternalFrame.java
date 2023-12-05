@@ -110,10 +110,10 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             }
         }); 
         
-        //Limit number of lines to specified maximum. The JTextArea control is a real
-        //memory hog once the number of lines gets large. With default java heap, memory
-        //exhausts around the 143,000 line appended. When printing simulations to window, 
-        //it's had to believe anyone would be interested in more than MAXLINES lines.
+        // Limit number of lines to specified maximum. The JTextArea control is a real
+        // memory hog once the number of lines gets large. With default java heap, memory
+        // exhausts around the 143,000 line appended. When printing simulations to window, 
+        // it's hard to believe anyone would be interested in more than MAXLINES lines.
         Element root = _progressTextArea.getDocument().getDefaultRootElement();
         if (root.getElementCount() > MAXLINES) {
            Element firstLine = root.getElement(0);

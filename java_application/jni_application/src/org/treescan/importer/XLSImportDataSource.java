@@ -17,7 +17,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.treescan.utils.FileAccess;
 
-/* A data source for reading from Excel (XLS) files natively. */
+/** A data source for reading from Excel (XLS) files natively. */
 public class XLSImportDataSource implements ImportDataSource {
 
     protected Workbook _workbook;
@@ -50,7 +50,7 @@ public class XLSImportDataSource implements ImportDataSource {
             throw new RuntimeException(e);
         }
         _file_path = file.getAbsolutePath();
-        //Set the first sheet to be initial default.
+        // Set the first sheet to be initial default.
         setSheet(0);
         
         if (_hasHeader) {
@@ -83,13 +83,13 @@ public class XLSImportDataSource implements ImportDataSource {
         }
     }
 
-    /* Sets what sheet to read from. */
+    /** Sets what sheet to read from. */
     public void setSheet(int i) {
         _sheet = _workbook.getSheetAt(i);
         _sheet_index = i;
     }
 
-    /* Gets the index of the sheet to read from. */
+    /** Gets the index of the sheet to read from. */
     public int getSheetIndex() {
         return _sheet_index;
     }
@@ -109,12 +109,12 @@ public class XLSImportDataSource implements ImportDataSource {
 
     @Override
     public Object[] readRow() {
-        if (_sheet == null) { //If _sheet is null then throw IOException so the caller is alerted to an unexpected error.
+        if (_sheet == null) { // If _sheet is null then throw IOException so the caller is alerted to an unexpected error.
             throw new RuntimeException("Null Sheet Reference");
         }
 
         boolean containedNonEmptyCells = false;
-        //returns the next non-empty row or null if none are left
+        // returns the next non-empty row or null if none are left
         while (true) {
             if (_current_row <= _sheet.getLastRowNum()) {
                 Row row = _sheet.getRow(_current_row);
@@ -122,40 +122,40 @@ public class XLSImportDataSource implements ImportDataSource {
                 if (row != null && row.getPhysicalNumberOfCells() > 0) {
                     ArrayList<Object> obj = new ArrayList<Object>();
                     
-                    //Get the number of defined cells in this row
+                    // Get the number of defined cells in this row
                     int totalDefinedCells = row.getPhysicalNumberOfCells();
-                    //Initialize the number of defined cells found so far
+                    // Initialize the number of defined cells found so far
                     int definedCellsFound = 0;
-                    //set number of cells that exist (defined or not)
+                    // set number of cells that exist (defined or not)
                     int lastCellInRow = row.getLastCellNum();
-                    //Stop for loop after processing all the defined cells of this row
+                    // Stop for loop after processing all the defined cells of this row
                     for (int i=0; i < lastCellInRow; i++) {
-                        //if still processing defined cells add them accordingly
+                        // if still processing defined cells add them accordingly
                         if (definedCellsFound < totalDefinedCells) {
                             Cell cell = row.getCell((short) i);
                             if (cell != null) {
-                                //If this cell is defined increment count
+                                // If this cell is defined increment count
                                 definedCellsFound++;
                                 String cellContents = getCellValue(cell).trim();
-                                //keep a flag to see if any of the cells contains real data, not just ""
+                                // keep a flag to see if any of the cells contains real data, not just ""
                                 if (!cellContents.equals("")) {
                                     containedNonEmptyCells = true;
                                 }
                                 obj.add(cellContents);
-                            } else { //If the cell is undefined add an empty string
+                            } else { // If the cell is undefined add an empty string
                                 obj.add("");
                             }
-                        } else {//done with defined cells but there are still some null trailing cells
+                        } else { // done with defined cells but there are still some null trailing cells
                             obj.add("");
                         }
                     }
-                    //normal return when row has data
+                    // normal return when row has data
                     if (containedNonEmptyCells) {
                         return obj.toArray();
                     }
                 }
-            } else { //gCurrentRow > _sheet.getLastRowNum()
-                //If there are no more rows to read return null.
+            } else { // gCurrentRow > _sheet.getLastRowNum()
+                // If there are no more rows to read return null.
                 return null;
             }
         }
@@ -179,7 +179,7 @@ public class XLSImportDataSource implements ImportDataSource {
      * @return a string formatted date
      */
     private String formatDate(double cellValue) {
-        //create date and set calendar to be used in setting dateValue
+        // create date and set calendar to be used in setting dateValue
         Date date = DateUtil.getJavaDate(cellValue);
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
@@ -201,13 +201,13 @@ public class XLSImportDataSource implements ImportDataSource {
         return dateValue.toString();
     }
 
-    /* Attempts to convert numeric cell value. */
+    /** Attempts to convert numeric cell value. */
     private String formatNumericCell(Cell cell, double cellValue) {
         boolean isPoiKnownDate = DateUtil.isCellDateFormatted(cell) || DateUtil.isInternalDateFormat(cell.getCellStyle().getDataFormat());
         if (isPoiKnownDate) {
             return formatDate(cellValue);
         } else {
-            //try to see if this is a user defined date format (unknown by POI's HSSFDateUtil)
+            // try to see if this is a user defined date format (unknown by POI's HSSFDateUtil)
             short formatIndex = cell.getCellStyle().getDataFormat();
             try {
                 BuiltinFormats.getBuiltinFormat(formatIndex);
@@ -215,15 +215,15 @@ public class XLSImportDataSource implements ImportDataSource {
                 DataFormat dataFormat = _workbook.createDataFormat();
                 String format = dataFormat.getFormat(formatIndex);
                 boolean isValid = DateUtil.isValidExcelDate(cellValue);
-                //see if there are any date formatting strings in the format
+                // see if there are any date formatting strings in the format
                 boolean hasDateFormating = format.matches(".*[mM]{2,}.*|.*[dD]{2,}.*|.*[yY]{2,}.*|.*[hH]{2,}.*|.*[sS]{2,}.*|.*[qQ]{2,}.*|.*[nN]{2,}.*|.*[wW]{2,}.*");
                 if (isValid && hasDateFormating) {
                     return formatDate(cellValue);
                 }
             }
-            //if this is not a date process as a number
+            // if this is not a date process as a number
             Double number = cellValue;
-            //if this is an int create the string as such
+            // if this is an int create the string as such
             if (number.doubleValue() == number.intValue()) {
                 return (Integer.toString(number.intValue()));
             }

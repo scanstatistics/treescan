@@ -42,7 +42,7 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
     }
 
     /**
-     * recursively searches Container objects contained in 'rootComponent' for
+     * Recursively searches Container objects contained in 'rootComponent' for
      * for 'searchComponent'.
      */
     boolean isContainedComponent(Component rootComponent, Component searchComponent) {
@@ -64,12 +64,12 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
     }
 
     /**
-     * Sets tab set visible and attempts to set focus on 'focusComponent'.
+     * Sets window visible and attempts to set focus on 'focusComponent'.
      */
     public void setVisible(Component focusComponent) {
-        //set tab set visible
+        // set window visible
         setVisibleWindow(true);
-        //find focus component and request focus
+        // find focus component and request focus
         for (int i = 0; i < jTabbedPane1.getTabCount(); ++i) {
             if (isContainedComponent(jTabbedPane1.getComponentAt(i), focusComponent)) {
                 jTabbedPane1.setSelectedIndex(i);
@@ -79,11 +79,11 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
         }
     }
 
-    /** */
+    /** Sets window visibility. */
     public void setVisibleWindow(boolean value) {
         if (value == false) {
             _closeButton.requestFocus();
-        } //cause any text controls to loose focus
+        } // cause any text controls to lose focus
         super.setVisible(value);
         if (value) {
             startModal();
@@ -95,7 +95,7 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
     }
 
     /**
-     * enables 'Set Defaults' button
+     * Enables 'Set Defaults' button
      */
     private void enableSetDefaultsButton() {
         // update enable/disable of Set Defaults button
@@ -133,7 +133,7 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
     }
 
     /**
-     * sets Parameters class with settings in form
+     * Sets Parameters class with settings in form
      */
     public void saveParameterSettings(Parameters parameters) {
         parameters.setGeneratingHtmlResults(_reportResultsAsHTML.isSelected());
@@ -165,7 +165,7 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
 
     /**
      * Sets default values for Output related tab and respective controls pulled
-     * these default values from the CParameter class
+     * from the CParameter class
      */
     private void setDefaultsForOutputTab() {
         _reportResultsAsHTML.setSelected(false);
@@ -175,14 +175,14 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
         _attributable_risk_exposed.setText("");
     }
 
-    /*
+    /**
      * Verifies that settings are valid in the context of all other parameter settings.
      */
     public void CheckSettings() {
         CheckAdditionalOutputOptions();
     }
 
-    /*
+    /**
      * Verifies that additional output settings are valid in the context of all parameter settings.
      */
     private void CheckAdditionalOutputOptions() throws NumberFormatException, AdvFeaturesExpectionSequential {
@@ -196,7 +196,7 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
         }
     }
 
-    /** enables options of the Additional Output tab */
+    /** Enables options of the Additional Output tab */
     public void enableAdditionalOutputOptions() {
         _chk_rpt_attributable_risk.setEnabled(true);
         _attributable_risk_exposed.setEnabled(_chk_rpt_attributable_risk.isEnabled() && _chk_rpt_attributable_risk.isSelected());

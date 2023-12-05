@@ -34,14 +34,14 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         setLocationRelativeTo(parent);
     }
 
-    /*
+    /**
      * Returns application update frequency choices
      */
     public static String[] updateFrequencyChoices() {
         return new String[] { CHECK_EVERYTIME_KEY, CHECK_WEEKLY_KEY, CHECK_MONTHLY_KEY, CHECK_MANUALLY_KEY };
     }
     
-    /*
+    /**
      * Sets the application update frequency setting. 
      */
     public static void setUpdateFrequency(String choice) {
@@ -49,7 +49,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         prefs.put(CHECK_FREQUENCY_KEY, choice);        
     }
 
-    /*
+    /**
      * Sets the type of file selection dialog to use.
      */
     public void setAlternativeBrowsing(boolean selected) {
@@ -60,7 +60,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         }
     }
     
-    /*
+    /**
      * Sets the application update frequency setting. 
      */
     public static String getUpdateFrequency() {
@@ -68,7 +68,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         return prefs.get(CHECK_FREQUENCY_KEY, CHECK_MONTHLY_KEY);
     }
     
-    /*
+    /**
      * Sets last time checked as now.
      */
     public static Date lastCheckedNow() {
@@ -78,7 +78,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         return date;
     }
     
-    /*
+    /**
      * Returns whether user preferences indicate that we should check for preferences now.
      */
     public static boolean shouldCheckUpdate() {

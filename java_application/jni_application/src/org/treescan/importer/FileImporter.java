@@ -24,7 +24,6 @@ public class FileImporter {
     private final String _groupmarker="\"";
     
     /**
-     * 
      * @param dataSource - import data source
      * @param importVariables - collection of all import variables
      * @param destinationFile - file where import records will be written.
@@ -75,14 +74,14 @@ public class FileImporter {
         Object[] values = _dataSource.readRow(); // read first row of data
         FileWriter writer = new FileWriter(_destinationFile); // open file writer - overwriting contents
         BufferedWriter buffer = new BufferedWriter(writer);
-        /* Start processing and writing records. Stop when data source is exhausted or cancel flag is tripped. */
+        // Start processing and writing records. Stop when data source is exhausted or cancel flag is tripped.
         while (values != null && !_cancelled) {
             ArrayList<String> record = (ArrayList<String>)record_template.clone();
             // for each mapped variable, set value in cooresponding spot of record.
             for (ImportVariable variable: mappedVariables) {
                 int iColumn = variable.getSourceFieldIndex(); // source field index is 1 based
                 if (iColumn > values.length)
-                    /* If the source column index is greater than number of values in data source record, set to empty string or default. */
+                    // If the source column index is greater than number of values in data source record, set to empty string or default.
                     value = variable.hasDefault() ? variable.getDefault() : "";
                 else
                     value = (String)values[iColumn - 1];

@@ -314,7 +314,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
      * Creates file selection dialog which always user to browse for parameter file and ultimately open in settings window.
      */
     private void openParameterSessionWindow() {
-        //Create a file chooser
+        // Create a file chooser
         List<InputFileFilter> filters = new ArrayList<InputFileFilter>();
         filters.add(new InputFileFilter("txt", "Text Files (*.txt)"));
         filters.add(new InputFileFilter("prm", "Settings Files (*.prm)"));
@@ -607,7 +607,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
                               "Please cancel or wait for analyses then close TreeScan.", "Error", JOptionPane.INFORMATION_MESSAGE);
                     return;
                 }
-                //trigger windowClosing event manually ...
+                // trigger windowClosing event manually ...
                 windowClosing(new WindowEvent(TreeScanApplication.this, WindowEvent.WINDOW_CLOSING));
             }
         } catch (Throwable t) {
@@ -647,7 +647,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     }
 
     /**
-     * returns whether there are actively running analyses
+     * Returns whether there are actively running analyses
      */
     private boolean getAnalysesRunning() {
         boolean bReturn = false;
@@ -736,7 +736,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         return true;
     }
 
-    /** closes all running analysis child windows -- this method is primarily used when closing the
+    /** Closes all running analysis child windows -- this method is primarily used when closing the
      * application and the user has indicated to close regardless of executing analyses. */
     private void CloseRunningAnalysesWindows() {
         for (int i = 0; i < allOpenFrames.size(); i++) {
@@ -768,8 +768,8 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             try {
                 openNewParameterSessionWindow(_file.getAbsolutePath());
             } catch (Throwable t) {
-                //The JNI method to read the parameters file might have initiated
-                //this exception; so check file access to see if that was infact the problem.
+                // The JNI method to read the parameters file might have initiated
+                // this exception; so check file access to see if that was infact the problem.
                 if (!FileAccess.ValidateFileAccess(_file.getAbsolutePath(), false)) {
                     JOptionPane.showMessageDialog(TreeScanApplication.this,
                             "The parameter file could not be opened for reading:\n " +
@@ -783,7 +783,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         }
     }
 
-    /** refreshes 'reopen' menu item to reflect possibly updated history list */
+    /** Refreshes 'reopen' menu item to reflect possibly updated history list */
     public void refreshOpenList() {
         _reopenSessionMenu.removeAll();
         for (int i = 0; i < ParameterHistory.getInstance().getHistoryList().size(); ++i) {
@@ -1115,7 +1115,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
     }
 
     /**
-     * form close event -- checks whether there are actively running analyses and
+     * Form close event -- checks whether there are actively running analyses and
      * prompts user as to whether to continue closing accordingly. The ForceClose()
      * method is used to ensure that all child windows will close.
      */
@@ -1162,7 +1162,7 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
                 return;
             }
         }
-        //saving window dimensions
+        // saving window dimensions
         Preferences _prefs = Preferences.userNodeForPackage(TreeScanApplication.class);
         _prefs.put(WIDTH_KEY, Integer.toString(getSize().width));
         _prefs.put(HEIGHT_KEY, Integer.toString(getSize().height));

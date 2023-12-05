@@ -29,7 +29,7 @@ import javax.swing.text.View;
 import javax.swing.text.html.HTMLDocument;
 
 public class JDocumentRenderer implements Printable {
-/*  JDocumentRenderer prints objects of type Document. Text attributes, including
+/** JDocumentRenderer prints objects of type Document. Text attributes, including
     fonts, color, and small icons, will be rendered to a printed page.
     JDocumentRenderer computes line breaks, paginates, and performs other
     formatting.
@@ -49,26 +49,26 @@ public class JDocumentRenderer implements Printable {
     setDocument() or setJEditorPane(). The Document may then be printed by
     setting the instance of JDocumentRenderer in any PrinterJob.
 */
-  protected int currentPage = -1;               //Used to keep track of when
-                                                //the page to print changes.
+  protected int currentPage = -1;               // Used to keep track of when
+                                                // the page to print changes.
 
-  protected JEditorPane jeditorPane;            //Container to hold the
-                                                //Document. This object will
-                                                //be used to lay out the
-                                                //Document for printing.
+  protected JEditorPane jeditorPane;            // Container to hold the
+                                                // Document. This object will
+                                                // be used to lay out the
+                                                // Document for printing.
 
-  protected double pageEndY = 0;                //Location of the current page
-                                                //end.
+  protected double pageEndY = 0;                // Location of the current page
+                                                // end.
 
-  protected double pageStartY = 0;              //Location of the current page
-                                                //start.
+  protected double pageStartY = 0;              // Location of the current page
+                                                // start.
 
-  protected boolean scaleWidthToFit = true;     //boolean to allow control over
-                                                //whether pages too wide to fit
-                                                //on a page will be scaled.
+  protected boolean scaleWidthToFit = true;     // boolean to allow control over
+                                                // whether pages too wide to fit
+                                                // on a page will be scaled.
 
 
-/*    The JDocumentRenderer class uses pFormat and pJob in its methods. Note
+/**   The JDocumentRenderer class uses pFormat and pJob in its methods. Note
       that pFormat is not the variable name used by the print method of the
       JDocumentRenderer. Although it would always be expected to reference the
       pFormat object, the print method gets its PageFormat as an argument.
@@ -76,33 +76,33 @@ public class JDocumentRenderer implements Printable {
   protected PageFormat pFormat;
   protected PrinterJob pJob;
 
-/*  The constructor initializes the pFormat and PJob variables.
+/** The constructor initializes the pFormat and PJob variables.
 */
   public JDocumentRenderer() {
     pFormat = new PageFormat();
     pJob = PrinterJob.getPrinterJob();
   }
 
-/*  Method to get the current Document
+/** Method to get the current Document
 */
   public Document getDocument() {
     if (jeditorPane != null) return jeditorPane.getDocument();
     else return null;
   }
 
-/*  Method to get the current choice the width scaling option.
+/** Method to get the current choice the width scaling option.
 */
   public boolean getScaleWidthToFit() {
     return scaleWidthToFit;
   }
 
-/*  pageDialog() displays a page setup dialog.
+/** pageDialog() displays a page setup dialog.
 */
   public void pageDialog() {
     pFormat = pJob.pageDialog(pFormat);
   }
 
-/*  The print method implements the Printable interface. Although Printables
+/** The print method implements the Printable interface. Although Printables
     may be called to render a page more than once, each page is painted in
     order. We may, therefore, keep track of changes in the page being rendered
     by setting the currentPage variable to equal the pageIndex, and then
@@ -204,21 +204,21 @@ public class JDocumentRenderer implements Printable {
     }
   }
 
-/*  print(HTMLDocument) is called to set an HTMLDocument for printing.
+/** print(HTMLDocument) is called to set an HTMLDocument for printing.
 */
   public void print(HTMLDocument htmlDocument) {
     setDocument(htmlDocument);
     printDialog();
   }
 
-/*  print(JEditorPane) prints a Document contained within a JEDitorPane.
+/** print(JEditorPane) prints a Document contained within a JEDitorPane.
 */
   public void print(JEditorPane jedPane) {
     setDocument(jedPane);
     printDialog();
   }
 
-/*  print(PlainDocument) is called to set a PlainDocument for printing.
+/** print(PlainDocument) is called to set a PlainDocument for printing.
 */
   public void print(PlainDocument plainDocument) {
     setDocument(plainDocument);
@@ -243,7 +243,7 @@ public class JDocumentRenderer implements Printable {
     }
   }
 
-/*  printView is a recursive method which iterates through the tree structure
+/** printView is a recursive method which iterates through the tree structure
     of the view sent to it. If the view sent to printView is a branch view,
     that is one with children, the method calls itself on each of these
     children. If the view is a leaf view, that is a view without children which
@@ -306,20 +306,20 @@ public class JDocumentRenderer implements Printable {
     return pageExists;
   }
 
-/*  Method to set the content type the JEditorPane.
+/** Method to set the content type the JEditorPane.
 */
   protected void setContentType(String type) {
     jeditorPane.setContentType(type);
   }
 
-/*  Method to set an HTMLDocument as the Document to print.
+/** Method to set an HTMLDocument as the Document to print.
 */
   public void setDocument(HTMLDocument htmlDocument) {
     jeditorPane = new JEditorPane();
     setDocument("text/html",htmlDocument);
   }
 
-/*  Method to set the Document to print as the one contained in a JEditorPane.
+/** Method to set the Document to print as the one contained in a JEditorPane.
     This method is useful when Java does not provide direct access to a
     particular Document type, such as a Rich Text Format document. With this
     method such a document can be sent to the JDocumentRenderer class enclosed
@@ -330,21 +330,21 @@ public class JDocumentRenderer implements Printable {
     setDocument(jedPane.getContentType(),jedPane.getDocument());
   }
 
-/*  Method to set a PlainDocument as the Document to print.
+/** Method to set a PlainDocument as the Document to print.
 */
   public void setDocument(PlainDocument plainDocument) {
     jeditorPane = new JEditorPane();
     setDocument("text/plain",plainDocument);
   }
 
-/*  Method to set the content type and document of the JEditorPane.
+/** Method to set the content type and document of the JEditorPane.
 */
   protected void setDocument(String type, Document document) {
     setContentType(type);
     jeditorPane.setDocument(document);
   }
 
-/*  Method to set the current choice of the width scaling option.
+/** Method to set the current choice of the width scaling option.
 */
   public void setScaleWidthToFit(boolean scaleWidth) {
     scaleWidthToFit = scaleWidth;
