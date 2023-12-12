@@ -20,7 +20,7 @@
                 <Property name="text" type="java.lang.String" value="New Session" noResource="true"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_newSessionMenuItem.setIcon(null);&#xd;&#xa;_newSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_newSessionMenuItem.setIcon(null);&#xd;&#xa;_newSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));"/>
               </AuxValues>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="_openSessionMenuItem">
@@ -31,7 +31,7 @@
                 <Property name="text" type="java.lang.String" value="Open Session File" noResource="true"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_openSessionMenuItem.setIcon(null);&#xd;&#xa;_openSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_openSessionMenuItem.setIcon(null);&#xd;&#xa;_openSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));"/>
               </AuxValues>
             </MenuItem>
             <Menu class="javax.swing.JMenu" name="_reopenSessionMenu">
@@ -49,7 +49,7 @@
                 </Property>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_closeSessionMenuItem.setIcon(null);&#xd;&#xa;_closeSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_closeSessionMenuItem.setIcon(null);&#xd;&#xa;_closeSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));"/>
               </AuxValues>
             </MenuItem>
             <MenuItem class="javax.swing.JSeparator" name="_fileMenuSeparator1">
@@ -61,7 +61,7 @@
                 </Property>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_saveSessionMenuItem.setIcon(null);&#xd;&#xa;_saveSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_saveSessionMenuItem.setIcon(null);&#xd;&#xa;_saveSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));"/>
               </AuxValues>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="_saveSessionAsMenuItem">
@@ -71,7 +71,7 @@
                 </Property>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_saveSessionAsMenuItem.setIcon(null);&#xd;&#xa;_saveSessionAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, (java.awt.event.InputEvent.SHIFT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_saveSessionAsMenuItem.setIcon(null);&#xd;&#xa;_saveSessionAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, (java.awt.event.InputEvent.SHIFT_DOWN_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()))));"/>
               </AuxValues>
             </MenuItem>
             <MenuItem class="javax.swing.JSeparator" name="_fileMenuSeparator2">
@@ -83,7 +83,7 @@
                 </Property>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_appPreferences.setIcon(null);&#xd;&#xa;_appPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_appPreferences.setIcon(null);&#xd;&#xa;_appPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));"/>
               </AuxValues>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="_printMenuItem">
@@ -93,7 +93,7 @@
                 </Property>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_printMenuItem.setIcon(null);&#xd;&#xa;_printMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_printMenuItem.setIcon(null);&#xd;&#xa;_printMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));"/>
               </AuxValues>
             </MenuItem>
             <MenuItem class="javax.swing.JSeparator" name="_fileMenuSeparator3">
@@ -126,7 +126,7 @@
                 </Property>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_executeSessionMenuItem.setIcon(null);&#xd;&#xa;_executeSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_executeSessionMenuItem.setIcon(null);&#xd;&#xa;_executeSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));"/>
               </AuxValues>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="_executeOptionsMenuItem">
@@ -136,7 +136,7 @@
                 </Property>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_executeOptionsMenuItem.setIcon(null);&#xd;&#xa;_executeOptionsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, (java.awt.event.InputEvent.SHIFT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_executeOptionsMenuItem.setIcon(null);&#xd;&#xa;_executeOptionsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, (java.awt.event.InputEvent.SHIFT_DOWN_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()))));"/>
               </AuxValues>
             </MenuItem>
           </SubComponents>

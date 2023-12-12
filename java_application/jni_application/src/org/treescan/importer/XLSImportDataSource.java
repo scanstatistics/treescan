@@ -3,7 +3,6 @@ package org.treescan.importer;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -17,25 +16,22 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.treescan.utils.FileAccess;
 
-/** A data source for reading from Excel (XLS) files natively. */
+/**
+ * XLSImportDataSource acts as a data source for the Importer by reading Excel files.
+ */
 public class XLSImportDataSource implements ImportDataSource {
 
     protected Workbook _workbook;
     protected Sheet _sheet;
     protected int _current_row;
-    private static final String VERSION_ERRROR = "The Excel file could not be opened.\n" +
-            "This error may be caused by opening an unsupported XLS version (Excel 5.0/7.0 format).\n" +
-            "To test whether you are importing an unsupported version, re-save the file to versions 97-2003 and try again.";
-    private String _file_path;
     private int _sheet_index = 0;
-    private ArrayList<Object> _column_names;
-    private boolean _hasHeader=false;
+    private ArrayList<Object> _column_names = new ArrayList<>();
+    private boolean _has_header=false;
     private InputStream _input_stream=null;
 
     public XLSImportDataSource(File file, boolean hasHeader) {
-        _column_names = new ArrayList<Object>();
         _current_row = 0;
-        _hasHeader = hasHeader;
+        _has_header = hasHeader;
         try {
             _input_stream = new FileInputStream(file);
             if (FileAccess.getExtension(file).equals(".xlsx"))
@@ -45,15 +41,16 @@ public class XLSImportDataSource implements ImportDataSource {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (org.apache.poi.hssf.OldExcelFormatException e) {
-            throw new ImportDataSource.UnsupportedException(VERSION_ERRROR, e);
+            throw new ImportDataSource.UnsupportedException("The Excel file could not be opened.\n" +
+            "This error may be caused by opening an unsupported XLS version (Excel 5.0/7.0 format).\n" +
+            "To test whether you are importing an unsupported version, re-save the file to versions 97-2003 and try again.", e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        _file_path = file.getAbsolutePath();
         // Set the first sheet to be initial default.
         setSheet(0);
         
-        if (_hasHeader) {
+        if (_has_header) {
             Object[] row = readRow();
             for (int i=0; i < row.length; ++i)
                 _column_names.add(row[i]);
@@ -70,7 +67,7 @@ public class XLSImportDataSource implements ImportDataSource {
             for (int i=1; i <= maxCols; ++i) {
                 _column_names.add("Column " + i);
             }
-            reset();
+            _current_row = _has_header ? 1 : 0; // reset current row
         }
     }
 
@@ -161,18 +158,6 @@ public class XLSImportDataSource implements ImportDataSource {
         }
     }
 
-    public void reset() {
-        _current_row = _hasHeader ? 1 : 0;
-    }
-
-    public int getCurrentRow() {
-        return _current_row;
-    }
-
-    public String getAbsolutePath() {
-        return _file_path;
-    }
-
     /**
      * make a date string out of the excel representation (i.e. M/D/YYYY [HH:MM])
      * @param cellValue excel representation
@@ -180,10 +165,8 @@ public class XLSImportDataSource implements ImportDataSource {
      */
     private String formatDate(double cellValue) {
         // create date and set calendar to be used in setting dateValue
-        Date date = DateUtil.getJavaDate(cellValue);
         Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-
+        cal.setTime(DateUtil.getJavaDate(cellValue));
         StringBuilder dateValue = new StringBuilder();
         dateValue.append(cal.get(Calendar.YEAR));
         dateValue.append("/");

@@ -13,10 +13,10 @@ public class PreviewTableModel extends AbstractTableModel {
     private static final long serialVersionUID = 1L;
     public static final int DEFAULT_PREVIEW_LENGTH = 50;
     private int _previewLength = DEFAULT_PREVIEW_LENGTH;
-    protected ArrayList<Object[]> _previewData = new ArrayList<Object[]>();
+    protected ArrayList<Object[]> _previewData = new ArrayList<>();
     protected int _maxFieldCount = 0;
     protected final ImportDataSource _data_source;
-    ArrayList<Object> _column_names = new ArrayList<Object>();
+    ArrayList<Object> _column_names = new ArrayList<>();
 
     /** Constructs a new PreviewTableModel object. */
     public PreviewTableModel(ImportDataSource data_source) {
@@ -56,6 +56,7 @@ public class PreviewTableModel extends AbstractTableModel {
     }
 
     /** Returns object at table row/column. */
+    @Override
     public Object getValueAt(int row, int col) {
         Object[] rowData = _previewData.get(row);
         if (col < rowData.length) {

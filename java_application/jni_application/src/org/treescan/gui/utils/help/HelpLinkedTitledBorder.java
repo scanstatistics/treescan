@@ -138,7 +138,7 @@ public class HelpLinkedTitledBorder implements Border, MouseListener, MouseMotio
 
         titleComponent.setSize(rect.width, rect.height);
         titleComponent.dispatchEvent(new MouseEvent(titleComponent, id, me.getWhen(),
-                me.getModifiers(), pt.x, pt.y, me.getClickCount(),
+                me.getModifiersEx(), pt.x, pt.y, me.getClickCount(),
                 me.isPopupTrigger(), me.getButton()));
 
         if (!titleComponent.isValid()) {

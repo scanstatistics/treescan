@@ -1,16 +1,7 @@
-/*
- * ImportDataSource.java
- *
- * Created on December 14, 2007, 2:27 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 package org.treescan.importer;
 
 /**
- *
- * @author Hostovic
+ * Defines file wizard data source interface.
  */
 public interface ImportDataSource {
     public class UnsupportedException extends RuntimeException {

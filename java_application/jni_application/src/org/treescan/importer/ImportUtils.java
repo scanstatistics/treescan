@@ -98,23 +98,18 @@ public class ImportUtils {
     False to leave all whitespace between delimiters.
     @param bStripGroupMarkers True to
     Returns a ArrayList of Cells parsed from sLine. */
-    public static ArrayList<String> parseLine(String sLine, String sDelimiter, String sOpenGroupMarker, String sCloseGroupMarker,
-            boolean bTrimWhitespace, boolean bStripGroupMarkers) {
+    public static ArrayList<String> parseLine(String sLine, String sDelimiter, String sOpenGroupMarker, String sCloseGroupMarker, boolean bTrimWhitespace, boolean bStripGroupMarkers) {
 
         // because we accept strings as delimiter and grouping markers, we have to do overlapping compares
         // to find matches.  We step through the length of sLine character by character.
 
-        ArrayList<String> vList = new ArrayList<String>();
+        ArrayList<String> vList = new ArrayList<>();
         StringBuffer buffer = new StringBuffer(""); // contains the text of our working cell
-
         boolean bGroupOpen = false; // indicates whether we're currently building a group (true
         // if we've found an instance of sOpenGroupMarker and are looking
         // for sCloseGroupMarker).
-
         int iPosition = 0;
-
         String s;
-
         sLine = StringUtils.strip(sLine);
         // if the delimiter is a single whitespace character, pre-process the line
         if (sDelimiter.length() == 1 && Character.isWhitespace(sDelimiter.charAt(0))) {

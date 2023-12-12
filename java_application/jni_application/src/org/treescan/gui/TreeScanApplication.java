@@ -915,13 +915,13 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
         _newSessionMenuItem.setAction(new NewSessionFileAction());
         _newSessionMenuItem.setText("New Session"); // NOI18N
         _newSessionMenuItem.setIcon(null);
-        _newSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        _newSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         _fileMenu.add(_newSessionMenuItem);
 
         _openSessionMenuItem.setAction(new OpenSessionFileAction());
         _openSessionMenuItem.setText("Open Session File"); // NOI18N
         _openSessionMenuItem.setIcon(null);
-        _openSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        _openSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         _fileMenu.add(_openSessionMenuItem);
 
         _reopenSessionMenu.setText("Reopen Session File"); // NOI18N
@@ -930,29 +930,29 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
 
         _closeSessionMenuItem.setAction(_closeSessionAction);
         _closeSessionMenuItem.setIcon(null);
-        _closeSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        _closeSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         _fileMenu.add(_closeSessionMenuItem);
         _fileMenu.add(_fileMenuSeparator1);
 
         _saveSessionMenuItem.setAction(_saveSessionAction);
         _saveSessionMenuItem.setIcon(null);
-        _saveSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        _saveSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         _fileMenu.add(_saveSessionMenuItem);
 
         _saveSessionAsMenuItem.setAction(_saveSessionAsAction);
         _saveSessionAsMenuItem.setIcon(null);
-        _saveSessionAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, (java.awt.event.InputEvent.SHIFT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));
+        _saveSessionAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, (java.awt.event.InputEvent.SHIFT_DOWN_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()))));
         _fileMenu.add(_saveSessionAsMenuItem);
         _fileMenu.add(_fileMenuSeparator2);
 
         _appPreferences.setAction(_applicationPreferencesAction);
         _appPreferences.setIcon(null);
-        _appPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        _appPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         _fileMenu.add(_appPreferences);
 
         _printMenuItem.setAction(_printResultsAction);
         _printMenuItem.setIcon(null);
-        _printMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        _printMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         _fileMenu.add(_printMenuItem);
         _fileMenu.add(_fileMenuSeparator3);
 
@@ -968,12 +968,12 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
 
         _executeSessionMenuItem.setAction(_executeSessionAction);
         _executeSessionMenuItem.setIcon(null);
-        _executeSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        _executeSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         _sessionMenu.add(_executeSessionMenuItem);
 
         _executeOptionsMenuItem.setAction(_executeOptionsAction);
         _executeOptionsMenuItem.setIcon(null);
-        _executeOptionsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, (java.awt.event.InputEvent.SHIFT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));
+        _executeOptionsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, (java.awt.event.InputEvent.SHIFT_DOWN_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()))));
         _sessionMenu.add(_executeOptionsMenuItem);
 
         menuBar.add(_sessionMenu);
