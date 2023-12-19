@@ -1149,7 +1149,9 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
     // write cases in window or cases or observed cases, depending on settings
     outfile << "<td>" << thisCut.getC() << "</td>";
     outfile << "<td>" << getValueAsString(thisCut.getExpected(_scanRunner), buffer) << "</td>";
-    outfile << "<td>" << getValueAsString(thisCut.getRelativeRisk(_scanRunner), buffer) << "</td>";
+    double rr = thisCut.getRelativeRisk(_scanRunner);
+    outfile << "<td data-order=" << std::scientific << (rr == std::numeric_limits<double>::infinity() ? std::numeric_limits<double>::max() : rr) 
+            << std::fixed << ">" << getValueAsString(rr, buffer) << "</td>";
     outfile << "<td>" << getValueAsString(thisCut.getExcessCases(_scanRunner), buffer) << "</td>";
     if (parameters.getReportAttributableRisk()) {
         double ar = thisCut.getAttributableRisk(_scanRunner);

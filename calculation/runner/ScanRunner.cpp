@@ -1705,11 +1705,10 @@ bool ScanRunner::reportableRecurrenceInterval(const CutStructure& cut) const {
     return _parameters.getIsProspectiveAnalysis() && _parameters.getNumReplicationsRequested() > MIN_REPLICA_RPT_PVALUE;
 }
 
+/** Reports the recurrence interval for CutStructure - must be a prospective analysis. */
 RecurrenceInterval_t ScanRunner::getRecurrenceInterval(const CutStructure& cut) const {
     if (!_parameters.getIsProspectiveAnalysis())
        throw prg_error("getRecurrenceInterval() called for non-prospective analysis.", "getRecurrenceInterval()");
-    if (!reportableCut(cut))
-        throw prg_error("Recurrence Interval cannot be obtained for this cut.", "getRecurrenceInterval()");
     double p_value = (double)cut.getRank() / (_parameters.getNumReplicationsRequested() + 1);
     // Determine the number of units in occurrence per user selection.
     double dUnitsInOccurrence = std::max(static_cast<double>(_parameters.getProspectiveFrequency()) / p_value, 1.0);
