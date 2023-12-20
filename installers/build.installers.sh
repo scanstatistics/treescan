@@ -9,7 +9,6 @@ binaries="/prj/treescan/build/binaries/linux"
 
 javajdk=$build/packages/java/jdk-15.0.2-linux_x64
 launch4j=$build/packages/launch4j/launch4j-3.12
-IzPack=$build/packages/IzPack/IzPack5.1.3
 
 #### Windows ##############################################################################
 # Build the Inno Setup installer for Windows. (Note that someday we might replace this process with jpackageInstallerWindows.bat)
@@ -32,11 +31,7 @@ zip $installer_version/treescan.${version}_windows.zip -j documents/*
 zip $installer_version/treescan.${version}_windows.zip examples/*
 
 #######   ############ Linux ################################################################################
-# Build the IzPack Java installer for Linux. (Note that someday we might replace this process with jpackageInstallerLinux.sh)
-
-# Build Linux installer. 
-$IzPack/bin/compile $build/treescan/installers/izpack/linux/install_linux.xml -b $installer_version -o $installer_version/install-${versionf}_linux.jar -k standard
-chmod a+x $installer_version/install-${versionf}_linux.jar
+# Build the installer for Linux.
 
 # Build batch binaries archive for Linux.
 rm -f $installer_version/treescan.${version}_linux.tar.gz
