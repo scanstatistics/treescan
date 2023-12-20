@@ -43,15 +43,18 @@ $javajdk/bin/jpackage --verbose --type app-image --input $bundleinputdir \
 $javajdk/bin/jpackage --verbose --type rpm --app-image $bundledir/TreeScanStatistic --app-version $version \
             --name TreeScanStatistic --resource-dir $srcdir/installers/resources --dest $2 \
             --description "Software for the tree-based scan statistic" \
+            --about-url https://www.treescan.org/ \
             --vendor "Martin Kulldorff together with Information Management Services Inc." \
             --linux-shortcut --linux-rpm-license-type "see TreeScan License Agreement @ https://www.treescan.org/techdoc.html" \
+            --license-file $srcdir/installers/documents/eula/License.txt --linux-app-category misc \
             --linux-app-release "0" --copyright "Copyright 2021, All rights reserved"
 
 #  Create application deb
 #$javajdk/bin/jpackage --verbose --type deb --app-image $bundledir/TreeScanStatistic --app-version $version \
-#           --name TreeScanStatistic --resource-dir $srcdir/installers/resources --dest $2 \
-#           --description "Software for the tree-based scan statistic" \
-#           --vendor "Martin Kulldorff together with Information Management Services Inc." \
-#           --linux-shortcut --linux-rpm-license-type "see TreeScan License Agreement @ https://www.treescan.org/techdoc.html" \
-#           --linux-app-release "0" --copyright "Copyright 2021, All rights reserved" \
-#           --linux-deb-maintainer techsupport@treescan.org
+#            --name TreeScanStatistic --resource-dir $srcdir/installers/resources --dest $2 \
+#            --description "Software for the tree-based scan statistic" \
+#            --about-url https://www.treescan.org/ \
+#            --vendor "Martin Kulldorff together with Information Management Services Inc." \
+#            --linux-shortcut --linux-deb-maintainer treescan@imsweb.com --linux-app-category misc \
+#            --license-file $srcdir/installers/documents/eula/License.txt \
+#            --linux-app-release "0" --copyright "Copyright 2021, All rights reserved"

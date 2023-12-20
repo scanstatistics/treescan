@@ -1,23 +1,82 @@
-TreeScanTM User License Agreement
+TreeScan(TM) User License Agreement
 
-These are the terms and conditions upon which Martin Kulldorff ("the Provider") offers the free use of the TreeScanTM software ("the Software"). By installing or updating the Software you (either an individual or a single entity) become bound by the terms of this agreement, unless you have a separate signed agreement with the Provider.
-      Use.
-1. Subject to the terms and conditions of this agreement, the Provider hereby grants to you a non-exclusive, non-transferable right to use the Software and the accompanying documentation (the "Documentation") free of charge.
-2. Any publications and presentations providing results from analyses using the Software should include a citation to both the statistical methodology papers and the Software itself. Suggested citations are provided in the TreeScan User Guide.
+These are the terms and conditions upon which Martin Kulldorff ("the Provider")
+offers the free use of the TreeScan(TM) software ("the Software"). By installing
+or updating the Software you (either an individual or a single entity) become
+bound by the terms of this agreement, unless you have a separate signed
+agreement with the Provider.
+
+Use.
+
+1. Subject to the terms and conditions of this agreement, the Provider hereby
+grants to you a non-exclusive, non-transferable right to use the Software and
+the accompanying documentation (the "Documentation") free of charge.
+
+2. Any publications and presentations providing results from analyses using
+the Software should include a citation to both the statistical methodology
+papers and the Software itself. Suggested citations are provided in the
+TreeScan User Guide.
+
 3. You may install and use the Software on as many computers as you wish.
-4. You may loan or give the software or copies of the software to others, under condition that they read and agree to this license agreement.
-5. You may incorporate and distribute the Software with other software to create a "Combined Product" that you loan, give or sell to others, under conditions that (i) all users of the Combined Product read and agree to this license agreement, (ii) the TreeScanTM component is clearly distinguished and marked as "TreeScanTM", and (iii) the TreeScanTM running window is clearly shown to users when they run the TreeScan component of the Combined Product.
-6. The TreeScanTM name is a trademark and should be designated as such.
-7. This Agreement is effective for an unlimited duration. This Agreement will terminate automatically if you fail to comply with any of the limitations or other requirements described herein. Upon any termination or expiration of this Agreement, you must destroy all copies of the Software and the Documentation. You may terminate this Agreement at any point by destroying all copies of the Software and the Documentation.
+
+4. You may loan or give the software or copies of the software to others,
+under condition that they read and agree to this license agreement.
+
+5. You may incorporate and distribute the Software with other software to
+create a "Combined Product" that you loan, give or sell to others, under
+conditions that (i) all users of the Combined Product read and agree to this
+license agreement, (ii) the TreeScanTM component is clearly distinguished and
+marked as "TreeScanTM", and (iii) the TreeScan(TM) running window is clearly
+shown to users when they run the TreeScan component of the Combined Product.
+
+6. The TreeScan(TM) name is a trademark and should be designated as such.
+
+Term.
+
+7. This Agreement is effective for an unlimited duration. This Agreement will
+terminate automatically if you fail to comply with any of the limitations or
+other requirements described herein. Upon any termination or expiration of
+this Agreement, you must destroy all copies of the Software and the
+Documentation. You may terminate this Agreement at any point by destroying all
+copies of the Software and the Documentation.
+
 Updates.
-8. You may download revisions and upgrades to the Software through the automatic update button on the TreeScan help menu. Any such updates of the Software are bound to this license agreement in the same manner as the original download.
+
+8. You may download revisions and upgrades to the Software through the
+automatic update button on the TreeScan help menu. Any such updates of the
+Software are bound to this license agreement in the same manner as the
+original download.
+
 Ownership Rights.
-9. Your possession, installation, or use of the Software does not transfer to you any title to the intellectual property in the Software, and you will not acquire any rights to the Software except as expressly set forth in this Agreement. All copies of the Software and Documentation made hereunder must contain the same proprietary notices that appear on and in the Software and Documentation.
+
+9. Your possession, installation, or use of the Software does not transfer to
+you any title to the intellectual property in the Software, and you will not
+acquire any rights to the Software except as expressly set forth in this
+Agreement. All copies of the Software and Documentation made hereunder must
+contain the same proprietary notices that appear on and in the Software and
+Documentation.
+
 Restrictions.
-10. You may not transfer any of the rights granted to you under this Agreement. You may not reverse engineer, decompile, or disassemble the Software, except to the extent the foregoing restriction is expressly prohibited by applicable law. You may not modify the Software in whole or in part. You may not remove any proprietary notices or labels on the Software. All rights not expressly set forth hereunder are reserved by the Provider.
+
+10. You may not transfer any of the rights granted to you under this Agreement.
+You may not reverse engineer, decompile, or disassemble the Software, except to
+the extent the foregoing restriction is expressly prohibited by applicable law.
+You may not modify the Software in whole or in part. You may not remove any
+proprietary notices or labels on the Software. All rights not expressly set
+forth hereunder are reserved by the Provider.
+
 Warranty and Disclaimer.
-11. The Provider does not warrant that the Software and User Guide will meet your requirements or operate free from error, and disclaims all other warranties and conditions either expressed or implied, including the warranty of merchantability and fitness for a particular purpose.
+
+11. The Provider does not warrant that the Software and User Guide will meet
+your requirements or operate free from error, and disclaims all other
+warranties and conditions either expressed or implied, including the warranty
+of merchantability and fitness for a particular purpose.
+
 Limitation of Liability.
-12. Under no circumstances and under no legal theory, whether in tort, contract, or otherwise, shall the provider or its contractors be liable to you or to any other person for any indirect, special, incidental, or consequential damages of any character including, without limitation, damages for loss or goodwill, work stoppage, computer failure or malfunction, or for any and all other damages or losses.
 
-
+12. Under no circumstances and under no legal theory, whether in tort,
+contract, or otherwise, shall the provider or its contractors be liable to you
+or to any other person for any indirect, special, incidental, or consequential
+damages of any character including, without limitation, damages for loss or
+goodwill, work stoppage, computer failure or malfunction, or for any and all
+other damages or losses.
