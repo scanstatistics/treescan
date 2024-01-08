@@ -536,6 +536,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getAllowMultipleRoots());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setIncludeIdenticalParentCuts", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getIncludeIdenticalParentCuts());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -965,6 +969,10 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
 
   mid = _getMethodId_Checked(Env, clazz, "getAllowMultipleRoots", "()Z");
   parameters.setAllowMultipleRoots(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getIncludeIdenticalParentCuts", "()Z");
+  parameters.setIncludeIdenticalParentCuts(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   return parameters;

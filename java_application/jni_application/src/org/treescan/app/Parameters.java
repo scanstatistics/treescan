@@ -114,6 +114,7 @@ public class Parameters implements Cloneable {
     private boolean _relaxed_study_data_period_checking=false;
     private boolean _allow_multi_parent_nodes=false;
     private boolean _allow_multiple_roots=true;
+    private boolean _include_identical_parent_cuts=false;
     
     private ArrayList<InputSourceSettings>     _input_sources;
 
@@ -231,10 +232,13 @@ public class Parameters implements Cloneable {
           if (_relaxed_study_data_period_checking != rhs._relaxed_study_data_period_checking) return false;
           if (_allow_multi_parent_nodes != rhs._allow_multi_parent_nodes) return false;
           if (_allow_multiple_roots != rhs._allow_multiple_roots) return false;
+          if (_include_identical_parent_cuts != rhs._include_identical_parent_cuts) return false;
           
           return true;
     }
-
+    
+    public boolean getIncludeIdenticalParentCuts() { return _include_identical_parent_cuts; }
+    public void setIncludeIdenticalParentCuts(boolean b) { _include_identical_parent_cuts = b; }
     public boolean getAllowMultipleRoots() { return _allow_multiple_roots; }
     public void setAllowMultipleRoots(boolean b) { _allow_multiple_roots = b; }
     public boolean getAllowMultiParentNodes() { return _allow_multi_parent_nodes; }

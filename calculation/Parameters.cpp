@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 79;
+const int Parameters::giNumParameters = 80;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -110,6 +110,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_relaxed_study_data_period_checking != rhs._relaxed_study_data_period_checking) return false;
   if (_allow_multi_parent_nodes != rhs._allow_multi_parent_nodes) return false;
   if (_allow_multiple_roots != rhs._allow_multiple_roots) return false;
+  if (_include_identical_parent_cuts != rhs._include_identical_parent_cuts) return false;
 
   return true;
 }
@@ -256,6 +257,7 @@ void Parameters::copy(const Parameters &rhs) {
     _relaxed_study_data_period_checking = rhs._relaxed_study_data_period_checking;
     _allow_multi_parent_nodes = rhs._allow_multi_parent_nodes;
     _allow_multiple_roots = rhs._allow_multiple_roots;
+    _include_identical_parent_cuts = rhs._include_identical_parent_cuts;
 }
 
 /** Returns the maximum temporal window in data time units. */
@@ -428,6 +430,7 @@ void Parameters::setAsDefaulted() {
 
     _report_attributable_risk = false;
     _attributable_risk_exposed = 0;
+    _include_identical_parent_cuts = false;
     _self_control_design = false;
 
     _input_sources.clear();

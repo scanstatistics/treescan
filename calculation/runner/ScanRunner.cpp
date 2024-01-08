@@ -1343,7 +1343,7 @@ bool ScanRunner::readDateColumn(DataSource& source, size_t columnIdx, int& dateI
 }
 
 /** Ranks cuts then removes those with lesser LLR values, then reports most likely. */
-void ScanRunner::rankCutsAndReportMostly() {
+void ScanRunner::rankCutsAndReportMostLikely() {
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
     if (_Cut.size()) {
         // Sort collection of cuts by log-likelihood.
@@ -1359,6 +1359,37 @@ void ScanRunner::rankCutsAndReportMostly() {
     if (_Cut.size())
         _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.front()->getLogLikelihood()));
 
+}
+
+/** If cut at parent node is identical to cut at child node, removes the parent node cut. */
+void ScanRunner::removeIdenticalParentCuts() {
+    if (_Cut.size()) {
+        // create map of node ID to CutStructure
+        std::map<int, const CutStructure*> nodeCuts;
+        for (const auto& cut : _Cut) nodeCuts[cut->getID()] = cut;
+        // sort by tree level ascending so that we delete grandparents before parents before children
+        std::sort(_Cut.begin(), _Cut.end(), [this](CutStructure* a, CutStructure* b) { return _Nodes[a->getID()]->getLevel() < _Nodes[b->getID()]->getLevel(); });
+        // compare parent cut to child cuts, if any
+        auto identicalCuts = [this](const CutStructure* a, const CutStructure* b) {
+            return a->getC() == b->getC() && a->getExpected(*this) == b->getExpected(*this) && a->getStartIdx() == b->getStartIdx() && a->getEndIdx() == b->getEndIdx();
+        };
+        for (size_t t = 0; t < _Cut.size();) {
+            boolean matchFound = false;
+            for (auto child : getCutChildNodes(*_Cut[t])) {
+                if (nodeCuts.count(child->getID())) {
+                    // delete cuts with at least one child that has matching cases, expected, and time window
+                    if (identicalCuts(nodeCuts[child->getID()], _Cut[t])) {
+                        _Cut.kill(_Cut.begin() + t);
+                        matchFound = true;
+                        break;
+                    }
+                }               
+            }
+            if (!matchFound) ++t;
+        }
+        // Restore sort order by log-likelihood
+        std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
+    }
 }
 
 /** Reads control data from passed file for Bernoulli models. 
@@ -1750,18 +1781,17 @@ bool ScanRunner::isSignificant(const RecurrenceInterval_t& ri, const Parameters&
 
 /** REPORT RESULTS */
 bool ScanRunner::reportResults(time_t start, time_t end) {
-    ResultsFileWriter resultsWriter(*this);
-
+    // Potentially remove cuts which are ancestors of other cuts and are identical in terms of observed, expected, etc.
+    if (!_parameters.getIncludeIdenticalParentCuts()) removeIdenticalParentCuts();
     // Assign the report order for each cut -- this allows user to sort in different ways during reporting, yet return to the
     // order reported in the main results file. 
     unsigned int i = 1;
     for (CutStructureContainer_t::iterator itr = _Cut.begin(); itr != _Cut.end(); ++itr, ++i)
         (*itr)->setReportOrder(i);
-
+    ResultsFileWriter resultsWriter(*this);
     // Create the main text output file.
     if (!resultsWriter.writeASCII(start, end))
         return false;
-
     if (_parameters.isGeneratingHtmlResults() || _parameters.isGeneratingTableResults()) {
         /* First whittle the cut list down to those that are reportable. */
         CutStructureContainer_t::iterator itr = _Cut.begin();
@@ -1944,6 +1974,17 @@ bool ScanRunner::run() {
         if (!runPowerEvaluations()) return false;
     }
     if (_print.GetIsCanceled()) return false;
+    // if tree-only sequential scan, identify now which cuts signalled in current look
+    if (_parameters.isSequentialScanTreeOnly()) {
+        Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, getTotalC(), getTotalN(), isCensoredData()));
+        for (auto cut : getCuts()) {
+            // If this cut hasn't signalled in previous looks but is now, mark as signalling in this look.
+            if (reportableCut(*cut) &&
+                _sequential_statistic->testCutSignaled(static_cast<size_t>(cut->getID())) == 0 &&
+                _sequential_statistic->testSignallingLLR(calcLogLikelihood->LogLikelihoodRatio(cut->getLogLikelihood())))
+                _sequential_statistic->setCutSignaled(static_cast<size_t>(cut->getID()));
+        }
+    }
     time(&gEndTime); // get end time
     if (!reportResults(gStartTime, gEndTime)) return false;
     // create SequentialStatistic object if tree-only sequential scan
@@ -2268,7 +2309,7 @@ bool ScanRunner::scanTree() {
             }
         }
     }
-    rankCutsAndReportMostly();
+    rankCutsAndReportMostLikely();   
     return _Cut.size() != 0;
 }
 
@@ -2388,8 +2429,8 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                 default: throw prg_error("Unknown cut type (%d).", "scanTreeTemporalConditionNode()", cutType);
             }
         }
-    }
-    rankCutsAndReportMostly();
+    }   
+    rankCutsAndReportMostLikely();
     return _Cut.size() != 0;
 }
 
@@ -2529,7 +2570,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
             }
         }
     }
-    rankCutsAndReportMostly();
+    rankCutsAndReportMostLikely();
     return _Cut.size() != 0;
 }
 
@@ -2653,8 +2694,8 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                 default: throw prg_error("Unknown cut type (%d).", "scanTreeTemporalConditionNodeTime()", cutType);
             }
         }
-    }
-    rankCutsAndReportMostly();
+    } 
+    rankCutsAndReportMostLikely();
     return _Cut.size() != 0;
 }
 
@@ -2755,7 +2796,7 @@ bool ScanRunner::setupTree() {
     if (!_parameters.getPerformPowerEvaluations() || !(_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_ONLY_SPECIFIED_CASES)) {
         // The conditional Poisson should not be performed with less than cases.
         if (_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::TOTALCASES && _TotalC < 2/* minimum number of cases */) {
-            _print.Printf("Error: The conditional Poison model requires at least 2 cases to perform analysis. %d counts defined in count file.\n", BasePrint::P_ERROR, _TotalC);
+            _print.Printf("Error: The conditional Poisson model requires at least 2 cases to perform analysis. %d counts defined in count file.\n", BasePrint::P_ERROR, _TotalC);
             return false;
         }
     }

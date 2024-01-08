@@ -201,6 +201,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= _reportLLRResultsAsCsvTable.isSelected() == false;
         bReturn &= _chk_rpt_attributable_risk.isSelected() == false;
         bReturn &= _attributable_risk_exposed.getText().equals("");
+        bReturn &= _chk_include_identical_parent_cuts.isSelected() == false;
         bReturn &= _reportTemporalGraph.isSelected() == false;
         bReturn &= _temporalGraphMostLikely.isSelected();
         bReturn &= _numMostLikelyClustersGraph.getText().equals("1");
@@ -363,6 +364,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setGeneratingLLRResults(_reportLLRResultsAsCsvTable.isSelected());
         parameters.setReportAttributableRisk(_chk_rpt_attributable_risk.isEnabled() && _chk_rpt_attributable_risk.isSelected());
         parameters.setAttributableRiskExposed(_attributable_risk_exposed.getText().length() > 0 ? Integer.parseInt(_attributable_risk_exposed.getText()): 0);
+        parameters.setIncludeIdenticalParentCuts(_chk_include_identical_parent_cuts.isSelected());
         parameters.setOutputTemporalGraphFile(_reportTemporalGraph.isEnabled() && _reportTemporalGraph.isSelected());
         if (_temporalGraphSignificant.isSelected()) {
             parameters.setTemporalGraphReportType(Parameters.TemporalGraphReportType.SIGNIFICANT_ONLY.ordinal());
@@ -514,6 +516,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportLLRResultsAsCsvTable.setSelected(parameters.isGeneratingLLRResults());
         _chk_rpt_attributable_risk.setSelected(parameters.getReportAttributableRisk());
         _attributable_risk_exposed.setText(parameters.getAttributableRiskExposed() > 0 ? Integer.toString(parameters.getAttributableRiskExposed()) : "");
+        _chk_include_identical_parent_cuts.setSelected(parameters.getIncludeIdenticalParentCuts());
 
         // Temporal Output tab
         _reportTemporalGraph.setSelected(parameters.getOutputTemporalGraphFile());
@@ -650,6 +653,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportLLRResultsAsCsvTable.setSelected(false);
         _chk_rpt_attributable_risk.setSelected(false);
         _attributable_risk_exposed.setText("");
+        _chk_include_identical_parent_cuts.setSelected(false);
     }
 
     /** Verifies that settings are valid in the context of all other parameter settings. */
@@ -1307,6 +1311,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _chk_rpt_attributable_risk = new javax.swing.JCheckBox();
         _attributable_risk_exposed = new javax.swing.JTextField();
         _chk_attributable_risk_extra = new javax.swing.JLabel();
+        _chk_include_identical_parent_cuts = new javax.swing.JCheckBox();
         _graphOutputGroup = new javax.swing.JPanel();
         _reportTemporalGraph = new javax.swing.JCheckBox();
         _temporalGraphMostLikely = new javax.swing.JRadioButton();
@@ -2429,7 +2434,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Attributable Risk"));
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Result Options"));
 
         _chk_rpt_attributable_risk.setText("Report attributable risk based on ");
         _chk_rpt_attributable_risk.addItemListener(new java.awt.event.ItemListener() {
@@ -2460,17 +2465,29 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _chk_attributable_risk_extra.setText("exposed.");
 
+        _chk_include_identical_parent_cuts.setText("Include parent cuts that are identical to child cuts.");
+        _chk_include_identical_parent_cuts.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_chk_rpt_attributable_risk)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_attributable_risk_exposed, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_chk_attributable_risk_extra, javax.swing.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(_chk_rpt_attributable_risk)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_attributable_risk_exposed, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_chk_attributable_risk_extra, javax.swing.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(_chk_include_identical_parent_cuts)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -2482,6 +2499,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_attributable_risk_exposed, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(_chk_attributable_risk_extra))
                     .addComponent(_chk_rpt_attributable_risk))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_chk_include_identical_parent_cuts)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -2589,7 +2608,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                 .addComponent(_temporalGraphSignificant)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(_temporalGraphPvalueCutoff, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))
+                                .addGap(0, 221, Short.MAX_VALUE))
                             .addComponent(_temporalGraphMostLikely, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(_graphOutputGroupLayout.createSequentialGroup()
                                 .addComponent(_temporalGraphMostLikelyX)
@@ -2635,11 +2654,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advanced_output_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(134, Short.MAX_VALUE))
+                .addContainerGap(139, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
@@ -2899,7 +2918,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_panel_sequential_analysis_tree_onlyLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_panel_sequential_analysis_tree_onlyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_sequential_alpha_spending_label, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
+                    .addComponent(_sequential_alpha_spending_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_sequential_alpha_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_panel_sequential_analysis_tree_onlyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3025,6 +3044,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JCheckBox _checkbox_allow_multiple_roots;
     private javax.swing.JCheckBox _checkbox_data_leaves_only;
     private javax.swing.JLabel _chk_attributable_risk_extra;
+    private javax.swing.JCheckBox _chk_include_identical_parent_cuts;
     private javax.swing.JCheckBox _chk_rpt_attributable_risk;
     private javax.swing.JButton _closeButton;
     private javax.swing.JButton _cutFileImportButton;

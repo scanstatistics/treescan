@@ -261,8 +261,9 @@ void IniParameterSpecification::Build_2_2_x_ParameterList() {
     _parameter_info[Parameters::RELAXED_STUDY_DATA_PERIOD_CHECKING] = ParamInfo(Parameters::RELAXED_STUDY_DATA_PERIOD_CHECKING, "relaxed-study-data-period-checking", 10, _advanced_input_section);
     _parameter_info[Parameters::ALLOW_MULTI_PARENT_NODES] = ParamInfo(Parameters::ALLOW_MULTI_PARENT_NODES, "allow-multi-parent-nodes", 11, _advanced_input_section);
     _parameter_info[Parameters::ALLOW_MULTIPLE_ROOTS] = ParamInfo(Parameters::ALLOW_MULTIPLE_ROOTS, "allow-multiple-roots", 12, _advanced_input_section);
+    _parameter_info[Parameters::INCLUDE_IDENTICAL_PARENT_CUTS] = ParamInfo(Parameters::INCLUDE_IDENTICAL_PARENT_CUTS, "include-identical-parent-cuts", 13, _additional_output_section);
 
-    assert(_parameter_info.size() == 78);
+    assert(_parameter_info.size() == 79);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

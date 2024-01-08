@@ -72,6 +72,7 @@ class Parameters {
                         REPORT_CRITICAL_VALUES,
                         REPORT_ATTR_RISK,
                         ATTR_RISK_NUM_EXPOSED,
+                        INCLUDE_IDENTICAL_PARENT_CUTS,
                         OUTPUT_TEMPORAL_GRAPH,          // generate temporal graph output file
                         TEMPORAL_GRAPH_REPORT_TYPE,     // which clusters to generate temporal graph (enum)
                         TEMPORAL_GRAPH_MLC_COUNT,       // number of most likely clusters to generate temporal graph (integer)
@@ -273,6 +274,7 @@ class Parameters {
     bool                                _dayofweek_adjustment;
     bool                                _report_attributable_risk;
     unsigned int                        _attributable_risk_exposed;
+    bool                                _include_identical_parent_cuts;
     bool                                _self_control_design;
     bool                                _restrict_tree_levels;
     RestrictTreeLevels_t                _restricted_tree_levels;
@@ -435,6 +437,7 @@ class Parameters {
     ratio_t                             getProbabilityRatio() const {return _probablility_ratio;}
     long                                getRandomizationSeed() const {return _randomizationSeed;}
     bool                                getReportAttributableRisk() const {return _report_attributable_risk;}
+    bool                                getIncludeIdenticalParentCuts() const {return _include_identical_parent_cuts;}
     bool                                getRestrictTreeLevels() const {return _restrict_tree_levels;}
     const RestrictTreeLevels_t        & getRestrictedTreeLevels() const {return _restricted_tree_levels;}
     unsigned int                        getAttributableRiskExposed() const {return _attributable_risk_exposed;}
@@ -510,6 +513,7 @@ class Parameters {
     void                                setRandomlyGeneratingSeed(bool b) {_randomlyGenerateSeed = b;}
     void                                setReadingSimulationData(bool b) {_read_simulations = b;}
     void                                setReportAttributableRisk(bool b) {_report_attributable_risk = b;}
+    void                                setIncludeIdenticalParentCuts(bool b) {_include_identical_parent_cuts = b;}
 	void                                setRestrictTreeLevels(bool b) {_restrict_tree_levels = b;}
 	void                                setRestrictedTreeLevels(const RestrictTreeLevels_t& r) {_restricted_tree_levels = r;}
     void                                setAttributableRiskExposed(unsigned int i) {_attributable_risk_exposed = i;}

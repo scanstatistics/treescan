@@ -358,14 +358,10 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 if (parameters.isSequentialScanTreeOnly()) {
                     PrintFormat.PrintSectionLabel(outfile, "Signalled", true);
                     unsigned int signalInLook = _scanRunner.getSequentialStatistic().testCutSignaled(static_cast<size_t>(thisCut.getID()));
-                    if (signalInLook != 0) {
+                    if (signalInLook != 0)
                         PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "Look %ld", signalInLook));
-                    } else if (_scanRunner.getSequentialStatistic().testSignallingLLR(calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood()))) {
-                        const_cast<ScanRunner&>(_scanRunner).refSequentialStatistic().setCutSignaled(static_cast<size_t>(thisCut.getID()));
-                        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "Look %ld", _scanRunner.getSequentialStatistic().getLook()));
-                    } else {
+                    else
                         PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "No"));
-                    }
                 }
                 outfile << std::endl;
             }

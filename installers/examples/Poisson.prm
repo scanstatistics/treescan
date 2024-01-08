@@ -155,6 +155,8 @@ report-critical-values=n
 report-attributable-risk=n
 ;number of exposed attributable risk is based upon (positive integer)
 attributable-risk-exposed=0
+;report parent cuts that match child cuts (y/n)
+include-identical-parent-cuts=n
 ;output temporal graph HTML file (y/n)
 output-temporal-graph-html=n
 ;temporal graph cluster reporting type (0=Only most likely cluster, 1=X most likely clusters, 2=Only significant clusters)
