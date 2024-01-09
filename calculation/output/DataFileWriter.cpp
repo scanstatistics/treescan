@@ -481,7 +481,7 @@ RecordBuffer& CutsRecordWriter::getRecordForCut(RecordBuffer& Record, const CutS
         } else
             Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood());
         if (scanner.reportablePValue(thisCut)) {
-            Record.GetFieldValue(P_VALUE_FLD).AsDouble() = static_cast<double>(thisCut.getRank()) / (scanner.getParameters().getNumReplicationsRequested() + 1);
+            Record.GetFieldValue(P_VALUE_FLD).AsDouble() = thisCut.getPValue(scanner);
             if (params.getIsProspectiveAnalysis())
                 Record.GetFieldValue(RECURR_FLD).AsDouble() = scanner.getRecurrenceInterval(thisCut).second;
         }

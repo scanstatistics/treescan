@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 80;
+const int Parameters::giNumParameters = 82;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -111,6 +111,8 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_allow_multi_parent_nodes != rhs._allow_multi_parent_nodes) return false;
   if (_allow_multiple_roots != rhs._allow_multiple_roots) return false;
   if (_include_identical_parent_cuts != rhs._include_identical_parent_cuts) return false;
+  if (_pvalue_reporting_type != rhs._pvalue_reporting_type) return false;
+  if (_early_term_threshold != rhs._early_term_threshold) return false;
 
   return true;
 }
@@ -258,8 +260,22 @@ void Parameters::copy(const Parameters &rhs) {
     _allow_multi_parent_nodes = rhs._allow_multi_parent_nodes;
     _allow_multiple_roots = rhs._allow_multiple_roots;
     _include_identical_parent_cuts = rhs._include_identical_parent_cuts;
+    _pvalue_reporting_type = rhs._pvalue_reporting_type;
+    _early_term_threshold = rhs._early_term_threshold;
 }
 
+/** Returns whether early termination option is performed. */
+bool Parameters::getTerminateSimulationsEarly() const {
+    return getPValueReportingType() == TERMINATION_PVALUE && // early termination option
+        getNumReplicationsRequested() >= MIN_REPLICA_RPT_PVALUE && // number of replications is at least at threshold for reporting p-value
+        getPerformPowerEvaluations() == false && // we're not performing the power evaluation
+        getSequentialScan() == false; // sequential scans don't early terminate
+}
+
+/** Returns threshold for early termination. If reporting default p-value, then threshold is determined by number of replications requested. */
+unsigned int Parameters::getExecuteEarlyTermThreshold() const {
+    return _early_term_threshold;
+}
 /** Returns the maximum temporal window in data time units. */
 unsigned int Parameters::getMaximumWindowInTimeUnits() const {
     switch (_maximum_window_type) {
@@ -471,6 +487,9 @@ void Parameters::setAsDefaulted() {
     _temporal_graph_report_cutoff = 0.05;
     _temporal_graph_report_count = 1;
     _temporal_graph_report_type = MLC_ONLY;
+
+    _pvalue_reporting_type = STANDARD_PVALUE;
+    _early_term_threshold = 50;
 }
 
 /** Sets output data file name.
@@ -498,6 +517,13 @@ void Parameters::setSequentialFilename(const char * s, bool bCorrectForRelativeP
 void Parameters::setPowerEvaluationAltHypothesisFilename(const char * s, bool bCorrectForRelativePath) {
   _power_alt_hypothesis_filename = s;
   if (bCorrectForRelativePath) assignMissingPath(_power_alt_hypothesis_filename, false);
+}
+
+/** Sets p-value reporting type. Throws exception if out of range. */
+void Parameters::setPValueReportingType(PValueReportingType e) {
+    if (e < STANDARD_PVALUE || e > TERMINATION_PVALUE)
+        throw prg_error("Enumeration %d out of range [%d,%d].", "setPValueReportingType()", e, STANDARD_PVALUE, TERMINATION_PVALUE);
+    _pvalue_reporting_type = e;
 }
 
 /** Sets filename of file used to load parameters. */

@@ -181,6 +181,13 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
         bValid = false;
         PrintDirection.Printf("Invalid Parameter Setting:\nThe minimum number of node cases cannot be less than 2 for high rate scans.\n", BasePrint::P_PARAMERROR);
     }
+    if (!_parameters.isSequentialScanTreeOnly()) { // tree sequential scan does not report p-values
+        if (_parameters.getNumReplicationsRequested() > 0 && _parameters.getPValueReportingType() == Parameters::TERMINATION_PVALUE &&
+            (_parameters.getEarlyTermThreshold() < 1 || _parameters.getEarlyTermThreshold() > _parameters.getNumReplicationsRequested())) {
+            bValid = false;
+            PrintDirection.Printf("%s:\nThe threshold for early termination of simulations must be from 1 to number of replications.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        }
+    }
     return bValid;
 }
 
@@ -541,6 +548,10 @@ bool ParametersValidate::ValidatePowerEvaluationParametersParameters(BasePrint &
     }
     if (_parameters.getNumReplicationsRequested() < 999) {
         PrintDirection.Printf("%s:\nThe minimum number of standard replications in the power evaluation is %u.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, 999);
+        bValid = false;
+    }
+    if (_parameters.getPValueReportingType() == Parameters::TERMINATION_PVALUE) {
+        PrintDirection.Printf("%s:\nThe power evaluation is not available with the Monte Carlo early termination.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         bValid = false;
     }
     if (_parameters.getPowerEvaluationReplications() < 100) {

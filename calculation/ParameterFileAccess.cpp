@@ -88,7 +88,9 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::RESTRICT_TREE_LEVELS    : return "restrict tree levels evaluated (y/n)";
             case Parameters::RESTRICTED_TREE_LEVELS  : return "tree levels excluded from evaluation (csv list of unsigned integers, root level is 1)";
             case Parameters::MINIMUM_CASES_NODE      : return "minimum number of cases in a node (integer)";
-            // Output
+            case Parameters::PVALUE_REPORT_TYPE      : return "p-value reporting type (STANDARD_PVALUE=0, TERMINATION_PVALUE)";
+            case Parameters::EARLY_TERM_THRESHOLD    : return "early termination threshold (> 0)";
+                /* Output */
             case Parameters::RESULTS_FILE            : return "results filename";
             case Parameters::RESULTS_HTML            : return "create HTML results (y/n)";
             case Parameters::RESULTS_CSV             : return "create CSV results (y/n)";
@@ -193,7 +195,9 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::RESTRICT_TREE_LEVELS     : return AsString(s, _parameters.getRestrictTreeLevels());
             case Parameters::RESTRICTED_TREE_LEVELS   : typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), s); return s;
             case Parameters::MINIMUM_CASES_NODE       : return AsString(s, _parameters.getMinimumHighRateNodeCases());
-            // Output
+            case Parameters::PVALUE_REPORT_TYPE       : return AsString(s, _parameters.getPValueReportingType());
+            case Parameters::EARLY_TERM_THRESHOLD     : return AsString(s, _parameters.getEarlyTermThreshold());
+            /* Output */
             case Parameters::RESULTS_FILE             : s = _parameters.getOutputFileName(); return s;
             case Parameters::RESULTS_HTML             : return AsString(s, _parameters.isGeneratingHtmlResults());
             case Parameters::RESULTS_CSV              : return AsString(s, _parameters.isGeneratingTableResults());
@@ -407,7 +411,10 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
                                                         }
                                                         break;
             case Parameters::MINIMUM_CASES_NODE       : return _parameters.setMinimumHighRateNodeCases(ReadUnsignedInt(value, e)); break;
-            // Output
+            case Parameters::PVALUE_REPORT_TYPE       : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::STANDARD_PVALUE, Parameters::TERMINATION_PVALUE);
+                                                        _parameters.setPValueReportingType((Parameters::PValueReportingType)iValue); break;
+            case Parameters::EARLY_TERM_THRESHOLD     : _parameters.setEarlyTermThreshold(ReadUnsignedInt(value, e)); break;
+            /* Output */
             case Parameters::RESULTS_FILE             : _parameters.setOutputFileName(value.c_str(), true); break;
             case Parameters::RESULTS_HTML             : _parameters.setGeneratingHtmlResults(ReadBoolean(value, e)); break;
             case Parameters::RESULTS_CSV              : _parameters.setGeneratingTableResults(ReadBoolean(value, e)); break;

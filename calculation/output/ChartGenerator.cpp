@@ -400,8 +400,7 @@ void TemporalChartGenerator::generateChart() const {
                 break;
             case Parameters::SIGNIFICANT_ONLY :
                 for (ScanRunner::CutStructureContainer_t::const_iterator itr = _scanner.getCuts().begin(); itr != _scanner.getCuts().end(); ++itr) {
-                    double rank = static_cast<double>((*itr)->getRank()) / static_cast<double>(parameters.getNumReplicationsRequested() + 1);
-                    if (_scanner.reportableCut(*(*itr)) && rank <= parameters.getTemporalGraphSignificantCutoff())
+                    if (_scanner.reportableCut(*(*itr)) && (*itr)->getPValue(_scanner) <= parameters.getTemporalGraphSignificantCutoff())
                         graphClusters.push_back(*itr);
                 }
                 break;

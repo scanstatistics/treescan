@@ -347,8 +347,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                 if (_scanRunner.reportablePValue(thisCut)) {
                     PrintFormat.PrintSectionLabel(outfile, "P-value", true);
-                    double p_value = (double)thisCut.getRank() / (parameters.getNumReplicationsRequested() + 1);
-                    printString(buffer, format.c_str(), p_value);
+                    printString(buffer, format.c_str(), thisCut.getPValue(_scanRunner));
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     if (parameters.getIsProspectiveAnalysis()) {
                         PrintFormat.PrintSectionLabel(outfile, "Recurrence Interval", true);
@@ -394,6 +393,8 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         }
         outfile << std::endl;
     }
+    if (_scanRunner.getCuts().size() && _scanRunner.getSimulationVariables().get_sim_count() < parameters.getNumReplicationsRequested())
+        outfile << "NOTE: The sequential Monte Carlo procedure was used to terminate the calculations after " << _scanRunner.getSimulationVariables().get_sim_count() << " replications." << std::endl;
     // print power estimation values
     if (parameters.getPerformPowerEvaluations()) {
         // sanity check
@@ -1000,7 +1001,12 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "<div>Critical value for look: " << _scanRunner.getSequentialStatistic().getCriticalValue() << std::endl;
         outfile << "</div></div>" << std::endl;
     }
-
+    // Report early termination
+    if (_scanRunner.getCuts().size() && _scanRunner.getSimulationVariables().get_sim_count() < parameters.getNumReplicationsRequested()) {
+        outfile << "<div class=\"program-info\">" << std::endl;
+        outfile << "<div>The sequential Monte Carlo procedure was used to terminate the calculations after " << _scanRunner.getSimulationVariables().get_sim_count() << " replications." << std::endl;
+        outfile << "</div></div>" << std::endl;
+    }
     // print power estimation values
     if (parameters.getPerformPowerEvaluations()) {
         outfile << "<div class=\"program-info\">" << std::endl;
@@ -1162,7 +1168,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
     }
     // write p-value
     if (_scanRunner.reportablePValue(thisCut)) {
-        outfile << "<td>" << printString(buffer, format.c_str(), (double)thisCut.getRank() / (parameters.getNumReplicationsRequested() + 1)) << "</td>";
+        outfile << "<td>" << printString(buffer, format.c_str(), thisCut.getPValue(_scanRunner)) << "</td>";
         if (parameters.getIsProspectiveAnalysis()) {
             RecurrenceInterval_t ri = _scanRunner.getRecurrenceInterval(thisCut);
             outfile << "<td data-order=" << static_cast<unsigned int>(ri.second) << ">" << getRecurranceIntervalAsString(ri, buffer) << "</td>";
@@ -1358,7 +1364,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
         if (sequentialTreeOnly) 
             node_attr_rr.get<0>() = static_cast<double>(_scanRunner.getSequentialStatistic().testCutSignaled(static_cast<size_t>(itr->second->getID())));
         else
-            node_attr_rr.get<0>() = (double)itr->second->getRank() / (parameters.getNumReplicationsRequested() + 1);
+            node_attr_rr.get<0>() = itr->second->getPValue(_scanRunner);
         node_attr_rr.get<1>() = itr->second->getRelativeRisk(_scanRunner);
         nodestream << "<li>RR = " << getValueAsString(node_attr_rr.get<1>(), buffer);
         if (sequentialTreeOnly) {

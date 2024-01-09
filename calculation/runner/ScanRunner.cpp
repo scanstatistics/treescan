@@ -373,6 +373,17 @@ std::string& CutStructure::getParentIndentifiers(const ScanRunner& scanner, std:
     return parents;
 }
 
+/** Returns the cuts p-value - taking into account it's rank and possible early termination. */
+double CutStructure::getPValue(const ScanRunner& scanner) const {
+    // If early terminated, return p-value in the contact of actual number of simulations performed.
+    if (scanner.getSimulationVariables().get_sim_count() < scanner.getParameters().getNumReplicationsRequested()) {
+        if (_report_order == 1) // report most likely p-value
+            return static_cast<double>(scanner.getParameters().getExecuteEarlyTermThreshold()) / static_cast<double>(scanner.getSimulationVariables().get_sim_count());
+        return static_cast<double>(_rank - 1) / static_cast<double>(scanner.getSimulationVariables().get_sim_count());
+    }
+    return (double)_rank / (scanner.getParameters().getNumReplicationsRequested() + 1);
+}
+
 /** Returns cut's relative risk. See user guide for formula explanation. */
 double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
     return getRelativeRiskFor(scanner, _ID, _C, _N, _start_idx, _end_idx);
@@ -1740,9 +1751,8 @@ bool ScanRunner::reportableRecurrenceInterval(const CutStructure& cut) const {
 RecurrenceInterval_t ScanRunner::getRecurrenceInterval(const CutStructure& cut) const {
     if (!_parameters.getIsProspectiveAnalysis())
        throw prg_error("getRecurrenceInterval() called for non-prospective analysis.", "getRecurrenceInterval()");
-    double p_value = (double)cut.getRank() / (_parameters.getNumReplicationsRequested() + 1);
     // Determine the number of units in occurrence per user selection.
-    double dUnitsInOccurrence = std::max(static_cast<double>(_parameters.getProspectiveFrequency()) / p_value, 1.0);
+    double dUnitsInOccurrence = std::max(static_cast<double>(_parameters.getProspectiveFrequency()) / cut.getPValue(*this), 1.0);
     // Now calculate recurrence interval as years and days based on frequency.
     switch (_parameters.getProspectiveFrequencyType()) {
         case Parameters::YEARLY: return std::make_pair(dUnitsInOccurrence, std::max(dUnitsInOccurrence * AVERAGE_DAYS_IN_YEAR, 1.0));
@@ -1761,7 +1771,7 @@ boost::logic::tribool ScanRunner::isSignificant(const CutStructure& cut) const {
         significance = isSignificant(getRecurrenceInterval(cut), _parameters);
     } else if (reportablePValue(cut)) {
         // p-value less than 0.05 is significant
-        significance = ((double)cut.getRank() / (double)(_parameters.getNumReplicationsRequested() + 1)) < 0.05;
+        significance = cut.getPValue(*this) < 0.05;
     } //else {// If both recurrence interval and p-value are not reportable, so we do not have information to say whether this cluster is significant or not.}
     return significance;
 }
@@ -1963,6 +1973,8 @@ bool ScanRunner::run() {
                     remove(_parameters.getOutputSimulationsFilename().c_str());
                     randomizer->setWriting(_parameters.getOutputSimulationsFilename());
                 }
+                Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, getTotalC(), getTotalN(), isCensoredData()));
+                _simVars.reset(calcLogLikelihood->LogLikelihoodRatio(_Cut.front()->getLogLikelihood()));
                 if (_parameters.isSequentialScanPurelyTemporal()) {
                     if (!runsequentialsimulations(_parameters.getNumReplicationsRequested())) return false;
                 } else if (!runsimulations(randomizer, _parameters.getNumReplicationsRequested(), false)) return false;

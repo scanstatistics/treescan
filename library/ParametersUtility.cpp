@@ -540,6 +540,13 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getIncludeIdenticalParentCuts());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setPValueReportingType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getPValueReportingType());
+  jni_error::_detectError(Env);
+  mid = _getMethodId_Checked(Env, clazz, "setEarlyTermThreshold", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getEarlyTermThreshold());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -973,6 +980,11 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
 
   mid = _getMethodId_Checked(Env, clazz, "getIncludeIdenticalParentCuts", "()Z");
   parameters.setIncludeIdenticalParentCuts(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  parameters.setPValueReportingType((Parameters::PValueReportingType)getEnumTypeOrdinalIndex(Env, jParameters, "getPValueReportingType", "Lorg/treescan/app/Parameters$PValueReportingType;"));
+  mid = _getMethodId_Checked(Env, clazz, "getEarlyTermThreshold", "()I");
+  parameters.setEarlyTermThreshold(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   return parameters;

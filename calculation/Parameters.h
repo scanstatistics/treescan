@@ -61,7 +61,9 @@ class Parameters {
                         RESTRICT_TREE_LEVELS,
                         RESTRICTED_TREE_LEVELS,
                         MINIMUM_CASES_NODE,
-                        // Output
+                        PVALUE_REPORT_TYPE, /* p-value reporting type (enumeration) */
+                        EARLY_TERM_THRESHOLD, /* early termination threshold (integer) */
+                        /* Output */
                         RESULTS_FILE,
                         RESULTS_HTML,
                         RESULTS_CSV,
@@ -137,6 +139,7 @@ class Parameters {
     enum ConditionalType {UNCONDITIONAL=0, TOTALCASES, NODE, NODEANDTIME};
     enum MaximumWindowType {PERCENTAGE_WINDOW=0, FIXED_LENGTH};    
     enum ScanRateType { HIGHRATE=0, LOWRATE, HIGHORLOWRATE };
+    enum PValueReportingType { STANDARD_PVALUE=0, TERMINATION_PVALUE };
     typedef std::map<std::string,Parameters::CutType> cut_map_t;
     typedef std::pair<cut_map_t, cut_map_t> cut_maps_t;
     typedef std::vector<std::string> FileNameContainer_t;
@@ -311,6 +314,9 @@ class Parameters {
     int                                 _temporal_graph_report_count;           // number of MLC clusters to graph with TemporalGraphReportType.X_MCL_ONLY
     double                              _temporal_graph_report_cutoff;          // P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY
 
+    PValueReportingType                 _pvalue_reporting_type;
+    unsigned int                        _early_term_threshold;
+
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
     const char                        * getRelativeToParameterName(const FileName& fParameterName, const std::string& sFilename, std::string& sValue) const;
@@ -326,6 +332,12 @@ class Parameters {
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
 
+    PValueReportingType                 getPValueReportingType() const { return _pvalue_reporting_type; }
+    void                                setPValueReportingType(PValueReportingType e);
+    unsigned int                        getEarlyTermThreshold() const { return _early_term_threshold; }
+    void                                setEarlyTermThreshold(unsigned int i) { _early_term_threshold = i; }
+    unsigned int                        getExecuteEarlyTermThreshold() const;
+    bool                                getTerminateSimulationsEarly() const;
     bool                                getDataOnlyOnLeaves() const { return _data_only_on_leaves; }
     void                                setDataOnlyOnLeaves(bool b) { _data_only_on_leaves = b; }
     bool                                getRelaxedStudyDataPeriodChecking() const { return _relaxed_study_data_period_checking; }

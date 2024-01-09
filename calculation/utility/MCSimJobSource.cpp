@@ -19,7 +19,7 @@ MCSimJobSource::MCSimJobSource(boost::posix_time::ptime CurrentTime, PrintQueue 
  , grRunner(rRunner)
  , _isPowerStep(isPowerStep)
 {
-  if (false/*rParameters.GetTerminateSimulationsEarly()*/) {
+  if (grRunner.getParameters().getTerminateSimulationsEarly()) {
     gfnRegisterResult = &MCSimJobSource::RegisterResult_AutoAbort;
   }
   else {
@@ -219,8 +219,8 @@ void MCSimJobSource::RegisterResult_AutoAbort(job_id_type const & rJobID, param_
          RegisterResult_NoAutoAbort(gmapOverflowResults.begin()->first, gmapOverflowResults.begin()->second.first, gmapOverflowResults.begin()->second.second);
          gmapOverflowResults.erase(gmapOverflowResults.begin());
          ++guiNextProcessingJobId;
-         if (grRunner.getSimulationVariables().get_llr_counters().front().second >= 0/* TODO grRunner.gParameters.GetExecuteEarlyTermThreshold()*/) {
-            // auto-abort is triggered
+         if (grRunner.getSimulationVariables().get_llr_counters().front().second >= grRunner.getParameters().getExecuteEarlyTermThreshold()) {
+            //auto-abort is triggered
             gfnRegisterResult = &MCSimJobSource::RegisterResult_AutoAbortConditionExists;
             ReleaseAutoAbortCheckResources();
             return;
@@ -300,8 +300,8 @@ void MCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, para
     if (_ratio_writer.get()) _ratio_writer->write(llr_result, rParam);
     if (!_isPowerStep) grRunner.updateCriticalValuesList(llr_result);
     if (grRunner.getParameters().isSequentialScanTreeOnly()) grRunner.refSequentialStatistic().addSimulationLLR(llr_result, rParam);
-    grRunner.getSimulationVariables().add_llr(llr_result);
-    grRunner.getSimulationVariables().increment_sim_count();
+    grRunner.refSimulationVariables().add_llr(llr_result);
+    grRunner.refSimulationVariables().increment_sim_count();
 
     ++guiJobsReported;
 

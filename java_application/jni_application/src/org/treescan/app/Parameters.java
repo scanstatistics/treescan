@@ -29,6 +29,8 @@ public class Parameters implements Cloneable {
     public enum ProspectiveFrequency { DAILY, WEEKLY, MONTHLY, QUARTERLY, YEARLY };
     /** temporal graph reporting type */
     public enum TemporalGraphReportType {MLC_ONLY, X_MCL_ONLY, SIGNIFICANT_ONLY}    
+    /** p-values reporting type */
+    public enum PValueReportingType { STANDARD_PVALUE, TERMINATION_PVALUE };
     public class CreationVersion {
     	public int _major;
     	public int _minor;
@@ -115,6 +117,9 @@ public class Parameters implements Cloneable {
     private boolean _allow_multi_parent_nodes=false;
     private boolean _allow_multiple_roots=true;
     private boolean _include_identical_parent_cuts=false;
+    /* PValue Reporting variables */
+    private PValueReportingType _pvalue_reporting_type=PValueReportingType.STANDARD_PVALUE; /** PValue reporting type */
+    private int _early_term_threshold=50; /** early termination threshold */
     
     private ArrayList<InputSourceSettings>     _input_sources;
 
@@ -233,6 +238,8 @@ public class Parameters implements Cloneable {
           if (_allow_multi_parent_nodes != rhs._allow_multi_parent_nodes) return false;
           if (_allow_multiple_roots != rhs._allow_multiple_roots) return false;
           if (_include_identical_parent_cuts != rhs._include_identical_parent_cuts) return false;
+          if (_pvalue_reporting_type != rhs._pvalue_reporting_type) return false;
+          if (_early_term_threshold != rhs._early_term_threshold) return false;
           
           return true;
     }
@@ -243,6 +250,10 @@ public class Parameters implements Cloneable {
     public void setAllowMultipleRoots(boolean b) { _allow_multiple_roots = b; }
     public boolean getAllowMultiParentNodes() { return _allow_multi_parent_nodes; }
     public void setAllowMultiParentNodes(boolean b) { _allow_multi_parent_nodes = b; }
+    public PValueReportingType getPValueReportingType() { return _pvalue_reporting_type; }
+    public void setPValueReportingType(int ord){try {_pvalue_reporting_type = PValueReportingType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, PValueReportingType.values());}}
+    public int getEarlyTermThreshold() { return _early_term_threshold; }
+    public void setEarlyTermThreshold(int i) { _early_term_threshold = i; }
     public boolean getRelaxedStudyDataPeriodChecking() { return _relaxed_study_data_period_checking; }
     public void setRelaxedStudyDataPeriodChecking(boolean b) { _relaxed_study_data_period_checking = b; }
     public boolean getDataOnlyOnLeaves() { return _data_only_on_leaves; }

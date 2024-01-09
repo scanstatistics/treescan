@@ -284,6 +284,20 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getSequentialScanParamete
 ParametersPrint::SettingContainer_t & ParametersPrint::getInferenceParameters(SettingContainer_t & settings) const {
     std::string buffer;
     settings.clear();
+
+    if (!_parameters.isSequentialScanTreeOnly()) { // tree sequential scan does not report p-values
+        buffer = "P-Value Reporting";
+        switch (_parameters.getPValueReportingType()) {
+        case Parameters::STANDARD_PVALUE:
+            settings.push_back(std::make_pair(buffer, "Standard Monte Carlo"));
+            break;
+        case Parameters::TERMINATION_PVALUE:
+            settings.push_back(std::make_pair(buffer, "Sequential Monte Carlo Early Termination"));
+            printString(buffer, "%u", _parameters.getEarlyTermThreshold());
+            settings.push_back(std::make_pair("Termination Cutoff", buffer));
+            break;
+        }
+    }
     settings.push_back(std::make_pair("Number of Replications", printString(buffer, "%u", _parameters.getNumReplicationsRequested())));
 
     if (_parameters.getScanType() != Parameters::TIMEONLY) {

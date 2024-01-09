@@ -61,6 +61,7 @@ public:
     double                  getExpected(const ScanRunner& scanner) const;
     unsigned int            getBranchOrder() const { return _branch_order; }
     std::string           & getParentIndentifiers(const ScanRunner& scanner, std::string& parents, bool asIdentifier) const;
+    double                  getPValue(const ScanRunner& scanner) const;
     unsigned int            getReportOrder() const { return _report_order; }
     unsigned int            getRank() const {return _rank;}
     double                  getRelativeRisk(const ScanRunner& scanner) const;
@@ -543,7 +544,8 @@ public:
     const SequentialStatistic        & getSequentialStatistic() const { return *_sequential_statistic; }
     const boost::dynamic_bitset<>    & getSequentialTreeNodesToRead() const { return _sequential_read_nodes; }
     const boost::dynamic_bitset<>    & getSequentialTreeNodesToWrite() const { return _sequential_write_nodes; }
-    SimulationVariables              & getSimulationVariables() {return _simVars;}
+    SimulationVariables              & refSimulationVariables() {return _simVars;}
+    const SimulationVariables        & getSimulationVariables() const { return _simVars; }
     int                                getTotalC() const {return _TotalC;}
     int                                getTotalControls() const {return _TotalControls;}
     double                             getTotalN() const {return _TotalN;}
