@@ -1733,8 +1733,8 @@ bool ScanRunner::readCuts(const std::string& filename) {
 bool ScanRunner::reportableCut(const CutStructure& cut) const {
     return /* Does the top cut rank among replications? */
            (_parameters.getNumReplicationsRequested() > 0 && cut.getRank() < _parameters.getNumReplicationsRequested() + 1) ||
-           /* If not performing replications, is the cut's observed greater than expected? (we're only scanning for high rates) */
-           (_parameters.getNumReplicationsRequested() == 0 && static_cast<double>(cut.getC()) > cut.getExpected(*this)) ||
+           /* If not performing replications at all */
+           _parameters.getNumReplicationsRequested() == 0 ||
            /* If tree-only sequential scan -- a cut reported in previous look is always reportable. */
            (_parameters.isSequentialScanTreeOnly() && getSequentialStatistic().testCutSignaled(static_cast<size_t>(cut.getID())) != 0);
 }
