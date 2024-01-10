@@ -29,6 +29,7 @@ BOOST_AUTO_TEST_SUITE( squish97_suite )
 /** Tests time tree analysis w/ censored data. */
 BOOST_AUTO_TEST_CASE( test_treetime_censored ) {
     squish97_TreeTemporal_censordata_fixture censore_fixture;
+    censore_fixture._parameters.setIncludeIdenticalParentCuts(true);
     censore_fixture._parameters.setGeneratingTableResults(true);
     censore_fixture._parameters.setPrintColumnHeaders(true);
     censore_fixture._parameters.setReportAttributableRisk(true);

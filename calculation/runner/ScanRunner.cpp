@@ -1385,7 +1385,7 @@ void ScanRunner::removeIdenticalParentCuts() {
             return a->getC() == b->getC() && a->getExpected(*this) == b->getExpected(*this) && a->getStartIdx() == b->getStartIdx() && a->getEndIdx() == b->getEndIdx();
         };
         for (size_t t = 0; t < _Cut.size();) {
-            boolean matchFound = false;
+            bool matchFound = false;
             for (auto child : getCutChildNodes(*_Cut[t])) {
                 if (nodeCuts.count(child->getID())) {
                     // delete cuts with at least one child that has matching cases, expected, and time window

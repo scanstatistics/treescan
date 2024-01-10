@@ -675,6 +675,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
 /** Tests the expected values of the data file writer with the tree-time scan conditioned on node, with day of week adjustment. */
 BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustment ) {
     // set parameters to report csv data file
+    _parameters.setIncludeIdenticalParentCuts(true);
     _parameters.setConditionalType(Parameters::NODEANDTIME);
     _parameters.setPerformDayOfWeekAdjustment(true);
     _parameters.setGeneratingTableResults(true);

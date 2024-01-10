@@ -302,6 +302,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_time_only_scan_w_dow, time_only_
 
 /** Tests the expected values of the attributable risk data with tree-time scan. */
 BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node, tree_temporal_fixture ) {
+    _parameters.setIncludeIdenticalParentCuts(true);
     _parameters.setGeneratingTableResults(true);
     _parameters.setReportAttributableRisk(true);
     _parameters.setAttributableRiskExposed(200);
@@ -393,6 +394,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node_w_
 
 /** Tests the expected values of the attributable risk data with tree-time scan. */
 BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_nodetime, tree_temporal_fixture ) {
+    _parameters.setIncludeIdenticalParentCuts(true);
     _parameters.setConditionalType(Parameters::NODEANDTIME);
     _parameters.setGeneratingTableResults(true);
     _parameters.setReportAttributableRisk(true);
@@ -438,6 +440,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_nodetim
 
 /** Tests the expected values of the attributable risk data with tree-time scan. */
 BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_nodetime_w_dow, tree_temporal_fixture ) {
+    _parameters.setIncludeIdenticalParentCuts(true);
     _parameters.setConditionalType(Parameters::NODEANDTIME);
     _parameters.setPerformDayOfWeekAdjustment(true);
     _parameters.setGeneratingTableResults(true);
