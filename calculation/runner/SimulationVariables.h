@@ -34,7 +34,7 @@ class SimulationVariables {
             _sum_llr += llr; 
             _sum_squared_llr += std::pow(llr, 2);
             for (container_t::iterator itr=_mlc_llr.begin(); itr != _mlc_llr.end(); ++itr)
-                if (macro_less_than_or_equal(itr->first, llr, DBL_CMP_TOLERANCE)) itr->second++;
+                if (macro_less_than(itr->first, llr, DBL_CMP_TOLERANCE)) itr->second++;
         }
         double          get_mean() const {return _sum_llr/static_cast<double>(_simulations_count);}
         container_t     get_llr_counters() const {return _mlc_llr;}

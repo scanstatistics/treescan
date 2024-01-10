@@ -393,7 +393,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         }
         outfile << std::endl;
     }
-    if (_scanRunner.getCuts().size() && _scanRunner.getSimulationVariables().get_sim_count() < parameters.getNumReplicationsRequested())
+    if (parameters.getTerminateSimulationsEarly() && _scanRunner.getCuts().size() && _scanRunner.getSimulationVariables().get_sim_count() < parameters.getNumReplicationsRequested())
         outfile << "NOTE: The sequential Monte Carlo procedure was used to terminate the calculations after " << _scanRunner.getSimulationVariables().get_sim_count() << " replications." << std::endl;
     // print power estimation values
     if (parameters.getPerformPowerEvaluations()) {
@@ -1002,7 +1002,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "</div></div>" << std::endl;
     }
     // Report early termination
-    if (_scanRunner.getCuts().size() && _scanRunner.getSimulationVariables().get_sim_count() < parameters.getNumReplicationsRequested()) {
+    if (parameters.getTerminateSimulationsEarly() && _scanRunner.getCuts().size() && _scanRunner.getSimulationVariables().get_sim_count() < parameters.getNumReplicationsRequested()) {
         outfile << "<div class=\"program-info\">" << std::endl;
         outfile << "<div>The sequential Monte Carlo procedure was used to terminate the calculations after " << _scanRunner.getSimulationVariables().get_sim_count() << " replications." << std::endl;
         outfile << "</div></div>" << std::endl;

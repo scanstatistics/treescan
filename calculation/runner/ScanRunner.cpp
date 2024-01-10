@@ -375,13 +375,15 @@ std::string& CutStructure::getParentIndentifiers(const ScanRunner& scanner, std:
 
 /** Returns the cuts p-value - taking into account it's rank and possible early termination. */
 double CutStructure::getPValue(const ScanRunner& scanner) const {
+    const auto& parameters = scanner.getParameters();
+    const auto& sim_vars = scanner.getSimulationVariables();
     // If early terminated, return p-value in the contact of actual number of simulations performed.
-    if (scanner.getSimulationVariables().get_sim_count() < scanner.getParameters().getNumReplicationsRequested()) {
+    if (parameters.getTerminateSimulationsEarly() && sim_vars.get_sim_count() < parameters.getNumReplicationsRequested()) {
         if (_report_order == 1) // report most likely p-value
-            return static_cast<double>(scanner.getParameters().getExecuteEarlyTermThreshold()) / static_cast<double>(scanner.getSimulationVariables().get_sim_count());
-        return static_cast<double>(_rank - 1) / static_cast<double>(scanner.getSimulationVariables().get_sim_count());
+            return static_cast<double>(parameters.getExecuteEarlyTermThreshold()) / static_cast<double>(sim_vars.get_sim_count());
+        return static_cast<double>(_rank - 1) / static_cast<double>(sim_vars.get_sim_count());
     }
-    return (double)_rank / (scanner.getParameters().getNumReplicationsRequested() + 1);
+    return (double)_rank / (parameters.getNumReplicationsRequested() + 1);
 }
 
 /** Returns cut's relative risk. See user guide for formula explanation. */
@@ -2009,6 +2011,7 @@ bool ScanRunner::run() {
 
 /** Runs power evaluations. */
 bool ScanRunner::runPowerEvaluations() {
+    SimulationVariables storeSimVarsCopy(_simVars);
     switch (_parameters.getCriticalValuesType()) {
         case Parameters::CV_MONTECARLO:
             // if simulations not already done in analysis stage, perform them now
@@ -2106,6 +2109,7 @@ bool ScanRunner::runPowerEvaluations() {
         // reset simulation variables for next power estimation iteration
         _simVars = simVarsCopy;
     }
+    _simVars = storeSimVarsCopy;
     return true;
 }
 
