@@ -28,8 +28,8 @@ cp -rf $srcdir/installers/examples $bundleinputdir
 cp -f $srcdir/installers/documents/userguide.pdf $bundleinputdir
 cp -f $srcdir/installers/documents/eula.html $bundleinputdir
 cp -f $srcdir/installers/documents/eula/License.txt $bundleinputdir
-cp -f $binaries/treescan32 $bundleinputdir
-cp -f $binaries/libtreescan32.so $bundleinputdir
+# cp -f $binaries/treescan32 $bundleinputdir
+# cp -f $binaries/libtreescan32.so $bundleinputdir
 cp -f $binaries/treescan64 $bundleinputdir
 cp -f $binaries/libtreescan64.so $bundleinputdir
 
