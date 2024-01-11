@@ -91,11 +91,10 @@ double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _
                     double Cn = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
                     double Ct = scanner.get_node_n_time_total_cases(_start_idx, _end_idx);
                     double denominator = totalC - Cn - Ct + C;
-                    if (denominator == 0.0) // This will never happen when looking for clusters with high rates.
+                    if (denominator == 0.0) // This should never happen.
                         return std::numeric_limits<double>::quiet_NaN();
                     double e2 = (Cn - C) * (Ct - C) / denominator;
-                    if (e2 == 0.0 && C == 0.0) // C == 0.0 will never happen when looking for clusters with high rates.
-                        return std::numeric_limits<double>::quiet_NaN();
+                    if (e2 == 0.0 && C == 0.0) return 0;
                     return C - e2;
                 }
                 default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getExcessCases()", parameters.getConditionalType());
@@ -389,6 +388,14 @@ double CutStructure::getPValue(const ScanRunner& scanner) const {
 /** Returns cut's relative risk. See user guide for formula explanation. */
 double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
     return getRelativeRiskFor(scanner, _ID, _C, _N, _start_idx, _end_idx);
+}
+
+/* Returns whether cut is high or low rate. */
+Parameters::ScanRateType CutStructure::getRate(const ScanRunner& scanner) const {
+    if (scanner.getParameters().getScanRateType() == Parameters::HIGHORLOWRATE)
+        return static_cast<double>(getC()) > getExpected(scanner) ? Parameters::HIGHRATE : Parameters::LOWRATE;
+    // Otherwise it is assumed that this cluster is that of the rate we're scanning.
+    return scanner.getParameters().getScanRateType();
 }
 
 ////////////////////////// SequentialStatistic ///////////////////////////////

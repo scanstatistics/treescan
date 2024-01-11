@@ -1063,6 +1063,11 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
     if (parameters.getScanType() != Parameters::TIMEONLY) {
         // Obtain the child notes for this cut and remove any children which are not interesting.
         unsigned int countFieldIdx = std::numeric_limits<unsigned int>::max();
+        auto includeChild = [this, &countFieldIdx](const CutStructure& thisCut, RecordBuffer& record) {
+            if (thisCut.getRate(_scanRunner) == Parameters::HIGHRATE) // we're excluding child nodes with no cases
+                return record.GetFieldValue(countFieldIdx).AsDouble() > 0.0 && !std::isnan(record.GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble());
+            return !std::isnan(record.GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble());
+        };
         CutsRecordWriter::getFieldDefs(fieldDefinitions, parameters, _scanRunner.hasNodeDescriptions());
         for (auto pnode : _scanRunner.getCutChildNodes(thisCut)) {
             boost::shared_ptr<RecordBuffer> record(new RecordBuffer(fieldDefinitions));
@@ -1070,7 +1075,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
                 countFieldIdx = record->GetFieldIndex({ std::string(DataRecordWriter::CASES_FIELD), std::string(DataRecordWriter::OBSERVED_CASES_FIELD), std::string(DataRecordWriter::WNDW_CASES_FIELD) });
             CutsRecordWriter::getRecordForCutChild(*(record), thisCut, *pnode, thisCut.getReportOrder(), _scanRunner);
             // Add this record if it is interesting.
-            if (record->GetFieldValue(countFieldIdx).AsDouble() > 0.0 && !std::isnan(record->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble()))
+            if (includeChild(thisCut, *(record)))
                 childRecords.push_back(record);
         }
         std::sort(std::begin(childRecords), std::end(childRecords), [](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {

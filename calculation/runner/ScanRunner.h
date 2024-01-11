@@ -64,6 +64,7 @@ public:
     double                  getPValue(const ScanRunner& scanner) const;
     unsigned int            getReportOrder() const { return _report_order; }
     unsigned int            getRank() const {return _rank;}
+    Parameters::ScanRateType getRate(const ScanRunner& scanner) const;
     double                  getRelativeRisk(const ScanRunner& scanner) const;
     DataTimeRange::index_t  getStartIdx() const {return _start_idx;}
     DataTimeRange::index_t  getEndIdx() const {return _end_idx;}

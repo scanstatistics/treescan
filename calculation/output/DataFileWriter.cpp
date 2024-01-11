@@ -379,10 +379,15 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
         // Now write records for each direct child of this cut/node.
         std::vector<boost::shared_ptr<RecordBuffer> > childRecords;
         unsigned int countFieldIdx = Record.GetFieldIndex({ std::string(CASES_FIELD), std::string(OBSERVED_CASES_FIELD), std::string(WNDW_CASES_FIELD) });
+        auto includeChild = [this, &countFieldIdx](const CutStructure& thisCut, RecordBuffer& record) {
+            if (thisCut.getRate(_scanner) == Parameters::HIGHRATE) // we're excluding child nodes with no cases
+                return record.GetFieldValue(countFieldIdx).AsDouble() > 0.0 && !std::isnan(record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble());
+            return !std::isnan(record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble());
+        };
         for (auto pnode : _scanner.getCutChildNodes(thisCut)) {
             boost::shared_ptr<RecordBuffer> record(new RecordBuffer(_dataFieldDefinitions));
             getRecordForCutChild(*(record), thisCut, *pnode, thisCut.getReportOrder(), _scanner);
-            if (record->GetFieldValue(countFieldIdx).AsDouble() > 0.0 && !std::isnan(record->GetFieldValue(EXCESS_CASES_FIELD).AsDouble()))
+            if (includeChild(thisCut, *(record)))
                 childRecords.push_back(record);
         }
         std::sort(std::begin(childRecords), std::end(childRecords), [](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
@@ -605,12 +610,10 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
                 throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", params.getModelType());
     }
 
-    if (_C > 0) { // In terms of child nodes, we're only interested if there are cases in them, so shortcut these calculations (which don't always play nice here).
-        Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = getRelativeRiskFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
-        Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = getExcessCasesFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
-        if (params.getReportAttributableRisk()) {
-            Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = getAttributableRiskFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
-        }
+    Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = getRelativeRiskFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
+    Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = getExcessCasesFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
+    if (params.getReportAttributableRisk()) {
+        Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = getAttributableRiskFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
     }
     return Record;
 }
