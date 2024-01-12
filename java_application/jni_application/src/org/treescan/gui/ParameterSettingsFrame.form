@@ -380,34 +380,34 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                   <Component id="_startDateYearLabel" alignment="0" max="32767" attributes="1"/>
-                                  <Component id="_studyPeriodStartDateYearTextField" alignment="0" min="-2" pref="50" max="-2" attributes="1"/>
+                                  <Component id="_studyPeriodStartDateYearTextField" alignment="0" min="-2" pref="64" max="-2" attributes="1"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="_startDateMonthLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="_studyPeriodStartDateMonthTextField" alignment="0" min="-2" pref="30" max="-2" attributes="0"/>
+                                  <Component id="_studyPeriodStartDateMonthTextField" alignment="0" min="-2" pref="40" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="_startDateDayLabel" alignment="1" max="32767" attributes="1"/>
-                                  <Component id="_studyPeriodStartDateDayTextField" alignment="1" min="-2" pref="30" max="-2" attributes="1"/>
+                                  <Component id="_studyPeriodStartDateDayTextField" alignment="1" min="-2" pref="40" max="-2" attributes="1"/>
                               </Group>
                               <EmptySpace min="-2" pref="50" max="-2" attributes="0"/>
                               <Component id="_endDateLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                   <Component id="_endDateYearLabel" alignment="1" max="32767" attributes="1"/>
-                                  <Component id="_studyPeriodEndDateYearTextField" alignment="1" min="-2" pref="50" max="-2" attributes="1"/>
+                                  <Component id="_studyPeriodEndDateYearTextField" alignment="1" min="-2" pref="64" max="-2" attributes="1"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="_endDateMonthLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="_studyPeriodEndDateMonthTextField" alignment="0" min="-2" pref="30" max="-2" attributes="0"/>
+                                  <Component id="_studyPeriodEndDateMonthTextField" alignment="0" min="-2" pref="40" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="_endDateDayLabel" alignment="0" max="32767" attributes="1"/>
-                                  <Component id="_studyPeriodEndDateDayTextField" alignment="0" min="-2" pref="30" max="-2" attributes="1"/>
+                                  <Component id="_studyPeriodEndDateDayTextField" alignment="0" min="-2" pref="40" max="-2" attributes="1"/>
                               </Group>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
@@ -674,9 +674,9 @@
                           <Component id="_scanStatisticPanel1" max="32767" attributes="1"/>
                           <Component id="_scanStatisticPanel" max="32767" attributes="1"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="_probabilityModelPanel" pref="322" max="32767" attributes="1"/>
+                              <Component id="_probabilityModelPanel" pref="337" max="32767" attributes="1"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="_probabilityModelPanel1" pref="297" max="32767" attributes="1"/>
+                              <Component id="_probabilityModelPanel1" pref="312" max="32767" attributes="1"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -770,7 +770,7 @@
                               <Component id="_eventProbabilityLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_eventProbabiltyDenominator" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="15" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>

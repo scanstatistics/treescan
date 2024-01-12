@@ -1360,8 +1360,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addGap(20, 20, 20)
                 .addComponent(_otherRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_otherFieldSeparatorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(186, Short.MAX_VALUE))
+                .addComponent(_otherFieldSeparatorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(150, Short.MAX_VALUE))
         );
         fieldSeparatorGroupLayout.setVerticalGroup(
             fieldSeparatorGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1421,7 +1421,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _fileFormatPanelLayout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addGap(5, 5, 5)
-                        .addComponent(_ignoreRowsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_ignoreRowsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(5, 5, 5)
                         .addComponent(jLabel5)
                         .addGap(18, 18, 18)

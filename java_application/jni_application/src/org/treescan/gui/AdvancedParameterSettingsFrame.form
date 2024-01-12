@@ -88,7 +88,7 @@
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Component id="_cutFileLabel" max="32767" attributes="0"/>
-                                  <Component id="_cutFileTextField" pref="626" max="32767" attributes="1"/>
+                                  <Component id="_cutFileTextField" pref="719" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_cutFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
@@ -212,7 +212,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="_checkbox_data_leaves_only" pref="645" max="32767" attributes="0"/>
+                      <Component id="_checkbox_data_leaves_only" pref="740" max="32767" attributes="0"/>
                       <Group type="102" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="_checkbox_allow_multi_parent_nodes" max="32767" attributes="0"/>
@@ -330,14 +330,14 @@
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="_percentageTemporalRadioButton" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_maxTemporalClusterSizeTextField" min="-2" pref="45" max="-2" attributes="0"/>
+                                  <Component id="_maxTemporalClusterSizeTextField" min="-2" pref="60" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_percentageOfStudyPeriodLabel" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="_timeTemporalRadioButton" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_maxTemporalClusterSizeUnitsTextField" min="-2" pref="45" max="-2" attributes="0"/>
+                                  <Component id="_maxTemporalClusterSizeUnitsTextField" min="-2" pref="60" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_maxTemporalTimeUnitsLabel" min="-2" max="-2" attributes="0"/>
                               </Group>
@@ -462,7 +462,7 @@
                               <Group type="102" attributes="0">
                                   <Component id="_minTemporalTimeLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Component id="_minTemporalClusterSizeUnitsTextField" min="-2" pref="45" max="-2" attributes="0"/>
+                                  <Component id="_minTemporalClusterSizeUnitsTextField" min="-2" pref="60" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_minTemporalTimeUnitsLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -600,42 +600,42 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" alignment="0" attributes="0">
-                                          <Component id="_startRangeStartYearTextField" min="-2" pref="50" max="-2" attributes="0"/>
+                                          <Component id="_startRangeStartYearTextField" min="-2" pref="64" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_startRangeStartMonthTextField" min="-2" pref="30" max="-2" attributes="0"/>
+                                          <Component id="_startRangeStartMonthTextField" min="-2" pref="40" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_startRangeStartDayTextField" min="-2" pref="30" max="-2" attributes="0"/>
+                                          <Component id="_startRangeStartDayTextField" min="-2" pref="40" max="-2" attributes="0"/>
                                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                           <Component id="_startRangeToLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                                          <Component id="_startRangeEndYearTextField" min="-2" pref="50" max="-2" attributes="0"/>
+                                          <Component id="_startRangeEndYearTextField" min="-2" pref="64" max="-2" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
-                                          <Component id="_endRangeStartYearTextField" min="-2" pref="50" max="-2" attributes="0"/>
+                                          <Component id="_endRangeStartYearTextField" min="-2" pref="64" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_endRangeStartMonthTextField" min="-2" pref="30" max="-2" attributes="0"/>
+                                          <Component id="_endRangeStartMonthTextField" min="-2" pref="40" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_endRangeStartDayTextField" min="-2" pref="30" max="-2" attributes="0"/>
+                                          <Component id="_endRangeStartDayTextField" min="-2" pref="40" max="-2" attributes="0"/>
                                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                           <Component id="_endRangeToLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                                          <Component id="_endRangeEndYearTextField" min="-2" pref="50" max="-2" attributes="0"/>
+                                          <Component id="_endRangeEndYearTextField" min="-2" pref="64" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" alignment="0" attributes="0">
-                                          <Component id="_startRangeEndMonthTextField" min="-2" pref="30" max="-2" attributes="0"/>
+                                          <Component id="_startRangeEndMonthTextField" min="-2" pref="40" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_startRangeEndDayTextField" min="-2" pref="30" max="-2" attributes="0"/>
+                                          <Component id="_startRangeEndDayTextField" min="-2" pref="40" max="-2" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
-                                          <Component id="_endRangeEndMonthTextField" min="-2" pref="30" max="-2" attributes="0"/>
+                                          <Component id="_endRangeEndMonthTextField" min="-2" pref="40" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_endRangeEndDayTextField" min="-2" pref="30" max="-2" attributes="0"/>
+                                          <Component id="_endRangeEndDayTextField" min="-2" pref="40" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="235" max="32767" attributes="0"/>
+                                  <EmptySpace pref="250" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -785,7 +785,7 @@
                                           <Component id="_endRangeEndGenericTextField" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="243" max="32767" attributes="0"/>
+                                  <EmptySpace pref="326" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -951,8 +951,8 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_labelMonteCarloReplications" min="-2" max="-2" attributes="1"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_montCarloReplicationsTextField" min="-2" pref="58" max="-2" attributes="0"/>
-                          <EmptySpace pref="314" max="32767" attributes="0"/>
+                          <Component id="_montCarloReplicationsTextField" min="-2" pref="80" max="-2" attributes="0"/>
+                          <EmptySpace pref="346" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1053,7 +1053,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_label_prospective_frequency" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_prospective_frequency" min="-2" pref="190" max="-2" attributes="0"/>
+                          <Component id="_prospective_frequency" min="-2" pref="239" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
@@ -1103,7 +1103,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_label_restrict_cuts" min="-2" max="-2" attributes="1"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_minimum_cases_textfield" min="-2" pref="64" max="-2" attributes="0"/>
+                          <Component id="_minimum_cases_textfield" min="-2" pref="80" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_label_restrict_cuts2" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
@@ -1170,8 +1170,8 @@
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="_radioEarlyTerminationPValues" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_earlyTerminationThreshold" min="-2" pref="73" max="-2" attributes="0"/>
-                                  <EmptySpace min="0" pref="297" max="32767" attributes="0"/>
+                                  <Component id="_earlyTerminationThreshold" min="-2" pref="80" max="-2" attributes="0"/>
+                                  <EmptySpace min="0" pref="344" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -1281,7 +1281,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_totalPowerCases" min="-2" pref="78" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_powerEvaluationWithSpecifiedCasesLabel" pref="386" max="32767" attributes="0"/>
+                                  <Component id="_powerEvaluationWithSpecifiedCasesLabel" pref="466" max="32767" attributes="0"/>
                               </Group>
                               <Component id="_alternativeHypothesisFilenameLabel" alignment="0" max="32767" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
@@ -1294,19 +1294,19 @@
                                       <Group type="102" attributes="0">
                                           <Component id="_eventProbabilityLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_eventProbabiltyNumerator" min="-2" pref="40" max="-2" attributes="0"/>
+                                          <Component id="_eventProbabiltyNumerator" min="-2" pref="50" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_eventProbabilityLabel2" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_eventProbabiltyDenominator" min="-2" pref="40" max="-2" attributes="0"/>
+                                          <Component id="_eventProbabiltyDenominator" min="-2" pref="50" max="-2" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
                                           <Component id="_numberPowerReplicationsLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_numberPowerReplications" min="-2" pref="58" max="-2" attributes="0"/>
+                                          <Component id="_numberPowerReplications" min="-2" pref="79" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace min="0" pref="326" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -1527,7 +1527,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_reportLLRResultsAsCsvTable" pref="633" max="32767" attributes="0"/>
+                          <Component id="_reportLLRResultsAsCsvTable" pref="726" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1575,9 +1575,9 @@
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="_chk_rpt_attributable_risk" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_attributable_risk_exposed" min="-2" pref="70" max="-2" attributes="0"/>
+                                  <Component id="_attributable_risk_exposed" min="-2" pref="80" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_chk_attributable_risk_extra" pref="393" max="32767" attributes="0"/>
+                                  <Component id="_chk_attributable_risk_extra" pref="437" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="_chk_include_identical_parent_cuts" min="-2" max="-2" attributes="0"/>
@@ -1655,7 +1655,7 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_reportTemporalGraph" pref="629" max="32767" attributes="0"/>
+                                  <Component id="_reportTemporalGraph" pref="726" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
@@ -1663,14 +1663,14 @@
                                       <Group type="102" alignment="0" attributes="0">
                                           <Component id="_temporalGraphSignificant" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                          <Component id="_temporalGraphPvalueCutoff" min="-2" pref="50" max="-2" attributes="1"/>
-                                          <EmptySpace min="0" pref="221" max="32767" attributes="0"/>
+                                          <Component id="_temporalGraphPvalueCutoff" min="-2" pref="80" max="-2" attributes="1"/>
+                                          <EmptySpace min="0" pref="245" max="32767" attributes="0"/>
                                       </Group>
                                       <Component id="_temporalGraphMostLikely" alignment="0" max="32767" attributes="0"/>
                                       <Group type="102" alignment="0" attributes="0">
                                           <Component id="_temporalGraphMostLikelyX" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_numMostLikelyClustersGraph" min="-2" pref="45" max="-2" attributes="0"/>
+                                          <Component id="_numMostLikelyClustersGraph" min="-2" pref="50" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_numMostLikelyClustersGraphLabel" max="32767" attributes="0"/>
                                       </Group>
@@ -1829,7 +1829,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_apply_time_range_restrictions" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_time_range_restrictions" pref="494" max="32767" attributes="0"/>
+                          <Component id="_time_range_restrictions" pref="572" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1870,7 +1870,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="_perform_dayofweek_adjustments" alignment="1" pref="657" max="32767" attributes="0"/>
+                      <Component id="_perform_dayofweek_adjustments" alignment="1" pref="750" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
@@ -1997,10 +1997,10 @@
                                           </Group>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                              <Component id="_maximum_cases_signal" pref="80" max="32767" attributes="0"/>
+                                              <Component id="_maximum_cases_signal" pref="100" max="32767" attributes="0"/>
                                               <Component id="_minimum_cases_signal" max="32767" attributes="0"/>
                                           </Group>
-                                          <EmptySpace min="0" pref="387" max="32767" attributes="0"/>
+                                          <EmptySpace min="0" pref="470" max="32767" attributes="0"/>
                                       </Group>
                                       <Component id="_sequential_analysis_file_label" alignment="0" max="32767" attributes="0"/>
                                   </Group>
