@@ -9,8 +9,8 @@
 #define VERSION_MAJOR   "2"
 #define VERSION_MINOR   "2"
 #define VERSION_RELEASE "0"
-#define VERSION_PHASE   "Beta 1" // testing phase name - leave blank for release
-#define VERSION_DATE    "Not Released"
+#define VERSION_PHASE   "" // testing phase name - leave blank for release
+#define VERSION_DATE    "January 2024"
 
 #if defined(_MSC_VER)
 #define NOMINMAX
