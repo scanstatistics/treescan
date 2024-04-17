@@ -170,7 +170,7 @@ DateStringParser::ParserStatus DateStringParser::Parse(const char * sDateString,
         return eParserStatus;
     if (readPrecision < geTimePrecision)
         return LESSER_PRECISION;
-    switch (readPrecision) {
+    switch (geTimePrecision) {
         case DataTimeRange::YEAR:
             if (!IsDateValid(iYear, DEFAULT_MONTH, DEFAULT_DAY)) return INVALID_DATE;
             thisDate = boost::gregorian::date(iYear, DEFAULT_MONTH, DEFAULT_DAY);
