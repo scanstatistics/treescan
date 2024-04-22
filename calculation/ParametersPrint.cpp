@@ -528,8 +528,12 @@ void ParametersPrint::WriteSettingsContainerHTML(const SettingContainer_t& setti
         out << "<h4>" << section << "</h4>" << std::endl << "<table><tbody>" << std::endl;
         SettingContainer_t::const_iterator itr=settings.begin();
         // print settings
-        for (itr=settings.begin(); itr != settings.end(); ++itr)
-            out << "<tr><th>" << itr->first << " :</th><td>" << itr->second << "</td></tr>" << std::endl;
+        for (itr = settings.begin(); itr != settings.end(); ++itr) {
+            if (itr->first == "Temporal Graph File")
+                out << "<tr><th>" << itr->first << " :</th><td><a href=\"file:///" << itr->second << "\">" << itr->second << "</a></td></tr>" << std::endl;
+            else
+                out << "<tr><th>" << itr->first << " :</th><td>" << itr->second << "</td></tr>" << std::endl;
+        }
         out << std::endl << "</tbody></table></div>";
     } catch (prg_exception& x) {
         x.addTrace("WriteSettingsContainerHTML()","ParametersPrint");
