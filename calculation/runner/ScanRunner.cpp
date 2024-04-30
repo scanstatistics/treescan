@@ -1187,9 +1187,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                       );
                       countDateWarningDisplayed = true;
                   }
-                    
-                }
-                else {
+                } else {
                     readSuccess = false;
                     _print.Printf(
                         "Error: Record %ld in count file references an invalid '%s' value.\n"
@@ -1205,7 +1203,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
             if (_parameters.isApplyingExclusionTimeRanges()) {
                 DataTimeRangeSet::rangeset_index_t rangeIdxExclusion = _parameters.getExclusionTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
                 if (rangeIdxExclusion.first == true) {
-                    ++_num_cases_excluded;
+                    _num_cases_excluded += count;
                     continue;
                 }
             }
