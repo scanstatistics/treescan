@@ -2,9 +2,9 @@
 <!-- Wraps the TreeScan java application into an executable. -->
 
 <launch4jConfig>
-  <dontWrapJar>false</dontWrapJar>
+  <dontWrapJar>true</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>/prj/treescan/build/treescan/java_application/jni_application/dist/TreeScan.jar</jar>
+  <jar>TreeScan.jar</jar>
   <outfile>/prj/treescan/build/treescan/java_application/jni_application/dist/TreeScan.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>

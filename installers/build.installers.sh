@@ -8,7 +8,7 @@ installer_version="/prj/treescan/installers/v.${version}.x"
 binaries="/prj/treescan/build/binaries/linux"
 
 javajdk=$build/packages/java/jdk-15.0.2-linux_x64
-launch4j=$build/packages/launch4j/launch4j-3.12
+launch4j=$build/packages/launch4j/launch4j-3.50
 
 #### Windows ##############################################################################
 # Build the Inno Setup installer for Windows. (Note that someday we might replace this process with jpackageInstallerWindows.bat)
