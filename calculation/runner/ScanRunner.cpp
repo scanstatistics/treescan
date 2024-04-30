@@ -826,7 +826,22 @@ const TreeStatistics& ScanRunner::getTreeStatistics() const {
             _tree_statistics->_nodes_per_level.insert(std::make_pair(level, static_cast<unsigned int>(1)));
         else
             _tree_statistics->_nodes_per_level[level] += static_cast<unsigned int>(1);
+        // record number of nodes evaluated per tree level restrictions
+        if (_parameters.getRestrictTreeLevels()) {
+            if (std::find(_parameters.getRestrictedTreeLevels().begin(), _parameters.getRestrictedTreeLevels().end(), node.getLevel()) == _parameters.getRestrictedTreeLevels().end())
+                ++_tree_statistics->_num_nodes_evaluated;
+        } else
+            ++_tree_statistics->_num_nodes_evaluated;
     }
+    _tree_statistics->_levels_included.resize(_tree_statistics->_nodes_per_level.size(), true);
+    _tree_statistics->_levels_excluded.resize(_tree_statistics->_nodes_per_level.size(), false);
+    if (_parameters.getRestrictTreeLevels()) {
+        for (auto& level : _parameters.getRestrictedTreeLevels()) {
+            _tree_statistics->_levels_included.set(level - 1, false);
+            _tree_statistics->_levels_excluded.set(level - 1, true);
+        }
+    }
+
     return *_tree_statistics.get();
 }
 

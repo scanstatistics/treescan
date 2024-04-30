@@ -347,12 +347,32 @@ struct TreeStatistics {
     typedef std::map<unsigned int, unsigned int> NodesLevel_t;
 
     unsigned int _num_nodes;
+    unsigned int _num_nodes_evaluated;
     unsigned int _num_root;
     unsigned int _num_leaf;
     unsigned int _num_parent;
     NodesLevel_t _nodes_per_level;
+    boost::dynamic_bitset<> _levels_included;
+    boost::dynamic_bitset<> _levels_excluded;
 
-    TreeStatistics() : _num_nodes(0), _num_root(0), _num_leaf(0), _num_parent(0) {}
+    std::string& toCsvString(const boost::dynamic_bitset<>& set, std::string& response) const {
+        if (set.empty())
+            response = "";
+        else {
+            std::stringstream buffer;
+            boost::dynamic_bitset<>::size_type p = set.find_first();
+            buffer << (p + 1);
+            p = set.find_next(p);
+            while (p != boost::dynamic_bitset<>::npos) {
+                buffer << ", " << (p + 1);
+                p = set.find_next(p);
+            }
+            response = buffer.str();
+        }
+        return response;
+    }
+
+    TreeStatistics() : _num_nodes(0), _num_nodes_evaluated(0), _num_root(0), _num_leaf(0), _num_parent(0) {}
 };
 
 class AbstractRandomizer;
