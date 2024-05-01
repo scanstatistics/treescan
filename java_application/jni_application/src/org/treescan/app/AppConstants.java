@@ -16,7 +16,7 @@ public final class AppConstants {
     private final static String APP_TITLE = "TreeScan - Software for the Tree-Based Scan Statistic";
     public static final int VERSION_MAJOR = 2;
     public static final int VERSION_MINOR = 2;
-    public static final int VERSION_RELEASE = 0;
+    public static final int VERSION_RELEASE = 1;
     public static final String VERSION_PHASE = "";
 
     public static final int MIN_YEAR = 1753;

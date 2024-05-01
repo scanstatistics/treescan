@@ -2,17 +2,15 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "TreeScan"
-#define MyAppVersion "2.2.0 Beta 1"
-#define MyAppPublisher "Information Management Services, Ins."
+#define MyAppVersion "2.2.1"
+#define MyAppPublisher "Information Management Services, Inc."
 #define MyAppURL "https://www.treescan.org/"
 #define MyAppExeName "TreeScan.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-; AppId={{AD0046EA-ADC2-4AD7-B623-E53C00CDAEC9} -- THISI IS THE RELEASE AppId.
-; Beta 2.2.0 installer -- B220 in GUID
-AppId={{AD0046EA-B220-4AD7-B623-E53C00CDAEC9}
+AppId={{AD0046EA-ADC2-4AD7-B623-E53C00CDAEC9} -- THIS IS THE RELEASE AppId.
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
