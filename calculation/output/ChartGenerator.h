@@ -71,8 +71,17 @@ class TemporalChartGenerator : public AbstractChartGenerator {
 		static const char * TEMPLATE_CHARTSERIES;
 		static const char * TEMPLATE_CHARTSERIES_PT;
 		static const char * TEMPLATE_CHARTSECTION;
+        static const char * TEMPLATE_CLUSTERDETAILS;
         const ScanRunner &  _scanner;
+        std::vector<int>    _ptcases;
         const SimulationVariables & _simVars;
+
+        // 0: Inside Cut Window, Inside Cut Node
+        // 1: Outside Cut Window, Inside Cut Node
+        // 2: Inside Cut Window, Outside Cut Node
+        // 3: Outside Cut Window, Outside Cut Node
+        typedef boost::tuple<int, int, int, int>  CutCaseTotals_t;
+        CutCaseTotals_t getCutCaseTotals(const CutStructure& cluster) const;
 
         class intervalGroups {
             public:
