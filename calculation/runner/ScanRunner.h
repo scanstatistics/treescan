@@ -34,10 +34,10 @@ class MatchedSets {
         MatchedSets() {}
         MatchedSets(matched_sets_t intitialSets): _matched_sets(intitialSets) {}
 
-        MatchedSets MatchedSets::operator+(const MatchedSets& other) const {
+        MatchedSets operator+(const MatchedSets& other) const {
             return MatchedSets(_matched_sets).add(other.get());
         }
-        MatchedSets & MatchedSets::operator+=(const MatchedSets& other) {
+        MatchedSets& operator+=(const MatchedSets& other) {
             return add(other.get());
         }
 
