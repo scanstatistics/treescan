@@ -11,7 +11,7 @@
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 ; AppId={{AD0046EA-ADC2-4AD7-B623-E53C00CDAEC9} -- THISI IS THE RELEASE AppId.
-; Beta 2.2.0 installer -- B230 in GUID
+; Beta 2.3.0 installer -- B230 in GUID
 AppId={{AD0046EA-B230-4AD7-B623-E53C00CDAEC9}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
@@ -26,8 +26,8 @@ LicenseFile=U:\eula\LicenseAgreement.rtf
 InfoBeforeFile=U:\build\treescan\installers\inno-setup\before-install.rtf
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputDir=U:\installers\v.2.2.x
-OutputBaseFilename=install-2_2_windows
+OutputDir=U:\installers\v.2.3.x
+OutputBaseFilename=install-2_3_windows
 ;SetupIconFile=U:\build\treescan\installers\resources\TreeScan.ico
 Compression=lzma
 SolidCompression=yes
