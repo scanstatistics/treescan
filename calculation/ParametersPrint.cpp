@@ -241,8 +241,11 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
     }
     if (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
         settings.push_back(std::make_pair("Self-Control Design",_parameters.getSelfControlDesign() ? "Yes" : "No"));
-        printString(buffer, "%u/%u", _parameters.getProbabilityRatio().first, _parameters.getProbabilityRatio().second);
-        settings.push_back(std::make_pair("Case Probability",buffer));
+        settings.push_back(std::make_pair("Variable Case Probability", _parameters.getVariableCaseProbability() ? "Yes" : "No"));
+        if (!_parameters.getVariableCaseProbability()) {
+            printString(buffer, "%u/%u", _parameters.getProbabilityRatio().first, _parameters.getProbabilityRatio().second);
+            settings.push_back(std::make_pair("Case Probability", buffer));
+        }
     }
     buffer = "Scan Rate";
     switch (_parameters.getScanRateType()) {

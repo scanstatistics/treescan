@@ -148,7 +148,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             }
         }
         // Display a message indicating which variables are not mapped to an source field.
-        if (missing.size() > 0) {
+        if (!missing.isEmpty()) {
             message.append("For the ").append(getInputFileTypeString());
             message.append(", the following TreeScan Variable(s) are required\nand an Source File Variable must");
             message.append(" be selected for each before import can proceed.\n\nTreeScan Variable(s): ");
@@ -169,6 +169,21 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             return true;              
           }
         }
+        // Special case for case and control files: We need to ensure tha both case probability columns are selected or neither.
+        if (_displayVariablesComboBox.getSelectedIndex() == 2 /* Tree-Only, Unconditional Bernoulli */ &&
+             (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Counts ||
+              _input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Controls
+             ) &&
+             ((model._visible_variables.get(2).isMappedToSourceField() && !model._visible_variables.get(3).isMappedToSourceField()) ||
+              (!model._visible_variables.get(2).isMappedToSourceField() && model._visible_variables.get(3).isMappedToSourceField())
+             )
+        ) {
+                message.append("For the ").append(getInputFileTypeString()).append(" with the unconditional Bernoulli model");
+                message.append(", the 'Number Exposed'\nand 'Total Number' variables are required to be selected or omitted as a pair.\n");
+                JOptionPane.showMessageDialog(this, message.toString(), "Note", JOptionPane.WARNING_MESSAGE);
+                return true;
+        }        
+        
         return false;
     }
 
@@ -392,9 +407,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
                 if (_startingmodeltype == Parameters.ModelType.POISSON)
                     builder.append("&lt;Node ID&gt;&#44;  &lt;Number of Cases&gt;&#44;  &lt;Population&gt;");
-                else if (_startingmodeltype == Parameters.ModelType.BERNOULLI_TREE)
+                else if (_startingmodeltype == Parameters.ModelType.BERNOULLI_TREE) {
                     builder.append("&lt;Node ID&gt;&#44;  &lt;Number of Cases&gt;");
-                else if (_startingmodeltype == Parameters.ModelType.BERNOULLI_TIME) {
+                    if (_startingconditionaltype == Parameters.ConditionalType.UNCONDITIONAL)
+                        builder.append("&#44; &lt;Number Exposed&gt;(optional)&#44;  &lt;Total Number&gt;(optional)");
+                } else if (_startingmodeltype == Parameters.ModelType.BERNOULLI_TIME) {
                     if (_startingscantype != Parameters.ScanType.TIMEONLY)
                         builder.append("&lt;Node ID&gt;&#44;  ");
                     builder.append("&lt;Number of Cases&gt;&#44; &lt;Time&gt;");
@@ -422,7 +439,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                         builder.append("&lt;Node ID&gt;&#44;  ");
                     builder.append("&lt;Number of Controls&gt;&#44;  &lt;Time&gt;");
                 } else { // _startingmodeltype == Parameters.ModelType.BERNOULLI_TREE or default                    
-                    builder.append("&lt;Node ID&gt;&#44;  &lt;Number of Controls&gt;");                
+                    builder.append("&lt;Node ID&gt;&#44;  &lt;Number of Controls&gt;");
+                    if (_startingconditionaltype == Parameters.ConditionalType.UNCONDITIONAL)
+                        builder.append("&#44; &lt;Number Exposed&gt;(optional)&#44;  &lt;Total Number&gt;(optional)");                    
                 }
                 break;
             case Cut:
@@ -915,9 +934,10 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _import_variables.add(new ImportVariable("Node ID", 0, true, null, null));
         _import_variables.add(new ImportVariable("Cases", 1, true, null, null));
         _import_variables.add(new ImportVariable("Population", 2, true, null, null));
-        //_import_variables.add(new ImportVariable("Controls", 2, false, null, null));
         _import_variables.add(new ImportVariable("Time", 2, true, null, null));
         _import_variables.add(new ImportVariable("Censored Time", 3, false, null, null));
+        _import_variables.add(new ImportVariable("Number Exposed", 2, false, null, null));
+        _import_variables.add(new ImportVariable("Total Number", 3, false, null, null));
     }
 
     /** Setup field descriptors for control file. */
@@ -926,6 +946,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _import_variables.add(new ImportVariable("Node ID", 0, true, null, null));
         _import_variables.add(new ImportVariable("Controls", 1, true, null, null));
         _import_variables.add(new ImportVariable("Time", 2, true, null, null));
+        _import_variables.add(new ImportVariable("Number Exposed", 2, false, null, null));
+        _import_variables.add(new ImportVariable("Total Number", 3, false, null, null));
     }    
     
     /** Setup field descriptors for power evaluations file. */
@@ -1011,6 +1033,16 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 _import_variables.get(4).setShowing(_displayVariablesComboBox.getSelectedIndex() == 4 /* Tree-time, Condition Node */ ||
                                                     _displayVariablesComboBox.getSelectedIndex() == 6 /* Time-Only */);
                 model.setShowing(_import_variables.get(4));
+                
+                
+                // Number Exposed
+                _import_variables.get(5).setShowing(_displayVariablesComboBox.getSelectedIndex() == 2 /* Tree-Only, Unconditional Bernoulli */);
+                model.setShowing(_import_variables.get(5));
+                
+                // Total Number
+                _import_variables.get(6).setShowing(_displayVariablesComboBox.getSelectedIndex() == 2 /* Tree-Only, Unconditional Bernoulli */);
+                model.setShowing(_import_variables.get(6));
+                
                 break;
             case Controls:
                 model.hideAll();
@@ -1032,6 +1064,15 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 _import_variables.get(2).setShowing(_displayVariablesComboBox.getSelectedIndex() == 7 /* Tree-time, Bernoulli */ ||
                                                     _displayVariablesComboBox.getSelectedIndex() == 8 /* Time-Only, Bernoulli */);
                 model.setShowing(_import_variables.get(2));
+                
+                // Number Exposed
+                _import_variables.get(3).setShowing(_displayVariablesComboBox.getSelectedIndex() == 2 /* Tree-Only, Unconditional Bernoulli */);
+                model.setShowing(_import_variables.get(3));
+                
+                // Total Number
+                _import_variables.get(4).setShowing(_displayVariablesComboBox.getSelectedIndex() == 2 /* Tree-Only, Unconditional Bernoulli */);
+                model.setShowing(_import_variables.get(4));
+                
                 break;                
             case Power_Evaluations:
                 for (ImportVariable variable : _import_variables) {

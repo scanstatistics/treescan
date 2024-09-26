@@ -338,9 +338,7 @@ ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& field
         if (params.getReportAttributableRisk()) {
             CreateField(fields, ATTRIBUTABLE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
         }
-        if ((params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME) ||
-            (params.getScanType() == Parameters::TIMEONLY && params.getConditionalType() == Parameters::TOTALCASES && params.isPerformingDayOfWeekAdjustment()) ||
-            (params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODE && params.isPerformingDayOfWeekAdjustment())) {
+        if (params.getIsTestStatistic()) {
             // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
             CreateField(fields, TEST_STATISTIC_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
             // CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
@@ -438,7 +436,10 @@ RecordBuffer& CutsRecordWriter::getRecordForCut(RecordBuffer& Record, const CutS
                     Record.GetFieldValue(END_WINDOW_FIELD).AsString() = rangeDates.second;
                 }
             case Parameters::BERNOULLI_TREE:
-                Record.GetFieldValue(OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(thisCut.getN());
+                if (params.getConditionalType() == Parameters::UNCONDITIONAL && params.getVariableCaseProbability())
+                    Record.GetFieldValue(OBSERVATIONS_FIELD).AsDouble() = thisCut.getMatchedSets().get().size();
+                else
+                    Record.GetFieldValue(OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(thisCut.getN());
                 Record.GetFieldValue(CASES_FIELD).AsDouble() = static_cast<int>(thisCut.getC());
                 Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = thisCut.getExpected(scanner);
                 break;
@@ -478,9 +479,7 @@ RecordBuffer& CutsRecordWriter::getRecordForCut(RecordBuffer& Record, const CutS
         Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = thisCut.getExcessCases(scanner);
         if (params.getReportAttributableRisk())
             Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = thisCut.getAttributableRisk(scanner);
-        if ((params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME) ||
-            (params.getScanType() == Parameters::TIMEONLY && params.getConditionalType() == Parameters::TOTALCASES && params.isPerformingDayOfWeekAdjustment()) ||
-            (params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODE && params.isPerformingDayOfWeekAdjustment())) {
+        if (params.getIsTestStatistic()) {
             // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
             Record.GetFieldValue(TEST_STATISTIC_FIELD).AsDouble() = calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood());
         } else
@@ -573,7 +572,11 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
                 Record.GetFieldValue(END_WINDOW_FIELD).AsString() = rangeDates.second;
             }
         case Parameters::BERNOULLI_TREE:
-            Record.GetFieldValue(OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(_N);
+            if (params.getConditionalType() == Parameters::UNCONDITIONAL && params.getVariableCaseProbability()) {
+                MatchedSets ms;
+                Record.GetFieldValue(OBSERVATIONS_FIELD).AsDouble() = scanner.getNodeMatchSets(&childNode, ms).get().size();
+            } else
+                Record.GetFieldValue(OBSERVATIONS_FIELD).AsDouble() = static_cast<int>(_N);
             Record.GetFieldValue(CASES_FIELD).AsDouble() = static_cast<int>(_C);
             Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = getExpectedFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
             break;
@@ -609,11 +612,13 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
             else
                 throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", params.getModelType());
     }
-
-    Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = getRelativeRiskFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
-    Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = getExcessCasesFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
+    MatchedSets ms;
+    if (params.getIsSelfControlVariableBerounlli()) // Obtain child node match sets for reporting
+        scanner.getNodeMatchSets(&childNode, ms);
+    Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = getRelativeRiskFor(scanner, childNode.getID(), _C, _N, ms, thisCut.getStartIdx(), thisCut.getEndIdx());
+    Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = getExcessCasesFor(scanner, childNode.getID(), _C, _N, ms, thisCut.getStartIdx(), thisCut.getEndIdx());
     if (params.getReportAttributableRisk()) {
-        Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = getAttributableRiskFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
+        Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = getAttributableRiskFor(scanner, childNode.getID(), _C, _N, ms, thisCut.getStartIdx(), thisCut.getEndIdx());
     }
     return Record;
 }

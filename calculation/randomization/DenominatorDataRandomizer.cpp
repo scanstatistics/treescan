@@ -110,6 +110,10 @@ int AbstractDenominatorDataRandomizer::RandomizeData(unsigned int iSimulation, c
     auto updateTree = [&treeNodes, &treeSimNodes, this]() { // update tree structure by adding counts up the tree
         for (size_t i = 0; i < treeNodes.size(); i++)
             addSimC_C(i, i, treeSimNodes[i].getIntC_C(), treeSimNodes, treeNodes);
+
+        //for (size_t i = 0; i < treeNodes.size(); i++)
+        //    addSimC_C(i, i, treeSimNodes[i].getGroupData(), treeSimNodes, treeNodes);
+
     };
     auto standardWrite = [&treeSimNodes, &mutex, this]() { // standard simulation data write
         boost::mutex::scoped_lock lock(mutex);

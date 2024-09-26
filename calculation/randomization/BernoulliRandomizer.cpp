@@ -34,6 +34,32 @@ int UnconditionalBernoulliRandomizer::randomize(unsigned int iSimulation, const 
     return TotalSimC;
 }
 
+//////////////////// UnconditionalBernoulliVariableProbabilityRandomizer //////////////////////////
+
+/** Constructor */
+UnconditionalBernoulliVariableProbabilityRandomizer::UnconditionalBernoulliVariableProbabilityRandomizer(const ScanRunner& scanner, long lInitialSeed)
+    :AbstractDenominatorDataRandomizer(scanner, lInitialSeed), _total_C(scanner.getTotalC()), _total_Controls(scanner.getTotalControls()) {}
+
+/** Internal method to distribute cases into treeSimNodes container. */
+int UnconditionalBernoulliVariableProbabilityRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
+    // reset seed of random number generator
+    setSeed(iSimulation);
+    // reset simData
+    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
+
+    int TotalSimC = 0;
+    for (size_t i = 0; i < treeNodes.size(); ++i) {
+        treeSimNodes[i].refBrC() = 0; // initializing the branch cases with zero
+        if (!treeNodes.randomized(i)) continue; // skip if not randomized
+        for (auto probability : treeNodes.getMatchSets(i).get()) {
+            int cases = _binomial_generator.GetBinomialDistributedVariable(1, static_cast<float>(probability), _random_number_generator);
+            treeSimNodes[i].refIntC() += cases;
+            TotalSimC += cases;
+        }
+    } // for i
+    return TotalSimC;
+}
+
 //////////////////// AbstractConditionalBernoulliRandomizer ////////////////////////////
 
 /* Constructor */

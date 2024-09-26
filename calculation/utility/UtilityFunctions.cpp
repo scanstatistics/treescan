@@ -196,6 +196,22 @@ std::string& getValueAsString(double value, std::string& s, unsigned int iSignif
     return s;
 }
 
+std::string& getRelativeValueAsString(double value, std::string& s, unsigned int iSignificant) {
+    // For the case variable probability, we didn't finish the relative risk calculation
+    // for the self control design. The current calculation sometime doesn't converge and
+    // the relative risk is returned as zero.
+
+    // TODO: Remove this function once the relative risk can be calculated without potential
+    //       for the function to not converge.
+
+    if (value == 0.0) {
+        s = "";
+        return s;
+    }
+    return getValueAsString(value, s, iSignificant);
+}
+
+
 /** Returns double as string with specified decimal precision. */
 std::string & getRoundAsString(double value, std::string& s, unsigned int precision, bool localize) {
     std::stringstream buffer;

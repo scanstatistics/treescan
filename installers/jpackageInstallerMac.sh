@@ -7,7 +7,7 @@ else
   read -p "Apple developer password (TreeScan Mac App Specific): " PASSWORD
 fi
 
-APPVERSION="2.2"
+APPVERSION="2.3"
 SRCDIR="/Users/treescan/prj/treescan.development/treescan"
 INSTALLER_DIR="/prj/treescan/installers/v.${APPVERSION}.x"
 SIGN_KEY="Developer ID Application: Information Management Services, Inc. (VF82MCMA83)"

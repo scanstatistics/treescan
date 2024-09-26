@@ -31,7 +31,7 @@
 #include "ChartGenerator.h"
 #include "ZipUtils.h"
 
-double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
+double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _N, const MatchedSets& ms, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
     const Parameters& parameters = scanner.getParameters();
     double C = static_cast<double>(_C), totalC = static_cast<double>(scanner.getTotalC());
     
@@ -41,10 +41,18 @@ double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _
                 case Parameters::UNCONDITIONAL:
                     if (parameters.getModelType() == Parameters::POISSON)
                         return C - _N;
-                    if (parameters.getModelType() == Parameters::BERNOULLI_TREE)
+                    if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
+                        if (parameters.getVariableCaseProbability()) {
+                            if (parameters.getSelfControlDesign()) {
+                                double rr = getRelativeRiskFor(scanner, nodeID, _C, _N, ms, _start_idx, _end_idx);
+                                return rr && rr != std::numeric_limits<double>::infinity() ? _C * (rr - 1.0) / rr : 0.0;
+                            }
+                            return C - _N;
+                        }
                         if (parameters.getSelfControlDesign())
                             return C - scanner.getParameters().getProbability() * (_N - C) / (1.0 - scanner.getParameters().getProbability());
-                    return C - _N * scanner.getParameters().getProbability();
+                        return C - _N * scanner.getParameters().getProbability();
+                    }
                     throw prg_error("Cannot calculate excess cases: tree-only, unconditonal, model (%d).", "getExcessCases()", parameters.getModelType());
                 case Parameters::TOTALCASES:
                     if (parameters.getModelType() == Parameters::POISSON) {
@@ -113,8 +121,11 @@ double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, 
             case Parameters::UNCONDITIONAL:
                 if (parameters.getModelType() == Parameters::POISSON)
                     return _N;
-                if (parameters.getModelType() == Parameters::BERNOULLI_TREE)
+                if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
+                    if (scanner.getParameters().getVariableCaseProbability())
+                        return _N;
                     return _N * scanner.getParameters().getProbability();
+                }
                 throw prg_error("Cannot determine expected cases: tree-only, unconditonal, model (%d).", "getExpected()", parameters.getModelType());
             case Parameters::TOTALCASES:
                 if (parameters.getModelType() == Parameters::POISSON)
@@ -182,7 +193,7 @@ double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, 
 }
 
 /** Calculates the attributable risk per person for cut. */
-double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
+double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, const MatchedSets& ms, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
     const Parameters& parameters = scanner.getParameters();
     double C = static_cast<double>(_C);
 
@@ -190,7 +201,7 @@ double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, dou
         case Parameters::TREEONLY: {
             switch (parameters.getConditionalType()) {
                 case Parameters::UNCONDITIONAL:
-                case Parameters::TOTALCASES: return getExcessCasesFor(scanner, nodeID, _C, _N, _start_idx, _end_idx) / static_cast<double>(parameters.getAttributableRiskExposed());
+                case Parameters::TOTALCASES: return getExcessCasesFor(scanner, nodeID, _C, _N, ms, _start_idx, _end_idx) / static_cast<double>(parameters.getAttributableRiskExposed());
                 default: throw prg_error("Cannot calculate attributable risk: tree-only, condition type (%d).", "getAttributableRiskFor()", parameters.getConditionalType());
             }
         }
@@ -199,7 +210,7 @@ double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, dou
             switch (parameters.getConditionalType()) {
                 case Parameters::TOTALCASES: // this option is really only for time-only
                 case Parameters::NODE:       // this option is really only for tree-time
-                    return getExcessCasesFor(scanner, nodeID, _C, _N, _start_idx, _end_idx) / static_cast<double>(parameters.getAttributableRiskExposed());
+                    return getExcessCasesFor(scanner, nodeID, _C, _N, ms, _start_idx, _end_idx) / static_cast<double>(parameters.getAttributableRiskExposed());
                 case Parameters::NODEANDTIME: {
                     double exp = getExpectedFor(scanner, nodeID, _C, _N, _start_idx, _end_idx);
                     double NodeCases = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
@@ -221,7 +232,7 @@ double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, dou
 }
 
 /** Returns cut's relative risk. See user guide for formula explanation. */
-double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
+double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, const MatchedSets& ms, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
     double relative_risk = 0;
     double C = static_cast<double>(_C), totalC = static_cast<double>(scanner.getTotalC());
 
@@ -235,10 +246,21 @@ double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double 
                             return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
                         }
                         if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
-                            if (parameters.getSelfControlDesign())
-                                relative_risk = (C / parameters.getProbability()) / ((_N - C) / (1.0 - parameters.getProbability()));
-                            else
-                                relative_risk = C / (_N * parameters.getProbability());
+                            if (parameters.getVariableCaseProbability()) {
+                                if (parameters.getSelfControlDesign()) {
+                                    relative_risk = getRelativeRiskFor(scanner, nodeID, _C, ms, 0.00001);
+
+                                    // TODO: Remove after function no longer has potential to not converge.
+                                    return relative_risk;
+
+                                } else
+                                    relative_risk = C / _N;
+                            } else {
+                                if (parameters.getSelfControlDesign())
+                                    relative_risk = (C / parameters.getProbability()) / ((_N - C) / (1.0 - parameters.getProbability()));
+                                else
+                                    relative_risk = C / (_N * parameters.getProbability());
+                            }
                             return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
                         }
                         throw prg_error("Cannot calculate relative risk: tree-only, unconditonal, model (%d).", "getRelativeRisk()", parameters.getModelType());
@@ -320,6 +342,75 @@ double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double 
     }
 }
 
+/** Iterative calculation of relative risk for variable case probability Bernoulli with self control design. */
+double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, const MatchedSets& matchedsets, double converge) {
+    double c = _C, n = static_cast<double>(matchedsets.get().size());
+    double RR = 0.0;
+
+    // Step 1
+    auto a = [](double probability) { 
+        return (1.0 / probability) - 1.0; 
+    };
+    auto b = [](double probability) { 
+        return probability / (1.0 - probability); 
+    };
+
+    // Step 2
+    double A = 0.0, B = 0.0;
+    for (auto probability : matchedsets.get()) {
+        A += a(probability);
+        B += b(probability);
+    }
+
+    // Step 3
+    double X1 = (c / B) / ((n - c) / n), X2 = (c / n) / ((n - c) / A);
+
+    auto getZ = [c, &matchedsets, &a, &b](double X1, double X2) {
+        // Step 4
+        double sumX1 = 0.0, sumX2 = 0.0;
+
+        double xx = 0;
+        for (auto probability : matchedsets.get()) {
+            sumX1 += (probability * X1) / (1.0 - probability + probability * X1);
+            sumX2 += X2 / (X2 + a(probability));
+        }
+        // Step 5
+        double Y1 = c - sumX1, Y2 = c - sumX2;
+        // Step 6a - return Z
+        return X1 + Y1 * (X2 - X1) / (Y1 - Y2); 
+    };
+
+    unsigned int iterations = 0, maxiterations = 30;
+    bool keepgoing = true;
+    do {
+        if (std::abs(X1 - X2) < converge) {
+            RR = X1;
+            break;
+        }
+
+        double S = 0.0, Z = 0.0;
+        // Step 6b
+        Z = getZ(X1, X2);
+        // Step 7 / 8
+        for (auto probability : matchedsets.get())
+            S += Z / (Z + a(probability));
+        // Step 9
+        if (std::abs(S - c) < converge) {
+            RR = Z; 
+            keepgoing = false;
+        } else {
+            X1 = Z;
+        }
+        ++iterations;
+    } while (keepgoing && iterations < maxiterations);
+    if (iterations >= maxiterations)
+        const_cast<ScanRunner&>(scanner).getPrint().Printf(
+            "Beta Release Warning: Unable for calculate relative risk for node '%s' since convergence did not occur after 30 interations.\n",
+            BasePrint::P_WARNING, scanner.getNodes()[nodeID]->getIdentifier().c_str()
+        );
+    return RR;
+}
+
 /** Returns the attributable risk as formatted string. */
 std::string & AttributableRiskAsString(double ar, std::string& s) {
     std::stringstream ss;
@@ -336,7 +427,11 @@ std::string & AttributableRiskAsString(double ar, std::string& s) {
 
 /** Calculates the attributable risk per person for cut. */
 double CutStructure::getAttributableRisk(const ScanRunner& scanner) const {
-    return getAttributableRiskFor(scanner, _ID, _C, _N, _start_idx, _end_idx);
+    if (scanner.getParameters().getIsSelfControlVariableBerounlli()) {// Specialize for this situation.
+        double excess = getExcessCases(scanner);
+        return excess / static_cast<double>(scanner.getParameters().getAttributableRiskExposed());
+    }
+    return getAttributableRiskFor(scanner, _ID, _C, _N, _matched_sets, _start_idx, _end_idx);
 }
 
 /** Returns the attributable risk as formatted string. */
@@ -354,7 +449,12 @@ std::string & CutStructure::getAttributableRiskAsString(const ScanRunner& scanne
 
 /** Calculates the excess number of cases. See user guide for formula explanation. */
 double CutStructure::getExcessCases(const ScanRunner& scanner) const {
-    return getExcessCasesFor(scanner, _ID, _C, _N, _start_idx, _end_idx);
+    // The relative risk calculation is a iterative process in this situation, so use cached value here.
+    if (scanner.getParameters().getIsSelfControlVariableBerounlli()) {
+        double rr = getRelativeRisk(scanner);
+        return rr && rr != std::numeric_limits<double>::infinity() ? _C * (rr - 1.0) / rr : 0.0;
+    }
+    return getExcessCasesFor(scanner, _ID, _C, _N, _matched_sets, _start_idx, _end_idx);
 }
 
 /** Returns cut's expected count. See user guide for formula explanation. */
@@ -387,7 +487,9 @@ double CutStructure::getPValue(const ScanRunner& scanner) const {
 
 /** Returns cut's relative risk. See user guide for formula explanation. */
 double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
-    return getRelativeRiskFor(scanner, _ID, _C, _N, _start_idx, _end_idx);
+    // The relative risk calculation is a iterative process in this situation, so use short cut here.
+    if (!_relative_risk) _relative_risk = getRelativeRiskFor(scanner, _ID, _C, _N, _matched_sets, _start_idx, _end_idx);
+    return *_relative_risk;
 }
 
 /* Returns whether cut is high or low rate. */
@@ -787,6 +889,8 @@ unsigned int ScanRunner::addCN_C(const NodeStructure& sourceNode, NodeStructure&
     std::transform(sourceNode.getIntN_Seq_New_C().begin(), sourceNode.getIntN_Seq_New_C().end(), destinationNode.refBrN_Seq_New_C().begin(), destinationNode.refBrN_Seq_New_C().begin(), std::plus<NodeStructure::expected_t>());
     destinationNode.setMinCensoredBr(std::min(sourceNode.getMinCensoredBr(), destinationNode.getMinCensoredBr()));
 
+    //destinationNode.AddMsBr(sourceNode.getMatchedSets());
+
     // continue walking up the tree
     NodeStructure::ParentContainer_t::const_iterator itr=destinationNode.getParents().begin(), itr_end=destinationNode.getParents().end();
     for (; itr != itr_end; ++itr)
@@ -1032,13 +1136,18 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
     bool bernoulliExpectingControl = _parameters.getControlFileName().empty();
 
     // Determine number of expected columns based on user settings.
-    std::string col_id("<identifier>"), col_count("<count>"), col_pop("<population>"), col_controls("<controls>"), col_time("<time>");
+    std::string col_id("<identifier>"), col_count("<count>"), col_pop("<population>"), col_controls("<controls>"), 
+        col_time("<time>"), col_numerator("<number exposed>"), col_denominator("<total number>");
     std::vector<std::string> expectedColumns;
     if (_parameters.getModelType() == Parameters::POISSON)
         expectedColumns = boost::assign::list_of (col_id) (col_count) (col_pop);
     else if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
         expectedColumns = boost::assign::list_of (col_id) (col_count);
         if (bernoulliExpectingControl) expectedColumns.push_back(col_controls);
+        if (_parameters.getConditionalType() == Parameters::UNCONDITIONAL && _parameters.getVariableCaseProbability()) {
+            expectedColumns.push_back(col_numerator);
+            expectedColumns.push_back(col_denominator);
+        }
     } else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
         if (_parameters.getScanType() == Parameters::TREETIME) expectedColumns = boost::assign::list_of (col_id) (col_count) (col_time);
         else expectedColumns = boost::assign::list_of (col_count) (col_time);
@@ -1122,16 +1231,36 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
             node->refIntN_C().front() += population;
 			if (sequence_new_data) node->refIntN_C_Seq_New().front() += population;
         } else if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
-            node->refIntC_C().front() += count;
-            node->refIntN_C().front() += count;
-            if (sequence_new_data) node->refIntN_C_Seq_New().front() += count;
+            if (_parameters.getConditionalType() == Parameters::UNCONDITIONAL && _parameters.getVariableCaseProbability()) {
+                // Read probability from record if this is a variable probability analysis.
+                double probability;
+                if (!readProbability(*dataSource, 2, probability, "count")) {
+                    readSuccess = false;
+                    continue;
+                }
+                if (probability == 0 || probability == 1.0) {
+                    _print.Printf(
+                        "Warning: Record %ld in count file references a case probability which is either zero or one.\n"
+                        "         This record is uninformative and will be ignored by the analysis.\n",
+                        BasePrint::P_READERROR, dataSource->getCurrentRecordIndex()
+                    );
+                    continue;
+                }
+                // add match set for each case - each matched set has one count
+                if (node->addMatchedSet(probability, static_cast<unsigned int>(count)))
+                    node->refIntC_C().front() += count;
+            } else {
+                node->refIntN_C().front() += count;
+                node->refIntC_C().front() += count;
+                if (sequence_new_data) node->refIntN_C_Seq_New().front() += count;
+            }
             // Skip to the next record in data source if not expecting controls column in this file.
             if (!bernoulliExpectingControl) {
                 checkNonLeafWithData(node, count > 0);
                 continue;
             }
             // Otherwise read and verify data from controls column.
-            if  (!string_to_numeric_type<int>(dataSource->getValueAt(static_cast<long>(expectedColumns.size()) - 1).c_str(), controls) || controls < 0) {
+            if  (!string_to_numeric_type<int>(dataSource->getValueAt(2).c_str(), controls) || controls < 0) {
                 readSuccess = false;
                 _print.Printf(
                     "Error: Record %ld in count file references an invalid number of controls.\n"
@@ -1163,8 +1292,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                         countDateWarningDisplayed = true;
                     }
                     
-                }
-                else {
+                } else {
                     readSuccess = false;
                     _print.Printf(
                         "Error: Record %ld in count file references an invalid '%s' value.\n"
@@ -1243,8 +1371,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
 
                             }
                             censorDateWarningDisplayed = true;
-                        }
-                        else {
+                        } else {
                             readSuccess = false;
                             _print.Printf(
                                 "Error: Record %ld in count file references an invalid 'censoring time' value.\n"
@@ -1279,7 +1406,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                     if (censortime < positive_range_days * (static_cast<double>(_parameters.getMinimumCensorPercentage()) / 100.0)) {
                         _print.Printf(
                             "Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
-                            "The censoring time is less than the %d%% of the positive data time range - which is %d units long. This observation will be ignored.",
+                            "The censoring time is less than %u percent of the positive data time range - which is %d units long. This observation will be ignored.\n",
                             BasePrint::P_WARNING, 
                             dataSource->getCurrentRecordIndex(), 
                             _parameters.getMinimumCensorPercentage(), 
@@ -1290,7 +1417,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                     if (censortime < daysSinceIncidence) {
                         _print.Printf(
                             "Warning: Record %ld in count file references an invalid 'censoring time' value.\n"
-                            "The censoring time is less than the 'day since incidence' value. This observation will be ignored.",
+                            "The censoring time is less than the 'day since incidence' value. This observation will be ignored.\n",
                             BasePrint::P_WARNING, 
                             dataSource->getCurrentRecordIndex()
                         );
@@ -1375,6 +1502,34 @@ bool ScanRunner::readDateColumn(DataSource& source, size_t columnIdx, int& dateI
     return true;
 }
 
+/** Reads probability columns from source. */
+bool ScanRunner::readProbability(DataSource& source, size_t columnIdx, double& probability, const std::string& file_name) const {
+    double numerator, denominator;
+    if (!string_to_numeric_type<double>(source.getValueAt(columnIdx).c_str(), numerator) || numerator < 0) {
+        _print.Printf(
+            "Error: Record %ld in %s file references an invalid value for the number of exposed.\nExpecting a positive integer or decimal number.\n",
+            BasePrint::P_READERROR, source.getCurrentRecordIndex(), file_name.c_str()
+        );
+        return false;
+    }
+    if (!string_to_numeric_type<double>(source.getValueAt(columnIdx + 1).c_str(), denominator) || denominator <= 0) {
+        _print.Printf(
+            "Error: Record %ld in %s file references an invalid value for the total number.\nExpecting an integer or decimal number greater than zero.\n",
+            BasePrint::P_READERROR, source.getCurrentRecordIndex(), file_name.c_str()
+        );
+        return false;
+    }
+    if (numerator > denominator) {
+        _print.Printf(
+            "Error: Record %ld in %s file references an invalid case probability.\nThe ratio of exposed to total number exceeds one.\n",
+            BasePrint::P_READERROR, source.getCurrentRecordIndex(), file_name.c_str()
+        );
+        return false;
+    }
+    probability = numerator / denominator;
+    return true;
+}
+
 /** Ranks cuts then removes those with lesser LLR values, then reports most likely. */
 void ScanRunner::rankCutsAndReportMostLikely() {
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
@@ -1445,21 +1600,25 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
     int controls = 0, daysSinceIncidence = 0; size_t expectedColumns = (_parameters.getScanType() == Parameters::TREETIME ? 3 : 2);
     long identifierIdx = _parameters.getScanType() == Parameters::TIMEONLY ? -1 : 0;
     long controlIdx = _parameters.getScanType() == Parameters::TIMEONLY ? 0 : 1;
+    if (_parameters.getScanType() == Parameters::TREEONLY && _parameters.getConditionalType() == Parameters::UNCONDITIONAL && _parameters.getVariableCaseProbability())
+        expectedColumns += 2;
     // Read records of control file, verifying the expected columns and data type then adding to data structures.
     while (dataSource->readRecord()) {
         if (!(dataSource->getNumValues() == expectedColumns)) {
             readSuccess = false;
             _print.Printf(
-                "Error: Record %ld in control file %s. Expecting %s<controls>%s but found %ld value%s.\n",
+                "Error: Record %ld in control file %s. Expecting %s<controls>%s%s but found %ld value%s.\n",
                 BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(),
                 (dataSource->getNumValues() > expectedColumns) ? "has extra data" : "is missing data",
-                (_parameters.getScanType() == Parameters::TIMEONLY ? "" : "<identifier>, "),
-                (Parameters::isTemporalScanType(_parameters.getScanType()) ? ", <time>" : ""),
+                (_parameters.getScanType() == Parameters::TIMEONLY ? "" : "<identifier>,"),
+                (Parameters::isTemporalScanType(_parameters.getScanType()) ? ",<time>" : ""),
+                (_parameters.getScanType() == Parameters::TREEONLY && _parameters.getConditionalType() == Parameters::UNCONDITIONAL && _parameters.getVariableCaseProbability() ? ",<number exposed>,<total number>" : ""),
                 dataSource->getNumValues(), 
                 (dataSource->getNumValues() == 1 ? "" : "s")
             );
             continue;
         }
+
         ScanRunner::Index_t index(true, 0);
         if (_parameters.getScanType() != Parameters::TIMEONLY) {
             index = getNodeIndex(dataSource->getValueAt(identifierIdx));
@@ -1499,8 +1658,27 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
             continue;
         }
         if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
-            node->refIntN_C().front() += controls;
-            if (sequence_new_data) node->refIntN_C_Seq_New().front() += controls;
+            if (_parameters.getConditionalType() == Parameters::UNCONDITIONAL && _parameters.getVariableCaseProbability()) {
+                // Read probability from record if this is a variable probability analysis.
+                double probability;
+                if (!readProbability(*dataSource, 2, probability, "control")) {
+                    readSuccess = false;
+                    continue;
+                }
+                if (probability == 0 || probability == 1.0) {
+                    _print.Printf(
+                        "Warning: Record %ld in control file references a case probability which is either zero or one.\n"
+                        "         This record is uninformative and will be ignored by the analysis.\n",
+                        BasePrint::P_READERROR, dataSource->getCurrentRecordIndex()
+                    );
+                    continue;
+                }
+                // add match set for each control - each matched set has one count
+                node->addMatchedSet(probability, static_cast<unsigned int>(controls));
+            } else {
+                node->refIntN_C().front() += controls;
+                if (sequence_new_data) node->refIntN_C_Seq_New().front() += controls;
+            }
         } else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
             if (!readDateColumn(*dataSource, controlIdx + 1, daysSinceIncidence, filename, time_columnname)) {
                 readSuccess = false;
@@ -1620,7 +1798,9 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
     while (dataSource->readRecord()) {
         if (dataSource->getNumValues() > 4) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in tree file has %ld values but expecting 2: <node id>, <parent node id>(optional) <distance between>(optional) <node label>(optional).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getNumValues());
+            _print.Printf("Error: Record %ld in tree file has %ld values but expecting 1 to 4:\n<node id>,<parent node id>(optional),<distance between>(optional),<node label>(optional).\n", 
+                BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getNumValues()
+            );
             continue;
         }
         std::string identifier = dataSource->getValueAt(0);
@@ -1818,8 +1998,13 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
     // Assign the report order for each cut -- this allows user to sort in different ways during reporting, yet return to the
     // order reported in the main results file. 
     unsigned int i = 1;
-    for (CutStructureContainer_t::iterator itr = _Cut.begin(); itr != _Cut.end(); ++itr, ++i)
+    for (CutStructureContainer_t::iterator itr = _Cut.begin(); itr != _Cut.end(); ++itr, ++i) {
         (*itr)->setReportOrder(i);
+        if (_parameters.getIsSelfControlVariableBerounlli() && (*itr)->getMatchedSets().get().empty()) {
+            MatchedSets ms;
+            (*itr)->setMatchedSets(getCutMatchSets(**itr, ms));
+        }
+    }
     ResultsFileWriter resultsWriter(*this);
     // Create the main text output file.
     if (!resultsWriter.writeASCII(start, end))
@@ -1891,6 +2076,33 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
 
 /** Run Scan. */
 bool ScanRunner::run() {
+    auto testMatchSet = [this](int c, const std::vector<double>& matchedsets) {
+        std::string buffer;
+        typelist_csv_string<double>(matchedsets, buffer);
+        printf("%s; c=%d\n", buffer.c_str(), c);
+        MatchedSets ms(matchedsets);
+        printf("converge 0.00001   => RR = %g\n", getRelativeRiskFor(*this, 0, c, ms, 0.00001));
+        printf("converge 0.0000001 => RR = %g\n\n", getRelativeRiskFor(*this, 0, c, ms, 0.0000001));
+    };
+    //testMatchSet(4, { 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 });
+    //testMatchSet(4, { 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 });
+    //testMatchSet(4, { 0.5, 0.5, 0.2, 0.2, 0.2, 0.2 });
+    //testMatchSet(4, { 0.9, 0.12, 0.66, 0.71, 0.09, 0.01 });
+    //testMatchSet(4, { 0.01, 0.02, 0.03, 0.04, 0.05, 0.06 });
+    //testMatchSet(4, { 0.360, 0.976, 0.548, 0.534, 0.950, 0.109 });
+    //testMatchSet(4, { 0.052, 0.048, 0.028, 0.037, 0.089, 0.021 });
+    //testMatchSet(4, { 0.067, 0.081, 0.04, 0.04, 0.025, 0.023 });
+    //testMatchSet(4, { 0.097, 0.066, 0.02, 0.011, 0.015, 0.063 });
+    //testMatchSet(4, { 0.017, 0.093, 0.008, 0.096, 0.029, 0.065 });
+    //testMatchSet(4, { 0.087, 0.041, 0.096, 0.1, 0.052, 0.026 });
+    //testMatchSet(4, { 0.001, 0.067, 0.033, 0.014, 0.065, 0.086 });
+    //testMatchSet(4, { 0.088, 0.007, 0.043, 0.016, 0.053, 0.055 });
+    //testMatchSet(4, { 0.009, 1.0, 0.0066, 0.000071, 0.99, 0.0 });
+    //testMatchSet(10, { 0.046, 0.039, 0.087, 0.093, 0.093, 0.042, 0.085, 0.093, 0.018, 0.083, 0.043, 0.076, 0.038, 0.009, 0.054, 0.098, 0.086, 0.056, 0.046, 0.001, 0.071, 0.064, 0.058, 0.007, 0.009, 0.023, 0.029, 0.059, 0.048, 0.059, 0.091, 0.053, 0.036, 0.098, 0.01, 0.043, 0.02, 0.093, 0.088, 0.034, 0.095, 0.051, 0.052, 0.032, 0.067, 0.005, 0.054, 0.087, 0.048, 0.079, 0.008, 0.022, 0.093, 0.009, 0.077, 0.033, 0.097, 0.042, 0.066, 0.05, 0.06, 0.063, 0.003, 0.037, 0.035, 0.015, 0.035, 0.042, 0.075, 0.014, 0.0, 0.063, 0.047, 0.038, 0.028, 0.004, 0.083, 0.04, 0.012, 0.017, 0.06, 0.061, 0.02, 0.035, 0.007, 0.033, 0.005, 0.052, 0.025, 0.042, 0.062, 0.082, 0.013, 0.08, 0.029, 0.074, 0.077, 0.078, 0.094, 0.1 });
+    //testMatchSet(50, { 0.03, 0.05, 0.09, 0.01, 0.05, 0.05, 0.05, 0.04, 0.06, 0.1, 0.09, 0.0, 0.02, 0.04, 0.07, 0.01, 0.06, 0.02, 0.01, 0.06, 0.07, 0.04, 0.01, 0.09, 0.01, 0.03, 0.09, 0.1, 0.09, 0.03, 0.06, 0.09, 0.02, 0.02, 0.08, 0.06, 0.09, 0.06, 0.03, 0.08, 0.06, 0.06, 0.08, 0.04, 0.01, 0.03, 0.1, 0.0, 0.09, 0.02, 0.08, 0.08, 0.01, 0.0, 0.09, 0.01, 0.07, 0.06, 0.02, 0.02, 0.08, 0.06, 0.04, 0.03, 0.09, 0.03, 0.09, 0.0, 0.07, 0.08, 0.0, 0.01, 0.03, 0.09, 0.01, 0.04, 0.03, 0.06, 0.08, 0.07, 0.03, 0.02, 0.05, 0.06, 0.03, 0.07, 0.06, 0.02, 0.05, 0.01, 0.09, 0.07, 0.03, 0.01, 0.09, 0.04, 0.09, 0.05, 0.0, 0.07 });
+    //exit(0);
+    
+
     time_t gStartTime, gEndTime;
     time(&gStartTime); //get start time
 
@@ -1981,7 +2193,7 @@ bool ScanRunner::run() {
                 scan_success = scanTreeTemporalConditionNode();
         } else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME)
             scan_success = scanTreeTemporalConditionNodeCensored();
-        else
+        else 
             scan_success = scanTree();
         // Perform simulations if cuts were found in real data or if this is a tree sequential analysis - in which case we need the simulated data for the following looks.
         if (scan_success || _parameters.isSequentialScanTreeOnly()) {
@@ -2942,6 +3154,10 @@ bool ScanRunner::setupTree() {
             }
             _TotalC = _parameters.getPowerEvaluationTotalCases();
             _TotalControls = static_cast<int>(_TotalN) - _TotalC;
+        } else if (_parameters.getVariableCaseProbability()) {
+            for (const auto& node : _Nodes) {
+                _TotalControls += static_cast<int>(node->getMatchedSets().get().size()) - node->getIntC();
+            }
         } else {
             _TotalControls = std::max(static_cast<int>(_TotalN) - _TotalC, 0);
         }

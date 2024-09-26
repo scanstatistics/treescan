@@ -63,6 +63,7 @@ class AbstractNodesProxy {
         virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const = 0;
         virtual int      getBrC(size_t i) const = 0;
         virtual double   getProbability(size_t i) const = 0;
+        virtual const MatchedSets& getMatchSets(size_t i) const { return _treeNodes[i]->getMatchedSets(); }
 
         virtual int getID(size_t i) const = 0;
 };
@@ -169,6 +170,7 @@ class AbstractRandomizer {
         bool _write_data;
         std::string _write_filename;
         bool _multiparents;
+
 
         void addSimC_C(size_t source_id, size_t target_id, const NodeStructure::CountContainer_t& c, SimNodeContainer_t& treeSimNodes, const ScanRunner::NodeStructureContainer_t& treeNodes);
         void setSeed(unsigned int iSimulationIndex);

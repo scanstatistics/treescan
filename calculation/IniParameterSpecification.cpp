@@ -92,8 +92,10 @@ void IniParameterSpecification::setup(Parameters::CreationVersion version) {
         Build_2_0_x_ParameterList();
     else if (version.iMajor == 2 && version.iMinor == 1)
         Build_2_1_x_ParameterList();
-    else
+    else if (version.iMajor == 2 && version.iMinor == 2)
         Build_2_2_x_ParameterList();
+    else
+        Build_2_3_x_ParameterList();
 }
 
 /** Returns ini version setting or default. */
@@ -266,6 +268,15 @@ void IniParameterSpecification::Build_2_2_x_ParameterList() {
     _parameter_info[Parameters::EARLY_TERM_THRESHOLD] = ParamInfo(Parameters::EARLY_TERM_THRESHOLD, "early-termination-threshold", 8, _inference_section);
 
     assert(_parameter_info.size() == 81);
+}
+
+/** Version 2.3 parameter specifications. */
+void IniParameterSpecification::Build_2_3_x_ParameterList() {
+    Build_2_2_x_ParameterList();
+
+    _parameter_info[Parameters::VARIABLE_CASE_PROBABILITY] = ParamInfo(Parameters::VARIABLE_CASE_PROBABILITY, "variable-case-probability", 11, _analysis_section);
+
+    assert(_parameter_info.size() == 82);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
