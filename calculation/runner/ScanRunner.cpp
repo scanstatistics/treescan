@@ -405,7 +405,7 @@ double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, const M
     } while (keepgoing && iterations < maxiterations);
     if (iterations >= maxiterations)
         const_cast<ScanRunner&>(scanner).getPrint().Printf(
-            "Beta Release Warning: Unable for calculate relative risk for node '%s' since convergence did not occur after 30 interations.\n",
+            "Beta Release Warning: Unable to calculate relative risk for node '%s' since convergence did not occur after 30 iterations.\n",
             BasePrint::P_WARNING, scanner.getNodes()[nodeID]->getIdentifier().c_str()
         );
     return RR;
