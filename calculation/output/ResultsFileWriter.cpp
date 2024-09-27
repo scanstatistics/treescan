@@ -171,13 +171,12 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
             PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(_scanRunner.getTotalN(), buffer, 1));
         }
         if (parameters.getModelType() == Parameters::BERNOULLI_TREE || parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+            PrintFormat.PrintSectionLabel(outfile, "Total Observations", false);
             if (parameters.getVariableCaseProbability()) {
-                PrintFormat.PrintSectionLabel(outfile, "Total Matched Sets", false);
                 PrintFormat.PrintAlignedMarginsDataString(outfile,
                     printString(buffer, "%ld", _scanRunner.getTotalC() + _scanRunner.getTotalControls())
                 );
             } else {
-                PrintFormat.PrintSectionLabel(outfile, "Total Observations", false);
                 PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", static_cast<int>(_scanRunner.getTotalN())));
             }
         }
