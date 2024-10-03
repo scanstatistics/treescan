@@ -1901,7 +1901,7 @@ bool ScanRunner::readNodesNotEvaluated(const std::string& filename) {
     bool readSuccess=true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::NOT_EVALUATED_NODES_FILE)));
     std::vector<char> escape_characters = { '\\', '^', '$', '?', '.', '+', '{', '}', '(', ')', '[', ']', '|' };
-    const char asterisk = '*';
+    const char asterisk = '*', period = '.', plus = '+';
 
     while (dataSource->readRecord()) {
         if (dataSource->getNumValues() != 1) {
@@ -1920,34 +1920,35 @@ bool ScanRunner::readNodesNotEvaluated(const std::string& filename) {
                     pos = matchId.find(escape_ch, pos + 2); // find next instance of character
                 }
             }
-            // change asterisk character to greedy wildcard regex
+            // change asterisk character to one or more character match and greedy regex
             auto pos = matchId.find(asterisk);
             while (pos != std::string::npos) {
-                matchId.insert(pos, 1, '.'); // period matches any character
+                matchId[pos] = plus; // switch asterisk to plus
+                matchId.insert(pos, 1, period); // period matches any character
                 pos = matchId.find(asterisk, pos + 2); // find next instance of character
             }
             boost::match_results<std::string::const_iterator> what;
             boost::regex re_wildcard(matchId);
+            unsigned int appliesTo = 0;
             for (auto& node : _Nodes) {
                 if (boost::regex_match(node->getIdentifier(), what, re_wildcard, boost::match_default)) {
                     if (what[0].matched) {
+                        ++appliesTo;
                         node->setIsEvaluated(false);
                     }
                 }
             }
+            _print.Printf("Notice: Record %ld in the not evaluated nodes file applies to %u node%s.\n", 
+                BasePrint::P_NOTICE, dataSource->getCurrentRecordIndex(), appliesTo, appliesTo == 1 ? "" : "s"
+            );
         } else { // Identifier is named exactly
             ScanRunner::Index_t index = getNodeIndex(matchId);
-            if (!index.first) {
-                readSuccess = false;
-                _print.Printf("Warning: Record %ld in the not evaluated nodes file has unknown node (%s).\n", BasePrint::P_WARNING, dataSource->getCurrentRecordIndex(), matchId.c_str());
-            } else
+            if (index.first)
                 _Nodes[index.second]->setIsEvaluated(false);
+            else
+                _print.Printf("Notice: Record %ld in the not evaluated nodes file references unknown node '%s'.\n", 
+                    BasePrint::P_NOTICE, dataSource->getCurrentRecordIndex(), matchId.c_str());
         }
-    }
-    // DEBUG
-    for (auto& node : _Nodes) {
-        if (!node->isEvaluated())
-            printf("%s is not evaluated\n", node->getIdentifier().c_str());
     }
     return readSuccess;
 }
