@@ -48,14 +48,13 @@ import org.treescan.gui.utils.WaitCursor;
 import org.treescan.gui.utils.help.HelpShow;
 import org.treescan.importer.DataSourceException;
 import org.treescan.importer.InputSourceSettings;
-import static org.treescan.importer.InputSourceSettings.InputFileType.Tree;
 import org.treescan.importer.InputSourceSettings.SourceDataFileType;
 import org.treescan.utils.FileAccess;
 
 public class FileSourceWizard extends javax.swing.JDialog implements PropertyChangeListener {
 
-    private Preferences _prefs = Preferences.userNodeForPackage(getClass());
-    private static final String _prefLastBackup = "import.destination";
+    private final Preferences _prefs = Preferences.userNodeForPackage(getClass());
+    private static final String PREF_LAST_BACKUP = "import.destination";
     private final String _source_settings_cardname = "source-settings";
     private final String _file_format_cardname = "file-format";
     private final String _data_mapping_cardname = "data-mapping";
@@ -64,13 +63,13 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private final String _file_format_buttons_cardname = "file-format-buttons";
     private final String _data_mapping_buttons_cardname = "data-mapping-buttons";
     private final String _output_settings_buttons_cardname = "output-settings-buttons";
-    public static final String _unassigned_variable = "unassigned";
+    public static final String UNASSIGNED_VARIABLE = "unassigned";
     private final int _sourceFileLineSample = 200;
     private final UndoManager undo = new UndoManager();
-    private ArrayList<ImportVariable> _import_variables = new ArrayList<ImportVariable>();
-    private Parameters.ModelType _startingmodeltype;
-    private Parameters.ScanType _startingscantype;
-    private Parameters.ConditionalType _startingconditionaltype;
+    private final ArrayList<ImportVariable> _import_variables = new ArrayList<>();
+    private final Parameters.ModelType _startingmodeltype;
+    private final Parameters.ScanType _startingscantype;
+    private final Parameters.ConditionalType _startingconditionaltype;
     private String _showing_maincontent_cardname;
     private boolean _errorSamplingSourceFile = true;
     private PreviewTableModel _preview_table_model = null;
@@ -143,12 +142,12 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         for (ImportVariable variable : _import_variables) {
             if (variable.getIsRequiredField() &&
                 model.isShowing(variable.getVariableName()) &&
-                (!variable.isMappedToSourceField() || ((String)model.getValueAt(variable.getVariableIndex(), 1)).equals(FileSourceWizard.this._unassigned_variable) )) {
+                (!variable.isMappedToSourceField() || ((String)model.getValueAt(variable.getVariableIndex(), 1)).equals(FileSourceWizard.this.UNASSIGNED_VARIABLE) )) {
                 missing.add(variable);
             }
         }
         // Display a message indicating which variables are not mapped to an source field.
-        if (missing.size() > 0) {
+        if (!missing.isEmpty()) {
             message.append("For the ").append(getInputFileTypeString());
             message.append(", the following TreeScan Variable(s) are required\nand an Source File Variable must");
             message.append(" be selected for each before import can proceed.\n\nTreeScan Variable(s): ");
@@ -184,16 +183,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private void configureDisplayVariablesComboBox() {
         _displayVariablesComboBox.removeAllItems();
         _displayVariablesComboBox.setModel(new javax.swing.DefaultComboBoxModel(
-                new String[] { "Tree Only Unconditional Poisson",
-                               "Tree Only Conditional Poisson",
-                               "Tree Only Unconditional Bernoulli",
-                               "Tree Only Conditional Bernoulli",
-                               "Tree-Time Conditioned on Node",
-                               "Tree-Time Conditioned on Node-Time",
-                               "Time-Only",
-                               "Tree-Time Bernoulli",
-                               "Time-Only Bernoulli"
-                }
+            new String[] { 
+                "Tree Only Unconditional Poisson", "Tree Only Conditional Poisson", "Tree Only Unconditional Bernoulli",
+                "Tree Only Conditional Bernoulli", "Tree-Time Conditioned on Node", "Tree-Time Conditioned on Node-Time",
+                "Time-Only", "Tree-Time Bernoulli", "Time-Only Bernoulli"
+            }
         ));
         _displayVariablesLabel.setEnabled(_display_variables_editable && 
                                           (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Counts || 
@@ -279,6 +273,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case Controls: setControlFileVariables(); break;
             case Cut: setCutFileVariables(); break;
             case Power_Evaluations : setPowerEvaluationsFileVariables(); break;
+            case NotEvaluated: setDoNotEvaluateNodesFileVariables(); break;
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
         }
         configureDisplayVariablesComboBox();
@@ -445,6 +440,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 if (_startingscantype == Parameters.ScanType.TIMEONLY || _startingscantype == Parameters.ScanType.TREETIME) {
                     builder.append("&#44; &lt;Start&gt;&#44;  &lt;End&gt;");
                 } break;
+            case NotEvaluated:
+                builder.append(" is:</p><span style=\"margin: 5px 0 0 5px;font-style:italic;font-weight:bold;\">");
+                builder.append("&lt;Node ID&gt; (can include wildcard match, e.g. 'C81.*')"); break;
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
         }
         builder.append("&nbsp;&nbsp;</span>");
@@ -481,6 +479,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case Controls: return "Control File";
             case Cut: return "Cuts File";
             case Power_Evaluations: return "Alternative Hypothesis File";
+            case NotEvaluated: return "Do Not Evaluate Nodes File";
             default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
         }
     }
@@ -538,7 +537,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case Excel : builder.append("<tr><th style=\"white-space:nowrap;\">File Type:</th><td>Excel</td></tr>"); break;
         }
         builder.append("</table></td>");
-        builder.append("<td valign=\"top\"><table><tr><th valign=\"top\" style=\"white-space:nowrap;\">Field Mapping:</th><td><table>");
+        builder.append("<td valign=\"top\"><table><tr><th valign=\"top\" style=\"white-space:nowrap;\">Field Mapping:</th><td>");
         for (int i=0; i < _input_source_settings.getFieldMaps().size(); ++i) {
             ImportVariable variable = getShowingImportVariableAt(i);
             if (variable != null && variable.getSourceFieldIndex() > 0) {
@@ -643,7 +642,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case Counts:
             case Controls:
             case Cut:
-            case Power_Evaluations: return true;
+            case Power_Evaluations:
+            case NotEvaluated: return true;
             default: throw new UnknownEnumException(fileType);
         }
     }
@@ -942,6 +942,12 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _import_variables.add(new ImportVariable("End", _startingscantype != Parameters.ScanType.TIMEONLY ? 3 : 2, true, null, null));*/
     }
 
+    /** Setup field descriptors for do not evaluate nodes file. */
+    private void setDoNotEvaluateNodesFileVariables() {
+        _import_variables.clear();
+        _import_variables.add(new ImportVariable("Node ID", 0, true, null, null));
+    }    
+    
     /** Sets InputSourceSettings object from user selections in wizard. */
     private void setInputSourceSettings() {
         if (_input_source_settings.getSourceDataFileType() == InputSourceSettings.SourceDataFileType.CSV) {
@@ -966,7 +972,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         VariableMappingTableModel mapping_model = (VariableMappingTableModel) _mapping_table.getModel();
         // assign the combo-box choices from column names of source data table
         mapping_model._combo_box.removeAllItems();
-        mapping_model._combo_box.addItem(_unassigned_variable);
+        mapping_model._combo_box.addItem(UNASSIGNED_VARIABLE);
         for (int i=0; i < _source_data_table.getModel().getColumnCount(); ++i) {
             mapping_model._combo_box.addItem(((PreviewTableModel)_source_data_table.getModel()).getNonSuffixedColumnName(i));
         }
@@ -1056,6 +1062,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 break;
             case Tree:
             case Cut:
+            case NotEvaluated:
             default:
                 for (ImportVariable variable : _import_variables) {
                     variable.setShowing(true);
@@ -1083,10 +1090,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case Controls: defaultName = "Controls"; extension =  ".ctl"; break;
             case Cut: defaultName = "cut"; extension =  ".cut";  break;
             case Power_Evaluations: defaultName = "AlternativeHypothesis"; extension =  ".ha";  break;
+            case NotEvaluated: defaultName = "DoNotEvaluateNodes"; extension =  ".csv";  break;
             default: throw new UnknownEnumException(filetype);
         }
         if (suggested_filename.trim().isEmpty()) {
-            _suggested_import_filename = new File(_prefs.get(_prefLastBackup, System.getProperty("user.home")) + System.getProperty("file.separator") + defaultName + extension);
+            _suggested_import_filename = new File(_prefs.get(PREF_LAST_BACKUP, System.getProperty("user.home")) + System.getProperty("file.separator") + defaultName + extension);
         } else {
             int lastDot = suggested_filename.trim().lastIndexOf(".");
             if (lastDot != -1)
@@ -1217,7 +1225,6 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Import File Wizard"); // NOI18N
         setModal(true);
-        setPreferredSize(new java.awt.Dimension(550, 450));
 
         _dialog_base_panel.setLayout(new javax.swing.BoxLayout(_dialog_base_panel, javax.swing.BoxLayout.Y_AXIS));
 
@@ -1575,7 +1582,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 if (file != null) {
                     org.treescan.gui.TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();
                     _outputDirectoryTextField.setText(file.getAbsolutePath());
-                    _prefs.put(_prefLastBackup, select.getDirectory().getAbsolutePath());
+                    _prefs.put(PREF_LAST_BACKUP, select.getDirectory().getAbsolutePath());
                 }
             }
         });
@@ -1940,9 +1947,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             if (col == 0) {
                 return _visible_variables.get(row).getDisplayLabel();
             } else {
-                if (_visible_variables.get(row).getSourceFieldIndex() < 1) return _unassigned_variable;
+                if (_visible_variables.get(row).getSourceFieldIndex() < 1) return UNASSIGNED_VARIABLE;
                 String name = _preview_table_model.getDataSourceColumnName(_visible_variables.get(row).getSourceFieldIndex() - 1);
-                return name == null || name.isEmpty() ? _unassigned_variable : name;
+                return name == null || name.isEmpty() ? UNASSIGNED_VARIABLE : name;
             }
         }
 

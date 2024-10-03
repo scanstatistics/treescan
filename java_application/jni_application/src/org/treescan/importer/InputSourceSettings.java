@@ -10,7 +10,7 @@ import org.treescan.app.UnknownEnumException;
  */
 public class InputSourceSettings implements Cloneable  {
     public enum SourceDataFileType {CSV, Excel97_2003, Excel};
-    public enum InputFileType {Tree, Counts, Cut, Power_Evaluations, Controls};
+    public enum InputFileType {Tree, Counts, Cut, Power_Evaluations, Controls, NotEvaluated};
     
     private SourceDataFileType _source_type=SourceDataFileType.CSV;
     private InputFileType _file_type=InputFileType.Tree;

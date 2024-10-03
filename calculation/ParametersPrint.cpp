@@ -306,6 +306,9 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInferenceParameters(Se
             typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), buffer);
             settings.push_back(std::make_pair("Tree Levels Excluded From Evaluation", buffer));
         }
+        settings.push_back(std::make_pair("Restrict Evaluated Tree Nodes", _parameters.getRestrictEvaluatedTreeNodes() ? "Yes" : "No"));
+        if (_parameters.getRestrictEvaluatedTreeNodes())
+            settings.push_back(std::make_pair("Not Evaluated Nodes File", _parameters.getNotEvaluatedNodesFileName()));
     }
 
     buffer = "Cut Type";

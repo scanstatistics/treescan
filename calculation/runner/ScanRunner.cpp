@@ -826,11 +826,8 @@ const TreeStatistics& ScanRunner::getTreeStatistics() const {
             _tree_statistics->_nodes_per_level.insert(std::make_pair(level, static_cast<unsigned int>(1)));
         else
             _tree_statistics->_nodes_per_level[level] += static_cast<unsigned int>(1);
-        // record number of nodes evaluated per tree level restrictions
-        if (_parameters.getRestrictTreeLevels()) {
-            if (std::find(_parameters.getRestrictedTreeLevels().begin(), _parameters.getRestrictedTreeLevels().end(), node.getLevel()) == _parameters.getRestrictedTreeLevels().end())
-                ++_tree_statistics->_num_nodes_evaluated;
-        } else
+        // record number of nodes evaluated per restrictions, node and tree level
+        if (node.isEvaluated())
             ++_tree_statistics->_num_nodes_evaluated;
     }
     _tree_statistics->_levels_included.resize(_tree_statistics->_nodes_per_level.size(), true);
@@ -849,10 +846,7 @@ const TreeStatistics& ScanRunner::getTreeStatistics() const {
 bool ScanRunner::isEvaluated(const NodeStructure& node) const {
     // If the node branch does not have the minimum number of cases in branch, it is not evaluated.
     if (static_cast<unsigned int>(node.getBrC()) < _node_evaluation_minimum) return false;
-    // Check whether the nodes level is excluded from evaluation - per user settings.
-    if (_parameters.getScanType() != Parameters::TIMEONLY && _parameters.getRestrictTreeLevels())
-        return std::find(_parameters.getRestrictedTreeLevels().begin(), _parameters.getRestrictedTreeLevels().end(), node.getLevel()) == _parameters.getRestrictedTreeLevels().end();
-    return true;
+    return node.isEvaluated();
 }
 
 /** Read the relative risks file
@@ -1717,7 +1711,7 @@ bool ScanRunner::readCuts(const std::string& filename) {
     if (_parameters.getScanType() == Parameters::TIMEONLY) return true; // time only does not read the tree structure file
 
     _print.Printf("Reading cuts file ...\n", BasePrint::P_STDOUT);
-    bool readSuccess=true;
+    bool readSuccess = true;
     std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::CUT_FILE)));
     Parameters::cut_maps_t cut_type_maps = Parameters::getCutTypeMap();
 
@@ -1725,8 +1719,8 @@ bool ScanRunner::readCuts(const std::string& filename) {
         if (dataSource->getNumValues() != 2) {
             readSuccess = false;
             _print.Printf("Error: Record %ld in cuts file %s. Expecting <identifier>, <cut type [simple,pairs,triplets,ordinal]> but found %ld value%s.\n",
-                          BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), (static_cast<int>(dataSource->getNumValues()) > 2) ? "has extra data" : "is missing data",
-                          dataSource->getNumValues(), (dataSource->getNumValues() == 1 ? "" : "s"));
+                BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), (static_cast<int>(dataSource->getNumValues()) > 2) ? "has extra data" : "is missing data",
+                dataSource->getNumValues(), (dataSource->getNumValues() == 1 ? "" : "s"));
             continue;
         }
         std::string identifier = dataSource->getValueAt(static_cast<long>(0));
@@ -1734,8 +1728,9 @@ bool ScanRunner::readCuts(const std::string& filename) {
         if (!index.first) {
             readSuccess = false;
             _print.Printf("Error: Record %ld in cut file has unknown node (%s).\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), identifier.c_str());
-        } else {
-            NodeStructure * node = _Nodes[index.second];
+        }
+        else {
+            NodeStructure* node = _Nodes[index.second];
             std::string cut_type_string = lowerString(trimString(dataSource->getValueAt(static_cast<long>(1))));
 
             Parameters::cut_map_t::iterator itr_abbr = cut_type_maps.first.find(cut_type_string);
@@ -1743,10 +1738,70 @@ bool ScanRunner::readCuts(const std::string& filename) {
             if (itr_abbr == cut_type_maps.first.end() && itr_full == cut_type_maps.second.end()) {
                 readSuccess = false;
                 _print.Printf("Error: Record %ld in cut file has unknown cut type (%s). Choices are simple, pairs, triplets and ordinal.\n", BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getValueAt(static_cast<long>(1)).c_str());
-            } else {
+            }
+            else {
                 node->setCutType(itr_abbr == cut_type_maps.first.end() ? itr_full->second : itr_abbr->second);
             }
         }
+    }
+    return readSuccess;
+}
+
+/** Reads file which identifies nodes which should not be evaluated. */
+bool ScanRunner::readNodesNotEvaluated(const std::string& filename) {
+    if (_parameters.getScanType() == Parameters::TIMEONLY) return true; // time only does not read the tree structure file
+
+    _print.Printf("Reading the not evaluated nodes file ...\n", BasePrint::P_STDOUT);
+    bool readSuccess=true;
+    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::NOT_EVALUATED_NODES_FILE)));
+    std::vector<char> escape_characters = { '\\', '^', '$', '?', '.', '+', '{', '}', '(', ')', '[', ']', '|' };
+    const char asterisk = '*';
+
+    while (dataSource->readRecord()) {
+        if (dataSource->getNumValues() != 1) {
+            readSuccess = false;
+            _print.Printf("Error: Record %ld in the not evaluated nodes file %s. Expecting <identifier> but found %ld value%s.\n",
+                          BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), (static_cast<int>(dataSource->getNumValues()) > 2) ? "has extra data" : "is missing data",
+                          dataSource->getNumValues(), (dataSource->getNumValues() == 1 ? "" : "s"));
+            continue;
+        }
+        std::string matchId = dataSource->getValueAt(static_cast<long>(0));
+        if (matchId.find(asterisk) != std::string::npos) { // Identifier contains wildcard character, regex search list of nodes.
+            for (auto escape_ch: escape_characters) { // escape reserved characters
+                auto pos = matchId.find(escape_ch);
+                while (pos != std::string::npos) {
+                    matchId.insert(pos, "\\"); // escape character
+                    pos = matchId.find(escape_ch, pos + 2); // find next instance of character
+                }
+            }
+            // change asterisk character to greedy wildcard regex
+            auto pos = matchId.find(asterisk);
+            while (pos != std::string::npos) {
+                matchId.insert(pos, 1, '.'); // period matches any character
+                pos = matchId.find(asterisk, pos + 2); // find next instance of character
+            }
+            boost::match_results<std::string::const_iterator> what;
+            boost::regex re_wildcard(matchId);
+            for (auto& node : _Nodes) {
+                if (boost::regex_match(node->getIdentifier(), what, re_wildcard, boost::match_default)) {
+                    if (what[0].matched) {
+                        node->setIsEvaluated(false);
+                    }
+                }
+            }
+        } else { // Identifier is named exactly
+            ScanRunner::Index_t index = getNodeIndex(matchId);
+            if (!index.first) {
+                readSuccess = false;
+                _print.Printf("Warning: Record %ld in the not evaluated nodes file has unknown node (%s).\n", BasePrint::P_WARNING, dataSource->getCurrentRecordIndex(), matchId.c_str());
+            } else
+                _Nodes[index.second]->setIsEvaluated(false);
+        }
+    }
+    // DEBUG
+    for (auto& node : _Nodes) {
+        if (!node->isEvaluated())
+            printf("%s is not evaluated\n", node->getIdentifier().c_str());
     }
     return readSuccess;
 }
@@ -1901,8 +1956,12 @@ bool ScanRunner::run() {
     }
     if (_print.GetIsCanceled()) return false;
 
+    if (_parameters.getRestrictEvaluatedTreeNodes() && !readNodesNotEvaluated(_parameters.getNotEvaluatedNodesFileName()))
+        throw resolvable_error("\nProblem encountered when reading the data from the non-evaluated nodes file.");
+
     if (_parameters.getCutsFileName().length() && !readCuts(_parameters.getCutsFileName()))
         throw resolvable_error("\nProblem encountered when reading the data from the cut file.");
+
     if (_print.GetIsCanceled()) return false;
 
     // create SequentialStatistic object if tree only sequential scan
@@ -2990,13 +3049,14 @@ bool ScanRunner::setupTree() {
             }
         } // for i
     }
+    Parameters::RestrictTreeLevels_t notEvaluatedLevels;
+    if (_parameters.getScanType() != Parameters::TIMEONLY && _parameters.getRestrictTreeLevels())
+        notEvaluatedLevels = _parameters.getRestrictedTreeLevels();
     // Now we can set the data structures of NodeStructure to cumulative -- only relevant for temporal model since other models have one element arrays.
-    // We can now set each nodes calculated level in tree structure.
-    std::for_each(_Nodes.begin(), _Nodes.end(), std::mem_fun(&NodeStructure::assignLevel));
-    for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
-        (*itr)->setCumulative();
-        if ((*itr)->assignLevel() == 1)
-            _rootNodes.push_back((*itr));
+    for (auto pnode: _Nodes) {
+        pnode->setCumulative();
+        if (pnode->assignLevel(notEvaluatedLevels) == 1) // assign node tree level and whether evaluated
+            _rootNodes.push_back(pnode);
     }
     // If tree sequential scan, determine which nodes are read from and/or written to the simulation data cache.
     if (_parameters.isSequentialScanTreeOnly()) {

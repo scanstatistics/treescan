@@ -188,6 +188,22 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
             PrintDirection.Printf("%s:\nThe threshold for early termination of simulations must be from 1 to number of replications.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
     }
+    if (_parameters.getScanType() == Parameters::TIMEONLY)
+        const_cast<Parameters&>(_parameters).setRestrictEvaluatedTreeNodes(false);
+
+    if (_parameters.getRestrictEvaluatedTreeNodes()) {
+        if (_parameters.getNotEvaluatedNodesFileName().empty()) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nNo not evaluated nodes file specified.\n", BasePrint::P_PARAMERROR);
+        } else if (!validateFileAccess(_parameters.getNotEvaluatedNodesFileName())) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\n"
+                "The not evaluated nodes file '%s' could not be opened for reading. "
+                "Please confirm that the path and/or file name are valid and that you "
+                "have permissions to read from this directory and file.\n",
+                BasePrint::P_PARAMERROR, _parameters.getNotEvaluatedNodesFileName().c_str());
+        }
+    }
     return bValid;
 }
 

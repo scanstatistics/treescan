@@ -390,6 +390,7 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
         case Parameters::CUT_FILE : Env.CallVoidMethod(issobject, mid, (jint)2); break;
         case Parameters::POWER_EVALUATIONS_FILE : Env.CallVoidMethod(issobject, mid, (jint)3); break;
         case Parameters::CONTROL_FILE: Env.CallVoidMethod(issobject, mid, (jint)4); break;
+        case Parameters::NOT_EVALUATED_NODES_FILE: Env.CallVoidMethod(issobject, mid, (jint)5); break;
         default : throw prg_error("Unknown parameter type for translation: %d", "copyCParametersToJParameters()", key.first);
       }
 
@@ -450,6 +451,14 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   if (!typelist_csv_string<unsigned int>(parameters.getRestrictedTreeLevels(), s)) 
     throw prg_error("Unable to convert tree levels", "copyCParametersToJParameters()");
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(s.c_str()));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setRestrictEvaluatedTreeNodes", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getRestrictEvaluatedTreeNodes());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setNotEvaluatedNodesFileName", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getNotEvaluatedNodesFileName().c_str()));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setSequentialScan", "(Z)V");
@@ -855,7 +864,8 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
         case 1/*Count*/        : type = Parameters::COUNT_FILE; break;
         case 2/*Cuts*/         : type = Parameters::CUT_FILE; break;
         case 3/*Powers Evals*/ : type = Parameters::POWER_EVALUATIONS_FILE; break;
-        case 4/*Control*/: type = Parameters::CONTROL_FILE; break;
+        case 4/*Control*/      : type = Parameters::CONTROL_FILE; break;
+        case 5/*Not Evaluated Nodes*/: type = Parameters::NOT_EVALUATED_NODES_FILE; break;
         default : throw prg_error("Unknown filetype for translation: %d", "copyJParametersToCParameters()", filetype);
       }
       parameters.defineInputSource(type, inputsource, idx);
@@ -883,6 +893,17 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
     throw prg_error("Unable to convert tree levels", "copyJParametersToCParameters()");
   }
   parameters.setRestrictedTreeLevels(list);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+  mid = _getMethodId_Checked(Env, clazz, "getRestrictEvaluatedTreeNodes", "()Z");
+  parameters.setRestrictEvaluatedTreeNodes(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getNotEvaluatedNodesFileName", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  parameters.setNotEvaluatedNodesFileName(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   mid = _getMethodId_Checked(Env, clazz, "getSequentialScan", "()Z");

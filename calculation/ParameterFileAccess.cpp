@@ -87,6 +87,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::RANDOMLY_GENERATE_SEED  : return "generate randomization seed (y/n)";
             case Parameters::RESTRICT_TREE_LEVELS    : return "restrict tree levels evaluated (y/n)";
             case Parameters::RESTRICTED_TREE_LEVELS  : return "tree levels excluded from evaluation (csv list of unsigned integers, root level is 1)";
+            case Parameters::RESTRICT_EVALUATED_NODES: return "restrict tree nodes evaluated (y/n)";
+            case Parameters::NOT_EVALUATED_NODES_FILE: return "not evaluated tree nodes filename";
             case Parameters::MINIMUM_CASES_NODE      : return "minimum number of cases in a node (integer)";
             case Parameters::PVALUE_REPORT_TYPE      : return "p-value reporting type (STANDARD_PVALUE=0, TERMINATION_PVALUE)";
             case Parameters::EARLY_TERM_THRESHOLD    : return "early termination threshold (> 0)";
@@ -194,6 +196,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::RANDOMLY_GENERATE_SEED   : return AsString(s, _parameters.isRandomlyGeneratingSeed());
             case Parameters::RESTRICT_TREE_LEVELS     : return AsString(s, _parameters.getRestrictTreeLevels());
             case Parameters::RESTRICTED_TREE_LEVELS   : typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), s); return s;
+            case Parameters::RESTRICT_EVALUATED_NODES : return AsString(s, _parameters.getRestrictEvaluatedTreeNodes());
+            case Parameters::NOT_EVALUATED_NODES_FILE : s = _parameters.getNotEvaluatedNodesFileName(); return s;
             case Parameters::MINIMUM_CASES_NODE       : return AsString(s, _parameters.getMinimumHighRateNodeCases());
             case Parameters::PVALUE_REPORT_TYPE       : return AsString(s, _parameters.getPValueReportingType());
             case Parameters::EARLY_TERM_THRESHOLD     : return AsString(s, _parameters.getEarlyTermThreshold());
@@ -410,7 +414,9 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
                                                             _parameters.setRestrictedTreeLevels(list);
                                                         }
                                                         break;
-            case Parameters::MINIMUM_CASES_NODE       : return _parameters.setMinimumHighRateNodeCases(ReadUnsignedInt(value, e)); break;
+            case Parameters::RESTRICT_EVALUATED_NODES : _parameters.setRestrictEvaluatedTreeNodes(ReadBoolean(value, e)); break;
+            case Parameters::NOT_EVALUATED_NODES_FILE : _parameters.setNotEvaluatedNodesFileName(value.c_str(), true); break;
+            case Parameters::MINIMUM_CASES_NODE       : _parameters.setMinimumHighRateNodeCases(ReadUnsignedInt(value, e)); break;
             case Parameters::PVALUE_REPORT_TYPE       : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::STANDARD_PVALUE, Parameters::TERMINATION_PVALUE);
                                                         _parameters.setPValueReportingType((Parameters::PValueReportingType)iValue); break;
             case Parameters::EARLY_TERM_THRESHOLD     : _parameters.setEarlyTermThreshold(ReadUnsignedInt(value, e)); break;

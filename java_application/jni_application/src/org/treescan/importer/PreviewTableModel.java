@@ -70,7 +70,7 @@ public class PreviewTableModel extends AbstractTableModel {
         if (idx < _column_names.size()) {
            return (String)_column_names.get(idx);
         } else {
-           return FileSourceWizard._unassigned_variable; 
+           return FileSourceWizard.UNASSIGNED_VARIABLE; 
         }        
     }
     

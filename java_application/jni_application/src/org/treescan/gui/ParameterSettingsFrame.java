@@ -588,6 +588,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _advancedParametersSetting.enableAdjustmentsOptions();
         _advancedParametersSetting.enablePowerEvaluationsGroup();
         _advancedParametersSetting.enableRestrictedLevelsGroup();
+        _advancedParametersSetting.enableRestrictNodesEvaluatedGroup();
         _advancedParametersSetting.enableSequentialAnalysisGroup();
         _advancedParametersSetting.enableAdditionalOutputOptions();
         _advancedParametersSetting.enableTimeRangeExclusionsGroup();

@@ -173,6 +173,12 @@ void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) 
             if (ReadInputSourceSection(SourceFile, section, key, source))
                 _parameters.defineInputSource(Parameters::POWER_EVALUATIONS_FILE, source);
         }
+        // not evaluated nodes file
+        if (GetSpecifications().GetParameterIniInfo(Parameters::NOT_EVALUATED_NODES_FILE, &section, &key)) {
+            Parameters::InputSource source;
+            if (ReadInputSourceSection(SourceFile, section, key, source))
+                _parameters.defineInputSource(Parameters::NOT_EVALUATED_NODES_FILE, source);
+        }
     } catch (prg_exception& x) {
         x.addTrace("ReadInputSourceSettings()","IniParameterFileAccess");
         throw;
@@ -448,6 +454,10 @@ void IniParameterFileAccess::WriteAdvancedAnalysisInferenceSettings(IniFile& Wri
         WriteIniParameter(WriteFile, Parameters::REPLICATIONS, GetParameterString(Parameters::REPLICATIONS, s).c_str(), GetParameterComment(Parameters::REPLICATIONS));
         WriteIniParameter(WriteFile, Parameters::RESTRICT_TREE_LEVELS, GetParameterString(Parameters::RESTRICT_TREE_LEVELS, s).c_str(), GetParameterComment(Parameters::RESTRICT_TREE_LEVELS));
         WriteIniParameter(WriteFile, Parameters::RESTRICTED_TREE_LEVELS, GetParameterString(Parameters::RESTRICTED_TREE_LEVELS, s).c_str(), GetParameterComment(Parameters::RESTRICTED_TREE_LEVELS));
+        WriteIniParameter(WriteFile, Parameters::RESTRICT_EVALUATED_NODES, GetParameterString(Parameters::RESTRICT_EVALUATED_NODES, s).c_str(), GetParameterComment(Parameters::RESTRICT_EVALUATED_NODES));
+        GetParameterString(Parameters::NOT_EVALUATED_NODES_FILE, s);
+        WriteIniParameter(WriteFile, Parameters::NOT_EVALUATED_NODES_FILE, s.c_str(), GetParameterComment(Parameters::NOT_EVALUATED_NODES_FILE));
+        if (s.size()) WriteInputSource(WriteFile, Parameters::NOT_EVALUATED_NODES_FILE, _parameters.getInputSource(Parameters::NOT_EVALUATED_NODES_FILE));
         WriteIniParameter(WriteFile, Parameters::RANDOMIZATION_SEED, GetParameterString(Parameters::RANDOMIZATION_SEED, s).c_str(), GetParameterComment(Parameters::RANDOMIZATION_SEED));
         WriteIniParameter(WriteFile, Parameters::RANDOMLY_GENERATE_SEED, GetParameterString(Parameters::RANDOMLY_GENERATE_SEED, s).c_str(), GetParameterComment(Parameters::RANDOMLY_GENERATE_SEED));
         WriteIniParameter(WriteFile, Parameters::MINIMUM_CASES_NODE, GetParameterString(Parameters::MINIMUM_CASES_NODE, s).c_str(), GetParameterComment(Parameters::MINIMUM_CASES_NODE));

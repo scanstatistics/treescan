@@ -60,6 +60,8 @@ class Parameters {
                         RANDOMLY_GENERATE_SEED,
                         RESTRICT_TREE_LEVELS,
                         RESTRICTED_TREE_LEVELS,
+                        RESTRICT_EVALUATED_NODES,
+                        NOT_EVALUATED_NODES_FILE,
                         MINIMUM_CASES_NODE,
                         PVALUE_REPORT_TYPE, /* p-value reporting type (enumeration) */
                         EARLY_TERM_THRESHOLD, /* early termination threshold (integer) */
@@ -281,6 +283,8 @@ class Parameters {
     bool                                _self_control_design;
     bool                                _restrict_tree_levels;
     RestrictTreeLevels_t                _restricted_tree_levels;
+    bool                                _restrict_evaluated_tree_nodes;
+    std::string                         _not_evaluated_nodes_filename;
     bool                                _sequential_scan;
     unsigned int                        _sequential_min_signal;
     unsigned int                        _sequential_max_signal;
@@ -449,9 +453,11 @@ class Parameters {
     ratio_t                             getProbabilityRatio() const {return _probablility_ratio;}
     long                                getRandomizationSeed() const {return _randomizationSeed;}
     bool                                getReportAttributableRisk() const {return _report_attributable_risk;}
+    const std::string                 & getNotEvaluatedNodesFileName() const { return _not_evaluated_nodes_filename; }
     bool                                getIncludeIdenticalParentCuts() const {return _include_identical_parent_cuts;}
     bool                                getRestrictTreeLevels() const {return _restrict_tree_levels;}
     const RestrictTreeLevels_t        & getRestrictedTreeLevels() const {return _restricted_tree_levels;}
+    bool                                getRestrictEvaluatedTreeNodes() const { return _restrict_evaluated_tree_nodes; }
     unsigned int                        getAttributableRiskExposed() const {return _attributable_risk_exposed;}
     bool                                getReportCriticalValues() const {return _report_critical_values;}
     ResultsFormat                       getResultsFormat() const {return _resultsFormat;}
@@ -488,6 +494,7 @@ class Parameters {
     void                                setConditionalType(ConditionalType e) {_conditional_type = e;}
     void                                setCountFileName(const char * sCountFileName, bool bCorrectForRelativePath=false);
     void                                setControlFileName(const char * sControlFileName, bool bCorrectForRelativePath = false);
+    void                                setNotEvaluatedNodesFileName(const char* filename, bool bCorrectForRelativePath = false);
     void                                setCriticalValue05(double d) {_critical_value_05 = d;}
     void                                setCriticalValue01(double d) {_critical_value_01 = d;}
     void                                setCriticalValue001(double d) {_critical_value_001 = d;}
@@ -528,6 +535,7 @@ class Parameters {
     void                                setIncludeIdenticalParentCuts(bool b) {_include_identical_parent_cuts = b;}
 	void                                setRestrictTreeLevels(bool b) {_restrict_tree_levels = b;}
 	void                                setRestrictedTreeLevels(const RestrictTreeLevels_t& r) {_restricted_tree_levels = r;}
+    void                                setRestrictEvaluatedTreeNodes(bool b) { _restrict_evaluated_tree_nodes = b; }
     void                                setAttributableRiskExposed(unsigned int i) {_attributable_risk_exposed = i;}
     void                                setReportCriticalValues(bool b) {_report_critical_values = b;}
     void                                setResultsFormat(ResultsFormat e) {_resultsFormat = e;}

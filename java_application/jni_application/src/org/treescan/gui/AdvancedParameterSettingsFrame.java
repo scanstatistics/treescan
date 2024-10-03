@@ -36,10 +36,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private final ParameterSettingsFrame _settings_window;
     private FocusedTabSet _focusedTabSet = FocusedTabSet.INPUT;
     private final String _sequential_treeonly_cardname = "sequential-treeonly";
-    private DateComponentsGroup _temporalStartRangeStartDateComponentsGroup;
-    private DateComponentsGroup _temporalStartRangeEndDateComponentsGroup;
-    private DateComponentsGroup _temporalEndRangeStartDateComponentsGroup;
-    private DateComponentsGroup _temporalEndRangeEndDateComponentsGroup;
+    private final DateComponentsGroup _temporalStartRangeStartDateComponentsGroup;
+    private final DateComponentsGroup _temporalStartRangeEndDateComponentsGroup;
+    private final DateComponentsGroup _temporalEndRangeStartDateComponentsGroup;
+    private final DateComponentsGroup _temporalEndRangeEndDateComponentsGroup;
     final static String TEMPORAL_WINDOW_COMPLETE = "temporal_window_complete";
     final static String TEMPORAL_WINDOW_GENERIC = "temporal_window_generic";    
     
@@ -152,7 +152,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         boolean bReturn = true;
         bReturn &= (_cutFileTextField.getText().equals(""));
         bReturn &= _checkbox_data_leaves_only.isSelected();
-        bReturn &= _checkbox_allow_multi_parent_nodes.isSelected();
+        bReturn &= !_checkbox_allow_multi_parent_nodes.isSelected();
         bReturn &= _checkbox_allow_multiple_roots.isSelected();
         bReturn &= _strict_study_data_period_checking.isSelected();
         return bReturn;
@@ -166,6 +166,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (Integer.parseInt(_montCarloReplicationsTextField.getText()) == 999);
         bReturn &= (_restrict_evaluated_levels.isSelected() == false);
         bReturn &= _restricted_levels.getText().equals("");
+        bReturn &= (_do_not_eval_nodes.isSelected() == false);
+        bReturn &= _noEvalNodesFileTextField.getText().equals("");
         bReturn &= Utils.selectionIs(_prospective_frequency, 0);
         bReturn &= _minimum_cases_textfield.getText().equals("2");
         // Temporal Window tab
@@ -307,6 +309,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setNumReplications(Integer.parseInt(_montCarloReplicationsTextField.getText()));
         parameters.setRestrictTreeLevels(_restrict_evaluated_levels.isSelected());
         parameters.setRestrictedTreeLevels(_restricted_levels.getText());
+        parameters.setRestrictEvaluatedTreeNodes(_do_not_eval_nodes.isSelected());
+        parameters.setNotEvaluatedNodesFileName(_noEvalNodesFileTextField.getText());        
         parameters.setProspectiveFrequencyType(getProspectiveFrequencyControlType().ordinal());
         parameters.setMinimumHighRateNodeCases(Integer.parseInt(_minimum_cases_textfield.getText()));
 
@@ -470,6 +474,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _montCarloReplicationsTextField.setText(Integer.toString(parameters.getNumReplicationsRequested()));
         _restrict_evaluated_levels.setSelected(parameters.getRestrictTreeLevels());
         _restricted_levels.setText(parameters.getRestrictedTreeLevels());
+        _do_not_eval_nodes.setSelected(parameters.getRestrictEvaluatedTreeNodes());
+        _noEvalNodesFileTextField.setText(parameters.getNotEvaluatedNodesFileName());
         _prospective_frequency.select(parameters.getProspectiveFrequencyType().ordinal());
         _minimum_cases_textfield.setText(Integer.toString(parameters.getMinimumHighRateNodeCases()));
 
@@ -1185,6 +1191,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
+     * Enables the restrict nodes evaluated group based upon current settings.
+     */
+    public void enableRestrictNodesEvaluatedGroup() {
+        boolean bEnableGroup = _settings_window.getScanType() != Parameters.ScanType.TIMEONLY;
+        _do_not_eval_nodes.setEnabled(bEnableGroup);
+        _noEvalNodesFileTextField.setEnabled(bEnableGroup && _do_not_eval_nodes.isSelected());
+        _noEvalNodesFileButton.setEnabled(bEnableGroup && _do_not_eval_nodes.isSelected());
+    }    
+    
+    /**
      * Enabled the minimum cases group based upon current settings.
      */
     public void enableMinimumCasesGroup() {
@@ -1333,6 +1349,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         jPanel3 = new javax.swing.JPanel();
         _restricted_levels = new javax.swing.JTextField();
         _restrict_evaluated_levels = new javax.swing.JCheckBox();
+        _do_not_eval_nodes = new javax.swing.JCheckBox();
+        _noEvalNodesFileTextField = new javax.swing.JTextField();
+        _noEvalNodesFileButton = new javax.swing.JButton();
         _prospective_frequency_group = new javax.swing.JPanel();
         _label_prospective_frequency = new javax.swing.JLabel();
         _prospective_frequency = new java.awt.Choice();
@@ -2088,7 +2107,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Tree Levels"));
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Do Not Evaluate"));
 
         TextPrompt tp = new TextPrompt("enter comma separated list of integers - root is 1", _restricted_levels);
         tp.setForeground( Color.BLUE );
@@ -2103,15 +2122,51 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _do_not_eval_nodes.setText("Do not evaluate nodes file:");
+        _do_not_eval_nodes.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableRestrictNodesEvaluatedGroup();
+                enableSetDefaultsButton();
+            }
+        });
+
+        _noEvalNodesFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
+        _noEvalNodesFileButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
+        _noEvalNodesFileButton.setToolTipText("Import not evaluated nodes file ..."); // NOI18N
+        _noEvalNodesFileButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                String key = InputSourceSettings.InputFileType.NotEvaluated.toString() + "1";
+                if (!_settings_window._input_source_map.containsKey(key)) {
+                    _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.NotEvaluated));
+                }
+                InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
+                // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);
+                selectionDialog.browse_inputsource(_noEvalNodesFileTextField, inputSourceSettings, _settings_window, false);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_restrict_evaluated_levels)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(_do_not_eval_nodes, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_restrict_evaluated_levels, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_restricted_levels)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_restricted_levels, javax.swing.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(_noEvalNodesFileTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_noEvalNodesFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -2120,7 +2175,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_restrict_evaluated_levels)
                     .addComponent(_restricted_levels, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_do_not_eval_nodes)
+                        .addComponent(_noEvalNodesFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(_noEvalNodesFileButton))
+                .addContainerGap(8, Short.MAX_VALUE))
         );
 
         _prospective_frequency_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Prospective Analyses"));
@@ -2306,7 +2367,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_prospective_frequency_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_group_min_cases, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(103, Short.MAX_VALUE))
+                .addContainerGap(72, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _advanced_inferenece_tab);
@@ -3183,6 +3244,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JButton _cutFileImportButton;
     private javax.swing.JLabel _cutFileLabel;
     public javax.swing.JTextField _cutFileTextField;
+    private javax.swing.JCheckBox _do_not_eval_nodes;
     private javax.swing.JTextField _earlyTerminationThreshold;
     private javax.swing.JLabel _endGenericRangeToLabel;
     private javax.swing.JLabel _endGenericWindowRangeLabel;
@@ -3222,6 +3284,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _minimum_cases_signal_label;
     private javax.swing.JTextField _minimum_cases_textfield;
     private javax.swing.JTextField _montCarloReplicationsTextField;
+    private javax.swing.JButton _noEvalNodesFileButton;
+    public javax.swing.JTextField _noEvalNodesFileTextField;
     private javax.swing.JTextField _numMostLikelyClustersGraph;
     private javax.swing.JLabel _numMostLikelyClustersGraphLabel;
     private javax.swing.JTextField _numberPowerReplications;

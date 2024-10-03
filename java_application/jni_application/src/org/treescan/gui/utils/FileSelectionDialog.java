@@ -59,6 +59,10 @@ public class FileSelectionDialog {
                 filters = FileSourceWizard.getInputFilters();
                 filters.add(new InputFileFilter("ha", "Alternative Hypothesis Files (*.ha)"));
                 break;
+            case NotEvaluated:
+                filters = FileSourceWizard.getInputFilters();
+                filters.add(new InputFileFilter("csv", " Do Not Evaluate Nodes Files (*.csv)"));
+                break;
            default: throw new UnknownEnumException(fileType);
         }
         setup(parent, browse_title, filters, lastBrowseDirectory);
@@ -76,6 +80,7 @@ public class FileSelectionDialog {
             case Controls: return "Control";
             case Cut: return "Cut";
             case Power_Evaluations: return "Alternative Hypothesis";
+            case NotEvaluated: return "Do Not Evaluate Nodes";
             default: throw new UnknownEnumException(fileType);
         }
     }

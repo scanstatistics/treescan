@@ -108,6 +108,7 @@ private:
     Parameters::CutType     _cut_type;
     CumulativeStatus        _cumulative_status;
     unsigned int            _level;             // calculated node level
+    bool                    _is_evaluated;
 
     CountContainer_t        _IntC_Censored;     // Number of censored cases internal to the node.
     count_t                 _min_censored_Br;   // minimum censored on branch
@@ -152,9 +153,9 @@ private:
 
 public:
     NodeStructure(const std::string& identifier) 
-        :_identifier(identifier), _ID(0), _cumulative_status(NON_CUMULATIVE), _level(0), _min_censored_Br(0) {}
+        :_identifier(identifier), _ID(0), _cumulative_status(NON_CUMULATIVE), _level(0), _min_censored_Br(0), _is_evaluated(true) {}
     NodeStructure(const std::string& identifier, const Parameters& parameters, size_t container_size) 
-        : _identifier(identifier), _ID(0), _cut_type(parameters.getCutType()), _cumulative_status(NON_CUMULATIVE), _level(0), _min_censored_Br(0) {
+        : _identifier(identifier), _ID(0), _cut_type(parameters.getCutType()), _cumulative_status(NON_CUMULATIVE), _level(0), _min_censored_Br(0), _is_evaluated(true) {
             initialize_containers(parameters, container_size);
     }
 
@@ -167,6 +168,8 @@ public:
             }
         }
     }
+    bool isEvaluated() const { return _is_evaluated; }
+    void setIsEvaluated(bool b) { _is_evaluated = b; }
     const Ancestors_t           & getAncestors() const {return _ancestors;}
     CensorDist_t                & getCensorDistribution(CensorDist_t& censor_distribution) const {
         censor_distribution.clear();
@@ -269,9 +272,10 @@ public:
         if (parent.refChildren().end() == std::find(parent.refChildren().begin(), parent.refChildren().end(), this))
             parent.refChildren().push_back(this);
     }
-    unsigned int assignLevel() {
+    unsigned int assignLevel(const Parameters::RestrictTreeLevels_t& notEvaluatedLevels) {
         // Warning - this method could cause infinite loop if check for circular dependency is not first performed.
         _level = getLevel(*this);
+        _is_evaluated &= std::find(notEvaluatedLevels.begin(), notEvaluatedLevels.end(), _level) == notEvaluatedLevels.end();
         return _level;
     }
     void setAncestors(boost::dynamic_bitset<>& ancestor_nodes) {
@@ -516,6 +520,7 @@ protected:
     bool                        readCounts(const std::string& srcfilename, bool sequence_new_data);
     bool                        readControls(const std::string& srcfilename, bool sequence_new_data);
     bool                        readCuts(const std::string& filename);
+    bool                        readNodesNotEvaluated(const std::string& filename);
     bool                        readDateColumn(DataSource& source, size_t columnIdx, int& dateIdx, const std::string& file_name, const std::string& column_name) const;
     bool                        readTree(const std::string& filename, unsigned int treeOrdinal);
     bool                        reportResults(time_t start, time_t end);

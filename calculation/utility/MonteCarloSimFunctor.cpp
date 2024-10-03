@@ -87,11 +87,7 @@ MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuc
 bool MCSimSuccessiveFunctor::isEvaluated(const NodeStructure& node, const SimulationNode& simNode) const {
     // If the node branch does not have the minimum number of cases in branch, it is not evaluated.
     if (static_cast<unsigned int>(simNode.getBrC()) < _scanRunner.getNodeEvaluationMinimum()) return false;
-    if (_scanRunner.getParameters().getScanType() != Parameters::TIMEONLY && _scanRunner.getParameters().getRestrictTreeLevels())
-        return std::find(_scanRunner.getParameters().getRestrictedTreeLevels().begin(), 
-                         _scanRunner.getParameters().getRestrictedTreeLevels().end(), 
-                         node.getLevel()) == _scanRunner.getParameters().getRestrictedTreeLevels().end();
-    return true;
+    return node.isEvaluated();
 }
 
 /** This function randomizes data and scans tree for either the Poisson or Bernoulli model. */

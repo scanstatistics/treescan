@@ -94,6 +94,8 @@ public class Parameters implements Cloneable {
     private int _power_baseline_probability_ratio_denominator=2;
     private boolean _restrict_tree_levels=false;
     private String _restricted_tree_levels = "";
+    private boolean _restrict_evaluated_tree_nodes=false;
+    private String _not_evaluated_nodes_filename = "";
     private boolean _sequential_scan=false;
     private int _sequential_min_signal=3;
     private int _sequential_max_signal=200;
@@ -153,6 +155,7 @@ public class Parameters implements Cloneable {
    	  newObject._temporal_start_range_sclose = new String(_temporal_start_range_sclose);
    	  newObject._temporal_end_range_sbegin = new String(_temporal_end_range_sbegin);
    	  newObject._temporal_end_range_sclose = new String(_temporal_end_range_sclose);
+          newObject._not_evaluated_nodes_filename = new String(_not_evaluated_nodes_filename);
     	  return newObject;
       } catch (CloneNotSupportedException e) {
         throw new InternalError("clone() failed!");
@@ -199,7 +202,9 @@ public class Parameters implements Cloneable {
           if (!_cutsfilename.equals(rhs._cutsfilename)) return false;
     	  if (_apply_risk_window_restriction != rhs._apply_risk_window_restriction) return false;
     	  if (_risk_window_percentage != rhs._risk_window_percentage) return false;
-
+          if (_restrict_evaluated_tree_nodes != rhs._restrict_evaluated_tree_nodes) return false;
+          if (!_not_evaluated_nodes_filename.equals(rhs._not_evaluated_nodes_filename)) return false;
+    
     	  if (!_outputfilename.equals(rhs._outputfilename)) return false;
     	  if (_generateHtmlResults != rhs._generateHtmlResults) return false;
     	  if (_generateTableResults != rhs._generateTableResults) return false;
@@ -244,6 +249,10 @@ public class Parameters implements Cloneable {
           return true;
     }
     
+    public final String getNotEvaluatedNodesFileName() {return _not_evaluated_nodes_filename;}
+    public void setNotEvaluatedNodesFileName(final String s) {_not_evaluated_nodes_filename = s;}
+    public boolean getRestrictEvaluatedTreeNodes() { return _restrict_evaluated_tree_nodes; }
+    public void setRestrictEvaluatedTreeNodes(boolean b) { _restrict_evaluated_tree_nodes = b; }
     public boolean getIncludeIdenticalParentCuts() { return _include_identical_parent_cuts; }
     public void setIncludeIdenticalParentCuts(boolean b) { _include_identical_parent_cuts = b; }
     public boolean getAllowMultipleRoots() { return _allow_multiple_roots; }
