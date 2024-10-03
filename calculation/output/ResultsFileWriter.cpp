@@ -353,7 +353,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getExpected(_scanRunner), buffer));
                 PrintFormat.PrintSectionLabel(outfile, "Relative Risk", true);
                 if (parameters.getIsSelfControlVariableBerounlli())
-                    PrintFormat.PrintAlignedMarginsDataString(outfile, getRelativeValueAsString(thisCut.getRelativeRisk(_scanRunner), buffer));
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getRelativeRisk(_scanRunner), buffer));
                 else
                     PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getRelativeRisk(_scanRunner), buffer));
                 PrintFormat.PrintSectionLabel(outfile, "Excess Cases", true);
@@ -1200,7 +1200,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
     double rr = thisCut.getRelativeRisk(_scanRunner);
     outfile << "<td data-order=" << std::scientific << (rr == std::numeric_limits<double>::infinity() ? std::numeric_limits<double>::max() : rr);
     if (parameters.getIsSelfControlVariableBerounlli())
-        outfile << std::fixed << ">" << getRelativeValueAsString(rr, buffer) << "</td>";
+        outfile << std::fixed << ">" << getValueAsString(rr, buffer) << "</td>";
     else
         outfile << std::fixed << ">" << getValueAsString(rr, buffer) << "</td>";
     outfile << "<td>" << getValueAsString(thisCut.getExcessCases(_scanRunner), buffer) << "</td>";

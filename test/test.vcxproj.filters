@@ -288,6 +288,9 @@
     <ClCompile Include="..\calculation\randomization\PermutationDataRandomizer.cpp">
       <Filter>Source Files\source\calculation\randomization</Filter>
     </ClCompile>
+    <ClCompile Include="squish220.cpp">
+      <Filter>Source Files\integration_tests</Filter>
+    </ClCompile>
     <ClCompile Include="squish29.cpp">
       <Filter>Source Files\integration_tests</Filter>
     </ClCompile>

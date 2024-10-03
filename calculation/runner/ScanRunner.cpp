@@ -249,10 +249,7 @@ double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double 
                             if (parameters.getVariableCaseProbability()) {
                                 if (parameters.getSelfControlDesign()) {
                                     relative_risk = getRelativeRiskFor(scanner, nodeID, _C, ms, 0.00001);
-
-                                    // TODO: Remove after function no longer has potential to not converge.
                                     return relative_risk;
-
                                 } else
                                     relative_risk = C / _N;
                             } else {
@@ -344,69 +341,42 @@ double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double 
 
 /** Iterative calculation of relative risk for variable case probability Bernoulli with self control design. */
 double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, const MatchedSets& matchedsets, double converge) {
-    double c = _C, n = static_cast<double>(matchedsets.get().size());
-    double RR = 0.0;
-
-    // Step 1
-    auto a = [](double probability) { 
-        return (1.0 / probability) - 1.0; 
-    };
-    auto b = [](double probability) { 
-        return probability / (1.0 - probability); 
-    };
-
-    // Step 2
-    double A = 0.0, B = 0.0;
-    for (auto probability : matchedsets.get()) {
-        A += a(probability);
-        B += b(probability);
-    }
-
-    // Step 3
-    double X1 = (c / B) / ((n - c) / n), X2 = (c / n) / ((n - c) / A);
-
-    auto getZ = [c, &matchedsets, &a, &b](double X1, double X2) {
-        // Step 4
-        double sumX1 = 0.0, sumX2 = 0.0;
-
-        double xx = 0;
-        for (auto probability : matchedsets.get()) {
-            sumX1 += (probability * X1) / (1.0 - probability + probability * X1);
-            sumX2 += X2 / (X2 + a(probability));
+    // check base conditions
+    if (_C == static_cast<int>(matchedsets.get().size()))
+        return std::numeric_limits<double>::infinity();
+    if (_C == 0)
+        return 0.0;
+    auto calcExpected = [&matchedsets](double RR) {
+        double e = 0.0;
+        for (auto pi : matchedsets.get()) {
+            e += 1.0 / (1.0 + ((1.0 - pi)/pi)/RR );
         }
-        // Step 5
-        double Y1 = c - sumX1, Y2 = c - sumX2;
-        // Step 6a - return Z
-        return X1 + Y1 * (X2 - X1) / (Y1 - Y2); 
+        return e;
     };
-
-    unsigned int iterations = 0, maxiterations = 30;
-    bool keepgoing = true;
-    do {
-        if (std::abs(X1 - X2) < converge) {
-            RR = X1;
-            break;
+    // Find the relative risk RR such that E(RR)=c
+    double R2 = 0.0, R1 = 1.0, c = _C, RR = 0.0;
+    double ER1 = calcExpected(R1);
+    if (c > ER1) { // high rate
+        R2 = 2.0;
+    } else if (c < ER1) { // low rate
+        R2 = 0.1;
+        while (calcExpected(R2) > c) {
+            R2 = R2 / 10.0;
         }
-
-        double S = 0.0, Z = 0.0;
-        // Step 6b
-        Z = getZ(X1, X2);
-        // Step 7 / 8
-        for (auto probability : matchedsets.get())
-            S += Z / (Z + a(probability));
-        // Step 9
-        if (std::abs(S - c) < converge) {
-            RR = Z; 
-            keepgoing = false;
-        } else {
-            X1 = Z;
-        }
+    } else return 0.0;
+    double a, b, ER2 = calcExpected(R2);
+    unsigned int iterations = 1, maxiterations = 30;
+    while (std::abs(ER1 - ER2) > converge && iterations < maxiterations) {
+        a = (ER2 - ER1 * R2 / R1) / (1.0 - R2 / R1);
+        b = (ER1 - a) / R1;
+        RR = (c - a) / b; // next candidate for the relative risk
+        R1 = R2; R2 = RR;
+        ER1 = calcExpected(R1); ER2 = calcExpected(R2);
         ++iterations;
-    } while (keepgoing && iterations < maxiterations);
+    }
     if (iterations >= maxiterations)
-        const_cast<ScanRunner&>(scanner).getPrint().Printf(
-            "Beta Release Warning: Unable to calculate relative risk for node '%s' since convergence did not occur after 30 iterations.\n",
-            BasePrint::P_WARNING, scanner.getNodes()[nodeID]->getIdentifier().c_str()
+        throw prg_error("Unable to calculate relative risk for node '%s' since convergence did not occur after %u iterations.\n", 
+            "getRelativeRiskFor()", iterations
         );
     return RR;
 }
@@ -2076,33 +2046,6 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
 
 /** Run Scan. */
 bool ScanRunner::run() {
-    auto testMatchSet = [this](int c, const std::vector<double>& matchedsets) {
-        std::string buffer;
-        typelist_csv_string<double>(matchedsets, buffer);
-        printf("%s; c=%d\n", buffer.c_str(), c);
-        MatchedSets ms(matchedsets);
-        printf("converge 0.00001   => RR = %g\n", getRelativeRiskFor(*this, 0, c, ms, 0.00001));
-        printf("converge 0.0000001 => RR = %g\n\n", getRelativeRiskFor(*this, 0, c, ms, 0.0000001));
-    };
-    //testMatchSet(4, { 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 });
-    //testMatchSet(4, { 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 });
-    //testMatchSet(4, { 0.5, 0.5, 0.2, 0.2, 0.2, 0.2 });
-    //testMatchSet(4, { 0.9, 0.12, 0.66, 0.71, 0.09, 0.01 });
-    //testMatchSet(4, { 0.01, 0.02, 0.03, 0.04, 0.05, 0.06 });
-    //testMatchSet(4, { 0.360, 0.976, 0.548, 0.534, 0.950, 0.109 });
-    //testMatchSet(4, { 0.052, 0.048, 0.028, 0.037, 0.089, 0.021 });
-    //testMatchSet(4, { 0.067, 0.081, 0.04, 0.04, 0.025, 0.023 });
-    //testMatchSet(4, { 0.097, 0.066, 0.02, 0.011, 0.015, 0.063 });
-    //testMatchSet(4, { 0.017, 0.093, 0.008, 0.096, 0.029, 0.065 });
-    //testMatchSet(4, { 0.087, 0.041, 0.096, 0.1, 0.052, 0.026 });
-    //testMatchSet(4, { 0.001, 0.067, 0.033, 0.014, 0.065, 0.086 });
-    //testMatchSet(4, { 0.088, 0.007, 0.043, 0.016, 0.053, 0.055 });
-    //testMatchSet(4, { 0.009, 1.0, 0.0066, 0.000071, 0.99, 0.0 });
-    //testMatchSet(10, { 0.046, 0.039, 0.087, 0.093, 0.093, 0.042, 0.085, 0.093, 0.018, 0.083, 0.043, 0.076, 0.038, 0.009, 0.054, 0.098, 0.086, 0.056, 0.046, 0.001, 0.071, 0.064, 0.058, 0.007, 0.009, 0.023, 0.029, 0.059, 0.048, 0.059, 0.091, 0.053, 0.036, 0.098, 0.01, 0.043, 0.02, 0.093, 0.088, 0.034, 0.095, 0.051, 0.052, 0.032, 0.067, 0.005, 0.054, 0.087, 0.048, 0.079, 0.008, 0.022, 0.093, 0.009, 0.077, 0.033, 0.097, 0.042, 0.066, 0.05, 0.06, 0.063, 0.003, 0.037, 0.035, 0.015, 0.035, 0.042, 0.075, 0.014, 0.0, 0.063, 0.047, 0.038, 0.028, 0.004, 0.083, 0.04, 0.012, 0.017, 0.06, 0.061, 0.02, 0.035, 0.007, 0.033, 0.005, 0.052, 0.025, 0.042, 0.062, 0.082, 0.013, 0.08, 0.029, 0.074, 0.077, 0.078, 0.094, 0.1 });
-    //testMatchSet(50, { 0.03, 0.05, 0.09, 0.01, 0.05, 0.05, 0.05, 0.04, 0.06, 0.1, 0.09, 0.0, 0.02, 0.04, 0.07, 0.01, 0.06, 0.02, 0.01, 0.06, 0.07, 0.04, 0.01, 0.09, 0.01, 0.03, 0.09, 0.1, 0.09, 0.03, 0.06, 0.09, 0.02, 0.02, 0.08, 0.06, 0.09, 0.06, 0.03, 0.08, 0.06, 0.06, 0.08, 0.04, 0.01, 0.03, 0.1, 0.0, 0.09, 0.02, 0.08, 0.08, 0.01, 0.0, 0.09, 0.01, 0.07, 0.06, 0.02, 0.02, 0.08, 0.06, 0.04, 0.03, 0.09, 0.03, 0.09, 0.0, 0.07, 0.08, 0.0, 0.01, 0.03, 0.09, 0.01, 0.04, 0.03, 0.06, 0.08, 0.07, 0.03, 0.02, 0.05, 0.06, 0.03, 0.07, 0.06, 0.02, 0.05, 0.01, 0.09, 0.07, 0.03, 0.01, 0.09, 0.04, 0.09, 0.05, 0.0, 0.07 });
-    //exit(0);
-    
-
     time_t gStartTime, gEndTime;
     time(&gStartTime); //get start time
 

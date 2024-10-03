@@ -58,7 +58,7 @@ double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _
 double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx);
 double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, const MatchedSets& ms, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx);
 double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, const MatchedSets& ms, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx);
-double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, const MatchedSets& matchedsets, double converge);
+double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, const MatchedSets& matchedsets, double converge=0.00001);
 std::string & AttributableRiskAsString(double ar, std::string& s);
 
 class CutStructure {

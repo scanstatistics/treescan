@@ -21,7 +21,6 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
                     switch (parameters.getConditionalType()) {
                         case Parameters::UNCONDITIONAL : 
                             if (parameters.getVariableCaseProbability())
-                                //return new UnconditionalBernoulliVariableProbabilityLogLoglikelihood(parameters);
                                 return new UnconditionalPoissonLoglikelihood(parameters);
                             return new UnconditionalBernoulliLogLoglikelihood(parameters);
                         case Parameters::TOTALCASES : return new BernoulliLoglikelihood(TotalC, TotalN, parameters);
