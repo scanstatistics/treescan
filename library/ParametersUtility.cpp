@@ -368,6 +368,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getSelfControlDesign());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setVariableCaseProbability", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getVariableCaseProbability());
+  jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "clearInputSourceSettings", "()V");
   Env.CallVoidMethod(jParameters, mid);
   jni_error::_detectError(Env);
@@ -789,6 +793,10 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
 
   mid = _getMethodId_Checked(Env, clazz, "getSelfControlDesign", "()Z");
   parameters.setSelfControlDesign(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getVariableCaseProbability", "()Z");
+  parameters.setVariableCaseProbability(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getInputSourceSettings", "()Ljava/util/ArrayList;");

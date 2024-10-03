@@ -141,7 +141,10 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
             }
             if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
                 PrintFormat.PrintSectionLabel(outfile, "Total Observations", false);
-                PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", static_cast<int>(_scanRunner.getTotalN())));
+                if (parameters.getConditionalType() == Parameters::UNCONDITIONAL && parameters.getVariableCaseProbability())
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getTotalC() + _scanRunner.getTotalControls()));
+                else
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", static_cast<int>(_scanRunner.getTotalN())));
             }
             if (parameters.getReportAttributableRisk()) {
                 PrintFormat.PrintSectionLabel(outfile, "Total Exposed", false);
@@ -171,7 +174,13 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         }
         if (parameters.getModelType() == Parameters::BERNOULLI_TREE || parameters.getModelType() == Parameters::BERNOULLI_TIME) {
             PrintFormat.PrintSectionLabel(outfile, "Total Observations", false);
-            PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", static_cast<int>(_scanRunner.getTotalN())));
+            if (parameters.getVariableCaseProbability()) {
+                PrintFormat.PrintAlignedMarginsDataString(outfile,
+                    printString(buffer, "%ld", _scanRunner.getTotalC() + _scanRunner.getTotalControls())
+                );
+            } else {
+                PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", static_cast<int>(_scanRunner.getTotalN())));
+            }
         }
         if (parameters.getReportAttributableRisk()) {
             PrintFormat.PrintSectionLabel(outfile, "Total Exposed", false);
@@ -331,7 +340,10 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     PrintFormat.PrintSectionLabel(outfile, "Cases in Window", true);
                 } else if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
                     PrintFormat.PrintSectionLabel(outfile, "Observations", true);
-                    printString(buffer, "%ld", static_cast<int>(thisCut.getN()));
+                    if (parameters.getConditionalType() == Parameters::UNCONDITIONAL && parameters.getVariableCaseProbability())
+                        printString(buffer, "%ld", thisCut.getMatchedSets().get().size());
+                    else
+                        printString(buffer, "%ld", static_cast<int>(thisCut.getN()));
                     PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
                     PrintFormat.PrintSectionLabel(outfile, "Cases", true);
                 } else if (parameters.getModelType() == Parameters::POISSON) {
@@ -342,16 +354,17 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 PrintFormat.PrintSectionLabel(outfile, parameters.getModelType() == Parameters::UNIFORM ? "Expected Cases" : "Expected", true);
                 PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getExpected(_scanRunner), buffer));
                 PrintFormat.PrintSectionLabel(outfile, "Relative Risk", true);
-                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getRelativeRisk(_scanRunner), buffer));
+                if (parameters.getIsSelfControlVariableBerounlli())
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getRelativeRisk(_scanRunner), buffer));
+                else
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getRelativeRisk(_scanRunner), buffer));
                 PrintFormat.PrintSectionLabel(outfile, "Excess Cases", true);
                 PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getExcessCases(_scanRunner), buffer));
                 if (parameters.getReportAttributableRisk()) {
                     PrintFormat.PrintSectionLabel(outfile, "Attributable Risk", true);
                     PrintFormat.PrintAlignedMarginsDataString(outfile, AttributableRiskAsString(thisCut.getAttributableRisk(_scanRunner), buffer));
                 }
-                if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||
-                    (parameters.getScanType() == Parameters::TIMEONLY && parameters.getConditionalType() == Parameters::TOTALCASES && parameters.isPerformingDayOfWeekAdjustment()) ||
-                    (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODE && parameters.isPerformingDayOfWeekAdjustment())) {
+                if (parameters.getIsTestStatistic()) {
                     // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
                     PrintFormat.PrintSectionLabel(outfile, "Test Statistic", true);
                 } else {
@@ -837,8 +850,14 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             outfile << "<tr><th>Total Cases Excluded:</th><td>" << _scanRunner.getNumExcludedCases() << "</td></tr>" << std::endl;
         if (parameters.getModelType() == Parameters::POISSON)
             outfile << "<tr><th>Total Expected:</th><td>" << getValueAsString(_scanRunner.getTotalN(), buffer, 1).c_str() << "</td></tr>" << std::endl;
-        if (parameters.getModelType() == Parameters::BERNOULLI_TREE || parameters.getModelType() == Parameters::BERNOULLI_TIME)
-            outfile << "<tr><th>Total Observations:</th><td>" << static_cast<int>(_scanRunner.getTotalN()) << "</td></tr>" << std::endl;
+        if (parameters.getModelType() == Parameters::BERNOULLI_TREE || parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+            outfile << "<tr><th>Total Observations:</th><td>";
+            if (parameters.getConditionalType() == Parameters::UNCONDITIONAL && parameters.getVariableCaseProbability())
+                outfile << _scanRunner.getTotalC() + _scanRunner.getTotalControls();
+            else
+                outfile << static_cast<int>(_scanRunner.getTotalN());
+            outfile << "</td></tr>" << std::endl;
+        }
         if (Parameters::isTemporalScanType(parameters.getScanType()))
             outfile << "<tr><th>Data Time Range:</th><td>" << parameters.getDataTimeRangeSet().toString(buffer, parameters.getDatePrecisionType()).c_str() << "</td></tr>" << std::endl;
         if (parameters.isApplyingExclusionTimeRanges())
@@ -879,8 +898,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                     outfile << "<th>Observations in Window</th>";
                 outfile << "<th>Cases in Window</th>";
             } else if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
-                outfile << "<th>Observations</th>";
-                outfile << "<th>Cases</th>";
+                outfile << "<th>Observations</th><th>Cases</th>";
             } else if (parameters.getModelType() == Parameters::POISSON) {
                 outfile << "<th>Observed Cases</th>";
             }
@@ -889,9 +907,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             if (parameters.getReportAttributableRisk()) {
                 outfile << "<th>Attributable Risk</th>" << std::endl;
             }
-            if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||
-                (parameters.getScanType() == Parameters::TIMEONLY && parameters.getConditionalType() == Parameters::TOTALCASES && parameters.isPerformingDayOfWeekAdjustment()) ||
-                (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODE && parameters.isPerformingDayOfWeekAdjustment())) {
+            if (parameters.getIsTestStatistic()) {
                 // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
                 outfile << "<th>Test Statistic</th>" << std::endl;
             } else {
@@ -1177,14 +1193,20 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         outfile << "<td>" << static_cast<int>(thisCut.getN()) << "</td>";
     } else if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
         // write number of observations
-        outfile << "<td>" << static_cast<int>(thisCut.getN()) << "</td>";
+        if (parameters.getConditionalType() == Parameters::UNCONDITIONAL && parameters.getVariableCaseProbability())
+            outfile << "<td>" << thisCut.getMatchedSets().get().size() << "</td>";
+        else
+            outfile << "<td>" << static_cast<int>(thisCut.getN()) << "</td>";
     }
     // write cases in window or cases or observed cases, depending on settings
     outfile << "<td>" << thisCut.getC() << "</td>";
     outfile << "<td>" << getValueAsString(thisCut.getExpected(_scanRunner), buffer) << "</td>";
     double rr = thisCut.getRelativeRisk(_scanRunner);
-    outfile << "<td data-order=" << std::scientific << (rr == std::numeric_limits<double>::infinity() ? std::numeric_limits<double>::max() : rr) 
-            << std::fixed << ">" << getValueAsString(rr, buffer) << "</td>";
+    outfile << "<td data-order=" << std::scientific << (rr == std::numeric_limits<double>::infinity() ? std::numeric_limits<double>::max() : rr);
+    if (parameters.getIsSelfControlVariableBerounlli())
+        outfile << std::fixed << ">" << getValueAsString(rr, buffer) << "</td>";
+    else
+        outfile << std::fixed << ">" << getValueAsString(rr, buffer) << "</td>";
     outfile << "<td>" << getValueAsString(thisCut.getExcessCases(_scanRunner), buffer) << "</td>";
     if (parameters.getReportAttributableRisk()) {
         double ar = thisCut.getAttributableRisk(_scanRunner);

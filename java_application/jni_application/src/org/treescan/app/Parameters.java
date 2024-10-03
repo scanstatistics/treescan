@@ -90,6 +90,7 @@ public class Parameters implements Cloneable {
     private boolean _report_attributable_risk=false;
     private int _attributable_risk_exposed=0;
     private boolean _self_control_design=false;
+    private boolean _variable_case_probablility=false;
     private int _power_baseline_probability_ratio_numerator=1;
     private int _power_baseline_probability_ratio_denominator=2;
     private boolean _restrict_tree_levels=false;
@@ -170,6 +171,7 @@ public class Parameters implements Cloneable {
           if (_probability_ratio_numerator != rhs._probability_ratio_numerator) return false;
           if (_probability_ratio_denominator != rhs._probability_ratio_denominator) return false;
           if (_self_control_design != rhs._self_control_design) return false;
+          if (_variable_case_probablility != rhs._variable_case_probablility) return false;
           if (_scan_rate_type != rhs._scan_rate_type) return false;
           if (_restrict_temporal_windows != rhs._restrict_temporal_windows) return false;
           if (!_temporal_start_range_sbegin.equals(rhs._temporal_start_range_sbegin)) return false;
@@ -249,6 +251,8 @@ public class Parameters implements Cloneable {
           return true;
     }
     
+    public boolean getVariableCaseProbability() { return _variable_case_probablility; }
+    public void setVariableCaseProbability(boolean b) { _variable_case_probablility = b; }
     public final String getNotEvaluatedNodesFileName() {return _not_evaluated_nodes_filename;}
     public void setNotEvaluatedNodesFileName(final String s) {_not_evaluated_nodes_filename = s;}
     public boolean getRestrictEvaluatedTreeNodes() { return _restrict_evaluated_tree_nodes; }

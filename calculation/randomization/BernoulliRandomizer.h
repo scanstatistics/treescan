@@ -20,6 +20,21 @@ class UnconditionalBernoulliRandomizer : public AbstractDenominatorDataRandomize
         virtual UnconditionalBernoulliRandomizer * clone() const {return new UnconditionalBernoulliRandomizer(*this);}
 };
 
+/** Data randomizer for unconditioned Bernoulli tree scan with variable probability. */
+class UnconditionalBernoulliVariableProbabilityRandomizer : public AbstractDenominatorDataRandomizer {
+protected:
+    int                 _total_C;
+    int                 _total_Controls;
+
+    virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
+
+public:
+    UnconditionalBernoulliVariableProbabilityRandomizer(const ScanRunner& scanner, long lInitialSeed = RandomNumberGenerator::glDefaultSeed);
+    virtual ~UnconditionalBernoulliVariableProbabilityRandomizer() {}
+
+    virtual UnconditionalBernoulliVariableProbabilityRandomizer* clone() const { return new UnconditionalBernoulliVariableProbabilityRandomizer(*this); }
+};
+
 /** Abstract data randomizer class for conditioned Bernoulli scan. */
 class AbstractConditionalBernoulliRandomizer : public AbstractDenominatorDataRandomizer {
     protected:

@@ -94,7 +94,8 @@ void IniParameterSpecification::setup(Parameters::CreationVersion version) {
         Build_2_1_x_ParameterList();
     else if (version.iMajor == 2 && version.iMinor == 2)
         Build_2_2_x_ParameterList();
-    Build_2_3_x_ParameterList();
+    else
+        Build_2_3_x_ParameterList();
 }
 
 /** Returns ini version setting or default. */
@@ -273,10 +274,11 @@ void IniParameterSpecification::Build_2_2_x_ParameterList() {
 void IniParameterSpecification::Build_2_3_x_ParameterList() {
     Build_2_2_x_ParameterList();
 
+    _parameter_info[Parameters::VARIABLE_CASE_PROBABILITY] = ParamInfo(Parameters::VARIABLE_CASE_PROBABILITY, "variable-case-probability", 11, _analysis_section);
     _parameter_info[Parameters::RESTRICT_EVALUATED_NODES] = ParamInfo(Parameters::RESTRICT_EVALUATED_NODES, "restrict-evaluated-nodes", 9, _inference_section);
     _parameter_info[Parameters::NOT_EVALUATED_NODES_FILE] = ParamInfo(Parameters::NOT_EVALUATED_NODES_FILE, "not-evaluated-nodes-file", 10, _inference_section);
 
-    assert(_parameter_info.size() == 83);
+    assert(_parameter_info.size() == 84);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

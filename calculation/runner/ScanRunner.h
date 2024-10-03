@@ -22,12 +22,43 @@
 #include <iomanip>
 #include <algorithm>
 
+/** Matched Sets class for tree-only, unconditional Bernoull, with variable case probability. */
+class MatchedSets {
+    public:
+        typedef std::vector<double> matched_sets_t; // # probability of being in the treatment group
+
+    private:
+        matched_sets_t _matched_sets;
+
+    public:
+        MatchedSets() {}
+        MatchedSets(matched_sets_t intitialSets): _matched_sets(intitialSets) {}
+
+        MatchedSets operator+(const MatchedSets& other) const {
+            return MatchedSets(_matched_sets).add(other.get());
+        }
+        MatchedSets& operator+=(const MatchedSets& other) {
+            return add(other.get());
+        }
+
+        MatchedSets& add(double probability) {
+            _matched_sets.push_back(probability);
+            return *this;
+        }
+        MatchedSets& add(const matched_sets_t& ms) {
+            _matched_sets.insert(_matched_sets.end(), ms.begin(), ms.end());
+            return *this;
+        }
+        const matched_sets_t& get() const { return _matched_sets; }
+};
+
 class ScanRunner;
 
-double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx);
+double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _N, const MatchedSets& ms, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx);
 double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx);
-double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx);
-double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx);
+double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, const MatchedSets& ms, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx);
+double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, const MatchedSets& ms, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx);
+double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, const MatchedSets& matchedsets, double converge=0.00001);
 std::string & AttributableRiskAsString(double ar, std::string& s);
 
 class CutStructure {
@@ -38,6 +69,7 @@ private:
     int                     _ID;            // NodeID
     int                     _C;             // Number of cases.
     double                  _N;             // Expected number of cases.
+    mutable MatchedSets     _matched_sets;  // matched sets
     double                  _LogLikelihood; // Loglikelihood value.
     unsigned int            _rank;
     unsigned int            _report_order;
@@ -46,8 +78,12 @@ private:
     DataTimeRange::index_t _end_idx;        // temporal end window index
     CutChildContainer_t    _cut_children;   // optional collection of children indexes
 
+    mutable boost::optional<double> _relative_risk; // cached attributes
+
 public:
-    CutStructure() : _ID(0), _C(0), _N(0), _LogLikelihood(-std::numeric_limits<double>::max()), _rank(1), _report_order(0), _branch_order(0), _start_idx(0), _end_idx(1) {}
+    CutStructure() : 
+        _ID(0), _C(0), _N(0), _LogLikelihood(-std::numeric_limits<double>::max()), _rank(1),
+        _report_order(0), _branch_order(0), _start_idx(0), _end_idx(1) {}
 
     void                    addCutChild(int cutID, bool clear=false) {if (clear) _cut_children.clear(); _cut_children.push_back(cutID);}
     int                     getC() const {return _C; /* Observed */}
@@ -57,6 +93,7 @@ public:
     int                     getID() const {return _ID;}
     double                  getLogLikelihood() const {return _LogLikelihood;}
     double                  getN() const {return _N;}
+    const MatchedSets     & getMatchedSets() const { return _matched_sets; }
     double                  getExcessCases(const ScanRunner& scanner) const;
     double                  getExpected(const ScanRunner& scanner) const;
     unsigned int            getBranchOrder() const { return _branch_order; }
@@ -76,6 +113,7 @@ public:
     void                    setID(int i) {_ID = i;}
     void                    setLogLikelihood(double d) {_LogLikelihood = d;}
     void                    setN(double d) {_N = d;}
+    void                    setMatchedSets(const MatchedSets& ms) { _matched_sets = ms; }
     void                    setStartIdx(DataTimeRange::index_t idx) {_start_idx = idx;}
     void                    setEndIdx(DataTimeRange::index_t idx) {_end_idx = idx;}
 };
@@ -103,7 +141,8 @@ private:
     ExpectedContainer_t     _IntN_C_Seq_New;    // Expected number of cases in current look sequential data set.
     ExpectedContainer_t     _BrN_C_Seq_New;     // Expected number of cases in current look sequential data set, with all descendants.
     ExpectedContainer_t     _BrN_C;             // Expected number of cases internal to the node and with all descendants.
-    ChildContainer_t         _Child;            // List of node IDs of the children and parents
+    MatchedSets             _matched_sets;      // variable case probability match sets
+    ChildContainer_t        _Child;             // List of node IDs of the children and parents
     ParentContainer_t       _Parent;
     Parameters::CutType     _cut_type;
     CumulativeStatus        _cumulative_status;
@@ -244,13 +283,22 @@ public:
                                     return _BrN_C;
                                 }
     ChildContainer_t            & refChildren() {return _Child;}
-
     const CountContainer_t      & getIntC_Censored() const { return _IntC_Censored; }
     CountContainer_t            & refIntC_Censored() {
                                     if (_IntC_Censored.size() == 0) {
                                         _IntC_Censored.resize(_IntC_C.size(), 0);
                                     }
                                     return _IntC_Censored; }
+    const MatchedSets           & getMatchedSets() const { return _matched_sets; }
+    bool                          addMatchedSet(double probability, unsigned int times) {
+        if (0 < probability && probability < 1.0) { // zero and one are non-informative
+            for (unsigned int i = 0; i < times; ++i) {
+                _matched_sets.add(probability);
+                refIntN_C().front() += probability;
+            }
+            return true;
+        } return false;
+    }
     void                          setIdentifier(const std::string& s) {_identifier = s;}
     void                          setName(const std::string& s) { _name = s; }
     void                          setID(int i) {_ID = i;}
@@ -522,6 +570,7 @@ protected:
     bool                        readCuts(const std::string& filename);
     bool                        readNodesNotEvaluated(const std::string& filename);
     bool                        readDateColumn(DataSource& source, size_t columnIdx, int& dateIdx, const std::string& file_name, const std::string& column_name) const;
+    bool                        readProbability(DataSource& source, size_t columnIdx, double& probability, const std::string& file_name) const;
     bool                        readTree(const std::string& filename, unsigned int treeOrdinal);
     bool                        reportResults(time_t start, time_t end);
     bool                        runPowerEvaluations();
@@ -548,6 +597,26 @@ public:
             return children;
         }
         return _Nodes[cut.getID()]->getChildren();
+    }
+    /** Calculates the matches for NodeStructure and descendents */
+    MatchedSets& getNodeMatchSets(const NodeStructure* pnode, MatchedSets& ms) const {
+        ms += pnode->getMatchedSets();
+        for (auto pcnode : pnode->getChildren()) {
+            getNodeMatchSets(pcnode, ms);
+        }
+        return ms;
+    };
+    /** Calculates the matches for CutStructure and descendents */
+    MatchedSets & getCutMatchSets(const CutStructure& cut, MatchedSets& ms) const {
+        ms += _Nodes[cut.getID()]->getMatchedSets();
+        if (cut.getCutChildren().size()) {
+            for (auto pcnode: cut.getCutChildren())
+                getNodeMatchSets(_Nodes[pcnode], ms);
+        } else {
+            for (auto pnode : _Nodes[cut.getID()]->getChildren())
+                getNodeMatchSets(pnode, ms);
+        }
+        return ms;
     }
     Index_t                            getNodeIndex(const std::string& identifier) const;
     bool                               isCensoredData() const { return _censored_data; }

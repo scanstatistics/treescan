@@ -33,6 +33,7 @@ class Parameters {
                         CONDITIONAL_TYPE,
                         MODEL_TYPE,
                         EVENT_PROBABILITY,
+                        VARIABLE_CASE_PROBABILITY,
                         SELF_CONTROL_DESIGN,
                         SEQUENTIAL_SCAN,
                         SEQUENTIAL_MIN_SIGNAL,
@@ -248,6 +249,7 @@ class Parameters {
     bool                                _printColumnHeaders;
     ModelType                           _modelType;
     ratio_t                             _probablility_ratio;
+    bool                                _variable_case_probablility;
     CutType                             _cut_type;
     bool                                _data_only_on_leaves;
     bool                                _relaxed_study_data_period_checking;
@@ -336,6 +338,8 @@ class Parameters {
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
 
+    bool                                getIsSelfControlVariableBerounlli() const;
+    bool                                getIsTestStatistic() const;
     PValueReportingType                 getPValueReportingType() const { return _pvalue_reporting_type; }
     void                                setPValueReportingType(PValueReportingType e);
     unsigned int                        getEarlyTermThreshold() const { return _early_term_threshold; }
@@ -451,6 +455,7 @@ class Parameters {
     double                              getPowerZ() const { return _power_z; }
     double                              getProbability() const {return static_cast<double>(_probablility_ratio.first)/static_cast<double>(_probablility_ratio.second);}
     ratio_t                             getProbabilityRatio() const {return _probablility_ratio;}
+    bool                                getVariableCaseProbability() const { return _variable_case_probablility; }
     long                                getRandomizationSeed() const {return _randomizationSeed;}
     bool                                getReportAttributableRisk() const {return _report_attributable_risk;}
     const std::string                 & getNotEvaluatedNodesFileName() const { return _not_evaluated_nodes_filename; }
@@ -528,6 +533,7 @@ class Parameters {
     void                                setPowerZ(double d) { _power_z = d; }
     void                                setPrintColumnHeaders(bool b) {_printColumnHeaders=b;}
     void                                setProbabilityRatio(ratio_t r) {_probablility_ratio = r;}
+    void                                setVariableCaseProbability(bool b) { _variable_case_probablility = b; }
     void                                setRandomizationSeed(long lSeed) {_randomizationSeed = lSeed;}
     void                                setRandomlyGeneratingSeed(bool b) {_randomlyGenerateSeed = b;}
     void                                setReadingSimulationData(bool b) {_read_simulations = b;}

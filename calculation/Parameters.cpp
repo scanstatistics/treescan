@@ -11,7 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/assign.hpp>
 
-const int Parameters::giNumParameters = 84;
+const int Parameters::giNumParameters = 85;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
@@ -43,6 +43,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_printColumnHeaders != rhs._printColumnHeaders) return false;
   if (_modelType != rhs._modelType) return false;
   if (_probablility_ratio != rhs._probablility_ratio) return false;
+  if (_variable_case_probablility != rhs._variable_case_probablility) return false;
   if (_cut_type != rhs._cut_type) return false;
   if (_conditional_type != rhs._conditional_type) return false;
   if (_scan_type != rhs._scan_type) return false;
@@ -167,6 +168,7 @@ void Parameters::copy(const Parameters &rhs) {
     _conditional_type = rhs._conditional_type;
     _modelType = rhs._modelType;
     _probablility_ratio = rhs._probablility_ratio;
+    _variable_case_probablility = rhs._variable_case_probablility;
     _restrict_temporal_windows = rhs._restrict_temporal_windows;
     _temporalStartRange = rhs._temporalStartRange;
     _temporalEndRange = rhs._temporalEndRange;
@@ -280,6 +282,23 @@ bool Parameters::getTerminateSimulationsEarly() const {
 unsigned int Parameters::getExecuteEarlyTermThreshold() const {
     return _early_term_threshold;
 }
+
+/** Returns whether analysis is tree-only, unconditioned Bernoulli,with self control design. */
+bool Parameters::getIsSelfControlVariableBerounlli() const {
+    return getScanType() == Parameters::TREEONLY && getConditionalType() == Parameters::UNCONDITIONAL &&
+        getModelType() == Parameters::BERNOULLI_TREE && getVariableCaseProbability() && getSelfControlDesign();
+}
+
+/** Returns whether analysis is calculate test statistic. */
+bool Parameters::getIsTestStatistic() const {
+    return (
+        (_scan_type == TREETIME && _conditional_type == NODEANDTIME) ||
+        (_scan_type == TIMEONLY && _conditional_type == TOTALCASES && isPerformingDayOfWeekAdjustment()) ||
+        (_scan_type == TREETIME && _conditional_type == NODE && isPerformingDayOfWeekAdjustment()) ||
+        (_scan_type == TREEONLY && _conditional_type == UNCONDITIONAL && _modelType == BERNOULLI_TREE && getVariableCaseProbability())
+    );
+}
+
 /** Returns the maximum temporal window in data time units. */
 unsigned int Parameters::getMaximumWindowInTimeUnits() const {
     switch (_maximum_window_type) {
@@ -404,6 +423,7 @@ void Parameters::setAsDefaulted() {
     _conditional_type = UNCONDITIONAL;
     _modelType = POISSON;
     _probablility_ratio = ratio_t(1,2);
+    _variable_case_probablility = false;
     _restrict_temporal_windows = false;
     _temporalStartRange = DataTimeRange();
     _temporalEndRange = DataTimeRange();
@@ -593,6 +613,7 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _modelType = static_cast<ModelType>(pt.get<unsigned int>("parameters.analysis.probability-model", POISSON));
     _probablility_ratio.first = pt.get<unsigned int>("parameters.analysis.event-probability.numerator", 1);
     _probablility_ratio.second = pt.get<unsigned int>("parameters.analysis.event-probability.denominator", 2);
+    _variable_case_probablility = pt.get<bool>("parameters.analysis.event-probability.variable-case-probability", false);
      _self_control_design = pt.get<bool>("parameters.analysis.self-control-design", false);
      _scan_rate_type = static_cast<ScanRateType>(pt.get<unsigned int>("parameters.analysis.scanrate", HIGHRATE));
      // Advanced Analysis - Temporal Window
@@ -685,6 +706,7 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.analysis.self-control-design", _self_control_design);
     pt.put("parameters.analysis.event-probability.numerator", _probablility_ratio.first);
     pt.put("parameters.analysis.event-probability.denominator", _probablility_ratio.second);
+    pt.put("parameters.analysis.event-probability.variable-case-probability", _variable_case_probablility);
     pt.put("parameters.analysis.scanrate", static_cast<unsigned int>(_scan_rate_type));
     // Advanced Analysis - Temporal Window
     pt.put("parameters.analysis.advanced.temporal-window.maximum-window-percentage", _maximum_window_percentage);

@@ -61,6 +61,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::MODEL_TYPE              : return "probability model type (POISSON=0, BERNOULLI_TREE=1, UNIFORM=2, Not-Applicable=3)";
             case Parameters::SELF_CONTROL_DESIGN     : return "self control design - unconditional Bernoulli only (y/n)";
             case Parameters::EVENT_PROBABILITY       : return "case probability (integer/integer)";
+            case Parameters::VARIABLE_CASE_PROBABILITY: return "variable case probability - unconditional Bernoulli only (y/n)";
             case Parameters::SEQUENTIAL_SCAN         : return "perform sequential scan - time-only scan (y/n)";
             case Parameters::SEQUENTIAL_MAX_SIGNAL   : return "sequential scan maximum cases for signal (integer)";
             case Parameters::RESTRICTED_TIME_RANGE   : return "restrict temporal windows (y/n)";
@@ -170,6 +171,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::MODEL_TYPE               : return AsString(s, _parameters.getModelType());
             case Parameters::SELF_CONTROL_DESIGN      : return AsString(s, _parameters.getSelfControlDesign());
             case Parameters::EVENT_PROBABILITY        : return AsString(s, _parameters.getProbabilityRatio());
+            case Parameters::VARIABLE_CASE_PROBABILITY : return AsString(s, _parameters.getVariableCaseProbability());
             case Parameters::SEQUENTIAL_SCAN          : return AsString(s, _parameters.getSequentialScan());
             case Parameters::SEQUENTIAL_MAX_SIGNAL    : return AsString(s, _parameters.getSequentialMaximumSignal());
             case Parameters::SEQUENTIAL_MIN_SIGNAL    : return AsString(s, _parameters.getSequentialMinimumSignal());
@@ -380,6 +382,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
                                                         _parameters.setModelType((Parameters::ModelType)iValue); break;
             case Parameters::SELF_CONTROL_DESIGN      : _parameters.setSelfControlDesign(ReadBoolean(value, e)); break;
             case Parameters::EVENT_PROBABILITY        : _parameters.setProbabilityRatio(ReadRatio(value)); break;
+            case Parameters::VARIABLE_CASE_PROBABILITY : _parameters.setVariableCaseProbability(ReadBoolean(value, e)); break;
             case Parameters::SEQUENTIAL_SCAN          : _parameters.setSequentialScan(ReadBoolean(value, e)); break;
             case Parameters::SEQUENTIAL_MAX_SIGNAL    : _parameters.setSequentialMaximumSignal(ReadUnsignedInt(value, e)); break;
             case Parameters::SEQUENTIAL_MIN_SIGNAL    : _parameters.setSequentialMinimumSignal(ReadUnsignedInt(value, e)); break;

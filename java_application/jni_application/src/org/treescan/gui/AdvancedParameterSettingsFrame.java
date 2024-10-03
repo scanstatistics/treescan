@@ -1230,8 +1230,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         //boolean bEnableGroup = true; scanType == Parameters.ScanType.TIMEONLY;
         boolean bEnableGroup = (
             scanType == Parameters.ScanType.TREEONLY &&
-            ((modelType == Parameters.ModelType.BERNOULLI_TREE && conditionType == Parameters.ConditionalType.UNCONDITIONAL) ||
-              modelType == Parameters.ModelType.POISSON
+            ((modelType == Parameters.ModelType.BERNOULLI_TREE && 
+              conditionType == Parameters.ConditionalType.UNCONDITIONAL &&
+              !Utils.selected(_settings_window._variable_case_probability)
+              ) || modelType == Parameters.ModelType.POISSON
             )
 	);
         _sequential_analysis_group.setEnabled(bEnableGroup);

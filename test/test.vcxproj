@@ -163,6 +163,7 @@
     <ClCompile Include="..\calculation\utility\TimeStamp.cpp" />
     <ClCompile Include="..\calculation\utility\UtilityFunctions.cpp" />
     <ClCompile Include="..\calculation\utility\ZipUtils.cpp" />
+    <ClCompile Include="squish220.cpp" />
     <ClCompile Include="squish54.cpp" />
     <ClCompile Include="squish29.cpp" />
     <ClCompile Include="squish81.cpp" />

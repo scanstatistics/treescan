@@ -19,7 +19,10 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
                 } break;
                 case Parameters::BERNOULLI_TREE: {
                     switch (parameters.getConditionalType()) {
-                        case Parameters::UNCONDITIONAL : return new UnconditionalBernoulliLogLoglikelihood(parameters);
+                        case Parameters::UNCONDITIONAL : 
+                            if (parameters.getVariableCaseProbability())
+                                return new UnconditionalPoissonLoglikelihood(parameters);
+                            return new UnconditionalBernoulliLogLoglikelihood(parameters);
                         case Parameters::TOTALCASES : return new BernoulliLoglikelihood(TotalC, TotalN, parameters);
                         default: throw prg_error("Unknown conditional type (%d).", "getNewLoglikelihood()", parameters.getConditionalType());
                     }

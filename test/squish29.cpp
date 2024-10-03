@@ -25,7 +25,10 @@ class testRunner : public ScanRunner {
 				if (!readTree(*itr, static_cast<unsigned int>(std::distance(_parameters.getTreeFileNames().begin(), itr) + 1)))
 					throw resolvable_error("\nProblem encountered when reading the data from the tree file: \n%s.", itr->c_str());
 			}
-			std::for_each(_Nodes.begin(), _Nodes.end(), std::mem_fun(&NodeStructure::assignLevel));
+			Parameters::RestrictTreeLevels_t notEvaluatedLevels;
+			
+			std::for_each(_Nodes.begin(), _Nodes.end(), [&notEvaluatedLevels](auto pnode) { pnode->assignLevel(notEvaluatedLevels); });
+			//for (auto pnode : _Nodes) pnode->assignLevel(notEvaluatedLevels);
 
 			BOOST_CHECK_EQUAL(37 , _Nodes.size());
 			std::vector<unsigned int> levels;

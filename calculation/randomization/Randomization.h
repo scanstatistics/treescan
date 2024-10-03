@@ -63,6 +63,7 @@ class AbstractNodesProxy {
         virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const = 0;
         virtual int      getBrC(size_t i) const = 0;
         virtual double   getProbability(size_t i) const = 0;
+        virtual const MatchedSets& getMatchSets(size_t i) const { return _treeNodes[i]->getMatchedSets(); }
 
         virtual int getID(size_t i) const = 0;
 };

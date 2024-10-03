@@ -15,8 +15,8 @@ if %argCount% NEQ 5 (
 REM script definitions
 set fileshare=\\oriole-03-int
 
-set treescanversion=2.2
-set treescanversionf=2_2
+set treescanversion=2.3
+set treescanversionf=2_3
 set treescan32exe=%fileshare%\treescan\build\treescan\batch_application\Win32\Release\treescan32.exe
 set treescan32dll=%fileshare%\treescan\build\treescan\library\Win32\Release\treescan32.dll
 set treescan64exe=%fileshare%\treescan\build\treescan\batch_application\x64\Release\treescan64.exe
