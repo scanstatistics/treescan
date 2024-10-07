@@ -200,10 +200,10 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     if (Parameters::isTemporalScanType(parameters.getScanType())) {
         _scanRunner.getCaselessWindowsAsString(buffer);
         if (buffer.size()) {
-            outfile << "Warning: The following " 
-                    << (parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "days" : "dates" )
-                    << " in the data time range do not have cases:" << std::endl;
-            PrintFormat.PrintNonRightMarginedDataString(outfile, buffer, false);
+            outfile << "Warning: The following "
+                << (parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "days" : "dates")
+                << " in the data time range do not have cases:" << std::endl;
+            PrintFormat.PrintSectionStatement(outfile, buffer.c_str());
             PrintFormat.PrintSectionSeparatorString(outfile, 0, 2);
         }
     }
@@ -401,7 +401,9 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     // Print critical values if requested.
     if ((parameters.getReportCriticalValues() && parameters.getNumReplicationsRequested() >= 19) || 
         (parameters.getPerformPowerEvaluations() && parameters.getCriticalValuesType() == Parameters::CV_MONTECARLO)) {
-        outfile << "A cut is statistically significant when its log likelihood ratio is greater than the critical value, which is, for significance level:" << std::endl;
+        PrintFormat.PrintSectionStatement(outfile, 
+            "A cut is statistically significant when its log likelihood ratio is greater than the critical value, which is, for significance level:"
+        );
         if (parameters.getNumReplicationsRequested() >= 99999) {
             CriticalValues::alpha_t alpha00001(_scanRunner.getCriticalValues().getAlpha00001());
             outfile << "... 0.00001: " <<  alpha00001.second << std::endl;

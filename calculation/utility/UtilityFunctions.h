@@ -130,5 +130,6 @@ void writePadRight(const std::string& text, _OutTy& destintation, size_t width, 
 using boost::uuids::detail::md5;
 std::string toString(const md5::digest_type &digest);
 std::stringstream & templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith);
+std::string& getWrappedText(const std::string& text, unsigned int marginLeft, unsigned int marginRight, const std::string& newline, std::string& wrapped);
 //******************************************************************************
 #endif

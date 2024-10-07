@@ -1421,13 +1421,12 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
     if (readSuccess && Parameters::isTemporalScanType(_parameters.getScanType()) && !((_parameters.getModelType() == Parameters::BERNOULLI_TIME) && bernoulliExpectingControl == false)) {
         _caselessWindows.flip(); // flip so that windows without cases are on instead of off
         if (_caselessWindows.count() > 0) {
-            std::string buffer;
+            std::string buffer, buffer2;
             _print.Printf(
-                "Warning: The following %s in the data time range do not have cases%s: %s\n",
-                BasePrint::P_WARNING,
+                "Warning: The following %s in the data time range do not have cases%s:\n%s", BasePrint::P_WARNING,
                 (_parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "days" : "dates"),
                 (_parameters.getModelType() == Parameters::BERNOULLI_TIME ? " or controls" : ""),
-                getCaselessWindowsAsString(buffer).c_str()
+                getWrappedText(getCaselessWindowsAsString(buffer), 0, 80, "\n", buffer2).c_str()
             );
         }
     }

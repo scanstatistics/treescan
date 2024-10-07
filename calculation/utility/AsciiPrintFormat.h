@@ -30,6 +30,7 @@ class AsciiPrintFormat {
      void                       PrintNonRightMarginedDataString(std::ostream& out, const std::string& sDataString, bool bPadLeftMargin, unsigned int iPostNewlines=1) const;
      void                       PrintSectionLabel(std::ostream& out, const char* sText, bool bPadLeftMargin) const;
      static void                PrintSectionSeparatorString(std::ostream& out, unsigned int iPreNewlines=0, unsigned int iPostNewlines=1, char cSeparator='_');
+     void                       PrintSectionStatement(std::ostream& out, const char* sText, unsigned int iPostNewlines = 1) const;
      static void                PrintVersionHeader(std::ostream& out);
      void                       SetMarginsAsCutSection(unsigned int iNumber);
      void                       SetMarginsAsOverviewSection();

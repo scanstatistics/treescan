@@ -145,6 +145,12 @@ void AsciiPrintFormat::PrintSectionSeparatorString(std::ostream& out, unsigned i
      out << std::endl;
 }
 
+/** Prints statement to file stream, respecting left and right margins. */
+void AsciiPrintFormat::PrintSectionStatement(std::ostream& out, const char* sText, unsigned int iPostNewlines) const {
+    std::string wrapped;
+    out << getWrappedText(sText, giLeftMargin, giRightMargin, "\n", wrapped);
+}
+
 /** Prints version header to file stream */
 void AsciiPrintFormat::PrintVersionHeader(std::ostream& out) {
   unsigned int  iSeparatorsMargin, iTextMargin, iPrint;
@@ -217,4 +223,3 @@ void AsciiPrintFormat::SetMarginsAsSummarySection() {
   giLabelWidth = (gbOneDataSet ? giOneDataSetSummuaryLabelWidth : giMultiDataSetSummaryLabelWidth);
   giDataLeftMargin = giLabelWidth + giLeftMargin + static_cast<unsigned int>(strlen(": "));
 }
-
