@@ -17,7 +17,7 @@ public final class AppConstants {
     public static final int VERSION_MAJOR = 2;
     public static final int VERSION_MINOR = 3;
     public static final int VERSION_RELEASE = 0;
-    public static final String VERSION_PHASE = "";
+    public static final String VERSION_PHASE = "Beta 2";
 
     public static final int MIN_YEAR = 1753;
     public static final int MAX_YEAR = 9999;

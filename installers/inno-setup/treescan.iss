@@ -2,8 +2,8 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "TreeScan"
-#define MyAppVersion "2.3.0"
-#define MyAppPublisher "Information Management Services, Ins."
+#define MyAppVersion "2.3.0 Beta 2"
+#define MyAppPublisher "Information Management Services, Inc."
 #define MyAppURL "https://www.treescan.org/"
 #define MyAppExeName "TreeScan.exe"
 
