@@ -69,6 +69,7 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
         <script type='text/javascript' src='--resource-path--javascript/jquery/jquery-3.1.1.min.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-9.1.2/code/highcharts.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-9.1.2/code/modules/exporting.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/highcharts/highcharts-9.1.2/code/modules/offline-exporting.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/jquery/bootstrap/3.3.7/bootstrap.min.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/jquery/bootstrap/bootstrap-multiselect/bootstrap-multiselect.js'></script> \n \
         <script type='text/javascript'> \n \
@@ -94,7 +95,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTHEADER = "\n \
                 var --container-id-- = { \n \
                     chart: { height: 400, renderTo: '--container-id--', zoomType:'xy', panning: true, panKey: 'shift', resetZoomButton: {relativeTo: 'chart', position: {x: -80, y: 10}, theme: {fill: 'white',stroke: 'silver',r: 0,states: {hover: {fill: '#41739D', style: { color: 'white' } } } } }, marginBottom: --margin-bottom--, borderColor: '#888888', plotBackgroundColor: '#e6e7e3', borderRadius: 0, borderWidth: 1, marginRight: --margin-right-- }, \n \
                     title: { text: '--chart-title--', align: 'center' }, \n \
-                    exporting: {filename: 'cluster_graph', chartOptions: { plotOptions: { series: { showInLegend: false } } }, buttons: get_extended_export_buttons('Chart Options', showChartOptions)}, \n \
+                    exporting: {fallbackToExportServer: false, filename: 'cluster_graph', chartOptions: { plotOptions: { series: { showInLegend: false } } }, buttons: get_extended_export_buttons('Chart Options', showChartOptions)}, \n \
                     plotOptions: { column: { grouping: true, stacking: 'normal' }}, \n \
                     responsive: { rules: [{ condition: {  maxWidth: null }, chartOptions: { chart: { height: 400 }, subtitle: { text: null }, navigator: { enabled: false } } }] }, \n \
                     tooltip: { crosshairs: true, shared: true, formatter: function(){var is_cluster = false;var has_observed = false;$.each(this.points, function(i, point) {if (point.series.options.id == 'cluster') {is_cluster = true;}if (point.series.options.id == 'obs') {has_observed = true;}});var s = '<b>'+ this.x +'</b>'; if (is_cluster) {s+= '<br/><b>Cluster Point</b>';}$.each(this.points,function(i, point){if (point.series.options.id == 'cluster'){if (!has_observed) {s += '<br/>Observed: '+ point.y;}} else {s += '<br/>'+ point.series.name +': '+ point.y;}});return s;}, }, \n \
