@@ -1912,6 +1912,7 @@ bool ScanRunner::readNodesNotEvaluated(const std::string& filename) {
         }
         std::string matchId = dataSource->getValueAt(static_cast<long>(0));
         if (matchId.find(asterisk) != std::string::npos) { // Identifier contains wildcard character, regex search list of nodes.
+            std::vector<NodeStructure*> appliedTo;
             for (auto escape_ch: escape_characters) { // escape reserved characters
                 auto pos = matchId.find(escape_ch);
                 while (pos != std::string::npos) {
@@ -1928,24 +1929,29 @@ bool ScanRunner::readNodesNotEvaluated(const std::string& filename) {
             }
             boost::match_results<std::string::const_iterator> what;
             boost::regex re_wildcard(matchId);
-            unsigned int appliesTo = 0;
-            for (auto& node : _Nodes) {
+            for (auto node : _Nodes) {
                 if (boost::regex_match(node->getIdentifier(), what, re_wildcard, boost::match_default)) {
                     if (what[0].matched) {
-                        ++appliesTo;
                         node->setIsEvaluated(false);
+                        appliedTo.push_back(node);
                     }
                 }
             }
-            _print.Printf("Notice: Record %ld in the not evaluated nodes file applies to %u node%s.\n", 
-                BasePrint::P_NOTICE, dataSource->getCurrentRecordIndex(), appliesTo, appliesTo == 1 ? "" : "s"
+            _print.Printf("Notice: Record %ld in the not evaluated nodes file applies to %u node%s%s\n", 
+                BasePrint::P_NOTICE, dataSource->getCurrentRecordIndex(), appliedTo.size(), 
+                appliedTo.size() == 1 ? "" : "s", appliedTo.size() ? ":" : "."
             );
+            for (auto at: appliedTo)
+                _print.Printf("%s\n", BasePrint::P_NOTICE, at->getIdentifier().c_str());
         } else { // Identifier is named exactly
             ScanRunner::Index_t index = getNodeIndex(matchId);
-            if (index.first)
+            if (index.first) {
                 _Nodes[index.second]->setIsEvaluated(false);
-            else
-                _print.Printf("Notice: Record %ld in the not evaluated nodes file references unknown node '%s'.\n", 
+                _print.Printf("Notice: Record %ld in the not evaluated nodes file applies exactly to node:\n%s\n",
+                    BasePrint::P_NOTICE, dataSource->getCurrentRecordIndex(), _Nodes[index.second]->getIdentifier().c_str()
+                );
+            } else
+                _print.Printf("Notice: Record %ld in the not evaluated nodes file references an unknown node '%s'.\n", 
                     BasePrint::P_NOTICE, dataSource->getCurrentRecordIndex(), matchId.c_str());
         }
     }
