@@ -266,13 +266,12 @@ std::string & GetTemporaryFilename(std::string& s, const char * atLocation) {
     Returns whether data was read or end of file encountered. */
 bool getlinePortable(std::ifstream& readstream, std::string& line) {
   std::ifstream::char_type nextChar;
-  std::stringstream        readStream;
+  std::stringstream readStream;
 
-  while (!readstream.eof()) {
-
-	  if (!readstream.get(nextChar)) { // Does reading next char bring us to end of file?
-         break;
-      }
+  while (readstream.good()) {
+	  if (!readstream.get(nextChar) || !readstream.good())
+          break; // Reading next char brings us to end of file or error state
+      
       if (nextChar == readstream.widen('\r')) {
           // could be either DOS or Mac 9 end of line -- peek at next char
           nextChar = readstream.peek();
@@ -289,7 +288,7 @@ bool getlinePortable(std::ifstream& readstream, std::string& line) {
       readStream << nextChar;
   }
   line = readStream.str();
-  return line.size() > 0 ? true : readstream.eof() == false;
+  return line.size() > 0 ? true : readstream.good();
 }
 
 std::string & getDerivedFilename(const std::string& source, const std::string& suffix, const std::string& extension, std::string& destination) {
