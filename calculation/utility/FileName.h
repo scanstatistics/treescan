@@ -37,7 +37,7 @@ class FileName {
     static char         getPathSeparator();
     void                setDirectory(const char * sNewDirectory);
     void                setDrive(const char * sNewDrive);
-    void                setExtension(const char* sNewExt);
+    FileName          & setExtension(const char* sNewExt);
     void                setFileName(const char* sNewFile);
     void                setFullPath(const char* sNewFullPath) ;
     void                setLocation(const char *sLocation);

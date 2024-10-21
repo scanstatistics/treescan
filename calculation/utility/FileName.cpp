@@ -128,11 +128,12 @@ void FileName::setDrive(const char * sNewDrive) {
 }
 
 /**  This function will set the extension. */
-void FileName::setExtension(const char* sNewExtension) {
-  if (!sNewExtension) return;
+FileName& FileName::setExtension(const char* sNewExtension) {
+  if (!sNewExtension) return *this;
   gsExtension = sNewExtension;
   if (sNewExtension[0] != '.' && strlen(sNewExtension))
     gsExtension.insert(0, ".");
+  return *this;
 }
 
 // This function will set the file name and only the filename.

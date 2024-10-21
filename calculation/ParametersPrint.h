@@ -16,6 +16,7 @@ class ParametersPrint {
     typedef std::vector< std::pair<std::string, std::string> > SettingContainer_t;
     const Parameters & _parameters;
 
+    SettingContainer_t & getAdditionalOutputFiles(SettingContainer_t& files) const;
     SettingContainer_t & getAdditionalOutputParameters(SettingContainer_t & settings) const;
     SettingContainer_t & getAdjustmentsParameters(SettingContainer_t & settings) const;
     SettingContainer_t & getAdvancedInputParameters(SettingContainer_t & settings) const;
@@ -32,7 +33,7 @@ class ParametersPrint {
     SettingContainer_t & getMiscellaneousAnalysisParameters(SettingContainer_t & settings) const;
 
     void WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, std::ostream& out) const;
-    void WriteSettingsContainerHTML(const SettingContainer_t& settings, const std::string& section, std::ostream& out) const;
+    void WriteSettingsContainerHTML(const SettingContainer_t& settings, const std::string& section, const std::string& sectionClass, std::ostream& out) const;
 
   public:
     ParametersPrint(const Parameters& Parameters) : _parameters(Parameters) {}

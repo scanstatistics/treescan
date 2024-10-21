@@ -11,6 +11,14 @@
 
 /** Prints parameters, in a particular format, to passed ascii file. */
 void ParametersPrint::Print(std::ostream& out) const {
+    SettingContainer_t files;
+    getAdditionalOutputFiles(files);
+    if (files.size()) {
+        AsciiPrintFormat::PrintSectionSeparatorString(out, 0, 2);
+        out << "ADDITIONAL RESULTS FILES" << std::endl << std::endl;
+        WriteSettingsContainer(files, "", out);
+    }
+
     AsciiPrintFormat::PrintSectionSeparatorString(out, 0, 2);
     out << "PARAMETER SETTINGS" << std::endl;
 
@@ -48,36 +56,47 @@ void ParametersPrint::Print(std::ostream& out) const {
 
 /** Prints parameters, in a particular format, to passed ascii file. */
 void ParametersPrint::PrintHTML(std::ostream& out) const {
+    std::string section_class = "additional-results-section";
+    SettingContainer_t files;
+    getAdditionalOutputFiles(files);
+    if (files.size()) {
+        AsciiPrintFormat::PrintSectionSeparatorString(out, 0, 2);
+        out << "<div id=\"parameter-settings\"><h4>Additional Results Files</h4>" << std::endl;
+        WriteSettingsContainerHTML(files, "", section_class, out);
+        out << std::endl << "</div>" << std::endl;
+    }
+
+    section_class = "parameter-section";
     SettingContainer_t settings;
     out << "<div id=\"parameter-settings\"><h4>Parameter Settings</h4>" << std::endl;
     // print 'Input' tab settings
-    WriteSettingsContainerHTML(getInputParameters(settings), "Input", out);
+    WriteSettingsContainerHTML(getInputParameters(settings), "Input", section_class, out);
     // print 'Analysis' tab settings
-    WriteSettingsContainerHTML(getAnalysisParameters(settings), "Analysis", out);
+    WriteSettingsContainerHTML(getAnalysisParameters(settings), "Analysis", section_class, out);
     // print 'Output' tab settings
-    WriteSettingsContainerHTML(getOutputParameters(settings), "Output", out);
+    WriteSettingsContainerHTML(getOutputParameters(settings), "Output", section_class, out);
     // print 'Advanced Input' tab settings
-    WriteSettingsContainerHTML(getAdvancedInputParameters(settings), "Advanced Input", out);
+    WriteSettingsContainerHTML(getAdvancedInputParameters(settings), "Advanced Input", section_class, out);
     // print 'Temporal Window' tab settings
-    WriteSettingsContainerHTML(getTemporalWindowParameters(settings), "Temporal Window", out);
+    WriteSettingsContainerHTML(getTemporalWindowParameters(settings), "Temporal Window", section_class, out);
     // print 'Adjustments' tab settings
-    WriteSettingsContainerHTML(getAdjustmentsParameters(settings), "Adjustments", out);
+    WriteSettingsContainerHTML(getAdjustmentsParameters(settings), "Adjustments", section_class, out);
     // print 'Inference' tab settings
-    WriteSettingsContainerHTML(getInferenceParameters(settings), "Inference", out);
+    WriteSettingsContainerHTML(getInferenceParameters(settings), "Inference", section_class, out);
     // print 'Sequential Analysis' tab settings
-    WriteSettingsContainerHTML(getSequentialScanParameters(settings), "Sequential Analysis", out);
+    WriteSettingsContainerHTML(getSequentialScanParameters(settings), "Sequential Analysis", section_class, out);
     // print 'Power Evaluations' tab settings
-    WriteSettingsContainerHTML(getPowerEvaluationsParameters(settings), "Power Evaluations", out);
+    WriteSettingsContainerHTML(getPowerEvaluationsParameters(settings), "Power Evaluations", section_class, out);
     // print 'Miscellaneous' tab settings
-    WriteSettingsContainerHTML(getMiscellaneousAnalysisParameters(settings), "Miscellaneous", out);
+    WriteSettingsContainerHTML(getMiscellaneousAnalysisParameters(settings), "Miscellaneous", section_class, out);
     // print 'Additional Output' tab settings
-    WriteSettingsContainerHTML(getAdditionalOutputParameters(settings), "Additional Output", out);
+    WriteSettingsContainerHTML(getAdditionalOutputParameters(settings), "Additional Output", section_class, out);
     // print 'Power Simulations' tab settings
-    WriteSettingsContainerHTML(getPowerSimulationsParameters(settings), "Power Simulations", out);
+    WriteSettingsContainerHTML(getPowerSimulationsParameters(settings), "Power Simulations", section_class, out);
     // print 'RunOptions' settings
-    WriteSettingsContainerHTML(getRunOptionsParameters(settings), "Run Options", out);
+    WriteSettingsContainerHTML(getRunOptionsParameters(settings), "Run Options", section_class, out);
     // print 'System' parameters
-    WriteSettingsContainerHTML(getSystemParameters(settings), "System", out);
+    WriteSettingsContainerHTML(getSystemParameters(settings), "System", section_class, out);
     out << std::endl << "</div>" << std::endl;
 }
 
@@ -141,6 +160,40 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(Settin
     return settings;
 }
 
+/** Prints 'ADDITIONAL RESULTS FILES' section to file stream. */
+ParametersPrint::SettingContainer_t& ParametersPrint::getAdditionalOutputFiles(SettingContainer_t& files) const {
+    FileName filename(_parameters.getOutputFileName().c_str());
+    std::string buffer;
+
+    try {
+        auto addByExtension = [&](const std::string& file_label, const std::string& extension) {
+            files.push_back(std::make_pair(file_label, filename.setExtension(extension.c_str()).getFullPath(buffer)));
+        };
+        auto addByFullpath = [&](const std::string& file_label, const std::string& full_path) {
+            files.push_back(std::make_pair(file_label, full_path));
+            filename.setFullPath(_parameters.getOutputFileName().c_str()); // reset
+        };
+        if (_parameters.isGeneratingHtmlResults())
+            addByFullpath("Results HTML", ResultsFileWriter::getHtmlFilename(_parameters, buffer));
+        if (_parameters.isGeneratingTableResults())
+            addByFullpath("Results CSV Table", CutsRecordWriter::getFilename(_parameters, buffer));
+        if (_parameters.getScanType() != Parameters::TIMEONLY) {
+            if (_parameters.isGeneratingNCBIAsnResults())
+                addByFullpath("NCBI Genome Workbench ASN1 File", ResultsFileWriter::getAsnFilename(_parameters, buffer));
+            if (_parameters.isGeneratingNewickFile())
+                addByFullpath("Newick Tree Format File", ResultsFileWriter::getNewickFilename(_parameters, buffer));
+        }
+        if (_parameters.isGeneratingLLRResults())
+            addByFullpath("Simulated Log Likelihood Ratios", LoglikelihoodRatioWriter::getFilename(_parameters, buffer, false));
+        if (_parameters.getOutputTemporalGraphFile())
+            addByFullpath("Temporal Graph File", TemporalChartGenerator::getFilename(filename).getFullPath(buffer));
+    } catch (prg_exception& x) {
+        x.addTrace("getAdditionalOutputFiles()", "ParametersPrint");
+        throw;
+    }
+    return files;
+}
+
 /** Prints 'Additional Output' tab parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParameters(SettingContainer_t & settings) const {
     std::string buffer;
@@ -152,19 +205,11 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParame
         settings.push_back(std::make_pair("Report Attributable Risk Based on # Exposed",buffer));
     }
     settings.push_back(std::make_pair("Report Simulated Log Likelihood Ratios",(_parameters.isGeneratingLLRResults() ? "Yes" : "No")));
-    if (_parameters.isGeneratingLLRResults()) {
-        settings.push_back(std::make_pair("Simulated Log Likelihood Ratios", LoglikelihoodRatioWriter::getFilename(_parameters, buffer, false)));
-    }
     settings.push_back(std::make_pair("Report Critical Values",(_parameters.getReportCriticalValues() ? "Yes" : "No")));
-    if (_parameters.isGeneratingTableResults() && _parameters.isPrintColumnHeaders()) {
-        settings.push_back(std::make_pair("Print Column Headers","Yes"));
-    }
-    if (_parameters.getOutputTemporalGraphFile()) {
-        FileName AdditionalOutputFile(_parameters.getOutputFileName().c_str());
-        AdditionalOutputFile.setFullPath(_parameters.getOutputFileName().c_str());
-        TemporalChartGenerator::getFilename(AdditionalOutputFile);
-        settings.push_back(std::make_pair("Temporal Graph File", AdditionalOutputFile.getFullPath(buffer)));
-    }
+    if (_parameters.isGeneratingTableResults())
+        settings.push_back(std::make_pair("Print Column Headers", (_parameters.isPrintColumnHeaders() ? "Yes" : "No")));
+    if (_parameters.isTemporalScanType(_parameters.getScanType()))
+        settings.push_back(std::make_pair("Temporal Graph File", (_parameters.getOutputTemporalGraphFile() ? "Yes" : "No")));
     return settings;
 }
 
@@ -334,18 +379,10 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getOutputParameters(Setti
     settings.clear();
     settings.push_back(std::make_pair("Results File",_parameters.getOutputFileName()));
     settings.push_back(std::make_pair("Report Results as HTML",(_parameters.isGeneratingHtmlResults() ? "Yes" : "No")));
-    if (_parameters.isGeneratingHtmlResults())
-        settings.push_back(std::make_pair("Results HTML", ResultsFileWriter::getHtmlFilename(_parameters, buffer)));
     settings.push_back(std::make_pair("Report Results as CSV Table",(_parameters.isGeneratingTableResults() ? "Yes" : "No")));
-    if (_parameters.isGeneratingTableResults())
-        settings.push_back(std::make_pair("Results CSV Table", CutsRecordWriter::getFilename(_parameters, buffer)));
     if (_parameters.getScanType() != Parameters::TIMEONLY) {
         settings.push_back(std::make_pair("Generate NCBI Genome Workbench ASN1 File", (_parameters.isGeneratingNCBIAsnResults() ? "Yes" : "No")));
-        if (_parameters.isGeneratingNCBIAsnResults())
-            settings.push_back(std::make_pair("NCBI Genome Workbench ASN1 File", ResultsFileWriter::getAsnFilename(_parameters, buffer)));
         settings.push_back(std::make_pair("Generate Newick Tree Format File", (_parameters.isGeneratingNewickFile() ? "Yes" : "No")));
-        if (_parameters.isGeneratingNewickFile())
-            settings.push_back(std::make_pair("Newick Tree Format File", ResultsFileWriter::getNewickFilename(_parameters, buffer)));
     }
     return settings;
 }
@@ -497,13 +534,14 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParamete
 void ParametersPrint::WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, std::ostream& out) const {
     try {
         if (!settings.size()) return;
-        // print section label
-        out << std::endl;
-        out << section;
-        out << std::endl;
-        for (size_t t=0; t < section.size(); ++t)
-            out << "-";
-        out << std::endl;
+        if (section.size()) { //print section label
+            out << std::endl;
+            out << section;
+            out << std::endl;
+            for (size_t t = 0; t < section.size(); ++t)
+                out << "-";
+            out << std::endl;
+        }
         SettingContainer_t::const_iterator itr=settings.begin();
         // first calculate maximum label length
         size_t tMaxLabel=0;
@@ -526,12 +564,14 @@ void ParametersPrint::WriteSettingsContainer(const SettingContainer_t& settings,
 }
 
 /** Writes settings container to file stream. */
-void ParametersPrint::WriteSettingsContainerHTML(const SettingContainer_t& settings, const std::string& section, std::ostream& out) const {
+void ParametersPrint::WriteSettingsContainerHTML(const SettingContainer_t& settings, const std::string& section, const std::string& sectionClass, std::ostream& out) const {
     try {
         if (!settings.size()) return;
-        // print section label
-        out << "<div class=\"parameter-section\">" << std::endl;
-        out << "<h4>" << section << "</h4>" << std::endl << "<table><tbody>" << std::endl;
+        out << "<div class='" << sectionClass << "'>" << std::endl;
+        if (section.size()) {// print section label
+            out << "<h4>" << section << "</h4>" << std::endl;
+        }
+        out << "<table><tbody>" << std::endl;
         SettingContainer_t::const_iterator itr=settings.begin();
         // print settings
         for (itr = settings.begin(); itr != settings.end(); ++itr) {
