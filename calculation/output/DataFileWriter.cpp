@@ -70,14 +70,15 @@ unsigned int RecordBuffer::GetFieldIndex(const std::string& sFieldName) const {
   return iPosition;
 }
 
-unsigned int RecordBuffer::GetFieldIndex(std::initializer_list<std::string> fieldNames) const {
+unsigned int RecordBuffer::GetFieldIndex(std::initializer_list<std::string> fieldNames, bool throwException) const {
     try {
         for (auto& filename : fieldNames) {
             for (size_t i=0; i < vFieldDefinitions.size(); ++i) {
                 if (!strcmp(vFieldDefinitions[i]->GetName(), filename.c_str())) return static_cast<unsigned int>(i);
             }
         }
-        throw prg_error("Field name not found in the field vector.", "GetFieldIndex()");
+        if (throwException)
+            throw prg_error("Field name not found in the field vector.", "GetFieldIndex()");
     } catch (prg_exception& x) {
         x.addTrace("GetFieldIndex()", "RecordBuffer");
         throw;
@@ -368,6 +369,36 @@ std::string& CutsRecordWriter::getFilename(const Parameters& parameters, std::st
     return getDerivedFilename(parameters.getOutputFileName(), suffix.str().c_str(), CSVDataFileWriter::CSV_FILE_EXT, buffer);
 }
 
+/* Returns whether child record is reported in output files. */
+bool CutsRecordWriter::includeChild(const ScanRunner& scanner, const CutStructure& thisCut, RecordBuffer& record) {
+    if (thisCut.getRate(scanner) == Parameters::HIGHRATE) {// we're excluding child nodes with no cases
+        // Prefer using the number of cases on node field.
+        unsigned int countFieldIdx = record.GetFieldIndex(
+            { std::string(DataRecordWriter::NODE_CASES_FIELD), std::string(DataRecordWriter::NODE_OBSERVATIONS_FIELD), std::string(DataRecordWriter::OBSERVATIONS_FIELD) }, false
+        );
+        if (!countFieldIdx) // Fallback to the number of cases.
+            countFieldIdx = record.GetFieldIndex(
+                { std::string(DataRecordWriter::CASES_FIELD), std::string(DataRecordWriter::OBSERVED_CASES_FIELD), std::string(DataRecordWriter::WNDW_CASES_FIELD) }
+            );
+        return record.GetFieldValue(countFieldIdx).AsDouble() > 0.0;
+    }
+    return true;
+}
+
+/* Sorts child records for reporting in output files by excess cases. */
+void CutsRecordWriter::sortChildRecords(std::vector<boost::shared_ptr<RecordBuffer>>& childRecords) {
+    std::sort(std::begin(childRecords), std::end(childRecords), [](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
+        double excessA = recordA->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble();
+        double excessB = recordB->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble();
+        if (!std::isnan(excessA) && !std::isnan(excessB))
+            return excessA > excessB;
+        else if (std::isnan(excessA) && !std::isnan(excessB))
+            return false;
+        else
+            return true;
+    });
+}
+
 void CutsRecordWriter::write(const CutStructure& thisCut) const {
     std::string buffer;
 
@@ -375,22 +406,14 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
         RecordBuffer Record(_dataFieldDefinitions);
         _csvWriter->writeRecord(getRecordForCut(Record, thisCut, _scanner));
         // Now write records for each direct child of this cut/node.
-        std::vector<boost::shared_ptr<RecordBuffer> > childRecords;
-        unsigned int countFieldIdx = Record.GetFieldIndex({ std::string(CASES_FIELD), std::string(OBSERVED_CASES_FIELD), std::string(WNDW_CASES_FIELD) });
-        auto includeChild = [this, &countFieldIdx](const CutStructure& thisCut, RecordBuffer& record) {
-            if (thisCut.getRate(_scanner) == Parameters::HIGHRATE) // we're excluding child nodes with no cases
-                return record.GetFieldValue(countFieldIdx).AsDouble() > 0.0 && !std::isnan(record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble());
-            return !std::isnan(record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble());
-        };
+        std::vector<boost::shared_ptr<RecordBuffer>> childRecords;
         for (auto pnode : _scanner.getCutChildNodes(thisCut)) {
             boost::shared_ptr<RecordBuffer> record(new RecordBuffer(_dataFieldDefinitions));
             getRecordForCutChild(*(record), thisCut, *pnode, thisCut.getReportOrder(), _scanner);
-            if (includeChild(thisCut, *(record)))
+            if (CutsRecordWriter::includeChild(_scanner, thisCut, *(record))) // Add this record if it is interesting.
                 childRecords.push_back(record);
         }
-        std::sort(std::begin(childRecords), std::end(childRecords), [](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
-            return recordA->GetFieldValue(EXCESS_CASES_FIELD).AsDouble() > recordB->GetFieldValue(EXCESS_CASES_FIELD).AsDouble();
-        });
+        CutsRecordWriter::sortChildRecords(childRecords);
         unsigned int writeIdx = 0;
         for (auto& record : childRecords) {
             record->GetFieldValue(CUT_NUM_FIELD).AsString() = printString(buffer, "%u_%u", thisCut.getReportOrder(), ++writeIdx);

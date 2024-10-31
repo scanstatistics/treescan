@@ -23,7 +23,7 @@ class RecordBuffer {
       const FieldDef                  & GetFieldDefinition(unsigned int iFieldIndex) const;
       const FieldDef                  & GetFieldDefinition(const std::string& sFieldName) const;
       unsigned int                      GetFieldIndex(const std::string& sFieldName) const;
-      unsigned int                      GetFieldIndex(std::initializer_list<std::string> fieldNames) const;
+      unsigned int                      GetFieldIndex(std::initializer_list<std::string> fieldNames, bool throwException=true) const;
       bool                              GetFieldIsBlank(unsigned int iFieldNumber) const;
       FieldValue                      & GetFieldValue(const std::string& sFieldName);
       FieldValue                      & GetFieldValue(unsigned int iFieldIndex);
@@ -125,6 +125,8 @@ class CutsRecordWriter : public DataRecordWriter {
        static RecordBuffer& getRecordForCut(RecordBuffer& Record, const CutStructure& thisCut, const ScanRunner& scanner);
        static RecordBuffer& getRecordForCutChild(RecordBuffer& Record, const CutStructure& thisCut, const NodeStructure& childNode, size_t subIndex, const ScanRunner& scanner);
 
+       static bool           includeChild(const ScanRunner& scanner, const CutStructure& thisCut, RecordBuffer& record);
+       static void           sortChildRecords(std::vector<boost::shared_ptr<RecordBuffer>>& childRecords);
        void                  write(const CutStructure& thisCut) const;
 };
 

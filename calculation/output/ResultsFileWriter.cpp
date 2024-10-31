@@ -1099,32 +1099,21 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
     const Parameters& parameters = _scanRunner.getParameters();
     const NodeStructure& thisNode = *(_scanRunner.getNodes()[thisCut.getID()]);
     std::string node_tr(thisNode.getOutputLabel()), buffer, buffer2;
-    std::vector<boost::shared_ptr<RecordBuffer> > childRecords;
+    std::vector<boost::shared_ptr<RecordBuffer>> childRecords;
     ptr_vector<FieldDef> fieldDefinitions;
 
     outfile << "<tr id=\"tr-" << encodeForJavascript(node_tr) << "\"><td>" << thisCut.getReportOrder() << "</td>";
     // skip reporting node identifier for time-only scans
     if (parameters.getScanType() != Parameters::TIMEONLY) {
         // Obtain the child notes for this cut and remove any children which are not interesting.
-        unsigned int countFieldIdx = std::numeric_limits<unsigned int>::max();
-        auto includeChild = [this, &countFieldIdx](const CutStructure& thisCut, RecordBuffer& record) {
-            if (thisCut.getRate(_scanRunner) == Parameters::HIGHRATE) // we're excluding child nodes with no cases
-                return record.GetFieldValue(countFieldIdx).AsDouble() > 0.0 && !std::isnan(record.GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble());
-            return !std::isnan(record.GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble());
-        };
         CutsRecordWriter::getFieldDefs(fieldDefinitions, parameters, _scanRunner.hasNodeDescriptions());
         for (auto pnode : _scanRunner.getCutChildNodes(thisCut)) {
             boost::shared_ptr<RecordBuffer> record(new RecordBuffer(fieldDefinitions));
-            if (countFieldIdx == std::numeric_limits<unsigned int>::max())
-                countFieldIdx = record->GetFieldIndex({ std::string(DataRecordWriter::CASES_FIELD), std::string(DataRecordWriter::OBSERVED_CASES_FIELD), std::string(DataRecordWriter::WNDW_CASES_FIELD) });
             CutsRecordWriter::getRecordForCutChild(*(record), thisCut, *pnode, thisCut.getReportOrder(), _scanRunner);
-            // Add this record if it is interesting.
-            if (includeChild(thisCut, *(record)))
+            if (CutsRecordWriter::includeChild(_scanRunner, thisCut, *(record))) // Add this record if it is interesting.
                 childRecords.push_back(record);
         }
-        std::sort(std::begin(childRecords), std::end(childRecords), [](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
-            return recordA->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble() > recordB->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble();
-        });
+        CutsRecordWriter::sortChildRecords(childRecords);
         buffer = thisNode.getIdentifier();
         outfile << "<td>" << (childRecords.size() > 0 ? "<a href=\"#\" class=\"cut-node-w-children\">" : "") << htmlencode(buffer);
         outfile << (childRecords.size() > 0 ? "</a>" : "") << "</td>";
