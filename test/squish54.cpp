@@ -341,7 +341,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_node, t
         getCSVRow(stream, data);
     }
     if (dataRows != expectedRows) BOOST_FAIL( "expecting " << expectedRows << " data rows, got " << dataRows );
-    if (childRows != 9) BOOST_FAIL("expecting 9 child data rows, got " << childRows);
+    if (childRows != 10) BOOST_FAIL("expecting 10 child data rows, got " << childRows);
     stream.close();
 }
 
@@ -434,7 +434,7 @@ BOOST_FIXTURE_TEST_CASE( test_attributable_risk_tree_time_scan_condition_nodetim
         getCSVRow(stream, data);
     }
     if (dataRows != expectedRows) BOOST_FAIL( "expecting " << expectedRows << " data rows, got " << dataRows );
-    if (childRows != 9) BOOST_FAIL("expecting 10 child data rows, got " << childRows);
+    if (childRows != 10) BOOST_FAIL("expecting 10 child data rows, got " << childRows);
     stream.close();
 }
 

@@ -668,7 +668,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
         getCSVRow(stream, data);
     }
     if (dataRows != 7) BOOST_FAIL( "expecting 7 data rows, got " << dataRows );
-    if (childRows != 8) BOOST_FAIL("expecting 8 data rows, got " << childRows);
+    if (childRows != 9) BOOST_FAIL("expecting 9 data rows, got " << childRows);
     stream.close();
 }
 
@@ -775,7 +775,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
         getCSVRow(stream, data);
     }
     if (dataRows != 10) BOOST_FAIL( "expecting 10 data rows, got " << dataRows );
-    if (childRows != 10) BOOST_FAIL("expecting 10 data rows, got " << childRows);
+    if (childRows != 12) BOOST_FAIL("expecting 12 data rows, got " << childRows);
     stream.close();
 }
 
