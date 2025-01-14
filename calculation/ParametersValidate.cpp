@@ -489,7 +489,10 @@ bool ParametersValidate::ValidateAnalysisParameters(BasePrint& PrintDirection) c
             PrintDirection.Printf("Invalid Parameter Setting:\nSelf control design is implemented for the unconditional Bernoulli model only.\n", BasePrint::P_PARAMERROR);
         }
         if (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL && !_parameters.getVariableCaseProbability()) {
-           if (_parameters.getProbabilityRatio().first == 0 || _parameters.getProbabilityRatio().second == 0 || _parameters.getProbabilityRatio().first >= _parameters.getProbabilityRatio().second) {
+           double top, bottom;
+           string_to_type<double>(_parameters.getProbabilityRatio().first.c_str(), top);
+           string_to_type<double>(_parameters.getProbabilityRatio().second.c_str(), bottom);
+           if (top == 0 || bottom == 0 || top >= bottom) {
                 bValid = false;
                 PrintDirection.Printf("Invalid Parameter Setting:\nCase probabilty must be between zero and one.\n", BasePrint::P_PARAMERROR);
            }
@@ -611,7 +614,10 @@ bool ParametersValidate::ValidatePowerEvaluationParametersParameters(BasePrint &
         bValid = false;
     }
     if (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::TOTALCASES) {
-        if (_parameters.getPowerBaselineProbabilityRatio().first == 0 || _parameters.getPowerBaselineProbabilityRatio().second == 0 || _parameters.getPowerBaselineProbabilityRatio().first >= _parameters.getPowerBaselineProbabilityRatio().second) {
+        double top, bottom;
+        string_to_type<double>(_parameters.getPowerBaselineProbabilityRatio().first.c_str(), top);
+        string_to_type<double>(_parameters.getPowerBaselineProbabilityRatio().second.c_str(), bottom);
+        if (top == 0 || bottom == 0 || top >= bottom) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation baseline probabilty must be between zero and one.\n", BasePrint::P_PARAMERROR);
         }

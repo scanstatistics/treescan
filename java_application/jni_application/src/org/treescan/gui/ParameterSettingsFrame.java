@@ -303,8 +303,8 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
     /** Verifies that analysis settings are valid in the context of all parameter settings. */
     private void CheckAnalysisSettings() {
         if (Utils.selected(_BernoulliButton)) {
-            int eventProbNumerator = Integer.parseInt(_eventProbabiltyNumerator.getText().trim());
-            int eventProbDenominator = Integer.parseInt(_eventProbabiltyDenominator.getText().trim());
+            double eventProbNumerator = Double.parseDouble(_eventProbabiltyNumerator.getText().trim());
+            double eventProbDenominator = Double.parseDouble(_eventProbabiltyDenominator.getText().trim());
             if (eventProbNumerator == 0 || eventProbDenominator == 0 || eventProbNumerator >= eventProbDenominator) {
                 throw new SettingsException("Please specify an event probabilty that is between zero and one.", (Component) _eventProbabiltyNumerator);
             }
@@ -399,8 +399,9 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         setControlsForAnalysisOptions(parameters.getScanType(), parameters.getConditionalType(), parameters.getModelType());
         _self_control_design.setSelected(parameters.getSelfControlDesign());
         _variable_case_probability.setSelected(parameters.getVariableCaseProbability());
-        _eventProbabiltyNumerator.setText(Integer.toString(parameters.getProbabilityRatioNumerator()));
-        _eventProbabiltyDenominator.setText(Integer.toString(parameters.getProbabilityRatioDenominator()));
+        _eventProbabiltyNumerator.setText(parameters.getProbabilityRatioNumerator());
+        _eventProbabiltyNumerator.setCaretPosition(0);
+        _eventProbabiltyDenominator.setText(parameters.getProbabilityRatioDenominator());
         switch (parameters.getScanRateType()) {
             case LOWRATE: _scanAreaLowRates.setSelected(true); break;
             case HIGHORLOWRATE: _scanAreaHighOrLowRates.setSelected(true); break;
@@ -488,8 +489,8 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         }
         parameters.setSelfControlDesign(_self_control_design.isEnabled() && _self_control_design.isSelected());
         parameters.setVariableCaseProbability(_variable_case_probability.isEnabled() && _variable_case_probability.isSelected());
-        parameters.setProbabilityRatioNumerator(Integer.parseInt(_eventProbabiltyNumerator.getText()));
-        parameters.setProbabilityRatioDenominator(Integer.parseInt(_eventProbabiltyDenominator.getText()));
+        parameters.setProbabilityRatioNumerator(_eventProbabiltyNumerator.getText());
+        parameters.setProbabilityRatioDenominator(_eventProbabiltyDenominator.getText());
         parameters.setScanRateType(getScanRateControlType().ordinal());
         parameters.setOutputFileName(_outputFileTextField.getText());
         parameters.setGeneratingHtmlResults(_reportResultsAsHTML.isSelected());
@@ -1195,7 +1196,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         });
         _eventProbabiltyNumerator.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_eventProbabiltyNumerator, e, 6);
+                Utils.validatePostiveFloatKeyTyped(_eventProbabiltyNumerator, e, 20);
             }
         });
         _eventProbabiltyNumerator.getDocument().addUndoableEditListener(new UndoableEditListener() {

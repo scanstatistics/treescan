@@ -39,7 +39,7 @@ class AbtractParameterFileAccess {
      int                         ReadInt(const std::string& sValue, Parameters::ParameterType e) const;
      int                         ReadUnsignedInt(const std::string& sValue, Parameters::ParameterType e) const;
      Parameters::CreationVersion ReadVersion(const std::string& sValue) const;
-     Parameters::ratio_t         ReadRatio(const std::string& sValue) const;
+     Parameters::ratio_t         ReadRatio(const std::string& sValue, Parameters::ParameterType e) const;
 
      static std::string        & AsString(std::string& ref, int i) {printString(ref, "%d", i); return ref;}
      static std::string        & AsString(std::string& ref, unsigned int i) {printString(ref, "%u", i); return ref;}
@@ -47,7 +47,7 @@ class AbtractParameterFileAccess {
      static std::string        & AsString(std::string& ref, double d) {printString(ref, "%g", d); return ref;}
      std::string               & AsString(std::string& ref, bool b) const {printString(ref, "%s", (b ? (_write_boolean_as_digit ? "1" : "y") : (_write_boolean_as_digit ? "0" : "n"))); return ref;}
      static std::string        & AsString(std::string& ref, const Parameters::CreationVersion& v) {printString(ref, "%d.%d.%d", v.iMajor, v.iMinor, v.iRelease); return ref;}
-     static std::string        & AsString(std::string& ref, const Parameters::ratio_t& r) {printString(ref, "%d/%d", r.first, r.second); return ref;}
+     static std::string        & AsString(std::string& ref, const Parameters::ratio_t& r);
      const char                * GetParameterComment(Parameters::ParameterType e) const;
      std::string               & GetParameterString(Parameters::ParameterType e, std::string& s) const;
 

@@ -63,8 +63,8 @@ public class Parameters implements Cloneable {
     private ModelType _modelType=ModelType.POISSON;
     private ScanType _scanType=ScanType.TREEONLY;
     private ConditionalType _conditionalType=ConditionalType.UNCONDITIONAL;
-    private int _probability_ratio_numerator=1;
-    private int _probability_ratio_denominator=2;
+    private String _probability_ratio_numerator="1";
+    private String _probability_ratio_denominator="2";
     private ScanRateType _scan_rate_type=ScanRateType.HIGHRATE;
 
     private boolean _restrict_temporal_windows = false;
@@ -91,8 +91,8 @@ public class Parameters implements Cloneable {
     private int _attributable_risk_exposed=0;
     private boolean _self_control_design=false;
     private boolean _variable_case_probablility=false;
-    private int _power_baseline_probability_ratio_numerator=1;
-    private int _power_baseline_probability_ratio_denominator=2;
+    private String _power_baseline_probability_ratio_numerator="1";
+    private String _power_baseline_probability_ratio_denominator="2";
     private boolean _restrict_tree_levels=false;
     private String _restricted_tree_levels = "";
     private boolean _restrict_evaluated_tree_nodes=false;
@@ -150,13 +150,17 @@ public class Parameters implements Cloneable {
             newObject._input_sources.add(iss.clone());
           }
           newObject._restricted_tree_levels = new String(_restricted_tree_levels);
-   	  newObject._data_time_range_sstart = new String(_data_time_range_sstart);
-   	  newObject._data_time_range_send = new String(_data_time_range_send);
-   	  newObject._temporal_start_range_sbegin = new String(_temporal_start_range_sbegin);
-   	  newObject._temporal_start_range_sclose = new String(_temporal_start_range_sclose);
-   	  newObject._temporal_end_range_sbegin = new String(_temporal_end_range_sbegin);
-   	  newObject._temporal_end_range_sclose = new String(_temporal_end_range_sclose);
+   	      newObject._data_time_range_sstart = new String(_data_time_range_sstart);
+          newObject._data_time_range_send = new String(_data_time_range_send);
+          newObject._temporal_start_range_sbegin = new String(_temporal_start_range_sbegin);
+          newObject._temporal_start_range_sclose = new String(_temporal_start_range_sclose);
+          newObject._temporal_end_range_sbegin = new String(_temporal_end_range_sbegin);
+          newObject._temporal_end_range_sclose = new String(_temporal_end_range_sclose);
           newObject._not_evaluated_nodes_filename = new String(_not_evaluated_nodes_filename);
+          newObject._probability_ratio_numerator = new String(_probability_ratio_numerator);
+          newObject._probability_ratio_denominator = new String(_probability_ratio_denominator);
+          newObject._power_baseline_probability_ratio_numerator = new String(_power_baseline_probability_ratio_numerator);
+          newObject._power_baseline_probability_ratio_denominator = new String(_power_baseline_probability_ratio_denominator);
     	  return newObject;
       } catch (CloneNotSupportedException e) {
         throw new InternalError("clone() failed!");
@@ -168,8 +172,8 @@ public class Parameters implements Cloneable {
    	  if (_scanType != rhs._scanType) return false;
           if (_conditionalType != rhs._conditionalType) return false;
           if (_modelType != rhs._modelType) return false;
-          if (_probability_ratio_numerator != rhs._probability_ratio_numerator) return false;
-          if (_probability_ratio_denominator != rhs._probability_ratio_denominator) return false;
+          if (!_probability_ratio_numerator.equals(rhs._probability_ratio_numerator)) return false;
+          if (!_probability_ratio_denominator.equals(rhs._probability_ratio_denominator)) return false;
           if (_self_control_design != rhs._self_control_design) return false;
           if (_variable_case_probablility != rhs._variable_case_probablility) return false;
           if (_scan_rate_type != rhs._scan_rate_type) return false;
@@ -224,8 +228,8 @@ public class Parameters implements Cloneable {
     	  if (_randomlyGenerateSeed != rhs._randomlyGenerateSeed) return false;
     	  if (_printColumnHeaders != rhs._printColumnHeaders) return false;
 
-          if (_power_baseline_probability_ratio_numerator != rhs._power_baseline_probability_ratio_numerator) return false;
-          if (_power_baseline_probability_ratio_denominator != rhs._power_baseline_probability_ratio_denominator) return false;
+          if (!_power_baseline_probability_ratio_numerator.equals(rhs._power_baseline_probability_ratio_numerator)) return false;
+          if (!_power_baseline_probability_ratio_denominator.equals(rhs._power_baseline_probability_ratio_denominator)) return false;
           if (_restrict_tree_levels != rhs._restrict_tree_levels) return false;
           if (!_restricted_tree_levels.equals(rhs._restricted_tree_levels)) return false;
           if (_apply_exclusion_ranges != rhs._apply_exclusion_ranges) return false;
@@ -239,7 +243,7 @@ public class Parameters implements Cloneable {
           if (_temporal_graph_report_count != rhs._temporal_graph_report_count) return false;
           if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
           if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;          
-          if(_minimum_highrate_nodes_cases != rhs._minimum_highrate_nodes_cases) return false;
+          if (_minimum_highrate_nodes_cases != rhs._minimum_highrate_nodes_cases) return false;
           if (_data_only_on_leaves != rhs._data_only_on_leaves) return false;
           if (_relaxed_study_data_period_checking != rhs._relaxed_study_data_period_checking) return false;
           if (_allow_multi_parent_nodes != rhs._allow_multi_parent_nodes) return false;
@@ -439,10 +443,10 @@ public class Parameters implements Cloneable {
             if (_modelType == ModelType.MODEL_NOT_APPLICABLE)  _modelType = ModelType.UNIFORM;
         } catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, ModelType.values());}
     }
-    public int getProbabilityRatioNumerator() {return _probability_ratio_numerator;}
-    public void setProbabilityRatioNumerator(int i) {_probability_ratio_numerator = i;}
-    public int getProbabilityRatioDenominator() {return _probability_ratio_denominator;}
-    public void setProbabilityRatioDenominator(int i) {_probability_ratio_denominator = i;}
+    public String getProbabilityRatioNumerator() {return _probability_ratio_numerator;}
+    public void setProbabilityRatioNumerator(String s) {_probability_ratio_numerator = s;}
+    public String getProbabilityRatioDenominator() {return _probability_ratio_denominator;}
+    public void setProbabilityRatioDenominator(String s) {_probability_ratio_denominator = s;}
     public void ThrowEnumException(int ord, Enum[] e) { throw new RuntimeException("Ordinal index " + ord + " out of range [" + e[0].ordinal() + "," +  e[e.length - 1].ordinal() + "]."); }
     public ScanType getScanType() {return _scanType;}
     public void setScanType(int ord) {try {_scanType = ScanType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, ScanType.values());}}
@@ -451,8 +455,8 @@ public class Parameters implements Cloneable {
     public final boolean isGeneratingLLRResults() {return _generate_llr_results;}
     public void setGeneratingLLRResults(boolean b) {_generate_llr_results=b;}
 
-    public int getPowerBaselineProbabilityRatioNumerator() {return _power_baseline_probability_ratio_numerator;}
-    public void setPowerBaselineProbabilityRatioNumerator(int i) {_power_baseline_probability_ratio_numerator = i;}
-    public int getPowerBaselineProbabilityRatioDenominator() {return _power_baseline_probability_ratio_denominator;}
-    public void setPowerBaselineProbabilityRatioDenominator(int i) {_power_baseline_probability_ratio_denominator = i;}
+    public String getPowerBaselineProbabilityRatioNumerator() {return _power_baseline_probability_ratio_numerator;}
+    public void setPowerBaselineProbabilityRatioNumerator(String i) {_power_baseline_probability_ratio_numerator = i;}
+    public String getPowerBaselineProbabilityRatioDenominator() {return _power_baseline_probability_ratio_denominator;}
+    public void setPowerBaselineProbabilityRatioDenominator(String i) {_power_baseline_probability_ratio_denominator = i;}
 }

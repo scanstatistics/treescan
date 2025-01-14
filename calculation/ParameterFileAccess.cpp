@@ -32,6 +32,17 @@ AbtractParameterFileAccess::AbtractParameterFileAccess(Parameters& Parameters, B
 /** Destructor */
 AbtractParameterFileAccess::~AbtractParameterFileAccess() {}
 
+/* Converts ratio data to string for wrting. */
+std::string& AbtractParameterFileAccess::AsString(std::string& ref, const Parameters::ratio_t& r) {
+    double test;
+    string_to_type<double>(r.second.c_str(), test);
+    if (test == 1.0)
+        ref = r.first;
+    else
+        printString(ref, "%s/%s", r.first.c_str(), r.second.c_str());
+    return ref; 
+}
+
 /** Returns constant char pointer to parameters comment string. */
 const char * AbtractParameterFileAccess::GetParameterComment(Parameters::ParameterType e) const {
     try {
@@ -335,15 +346,23 @@ Parameters::CreationVersion AbtractParameterFileAccess::ReadVersion(const std::s
    return v;
 }
 
-/** Attempts to interpret passed string as ratio of format '#/#'. Throws InvalidParameterException. */
-Parameters::ratio_t AbtractParameterFileAccess::ReadRatio(const std::string& sValue) const {
+/** Attempts to interpret passed string as ratio of format '#/#' or decimal value. */
+Parameters::ratio_t AbtractParameterFileAccess::ReadRatio(const std::string& sValue, Parameters::ParameterType e) const {
+    if (sValue.size() == 0) throw parameter_error("Invalid Parameter Setting:\nParameter '%s' is not set.\n", GetParameterLabel(e));
     Parameters::ratio_t r;
-
-   if (sValue.size() == 0)
-     throw parameter_error("Invalid Parameter Setting:\nParameter '%s' is not set.\n", GetParameterLabel(Parameters::EVENT_PROBABILITY));
-   else if (sscanf(sValue.c_str(), "%u/%u", &r.first, &r.second) < 2)
-     throw parameter_error("Invalid Parameter Setting:\nParameter '%s' is not set.\n", GetParameterLabel(Parameters::EVENT_PROBABILITY));
-  return r;
+    auto sepPos = sValue.find("/");
+    double top;
+    unsigned int bottom;
+    if (sepPos == sValue.npos) { // No separator in value, try parsing as just a decimal value.
+        if (!string_to_type<double>(sValue.c_str(), top))
+            throw parameter_error("Invalid Parameter Setting:\nParameter '%s' could not be read as numeric value.\n", GetParameterLabel(e));
+        r = Parameters::ratio_t(sValue, "1");
+    } else {
+        r = Parameters::ratio_t(sValue.substr(0, sepPos), sValue.substr(sepPos + 1, sValue.size()));
+        if (!string_to_type<double>(r.first.c_str(), top) || !string_to_type<unsigned int>(r.second.c_str(), bottom))
+            throw parameter_error("Invalid Parameter Setting:\nParameter '%s' could not be read as a ratio.\n", GetParameterLabel(e));
+    }
+    return r;
 }
 
 /** Calls appropriate read and set function for parameter type. */
@@ -381,7 +400,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::MODEL_TYPE               : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::POISSON, Parameters::BERNOULLI_TIME);
                                                         _parameters.setModelType((Parameters::ModelType)iValue); break;
             case Parameters::SELF_CONTROL_DESIGN      : _parameters.setSelfControlDesign(ReadBoolean(value, e)); break;
-            case Parameters::EVENT_PROBABILITY        : _parameters.setProbabilityRatio(ReadRatio(value)); break;
+            case Parameters::EVENT_PROBABILITY        : _parameters.setProbabilityRatio(ReadRatio(value, Parameters::EVENT_PROBABILITY)); break;
             case Parameters::VARIABLE_CASE_PROBABILITY : _parameters.setVariableCaseProbability(ReadBoolean(value, e)); break;
             case Parameters::SEQUENTIAL_SCAN          : _parameters.setSequentialScan(ReadBoolean(value, e)); break;
             case Parameters::SEQUENTIAL_MAX_SIGNAL    : _parameters.setSequentialMaximumSignal(ReadUnsignedInt(value, e)); break;
@@ -452,7 +471,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::POWER_EVALUATION_TOTALCASES : _parameters.setPowerEvaluationTotalCases(ReadInt(value, e)); break;
             case Parameters::POWER_EVALUATIONS_REPLICA : _parameters.setPowerEvaluationReplications(ReadUnsignedInt(value, e)); break;
             case Parameters::POWER_EVALUATIONS_FILE   : _parameters.setPowerEvaluationAltHypothesisFilename(value.c_str(), true); break;
-            case Parameters::POWER_BASELINE_PROBABILITY : _parameters.setPowerBaselineProbabilityRatio(ReadRatio(value)); break;
+            case Parameters::POWER_BASELINE_PROBABILITY : _parameters.setPowerBaselineProbabilityRatio(ReadRatio(value, Parameters::POWER_BASELINE_PROBABILITY)); break;
             case Parameters::POWER_Z                  : _parameters.setPowerZ(ReadDouble(value, e)); break;
             // Power Simulations
             case Parameters::READ_SIMULATIONS         : _parameters.setReadingSimulationData(ReadBoolean(value, e)); break;

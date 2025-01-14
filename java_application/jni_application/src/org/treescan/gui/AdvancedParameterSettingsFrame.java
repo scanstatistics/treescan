@@ -354,8 +354,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setPowerEvaluationTotalCases(Integer.parseInt((_totalPowerCases.getText().length() > 0 ? _totalPowerCases.getText() : "600")));
         parameters.setPowerEvaluationReplications(Integer.parseInt(_numberPowerReplications.getText()));
         parameters.setPowerEvaluationAltHypothesisFilename(_alternativeHypothesisFilename.getText());
-        parameters.setPowerBaselineProbabilityRatioNumerator(Integer.parseInt(_eventProbabiltyNumerator.getText()));
-        parameters.setPowerBaselineProbabilityRatioDenominator(Integer.parseInt(this._eventProbabiltyDenominator.getText()));
+        parameters.setPowerBaselineProbabilityRatioNumerator(_eventProbabiltyNumerator.getText());
+        parameters.setPowerBaselineProbabilityRatioDenominator(_eventProbabiltyDenominator.getText());
 
         // Sequential Analysis tab
         parameters.setSequentialScan(_sequential_analysis_group.isEnabled() && _perform_sequential_scan.isSelected());
@@ -512,8 +512,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _totalPowerCases.setText(Integer.toString(parameters.getPowerEvaluationTotalCases()));
         _numberPowerReplications.setText(Integer.toString(parameters.getPowerEvaluationReplications()));
         _alternativeHypothesisFilename.setText(parameters.getPowerEvaluationAltHypothesisFilename());
-        _eventProbabiltyNumerator.setText(Integer.toString(parameters.getPowerBaselineProbabilityRatioNumerator()));
-        _eventProbabiltyDenominator.setText(Integer.toString(parameters.getPowerBaselineProbabilityRatioDenominator()));
+        _eventProbabiltyNumerator.setText(parameters.getPowerBaselineProbabilityRatioNumerator());
+        _eventProbabiltyDenominator.setText(parameters.getPowerBaselineProbabilityRatioDenominator());
 
         // Seqential Analysis tab
         _perform_sequential_scan.setSelected(parameters.getSequentialScan());
@@ -774,8 +774,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 );
             }
             if (_settings_window.getModelType() == Parameters.ModelType.BERNOULLI_TREE && _settings_window.getConditionalType() == Parameters.ConditionalType.TOTALCASES) {
-                int eventProbNumerator = Integer.parseInt(_eventProbabiltyNumerator.getText().trim());
-                int eventProbDenominator = Integer.parseInt(_eventProbabiltyDenominator.getText().trim());
+                double eventProbNumerator = Double.parseDouble(_eventProbabiltyNumerator.getText().trim());
+                double eventProbDenominator = Double.parseDouble(_eventProbabiltyDenominator.getText().trim());
                 if (eventProbNumerator == 0 || eventProbDenominator == 0 || eventProbNumerator >= eventProbDenominator)
                     throw new AdvFeaturesExpection("Please specify an event probabilty that is between zero and one.",
                         FocusedTabSet.ANALYSIS,(Component) _eventProbabiltyNumerator
@@ -2488,7 +2488,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         });
         _eventProbabiltyNumerator.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_eventProbabiltyNumerator, e, 6);
+                Utils.validatePostiveFloatKeyTyped(_eventProbabiltyNumerator, e, 20);
             }
         });
         _eventProbabiltyNumerator.getDocument().addUndoableEditListener(new UndoableEditListener() {

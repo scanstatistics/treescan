@@ -19,6 +19,22 @@ Parameters::cut_maps_t Parameters::getCutTypeMap() {
    return std::make_pair(cut_type_map_abbr, cut_type_map);
 }
 
+/* Returns the global event probability as decimal value. */
+double Parameters::getProbability() const {
+    double top, bottom;
+    string_to_type<double>(_probablility_ratio.first.c_str(), top);
+    string_to_type<double>(_probablility_ratio.second.c_str(), bottom);
+    return top / bottom;
+}
+
+/* Returns the baseline event probability for the power evaluation as decimal value. */
+double Parameters::getPowerBaselineProbability() const {
+    double top, bottom;
+    string_to_type<double>(_power_baseline_probablility_ratio.first.c_str(), top);
+    string_to_type<double>(_power_baseline_probablility_ratio.second.c_str(), bottom);
+    return top / bottom;
+}
+
 bool  Parameters::operator==(const Parameters& rhs) const {
   if (_replications != rhs._replications) return false;
   if (_treeFileNames != rhs._treeFileNames) return false;
@@ -422,7 +438,7 @@ void Parameters::setAsDefaulted() {
     _scan_type = TREEONLY;
     _conditional_type = UNCONDITIONAL;
     _modelType = POISSON;
-    _probablility_ratio = ratio_t(1,2);
+    _probablility_ratio = ratio_t("1","2");
     _variable_case_probablility = false;
     _restrict_temporal_windows = false;
     _temporalStartRange = DataTimeRange();
@@ -465,7 +481,7 @@ void Parameters::setAsDefaulted() {
     _power_evaluation_totalcases = 600;
     _power_replica = _replications + 1;
     _power_alt_hypothesis_filename = "";
-    _power_baseline_probablility_ratio = ratio_t(1,2);
+    _power_baseline_probablility_ratio = ratio_t("1","2");
     _power_z = 0.001;
 
     _creationVersion.iMajor = atoi(VERSION_MAJOR);
@@ -611,8 +627,8 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _scan_type = static_cast<ScanType>(pt.get<unsigned int>("parameters.analysis.scan", TREEONLY));
     _conditional_type = static_cast<ConditionalType>(pt.get<unsigned int>("parameters.analysis.conditional", UNCONDITIONAL));
     _modelType = static_cast<ModelType>(pt.get<unsigned int>("parameters.analysis.probability-model", POISSON));
-    _probablility_ratio.first = pt.get<unsigned int>("parameters.analysis.event-probability.numerator", 1);
-    _probablility_ratio.second = pt.get<unsigned int>("parameters.analysis.event-probability.denominator", 2);
+    _probablility_ratio.first = pt.get<std::string>("parameters.analysis.event-probability.numerator", "1");
+    _probablility_ratio.second = pt.get<std::string>("parameters.analysis.event-probability.denominator", "2");
     _variable_case_probablility = pt.get<bool>("parameters.analysis.event-probability.variable-case-probability", false);
      _self_control_design = pt.get<bool>("parameters.analysis.self-control-design", false);
      _scan_rate_type = static_cast<ScanRateType>(pt.get<unsigned int>("parameters.analysis.scanrate", HIGHRATE));
@@ -655,8 +671,8 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _critical_value_001 = pt.get<double>("parameters.analysis.advanced.power-evaluations.critical-value-001", 0);
     _power_evaluation_totalcases = pt.get<int>("parameters.analysis.advanced.power-evaluations.totalcases", 0);
     _power_replica = pt.get<int>("parameters.analysis.advanced.power-evaluations.replications", _replications + 1);
-    _power_baseline_probablility_ratio.first = pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.baseline-probability.numerator", 1);
-    _power_baseline_probablility_ratio.second = pt.get<unsigned int>("parameters.analysis.advanced.power-evaluations.baseline-probability.denominator", 2);
+    _power_baseline_probablility_ratio.first = pt.get<std::string>("parameters.analysis.advanced.power-evaluations.baseline-probability.numerator", "1");
+    _power_baseline_probablility_ratio.second = pt.get<std::string>("parameters.analysis.advanced.power-evaluations.baseline-probability.denominator", "2");
     setPowerEvaluationAltHypothesisFilename(pt.get<std::string>("parameters.analysis.advanced.power-evaluations.alternative-hypothesis-file", "").c_str(), true);
     _power_z = pt.get<double>("parameters.analysis.advanced.power-evaluations.power-z", 0.001);
     // Advanced Analysis - Miscellaneous

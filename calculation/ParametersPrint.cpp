@@ -8,6 +8,7 @@
 #include "ResultsFileWriter.h"
 #include "DataFileWriter.h"
 #include "ChartGenerator.h"
+#include "ParameterFileAccess.h"
 
 /** Prints parameters, in a particular format, to passed ascii file. */
 void ParametersPrint::Print(std::ostream& out) const {
@@ -287,10 +288,8 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
     if (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
         settings.push_back(std::make_pair("Self-Control Design",_parameters.getSelfControlDesign() ? "Yes" : "No"));
         settings.push_back(std::make_pair("Variable Case Probability", _parameters.getVariableCaseProbability() ? "Yes" : "No"));
-        if (!_parameters.getVariableCaseProbability()) {
-            printString(buffer, "%u/%u", _parameters.getProbabilityRatio().first, _parameters.getProbabilityRatio().second);
-            settings.push_back(std::make_pair("Case Probability", buffer));
-        }
+        if (!_parameters.getVariableCaseProbability())
+            settings.push_back(std::make_pair("Case Probability", AbtractParameterFileAccess::AsString(buffer, _parameters.getProbabilityRatio())));
     }
     buffer = "Scan Rate";
     switch (_parameters.getScanRateType()) {
@@ -433,8 +432,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getPowerEvaluationsParame
             settings.push_back(std::make_pair("Simulated Log Likelihood Ratios (HA)", LoglikelihoodRatioWriter::getFilename(_parameters, buffer, true)));
         }
         if (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::TOTALCASES) {
-            printString(buffer, "%u/%u", _parameters.getPowerBaselineProbabilityRatio().first, _parameters.getPowerBaselineProbabilityRatio().second);
-            settings.push_back(std::make_pair("Baseline Probability",buffer));
+            settings.push_back(std::make_pair("Baseline Probability", AbtractParameterFileAccess::AsString(buffer, _parameters.getPowerBaselineProbabilityRatio())));
             if (_parameters.getPowerZ() != 0.001) {
                 printString(buffer, "%lf", _parameters.getPowerZ());
                 settings.push_back(std::make_pair("Power Z", buffer));

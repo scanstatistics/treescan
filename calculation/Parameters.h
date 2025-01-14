@@ -8,7 +8,7 @@
 
 class Parameters {
   public:
-    typedef std::pair<unsigned int,unsigned int> ratio_t;
+    typedef std::pair<std::string,std::string> ratio_t;
     enum ParameterType {// Input
                         TREE_FILE=1,
                         COUNT_FILE,
@@ -450,10 +450,10 @@ class Parameters {
     int                                 getPowerEvaluationTotalCases() const {return _power_evaluation_totalcases;}
     PowerEvaluationType                 getPowerEvaluationType() const {return _power_evaluation_type;}
     unsigned int                        getPowerEvaluationReplications() const {return _power_replica;}
-    double                              getPowerBaselineProbability() const {return static_cast<double>(_power_baseline_probablility_ratio.first)/static_cast<double>(_power_baseline_probablility_ratio.second);}
+    double                              getPowerBaselineProbability() const;
     ratio_t                             getPowerBaselineProbabilityRatio() const {return _power_baseline_probablility_ratio;}
     double                              getPowerZ() const { return _power_z; }
-    double                              getProbability() const {return static_cast<double>(_probablility_ratio.first)/static_cast<double>(_probablility_ratio.second);}
+    double                              getProbability() const;
     ratio_t                             getProbabilityRatio() const {return _probablility_ratio;}
     bool                                getVariableCaseProbability() const { return _variable_case_probablility; }
     long                                getRandomizationSeed() const {return _randomizationSeed;}

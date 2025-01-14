@@ -199,13 +199,12 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jint)parameters.getModelType());
   jni_error::_detectError(Env);
 
-  Parameters::ratio_t ratio = parameters.getProbabilityRatio();
-  mid = _getMethodId_Checked(Env, clazz, "setProbabilityRatioNumerator", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)ratio.first);
+  mid = _getMethodId_Checked(Env, clazz, "setProbabilityRatioNumerator", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getProbabilityRatio().first.c_str()));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setProbabilityRatioDenominator", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)ratio.second);
+  mid = _getMethodId_Checked(Env, clazz, "setProbabilityRatioDenominator", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getProbabilityRatio().second.c_str()));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setScanType", "(I)V");
@@ -437,13 +436,12 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
       }
   }
 
-  ratio = parameters.getPowerBaselineProbabilityRatio();
-  mid = _getMethodId_Checked(Env, clazz, "setPowerBaselineProbabilityRatioNumerator", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)ratio.first);
+  mid = _getMethodId_Checked(Env, clazz, "setPowerBaselineProbabilityRatioNumerator", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getPowerBaselineProbabilityRatio().first.c_str()));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setPowerBaselineProbabilityRatioDenominator", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)ratio.second);
+  mid = _getMethodId_Checked(Env, clazz, "setPowerBaselineProbabilityRatioDenominator", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getPowerBaselineProbabilityRatio().second.c_str()));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setRestrictTreeLevels", "(Z)V");
@@ -670,12 +668,18 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   jni_error::_detectError(Env);
 
   Parameters::ratio_t ratio;
-  mid = _getMethodId_Checked(Env, clazz, "getProbabilityRatioNumerator", "()I");
-  ratio.first = static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid));
+  mid = _getMethodId_Checked(Env, clazz, "getProbabilityRatioNumerator", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
-  mid = _getMethodId_Checked(Env, clazz, "getProbabilityRatioDenominator", "()I");
-  ratio.second = static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid));
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  ratio.first = sFilename;
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+  mid = _getMethodId_Checked(Env, clazz, "getProbabilityRatioDenominator", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  ratio.second = sFilename;
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
   parameters.setProbabilityRatio(ratio);
 
   parameters.setScanType((Parameters::ScanType)getEnumTypeOrdinalIndex(Env, jParameters, "getScanType", "Lorg/treescan/app/Parameters$ScanType;"));
@@ -879,12 +883,18 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
       parameters.defineInputSource(type, inputsource, idx);
   }
 
-  mid = _getMethodId_Checked(Env, clazz, "getPowerBaselineProbabilityRatioNumerator", "()I");
-  ratio.first = static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid));
+  mid = _getMethodId_Checked(Env, clazz, "getPowerBaselineProbabilityRatioNumerator", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
-  mid = _getMethodId_Checked(Env, clazz, "getPowerBaselineProbabilityRatioDenominator", "()I");
-  ratio.second = static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid));
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  ratio.first = sFilename;
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+  mid = _getMethodId_Checked(Env, clazz, "getPowerBaselineProbabilityRatioDenominator", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  ratio.second = sFilename;
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
   parameters.setPowerBaselineProbabilityRatio(ratio);
 
   mid = _getMethodId_Checked(Env, clazz, "getRestrictTreeLevels", "()Z");

@@ -528,7 +528,7 @@ SequentialStatistic::SequentialStatistic(const Parameters& parameters, const Sca
             throw resolvable_error("Error: Number of replications requested (%u) does match setting in previous sequential scan (%u).",
                                    _parameters.getNumReplicationsRequested(), 
                                    _statistic_parameters.getNumReplicationsRequested());
-        if (_parameters.isSequentialScanBernoulli() && _parameters.getProbabilityRatio() != _statistic_parameters.getProbabilityRatio())
+        if (_parameters.isSequentialScanBernoulli() && _parameters.getProbability() != _statistic_parameters.getProbability())
             throw resolvable_error("Error: Event probability requested (%s) does match setting in previous sequential scan (%s).",
                                     AbtractParameterFileAccess::AsString(buffer1, _parameters.getProbabilityRatio()).c_str(),
                                     AbtractParameterFileAccess::AsString(buffer2, _statistic_parameters.getProbabilityRatio()).c_str());
@@ -645,9 +645,11 @@ void SequentialStatistic::readSettings(const std::string &filename) {
     _statistic_parameters.setNumReplications(static_cast<unsigned int>(pt.get<unsigned int>("parameters.replications", _parameters.getNumReplicationsRequested())));
     if (_parameters.isSequentialScanBernoulli())
 		_statistic_parameters.setProbabilityRatio(
-			Parameters::ratio_t(pt.get<unsigned int>("parameters.event-probability-numerator", _parameters.getProbabilityRatio().first),
-                                pt.get<unsigned int>("parameters.event-probability-denominator", _parameters.getProbabilityRatio().second))
-    );
+			Parameters::ratio_t(
+                pt.get<std::string>("parameters.event-probability-numerator", _parameters.getProbabilityRatio().first),
+                pt.get<std::string>("parameters.event-probability-denominator", _parameters.getProbabilityRatio().second)
+            )
+        );
     _statistic_parameters.setScanType((Parameters::ScanType)pt.get<unsigned int>("parameters.scan-type", static_cast<unsigned int>(_parameters.getScanType())));
     _statistic_parameters.setModelType((Parameters::ModelType)pt.get<unsigned int>("parameters.probability-model-type", static_cast<unsigned int>(_parameters.getModelType())));
     _statistic_parameters.setConditionalType((Parameters::ConditionalType)pt.get<unsigned int>("parameters.conditional-type", static_cast<unsigned int>(_parameters.getConditionalType())));
