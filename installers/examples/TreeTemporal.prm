@@ -9,6 +9,8 @@ conditional-type=3
 self-control-design=n
 ;case probability (integer/integer)
 event-probability=1/2
+;variable case probability - unconditional Bernoulli only (y/n)
+variable-case-probability=n
 ;scan rate type (HIGHRATE=0, LOWRATE=1, HIGHORLOWRATE=2)
 scan-rate-type=0
 
@@ -43,9 +45,9 @@ cut-filename=
 cut-type=0
 ;allow data only on tree leaves - (y/n)
 data-only-on-leaves=y
-;relaxed study data period checking - (y/n)
+;ignore cases outside study period - (y/n)
 relaxed-study-data-period-checking=n
-;allow multiple parents for the same node - (y/n)
+;allow multi-parent nodes - (y/n)
 allow-multi-parent-nodes=n
 ;allow multiple root nodes - (y/n)
 allow-multiple-roots=y
@@ -95,12 +97,20 @@ monte-carlo-replications=999
 restrict-tree-levels=n
 ;tree levels excluded from evaluation (csv list of unsigned integers, root level is 1)
 excluded-tree-levels=
+;restrict tree nodes evaluated (y/n)
+restrict-evaluated-nodes=n
+;not evaluated tree nodes filename
+not-evaluated-nodes-file=
 ;randomization seed (integer)
 randomization-seed=12345678
 ;generate randomization seed (y/n)
 random-randomization-seed=n
 ;minimum number of cases in a node (integer)
 minimum-node-cases=2
+;p-value reporting type (STANDARD_PVALUE=0, TERMINATION_PVALUE)
+pvalue-report-type=0
+;early termination threshold (> 0)
+early-termination-threshold=50
 
 [Sequential Scan]
 ;perform sequential scan - time-only scan (y/n)
@@ -182,5 +192,5 @@ parallel-processes=0
 
 [System]
 ;parameters version - do not modify
-parameters-version=2.2.0
+parameters-version=2.3.0
 
