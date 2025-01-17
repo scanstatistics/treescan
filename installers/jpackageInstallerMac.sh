@@ -51,7 +51,7 @@ mkdir $BUNDLEDIR
 mkdir $BUNDLEDIR/imagesrc
 # Copy TreeScan.jar from fileshare -- maybe we can build this locally at some point.
 echo Copying TreeScan.jar from fileshare
-scp -r treescan@gen-btp-01.imsweb.com:/prj/treescan/build/treescan/java_application/jni_application/dist/TreeScan.jar $BUNDLEDIR/imagesrc
+scp -r treescan@gen-btp-02.imsweb.com:/prj/treescan/build/treescan/java_application/jni_application/dist/TreeScan.jar $BUNDLEDIR/imagesrc
 #cp -rf $SRCDIR/java_application/jni_application/dist/TreeScan.jar $BUNDLEDIR/imagesrc
 cp -rf $SRCDIR/java_application/jni_application/libs $BUNDLEDIR/imagesrc
 cp -rf $SRCDIR/installers/examples $BUNDLEDIR/imagesrc
@@ -74,6 +74,19 @@ codesign --options runtime --timestamp -f -v -s "${SIGN_KEY}" $BUNDLEDIR/imagesr
 codesign -vvv --strict $BUNDLEDIR/imagesrc/libtreescan.jnilib
 codesign --entitlements  ${ENTITLEMENTS} --options runtime --timestamp -f -v -s "${SIGN_KEY}" $BUNDLEDIR/imagesrc/TreeScan.jar
 codesign -vvv --strict $BUNDLEDIR/imagesrc/TreeScan.jar
+
+echo making temp 
+mkdir $BUNDLEDIR/temp
+echo unzip
+unzip $BUNDLEDIR/imagesrc/libs/jna-4.5.1.jar -d $BUNDLEDIR/temp
+echo codesign
+codesign --options runtime --timestamp -f -v -s "${SIGN_KEY}" $BUNDLEDIR/temp/com/sun/jna/darwin/libjnidispatch.jnilib
+rm $BUNDLEDIR/imagesrc/libs/jna-4.5.1.jar
+cd $BUNDLEDIR/temp
+zip -r -u $BUNDLEDIR/imagesrc/libs/jna-4.5.1.jar com META-INF
+
+echo Any problems codesigning jna lib?
+read APPLES_TEST
 
 # Technically we should be able to just call the following to create the app, codesign and build dmg.
 # Unfortunately the notarization fails - complaining about signatures on the launcher and dylib being invalid.
@@ -145,4 +158,4 @@ bzip2 -f $BUNDLEDIR/treescan.${APPVERSION}_mac.tar
 echo Copying dmg to fileshare
 mv $BUNDLEDIR/bin/TreeScan-${APPVERSION}.dmg $BUNDLEDIR/bin/TreeScan_${APPVERSION}_mac.dmg
 mv $BUNDLEDIR/TreeScan.zip $BUNDLEDIR/TreeScan_${APPVERSION}_mac.zip
-scp -r $BUNDLEDIR/bin/TreeScan_${APPVERSION}_mac.dmg $BUNDLEDIR/TreeScan_${APPVERSION}_mac.zip $BUNDLEDIR/treescan.${APPVERSION}_mac.tar.bz2 treescan@gen-btp-01.imsweb.com:${INSTALLER_DIR}
+scp -r $BUNDLEDIR/bin/TreeScan_${APPVERSION}_mac.dmg $BUNDLEDIR/TreeScan_${APPVERSION}_mac.zip $BUNDLEDIR/treescan.${APPVERSION}_mac.tar.bz2 treescan@gen-btp-02.imsweb.com:${INSTALLER_DIR}
