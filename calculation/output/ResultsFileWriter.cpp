@@ -1098,10 +1098,11 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
 std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Loglikelihood_t & calcLogLikelihood, const std::string& format, std::ofstream& outfile, std::stringstream * subrows) {
     const Parameters& parameters = _scanRunner.getParameters();
     const NodeStructure& thisNode = *(_scanRunner.getNodes()[thisCut.getID()]);
-    std::string node_tr(thisNode.getOutputLabel()), buffer, buffer2;
+    std::string node_tr, buffer, buffer2;
     std::vector<boost::shared_ptr<RecordBuffer>> childRecords;
     ptr_vector<FieldDef> fieldDefinitions;
 
+    printString(node_tr, "ID_%d", thisNode.getID());
     outfile << "<tr id=\"tr-" << encodeForJavascript(node_tr) << "\"><td>" << thisCut.getReportOrder() << "</td>";
     // skip reporting node identifier for time-only scans
     if (parameters.getScanType() != Parameters::TIMEONLY) {
@@ -1387,12 +1388,12 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
     std::stringstream nodestream;
     // Write header section to this nodestream.
     std::string buffer(node.getOutputLabel()), parent;
-    if (node.getParents().size())
-        parent = node.getParents().front().first->getOutputLabel();
+    printString(buffer, "ID_%d", node.getID());
     nodestream << "{ HTMLid: '" << encodeForJavascript(buffer) << "', innerHTML: \"<ul><li><a data-toggle='tooltip' title='<ul><li class=" << buffer << ">";
     buffer = node.getOutputLabel();
     nodestream << htmlencode(buffer) << "</li></ul>' data-html='true'";
-    if (!parent.empty()) { nodestream << " parent_id=" << encodeForJavascript(parent) << " "; }
+    if (node.getParents().size())
+        nodestream << " parent_id=" << encodeForJavascript(printString(parent, "ID_%d", node.getParents().front().first->getID())) << " ";
     nodestream << "> ";
     // Create truncated identifier if longer than 25 characters -- so it can fit in node box outline.
     buffer = node.getOutputLabel();
