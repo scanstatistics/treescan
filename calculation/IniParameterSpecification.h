@@ -78,12 +78,13 @@ class IniParameterSpecification {
     static const char * RunOptions;
     static const char * System;
 
-    static const char         * SourceType;
-    static const char         * SourceDelimiter;
-    static const char         * SourceGrouper;
-    static const char         * SourceSkip;
-    static const char         * SourceFirstRowHeader;
-    static const char         * SourceFieldMap;
+    static const char * SourceType;
+    static const char * SourceDelimiter;
+    static const char * SourceGrouper;
+    static const char * SourceSkip;
+    static const char * SourceFirstRowHeader;
+    static const char * SourceFieldMap;
+    static const char * SourceFieldMapOneCount;
 
     void setup(Parameters::CreationVersion version);
 

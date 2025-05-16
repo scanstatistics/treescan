@@ -26,7 +26,7 @@ const char * IniParameterSpecification::SourceGrouper           = "SourceGrouper
 const char * IniParameterSpecification::SourceSkip              = "SourceSkip";
 const char * IniParameterSpecification::SourceFieldMap          = "SourceFieldMap";
 const char * IniParameterSpecification::SourceFirstRowHeader    = "SourceFirstRowHeader";
-
+const char * IniParameterSpecification::SourceFieldMapOneCount  = "oneCount";
 
 /** Constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {

@@ -37,9 +37,10 @@ public class CSVImportDataSource implements ImportDataSource {
         _group_delimiter = groupDelimiter;
         _skip = skip;
         _total_rows = countLines(_source_file);
+        _column_names.add("One Count");
         if (_has_header) {
             Object[] row = readRow();
-            for (int i=0; i < row.length; ++i)
+            for (int i=1; i < row.length; ++i)
                 _column_names.add(row[i]);
             _skip += 1;
         } else {
@@ -151,6 +152,8 @@ public class CSVImportDataSource implements ImportDataSource {
             }
         } while (row.isEmpty());
         if (line == null) return null;
+        // Tack on the generated columns.
+        row.add(0, "1");        
         return row.toArray();
     }
 

@@ -49,10 +49,10 @@ public class XLSImportDataSource implements ImportDataSource {
         }
         // Set the first sheet to be initial default.
         setSheet(0);
-        
+        _column_names.add("One Count");
         if (_has_header) {
             Object[] row = readRow();
-            for (int i=0; i < row.length; ++i)
+            for (int i=1; i < row.length; ++i)
                 _column_names.add(row[i]);
             _current_row = 1;
         } else {
@@ -117,8 +117,8 @@ public class XLSImportDataSource implements ImportDataSource {
                 Row row = _sheet.getRow(_current_row);
                 _current_row++;
                 if (row != null && row.getPhysicalNumberOfCells() > 0) {
-                    ArrayList<Object> obj = new ArrayList<Object>();
-                    
+                    ArrayList<Object> obj = new ArrayList<>();
+                    obj.add("1");
                     // Get the number of defined cells in this row
                     int totalDefinedCells = row.getPhysicalNumberOfCells();
                     // Initialize the number of defined cells found so far

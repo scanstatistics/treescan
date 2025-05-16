@@ -10,6 +10,9 @@
 
 /** Input data source abstraction. */
 class DataSource {
+    public:
+        enum FieldType { ONECOUNT };
+
     protected:
         bool _blank_record_flag;
         FieldMapContainer_t _fields_map;

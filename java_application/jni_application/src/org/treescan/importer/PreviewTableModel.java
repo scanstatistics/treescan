@@ -3,6 +3,7 @@ package org.treescan.importer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.table.AbstractTableModel;
+import org.apache.commons.lang3.ArrayUtils;
 import org.treescan.gui.FileSourceWizard;
 
 /**
@@ -17,12 +18,16 @@ public class PreviewTableModel extends AbstractTableModel {
     protected int _maxFieldCount = 0;
     protected final ImportDataSource _data_source;
     ArrayList<Object> _column_names = new ArrayList<>();
+    protected boolean _show_oneCount=true;
+    protected String _non_datasource_column_suffix=" *";
 
     /** Constructs a new PreviewTableModel object. */
-    public PreviewTableModel(ImportDataSource data_source) {
+    public PreviewTableModel(ImportDataSource data_source, boolean show_oneCount) {
         super();
         _data_source = data_source;
+        _show_oneCount = show_oneCount;
         _column_names = new ArrayList(Arrays.asList(_data_source.getColumnNames()));
+        if (!_show_oneCount) _column_names.remove(0);
         for (int i=0; i < getPreviewLength(); ++i) {
             Object[] values = _data_source.readRow();
             if (values != null) {
@@ -77,7 +82,10 @@ public class PreviewTableModel extends AbstractTableModel {
     /** Returns the name of column at index. If a header row is not defined, returns "Column x" as name. */
     @Override
     public String getColumnName(int idx) {
-        return getNonSuffixedColumnName(idx);
+        String name = getNonSuffixedColumnName(idx);
+        if (idx == 0 && _show_oneCount)
+            return name + _non_datasource_column_suffix;
+        return name;        
     }
 
     /** Returns the number of columns in data source. */
@@ -99,6 +107,7 @@ public class PreviewTableModel extends AbstractTableModel {
     /** Adds row to table cache and fires table date change event. */
     public void addRow(Object[] row) {
         if (row != null) {
+            if (!_show_oneCount) row = ArrayUtils.remove(row, 0);
             _previewData.add(row);
             if (row.length > _maxFieldCount) {
                 _maxFieldCount = row.length;

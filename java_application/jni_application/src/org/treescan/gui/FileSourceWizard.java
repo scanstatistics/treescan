@@ -811,7 +811,17 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private void previewSource() throws Exception {
         // set the import tables mapping_model to default until we have an instance of the native mapping_model avaiable
         _source_data_table.setModel(new DefaultTableModel());
-
+        boolean show_oneCount=false;
+        switch (_input_source_settings.getInputFileType()) {
+            case Tree: show_oneCount=true; break;
+            case Counts: show_oneCount=true; break;
+            case Cut: show_oneCount=false; break;
+            case Power_Evaluations: show_oneCount=false; break;
+            case Controls: show_oneCount=true; break;
+            case NotEvaluated: show_oneCount=false; break;
+            default: throw new UnknownEnumException(_input_source_settings.getInputFileType());
+        }        
+        _not_source_mssg.setVisible(show_oneCount);
         // create the table mapping_model
         File file = new File(getSourceFilename());
         if (file.exists()) {
@@ -821,11 +831,11 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                  _excel_has_header = JOptionPane.showConfirmDialog(this, "Does the first row in this Excel file contain column headers?",
                                                                    "Excel Options", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
                 ImportDataSource source = new XLSImportDataSource(new File(getSourceFilename()), _excel_has_header);
-                _preview_table_model = new PreviewTableModel(source);
+                _preview_table_model = new PreviewTableModel(source, show_oneCount);
             } else {
                 int skipRows = Integer.parseInt(_ignoreRowsTextField.getText());
                 ImportDataSource source = new CSVImportDataSource(file, _firstRowColumnHeadersCheckBox.isSelected(), '\n', getColumnDelimiter(), getGroupMarker(), skipRows);
-                _preview_table_model = new PreviewTableModel(source);
+                _preview_table_model = new PreviewTableModel(source, show_oneCount);
             }
         }
         // now assign mapping_model to table object
@@ -1232,6 +1242,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _dataMappingBottomPanel = new javax.swing.JPanel();
         _importTableScrollPane = new javax.swing.JScrollPane();
         _source_data_table = new javax.swing.JTable();
+        _not_source_mssg = new javax.swing.JLabel();
         _outputSettingsPanel = new javax.swing.JPanel();
         _execute_import_now = new javax.swing.JRadioButton();
         _outputDirectoryTextField = new javax.swing.JTextField();
@@ -1579,10 +1590,12 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         );
         _dataMappingBottomPanelLayout.setVerticalGroup(
             _dataMappingBottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
+            .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
         );
 
         jSplitPane1.setRightComponent(_dataMappingBottomPanel);
+
+        _not_source_mssg.setText("(*) Column not in the source file, but can be used as a TreeScan variable.");
 
         javax.swing.GroupLayout _dataMappingPanelLayout = new javax.swing.GroupLayout(_dataMappingPanel);
         _dataMappingPanel.setLayout(_dataMappingPanelLayout);
@@ -1590,15 +1603,18 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             _dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_dataMappingPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1)
+                .addGroup(_dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
+                    .addComponent(_not_source_mssg, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _dataMappingPanelLayout.setVerticalGroup(
             _dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_dataMappingPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1)
-                .addContainerGap())
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_not_source_mssg))
         );
 
         _main_content_panel.add(_dataMappingPanel, "data-mapping");
@@ -1920,6 +1936,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
     private javax.swing.ButtonGroup _import_operation_buttonGroup;
     private javax.swing.JPanel _main_content_panel;
     private javax.swing.JTable _mapping_table;
+    private javax.swing.JLabel _not_source_mssg;
     private javax.swing.JTextField _otherFieldSeparatorTextField;
     private javax.swing.JRadioButton _otherRadioButton;
     private javax.swing.JTextField _outputDirectoryTextField;

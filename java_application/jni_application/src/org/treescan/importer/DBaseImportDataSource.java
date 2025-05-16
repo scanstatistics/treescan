@@ -36,6 +36,7 @@ public class DBaseImportDataSource implements ImportDataSource {
         try {
             _input_stream = new FileInputStream(_source_file);
             _reader = new DBFReader(_input_stream);
+            _column_names.add("One Count");
             for (int i=0; i < _reader.getFieldCount(); ++i) {
                 String name = _reader.getField(i).getName();
                 _column_names.add(name.isEmpty() ? ("Column " + (i + 1)) : name);
@@ -67,6 +68,7 @@ public class DBaseImportDataSource implements ImportDataSource {
      */
     @Override
     public boolean isColumnDate(int iColumn) {
+        if (iColumn <= 0) return false; // oneCount column is not date field
         try {
             return _reader.getField(iColumn).getType() == DBFDataType.DATE;
         } catch (DBFException e) {
@@ -76,6 +78,7 @@ public class DBaseImportDataSource implements ImportDataSource {
 
     /** Returns whether column at index is a numeric field. */
     public boolean isColumnNumeric(int iColumn) {
+        if (iColumn <= 0) return false; // // oneCount column is not numeric field
         try {
             return _reader.getField(iColumn).getType() == DBFDataType.NUMERIC;
         } catch (DBFException e) {
@@ -114,6 +117,7 @@ public class DBaseImportDataSource implements ImportDataSource {
             if (record == null) {
                 return null;
             }
+            values.add("1");
             for (int i=0; i < record.length; ++i) {
                 if (record[i] == null) { // replace null values with empty string
                     values.add("");

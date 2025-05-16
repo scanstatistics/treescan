@@ -4,6 +4,7 @@
 //***************************************************************************
 #include "ParameterFileAccess.h"
 #include "IniParameterFileAccess.h"
+#include "DataSource.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/detail/xml_parser_error.hpp>
 #include <boost/tokenizer.hpp>
@@ -532,7 +533,9 @@ Parameters::InputSource & AbtractParameterFileAccess::setInputSource(Parameters:
             for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=mappings.begin(); itr != mappings.end(); ++itr) {
                 std::string token(*itr);
                 trimString(token);
-                if (string_to_type<int>(token.c_str(), column)) {
+                if (token == IniParameterSpecification::SourceFieldMapOneCount) {
+                    fields_map.push_back(DataSource::ONECOUNT);
+                } else if (string_to_type<int>(token.c_str(), column)) {
                     fields_map.push_back((long)column);
                 } else {
                     throw resolvable_error("Unable to read parameter value '%s' as %s item.", token.c_str(), IniParameterSpecification::SourceFieldMap);
