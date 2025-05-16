@@ -14,8 +14,6 @@ import java.net.URL;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JInternalFrame;
@@ -50,7 +48,6 @@ import org.treescan.utils.Elevator;
  *
  * Created on December 5, 2007, 11:14 AM
  */
-import javax.help.SwingHelpUtilities;
 import javax.swing.KeyStroke;
 import org.apache.commons.lang3.SystemUtils;
 import org.treescan.gui.utils.FileSelectionDialog;
@@ -526,42 +523,6 @@ public class TreeScanApplication extends javax.swing.JFrame implements WindowFoc
             } catch (Throwable t) {
                 new ExceptionDialog(TreeScanApplication.this, t).setVisible(true);
             }
-        }
-    }
-
-    /**
-     * Help system action, launches the help system.
-     */
-    public class HelpSystemAction extends AbstractAction {
-
-        static final String helpsetName = "TreeScan_Help";
-        private static final long serialVersionUID = 1L;
-
-        public HelpSystemAction() {
-            super("Help System");
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            try {
-                SwingHelpUtilities.setContentViewerUI("org.treescan.gui.utils.ExternalLinkContentViewerUI");
-                ClassLoader cl = TreeScanApplication.class.getClassLoader();
-                URL url = HelpSet.findHelpSet(cl, helpsetName, "", Locale.getDefault());
-                if (url == null) {
-                    url = HelpSet.findHelpSet(cl, helpsetName, ".hs", Locale.getDefault());
-                    if (url == null) {
-                        JOptionPane.showMessageDialog(null, "The help system could not be located.", " Help", JOptionPane.WARNING_MESSAGE);
-                        return;
-                    }
-                }
-                HelpSet mainHS = new HelpSet(cl, url);
-                HelpBroker mainHB = mainHS.createHelpBroker();
-                mainHB.setDisplayed(true);
-            } catch (Throwable t) {
-                new ExceptionDialog(TreeScanApplication.this, t).setVisible(true);
-            }
-
-        //JOptionPane.showMessageDialog(TreeScanApplication.this, "HelpSystemAction::actionPerformed() not implemented.", "Note", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
