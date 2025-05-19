@@ -10,7 +10,7 @@ then
 fi
 
 echo building zlib library ...
-cd $2/zlib/zlib-1.2.7
+cd $2/zlib/zlib-1.3.1
 make clean
 make libz.dylib CC="$7 $8 $9" CFLAGS="-stdlib=libc++ -O3 -Wall $4 -fPIC -DHAVE_HIDDEN -DHAVE_UNISTD_H" AR="/usr/bin/libtool" ARFLAGS="-o" ${10}
 echo zlib done

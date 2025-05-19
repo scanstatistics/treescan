@@ -42,7 +42,7 @@ The Visual Studio Solution references relative paths to the Boost library and JD
 The Linux binaries are built through the [Linux build_binaries](scripts/linux/build_binaries) shell script.
 ### macOS
 #### Prerequisites
-- Apple clang 15
+- Apple clang 17
 
 The macOS binaries are built through the [macOS build_binaries](scripts/mac/build_binaries) shell script.
 

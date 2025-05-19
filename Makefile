@@ -20,8 +20,8 @@ UTILITY        := $(TREESCAN)/calculation/utility
 RANDOMIZER     := $(TREESCAN)/calculation/randomization
 LOGLIKELIHOOD  := $(TREESCAN)/calculation/loglikelihood
 
-ZLIB           := $(TREESCAN)/zlib/zlib-1.2.7
-ZLIB_MINIZIP   := $(TREESCAN)/zlib/zlib-1.2.7/contrib/minizip
+ZLIB           := $(TREESCAN)/zlib/zlib-1.3.1
+ZLIB_MINIZIP   := $(TREESCAN)/zlib/zlib-1.3.1/contrib/minizip
 JNI            :=
 JNI_PLAT       :=
 BOOSTDIR    := $(TREESCAN)/../boost/boost_1_46_0

@@ -10,7 +10,7 @@ then
 fi
 
 echo building zlib library ...
-cd $3/zlib/zlib-1.2.7
+cd $3/zlib/zlib-1.3.1
 make clean
 nice -n 19 make libz.a CC=$8 CFLAGS="-O3 -Wall $5 -fPIC -DHAVE_HIDDEN" $9
 echo zlib done
