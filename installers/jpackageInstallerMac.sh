@@ -77,11 +77,12 @@ codesign -vvv --strict $BUNDLEDIR/imagesrc/TreeScan.jar
 
 # jna library started failing notorization, need to codesign manually
 mkdir $BUNDLEDIR/temp
-unzip $BUNDLEDIR/imagesrc/libs/jna-4.5.1.jar -d $BUNDLEDIR/temp
-codesign --options runtime --timestamp -f -v -s "${SIGN_KEY}" $BUNDLEDIR/temp/com/sun/jna/darwin/libjnidispatch.jnilib
-rm $BUNDLEDIR/imagesrc/libs/jna-4.5.1.jar
+unzip $BUNDLEDIR/imagesrc/libs/jna-5.17.0.jar -d $BUNDLEDIR/temp
+codesign --options runtime --timestamp -f -v -s "${SIGN_KEY}" $BUNDLEDIR/temp/com/sun/jna/darwin-x86-64/libjnidispatch.jnilib
+codesign --options runtime --timestamp -f -v -s "${SIGN_KEY}" $BUNDLEDIR/temp/com/sun/jna/darwin-aarch64/libjnidispatch.jnilib
+rm $BUNDLEDIR/imagesrc/libs/jna-5.17.0.jar
 cd $BUNDLEDIR/temp
-zip -r -u $BUNDLEDIR/imagesrc/libs/jna-4.5.1.jar com META-INF
+zip -r -u $BUNDLEDIR/imagesrc/libs/jna-5.17.0.jar com META-INF
 
 # Technically we should be able to just call the following to create the app, codesign and build dmg.
 # Unfortunately the notarization fails - complaining about signatures on the launcher and dylib being invalid.
