@@ -129,7 +129,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getMiscellaneousAnalysisP
             break;
         default: throw prg_error("Unknown prospective frequency type '%d'.\n", "getMiscellaneousAnalysisParameters()", _parameters.getProspectiveFrequencyType());
         }
-        settings.push_back(std::make_pair("Prospective Analysis Frequency", buffer));
+        settings.emplace_back("Prospective Analysis Frequency", buffer);
     }
     return settings;
 }
@@ -139,23 +139,23 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInputParameters(Settin
     std::string buffer;
     settings.clear();
     if (_parameters.getScanType() != Parameters::TIMEONLY)
-        settings.push_back(std::make_pair("Tree File",_parameters.getTreeFileNames().front()));
-    settings.push_back(std::make_pair("Count File",_parameters.getCountFileName()));
+        settings.emplace_back("Tree File",_parameters.getTreeFileNames().front());
+    settings.emplace_back("Count File",_parameters.getCountFileName());
     if ((_parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getModelType() == Parameters::BERNOULLI_TIME) && !_parameters.getControlFileName().empty())
-        settings.push_back(std::make_pair("Control File", _parameters.getControlFileName()));
+        settings.emplace_back("Control File", _parameters.getControlFileName());
     if (Parameters::isTemporalScanType(_parameters.getScanType()))
-        settings.push_back(std::make_pair("Data Time Range", _parameters.getDataTimeRangeStr()));
+        settings.emplace_back("Data Time Range", _parameters.getDataTimeRangeStr());
     switch (_parameters.getDatePrecisionType()) {
         case DataTimeRange::GENERIC:
-            settings.push_back(std::make_pair("Time Precision", "Generic")); break;
+            settings.emplace_back("Time Precision", "Generic"); break;
         case DataTimeRange::DAY :
-            settings.push_back(std::make_pair("Time Precision", "Day")); break;
+            settings.emplace_back("Time Precision", "Day"); break;
         case DataTimeRange::MONTH:
-            settings.push_back(std::make_pair("Time Precision", "Month")); break;
+            settings.emplace_back("Time Precision", "Month"); break;
         case DataTimeRange::YEAR:
-            settings.push_back(std::make_pair("Time Precision", "Year")); break;
+            settings.emplace_back("Time Precision", "Year"); break;
         case DataTimeRange::NONE:
-            settings.push_back(std::make_pair("Time Precision", "None")); break;
+            settings.emplace_back("Time Precision", "None"); break;
         default: throw prg_error("Unknown date precision type '%d'.\n", "getInputParameters()", _parameters.getDatePrecisionType());
     }
     return settings;
@@ -168,10 +168,10 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getAdditionalOutputFiles(S
 
     try {
         auto addByExtension = [&](const std::string& file_label, const std::string& extension) {
-            files.push_back(std::make_pair(file_label, filename.setExtension(extension.c_str()).getFullPath(buffer)));
+            files.emplace_back(file_label, filename.setExtension(extension.c_str()).getFullPath(buffer));
         };
         auto addByFullpath = [&](const std::string& file_label, const std::string& full_path) {
-            files.push_back(std::make_pair(file_label, full_path));
+            files.emplace_back(file_label, full_path);
             filename.setFullPath(_parameters.getOutputFileName().c_str()); // reset
         };
         if (_parameters.isGeneratingHtmlResults())
@@ -200,17 +200,17 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParame
     std::string buffer;
     settings.clear();
 
-    settings.push_back(std::make_pair("Attributable Risk ",(_parameters.getReportAttributableRisk() ? "Yes" : "No")));
+    settings.emplace_back("Attributable Risk ",(_parameters.getReportAttributableRisk() ? "Yes" : "No"));
     if (_parameters.getReportAttributableRisk()) {
         printString(buffer, "%u", _parameters.getAttributableRiskExposed());
-        settings.push_back(std::make_pair("Report Attributable Risk Based on # Exposed",buffer));
+        settings.emplace_back("Report Attributable Risk Based on # Exposed",buffer);
     }
-    settings.push_back(std::make_pair("Report Simulated Log Likelihood Ratios",(_parameters.isGeneratingLLRResults() ? "Yes" : "No")));
-    settings.push_back(std::make_pair("Report Critical Values",(_parameters.getReportCriticalValues() ? "Yes" : "No")));
+    settings.emplace_back("Report Simulated Log Likelihood Ratios",(_parameters.isGeneratingLLRResults() ? "Yes" : "No"));
+    settings.emplace_back("Report Critical Values",(_parameters.getReportCriticalValues() ? "Yes" : "No"));
     if (_parameters.isGeneratingTableResults())
-        settings.push_back(std::make_pair("Print Column Headers", (_parameters.isPrintColumnHeaders() ? "Yes" : "No")));
+        settings.emplace_back("Print Column Headers", (_parameters.isPrintColumnHeaders() ? "Yes" : "No"));
     if (_parameters.isTemporalScanType(_parameters.getScanType()))
-        settings.push_back(std::make_pair("Temporal Graph File", (_parameters.getOutputTemporalGraphFile() ? "Yes" : "No")));
+        settings.emplace_back("Produce Temporal Graphs", (_parameters.getOutputTemporalGraphFile() ? "Yes" : "No"));
     return settings;
 }
 
@@ -225,12 +225,12 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(
             case Parameters::NODEANDTIME: buffer = "Perform Node by Day-of-Week Adjustment"; break;
             default: throw prg_error("Unknown conditional type (%d).", "getAdjustmentsParameters()", _parameters.getConditionalType());
         }
-        settings.push_back(std::make_pair("Perform Day of Week Adjustment",(_parameters.getPerformDayOfWeekAdjustment() ? "Yes" : "No")));
+        settings.emplace_back("Perform Day of Week Adjustment",(_parameters.getPerformDayOfWeekAdjustment() ? "Yes" : "No"));
     }
     if (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) {
-        settings.push_back(std::make_pair("Apply Data Time Range Exclusions", (_parameters.isApplyingExclusionTimeRanges() ? "Yes" : "No")));
+        settings.emplace_back("Apply Data Time Range Exclusions", (_parameters.isApplyingExclusionTimeRanges() ? "Yes" : "No"));
         if (_parameters.isApplyingExclusionTimeRanges())
-            settings.push_back(std::make_pair("Data Time Range Exclusions", _parameters.getExclusionTimeRangeStr()));
+            settings.emplace_back("Data Time Range Exclusions", _parameters.getExclusionTimeRangeStr());
     }
     return settings;
 }
@@ -240,17 +240,17 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdvancedInputParameter
     std::string buffer;
     settings.clear();
     if (_parameters.getScanType() != Parameters::TIMEONLY)
-        settings.push_back(std::make_pair("Cut File",_parameters.getCutsFileName()));
-    settings.push_back(std::make_pair("Only Allow Data on Leaves of Tree", (_parameters.getDataOnlyOnLeaves() ? "Yes" : "No")));
-    settings.push_back(std::make_pair("Relaxed Study Data Period Checking", (_parameters.getRelaxedStudyDataPeriodChecking() ? "Yes" : "No")));
-    settings.push_back(std::make_pair("Allow Multiple Parents for the Same Node", (_parameters.getAllowMultiParentNodes() ? "Yes" : "No")));
-    settings.push_back(std::make_pair("Allow Multiple Root Nodes", (_parameters.getAllowMultipleRoots() ? "Yes" : "No")));
+        settings.emplace_back("Cut File",_parameters.getCutsFileName());
+    settings.emplace_back("Only Allow Data on Leaves of Tree", (_parameters.getDataOnlyOnLeaves() ? "Yes" : "No"));
+    settings.emplace_back("Relaxed Study Data Period Checking", (_parameters.getRelaxedStudyDataPeriodChecking() ? "Yes" : "No"));
+    settings.emplace_back("Allow Multiple Parents for the Same Node", (_parameters.getAllowMultiParentNodes() ? "Yes" : "No"));
+    settings.emplace_back("Allow Multiple Root Nodes", (_parameters.getAllowMultipleRoots() ? "Yes" : "No"));
     if (_parameters.getScanType() != Parameters::TIMEONLY && _parameters.getTreeFileNames().size() > 1) {
-        for (Parameters::FileNameContainer_t::const_iterator itr=_parameters.getTreeFileNames().begin()+1; itr != _parameters.getTreeFileNames().end(); ++itr)
-            settings.push_back(std::make_pair("Tree File", *itr));
+        for (auto& filename: _parameters.getTreeFileNames())
+            settings.emplace_back("Tree File", filename);
     }
     if (_parameters.isApplyingRiskWindowRestrictionCensored())
-        settings.push_back(std::make_pair("Applying Risk Window Restriction Due to Censoring", "Yes"));
+        settings.emplace_back("Applying Risk Window Restriction Due to Censoring", "Yes");
     return settings;
 }
 
@@ -261,41 +261,41 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
 
     buffer = "Type of Scan";
     switch (_parameters.getScanType()) {
-        case Parameters::TREEONLY : settings.push_back(std::make_pair(buffer,"Tree Only")); break;
-        case Parameters::TREETIME : settings.push_back(std::make_pair(buffer,"Tree and Time")); break;
-        case Parameters::TIMEONLY : settings.push_back(std::make_pair(buffer,"Time Only")); break;
+        case Parameters::TREEONLY : settings.emplace_back(buffer,"Tree Only"); break;
+        case Parameters::TREETIME : settings.emplace_back(buffer,"Tree and Time"); break;
+        case Parameters::TIMEONLY : settings.emplace_back(buffer,"Time Only"); break;
         default: throw prg_error("Unknown scan type (%d).", "getAnalysisParameters()", _parameters.getScanType());
     }
     buffer = "Conditional Analysis";
     switch (_parameters.getConditionalType()) {
-        case Parameters::UNCONDITIONAL : settings.push_back(std::make_pair(buffer,"No (unconditional)")); break;
-        case Parameters::TOTALCASES : settings.push_back(std::make_pair(buffer,"Total Cases")); break;
-        case Parameters::NODE : settings.push_back(std::make_pair(buffer,"Node")); break;
-        case Parameters::NODEANDTIME : settings.push_back(std::make_pair(buffer,"Node and Time")); break;
+        case Parameters::UNCONDITIONAL : settings.emplace_back(buffer,"No (unconditional)"); break;
+        case Parameters::TOTALCASES : settings.emplace_back(buffer,"Total Cases"); break;
+        case Parameters::NODE : settings.emplace_back(buffer,"Node"); break;
+        case Parameters::NODEANDTIME : settings.emplace_back(buffer,"Node and Time"); break;
         default: throw prg_error("Unknown conditional type (%d).", "getAnalysisParameters()", _parameters.getConditionalType());
     }
     switch (_parameters.getModelType()) {
-        case Parameters::POISSON : settings.push_back(std::make_pair("Probability Model - Tree","Poisson")); break;
-        case Parameters::BERNOULLI_TREE: settings.push_back(std::make_pair("Probability Model - Tree","Bernoulli")); break;
+        case Parameters::POISSON : settings.emplace_back("Probability Model - Tree","Poisson"); break;
+        case Parameters::BERNOULLI_TREE: settings.emplace_back("Probability Model - Tree","Bernoulli"); break;
         case Parameters::UNIFORM :
             if (_parameters.getConditionalType() == Parameters::NODE)
-                settings.push_back(std::make_pair("Probability Model - Time","Uniform"));
+                settings.emplace_back("Probability Model - Time","Uniform");
             break;
-        case Parameters::BERNOULLI_TIME: settings.push_back(std::make_pair("Probability Model - Time", "Beroulli"));
+        case Parameters::BERNOULLI_TIME: settings.emplace_back("Probability Model - Time", "Beroulli");
         case Parameters::MODEL_NOT_APPLICABLE: break;
         default: throw prg_error("Unknown model type (%d).", "getAnalysisParameters()", _parameters.getModelType());
     }
     if (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) {
-        settings.push_back(std::make_pair("Self-Control Design",_parameters.getSelfControlDesign() ? "Yes" : "No"));
-        settings.push_back(std::make_pair("Variable Case Probability", _parameters.getVariableCaseProbability() ? "Yes" : "No"));
+        settings.emplace_back("Self-Control Design",_parameters.getSelfControlDesign() ? "Yes" : "No");
+        settings.emplace_back("Variable Case Probability", _parameters.getVariableCaseProbability() ? "Yes" : "No");
         if (!_parameters.getVariableCaseProbability())
-            settings.push_back(std::make_pair("Case Probability", AbtractParameterFileAccess::AsString(buffer, _parameters.getProbabilityRatio())));
+            settings.emplace_back("Case Probability", AbtractParameterFileAccess::AsString(buffer, _parameters.getProbabilityRatio()));
     }
     buffer = "Scan Rate";
     switch (_parameters.getScanRateType()) {
-        case Parameters::HIGHRATE: settings.push_back(std::make_pair(buffer, "High Rates")); break;
-        case Parameters::LOWRATE: settings.push_back(std::make_pair(buffer, "Low Rates")); break;
-        case Parameters::HIGHORLOWRATE: settings.push_back(std::make_pair(buffer, "High or Low Rates")); break;
+        case Parameters::HIGHRATE: settings.emplace_back(buffer, "High Rates"); break;
+        case Parameters::LOWRATE: settings.emplace_back(buffer, "Low Rates"); break;
+        case Parameters::HIGHORLOWRATE: settings.emplace_back(buffer, "High or Low Rates"); break;
         default: throw prg_error("Unknown scan rate type (%d).", "getAnalysisParameters()", _parameters.getScanRateType());
     }
     return settings;
@@ -309,19 +309,19 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getSequentialScanParamete
     if ((_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES) ||
         (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL) ||
 		(_parameters.getModelType() == Parameters::POISSON && _parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
-        settings.push_back(std::make_pair("Perform Sequential Analysis", _parameters.getSequentialScan() ? "Yes" : "No"));
+        settings.emplace_back("Perform Sequential Analysis", _parameters.getSequentialScan() ? "Yes" : "No");
         if (_parameters.isSequentialScanPurelyTemporal() && _parameters.getScanType() == Parameters::TIMEONLY) {
             printString(buffer, "%u", _parameters.getSequentialMinimumSignal());
-            settings.push_back(std::make_pair("Sequential Minimum Cases to Signal", buffer));
+            settings.emplace_back("Sequential Minimum Cases to Signal", buffer);
             printString(buffer, "%u", _parameters.getSequentialMaximumSignal());
-            settings.push_back(std::make_pair("Sequential Maximum Cases to Signal", buffer));
-            settings.push_back(std::make_pair("Sequential File", SequentialScanLoglikelihoodRatioWriter::getFilename(_parameters, buffer)));
+            settings.emplace_back("Sequential Maximum Cases to Signal", buffer);
+            settings.emplace_back("Sequential File", SequentialScanLoglikelihoodRatioWriter::getFilename(_parameters, buffer));
         }
         if (_parameters.isSequentialScanTreeOnly()) {
             printString(buffer, "%g", _parameters.getSequentialAlphaOverall());
-            settings.push_back(std::make_pair("Alpha Overall", buffer));
+            settings.emplace_back("Alpha Overall", buffer);
             printString(buffer, "%g", _parameters.getSequentialAlphaSpending());
-            settings.push_back(std::make_pair("Alpha Spend Current Look", buffer));
+            settings.emplace_back("Alpha Spend Current Look", buffer);
         }
     }
     return settings;
@@ -336,39 +336,39 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInferenceParameters(Se
         buffer = "P-Value Reporting";
         switch (_parameters.getPValueReportingType()) {
         case Parameters::STANDARD_PVALUE:
-            settings.push_back(std::make_pair(buffer, "Standard Monte Carlo"));
+            settings.emplace_back(buffer, "Standard Monte Carlo");
             break;
         case Parameters::TERMINATION_PVALUE:
-            settings.push_back(std::make_pair(buffer, "Sequential Monte Carlo Early Termination"));
+            settings.emplace_back(buffer, "Sequential Monte Carlo Early Termination");
             printString(buffer, "%u", _parameters.getEarlyTermThreshold());
-            settings.push_back(std::make_pair("Termination Cutoff", buffer));
+            settings.emplace_back("Termination Cutoff", buffer);
             break;
         }
     }
-    settings.push_back(std::make_pair("Number of Replications", printString(buffer, "%u", _parameters.getNumReplicationsRequested())));
+    settings.emplace_back("Number of Replications", printString(buffer, "%u", _parameters.getNumReplicationsRequested()));
 
     if (_parameters.getScanType() != Parameters::TIMEONLY) {
-        settings.push_back(std::make_pair("Restrict Tree Levels", _parameters.getRestrictTreeLevels() ? "Yes" : "No"));
+        settings.emplace_back("Restrict Tree Levels", _parameters.getRestrictTreeLevels() ? "Yes" : "No");
         if (_parameters.getRestrictTreeLevels()) {
             typelist_csv_string<unsigned int>(_parameters.getRestrictedTreeLevels(), buffer);
-            settings.push_back(std::make_pair("Tree Levels Excluded From Evaluation", buffer));
+            settings.emplace_back("Tree Levels Excluded From Evaluation", buffer);
         }
-        settings.push_back(std::make_pair("Restrict Evaluated Tree Nodes", _parameters.getRestrictEvaluatedTreeNodes() ? "Yes" : "No"));
+        settings.emplace_back("Restrict Evaluated Tree Nodes", _parameters.getRestrictEvaluatedTreeNodes() ? "Yes" : "No");
         if (_parameters.getRestrictEvaluatedTreeNodes())
-            settings.push_back(std::make_pair("Not Evaluated Nodes File", _parameters.getNotEvaluatedNodesFileName()));
+            settings.emplace_back("Not Evaluated Nodes File", _parameters.getNotEvaluatedNodesFileName());
     }
 
     buffer = "Cut Type";
     switch (_parameters.getCutType()) {
-        case Parameters::PAIRS : settings.push_back(std::make_pair(buffer,"Pairs")); break;
-        case Parameters::TRIPLETS : settings.push_back(std::make_pair(buffer,"Triplets")); break;
-        case Parameters::ORDINAL : settings.push_back(std::make_pair(buffer,"Ordinal")); break;
-        case Parameters::COMBINATORIAL : settings.push_back(std::make_pair(buffer,"Combinatorial")); break;
-        case Parameters::SIMPLE : //settings.push_back(std::make_pair(buffer,"Simple")); break;
+        case Parameters::PAIRS : settings.emplace_back(buffer,"Pairs"); break;
+        case Parameters::TRIPLETS : settings.emplace_back(buffer,"Triplets"); break;
+        case Parameters::ORDINAL : settings.emplace_back(buffer,"Ordinal"); break;
+        case Parameters::COMBINATORIAL : settings.emplace_back(buffer,"Combinatorial"); break;
+        case Parameters::SIMPLE : //settings.emplace_back(buffer,"Simple"); break;
         default: break;
     }
     if (_parameters.getScanRateType() != Parameters::LOWRATE)
-        settings.push_back(std::make_pair("Minimum Number of High Rate Node Cases", printString(buffer, "%u", _parameters.getMinimumHighRateNodeCases())));
+        settings.emplace_back("Minimum Number of High Rate Node Cases", printString(buffer, "%u", _parameters.getMinimumHighRateNodeCases()));
     return settings;
 }
 
@@ -376,12 +376,12 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getInferenceParameters(Se
 ParametersPrint::SettingContainer_t & ParametersPrint::getOutputParameters(SettingContainer_t & settings) const {
    std::string buffer;
     settings.clear();
-    settings.push_back(std::make_pair("Results File",_parameters.getOutputFileName()));
-    settings.push_back(std::make_pair("Report Results as HTML",(_parameters.isGeneratingHtmlResults() ? "Yes" : "No")));
-    settings.push_back(std::make_pair("Report Results as CSV Table",(_parameters.isGeneratingTableResults() ? "Yes" : "No")));
+    settings.emplace_back("Results File",_parameters.getOutputFileName());
+    settings.emplace_back("Report Results as HTML",(_parameters.isGeneratingHtmlResults() ? "Yes" : "No"));
+    settings.emplace_back("Report Results as CSV Table",(_parameters.isGeneratingTableResults() ? "Yes" : "No"));
     if (_parameters.getScanType() != Parameters::TIMEONLY) {
-        settings.push_back(std::make_pair("Generate NCBI Genome Workbench ASN1 File", (_parameters.isGeneratingNCBIAsnResults() ? "Yes" : "No")));
-        settings.push_back(std::make_pair("Generate Newick Tree Format File", (_parameters.isGeneratingNewickFile() ? "Yes" : "No")));
+        settings.emplace_back("Generate NCBI Genome Workbench ASN1 File", (_parameters.isGeneratingNCBIAsnResults() ? "Yes" : "No"));
+        settings.emplace_back("Generate Newick Tree Format File", (_parameters.isGeneratingNewickFile() ? "Yes" : "No"));
     }
     return settings;
 }
@@ -393,49 +393,49 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getPowerEvaluationsParame
     if (_parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::BERNOULLI_TREE ||
         (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.getConditionalType() == Parameters::TOTALCASES) ||
         (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE)) {
-        settings.push_back(std::make_pair("Perform Power Evaluations", (_parameters.getPerformPowerEvaluations() ? "Yes" : "No")));
+        settings.emplace_back("Perform Power Evaluations", (_parameters.getPerformPowerEvaluations() ? "Yes" : "No"));
         if (!_parameters.getPerformPowerEvaluations()) return settings;
         buffer = "Power Evaluation Type";
         switch (_parameters.getPowerEvaluationType()) {
             case Parameters::PE_WITH_ANALYSIS: 
-                settings.push_back(std::make_pair(buffer,"Standard Analysis and Power Evaluation Together")); break;
+                settings.emplace_back(buffer,"Standard Analysis and Power Evaluation Together"); break;
             case Parameters::PE_ONLY_CASEFILE:
                 printString(buffer2, "Only Power Evaluation%s", (_parameters.getConditionalType() == Parameters::UNCONDITIONAL ? "" : ", Using Total Cases from Count File"));
-                settings.push_back(std::make_pair(buffer,buffer2)); break;
+                settings.emplace_back(buffer,buffer2); break;
             case Parameters::PE_ONLY_SPECIFIED_CASES: 
-                settings.push_back(std::make_pair(buffer,"Only Power Evaluation, Using Defined Total Cases")); 
+                settings.emplace_back(buffer,"Only Power Evaluation, Using Defined Total Cases"); 
                 printString(buffer, "%i", _parameters.getPowerEvaluationTotalCases());
-                settings.push_back(std::make_pair("Power Evaluation Total Cases",buffer)); 
+                settings.emplace_back("Power Evaluation Total Cases",buffer); 
                 break;
             default: throw prg_error("Unknown power evaluation type '%d'.\n", "PrintPowerEvaluationsParameters()", _parameters.getPowerEvaluationType());
         }
         buffer = "Critical Values";
         switch (_parameters.getCriticalValuesType()) {
             case Parameters::CV_MONTECARLO: 
-                settings.push_back(std::make_pair(buffer,"Monte Carlo")); break;
+                settings.emplace_back(buffer,"Monte Carlo"); break;
             case Parameters::CV_POWER_VALUES: 
-                settings.push_back(std::make_pair(buffer,"User Defined"));
+                settings.emplace_back(buffer,"User Defined");
                 printString(buffer, "%lf", _parameters.getCriticalValue05());
-                settings.push_back(std::make_pair("Critical Value .05",buffer));
+                settings.emplace_back("Critical Value .05",buffer);
                 printString(buffer, "%lf", _parameters.getCriticalValue01());
-                settings.push_back(std::make_pair("Critical Value .01",buffer));
+                settings.emplace_back("Critical Value .01",buffer);
                 printString(buffer, "%lf", _parameters.getCriticalValue001());
-                settings.push_back(std::make_pair("Critical Value .001",buffer));
+                settings.emplace_back("Critical Value .001",buffer);
                 break;
             default: throw prg_error("Unknown critical values type '%d'.\n", "PrintPowerEvaluationsParameters()", _parameters.getCriticalValuesType());
         }
         printString(buffer, "%u", _parameters.getPowerEvaluationReplications());
-        settings.push_back(std::make_pair("Number of Replications",buffer));
-        settings.push_back(std::make_pair("Alternative Hypothesis File",_parameters.getPowerEvaluationAltHypothesisFilename()));
-        settings.push_back(std::make_pair("Alternative Hypothesis Results", PowerEstimationRecordWriter::getFilename(_parameters, buffer)));
+        settings.emplace_back("Number of Replications",buffer);
+        settings.emplace_back("Alternative Hypothesis File",_parameters.getPowerEvaluationAltHypothesisFilename());
+        settings.emplace_back("Alternative Hypothesis Results", PowerEstimationRecordWriter::getFilename(_parameters, buffer));
         if (_parameters.isGeneratingLLRResults()) {
-            settings.push_back(std::make_pair("Simulated Log Likelihood Ratios (HA)", LoglikelihoodRatioWriter::getFilename(_parameters, buffer, true)));
+            settings.emplace_back("Simulated Log Likelihood Ratios (HA)", LoglikelihoodRatioWriter::getFilename(_parameters, buffer, true));
         }
         if (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::TOTALCASES) {
-            settings.push_back(std::make_pair("Baseline Probability", AbtractParameterFileAccess::AsString(buffer, _parameters.getPowerBaselineProbabilityRatio())));
+            settings.emplace_back("Baseline Probability", AbtractParameterFileAccess::AsString(buffer, _parameters.getPowerBaselineProbabilityRatio()));
             if (_parameters.getPowerZ() != 0.001) {
                 printString(buffer, "%lf", _parameters.getPowerZ());
-                settings.push_back(std::make_pair("Power Z", buffer));
+                settings.emplace_back("Power Z", buffer);
             }
         }
     }
@@ -444,15 +444,14 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getPowerEvaluationsParame
 
 /** Prints 'Power Simulations' parameters to file stream. */
 ParametersPrint::SettingContainer_t & ParametersPrint::getPowerSimulationsParameters(SettingContainer_t & settings) const {
-    std::string buffer;
     settings.clear();
     if (_parameters.isReadingSimulationData()) {
-        settings.push_back(std::make_pair("Read Simulation Data", "Yes"));
-        settings.push_back(std::make_pair("Simulation Input Data File",_parameters.getInputSimulationsFilename()));
+        settings.emplace_back("Read Simulation Data", "Yes");
+        settings.emplace_back("Simulation Input Data File",_parameters.getInputSimulationsFilename());
     }
     if (_parameters.isWritingSimulationData()) {
-        settings.push_back(std::make_pair("Write Simulation Data", "Yes"));
-        settings.push_back(std::make_pair("Simulation Output Data File",_parameters.getOutputSimulationsFilename()));
+        settings.emplace_back("Write Simulation Data", "Yes");
+        settings.emplace_back("Simulation Output Data File",_parameters.getOutputSimulationsFilename());
     }
     return settings;
 }
@@ -462,16 +461,16 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getRunOptionsParameters(S
     std::string buffer;
     settings.clear();
     if (_parameters.getNumRequestedParallelProcesses() == 0)
-        settings.push_back(std::make_pair("Processer Usage","All Available Processors"));
+        settings.emplace_back("Processer Usage","All Available Processors");
     else {
         printString(buffer, "At Most %u Processors", _parameters.getNumRequestedParallelProcesses());
-        settings.push_back(std::make_pair("Processer Usage",buffer));
+        settings.emplace_back("Processer Usage",buffer);
     }
     if (_parameters.isRandomlyGeneratingSeed())
-        settings.push_back(std::make_pair("Use Random Seed",(_parameters.isRandomlyGeneratingSeed() ? "Yes" : "No")));
+        settings.emplace_back("Use Random Seed",(_parameters.isRandomlyGeneratingSeed() ? "Yes" : "No"));
     if (_parameters.getRandomizationSeed() != RandomNumberGenerator::glDefaultSeed) {
         printString(buffer, "%ld\n", _parameters.getRandomizationSeed());
-        settings.push_back(std::make_pair("Randomization Seed",buffer));
+        settings.emplace_back("Randomization Seed",buffer);
     }
     return settings;
 }
@@ -486,7 +485,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getSystemParameters(Setti
         IniVersion.iMinor != Current.iMinor ||
         IniVersion.iRelease != Current.iRelease) {
         printString(buffer, "%u.%u.%u", IniVersion.iMajor, IniVersion.iMinor, IniVersion.iRelease);
-        settings.push_back(std::make_pair("Parameters Version",buffer));
+        settings.emplace_back("Parameters Version",buffer);
     }
     return settings;
 }
@@ -499,29 +498,29 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParamete
         switch (_parameters.getMaximumWindowType()) {
             case Parameters::PERCENTAGE_WINDOW :
                 printString(buffer, "%g%% of Data Time Range", _parameters.getMaximumWindowPercentage());
-                settings.push_back(std::make_pair("Maximum Temporal Window", buffer)); 
+                settings.emplace_back("Maximum Temporal Window", buffer); 
                 break;
             case Parameters::FIXED_LENGTH :
                 printString(buffer, "%u Time Units", _parameters.getMaximumWindowLength());
-                settings.push_back(std::make_pair("Maximum Temporal Window",buffer)); 
+                settings.emplace_back("Maximum Temporal Window",buffer); 
                 break;
             default: throw prg_error("Unknown maximum window type (%d).", "getTemporalWindowParameters()", _parameters.getMaximumWindowType());
         }
         printString(buffer, "%u Time Units", _parameters.getMinimumWindowLength());
-        settings.push_back(std::make_pair("Minimum Temporal Window",buffer));
+        settings.emplace_back("Minimum Temporal Window",buffer);
     }
     if (_parameters.isTemporalScanType(_parameters.getScanType())) {
-        settings.push_back(std::make_pair("Apply Risk Window Restriction", (_parameters.isApplyingRiskWindowRestriction() ? "Yes" : "No")));
+        settings.emplace_back("Apply Risk Window Restriction", (_parameters.isApplyingRiskWindowRestriction() ? "Yes" : "No"));
         if (_parameters.isApplyingRiskWindowRestriction()) {
             printString(buffer, "Restrict Risk Window to %g%% of Evaluated Windows", _parameters.getRiskWindowPercentage());
-            settings.push_back(std::make_pair("Maximum Temporal Window", buffer));
+            settings.emplace_back("Maximum Temporal Window", buffer);
         }
-        settings.push_back(std::make_pair("Prospective Analysis", (_parameters.getIsProspectiveAnalysis() ? "Yes" : "No")));
+        settings.emplace_back("Prospective Analysis", (_parameters.getIsProspectiveAnalysis() ? "Yes" : "No"));
         if (!_parameters.getIsProspectiveAnalysis()) {
-            settings.push_back(std::make_pair("Restrict Temporal Windows", (_parameters.getRestrictTemporalWindows() ? "Yes" : "No")));
+            settings.emplace_back("Restrict Temporal Windows", (_parameters.getRestrictTemporalWindows() ? "Yes" : "No"));
             if (_parameters.getRestrictTemporalWindows()) {
-                settings.push_back(std::make_pair("Temporal Time Window Start", _parameters.getTemporalStartRangeStr()));
-                settings.push_back(std::make_pair("Temporal Time Window End", _parameters.getTemporalEndRangeStr()));
+                settings.emplace_back("Temporal Time Window Start", _parameters.getTemporalStartRangeStr());
+                settings.emplace_back("Temporal Time Window End", _parameters.getTemporalEndRangeStr());
             }
         }
     }
@@ -533,26 +532,22 @@ void ParametersPrint::WriteSettingsContainer(const SettingContainer_t& settings,
     try {
         if (!settings.size()) return;
         if (section.size()) { //print section label
-            out << std::endl;
-            out << section;
-            out << std::endl;
-            for (size_t t = 0; t < section.size(); ++t)
-                out << "-";
+            out << std::endl << section << std::endl;
+            std::fill_n(std::ostream_iterator<char>(out), section.size(), '-');
             out << std::endl;
         }
-        SettingContainer_t::const_iterator itr=settings.begin();
         // first calculate maximum label length
         size_t tMaxLabel=0;
-        for (; itr != settings.end(); ++itr)
-            tMaxLabel = std::max(tMaxLabel, itr->first.size());
+        for (auto& setting : settings)
+            tMaxLabel = std::max(tMaxLabel, setting.first.size());
         // print settings
-        for (itr=settings.begin(); itr != settings.end(); ++itr) {
+        for (auto& setting : settings) {
             out << "  ";
-            out << itr->first;
-            for (size_t t=itr->first.size(); t < tMaxLabel; ++t)
+            out << setting.first;
+            for (size_t t= setting.first.size(); t < tMaxLabel; ++t)
                 out << " ";
             out << " : ";
-            out << itr->second;
+            out << setting.second;
             out << std::endl;
         }
     } catch (prg_exception& x) {
@@ -570,13 +565,12 @@ void ParametersPrint::WriteSettingsContainerHTML(const SettingContainer_t& setti
             out << "<h4>" << section << "</h4>" << std::endl;
         }
         out << "<table><tbody>" << std::endl;
-        SettingContainer_t::const_iterator itr=settings.begin();
         // print settings
-        for (itr = settings.begin(); itr != settings.end(); ++itr) {
-            if (itr->first == "Temporal Graph File")
-                out << "<tr><th>" << itr->first << " :</th><td><a href=\"file:///" << itr->second << "\">" << itr->second << "</a></td></tr>" << std::endl;
+        for (auto& setting: settings) {
+            if (setting.first == "Temporal Graph File")
+                out << "<tr><th>" << setting.first << " :</th><td><a target=\"_blank\" href=\"file:///" << setting.second << "\">" << setting.second << "</a></td></tr>" << std::endl;
             else
-                out << "<tr><th>" << itr->first << " :</th><td>" << itr->second << "</td></tr>" << std::endl;
+                out << "<tr><th>" << setting.first << " :</th><td>" << setting.second << "</td></tr>" << std::endl;
         }
         out << std::endl << "</tbody></table></div>";
     } catch (prg_exception& x) {

@@ -789,7 +789,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << " }" << std::endl << "};" << std::endl;
         outfile << "$(document).ready(function(){if (Object.keys(chart_config.nodeStructure).length < 2){$('#show_tree').addClass('disabled').html('Tree Visualization (No nodes for display)');}});</script>" << std::endl;
     }
-    outfile << "<script src=\"https://www.treescan.org/html-results/treescan-results.1.3.js\" type=\"text/javascript\"></script>" << std::endl;
+    outfile << "<script src=\"https://www.treescan.org/html-results/treescan-results.1.3.1.js\" type=\"text/javascript\"></script>" << std::endl;
     outfile << "<body>" << std::endl;
     buffer = AppToolkit::getToolkit().GetWebSite();
     outfile << "<div class='hr' style='margin-top: 5px;'></div><div class='program-info'>" << std::endl;
