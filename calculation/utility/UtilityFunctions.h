@@ -131,5 +131,6 @@ using boost::uuids::detail::md5;
 std::string toString(const md5::digest_type &digest);
 std::stringstream & templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith);
 std::string& getWrappedText(const std::string& text, unsigned int marginLeft, unsigned int marginRight, const std::string& newline, std::string& wrapped);
+std::string& humanize(double n, std::string& humanized, int decimals = 1);
 //******************************************************************************
 #endif

@@ -10,6 +10,7 @@
 #include "UtilityFunctions.h"
 #include "Toolkit.h"
 #include "DataFileWriter.h"
+#include <string>
 
 /** Returns filename of html output. */
 std::string& ResultsFileWriter::getHtmlFilename(const Parameters& parameters, std::string& buffer) {
@@ -1216,7 +1217,9 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         outfile << "<td>" << printString(buffer, format.c_str(), thisCut.getPValue(_scanRunner)) << "</td>";
         if (parameters.getIsProspectiveAnalysis()) {
             RecurrenceInterval_t ri = _scanRunner.getRecurrenceInterval(thisCut);
-            outfile << "<td data-order=" << static_cast<unsigned int>(ri.second) << ">" << getRecurranceIntervalAsString(ri, buffer) << "</td>";
+            outfile << "<td data-order="
+                << getRoundAsString(ri.second, buffer, std::min(std::to_string(_scanRunner.getSimulationVariables().get_sim_count()).size(), (size_t)10))
+                << ">" << getRecurranceIntervalAsString(ri, buffer2) << "</td>";
         }
     }
     if (parameters.getScanType() != Parameters::TIMEONLY) {
@@ -1363,14 +1366,16 @@ const char * ResultsFileWriter::getRecurranceIntervalClass(const RecurrenceInter
         return (childClass ? "ri-less-children " : "ri-less ");
 }
 
+/** Returns the RecurrenceInterval_t as a formatted string. */
 std::string& ResultsFileWriter::getRecurranceIntervalAsString(const RecurrenceInterval_t& ri, std::string& buffer) const {
     if (ri.first < 1.0)
-        printString(buffer, "%.0lf %s%s", ri.second, "day", (ri.second < 1.5 ? "" : "s"));
+        return printString(buffer, "%.0lf %s%s", ri.second, "day", (ri.second < 1.5 ? "" : "s"));
     else if (ri.first <= 10.0)
-        printString(buffer, "%.1lf %s%s", ri.first, "year", (ri.first < 1.05 ? "" : "s"));
-    else
-        printString(buffer, "%.0lf %s", ri.first, "years");
-    return buffer;
+        return printString(buffer, "%.1lf %s%s", ri.first, "year", (ri.first < 1.05 ? "" : "s"));
+    else {
+        std::string buffer2;
+        return printString(buffer, "%s %s", humanize(ri.first, buffer2, 1).c_str(), "years");
+    }
 }
 
 /** Convert the signal to class name to be used in html/javascript. */
