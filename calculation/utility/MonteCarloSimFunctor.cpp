@@ -171,6 +171,12 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
     boost::shared_ptr<AbstractWindowLength> window(_scanRunner.getNewWindowLength());
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
 
+    auto getWindowLength = [this](int iWindowStart, int iWindowEnd){
+        if (_scanRunner.getParameters().isApplyingExclusionTimeRanges()) {
+            return static_cast<size_t>(iWindowEnd - iWindowStart + 1 - _scanRunner.getNumExclusionsInWindow(iWindowStart, iWindowEnd));
+        } else
+            return static_cast<size_t>(iWindowEnd - iWindowStart + 1);
+    };
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
     int branchSum = 0, branchSum2 = 0;
     double simLogLikelihood = -std::numeric_limits<double>::max(), minimum_cases = _scanRunner.getNodeEvaluationMinimum();
@@ -186,7 +192,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                     NodeStructure::count_t branchWindow = thisSimNode.getBrC_C()[iWindowStart] - thisSimNode.getBrC_C()[iWindowEnd + 1];
                     if (branchWindow >= minimum_cases)
                         simLogLikelihood = std::max(simLogLikelihood,
-                            _loglikelihood->LogLikelihood(branchWindow, static_cast<NodeStructure::expected_t>(thisSimNode.getBrC()), iWindowEnd - iWindowStart + 1)
+                            _loglikelihood->LogLikelihood(branchWindow, static_cast<NodeStructure::expected_t>(thisSimNode.getBrC()), getWindowLength(iWindowStart, iWindowEnd))
                         );
                 }
             }
@@ -210,7 +216,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                                     branchSum += static_cast<NodeStructure::expected_t>(childSimNode.getBrC());
                                     if (branchWindow >= minimum_cases)
                                         simLogLikelihood = std::max(simLogLikelihood,
-                                            _loglikelihood->LogLikelihood(branchWindow, branchSum, iWindowEnd - iWindowStart + 1)
+                                            _loglikelihood->LogLikelihood(branchWindow, branchSum, getWindowLength(iWindowStart, iWindowEnd))
                                         );
                                 }
                             }
@@ -232,7 +238,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                                     branchSum = startBranchWindow + (stopSimChildNode.getBrC_C()[iWindowStart] - stopSimChildNode.getBrC_C()[iWindowEnd + 1]);
                                     if (branchSum >= minimum_cases)
                                         simLogLikelihood = std::max(simLogLikelihood,
-                                            _loglikelihood->LogLikelihood(branchSum, startBranchSum + static_cast<NodeStructure::expected_t>(stopSimChildNode.getBrC()), iWindowEnd - iWindowStart + 1)
+                                            _loglikelihood->LogLikelihood(branchSum, startBranchSum + static_cast<NodeStructure::expected_t>(stopSimChildNode.getBrC()), getWindowLength(iWindowStart, iWindowEnd))
                                         );
                                 }
                             }
@@ -254,7 +260,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                                     branchSum = startBranchWindow + (stopSimChildNode.getBrC_C()[iWindowStart] - stopSimChildNode.getBrC_C()[iWindowEnd + 1]);
                                     if (branchSum >= minimum_cases)
                                         simLogLikelihood = std::max(simLogLikelihood,
-                                            _loglikelihood->LogLikelihood(branchSum, startBranchSum + static_cast<NodeStructure::expected_t>(stopSimChildNode.getBrC()), iWindowEnd - iWindowStart + 1)
+                                            _loglikelihood->LogLikelihood(branchSum, startBranchSum + static_cast<NodeStructure::expected_t>(stopSimChildNode.getBrC()), getWindowLength(iWindowStart, iWindowEnd))
                                         );
                                     for (size_t k=i+1; k < j; ++k) {
                                         const SimulationNode& middleSimChildNode(_treeSimNodes[thisNode.getChildren()[k]->getID()]);
@@ -263,7 +269,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                                             simLogLikelihood = std::max(simLogLikelihood,
                                                 _loglikelihood->LogLikelihood(branchSum2,
                                                     startBranchSum + static_cast<NodeStructure::expected_t>(middleSimChildNode.getBrC()) + static_cast<NodeStructure::expected_t>(stopSimChildNode.getBrC()),
-                                                    iWindowEnd - iWindowStart + 1
+                                                    getWindowLength(iWindowStart, iWindowEnd)
                                                 )
                                             );
                                     }

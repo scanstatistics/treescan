@@ -306,15 +306,16 @@ public class Parameters implements Cloneable {
                _modelType == Parameters.ModelType.BERNOULLI_TREE &&
                _conditionalType == Parameters.ConditionalType.UNCONDITIONAL;
     }
-
     public boolean isSequentialScanPoisson() {
         return _sequential_scan && _modelType == Parameters.ModelType.POISSON;
     }
-    
     public boolean isSequentialScanTreeOnly() {
         return isSequentialScanBernoulli() || isSequentialScanPoisson();
     }    
-    
+    static public boolean isTemporalScanType(ScanType e) {
+        return e == Parameters.ScanType.TIMEONLY || e == Parameters.ScanType.TREETIME;
+    }
+
     public DatePrecisionType getPrecisionOfTimesType() {return _date_precision_type;}
     public void setPrecisionOfTimesType(DatePrecisionType e) { _date_precision_type = e;}
     public void setPrecisionOfTimesType(int ord) {try {_date_precision_type = DatePrecisionType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, DatePrecisionType.values());}}    

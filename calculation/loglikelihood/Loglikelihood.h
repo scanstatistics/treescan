@@ -76,6 +76,10 @@ public:
     SCANRATE_WIN_FUNCPTR _win_of_interest;
     bool HighRateWindow(int c, double n, double r) const {
         if (n == 0.0) return false;
+
+        // TODO:
+        // What is the behavior when c == n and therefore c/n == 1.0; passing c/n > r check?
+
         return static_cast<unsigned int>(c) >= _minimum_highrate_nodes_cases && static_cast<double>(c) / n > r;
     }
     bool LowRateWindow(int c, double n, double r) const {
@@ -296,10 +300,22 @@ public:
     TemporalLoglikelihood(int totalC, double totalN, const Parameters& parameters)
         : AbstractLoglikelihood(parameters), _totalC(totalC), _totalN(totalN), _totalDaysInRange(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets()) {
         unsigned int max_windowlength = parameters.getMaximumWindowInTimeUnits();
+        // If applying window exclusions with the uniform time model, reduce the total days in range by excluded ranges.
+        if (parameters.isApplyingExclusionTimeRanges() && parameters.getModelType() == Parameters::UNIFORM) {
+            for (const auto& excluded : parameters.getExclusionTimeRangeSet().getDataTimeRangeSets())
+                _totalDaysInRange -= excluded.getEnd() - excluded.getStart() + 1;
+            // TODO:
+            // What if the _totalDaysInRange is now less than or equal to max_windowlength?
+            // Does this mean we need some kind of check in the parameters validate?
+            //assert(_totalDaysInRange > max_windowlength);
+
+            max_windowlength = std::min(max_windowlength, static_cast<unsigned int>(_totalDaysInRange));
+        }
+
         _log1.resize(max_windowlength + 1, 0.0);
         _log2.resize(max_windowlength + 1, 0.0);
         for (size_t i=1; i <= max_windowlength; ++i) {
-            _log1[i] = log( static_cast<double>(i) / static_cast<double>(_totalDaysInRange));
+            _log1[i] = log(static_cast<double>(i) / static_cast<double>(_totalDaysInRange));
             _log2[i] = log(1.0 -  static_cast<double>(i) / static_cast<double>(_totalDaysInRange));
         }
         switch (parameters.getScanRateType()) {

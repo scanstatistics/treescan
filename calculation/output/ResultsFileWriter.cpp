@@ -168,6 +168,10 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         if (parameters.isApplyingExclusionTimeRanges()) {
             PrintFormat.PrintSectionLabel(outfile, "Total Cases Excluded", false);
             PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getNumExcludedCases()));
+            if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+                PrintFormat.PrintSectionLabel(outfile, "Total Controls Excluded", false);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getNumExcludedControls()));
+            }
         }
         if (parameters.getModelType() == Parameters::POISSON) {
             PrintFormat.PrintSectionLabel(outfile, "Total Expected", false);
@@ -790,7 +794,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << " }" << std::endl << "};" << std::endl;
         outfile << "$(document).ready(function(){if (Object.keys(chart_config.nodeStructure).length < 2){$('#show_tree').addClass('disabled').html('Tree Visualization (No nodes for display)');}});</script>" << std::endl;
     }
-    outfile << "<script src=\"https://www.treescan.org/html-results/treescan-results.1.3.1.js\" type=\"text/javascript\"></script>" << std::endl;
+    outfile << "<script src=\"https://www.treescan.org/html-results/treescan-results.1.3.js\" type=\"text/javascript\"></script>" << std::endl;
     outfile << "<body>" << std::endl;
     buffer = AppToolkit::getToolkit().GetWebSite();
     outfile << "<div class='hr' style='margin-top: 5px;'></div><div class='program-info'>" << std::endl;
@@ -849,8 +853,11 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                 outfile << "<tr><th>Average Censoring Time:</th><td>" << _scanRunner.getAvgCensorTime() << "</td></tr>" << std::endl;
             }
         }
-        if (parameters.isApplyingExclusionTimeRanges())
+        if (parameters.isApplyingExclusionTimeRanges()) {
             outfile << "<tr><th>Total Cases Excluded:</th><td>" << _scanRunner.getNumExcludedCases() << "</td></tr>" << std::endl;
+            if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
+                outfile << "<tr><th>Total Controls Excluded:</th><td>" << _scanRunner.getNumExcludedControls() << "</td></tr>" << std::endl;
+        }
         if (parameters.getModelType() == Parameters::POISSON)
             outfile << "<tr><th>Total Expected:</th><td>" << getValueAsString(_scanRunner.getTotalN(), buffer, 1).c_str() << "</td></tr>" << std::endl;
         if (parameters.getModelType() == Parameters::BERNOULLI_TREE || parameters.getModelType() == Parameters::BERNOULLI_TIME) {

@@ -79,6 +79,17 @@ double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _
                             double NodeCases = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
                             return C - exp * ((NodeCases - C) / (NodeCases - exp));
                         }
+                        if (parameters.isApplyingExclusionTimeRanges()) {
+
+							// TODO: Is this correct? Ask Martin.
+
+                            double W = static_cast<double>(_end_idx - _start_idx + 1.0) - scanner.getNumExclusionsInWindow(_start_idx, _end_idx);
+                            double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                            for (const auto& excluded : parameters.getExclusionTimeRangeSet().getDataTimeRangeSets())
+                                T -= excluded.getEnd() - excluded.getStart() + 1;
+                            if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getExcessCases()", parameters.getModelType(), T, W);
+                            return C - W * (_N - C) / (T - W);
+                        }
                         double W = static_cast<double>(_end_idx - _start_idx + 1.0);
                         double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
                         if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getExcessCases()", parameters.getModelType(), T, W);
@@ -142,6 +153,15 @@ double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, 
                     if (parameters.getModelType() == Parameters::UNIFORM) {
                         if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
                             return _N;
+                        } else if (parameters.isApplyingExclusionTimeRanges()) {
+
+                            // TODO: Is this correct? Ask Martin.
+
+                            DataTimeRange::index_t W = _end_idx - _start_idx + 1 - scanner.getNumExclusionsInWindow(_start_idx, _end_idx);
+                            double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                            for (const auto& excluded : parameters.getExclusionTimeRangeSet().getDataTimeRangeSets())
+                                T -= excluded.getEnd() - excluded.getStart() + 1;
+                            return _N * static_cast<double>(W) / T;
                         } else {
                             /** (N*W/T)
                                 N = number of cases in the node, through the whole time period (below, all 0604 cases)
@@ -807,7 +827,8 @@ void SequentialStatistic::write(const std::string &casefilename, const std::stri
 /** Constructor */
 ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) : 
     _print(print), _TotalC(0), _TotalControls(0), _TotalN(0), _parameters(parameters), _has_multi_parent_nodes(false),
-    _censored_data(false), _has_node_descriptions(false), _num_censored_cases(0), _avg_censor_time(0), _num_cases_excluded(0){
+    _censored_data(false), _has_node_descriptions(false), _num_censored_cases(0), _avg_censor_time(0),
+    _num_cases_excluded(0), _num_controls_excluded(0){
     // TODO: Eventually this will need refactoring once we implement multiple data time ranges.
     DataTimeRange min_max = Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getMinMax() : DataTimeRange(0,0);
     // translate to ensure zero based additive
@@ -823,11 +844,21 @@ ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) :
     // Potentially force censored execution.
     _censored_data = parameters.isForcedCensoredAlgorithm();
     // Determine the minimum numbers of cases in a branch as a short cut when evaluating a node.
-    switch (parameters.getScanRateType()) {
-        case Parameters::LOWRATE: _node_evaluation_minimum = parameters.getMinimumLowRateNodeCases(); break;
-        case Parameters::HIGHORLOWRATE: _node_evaluation_minimum = std::min(parameters.getMinimumLowRateNodeCases(), parameters.getMinimumHighRateNodeCases()); break;
-        case Parameters::HIGHRATE: _node_evaluation_minimum = parameters.getMinimumHighRateNodeCases(); break;
-        default: throw prg_error("Unknown scan rate type'%d'.", "ScanRunner()", parameters.getScanRateType());
+    switch (_parameters.getScanRateType()) {
+        case Parameters::LOWRATE: _node_evaluation_minimum = _parameters.getMinimumLowRateNodeCases(); break;
+        case Parameters::HIGHORLOWRATE: _node_evaluation_minimum = std::min(_parameters.getMinimumLowRateNodeCases(), parameters.getMinimumHighRateNodeCases()); break;
+        case Parameters::HIGHRATE: _node_evaluation_minimum = _parameters.getMinimumHighRateNodeCases(); break;
+        default: throw prg_error("Unknown scan rate type'%d'.", "ScanRunner()", _parameters.getScanRateType());
+    }
+    // If applying window exclusions with the uniform time model, compile set of window indexes which are excluded.
+    if (_parameters.isApplyingExclusionTimeRanges() && _parameters.getModelType() == Parameters::UNIFORM) {
+        _window_exclusions.resize(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+        for (const auto& excluded : _parameters.getExclusionTimeRangeSet().getDataTimeRangeSets()) {
+            for (auto i = excluded.getStart(); i <= excluded.getEnd(); ++i) {
+                //_window_exclusions.emplace(i + _zero_translation_additive);
+				_window_exclusions.set(i + _zero_translation_additive);
+            }
+        }
     }
 }
 
@@ -843,6 +874,17 @@ boost::shared_ptr<AbstractWindowLength> ScanRunner::getNewWindowLength() const {
         return boost::shared_ptr<AbstractWindowLength>(new RiskPercentageWindowLength(_parameters, static_cast<int>(_parameters.getMinimumWindowLength()) - 1, static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1, _zero_translation_additive));
     return boost::shared_ptr<AbstractWindowLength>(new WindowLength(_parameters, static_cast<int>(_parameters.getMinimumWindowLength()) - 1, static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1));
 }
+
+/** Returns the number if window indexes in range which are excluded. */
+unsigned int ScanRunner::getNumExclusionsInWindow(DataTimeRange::index_t start, DataTimeRange::index_t end) const {
+	unsigned int count = 0;
+    for (DataTimeRange::index_t idx = start; idx <= end; ++idx) {
+        if (_window_exclusions.test(idx))
+            ++count;
+    }
+    return count;
+}
+
 
 /** Adds cases and measure through the tree from each node through the tree to all its parents, and so on, to all its ancestors as well.
     If a node is a decendant to an ancestor in more than one way, the cases and measure is only added once to that ancestor. */
@@ -1268,6 +1310,14 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                 }  
                 continue;
             }
+            // If applying exclusion time range and this event is in one of the exclusion ranges, skip this record (TreeTime conditioned on Node/Time only).
+            if (_parameters.isApplyingExclusionTimeRanges()) {
+                DataTimeRangeSet::rangeset_index_t rangeIdxExclusion = _parameters.getExclusionTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
+                if (rangeIdxExclusion.first == true) {
+                    _num_cases_excluded += count;
+                    continue;
+                }
+            }
             if (checkNonLeafWithData(node, count > 0)) continue;
             node->refIntC_C()[daysSinceIncidence + _zero_translation_additive] += count;
             node->refIntN_C()[daysSinceIncidence + _zero_translation_additive] += count;
@@ -1398,6 +1448,8 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                             throw resolvable_error("Error: The sequential scan is not implemented for censored data.");
                         if (_parameters.getPerformPowerEvaluations())
                             throw resolvable_error("Error: The power evaluations option is not implemented for censored data.");
+                        if (_parameters.isApplyingExclusionTimeRanges())
+                            throw resolvable_error("Error: For the uniform model, censored data and data time range exclusion options cannot be used together.");
                         // Now mark the parameter settings to say that this data set has censored data.
                         _censored_data = true;
                         // Note the censored case in the censored data array for this node.
@@ -1673,6 +1725,14 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
                     );
                 }    
                 continue;
+            }
+            // If applying exclusion time range and this event is in one of the exclusion ranges, skip this record (TreeTime conditioned on Node/Time only).
+            if (_parameters.isApplyingExclusionTimeRanges()) {
+                DataTimeRangeSet::rangeset_index_t rangeIdxExclusion = _parameters.getExclusionTimeRangeSet().getDataTimeRangeIndex(daysSinceIncidence);
+                if (rangeIdxExclusion.first == true) {
+                    _num_controls_excluded += controls;
+                    continue;
+                }
             }
             node->refIntN_C()[daysSinceIncidence + _zero_translation_additive] += controls;
             if (controls) _caselessWindows.set(daysSinceIncidence + _zero_translation_additive);
@@ -2963,9 +3023,15 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, 
         (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.isPerformingDayOfWeekAdjustment()) ||
         (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE && _parameters.isPerformingDayOfWeekAdjustment()))
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN);
-    else if (_parameters.getModelType() == Parameters::UNIFORM)
-        loglikelihood = logCalculator->LogLikelihood(BrC, BrN, endIdx - startIdx + 1);
-    else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME)
+    else if (_parameters.getModelType() == Parameters::UNIFORM) {
+        if (_parameters.isApplyingExclusionTimeRanges()) {
+            // When applying window exclusions, we need to subtract those excluded windows from the window length passed to LLR function.
+            size_t window_length = endIdx - startIdx + 1 - getNumExclusionsInWindow(startIdx, endIdx);
+            if (window_length)
+                loglikelihood = logCalculator->LogLikelihood(BrC, BrN, window_length);
+        } else
+            loglikelihood = logCalculator->LogLikelihood(BrC, BrN, endIdx - startIdx + 1);
+    } else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME)
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN, BrC_All, BrN_All);
     else
         loglikelihood = logCalculator->LogLikelihood(BrC, BrN);
