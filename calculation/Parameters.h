@@ -81,7 +81,7 @@ class Parameters {
                         OUTPUT_TEMPORAL_GRAPH,          // generate temporal graph output file
                         TEMPORAL_GRAPH_REPORT_TYPE,     // which clusters to generate temporal graph (enum)
                         TEMPORAL_GRAPH_MLC_COUNT,       // number of most likely clusters to generate temporal graph (integer)
-                        TEMPORAL_GRAPH_CUTOFF,          // p-value cutoff for signicant clusters when generating temporal graph (numeric)
+                        TEMPORAL_GRAPH_CUTOFF,          // cutoff for signicant clusters when generating temporal graph (numeric)
                         // Advanced Analysis - power evaluations
                         POWER_EVALUATIONS,
                         POWER_EVALUATION_TYPE,

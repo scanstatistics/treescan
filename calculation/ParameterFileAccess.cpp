@@ -120,7 +120,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::OUTPUT_TEMPORAL_GRAPH   : return "output temporal graph HTML file (y/n)";
             case Parameters::TEMPORAL_GRAPH_REPORT_TYPE: return "temporal graph cluster reporting type (0=Only most likely cluster, 1=X most likely clusters, 2=Only significant clusters)";
             case Parameters::TEMPORAL_GRAPH_MLC_COUNT: return "number of most likely clusters to report in temporal graph (positive integer)";
-            case Parameters::TEMPORAL_GRAPH_CUTOFF   : return "significant clusters p-value cutoff to report in temporal graph (0.000-1.000)";
+            case Parameters::TEMPORAL_GRAPH_CUTOFF   : return "cluster cutoff to report in temporal graph (numeric)";
             // Power Evaluations
             case Parameters::POWER_EVALUATIONS       : return "perform power evaluations (y/n)";
             case Parameters::POWER_EVALUATION_TYPE   : return "power evaluation type (0=Analysis And Power Evaluation Together, 1=Only Power Evaluation With Count File, 2=Only Power Evaluation With Defined Total Cases)";

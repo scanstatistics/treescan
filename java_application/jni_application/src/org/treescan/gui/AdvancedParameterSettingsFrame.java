@@ -17,6 +17,7 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoManager;
 import org.treescan.app.AdvFeaturesExpection;
+import org.treescan.app.AppConstants;
 import org.treescan.app.Parameters;
 import org.treescan.app.UnknownEnumException;
 import org.treescan.gui.utils.DateComponentsGroup;
@@ -382,7 +383,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             parameters.setTemporalGraphReportType(Parameters.TemporalGraphReportType.MLC_ONLY.ordinal());            
         }
         parameters.setTemporalGraphMostLikelyCount(Integer.parseInt(_numMostLikelyClustersGraph.getText()));
-        parameters.setTemporalGraphSignificantCutoff(Double.parseDouble(_temporalGraphPvalueCutoff.getText()));
+        if (parameters.getIsProspectiveAnalysis())
+            parameters.setTemporalGraphSignificantCutoff(Double.valueOf(_temporalGraphPvalueCutoff.getText()).intValue());
+        else
+            parameters.setTemporalGraphSignificantCutoff(Double.parseDouble(_temporalGraphPvalueCutoff.getText()));        
     }
 
     /**
@@ -538,7 +542,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _temporalGraphMostLikelyX.setSelected(parameters.getTemporalGraphReportType() == Parameters.TemporalGraphReportType.X_MCL_ONLY);
         _numMostLikelyClustersGraph.setText(Integer.toString(parameters.getTemporalGraphMostLikelyCount()));
         _temporalGraphSignificant.setSelected(parameters.getTemporalGraphReportType() == Parameters.TemporalGraphReportType.SIGNIFICANT_ONLY);
-        _temporalGraphPvalueCutoff.setText(Double.toString(parameters.getTemporalGraphSignificantCutoff()));
+        if (parameters.getIsProspectiveAnalysis())
+            _temporalGraphPvalueCutoff.setText(Integer.toString((int)parameters.getTemporalGraphSignificantCutoff()));
+        else
+            _temporalGraphPvalueCutoff.setText(Double.toString(parameters.getTemporalGraphSignificantCutoff()));
         
         enablePowerEvaluationsGroup();
         enableSequentialAnalysisGroup();
@@ -897,6 +904,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (Integer.parseInt(_attributable_risk_exposed.getText().trim()) < 1)
                 throw new AdvFeaturesExpection("The number exposed for the attributable risk must be greater than zero.", FocusedTabSet.OUTPUT, (Component) _attributable_risk_exposed);
         }
+        if (Utils.selected(_temporalGraphSignificant)) {
+            double cutoff = Double.parseDouble(_temporalGraphPvalueCutoff.getText());
+            if (Utils.selected(_prospective_evaluation) && cutoff < 1.0)
+                throw new AdvFeaturesExpection(
+                    "The recurrence interval cutoff for including clusters in temporal graph must\nbe greater than or equal to one for a prospective scan.", 
+                    FocusedTabSet.OUTPUT, (Component) _temporalGraphPvalueCutoff
+                );
+            if (!Utils.selected(_prospective_evaluation) && (cutoff < 0.0 || cutoff > 1.0))
+                throw new AdvFeaturesExpection(
+                    "The p-value cutoff for including clusters in temporal graph must\nbe between 0 and 1 (inclusive) for a retrospective scan.", 
+                    FocusedTabSet.OUTPUT, (Component) _temporalGraphPvalueCutoff
+                );
+        }        
     }
 
     /** Verifies that inference settings are valid in the context of all parameter settings. */
@@ -1060,6 +1080,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _temporalGraphSignificant.setEnabled(enable && _reportTemporalGraph.isSelected());
         _temporalGraphPvalueCutoff.setEnabled(enable && _reportTemporalGraph.isSelected() && _temporalGraphSignificant.isSelected());
+        
+        double val = Double.parseDouble(_temporalGraphPvalueCutoff.getText());
+        if (Utils.selected(_prospective_evaluation)) {
+            if (val < 1) _temporalGraphPvalueCutoff.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF);
+            _temporalGraphSignificant.setText("All clusters, one graph for each, with a recurrence interval greater than or equal:");
+        } else {
+            _temporalGraphSignificant.setText("All clusters, one graph for each, with p-value less than or equal:");
+            if (val < 0 || val > 1) _temporalGraphPvalueCutoff.setText(AppConstants.DEFAULT_PVALUE_CUTOFF);
+        }          
     }    
     
     /** Enables options of the Adjustments tab */
@@ -1274,6 +1303,39 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }*/
     }
 
+    /* Adds listeners to a JTextField intended for p-value/recurrence interval cutoff input. */
+    private void initCutoffJTextField(javax.swing.JTextField cutoff_field, String default_ri, String default_pvalue) {
+        UndoManager undome = new UndoManager();
+        cutoff_field.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                if (Utils.selected(_prospective_evaluation))
+                    Utils.validatePostiveNumericKeyTyped(cutoff_field, e, 10);
+                else 
+                    Utils.validatePostiveFloatKeyTyped(cutoff_field, e, 20);
+            }
+        });
+        cutoff_field.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (Utils.selected(_prospective_evaluation)) {
+                    while (cutoff_field.getText().length() == 0 ||
+                        Double.parseDouble(cutoff_field.getText()) < 1)
+                        if (undome.canUndo()) undome.undo(); else cutoff_field.setText(default_ri);
+                } else {
+                    while (cutoff_field.getText().length() == 0 ||
+                            Double.parseDouble(cutoff_field.getText()) <= 0 ||
+                            Double.parseDouble(cutoff_field.getText()) > 1)
+                        if (undome.canUndo()) undome.undo(); else cutoff_field.setText(default_pvalue);
+                }
+                enableSetDefaultsButton();
+            }
+        });
+        cutoff_field.getDocument().addUndoableEditListener((UndoableEditEvent evt) -> {
+            undome.addEdit(evt.getEdit());
+        });
+    }   
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -2034,6 +2096,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 Parameters.ScanType scanType = _settings_window.getScanType();
                 enableTemporalOptionGroups(scanType == Parameters.ScanType.TREETIME || scanType == Parameters.ScanType.TIMEONLY);
                 enableProspectiveFrequencyGroup();
+                enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());
                 enableSetDefaultsButton();
             }
         });
@@ -2751,8 +2814,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 undo.addEdit(evt.getEdit());
             }
         });
+        _numMostLikelyClustersGraph.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                _numMostLikelyClustersGraphFocusGained(evt);
+            }
+        });
 
         _numMostLikelyClustersGraphLabel.setText("most likely clusters, one graph for each");
+        _numMostLikelyClustersGraphLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                _numMostLikelyClustersGraphLabelMouseClicked(evt);
+            }
+        });
 
         _temporal_graph_buttongroup.add(_temporalGraphSignificant);
         _temporalGraphSignificant.setText("All significant clusters, one graph for each, with p-value less than:");
@@ -2767,23 +2840,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _temporalGraphPvalueCutoff.setText("0.05"); // NOI18N
         _temporalGraphPvalueCutoff.setEnabled(false);
-        _temporalGraphPvalueCutoff.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_temporalGraphPvalueCutoff, e, 20);
-            }
-        });
+        initCutoffJTextField(_temporalGraphPvalueCutoff, AppConstants.DEFAULT_RECURRENCE_CUTOFF, AppConstants.DEFAULT_PVALUE_CUTOFF);
         _temporalGraphPvalueCutoff.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_temporalGraphPvalueCutoff.getText().length() == 0 ||
-                    Double.parseDouble(_temporalGraphPvalueCutoff.getText()) <= 0 ||
-                    Double.parseDouble(_temporalGraphPvalueCutoff.getText()) > 1)
-                if (undo.canUndo()) undo.undo(); else _temporalGraphPvalueCutoff.setText(".05");
-                enableSetDefaultsButton();
-            }
-        });
-        _temporalGraphPvalueCutoff.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                _temporalGraphPvalueCutoffFocusGained(evt);
             }
         });
 
@@ -3221,6 +3281,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void _temporalGraphPvalueCutoffFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event__temporalGraphPvalueCutoffFocusGained
+        _temporalGraphSignificant.setSelected(true);
+    }//GEN-LAST:event__temporalGraphPvalueCutoffFocusGained
+
+    private void _numMostLikelyClustersGraphLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event__numMostLikelyClustersGraphLabelMouseClicked
+        if (_numMostLikelyClustersGraphLabel.isEnabled())
+            _temporalGraphMostLikelyX.setSelected(true);
+    }//GEN-LAST:event__numMostLikelyClustersGraphLabelMouseClicked
+
+    private void _numMostLikelyClustersGraphFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event__numMostLikelyClustersGraphFocusGained
+        _temporalGraphMostLikelyX.setSelected(true);
+    }//GEN-LAST:event__numMostLikelyClustersGraphFocusGained
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel _advanced_adjustments_tab;

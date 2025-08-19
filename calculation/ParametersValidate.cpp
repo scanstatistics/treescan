@@ -52,6 +52,7 @@ bool ParametersValidate::Validate(BasePrint& printDirection) const {
     bValid &= ValidateSequentialScanParameters(printDirection);
     bValid &= ValidatePowerEvaluationParametersParameters(printDirection);
     bValid &= ValidateRandomizationSeed(printDirection);
+    bValid &= ValidateTemporalOutputParameters(printDirection);
     const_cast<Parameters&>(_parameters).setProspectiveFrequency(std::max(_parameters.getProspectiveFrequency(), 1u));
     return bValid;
 }
@@ -628,6 +629,37 @@ bool ParametersValidate::ValidatePowerEvaluationParametersParameters(BasePrint &
     }
     return bValid;
 }
+
+/** Validates temporal output settings. */
+bool ParametersValidate::ValidateTemporalOutputParameters(BasePrint& PrintDirection) const {
+    bool bValid = true;
+
+    if (_parameters.getOutputTemporalGraphFile()) {
+        switch (_parameters.getTemporalGraphReportType()) {
+            case Parameters::SIGNIFICANT_ONLY:
+                if (_parameters.getIsProspectiveAnalysis() && _parameters.getTemporalGraphSignificantCutoff() < 1) {
+                    bValid = false;
+                    PrintDirection.Printf(
+                        "%s:\nThe cutoff value used to determine whether a cluster is included in the temporal graph must be greater than or equal to one for a prospective scan.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                }
+                if (!_parameters.getIsProspectiveAnalysis() && (_parameters.getTemporalGraphSignificantCutoff() < 0 || _parameters.getTemporalGraphSignificantCutoff() > 1)) {
+                    bValid = false;
+                    PrintDirection.Printf(
+                        "%s:\nThe cutoff value used to determine whether a cluster is included in the temporal graph must be between 0 and 1 (inclusive) for a retrospective analysis.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                }
+                break;
+            case Parameters::MLC_ONLY:
+            case Parameters::X_MCL_ONLY:
+            default: break;
+        }
+    }
+    return bValid;
+}
+
 
 /** Validates temporal window settings. */
 bool ParametersValidate::ValidateTemporalWindowParameters(BasePrint & PrintDirection) const {

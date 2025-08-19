@@ -19,6 +19,9 @@ public final class AppConstants {
     public static final int VERSION_RELEASE = 0;
     public static final String VERSION_PHASE = "";
 
+    public static String DEFAULT_PVALUE_CUTOFF = "0.05";
+    public static String DEFAULT_RECURRENCE_CUTOFF = "365"; // in days
+    
     public static final int MIN_YEAR = 1753;
     public static final int MAX_YEAR = 9999;
     public static final int MIN_GENERIC = -219145;

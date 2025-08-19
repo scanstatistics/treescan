@@ -211,6 +211,21 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParame
         settings.emplace_back("Print Column Headers", (_parameters.isPrintColumnHeaders() ? "Yes" : "No"));
     if (_parameters.isTemporalScanType(_parameters.getScanType()))
         settings.emplace_back("Produce Temporal Graphs", (_parameters.getOutputTemporalGraphFile() ? "Yes" : "No"));
+    if (_parameters.getOutputTemporalGraphFile()) {
+        settings.push_back(std::make_pair("Cluster Graphing", ""));
+        switch (_parameters.getTemporalGraphReportType()) {
+            case Parameters::MLC_ONLY: settings.back().second = "Most likely cluster only"; break;
+            case Parameters::X_MCL_ONLY:
+                printString(settings.back().second,
+                    "%d most likely clusters, one graph for each", _parameters.getTemporalGraphMostLikelyCount()
+                ); break;
+            case Parameters::SIGNIFICANT_ONLY:
+                printString(settings.back().second,
+                    "All clusters, one graph for each, meeting cutoff %g", _parameters.getTemporalGraphSignificantCutoff()
+                ); break;
+            default: throw prg_error("Unknown temporal graph type %d.\n", "PrintTemporalOutputParameters()", _parameters.getOutputTemporalGraphFile());
+        }
+    }
     return settings;
 }
 

@@ -298,8 +298,13 @@ void TemporalChartGenerator::generateChart() const {
                 break;
             case Parameters::SIGNIFICANT_ONLY :
                 for (ScanRunner::CutStructureContainer_t::const_iterator itr = _scanner.getCuts().begin(); itr != _scanner.getCuts().end(); ++itr) {
-                    if (_scanner.reportableCut(*(*itr)) && (*itr)->getPValue(_scanner) <= parameters.getTemporalGraphSignificantCutoff())
+                    if (_scanner.reportableCut(*(*itr)) && (
+                        (parameters.getIsProspectiveAnalysis() &&
+                         std::round(_scanner.getRecurrenceInterval(**itr).second) >= parameters.getTemporalGraphSignificantCutoff()) ||
+                        (!parameters.getIsProspectiveAnalysis() && (*itr)->getPValue(_scanner) <= parameters.getTemporalGraphSignificantCutoff())
+                    )) {
                         graphClusters.push_back(*itr);
+                    }
                 }
                 break;
         }
@@ -433,9 +438,10 @@ void TemporalChartGenerator::generateChart() const {
 		if (graphClusters.size()) {
             templateReplace(html, "--main-content--", cluster_sections.str());
         } else {
-            printString(buffer2, "<h3 style=\"text-align:center;\">No significant clusters to graph. All clusters had a p-value greater than %lf.</h3>",
-                0.05 // _dataHub.GetParameters().getTemporalGraphSignificantCutoff()
-            );
+            if (parameters.getIsProspectiveAnalysis())
+                printString(buffer2, "<h3 style=\"text-align:center;\">No clusters to graph. All clusters had a recurrence interval less than %.0lf.</h3>", parameters.getTemporalGraphSignificantCutoff());
+            else
+                printString(buffer2, "<h3 style=\"text-align:center;\">No clusters to graph. All clusters had a p-value greater than %g.</h3>", parameters.getTemporalGraphSignificantCutoff());
             templateReplace(html, "--main-content--", buffer2.c_str());
         }
 		printString(buffer,

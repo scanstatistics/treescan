@@ -882,7 +882,7 @@
                 <Property name="text" type="java.lang.String" value="Prospective Evaluation"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospective_evaluation.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        Parameters.ScanType scanType = _settings_window.getScanType();&#xa;        enableTemporalOptionGroups(scanType == Parameters.ScanType.TREETIME || scanType == Parameters.ScanType.TIMEONLY);&#xa;        enableProspectiveFrequencyGroup();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospective_evaluation.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        Parameters.ScanType scanType = _settings_window.getScanType();&#xa;        enableTemporalOptionGroups(scanType == Parameters.ScanType.TREETIME || scanType == Parameters.ScanType.TIMEONLY);&#xa;        enableProspectiveFrequencyGroup();&#xa;        enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
               </AuxValues>
             </Component>
           </SubComponents>
@@ -1784,6 +1784,9 @@
                     <Property name="text" type="java.lang.String" value="1" noResource="true"/>
                     <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="_numMostLikelyClustersGraphFocusGained"/>
+                  </Events>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_numMostLikelyClustersGraph.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_numMostLikelyClustersGraph, e, 5);&#xa;    }&#xa;});&#xa;_numMostLikelyClustersGraph.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_numMostLikelyClustersGraph.getText().length() == 0 || Integer.parseInt(_numMostLikelyClustersGraph.getText()) == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _numMostLikelyClustersGraph.setText(&quot;1&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_numMostLikelyClustersGraph.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1792,6 +1795,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="most likely clusters, one graph for each"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="_numMostLikelyClustersGraphLabelMouseClicked"/>
+                  </Events>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalGraphSignificant">
                   <Properties>
@@ -1809,8 +1815,11 @@
                     <Property name="text" type="java.lang.String" value="0.05" noResource="true"/>
                     <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="_temporalGraphPvalueCutoffFocusGained"/>
+                  </Events>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalGraphPvalueCutoff.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_temporalGraphPvalueCutoff, e, 20);&#xa;    }&#xa;});&#xa;_temporalGraphPvalueCutoff.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_temporalGraphPvalueCutoff.getText().length() == 0 ||&#xa;                Double.parseDouble(_temporalGraphPvalueCutoff.getText()) &lt;= 0 ||&#xa;                Double.parseDouble(_temporalGraphPvalueCutoff.getText()) &gt; 1)&#xa;            if (undo.canUndo()) undo.undo(); else _temporalGraphPvalueCutoff.setText(&quot;.05&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_temporalGraphPvalueCutoff.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="initCutoffJTextField(_temporalGraphPvalueCutoff, AppConstants.DEFAULT_RECURRENCE_CUTOFF, AppConstants.DEFAULT_PVALUE_CUTOFF);"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
