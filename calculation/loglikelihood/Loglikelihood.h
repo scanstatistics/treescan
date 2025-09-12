@@ -304,14 +304,8 @@ public:
         if (parameters.isApplyingExclusionTimeRanges() && parameters.getModelType() == Parameters::UNIFORM) {
             for (const auto& excluded : parameters.getExclusionTimeRangeSet().getDataTimeRangeSets())
                 _totalDaysInRange -= excluded.getEnd() - excluded.getStart() + 1;
-            // TODO:
-            // What if the _totalDaysInRange is now less than or equal to max_windowlength?
-            // Does this mean we need some kind of check in the parameters validate?
-            //assert(_totalDaysInRange > max_windowlength);
-
             max_windowlength = std::min(max_windowlength, static_cast<unsigned int>(_totalDaysInRange));
         }
-
         _log1.resize(max_windowlength + 1, 0.0);
         _log2.resize(max_windowlength + 1, 0.0);
         for (size_t i=1; i <= max_windowlength; ++i) {

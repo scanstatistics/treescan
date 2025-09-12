@@ -80,9 +80,6 @@ double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _
                             return C - exp * ((NodeCases - C) / (NodeCases - exp));
                         }
                         if (parameters.isApplyingExclusionTimeRanges()) {
-
-							// TODO: Is this correct? Ask Martin.
-
                             double W = static_cast<double>(_end_idx - _start_idx + 1.0) - scanner.getNumExclusionsInWindow(_start_idx, _end_idx);
                             double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
                             for (const auto& excluded : parameters.getExclusionTimeRangeSet().getDataTimeRangeSets())
@@ -154,9 +151,6 @@ double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, 
                         if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
                             return _N;
                         } else if (parameters.isApplyingExclusionTimeRanges()) {
-
-                            // TODO: Is this correct? Ask Martin.
-
                             DataTimeRange::index_t W = _end_idx - _start_idx + 1 - scanner.getNumExclusionsInWindow(_start_idx, _end_idx);
                             double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
                             for (const auto& excluded : parameters.getExclusionTimeRangeSet().getDataTimeRangeSets())
@@ -190,6 +184,12 @@ double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, 
                     if (parameters.getModelType() == Parameters::UNIFORM) {
                         if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
                             return _N;
+                        } else if (parameters.isApplyingExclusionTimeRanges()) {
+                            DataTimeRange::index_t W = _end_idx - _start_idx + 1 - scanner.getNumExclusionsInWindow(_start_idx, _end_idx);
+                            double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                            for (const auto& excluded : parameters.getExclusionTimeRangeSet().getDataTimeRangeSets())
+                                T -= excluded.getEnd() - excluded.getStart() + 1;
+                            return _N * static_cast<double>(W) / T;
                         } else {
                             /** (N*W/T)
                                 N = number of cases in the node, through the whole time period (below, all 0604 cases)
@@ -314,6 +314,15 @@ double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double 
                                 relative_risk = std::numeric_limits<double>::infinity();
                             else
                                 relative_risk = (C / exp) / ((NodeCases - C) / (NodeCases - exp));
+                            return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
+                        }
+                        if (parameters.isApplyingExclusionTimeRanges()) {
+                            DataTimeRange::index_t W = _end_idx - _start_idx + 1 - scanner.getNumExclusionsInWindow(_start_idx, _end_idx);
+                            double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                            for (const auto& excluded : parameters.getExclusionTimeRangeSet().getDataTimeRangeSets())
+                                T -= excluded.getEnd() - excluded.getStart() + 1;
+                            double CC = _N - static_cast<double>(_C);
+                            relative_risk = (CC && (T - W)) ? (static_cast<double>(_C) / W) / (CC / (T - W)) : 0.0;
                             return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
                         }
                         double W = static_cast<double>(_end_idx - _start_idx + 1.0);
