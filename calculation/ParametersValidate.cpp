@@ -79,11 +79,18 @@ bool ParametersValidate::ValidateAdjustmentsParameters(BasePrint & PrintDirectio
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nThe day of week adjustment is only implemented for the date precision of day or generic.\n", BasePrint::P_PARAMERROR);
         }
+        if (_parameters.isApplyingExclusionTimeRanges() && _parameters.getModelType() == Parameters::UNIFORM) {
+            bValid = false;
+            PrintDirection.Printf(
+                "Invalid Parameter Setting:\nFor the uniform model, the day of week adjustment and data time range exclusion options cannot be used together.\n",
+                BasePrint::P_PARAMERROR
+            );
+        }
     }
     if (_parameters.isApplyingExclusionTimeRanges() && _parameters.getDataTimeRangeSet().getDataTimeRangeSets().size() > 0) {
-        if (!(_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME)) {
+        if (!_parameters.isTemporalScanType(_parameters.getScanType())) {
             bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nThe option to exclude specific time ranges is only implemented for 'Tree-Time' scans conditioned on both node and time.\n", BasePrint::P_PARAMERROR);
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe option to exclude specific time ranges is only implemented for tree-time scans.\n", BasePrint::P_PARAMERROR);
         }
         if (_parameters.getExclusionTimeRangeStr().empty()) {
             bValid = false;

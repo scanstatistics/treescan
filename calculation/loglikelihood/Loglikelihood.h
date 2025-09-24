@@ -296,10 +296,16 @@ public:
     TemporalLoglikelihood(int totalC, double totalN, const Parameters& parameters)
         : AbstractLoglikelihood(parameters), _totalC(totalC), _totalN(totalN), _totalDaysInRange(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets()) {
         unsigned int max_windowlength = parameters.getMaximumWindowInTimeUnits();
+        // If applying window exclusions with the uniform time model, reduce the total days in range by excluded ranges.
+        if (parameters.isApplyingExclusionTimeRanges() && parameters.getModelType() == Parameters::UNIFORM) {
+            for (const auto& excluded : parameters.getExclusionTimeRangeSet().getDataTimeRangeSets())
+                _totalDaysInRange -= excluded.getEnd() - excluded.getStart() + 1;
+            max_windowlength = std::min(max_windowlength, static_cast<unsigned int>(_totalDaysInRange));
+        }
         _log1.resize(max_windowlength + 1, 0.0);
         _log2.resize(max_windowlength + 1, 0.0);
         for (size_t i=1; i <= max_windowlength; ++i) {
-            _log1[i] = log( static_cast<double>(i) / static_cast<double>(_totalDaysInRange));
+            _log1[i] = log(static_cast<double>(i) / static_cast<double>(_totalDaysInRange));
             _log2[i] = log(1.0 -  static_cast<double>(i) / static_cast<double>(_totalDaysInRange));
         }
         switch (parameters.getScanRateType()) {

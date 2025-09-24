@@ -5,13 +5,15 @@
 #include "TemporalRandomizer.h"
 #include <boost/random.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
+#include <set>
 
 using boost::mt19937;
 
 /** Constructor */
 TemporalRandomizer::TemporalRandomizer(const ScanRunner& scanner, long lInitialSeed)
-    : AbstractRandomizer(scanner.getParameters(), scanner.getMultiParentNodesExist(), lInitialSeed),
-     _total_C(scanner.getTotalC()), _total_N(scanner.getTotalN()), _time_range_sets(scanner.getParameters().getDataTimeRangeSet()), _day_of_week_indexes(scanner.getDayOfWeekIndexes()) {
+:AbstractRandomizer(scanner.getParameters(), scanner.getMultiParentNodesExist(), lInitialSeed),
+ _total_C(scanner.getTotalC()), _total_N(scanner.getTotalN()), _time_range_sets(scanner.getParameters().getDataTimeRangeSet()),
+ _day_of_week_indexes(scanner.getDayOfWeekIndexes()), _window_exclusions(scanner.getWindowExclusions()) {
     // This will need refactoring if we ever implement multiple data time ranges.
     DataTimeRange min_max = _time_range_sets.getMinMax();
     _zero_translation_additive = (min_max.getStart() <= 0) ? std::abs(min_max.getStart()) : min_max.getStart() * -1;
@@ -67,6 +69,20 @@ int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesP
             // Now apply any of the cases that were not censored on this node -- they are distributed across entire data time range.
             for (NodeStructure::count_t c=0; c < nodeC - censor_count; ++c) {
                 DataTimeRange::index_t idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(zeroRange.getEnd()), _random_number_generator));
+                ++(simNode.refIntC_C()[idx]);
+                ++TotalSimC;
+            }
+        }
+    } else if (_parameters.isApplyingExclusionTimeRanges()) {
+        for (size_t i = 0; i < treeNodes.size(); ++i) {
+            NodeStructure::count_t nodeC = treeNodes.getIntC(i);
+            if (!treeNodes.randomized(i) || !nodeC) continue; // skip if not randomized or zero node cases
+            SimulationNode& simNode(treeSimNodes[i]);
+            for (NodeStructure::count_t c = 0; c < nodeC; ++c) {
+                DataTimeRange::index_t idx;
+                do {
+                    idx = static_cast<DataTimeRange::index_t>(Equilikely(static_cast<long>(zeroRange.getStart()), static_cast<long>(zeroRange.getEnd()), _random_number_generator));
+				} while (_window_exclusions.test(idx)); // skip trying until index is not in the exclusion set
                 ++(simNode.refIntC_C()[idx]);
                 ++TotalSimC;
             }

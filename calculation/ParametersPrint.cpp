@@ -242,7 +242,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(
         }
         settings.emplace_back("Perform Day of Week Adjustment",(_parameters.getPerformDayOfWeekAdjustment() ? "Yes" : "No"));
     }
-    if (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) {
+    if (_parameters.isTemporalScanType(_parameters.getScanType())) {
         settings.emplace_back("Apply Data Time Range Exclusions", (_parameters.isApplyingExclusionTimeRanges() ? "Yes" : "No"));
         if (_parameters.isApplyingExclusionTimeRanges())
             settings.emplace_back("Data Time Range Exclusions", _parameters.getExclusionTimeRangeStr());

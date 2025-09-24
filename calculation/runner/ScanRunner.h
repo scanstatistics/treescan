@@ -21,6 +21,7 @@
 #include <numeric>
 #include <iomanip>
 #include <algorithm>
+#include <set>
 
 /** Matched Sets class for tree-only, unconditional Bernoull, with variable case probability. */
 class MatchedSets {
@@ -552,12 +553,14 @@ protected:
     NodeStructure::count_t              _num_censored_cases;
     DataTimeRange::index_t              _avg_censor_time;
     NodeStructure::count_t              _num_cases_excluded;
+    NodeStructure::count_t              _num_controls_excluded;
     unsigned int                        _node_evaluation_minimum;
     mutable SequentialStatistic_t       _sequential_statistic;
     boost::dynamic_bitset<>             _sequential_read_nodes; // node indexes which were previously written to simulations cache
     boost::dynamic_bitset<>             _sequential_write_nodes; // node indexes which will be written to simulations cache
     // cache for storing total cases in time window
     mutable std::map<std::pair<DataTimeRange::index_t, DataTimeRange::index_t>, double> _node_n_time_total_cases_cache;
+	boost::dynamic_bitset<> _window_exclusions;
 
     unsigned int                addCN_C(const NodeStructure& sourceNode, NodeStructure& destinationNode, boost::dynamic_bitset<>& ancestor_nodes);
     size_t                      calculateCutsCount() const;
@@ -588,6 +591,8 @@ protected:
 public:
     ScanRunner(const Parameters& parameters, BasePrint& print);
 
+    unsigned int getNumExclusionsInWindow(DataTimeRange::index_t start, DataTimeRange::index_t end) const;
+    const boost::dynamic_bitset<>& getWindowExclusions() const { return _window_exclusions; }
     const NodeStructure::ChildContainer_t getCutChildNodes(const CutStructure& cut) const {
         // Returns the direct child nodes for cut. If this cut wasn't simple, then this might be a subset of the children.
         if (cut.getCutChildren().size()) {
@@ -623,6 +628,7 @@ public:
     DataTimeRange::index_t             getAvgCensorTime() const { return _avg_censor_time; }
     NodeStructure::count_t             getNumCensoredCases() const { return _num_censored_cases; }
     NodeStructure::count_t             getNumExcludedCases() const { return _num_cases_excluded; }
+    NodeStructure::count_t             getNumExcludedControls() const { return _num_controls_excluded; }
     const CriticalValues             & getCriticalValues() const {return *_critical_values;}
     std::string                      & getCaselessWindowsAsString(std::string& s) const;
     const CutStructureContainer_t    & getCuts() const {return _Cut;}

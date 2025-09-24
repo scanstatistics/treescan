@@ -944,7 +944,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     /** Verifies that adjustment options are valid. */
     private void CheckAdjustmentSettings() {
-        if (_apply_time_range_restrictions.isEnabled() && _apply_time_range_restrictions.isSelected()) {
+        if (Utils.selected(_apply_time_range_restrictions)) {
             if (_time_range_restrictions.getText().trim().length() == 0)
                 throw new AdvFeaturesExpection(
                     "Please specify a semi-colon separated list of ranges " + 
@@ -957,6 +957,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             } else {
                 if (!_time_range_restrictions.getText().trim().replace(" ", "").matches("^\\[\\d{4}/\\d{1,2}/\\d{1,2},\\d{4}/\\d{1,2}/\\d{1,2}](;\\[\\d{4}/\\d{1,2}/\\d{1,2},\\d{4}/\\d{1,2}/\\d{1,2}])*$"))
                     throw new AdvFeaturesExpection("Not a valid semi-colon separated list of ranges (e.g. [2000/1/15,2000/2/15];[2000/10/22,2000/10/24]).", FocusedTabSet.ANALYSIS, (Component)_time_range_restrictions);                
+            }
+            if (Utils.selected(_perform_dayofweek_adjustments) && _settings_window.getModelType() == Parameters.ModelType.UNIFORM) {
+                throw new AdvFeaturesExpection(
+                    """
+                    For the uniform model, the day of week adjustment and data time range exclusion options cannot be used together.""", 
+                    FocusedTabSet.ANALYSIS, (Component)_perform_dayofweek_adjustments
+                );
+                
             }
         }
     }
@@ -1111,7 +1119,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     public void enableTimeRangeExclusionsGroup() {
-        _group_exclusions.setEnabled(_settings_window.getScanType() == Parameters.ScanType.TREETIME && _settings_window.getConditionalType() == Parameters.ConditionalType.NODEANDTIME);
+        _group_exclusions.setEnabled(Parameters.isTemporalScanType(_settings_window.getScanType()));
         _apply_time_range_restrictions.setEnabled(_group_exclusions.isEnabled());
         _time_range_restrictions.setEnabled(_apply_time_range_restrictions.isEnabled() && _apply_time_range_restrictions.isSelected());
     }

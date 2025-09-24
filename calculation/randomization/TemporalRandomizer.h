@@ -5,6 +5,7 @@
 #include "Randomization.h"
 #include "RandomDistribution.h"
 #include "PermutationDataRandomizer.h"
+#include <boost/dynamic_bitset.hpp>
 
 /** Data randomizer for uniform tree-time scan. */
 class TemporalRandomizer : public AbstractRandomizer {
@@ -19,6 +20,7 @@ protected:
     const ScanRunner::DayOfWeekIndexes_t  & _day_of_week_indexes;
     bool                        _censored_data;
     node_censor_container_t     _node_censors;
+    const boost::dynamic_bitset<>& _window_exclusions;
 
     virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
     virtual int read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex);
