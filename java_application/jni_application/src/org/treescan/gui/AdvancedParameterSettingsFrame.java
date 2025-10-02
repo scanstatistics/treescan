@@ -1821,7 +1821,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _risk_window_percentage_label.setText("percent of the between time zero and the end of the temporal window");
+        _risk_window_percentage_label.setText("percent of the length between time zero and the end of the temporal window");
 
         javax.swing.GroupLayout _minTemporalOptionsGroupLayout = new javax.swing.GroupLayout(_minTemporalOptionsGroup);
         _minTemporalOptionsGroup.setLayout(_minTemporalOptionsGroupLayout);
@@ -1861,6 +1861,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_risk_window_percentage_label))
                 .addContainerGap(19, Short.MAX_VALUE))
         );
+
+        _risk_window_percentage_label.getAccessibleContext().setAccessibleName("percent of the length between time zero and the end of the temporal window");
 
         _temporalWindowDefinitionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Window"));
 

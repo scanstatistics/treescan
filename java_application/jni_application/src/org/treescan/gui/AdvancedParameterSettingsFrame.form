@@ -532,8 +532,11 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_risk_window_percentage_label">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="percent of the between time zero and the end of the temporal window"/>
+                    <Property name="text" type="java.lang.String" value="percent of the length between time zero and the end of the temporal window"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="percent of the length between time zero and the end of the temporal window"/>
+                  </AccessibilityProperties>
                 </Component>
               </SubComponents>
             </Container>
