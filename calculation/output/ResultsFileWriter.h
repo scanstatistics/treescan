@@ -34,7 +34,7 @@ class ResultsFileWriter {
 
     std::ofstream & openStream(const std::string& outputfile, std::ofstream & outfile, bool overwrite=false) const;
     std::string   & getTotalRunningTime(time_t start, time_t end, std::string & buffer) const;
-    std::string   & getAnalysisSuccinctStatement(std::string & buffer) const;
+    std::string   & getAnalysisSuccinctStatement(std::string & statement, const std::string& newline) const;
 
     std::stringstream & getNCBIAsnDefinition(const NodeStructure& node, const ptr_vector<FieldDef>& fieldDefinitions, bool idoffset, const std::map<int, const CutStructure*>& nodeCuts, std::stringstream& destination) const;
     std::string & encodeForASN(std::string & text) const;

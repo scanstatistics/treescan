@@ -71,7 +71,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     PrintFormat.PrintVersionHeader(outfile);
     std::string buffer = ctime(&start), buffer2;
     outfile << std::endl << "Program run on: " << buffer << std::endl;
-    PrintFormat.PrintNonRightMarginedDataString(outfile, getAnalysisSuccinctStatement(buffer), false);
+    PrintFormat.PrintNonRightMarginedDataString(outfile, getAnalysisSuccinctStatement(buffer, std::string("\n")), false);
     PrintFormat.SetMarginsAsSummarySection();
     PrintFormat.PrintSectionSeparatorString(outfile);
     outfile << std::endl << "SUMMARY STATISTICS" << std::endl << std::endl;
@@ -471,67 +471,68 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
 }
 
 /** Returns a string which details primary analysis settings. */
-std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & buffer) const {
+std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & statement, const std::string& newline) const {
     const Parameters& parameters = _scanRunner.getParameters();
-    std::string scanrate("\nlooking for ");
+	std::stringstream scanrate, buffer;
+	scanrate << newline << "looking for ";
     switch (parameters.getScanRateType()) {
-        case Parameters::LOWRATE: scanrate += "low rate branches\n"; break;
-        case Parameters::HIGHORLOWRATE: scanrate += "high or low rate branches\n"; break;
-        case Parameters::HIGHRATE: scanrate += "high rate branches\n"; break;
+        case Parameters::LOWRATE: scanrate << "low rate branches" << newline; break;
+        case Parameters::HIGHORLOWRATE: scanrate << "high or low rate branches" << newline; break;
+        case Parameters::HIGHRATE: scanrate << "high rate branches" << newline; break;
         default: throw prg_error("Unknown scan rate type'%d'.", "getAnalysisSuccinctStatement()", parameters.getScanRateType());
     }
     switch (parameters.getScanType()) {
         case Parameters::TREEONLY : {
-            buffer = parameters.isSequentialScanTreeOnly() ? "Tree Only Sequential scan" : "Tree Only scan";
-            buffer += scanrate;
+            buffer << (parameters.isSequentialScanTreeOnly() ? "Tree Only Sequential scan" : "Tree Only scan") << scanrate.str();
             switch (parameters.getConditionalType()) {
-                case Parameters::UNCONDITIONAL : buffer += "with unconditional"; break;
-                case Parameters::TOTALCASES : buffer += "with conditional"; break;
+                case Parameters::UNCONDITIONAL : buffer << "with unconditional"; break;
+                case Parameters::TOTALCASES : buffer << "with conditional"; break;
                 case Parameters::NODE : break;
                 default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", parameters.getConditionalType());
             }
             switch (parameters.getModelType()) {
-                case Parameters::POISSON : buffer += " Poisson model"; break;
-                case Parameters::BERNOULLI_TREE: buffer += " Bernoulli model";
+                case Parameters::POISSON : buffer << " Poisson model"; break;
+                case Parameters::BERNOULLI_TREE: buffer << " Bernoulli model";
                     if (_scanRunner.getParameters().getSelfControlDesign())
-                        buffer += " (self-control design)";
+                        buffer << " (self-control design)";
                     break;
                 case Parameters::UNIFORM : break;
                 default: throw prg_error("Unknown nodel type (%d).", "getAnalysisSuccinctStatement()", parameters.getModelType());
             }
         } break;
-        case Parameters::TREETIME : 
-            buffer = "Tree Temporal scan";
-            buffer += scanrate;
+        case Parameters::TREETIME :
+            buffer << (parameters.getIsProspectiveAnalysis() ? "Prospective " : "") << "Tree Temporal scan" << scanrate.str();
             switch (parameters.getConditionalType()) {
                 case Parameters::NODE : 
                     if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
-                        buffer += "with conditional Bernoulli model";
+                        buffer << "with conditional Bernoulli model";
                     else
-                        buffer += "with conditional Uniform model"; 
+                        buffer << "with conditional Uniform model"; 
                     break;
-                case Parameters::NODEANDTIME : buffer += "conditioned on node and time"; break;
+                case Parameters::NODEANDTIME : buffer << "conditioned on node and time"; break;
                 default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", parameters.getConditionalType());
             } break;
         case Parameters::TIMEONLY :
-            buffer = parameters.isSequentialScanPurelyTemporal() ? "Time Only Sequential scan" : "Time Only scan";
-            buffer += scanrate;
+            buffer << (parameters.isSequentialScanPurelyTemporal() ? "Time Only Sequential scan" : "Time Only scan") << scanrate.str();
             switch (parameters.getConditionalType()) {
                 case Parameters::TOTALCASES : 
                     if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
-                        buffer += "with conditional Bernoulli model";
+                        buffer << "with conditional Bernoulli model";
                     else
-                        buffer += "with conditional Uniform model"; 
+                        buffer << "with conditional Uniform model"; 
                     break;
                 default: throw prg_error("Unknown conditional type (%d).", "getAnalysisSuccinctStatement()", parameters.getConditionalType());
             } break;
             if (parameters.isSequentialScanPurelyTemporal()) {
                 std::string temp;
-                buffer += printString(temp, ", %d out of %u cases observed.", _scanRunner.getTotalC(), parameters.getSequentialMaximumSignal());
+                buffer << printString(temp, ", %d out of %u cases observed.", _scanRunner.getTotalC(), parameters.getSequentialMaximumSignal());
             }
         default: throw prg_error("Unknown scan type (%d).", "getAnalysisSuccinctStatement()", parameters.getScanType());
     }
-    return buffer;
+    if (parameters.getPerformDayOfWeekAdjustment())
+        buffer << newline << "adjusting for weekly trends nonparametrically";
+	statement = buffer.str();
+    return statement;
 }
 
 /** Writes tree structure and results of analysis to NCBI ASN1 file. */
@@ -798,7 +799,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<body>" << std::endl;
     buffer = AppToolkit::getToolkit().GetWebSite();
     outfile << "<div class='hr' style='margin-top: 5px;'></div><div class='program-info'>" << std::endl;
-    outfile << "<p style='font-size:15px;font-weight:bold;'>" << getAnalysisSuccinctStatement(buffer) << "</p>";
+    outfile << "<p style='font-size:15px;font-weight:bold;'>" << getAnalysisSuccinctStatement(buffer, std::string("<br/>")) << "</p>";
     outfile << "<h2 style='font-size:15px;margin: 8px 0 5px 0;font-weight:bold;'>SUMMARY STATISTICS</h2>" << std::endl;    
 
     outfile << "<table class='analysis-summary'><tbody>" << std::endl;
