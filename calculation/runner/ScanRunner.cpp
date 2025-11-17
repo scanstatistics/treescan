@@ -2032,11 +2032,11 @@ bool ScanRunner::readNodesNotEvaluated(const std::string& filename) {
 /** Returns whether cut is reportable. */
 bool ScanRunner::reportableCut(const CutStructure& cut) const {
     return /* Does the top cut rank among replications? */
-           (_parameters.getNumReplicationsRequested() > 0 && cut.getRank() < _parameters.getNumReplicationsRequested() + 1) ||
-           /* If not performing replications at all */
-           _parameters.getNumReplicationsRequested() == 0 ||
-           /* If tree-only sequential scan -- a cut reported in previous look is always reportable. */
-           (_parameters.isSequentialScanTreeOnly() && getSequentialStatistic().testCutSignaled(static_cast<size_t>(cut.getID())) != 0);
+        (_parameters.getNumReplicationsRequested() > 0 && cut.getRank() <= _simVars.get_sim_count()) ||
+        /* If not performing replications at all */
+        _parameters.getNumReplicationsRequested() == 0 ||
+        /* If tree-only sequential scan -- a cut reported in previous look is always reportable. */
+        (_parameters.isSequentialScanTreeOnly() && getSequentialStatistic().testCutSignaled(static_cast<size_t>(cut.getID())) != 0);
 }
 
 bool ScanRunner::reportablePValue(const CutStructure& cut) const {
@@ -2103,6 +2103,10 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
             (*itr)->setMatchedSets(getCutMatchSets(**itr, ms));
         }
     }
+
+    printf("_Cuts.size() == %u\n", this->_Cut.size());
+
+
     ResultsFileWriter resultsWriter(*this);
     // Create the main text output file.
     if (!resultsWriter.writeASCII(start, end))
