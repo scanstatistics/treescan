@@ -11,20 +11,28 @@
 
 /** A class to contain simulated data for a node. */
 class SimulationNode {
+    public:
+        typedef std::vector<double> SampleSiteDiff_t;
     private:
         NodeStructure::CountContainer_t _IntC_C;
         NodeStructure::CountContainer_t _BrC_C;
+        SampleSiteDiff_t _sample_site_differences;
+        SampleSiteDiff_t _Br_sample_site_differences;
         unsigned int _level;
 
     public:
-        SimulationNode(size_t container_size/*=1*/, unsigned int level) : _level(level) {
+        SimulationNode(size_t container_size, unsigned int level, unsigned int sample_sites) : _level(level) {
             _IntC_C.resize(container_size, 0);
             _BrC_C.resize(container_size, 0);
+            if (sample_sites) _sample_site_differences.resize(sample_sites, 0.0);
+            if (sample_sites) _Br_sample_site_differences.resize(sample_sites, 0.0);
         }
 
         void clear() {
             std::fill(_IntC_C.begin(), _IntC_C.end(), 0);
             std::fill(_BrC_C.begin(), _BrC_C.end(), 0);
+            std::fill(_sample_site_differences.begin(), _sample_site_differences.end(), 0.0);
+            std::fill(_Br_sample_site_differences.begin(), _Br_sample_site_differences.end(), 0.0);
         }
         void setCumulative() {
             TreeScan::cumulative_backward(_IntC_C);
@@ -36,11 +44,15 @@ class SimulationNode {
         const NodeStructure::CountContainer_t    & getIntC_C() const {return _IntC_C;}
         NodeStructure::count_t                     getBrC() const {return _BrC_C.front();}
         const NodeStructure::CountContainer_t    & getBrC_C() const {return _BrC_C;}
+        const SampleSiteDiff_t& getSampleSiteDifferences() const { return _sample_site_differences; }
+        const SampleSiteDiff_t& getSampleSiteDifferencesBr() const { return _Br_sample_site_differences; }
 
         NodeStructure::count_t                   & refIntC() {return _IntC_C.front();}
         NodeStructure::CountContainer_t          & refIntC_C() {return _IntC_C;}
         NodeStructure::count_t                   & refBrC() {return _BrC_C.front();}
         NodeStructure::CountContainer_t          & refBrC_C() {return _BrC_C;}
+        SampleSiteDiff_t& refSampleSiteDifferences() { return _sample_site_differences; }
+        SampleSiteDiff_t& refSampleSiteDifferencesBr() { return _Br_sample_site_differences; }
 };
 
 /** An abtract base class to define api used to access tree nodes during randomization. */
@@ -63,7 +75,8 @@ class AbstractNodesProxy {
         virtual const NodeStructure::CountContainer_t & getIntC_C(size_t i) const = 0;
         virtual int      getBrC(size_t i) const = 0;
         virtual double   getProbability(size_t i) const = 0;
-        virtual const MatchedSets& getMatchSets(size_t i) const { return _treeNodes[i]->getMatchedSets(); }
+        const MatchedSets& getMatchSets(size_t i) const { return _treeNodes[i]->getMatchedSets(); }
+        const SampleSiteMap_t& getSampleSiteMap(size_t i) const { return _treeNodes[i]->getSampleSiteDataBr(); }
 
         virtual int getID(size_t i) const = 0;
 };

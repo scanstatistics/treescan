@@ -7,7 +7,6 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/assign.hpp>
 #include <boost/filesystem.hpp>
 #include <locale>
 
@@ -33,8 +32,9 @@
 
 double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _N, const MatchedSets& ms, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
     const Parameters& parameters = scanner.getParameters();
+    if (parameters.getModelType() == Parameters::SIGNED_RANK)
+        throw prg_error("Cannot calculate excess cases for signed-rank model.", "getExcessCasesFor()");
     double C = static_cast<double>(_C), totalC = static_cast<double>(scanner.getTotalC());
-    
     switch (parameters.getScanType()) {
         case Parameters::TREEONLY: {
             switch (parameters.getConditionalType()) {
@@ -122,6 +122,8 @@ double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _
 
 double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
     const Parameters& parameters = scanner.getParameters();
+    if (parameters.getModelType() == Parameters::SIGNED_RANK)
+        throw prg_error("Cannot calculate expected for signed-rank model.", "getExpectedFor()");
     double totalC = static_cast<double>(scanner.getTotalC());
     switch (parameters.getScanType()) {
         case Parameters::TREEONLY: {
@@ -215,8 +217,9 @@ double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, 
 /** Calculates the attributable risk per person for cut. */
 double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, const MatchedSets& ms, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
     const Parameters& parameters = scanner.getParameters();
+    if (parameters.getModelType() == Parameters::SIGNED_RANK)
+        throw prg_error("Cannot calculate attributable risk for signed-rank model.", "getAttributableRiskFor()");
     double C = static_cast<double>(_C);
-
     switch (parameters.getScanType()) {
         case Parameters::TREEONLY: {
             switch (parameters.getConditionalType()) {
@@ -253,118 +256,117 @@ double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, dou
 
 /** Returns cut's relative risk. See user guide for formula explanation. */
 double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, const MatchedSets& ms, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
+    const Parameters& parameters = scanner.getParameters();
+    if (parameters.getModelType() == Parameters::SIGNED_RANK)
+        throw prg_error("Cannot calculate relative risk for signed-rank model.", "getRelativeRisk()");
     double relative_risk = 0;
     double C = static_cast<double>(_C), totalC = static_cast<double>(scanner.getTotalC());
-
-    const Parameters& parameters = scanner.getParameters();
-        switch (parameters.getScanType()) {
-            case Parameters::TREEONLY: {
-                switch (parameters.getConditionalType()) {
-                    case Parameters::UNCONDITIONAL:
-                        if (parameters.getModelType() == Parameters::POISSON) {
-                            relative_risk = C / _N;
-                            return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
-                        }
-                        if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
-                            if (parameters.getVariableCaseProbability()) {
-                                if (parameters.getSelfControlDesign()) {
-                                    relative_risk = getRelativeRiskFor(scanner, nodeID, _C, ms, 0.00001);
-                                    return relative_risk;
-                                } else
-                                    relative_risk = C / _N;
-                            } else {
-                                if (parameters.getSelfControlDesign())
-                                    relative_risk = (C / parameters.getProbability()) / ((_N - C) / (1.0 - parameters.getProbability()));
-                                else
-                                    relative_risk = C / (_N * parameters.getProbability());
-                            }
-                            return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
-                        }
-                        throw prg_error("Cannot calculate relative risk: tree-only, unconditonal, model (%d).", "getRelativeRisk()", parameters.getModelType());
-                    case Parameters::TOTALCASES:
-                        if (parameters.getModelType() == Parameters::POISSON) {
-                            double NN = scanner.getTotalN() - _N;
-                            if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", parameters.getModelType(), scanner.getTotalN(), _N);
-                            double CC = totalC - C;
-                            relative_risk = CC ? (C / _N) / (CC / NN) : 0;
-                            return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
-                        }
-                        if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
-                            double NN = scanner.getTotalN() - _N;
-                            if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", parameters.getModelType(), scanner.getTotalN(), _N);
-                            double CC = totalC - C;
-                            relative_risk = CC ? (C / _N) / (CC / NN) : 0;
-                            return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
-                        }
-                        throw prg_error("Cannot calculate relative risk: tree-only, total-cases, model (%d).", "getRelativeRisk()", parameters.getModelType());
-                    default: throw prg_error("Cannot calculate relative risk: tree-only, condition type (%d).", "getRelativeRisk()", parameters.getConditionalType());
-                }
+    switch (parameters.getScanType()) {
+    case Parameters::TREEONLY: {
+        switch (parameters.getConditionalType()) {
+        case Parameters::UNCONDITIONAL:
+            if (parameters.getModelType() == Parameters::POISSON) {
+                relative_risk = C / _N;
+                return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
             }
-            case Parameters::TIMEONLY: // time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node
-            case Parameters::TREETIME: {
-                switch (parameters.getConditionalType()) {
-                case Parameters::TOTALCASES: // this option is really only for time-only
-                case Parameters::NODE:       // this option is really only for tree-time
-                    if (parameters.getModelType() == Parameters::UNIFORM) {
-                        if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
-                            // (Obs/Exp) / [ (NodeCases-Obs) / (NodeCases-Exp) ]
-                            double exp = getExpectedFor(scanner, nodeID, _C, _N, _start_idx, _end_idx);
-                            double NodeCases = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
-                            if (C == NodeCases)
-                                relative_risk = std::numeric_limits<double>::infinity();
-                            else
-                                relative_risk = (C / exp) / ((NodeCases - C) / (NodeCases - exp));
-                            return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
-                        }
-                        if (parameters.isApplyingExclusionTimeRanges()) {
-                            DataTimeRange::index_t W = _end_idx - _start_idx + 1 - scanner.getNumExclusionsInWindow(_start_idx, _end_idx);
-                            double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-                            for (const auto& excluded : parameters.getExclusionTimeRangeSet().getDataTimeRangeSets())
-                                T -= excluded.getEnd() - excluded.getStart() + 1;
-                            double CC = _N - static_cast<double>(_C);
-                            relative_risk = (CC && (T - W)) ? (static_cast<double>(_C) / W) / (CC / (T - W)) : 0.0;
-                            return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
-                        }
-                        double W = static_cast<double>(_end_idx - _start_idx + 1.0);
-                        double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
-                        if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getRelativeRisk()", parameters.getModelType(), T, W);
-                        double CC = _N - static_cast<double>(_C);
-                        relative_risk = CC ? (static_cast<double>(_C) / W) / (CC / (T - W)) : 0.0;
-                        return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
-                    }
-                    else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-                        double casesInNode = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
-                        // when all cases are inside cluster, relative risk goes to infinity
-                        if (casesInNode == static_cast<double>(_C)) return std::numeric_limits<double>::infinity();
-                        double totalInNode = scanner.getNodes()[nodeID]->getBrN();
-                        // RR = (c / n) / ((C - c) / (N - n))
-                        if (_N && totalInNode - _N && ((casesInNode - _C) / (totalInNode - _N)))
-                            return (_C / _N) / ((casesInNode - _C) / (totalInNode - _N));
-                        return 0.0;
-                    }
-                    throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getRelativeRisk()", parameters.getModelType());
-                case Parameters::NODEANDTIME: {
-                    /** c = cases in detected cluster
-                        C = total cases in the whole tree
-                        C(n)=total cases in the cluster node, summed over the whole study time period
-                        C(t)=total cases in the cluster time window, summed over all the nodes
-                        Let E2 = (C(n)-c)*(C(t)-c) / (C-C(n)-C(t)+c) -- this is an alternative method for calculating expected counts
-                        RR = c/E2 */
-                    double Cn = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
-                    double Ct = scanner.get_node_n_time_total_cases(_start_idx, _end_idx);
-                    double denominator = totalC - Cn - Ct + C;
-                    if (denominator == 0.0) // This will never happen when looking for clusters with high rates.
-                        return std::numeric_limits<double>::quiet_NaN();
-                    double e2 = (Cn - C) * (Ct - C) / denominator;
-                    if (e2 == 0.0) // C == 0.0 will never happen when looking for clusters with high rates.
-                        return C == 0.0 ? std::numeric_limits<double>::quiet_NaN() : std::numeric_limits<double>::infinity(); // This will happen now and then.
-                    return C / e2;
+            if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
+                if (parameters.getVariableCaseProbability()) {
+                    if (parameters.getSelfControlDesign()) {
+                        relative_risk = getRelativeRiskFor(scanner, nodeID, _C, ms, 0.00001);
+                        return relative_risk;
+                    } else
+                        relative_risk = C / _N;
+                } else {
+                    if (parameters.getSelfControlDesign())
+                        relative_risk = (C / parameters.getProbability()) / ((_N - C) / (1.0 - parameters.getProbability()));
+                    else
+                        relative_risk = C / (_N * parameters.getProbability());
                 }
-                default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getRelativeRisk()", parameters.getConditionalType());
-                }
+                return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
             }
-
-            default: throw prg_error("Unknown scan type (%d).", "getRelativeRisk()", parameters.getScanType());
+            throw prg_error("Cannot calculate relative risk: tree-only, unconditonal, model (%d).", "getRelativeRisk()", parameters.getModelType());
+        case Parameters::TOTALCASES:
+            if (parameters.getModelType() == Parameters::POISSON) {
+                double NN = scanner.getTotalN() - _N;
+                if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", parameters.getModelType(), scanner.getTotalN(), _N);
+                double CC = totalC - C;
+                relative_risk = CC ? (C / _N) / (CC / NN) : 0;
+                return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
+            }
+            if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
+                double NN = scanner.getTotalN() - _N;
+                if (!NN) throw prg_error("Program error detected: model=%d, totalN=%lf, n=%lf.", "getRelativeRisk()", parameters.getModelType(), scanner.getTotalN(), _N);
+                double CC = totalC - C;
+                relative_risk = CC ? (C / _N) / (CC / NN) : 0;
+                return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
+            }
+            throw prg_error("Cannot calculate relative risk: tree-only, total-cases, model (%d).", "getRelativeRisk()", parameters.getModelType());
+        default: throw prg_error("Cannot calculate relative risk: tree-only, condition type (%d).", "getRelativeRisk()", parameters.getConditionalType());
+        }
+    }
+    case Parameters::TIMEONLY: // time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node
+    case Parameters::TREETIME: {
+        switch (parameters.getConditionalType()) {
+        case Parameters::TOTALCASES: // this option is really only for time-only
+        case Parameters::NODE:       // this option is really only for tree-time
+            if (parameters.getModelType() == Parameters::UNIFORM) {
+                if (parameters.isPerformingDayOfWeekAdjustment() || scanner.isCensoredData()) {
+                    // (Obs/Exp) / [ (NodeCases-Obs) / (NodeCases-Exp) ]
+                    double exp = getExpectedFor(scanner, nodeID, _C, _N, _start_idx, _end_idx);
+                    double NodeCases = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
+                    if (C == NodeCases)
+                        relative_risk = std::numeric_limits<double>::infinity();
+                    else
+                        relative_risk = (C / exp) / ((NodeCases - C) / (NodeCases - exp));
+                    return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
+                }
+                if (parameters.isApplyingExclusionTimeRanges()) {
+                    DataTimeRange::index_t W = _end_idx - _start_idx + 1 - scanner.getNumExclusionsInWindow(_start_idx, _end_idx);
+                    double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                    for (const auto& excluded : parameters.getExclusionTimeRangeSet().getDataTimeRangeSets())
+                        T -= excluded.getEnd() - excluded.getStart() + 1;
+                    double CC = _N - static_cast<double>(_C);
+                    relative_risk = (CC && (T - W)) ? (static_cast<double>(_C) / W) / (CC / (T - W)) : 0.0;
+                    return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
+                }
+                double W = static_cast<double>(_end_idx - _start_idx + 1.0);
+                double T = static_cast<double>(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets());
+                if (!(T - W)) throw prg_error("Program error detected: model=%d, T=%lf, W=%lf.", "getRelativeRisk()", parameters.getModelType(), T, W);
+                double CC = _N - static_cast<double>(_C);
+                relative_risk = CC ? (static_cast<double>(_C) / W) / (CC / (T - W)) : 0.0;
+                return relative_risk ? relative_risk : std::numeric_limits<double>::infinity();
+            } else if (parameters.getModelType() == Parameters::BERNOULLI_TIME) {
+                double casesInNode = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
+                // when all cases are inside cluster, relative risk goes to infinity
+                if (casesInNode == static_cast<double>(_C)) return std::numeric_limits<double>::infinity();
+                double totalInNode = scanner.getNodes()[nodeID]->getBrN();
+                // RR = (c / n) / ((C - c) / (N - n))
+                if (_N && totalInNode - _N && ((casesInNode - _C) / (totalInNode - _N)))
+                    return (_C / _N) / ((casesInNode - _C) / (totalInNode - _N));
+                return 0.0;
+            }
+            throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getRelativeRisk()", parameters.getModelType());
+        case Parameters::NODEANDTIME: {
+            /** c = cases in detected cluster
+                C = total cases in the whole tree
+                C(n)=total cases in the cluster node, summed over the whole study time period
+                C(t)=total cases in the cluster time window, summed over all the nodes
+                Let E2 = (C(n)-c)*(C(t)-c) / (C-C(n)-C(t)+c) -- this is an alternative method for calculating expected counts
+                RR = c/E2 */
+            double Cn = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
+            double Ct = scanner.get_node_n_time_total_cases(_start_idx, _end_idx);
+            double denominator = totalC - Cn - Ct + C;
+            if (denominator == 0.0) // This will never happen when looking for clusters with high rates.
+                return std::numeric_limits<double>::quiet_NaN();
+            double e2 = (Cn - C) * (Ct - C) / denominator;
+            if (e2 == 0.0) // C == 0.0 will never happen when looking for clusters with high rates.
+                return C == 0.0 ? std::numeric_limits<double>::quiet_NaN() : std::numeric_limits<double>::infinity(); // This will happen now and then.
+            return C / e2;
+        }
+        default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getRelativeRisk()", parameters.getConditionalType());
+        }
+    }
+    default: throw prg_error("Unknown scan type (%d).", "getRelativeRisk()", parameters.getScanType());
     }
 }
 
@@ -493,10 +495,28 @@ double CutStructure::getRelativeRisk(const ScanRunner& scanner) const {
 
 /* Returns whether cut is high or low rate. */
 Parameters::ScanRateType CutStructure::getRate(const ScanRunner& scanner) const {
-    if (scanner.getParameters().getScanRateType() == Parameters::HIGHORLOWRATE)
+    switch (scanner.getParameters().getScanRateType()) {
+    case Parameters::LOWRATE:
+    case Parameters::HIGHRATE:
+        return scanner.getParameters().getScanRateType();
+    default:
+    case Parameters::HIGHORLOWRATE:
+        if (scanner.getParameters().getModelType() == Parameters::SIGNED_RANK) {
+            auto proportions = getAverage(getSampleSiteData());
+            return proportions.second < proportions.first ? Parameters::LOWRATE : Parameters::HIGHRATE;
+        }
         return static_cast<double>(getC()) > getExpected(scanner) ? Parameters::HIGHRATE : Parameters::LOWRATE;
-    // Otherwise it is assumed that this cluster is that of the rate we're scanning.
-    return scanner.getParameters().getScanRateType();
+    };
+}
+
+////////////////////////// NodeStructure //////////////////////////////////////
+
+/* Adds sample site data to node, skipping add and returning false when data already exists for sample site. */
+bool NodeStructure::addSampleSiteData(size_t ssIdx, double baseline_proportion, double current_proportion) {
+    if (_sample_site_data.find(ssIdx) != _sample_site_data.end())
+        return false;
+    _sample_site_data.emplace(ssIdx, SampleSiteData(baseline_proportion, current_proportion));
+    return true;
 }
 
 ////////////////////////// SequentialStatistic ///////////////////////////////
@@ -911,6 +931,9 @@ unsigned int ScanRunner::addCN_C(const NodeStructure& sourceNode, NodeStructure&
     std::transform(sourceNode.getIntN_C().begin(), sourceNode.getIntN_C().end(), destinationNode.refBrN_C().begin(), destinationNode.refBrN_C().begin(), std::plus<NodeStructure::expected_t>());
     std::transform(sourceNode.getIntN_Seq_New_C().begin(), sourceNode.getIntN_Seq_New_C().end(), destinationNode.refBrN_Seq_New_C().begin(), destinationNode.refBrN_Seq_New_C().begin(), std::plus<NodeStructure::expected_t>());
     destinationNode.setMinCensoredBr(std::min(sourceNode.getMinCensoredBr(), destinationNode.getMinCensoredBr()));
+    if (_parameters.getModelType() == Parameters::SIGNED_RANK) {
+        destinationNode.addSampleSiteDataToBranch(sourceNode.getSampleSiteData());
+    }
 
     // continue walking up the tree
     NodeStructure::ParentContainer_t::const_iterator itr=destinationNode.getParents().begin(), itr_end=destinationNode.getParents().end();
@@ -970,7 +993,10 @@ const TreeStatistics& ScanRunner::getTreeStatistics() const {
 /** Returns true if NodeStructure is evaluated in scanning processing. */
 bool ScanRunner::isEvaluated(const NodeStructure& node) const {
     // If the node branch does not have the minimum number of cases in branch, it is not evaluated.
-    if (static_cast<unsigned int>(node.getBrC()) < _node_evaluation_minimum) return false;
+    if (_parameters.getModelType() == Parameters::SIGNED_RANK && node.getLevel() == 1)
+        return false; // skip root nodes for signed rank
+    if (_parameters.getModelType() != Parameters::SIGNED_RANK && static_cast<unsigned int>(node.getBrC()) < _node_evaluation_minimum)
+        return false; // skip nodes with insufficient cases in branch
     return node.isEvaluated();
 }
 
@@ -1152,7 +1178,8 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
 
     // Determine number of expected columns based on user settings.
     std::string col_id("<identifier>"), col_count("<count>"), col_pop("<population>"), col_controls("<controls>"), 
-        col_time("<time>"), col_numerator("<number exposed>"), col_denominator("<total number>");
+        col_time("<time>"), col_numerator("<number exposed>"), col_denominator("<total number>"), 
+        col_baseline_prop("<baseline percentage>"), col_current_prop("<current percentage>"), col_sample_site("<sample site>");
     std::vector<std::string> expectedColumns;
     if (_parameters.getModelType() == Parameters::POISSON)
         expectedColumns = boost::assign::list_of (col_id) (col_count) (col_pop);
@@ -1166,6 +1193,8 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
     } else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
         if (_parameters.getScanType() == Parameters::TREETIME) expectedColumns = boost::assign::list_of (col_id) (col_count) (col_time);
         else expectedColumns = boost::assign::list_of (col_count) (col_time);
+    } else if (_parameters.getModelType() == Parameters::SIGNED_RANK) {
+        expectedColumns = boost::assign::list_of(col_id) (col_baseline_prop) (col_current_prop) (col_sample_site);
     } else {
         if (_parameters.getScanType() != Parameters::TIMEONLY) expectedColumns = boost::assign::list_of (col_id) (col_count) (col_time);
         else expectedColumns = boost::assign::list_of (col_count) (col_time);
@@ -1218,15 +1247,17 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
             }
         }
         // Read and verify number of cases column.
-        if  (!string_to_numeric_type<int>(dataSource->getValueAt(countIdx).c_str(), count) || count < 0) {
-            readSuccess = false;
-            _print.Printf(
-                "Error: Record %ld in count file references an invalid number of cases.\n"
-                "The number of cases must be an integer value greater than or equal to zero.\n", 
-                BasePrint::P_READERROR, 
-                dataSource->getCurrentRecordIndex()
-            );
-            continue;
+        if (_parameters.getModelType() != Parameters::SIGNED_RANK) {
+            if  (!string_to_numeric_type<int>(dataSource->getValueAt(countIdx).c_str(), count) || count < 0) {
+                readSuccess = false;
+                _print.Printf(
+                    "Error: Record %ld in count file references an invalid number of cases.\n"
+                    "The number of cases must be an integer value greater than or equal to zero.\n", 
+                    BasePrint::P_READERROR, 
+                    dataSource->getCurrentRecordIndex()
+                );
+                continue;
+            }
         }
         // Now read model specific columns from data source.
         NodeStructure * node = _Nodes[index.second];
@@ -1306,7 +1337,6 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
                         );
                         countDateWarningDisplayed = true;
                     }
-                    
                 } else {
                     readSuccess = false;
                     _print.Printf(
@@ -1331,6 +1361,59 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
             node->refIntC_C()[daysSinceIncidence + _zero_translation_additive] += count;
             node->refIntN_C()[daysSinceIncidence + _zero_translation_additive] += count;
             if (count) _caselessWindows.set(daysSinceIncidence + _zero_translation_additive);
+        } else if (_parameters.getModelType() == Parameters::SIGNED_RANK) {
+            double baseline = 0.0, current = 0.0;
+            std::string sample_site = "";
+            // Read and verify baseline.
+            if (!string_to_numeric_type<double>(dataSource->getValueAt(1).c_str(), baseline)) {
+                readSuccess = false;
+                _print.Printf(
+                    "Error: Record %ld in count file references an invalid baseline proportion.\n"
+                    "The baseline proportion must be a numeric value.\n", 
+                    BasePrint::P_READERROR, 
+                    dataSource->getCurrentRecordIndex()
+                );
+                continue;
+            }
+            // Read and verify current.
+            if (!string_to_numeric_type<double>(dataSource->getValueAt(2).c_str(), current)) {
+                readSuccess = false;
+                _print.Printf(
+                    "Error: Record %ld in count file references an invalid current proportion.\n"
+                    "The current proportion must be a numeric value.\n", 
+                    BasePrint::P_READERROR, 
+                    dataSource->getCurrentRecordIndex()
+                );
+                continue;
+            }
+            // Read sample site identifier.
+            sample_site = dataSource->getValueAt(3);
+            if (sample_site.empty()) {
+                readSuccess = false;
+                _print.Printf(
+                    "Error: Record %ld in count file is missing a sample site identifier.\n", 
+                    BasePrint::P_READERROR, 
+                    dataSource->getCurrentRecordIndex()
+                );
+                continue;
+            }
+            if (checkNonLeafWithData(node, true)) continue;
+            auto itr = std::find(_sample_site_identifiers.begin(), _sample_site_identifiers.end(), sample_site);
+            if (itr == _sample_site_identifiers.end()) {
+                _sample_site_identifiers.push_back(sample_site);
+                itr = _sample_site_identifiers.end() - 1;
+            }
+            if (!node->addSampleSiteData(std::distance(_sample_site_identifiers.begin(), itr), baseline, current)) {
+                readSuccess = false;
+                _print.Printf(
+                    "Error: Record %ld in count file duplicates sample site '%s' for node '%s'.\n", 
+                    BasePrint::P_READERROR, 
+                    dataSource->getCurrentRecordIndex(),
+                    sample_site.c_str(),
+                    node->getIdentifier().c_str()
+                );
+                continue;
+            }
         } else if (Parameters::isTemporalScanType(_parameters.getScanType())) {
             // First check the data on leaves restriction.
             if (checkNonLeafWithData(node, count > 0)) continue;
@@ -1556,7 +1639,7 @@ bool ScanRunner::readProbability(DataSource& source, size_t columnIdx, double& p
 
 /** Ranks cuts then removes those with lesser LLR values, then reports most likely. */
 void ScanRunner::rankCutsAndReportMostLikely() {
-    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
+    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
     if (_Cut.size()) {
         // Sort collection of cuts by log-likelihood.
         std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
@@ -1568,9 +1651,12 @@ void ScanRunner::rankCutsAndReportMostLikely() {
             else ++t;
         }
     }
-    if (_Cut.size())
-        _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.front()->getLogLikelihood()));
-
+    if (_Cut.size()) {
+        if (_parameters.getModelType() == Parameters::SIGNED_RANK)
+            _print.Printf("The log likelihood ratio of the most likely cut is %g.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.front()->getLogLikelihood()));
+        else
+            _print.Printf("The log likelihood ratio of the most likely cut is %lf.\n", BasePrint::P_STDOUT, calcLogLikelihood->LogLikelihoodRatio(_Cut.front()->getLogLikelihood()));
+    }
 }
 
 /** If cut at parent node is identical to cut at child node, removes the parent node cut. */
@@ -1583,6 +1669,8 @@ void ScanRunner::removeIdenticalParentCuts() {
         std::sort(_Cut.begin(), _Cut.end(), [this](CutStructure* a, CutStructure* b) { return _Nodes[a->getID()]->getLevel() < _Nodes[b->getID()]->getLevel(); });
         // compare parent cut to child cuts, if any
         auto identicalCuts = [this](const CutStructure* a, const CutStructure* b) {
+            if (_parameters.getModelType() == Parameters::SIGNED_RANK)
+                return a->getSampleSiteData() == b->getSampleSiteData();
             return a->getC() == b->getC() && a->getExpected(*this) == b->getExpected(*this) && a->getStartIdx() == b->getStartIdx() && a->getEndIdx() == b->getEndIdx();
         };
         for (size_t t = 0; t < _Cut.size();) {
@@ -2268,7 +2356,10 @@ bool ScanRunner::run() {
                 scan_success = scanTreeTemporalConditionNode();
         } else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME)
             scan_success = scanTreeTemporalConditionNodeCensored();
-        else
+        else if (_parameters.getModelType() == Parameters::SIGNED_RANK) {
+            //checkSewerShedDataConsistency(*this, false);
+            scan_success = scanTreeSignedRank();
+        } else
             scan_success = scanTree();
         // Perform simulations if cuts were found in real data or if this is a tree sequential analysis - in which case we need the simulated data for the following looks.
         if (scan_success || _parameters.isSequentialScanTreeOnly()) {
@@ -2282,7 +2373,7 @@ bool ScanRunner::run() {
                     remove(_parameters.getOutputSimulationsFilename().c_str());
                     randomizer->setWriting(_parameters.getOutputSimulationsFilename());
                 }
-                Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, getTotalC(), getTotalN(), isCensoredData()));
+                Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
                 _simVars.reset(calcLogLikelihood->LogLikelihoodRatio(_Cut.front()->getLogLikelihood()));
                 if (_parameters.isSequentialScanPurelyTemporal()) {
                     if (!runsequentialsimulations(_parameters.getNumReplicationsRequested())) return false;
@@ -2297,7 +2388,7 @@ bool ScanRunner::run() {
     if (_print.GetIsCanceled()) return false;
     // if tree-only sequential scan, identify now which cuts signalled in current look
     if (_parameters.isSequentialScanTreeOnly()) {
-        Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, getTotalC(), getTotalN(), isCensoredData()));
+        Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
         for (auto cut : getCuts()) {
             // If this cut hasn't signalled in previous looks but is now, mark as signalling in this look.
             if (reportableCut(*cut) &&
@@ -2422,7 +2513,11 @@ bool ScanRunner::runPowerEvaluations() {
 
 /** DOING THE MONTE CARLO SIMULATIONS */
 bool ScanRunner::runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep, unsigned int iteration) {
-    const char * sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %lf\n";
+    const char* sReplicationFormatString;
+    if (_parameters.getModelType() == Parameters::SIGNED_RANK)
+        sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %.0lf\n";
+    else 
+        sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %lf\n";
     unsigned long ulParallelProcessCount = std::min(_parameters.getNumParallelProcessesToExecute(), num_relica);
 
     try {
@@ -2559,7 +2654,7 @@ size_t ScanRunner::calculateCutsCount() const {
 /** SCANNING THE TREE */
 bool ScanRunner::scanTree() {
     _print.Printf("Scanning the tree ...\n", BasePrint::P_STDOUT);
-    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
+    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
 
     for (size_t n=0; n < _Nodes.size(); ++n) {
         const NodeStructure& thisNode(*_Nodes[n]);
@@ -2636,10 +2731,88 @@ bool ScanRunner::scanTree() {
     return _Cut.size() != 0;
 }
 
+/** SCANNING THE TREE */
+bool ScanRunner::scanTreeSignedRank() {
+    _print.Printf("Scanning the tree ...\n", BasePrint::P_STDOUT);
+    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
+
+    for (size_t n = 0; n < _Nodes.size(); ++n) {
+        const NodeStructure& thisNode(*_Nodes[n]);
+        if (isEvaluated(thisNode)) {
+            // Always do simple cut for each node
+            calculateCut(n, thisNode.getSampleSiteDataBr(), calcLogLikelihood);
+            //if (thisNode.getChildren().size() == 0) continue;
+            Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
+            switch (cutType) {
+            case Parameters::SIMPLE: break; // already done, regardless of specified node cut
+            case Parameters::ORDINAL: { // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
+                CutStructure::CutChildContainer_t currentChildren;
+                // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
+                for (size_t i = 0; i < thisNode.getChildren().size() - 1; ++i) {
+                    const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
+                    currentChildren.clear();
+                    currentChildren.push_back(firstChildNode.getID());
+                    SampleSiteMap_t accumulation = firstChildNode.getSampleSiteDataBr();
+                    for (size_t j = i + 1; j < thisNode.getChildren().size(); ++j) {
+                        const NodeStructure& childNode(*(thisNode.getChildren()[j]));
+                        currentChildren.push_back(childNode.getID());
+                        CutStructure* cut = calculateCut(n, combine(accumulation, childNode.getSampleSiteDataBr()), calcLogLikelihood);
+                        if (cut) cut->setCutChildren(currentChildren);
+                    }
+                }
+            } break;
+            case Parameters::PAIRS: {// Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
+                for (size_t i = 0; i < thisNode.getChildren().size() - 1; ++i) {
+                    const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
+                    for (size_t j = i + 1; j < thisNode.getChildren().size(); ++j) {
+                        SampleSiteMap_t accumulation = startChildNode.getSampleSiteDataBr();
+                        const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
+                        CutStructure* cut = calculateCut(n, combine(accumulation, stopChildNode.getSampleSiteDataBr()), calcLogLikelihood);
+                        if (cut) {
+                            cut->addCutChild(startChildNode.getID(), true);
+                            cut->addCutChild(stopChildNode.getID());
+                        }
+                    }
+                }
+            } break;
+            case Parameters::TRIPLETS: {// Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
+                for (size_t i = 0; i < thisNode.getChildren().size() - 1; ++i) {
+                    const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
+                    for (size_t j = i + 1; j < thisNode.getChildren().size(); ++j) {
+                        SampleSiteMap_t accumulation = startChildNode.getSampleSiteDataBr();
+                        const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
+                        CutStructure* cut = calculateCut(n, combine(accumulation, stopChildNode.getSampleSiteDataBr()), calcLogLikelihood);
+                        if (cut) {
+                            cut->addCutChild(startChildNode.getID(), true);
+                            cut->addCutChild(stopChildNode.getID());
+                        }
+                        for (size_t k = i + 1; k < j; ++k) {
+                            const NodeStructure& middleChildNode(*(thisNode.getChildren()[k]));
+                            SampleSiteMap_t accumulationStartStop = accumulation;
+                            //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
+                            cut = calculateCut(n, combine(accumulationStartStop, middleChildNode.getSampleSiteDataBr()), calcLogLikelihood);
+                            if (cut) {
+                                cut->addCutChild(startChildNode.getID(), true);
+                                cut->addCutChild(middleChildNode.getID());
+                                cut->addCutChild(stopChildNode.getID());
+                            }
+                        }
+                    }
+                }
+            } break;
+            case Parameters::COMBINATORIAL:
+                default: throw prg_error("Unknown cut type (%d).", "scanTreeSignedRank()", cutType);
+            }
+        }
+    }
+    rankCutsAndReportMostLikely();
+    return _Cut.size() != 0;
+}
+
 /** SCANNING THE TREE for temporal model */
 bool ScanRunner::scanTreeTemporalConditionNode() {
     _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
-    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
+    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
 
     // Define the start and end windows with the zero index offset already incorporated.
     DataTimeRange startWindow(temporalStartRange().getStart() + _zero_translation_additive, temporalStartRange().getEnd() + _zero_translation_additive),
@@ -2761,7 +2934,7 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
 /** SCANNING THE TREE for temporal model conditioned on node and censored. */
 bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
     _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
-   Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
+   Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
 
     // Define the start and end windows with the zero index offset already incorporated.
     DataTimeRange startWindow(temporalStartRange().getStart() + _zero_translation_additive, temporalStartRange().getEnd() + _zero_translation_additive),
@@ -2900,7 +3073,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
 /** SCANNING THE TREE for temporal model -- conditioned on the total cases across nodes and time. */
 bool ScanRunner::scanTreeTemporalConditionNodeTime() {
     _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
-    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_parameters, _TotalC, _TotalN, _censored_data));
+    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
 
     // Define the start and end windows with the zero index offset already incorporated.
     DataTimeRange startWindow(temporalStartRange().getStart() + _zero_translation_additive,
@@ -3023,6 +3196,21 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
 }
 
 /** Calculates the log likelihood of the cut over evaluation currently, then updates collection of best cuts by node. */
+CutStructure* ScanRunner::calculateCut(size_t node_index, const SampleSiteMap_t& samplesiteData, const Loglikelihood_t& logCalculator) {
+    double loglikelihood = logCalculator->LogLikelihoodRatio(SampleSiteMapDifferenceProxy(samplesiteData));
+    if (loglikelihood == 0.0 || loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD)
+        // Exclude this cut if log likelihood is unset.
+        return 0;
+
+    std::auto_ptr<CutStructure> cut(new CutStructure());
+    cut->setLogLikelihood(loglikelihood);
+    cut->setID(static_cast<int>(node_index));
+    cut->setSampleSiteData(samplesiteData);
+
+    return updateCut(cut);
+}
+
+/** Calculates the log likelihood of the cut over evaluation currently, then updates collection of best cuts by node. */
 CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx, int BrC_All, double BrN_All) {
     // Skip calculation if branch count does not meet evaluation minimum.
     if (BrC < static_cast<int>(_node_evaluation_minimum)) return 0;
@@ -3084,8 +3272,7 @@ CutStructure * ScanRunner::updateCut(std::auto_ptr<CutStructure>& cut) {
         itr = std::lower_bound(_Cut.begin(), _Cut.end(), cut.get(), CompareCutsByEndIdx());
         if (!(itr != _Cut.end() && (*itr)->getEndIdx() == cut->getEndIdx()))
             return *(_Cut.insert(itr, cut.release()));
-    }
-    else {
+    } else {
         // we're keeping the best cut for each node
         itr = std::lower_bound(_Cut.begin(), _Cut.end(), cut.get(), CompareCutsById());
         if (!(itr != _Cut.end() && (*itr)->getID() == cut->getID()))
@@ -3107,10 +3294,11 @@ bool ScanRunner::setupTree() {
 
     // Initialize variables and calculate the total number of cases
     _TotalC = 0; _TotalN = 0;
-    for(NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
-        std::fill((*itr)->refBrC_C().begin(), (*itr)->refBrC_C().end(), 0);
-        std::fill((*itr)->refBrN_C().begin(), (*itr)->refBrN_C().end(), 0);
-        _TotalC = std::accumulate((*itr)->refIntC_C().begin(), (*itr)->refIntC_C().end(), _TotalC);
+    for(auto node:_Nodes) {
+        std::fill(node->refBrC_C().begin(), node->refBrC_C().end(), 0);
+        std::fill(node->refBrN_C().begin(), node->refBrN_C().end(), 0);
+        _TotalC = std::accumulate(node->refIntC_C().begin(), node->refIntC_C().end(), _TotalC);
+        node->ensureSampleSiteDataExists(_sample_site_identifiers.size());
     }
 
     // If executing sequential scan and the number of cases in counts file is less than user specified total sequential cases.

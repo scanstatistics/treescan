@@ -4,6 +4,10 @@
 //******************************************************************************
 #include "Parameters.h"
 #include "PrjException.h"
+#include "SampleSiteData.h"
+
+class ScanRunner;
+class SampleSiteDifferenceProxy;
 
 /** Abstract base log likelihood class. */
 class AbstractLoglikelihood {
@@ -34,8 +38,12 @@ public:
 	virtual double LogLikelihood(int c, double n, size_t windowLength) const {
         throw prg_error("LogLikelihood(int,int,size_t) not implemented.", "LogLikelihood()");
     }
+    virtual double LogLikelihoodRatio(const SampleSiteDifferenceProxy& ssData) const {
+        throw prg_error("LogLikelihoodRatio(const SampleSiteMap_t& ssData) not implemented.", "LogLikelihood()");
+    }
     virtual double LogLikelihoodRatio(double logLikelihood) const = 0;
-    static AbstractLoglikelihood * getNewLoglikelihood(const Parameters& parameters, int TotalC, double TotalN, bool censored_data);
+    static AbstractLoglikelihood * getNewLoglikelihood(const ScanRunner& scanrunner);
+    static AbstractLoglikelihood * getNewLoglikelihood(const Parameters& parameters, int TotalC, double TotalN, bool censored_data=false, unsigned int sample_sites=0);
     static double UNSET_LOGLIKELIHOOD;
 
     SCANRATE_FUNCPTR _of_interest;
@@ -88,6 +96,61 @@ public:
 };
 
 typedef boost::shared_ptr<AbstractLoglikelihood> Loglikelihood_t;
+
+class SampleSiteDifferenceProxy {
+public:
+    virtual ~SampleSiteDifferenceProxy() {}
+    virtual double nextDifference() const = 0;
+    virtual size_t size() const = 0;
+};
+
+class SampleSiteMapDifferenceProxy : public SampleSiteDifferenceProxy {
+private:
+    const SampleSiteMap_t& _ssData;
+    mutable SampleSiteMap_t::const_iterator _current;
+
+public:
+    SampleSiteMapDifferenceProxy(const SampleSiteMap_t& ssData) : _ssData(ssData), _current(_ssData.cbegin()){}
+    virtual double nextDifference() const {
+        double diff = _current->second.difference();
+        ++_current;
+        return diff;
+    }
+    virtual size_t size() const { return _ssData.size(); }
+};
+
+class SampleSiteVectorDifferenceProxy : public SampleSiteDifferenceProxy {
+private:
+    const std::vector<double>& _ssData;
+    mutable size_t _current;
+
+public:
+    SampleSiteVectorDifferenceProxy(const std::vector<double>& ssData) : _ssData(ssData), _current(0) {}
+    virtual double nextDifference() const {
+        double diff = _ssData[_current];
+        ++_current;
+        return diff;
+    }
+    virtual size_t size() const { return _ssData.size(); }
+};
+
+/** Log likelihood class for the signed rank model. */
+class SignedRankLoglikelihood : public AbstractLoglikelihood {
+private:
+    unsigned int _num_sample_sites;
+    mutable std::vector<std::pair<double,double>> _ranker;
+
+public:
+    SignedRankLoglikelihood(const Parameters& parameters, unsigned int num_sample_sites);
+    virtual ~SignedRankLoglikelihood() {}
+
+    virtual double LogLikelihoodRatio(const SampleSiteDifferenceProxy& ssData) const;
+
+    virtual double  LogLikelihoodRatio(double logLikelihood) const {
+        if (logLikelihood == UNSET_LOGLIKELIHOOD) return 0.0;
+        return logLikelihood;
+    }
+};
 
 /** Log likelihood class for conditional Poisson. */
 class PoissonLoglikelihood : public AbstractLoglikelihood {

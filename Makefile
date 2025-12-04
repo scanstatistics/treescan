@@ -46,6 +46,7 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(RUNNER)/DataSource.cpp \
                $(RUNNER)/DataTimeRanges.cpp \
                $(RUNNER)/RelativeRiskAdjustment.cpp \
+               $(RUNNER)/SampleSiteData.cpp \
                $(OUTPUT)/DataFileWriter.cpp \
                $(OUTPUT)/ResultsFileWriter.cpp \
                $(OUTPUT)/ChartGenerator.cpp \
@@ -59,6 +60,7 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(RANDOMIZER)/TemporalRandomizer.cpp \
                $(RANDOMIZER)/AlternativeHypothesisRandomizer.cpp \
                $(RANDOMIZER)/PermutationDataRandomizer.cpp \
+               $(RANDOMIZER)/WilcoxonSignedRankRandomizer.cpp \
                $(LOGLIKELIHOOD)/Loglikelihood.cpp \
                $(LOGLIKELIHOOD)/CriticalValues.cpp \
                $(UTILITY)/RandomDistribution.cpp \

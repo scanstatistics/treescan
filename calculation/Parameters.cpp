@@ -311,7 +311,8 @@ bool Parameters::getIsTestStatistic() const {
         (_scan_type == TREETIME && _conditional_type == NODEANDTIME) ||
         (_scan_type == TIMEONLY && _conditional_type == TOTALCASES && isPerformingDayOfWeekAdjustment()) ||
         (_scan_type == TREETIME && _conditional_type == NODE && isPerformingDayOfWeekAdjustment()) ||
-        (_scan_type == TREEONLY && _conditional_type == UNCONDITIONAL && _modelType == BERNOULLI_TREE && getVariableCaseProbability())
+        (_scan_type == TREEONLY && _conditional_type == UNCONDITIONAL && _modelType == BERNOULLI_TREE && getVariableCaseProbability()) ||
+        _modelType == SIGNED_RANK
     );
 }
 

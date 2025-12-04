@@ -6,13 +6,15 @@
 #include "PoissonRandomizer.h"
 #include "BernoulliRandomizer.h"
 #include "TemporalRandomizer.h"
+#include "WilcoxonSignedRankRandomizer.h"
 
 /** Returns new randomizer object given parameter settings. */
 AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const ScanRunner& scanner) {
     const Parameters& parameters = scanner.getParameters();
     switch (parameters.getScanType()) {
-
         case Parameters::TREEONLY : {
+            if (parameters.getModelType() == Parameters::SIGNED_RANK)
+                return new WilcoxonSignedRankRandomizer(scanner, parameters.getRandomizationSeed());
             switch (parameters.getConditionalType()) {
                 case Parameters::UNCONDITIONAL :
                     if (parameters.getModelType() == Parameters::POISSON)
@@ -31,7 +33,6 @@ AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const ScanRunner& scan
                 default: throw prg_error("Cannot determine randomizer: tree-only, condition type (%d).", "getNewRandomizer()", parameters.getConditionalType());
             }
         }
-
         case Parameters::TREETIME : {
             switch (parameters.getConditionalType()) {
                 case Parameters::NODE :
@@ -47,7 +48,6 @@ AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const ScanRunner& scan
                 default: throw prg_error("Cannot determine randomizer: tree-time, condition type (%d).", "getNewRandomizer()", parameters.getConditionalType());
             }
         }
-
         case Parameters::TIMEONLY : { // time-only, conditioned on total cases, is a special case of tree-time, conditioned on the node with only one node
             switch (parameters.getConditionalType()) {
                 case Parameters::TOTALCASES :
@@ -59,7 +59,6 @@ AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const ScanRunner& scan
                 default: throw prg_error("Cannot determine randomizer: time-only, condition type (%d).", "getNewRandomizer()", parameters.getConditionalType());
             }
         }
-
         default: throw prg_error("Unknown scan type (%d).", "getNewRandomizer()", parameters.getScanType());
     }
 }

@@ -66,7 +66,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
 
     AsciiPrintFormat PrintFormat;
     Parameters& parameters(const_cast<Parameters&>(_scanRunner.getParameters()));
-    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN(), _scanRunner.isCensoredData()));
+    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_scanRunner));
 
     PrintFormat.PrintVersionHeader(outfile);
     std::string buffer = ctime(&start), buffer2;
@@ -156,8 +156,13 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         outfile << std::endl << "Data Summary:" << std::endl;
         if (!parameters.getPerformPowerEvaluations() ||
             !(parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_ONLY_CASEFILE && parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
-            PrintFormat.PrintSectionLabel(outfile, "Total Cases", false);
-            PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getTotalC()));
+            if (parameters.getModelType() == Parameters::SIGNED_RANK) {
+                PrintFormat.PrintSectionLabel(outfile, "Total Sample Sites", false);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", _scanRunner.getSampleSiteIdentifiers().size()));
+            } else {
+                PrintFormat.PrintSectionLabel(outfile, "Total Cases", false);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getTotalC()));
+            }
             if (_scanRunner.isCensoredData()) {
                 PrintFormat.PrintSectionLabel(outfile, "Total Censored Cases", false);
                 PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getNumCensoredCases()));
@@ -353,18 +358,34 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     PrintFormat.PrintSectionLabel(outfile, "Cases", true);
                 } else if (parameters.getModelType() == Parameters::POISSON) {
                     PrintFormat.PrintSectionLabel(outfile, "Observed Cases", true);
+                } else if (parameters.getModelType() == Parameters::SIGNED_RANK) {
+                    auto proportions = getAverage(thisCut.getSampleSiteData());
+                    PrintFormat.PrintSectionLabel(outfile, "Baseline Average", true);
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%g", proportions.first));
+                    PrintFormat.PrintSectionLabel(outfile, "Current Average", true);
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%g", proportions.second));
+                    PrintFormat.PrintSectionLabel(outfile, "Percent Change", true);
+                    if (proportions.first)
+                        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%g", proportions.second/proportions.first - 1.0));
+                    else
+                        PrintFormat.PrintAlignedMarginsDataString(outfile, "infinity");
+                    PrintFormat.PrintSectionLabel(outfile, "Absolute Change", true);
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%g", std::abs(proportions.second - proportions.first)));
                 }
-                printString(buffer, "%ld", thisCut.getC());
-                PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
-                PrintFormat.PrintSectionLabel(outfile, parameters.getModelType() == Parameters::UNIFORM ? "Expected Cases" : "Expected", true);
-                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getExpected(_scanRunner), buffer));
-                PrintFormat.PrintSectionLabel(outfile, "Relative Risk", true);
+                if (parameters.getModelType() != Parameters::SIGNED_RANK) {
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", thisCut.getC()));
+                    PrintFormat.PrintSectionLabel(outfile, parameters.getModelType() == Parameters::UNIFORM ? "Expected Cases" : "Expected", true);
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getExpected(_scanRunner), buffer));
+                    PrintFormat.PrintSectionLabel(outfile, "Relative Risk", true);
+                }
                 if (parameters.getIsSelfControlVariableBerounlli())
                     PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getRelativeRisk(_scanRunner), buffer));
-                else
+                else if(parameters.getModelType() != Parameters::SIGNED_RANK)
                     PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getRelativeRisk(_scanRunner), buffer));
-                PrintFormat.PrintSectionLabel(outfile, "Excess Cases", true);
-                PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getExcessCases(_scanRunner), buffer));
+                if (parameters.getModelType() != Parameters::SIGNED_RANK) {
+                    PrintFormat.PrintSectionLabel(outfile, "Excess Cases", true);
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getExcessCases(_scanRunner), buffer));
+                }
                 if (parameters.getReportAttributableRisk()) {
                     PrintFormat.PrintSectionLabel(outfile, "Attributable Risk", true);
                     PrintFormat.PrintAlignedMarginsDataString(outfile, AttributableRiskAsString(thisCut.getAttributableRisk(_scanRunner), buffer));
@@ -378,6 +399,8 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                 double llr = calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood());
                 if (parameters.isSequentialScanTreeOnly() && !macro_less_than(MIN_CUT_LLR, llr, DBL_CMP_TOLERANCE))
                     buffer = "Not Applicable"; // It's possible that this cut signalled in prior look but now its llr is not significant.
+                else if (parameters.getModelType() == Parameters::SIGNED_RANK)
+                    printString(buffer, "%.0lf", llr);
                 else
                     printString(buffer, "%.6lf", llr);
                 PrintFormat.PrintAlignedMarginsDataString(outfile, buffer);
@@ -406,28 +429,49 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     // Print critical values if requested.
     if ((parameters.getReportCriticalValues() && parameters.getNumReplicationsRequested() >= 19) || 
         (parameters.getPerformPowerEvaluations() && parameters.getCriticalValuesType() == Parameters::CV_MONTECARLO)) {
+        PrintFormat.SetMarginsAsOverviewSection();
         PrintFormat.PrintSectionStatement(outfile, 
             "A cut is statistically significant when its log likelihood ratio is greater than the critical value, which is, for significance level:"
         );
         if (parameters.getNumReplicationsRequested() >= 99999) {
             CriticalValues::alpha_t alpha00001(_scanRunner.getCriticalValues().getAlpha00001());
-            outfile << "... 0.00001: " <<  alpha00001.second << std::endl;
+            outfile << "... 0.00001: ";
+            if (parameters.getModelType() == Parameters::SIGNED_RANK)
+                outfile <<  printString(buffer, "%.0lf", alpha00001.second) << std::endl;
+            else
+                outfile <<  alpha00001.second << std::endl;
         }
         if (parameters.getNumReplicationsRequested() >= 9999) {
             CriticalValues::alpha_t alpha0001(_scanRunner.getCriticalValues().getAlpha0001());
-            outfile << "... 0.0001: " <<  alpha0001.second << std::endl;
+            outfile << "... 0.0001: ";
+            if (parameters.getModelType() == Parameters::SIGNED_RANK)
+                outfile << printString(buffer, "%.0lf", alpha0001.second) << std::endl;
+            else
+                outfile << alpha0001.second << std::endl;
         }
         if (parameters.getNumReplicationsRequested() >= 999) {
             CriticalValues::alpha_t alpha001(_scanRunner.getCriticalValues().getAlpha001());
-            outfile << "... 0.001: " <<  alpha001.second << std::endl;
+            outfile << "... 0.001: ";
+            if (parameters.getModelType() == Parameters::SIGNED_RANK)
+                outfile << printString(buffer, "%.0lf", alpha001.second) << std::endl;
+            else
+                outfile << alpha001.second << std::endl;
         }
         if (parameters.getNumReplicationsRequested() >= 99) {
             CriticalValues::alpha_t alpha01(_scanRunner.getCriticalValues().getAlpha01());
-            outfile << "... 0.01: " <<  alpha01.second << std::endl;
+            outfile << "... 0.01: ";
+            if (parameters.getModelType() == Parameters::SIGNED_RANK)
+                outfile << printString(buffer, "%.0lf", alpha01.second) << std::endl;
+            else
+                outfile << alpha01.second << std::endl;
         }
         if (parameters.getNumReplicationsRequested() >= 19) {
             CriticalValues::alpha_t alpha05(_scanRunner.getCriticalValues().getAlpha05());
-            outfile << "... 0.05: " <<  alpha05.second << std::endl;
+            outfile << "... 0.05: ";
+            if (parameters.getModelType() == Parameters::SIGNED_RANK)
+                outfile << printString(buffer, "%.0lf", alpha05.second) << std::endl;
+            else
+                outfile << alpha05.second << std::endl;
         }
         outfile << std::endl;
     }
@@ -496,6 +540,7 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & stat
                     if (_scanRunner.getParameters().getSelfControlDesign())
                         buffer << " (self-control design)";
                     break;
+                case Parameters::SIGNED_RANK: buffer << " Signed Rank model"; break;
                 case Parameters::UNIFORM : break;
                 default: throw prg_error("Unknown nodel type (%d).", "getAnalysisSuccinctStatement()", parameters.getModelType());
             }
@@ -724,7 +769,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     std::ofstream outfile;
     openStream(getHtmlFilename(parameters, buffer), outfile);
     if (!outfile) return false;
-    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN(), _scanRunner.isCensoredData()));
+    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_scanRunner));
 
     outfile << "<!DOCTYPE html>" << std::endl; 
     outfile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " << std::endl;
@@ -793,7 +838,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         if (root_counter > 0)
             outfile << ", children: [" << std::endl << rootstream.str() << "]";
         outfile << " }" << std::endl << "};" << std::endl;
-        outfile << "$(document).ready(function(){if (Object.keys(chart_config.nodeStructure).length < 2){$('#show_tree').addClass('disabled').html('Tree Visualization (No nodes for display)');}});</script>" << std::endl;
+        outfile << "$(document).ready(function(){if (Object.keys(chart_config.nodeStructure).length < 2){$('#show_tree').addClass('disabled').html('Cuts Visualization (No nodes for display)');}});</script>" << std::endl;
     }
     outfile << "<script src=\"https://www.treescan.org/html-results/treescan-results.1.3.1.js\" type=\"text/javascript\"></script>" << std::endl;
     outfile << "<body>" << std::endl;
@@ -848,7 +893,10 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "<tr><th class='section-caption'><span>Data Summary</span></th><td></td></tr>" << std::endl;
         if (!parameters.getPerformPowerEvaluations() ||
             !(parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_ONLY_CASEFILE && parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
-            outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
+            if (parameters.getModelType() == Parameters::SIGNED_RANK)
+                outfile << "<tr><th>Total Sample Sites:</th><td>" << _scanRunner.getSampleSiteIdentifiers().size() << "</td></tr>" << std::endl;
+            else 
+                outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
             if (_scanRunner.isCensoredData()) {
                 outfile << "<tr><th>Total Censored Cases:</th><td>" << _scanRunner.getNumCensoredCases() << "</td></tr>" << std::endl;
                 outfile << "<tr><th>Average Censoring Time:</th><td>" << _scanRunner.getAvgCensorTime() << "</td></tr>" << std::endl;
@@ -881,17 +929,17 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     }
     outfile << "</tbody></table></div>" << std::endl;
 
-    outfile << "<div class=\"hr\"></div>" << std::endl;
+    outfile << "<div class='hr'></div>" << std::endl;
     if (parameters.isSequentialScanPurelyTemporal() && static_cast<unsigned int>(_scanRunner.getTotalC()) > parameters.getSequentialMaximumSignal()) {
         outfile << "<div class=\"warning\">Note: The sequential scan reached or exceeded the specified maximum cases. The sequential analysis is over.</div><div class=\"hr\"></div>";
     } else if (!parameters.getPerformPowerEvaluations() || (parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         if (treeSequentialAnalysisComplete())
-            outfile << "<div class=\"warning\">Note: The alpha spending for sequential scan reached the specified alpha overall. The sequential analysis is over.</div><div class=\"hr\"></div>";
-        outfile << "<div id=\"cuts\">" << std::endl;
+            outfile << "<div class='warning'>Note: The alpha spending for sequential scan reached the specified alpha overall. The sequential analysis is over.</div><div class='hr'></div>";
+        outfile << "<div id='cuts'>" << std::endl;
         if (_scanRunner.getCuts().size() == 0 || !_scanRunner.reportableCut(*_scanRunner.getCuts()[0])) {
             outfile << "<h3>No cuts were found.</h3>" << std::endl;
         } else {
-            outfile << "<h3>MOST LIKELY CUTS</h3><div><table id=\"id_cuts\" class=\"display\" style=\"width:100%\">" << std::endl;
+            outfile << "<h3>MOST LIKELY CUTS</h3><div><table id='id_cuts' class='display' style='width:100%'>" << std::endl;
             outfile << "<thead><tr><th>No.</th>";
             // skip reporting node identifier for time-only scans
             if (parameters.getScanType() != Parameters::TIMEONLY) {
@@ -912,11 +960,14 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
                 outfile << "<th>Observations</th><th>Cases</th>";
             } else if (parameters.getModelType() == Parameters::POISSON) {
                 outfile << "<th>Observed Cases</th>";
+            } else if (parameters.getModelType() == Parameters::SIGNED_RANK) {
+                outfile << "<th>Baseline Average</th><th>Current Average</th><th>Percent Change</th><th>Absolute Change</th>";
             }
-            outfile << "<th>" << (parameters.getModelType() == Parameters::UNIFORM ? "Expected Cases" : "Expected") << "</th>";
-            outfile << "<th>Relative Risk</th><th>Excess Cases</th>" << std::endl;
-            if (parameters.getReportAttributableRisk()) {
-                outfile << "<th>Attributable Risk</th>" << std::endl;
+            if (parameters.getModelType() != Parameters::SIGNED_RANK) {
+                outfile << "<th>" << (parameters.getModelType() == Parameters::UNIFORM ? "Expected Cases" : "Expected") << "</th>";
+                outfile << "<th>Relative Risk</th><th>Excess Cases</th>" << std::endl;
+                if (parameters.getReportAttributableRisk())
+                    outfile << "<th>Attributable Risk</th>" << std::endl;
             }
             if (parameters.getIsTestStatistic()) {
                 // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
@@ -961,8 +1012,8 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     }
 
     if (showingTreeGraph) {
-        outfile << "<a class=\"btn btn-primary btn-sm\" id=\"show_tree\" data-toggle=\"collapse\" href=\"#collapseExample\" role=\"button\" aria-expanded=\"false\" aria-controls=\"collapseExample\">Tree Visualization</a>" << std::endl;
-        outfile << "<div class=\"collapse\" id=\"collapseExample\"><h3>Visualization of Analysis Tree  <span id=\"loading_graph\">... loading <i class=\"fa fa-circle-o-notch fa-spin\"></i></span><span id=\"fail_message\"></span></h3>";
+        outfile << "<a class=\"btn btn-primary btn-sm\" id=\"show_tree\" data-toggle=\"collapse\" href=\"#collapseExample\" role=\"button\" aria-expanded=\"false\" aria-controls=\"collapseExample\">Cuts Visualization</a>" << std::endl;
+        outfile << "<div class=\"collapse\" id=\"collapseExample\"><h3>Visualization of Cuts in Tree  <span id=\"loading_graph\">... loading <i class=\"fa fa-circle-o-notch fa-spin\"></i></span><span id=\"fail_message\"></span></h3>";
         outfile << "<div class=\"row\">" << std::endl;
 
         outfile << "<div class=\"col-3\"><div class=\"custom-control custom-radio\">" << std::endl;
@@ -1028,23 +1079,43 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << std::endl << "<div>A cut is statistically significant when its log likelihood ratio is greater than the critical value, which is, for significance level:</div>" << std::endl;
         if (parameters.getNumReplicationsRequested() >= 99999) {
             CriticalValues::alpha_t alpha00001(_scanRunner.getCriticalValues().getAlpha00001());
-            outfile << "<div>... 0.00001: " <<  alpha00001.second << "</div>" << std::endl;
+            outfile << "<div>... 0.00001: ";
+            if (parameters.getModelType() == Parameters::SIGNED_RANK)
+                outfile << printString(buffer, "%.0lf", alpha00001.second) << "</div>" << std::endl;
+            else
+                outfile << alpha00001.second << "</div>" << std::endl;
         }
         if (parameters.getNumReplicationsRequested() >= 9999) {
             CriticalValues::alpha_t alpha0001(_scanRunner.getCriticalValues().getAlpha0001());
-            outfile << "<div>... 0.0001: " <<  alpha0001.second << "</div>"<< std::endl;
+            outfile << "<div>... 0.0001: ";
+            if (parameters.getModelType() == Parameters::SIGNED_RANK)
+                outfile << printString(buffer, "%.0lf", alpha0001.second) << "</div>" << std::endl;
+            else
+                outfile << alpha0001.second << "</div>" << std::endl;
         }
         if (parameters.getNumReplicationsRequested() >= 999) {
             CriticalValues::alpha_t alpha001(_scanRunner.getCriticalValues().getAlpha001());
-            outfile << "<div>... 0.001: " <<  alpha001.second << "</div>" << std::endl;
+            outfile << "<div>... 0.001: ";
+            if (parameters.getModelType() == Parameters::SIGNED_RANK)
+                outfile << printString(buffer, "%.0lf", alpha001.second) << "</div>" << std::endl;
+            else
+                outfile << alpha001.second << "</div>" << std::endl;
         }
         if (parameters.getNumReplicationsRequested() >= 99) {
             CriticalValues::alpha_t alpha01(_scanRunner.getCriticalValues().getAlpha01());
-            outfile << "<div>... 0.01: " <<  alpha01.second << "</div>" << std::endl;
+            outfile << "<div>... 0.01: ";
+            if (parameters.getModelType() == Parameters::SIGNED_RANK)
+                outfile << printString(buffer, "%.0lf", alpha01.second) << "</div>" << std::endl;
+            else
+                outfile << alpha01.second << "</div>" << std::endl;
         }
         if (parameters.getNumReplicationsRequested() >= 19) {
             CriticalValues::alpha_t alpha05(_scanRunner.getCriticalValues().getAlpha05());
-            outfile << "<div>... 0.05: " <<  alpha05.second << "</div>" << std::endl;
+            outfile << "<div>... 0.05: ";
+            if (parameters.getModelType() == Parameters::SIGNED_RANK)
+                outfile << printString(buffer, "%.0lf", alpha05.second) << "</div>" << std::endl;
+            else
+                outfile << alpha05.second << "</div>" << std::endl;
         }
         outfile << "</div>" << std::endl;
     }
@@ -1123,7 +1194,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
             if (CutsRecordWriter::includeChild(_scanRunner, thisCut, *(record))) // Add this record if it is interesting.
                 childRecords.push_back(record);
         }
-        CutsRecordWriter::sortChildRecords(childRecords);
+        CutsRecordWriter::sortChildRecords(childRecords, _scanRunner.getParameters(), thisCut.getRate(_scanRunner));
         buffer = thisNode.getIdentifier();
         outfile << "<td>" << (childRecords.size() > 0 ? "<a href=\"#\" class=\"cut-node-w-children\">" : "") << htmlencode(buffer);
         outfile << (childRecords.size() > 0 ? "</a>" : "") << "</td>";
@@ -1199,24 +1270,36 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         else
             outfile << "<td>" << static_cast<int>(thisCut.getN()) << "</td>";
     }
-    // write cases in window or cases or observed cases, depending on settings
-    outfile << "<td>" << thisCut.getC() << "</td>";
-    outfile << "<td>" << getValueAsString(thisCut.getExpected(_scanRunner), buffer) << "</td>";
-    double rr = thisCut.getRelativeRisk(_scanRunner);
-    outfile << "<td data-order=" << std::scientific << (rr == std::numeric_limits<double>::infinity() ? std::numeric_limits<double>::max() : rr);
-    if (parameters.getIsSelfControlVariableBerounlli())
-        outfile << std::fixed << ">" << getValueAsString(rr, buffer) << "</td>";
-    else
-        outfile << std::fixed << ">" << getValueAsString(rr, buffer) << "</td>";
-    outfile << "<td>" << getValueAsString(thisCut.getExcessCases(_scanRunner), buffer) << "</td>";
-    if (parameters.getReportAttributableRisk()) {
-        double ar = thisCut.getAttributableRisk(_scanRunner);
-        outfile << "<td data-order="<< ar << ">" << AttributableRiskAsString(ar, buffer) << "</td>";
+    if (parameters.getModelType() == Parameters::SIGNED_RANK) {
+        auto proportions = getAverage(thisCut.getSampleSiteData());
+        outfile << "<td>" << printString(buffer, "%g", proportions.first) << "</td><td>" << printString(buffer2, "%g", proportions.second) << "</td>";
+        if (proportions.first)
+            outfile << "<td>" << printString(buffer, "%g", proportions.second/proportions.first - 1.0);
+        else
+            outfile << "<td data-order=99999>infinity";
+        outfile << "</td><td>" << printString(buffer2, "%g", std::abs(proportions.second - proportions.first)) << "</td>";
+    } else {
+        // write cases in window or cases or observed cases, depending on settings
+        outfile << "<td>" << thisCut.getC() << "</td>";
+        outfile << "<td>" << getValueAsString(thisCut.getExpected(_scanRunner), buffer) << "</td>";
+        double rr = thisCut.getRelativeRisk(_scanRunner);
+        outfile << "<td data-order=" << std::scientific << (rr == std::numeric_limits<double>::infinity() ? std::numeric_limits<double>::max() : rr);
+        if (parameters.getIsSelfControlVariableBerounlli())
+            outfile << std::fixed << ">" << getValueAsString(rr, buffer) << "</td>";
+        else
+            outfile << std::fixed << ">" << getValueAsString(rr, buffer) << "</td>";
+        outfile << "<td>" << getValueAsString(thisCut.getExcessCases(_scanRunner), buffer) << "</td>";
+        if (parameters.getReportAttributableRisk()) {
+            double ar = thisCut.getAttributableRisk(_scanRunner);
+            outfile << "<td data-order="<< ar << ">" << AttributableRiskAsString(ar, buffer) << "</td>";
+        }
     }
     double llr = calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood());
     if (parameters.isSequentialScanTreeOnly() && !macro_less_than(MIN_CUT_LLR, llr, DBL_CMP_TOLERANCE))
         outfile << "<td data-order=0>Not Applicable</td>"; 
-    else {
+    else if (parameters.getModelType() == Parameters::SIGNED_RANK) {
+        outfile << "<td>" << printString(buffer, "%.0lf", llr) << "</td>";
+    } else {
         printString(buffer, "%.6lf", llr);
         outfile << "<td data-order=" << buffer << ">" << buffer << "</td>";
     }
@@ -1285,6 +1368,12 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
                     string_values.push_back(printString(buffer, "'%ld'", static_cast<int>(Record->GetFieldValue(CutsRecordWriter::OBSERVED_CASES_FIELD).AsDouble())));
                     string_values.push_back(printString(buffer, "'%s'", getValueAsString(Record->GetFieldValue(CutsRecordWriter::EXPECTED_FIELD).AsDouble(), buffer2).c_str()));
                     break;
+                case Parameters::SIGNED_RANK:
+                    string_values.push_back(printString(buffer, "'%g'", Record->GetFieldValue(CutsRecordWriter::SS_BASELINE_FIELD).AsDouble()));
+                    string_values.push_back(printString(buffer, "'%g'", Record->GetFieldValue(CutsRecordWriter::SS_CURRENT_FIELD).AsDouble()));
+                    string_values.push_back(printString(buffer, "'%g'", Record->GetFieldValue(CutsRecordWriter::SS_PERC_CHANGE_FIELD).AsDouble()));
+                    string_values.push_back(printString(buffer, "'%g'", Record->GetFieldValue(CutsRecordWriter::SS_ABS_CHANGE_FIELD).AsDouble()));
+                    break;
                 case Parameters::UNIFORM:
                 case Parameters::MODEL_NOT_APPLICABLE:
                 default:
@@ -1303,10 +1392,11 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
                     } else
                         throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", parameters.getModelType());
             }
-            string_values.push_back(printString(buffer, "'%s'", getValueAsString(Record->GetFieldValue(CutsRecordWriter::RELATIVE_RISK_FIELD).AsDouble(), buffer2).c_str()));
-            string_values.push_back(printString(buffer, "'%s'", getValueAsString(Record->GetFieldValue(CutsRecordWriter::EXCESS_CASES_FIELD).AsDouble(), buffer2).c_str()));
-            if (parameters.getReportAttributableRisk()) {
-                string_values.push_back(printString(buffer, "'%s'", AttributableRiskAsString(Record->GetFieldValue(CutsRecordWriter::ATTRIBUTABLE_RISK_FIELD).AsDouble(), buffer2).c_str()));
+            if (parameters.getModelType() != Parameters::SIGNED_RANK) {
+                string_values.push_back(printString(buffer, "'%s'", getValueAsString(Record->GetFieldValue(CutsRecordWriter::RELATIVE_RISK_FIELD).AsDouble(), buffer2).c_str()));
+                string_values.push_back(printString(buffer, "'%s'", getValueAsString(Record->GetFieldValue(CutsRecordWriter::EXCESS_CASES_FIELD).AsDouble(), buffer2).c_str()));
+                if (parameters.getReportAttributableRisk())
+                    string_values.push_back(printString(buffer, "'%s'", AttributableRiskAsString(Record->GetFieldValue(CutsRecordWriter::ATTRIBUTABLE_RISK_FIELD).AsDouble(), buffer2).c_str()));
             }
             string_values.push_back(not_applicable);
             if (_scanRunner.reportablePValue(thisCut)) {
@@ -1398,6 +1488,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
     const Parameters& parameters = _scanRunner.getParameters();
     bool sequentialTreeOnly = parameters.isSequentialScanTreeOnly();
     bool prospectiveScan = parameters.getIsProspectiveAnalysis();
+    bool signedrank = parameters.getModelType() == Parameters::SIGNED_RANK;
     std::stringstream nodestream;
     // Write header section to this nodestream.
     std::string buffer(node.getOutputLabel()), parent;
@@ -1423,7 +1514,11 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
             node_attr_rr.get<0>() = static_cast<double>(_scanRunner.getSequentialStatistic().testCutSignaled(static_cast<size_t>(itr->second->getID())));
         else
             node_attr_rr.get<0>() = itr->second->getPValue(_scanRunner);
-        node_attr_rr.get<1>() = itr->second->getRelativeRisk(_scanRunner);
+        // Get relative risk for this node.
+        // For signed-rank model, relative risk is not defined, so set to 0.0 for now.
+        // There might be some future request to revise this feature for signed-rank model, so
+        // I'm not guesss to what might be nor am I going to remove it currently.
+        node_attr_rr.get<1>() = signedrank ? 0.0 : itr->second->getRelativeRisk(_scanRunner);
         nodestream << "<li>RR = " << getValueAsString(node_attr_rr.get<1>(), buffer);
         if (sequentialTreeOnly) {
             if (node_attr_rr.get<0>() != 0.0)

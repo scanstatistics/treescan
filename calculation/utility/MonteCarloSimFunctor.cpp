@@ -21,16 +21,16 @@ AbstractMeasureList * AbstractMeasureList::getNewMeasureList(const ScanRunner& s
 }
 
 /* Constructor */
-MCSimSuccessiveFunctor::MCSimSuccessiveFunctor(boost::mutex& mutex,
-                                               boost::shared_ptr<AbstractRandomizer> randomizer,
-                                               const ScanRunner& scanRunner) : _mutex(mutex), _randomizer(randomizer), _scanRunner(scanRunner) {
+MCSimSuccessiveFunctor::MCSimSuccessiveFunctor(
+    boost::mutex& mutex, boost::shared_ptr<AbstractRandomizer> randomizer, const ScanRunner& scanRunner
+):_mutex(mutex), _randomizer(randomizer), _scanRunner(scanRunner) {
     // This will need refactoring if we ever implement multiple data time ranges.
     const Parameters& parameters = _scanRunner.getParameters();
     size_t daysInDataTimeRange = Parameters::isTemporalScanType(parameters.getScanType()) ?parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
     for (auto node: _scanRunner.getNodes())
-        _treeSimNodes.push_back(SimulationNode(daysInDataTimeRange, node->getLevel()));
+        _treeSimNodes.push_back(SimulationNode(daysInDataTimeRange, node->getLevel(), static_cast<unsigned int>(_scanRunner.getSampleSiteIdentifiers().size())));
     //_treeSimNodes.resize(_scanRunner.getNodes().size(), SimulationNode(daysInDataTimeRange));
-    _loglikelihood.reset(AbstractLoglikelihood::getNewLoglikelihood(_scanRunner.getParameters(), _scanRunner.getTotalC(), _scanRunner.getTotalN(), _scanRunner.isCensoredData()));
+    _loglikelihood.reset(AbstractLoglikelihood::getNewLoglikelihood(_scanRunner));
 
     if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||
         (parameters.getScanType() == Parameters::TIMEONLY && parameters.isPerformingDayOfWeekAdjustment()) ||
@@ -53,6 +53,8 @@ MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuc
                 temp_result.dSuccessfulResult = scanTreeTemporalConditionNode(param);
         else if (parameters.getModelType() == Parameters::BERNOULLI_TIME)
             temp_result.dSuccessfulResult = scanTreeTemporalConditionNodeCensored(param);
+        else if (parameters.getModelType() == Parameters::SIGNED_RANK)
+            temp_result.dSuccessfulResult = scanTreeSignedRank(param);
         else
             temp_result.dSuccessfulResult = scanTree(param);
         temp_result.bUnExceptional = true;
@@ -86,7 +88,10 @@ MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuc
 /** Returns true if NodeStructure/SimulationNode is evaluated in scanning processing. */
 bool MCSimSuccessiveFunctor::isEvaluated(const NodeStructure& node, const SimulationNode& simNode) const {
     // If the node branch does not have the minimum number of cases in branch, it is not evaluated.
-    if (static_cast<unsigned int>(simNode.getBrC()) < _scanRunner.getNodeEvaluationMinimum()) return false;
+    if (_scanRunner.getParameters().getModelType() == Parameters::SIGNED_RANK && node.getLevel() == 1)
+        return false; // skip root nodes for signed rank
+    if (_scanRunner.getParameters().getModelType() != Parameters::SIGNED_RANK && static_cast<unsigned int>(node.getBrC()) < _scanRunner.getNodeEvaluationMinimum())
+        return false; // skip nodes with insufficient cases in branch
     return node.isEvaluated();
 }
 
@@ -155,6 +160,88 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTree(
     } // for i<nNodes
 
     return std::make_pair(simLogLikelihood,TotalSimC);
+}
+
+/** This function randomizes data and scans tree for either the signed rank model. */
+MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeSignedRank(MCSimSuccessiveFunctor::param_type const& param) {
+    // randomize data
+    int TotalSimC = _randomizer.get()->RandomizeData(param, _scanRunner.getNodes(), _mutex, _treeSimNodes);
+
+    //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
+    const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
+    double simLogLikelihood = 0;
+    for (size_t n = 0; n < nodes.size(); ++n) {
+        const NodeStructure& thisNode(*(nodes[n]));
+        if (isEvaluated(thisNode, _treeSimNodes[n])) {
+            // always do simple cut
+            simLogLikelihood = std::max(
+                simLogLikelihood, 
+                _loglikelihood->LogLikelihoodRatio(SampleSiteVectorDifferenceProxy(_treeSimNodes[n].getSampleSiteDifferencesBr()))
+            );
+            Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
+            switch (cutType) {
+            case Parameters::SIMPLE: break; // already done
+            case Parameters::ORDINAL: {// Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
+                for (size_t i = 0; i < thisNode.getChildren().size() - 1; ++i) {
+                    const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
+                    SimulationNode::SampleSiteDiff_t accumulation = _treeSimNodes[i].getSampleSiteDifferencesBr();
+                    for (size_t j = i + 1; j < thisNode.getChildren().size(); ++j) {
+                        const NodeStructure& childNode(*(thisNode.getChildren()[j]));
+                        const auto& childNodeDiffBr = _treeSimNodes[static_cast<size_t>(childNode.getID())].getSampleSiteDifferencesBr();
+                        std::transform(childNodeDiffBr.begin(), childNodeDiffBr.end(), accumulation.begin(), accumulation.begin(), std::plus<double>());
+                        simLogLikelihood = std::max(
+                            simLogLikelihood,
+                            _loglikelihood->LogLikelihoodRatio(SampleSiteVectorDifferenceProxy(accumulation))
+                        );
+                    }
+                }
+            } break;
+            case Parameters::PAIRS: {// Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
+                for (size_t i = 0; i < thisNode.getChildren().size() - 1; ++i) {
+                    const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
+                    for (size_t j = i + 1; j < thisNode.getChildren().size(); ++j) {
+                        SimulationNode::SampleSiteDiff_t accumulation = _treeSimNodes[static_cast<size_t>(startChildNode.getID())].getSampleSiteDifferencesBr();
+                        const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
+                        const auto& childNodeDiffBr = _treeSimNodes[static_cast<size_t>(stopChildNode.getID())].getSampleSiteDifferencesBr();
+                        std::transform(childNodeDiffBr.begin(), childNodeDiffBr.end(), accumulation.begin(), accumulation.begin(), std::plus<double>());
+                        simLogLikelihood = std::max(
+                            simLogLikelihood,
+                            _loglikelihood->LogLikelihoodRatio(SampleSiteVectorDifferenceProxy(accumulation))
+                        );
+                    }
+                }
+            } break;
+            case Parameters::TRIPLETS: {// Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
+                for (size_t i = 0; i < thisNode.getChildren().size() - 1; ++i) {
+                    const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
+                    for (size_t j = i + 1; j < thisNode.getChildren().size(); ++j) {
+                        SimulationNode::SampleSiteDiff_t accumulation = _treeSimNodes[static_cast<size_t>(startChildNode.getID())].getSampleSiteDifferencesBr();
+                        const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
+                        const auto& childNodeDiffBr = _treeSimNodes[static_cast<size_t>(stopChildNode.getID())].getSampleSiteDifferencesBr();
+                        std::transform(childNodeDiffBr.begin(), childNodeDiffBr.end(), accumulation.begin(), accumulation.begin(), std::plus<double>());
+                        simLogLikelihood = std::max(
+                            simLogLikelihood,
+                            _loglikelihood->LogLikelihoodRatio(SampleSiteVectorDifferenceProxy(accumulation))
+                        );
+                        for (size_t k = i + 1; k < j; ++k) {
+                            SimulationNode::SampleSiteDiff_t accumulationStartStop = accumulation;
+                            const NodeStructure& middleChildNode(*(thisNode.getChildren()[k]));
+                            const auto& middleChildNodeDiffBr = _treeSimNodes[static_cast<size_t>(middleChildNode.getID())].getSampleSiteDifferencesBr();
+                            std::transform(middleChildNodeDiffBr.begin(), middleChildNodeDiffBr.end(), accumulationStartStop.begin(), accumulationStartStop.begin(), std::plus<double>());
+                            simLogLikelihood = std::max(
+                                simLogLikelihood,
+                                _loglikelihood->LogLikelihoodRatio(SampleSiteVectorDifferenceProxy(accumulationStartStop))
+                            );
+                        }
+                    }
+                }
+            } break;
+            case Parameters::COMBINATORIAL: default: throw prg_error("Unknown cut type (%d).", "scanTree()", cutType);
+            };
+        }
+    } // for i<nNodes
+
+    return std::make_pair(simLogLikelihood, TotalSimC);
 }
 
 /** This function randomizes data and scans tree for either the temporal model. */
@@ -558,7 +645,7 @@ SequentialMCSimSuccessiveFunctor::SequentialMCSimSuccessiveFunctor(boost::mutex&
     : _mutex(mutex), _scanRunner(scanner), _sequential_writer(writer) {
     // This will need refactoring if we ever implement multiple data time ranges.
     const Parameters& parameters = _scanRunner.getParameters();
-    _treeSimNode.reset(new SimulationNode(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1, 1));
+    _treeSimNode.reset(new SimulationNode(parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1, 1, 0));
 
     // This will need refactoring if we ever implement multiple data time ranges.
     DataTimeRange min_max = parameters.getDataTimeRangeSet().getMinMax();
@@ -573,7 +660,7 @@ SequentialMCSimSuccessiveFunctor::SequentialMCSimSuccessiveFunctor(boost::mutex&
 
     // Define the minimum and maximum window lengths.
     _window = _scanRunner.getNewWindowLength();
-    _loglikelihood.reset(AbstractLoglikelihood::getNewLoglikelihood(parameters, _scanRunner.getTotalC(), _scanRunner.getTotalN(), _scanRunner.isCensoredData()));
+    _loglikelihood.reset(AbstractLoglikelihood::getNewLoglikelihood(_scanRunner));
 }
 
 SequentialMCSimSuccessiveFunctor::result_type SequentialMCSimSuccessiveFunctor::operator() (SequentialMCSimSuccessiveFunctor::param_type const & param) {

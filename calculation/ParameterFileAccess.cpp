@@ -70,7 +70,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             // Analysis
             case Parameters::SCAN_TYPE               : return "scan type (TREEONLY=0, TREETIME=1, TIMEONLY=2)";
             case Parameters::CONDITIONAL_TYPE        : return "conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)";
-            case Parameters::MODEL_TYPE              : return "probability model type (POISSON=0, BERNOULLI_TREE=1, UNIFORM=2, Not-Applicable=3)";
+            case Parameters::MODEL_TYPE              : return "probability model type (POISSON=0, BERNOULLI_TREE=1, UNIFORM=2, Not-Applicable=3, BERNOULLI_TIME=4, SIGNED_RANK=5)";
             case Parameters::SELF_CONTROL_DESIGN     : return "self control design - unconditional Bernoulli only (y/n)";
             case Parameters::EVENT_PROBABILITY       : return "case probability (integer/integer)";
             case Parameters::VARIABLE_CASE_PROBABILITY: return "variable case probability - unconditional Bernoulli only (y/n)";
@@ -398,7 +398,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
                                                         _parameters.setScanType((Parameters::ScanType)iValue); break;
             case Parameters::CONDITIONAL_TYPE         : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::UNCONDITIONAL, Parameters::NODEANDTIME);
                                                         _parameters.setConditionalType((Parameters::ConditionalType)iValue); break;
-            case Parameters::MODEL_TYPE               : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::POISSON, Parameters::BERNOULLI_TIME);
+            case Parameters::MODEL_TYPE               : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::POISSON, Parameters::SIGNED_RANK);
                                                         _parameters.setModelType((Parameters::ModelType)iValue); break;
             case Parameters::SELF_CONTROL_DESIGN      : _parameters.setSelfControlDesign(ReadBoolean(value, e)); break;
             case Parameters::EVENT_PROBABILITY        : _parameters.setProbabilityRatio(ReadRatio(value, Parameters::EVENT_PROBABILITY)); break;

@@ -61,7 +61,8 @@ unsigned int RecordBuffer::GetFieldIndex(const std::string& sFieldName) const {
        bFound = (!strcmp(vFieldDefinitions[i]->GetName(), sFieldName.c_str()));
        iPosition = i;
    }
-   if (!bFound) throw prg_error("Field name %s not found in the field vector.", "GetFieldIndex()", sFieldName.c_str());
+   if (!bFound) 
+    throw prg_error("Field name %s not found in the field vector.", "GetFieldIndex()", sFieldName.c_str());
   }
   catch (prg_exception& x) {
     x.addTrace("GetFieldIndex()","RecordBuffer");
@@ -227,6 +228,11 @@ const char * DataRecordWriter::NODE_ID_FIELD                             = "Node
 const char * DataRecordWriter::NODE_NAME_FIELD                           = "Node Name";
 const char * DataRecordWriter::NODE_OBSERVATIONS_FIELD                   = "Node Observations";
 const char * DataRecordWriter::NODE_CASES_FIELD                          = "Node Cases";
+const char * DataRecordWriter::SS_BASELINE_FIELD                         = "Baseline Average";
+const char * DataRecordWriter::SS_CURRENT_FIELD                          = "Current Average";
+const char * DataRecordWriter::SS_PERC_CHANGE_FIELD                      = "Percent Change";
+const char * DataRecordWriter::SS_ABS_CHANGE_FIELD                       = "Absolute Change";
+
 const char * DataRecordWriter::START_WINDOW_FIELD                        = "Time Window Start";
 const char * DataRecordWriter::END_WINDOW_FIELD                          = "Time Window End";
 const char * DataRecordWriter::OBSERVATIONS_FIELD                        = "Observations";
@@ -317,6 +323,12 @@ ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& field
             CreateField(fields, OBSERVED_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
             CreateField(fields, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             break;
+        case Parameters::SIGNED_RANK:
+            CreateField(fields, SS_BASELINE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            CreateField(fields, SS_CURRENT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            CreateField(fields, SS_PERC_CHANGE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            CreateField(fields, SS_ABS_CHANGE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            break;
         case Parameters::UNIFORM:
         case Parameters::MODEL_NOT_APPLICABLE:
         default:
@@ -334,14 +346,15 @@ ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& field
             } else
                 throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", params.getModelType());
         }
-        CreateField(fields, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-        CreateField(fields, EXCESS_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-        if (params.getReportAttributableRisk()) {
-            CreateField(fields, ATTRIBUTABLE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+        if (params.getModelType() != Parameters::SIGNED_RANK) {
+            CreateField(fields, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            CreateField(fields, EXCESS_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            if (params.getReportAttributableRisk())
+                CreateField(fields, ATTRIBUTABLE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
         }
         if (params.getIsTestStatistic()) {
             // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
-            CreateField(fields, TEST_STATISTIC_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
+            CreateField(fields, TEST_STATISTIC_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, params.getModelType() == Parameters::SIGNED_RANK ? 0 : 6);
             // CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
         } else {
             CreateField(fields, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
@@ -371,6 +384,10 @@ std::string& CutsRecordWriter::getFilename(const Parameters& parameters, std::st
 
 /* Returns whether child record is reported in output files. */
 bool CutsRecordWriter::includeChild(const ScanRunner& scanner, const CutStructure& thisCut, RecordBuffer& record) {
+    if (scanner.getParameters().getModelType() == Parameters::SIGNED_RANK) {
+        std::pair<double, double> average = getAverage(thisCut.getSampleSiteData());
+        return average.first || average.second; // include if either baseline or current average is non-zero
+    }
     if (thisCut.getRate(scanner) == Parameters::HIGHRATE) {// we're excluding child nodes with no cases
         // Prefer using the number of cases on node field.
         unsigned int countFieldIdx = record.GetFieldIndex(
@@ -386,17 +403,25 @@ bool CutsRecordWriter::includeChild(const ScanRunner& scanner, const CutStructur
 }
 
 /* Sorts child records for reporting in output files by excess cases. */
-void CutsRecordWriter::sortChildRecords(std::vector<boost::shared_ptr<RecordBuffer>>& childRecords) {
-    std::sort(std::begin(childRecords), std::end(childRecords), [](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
-        double excessA = recordA->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble();
-        double excessB = recordB->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble();
-        if (!std::isnan(excessA) && !std::isnan(excessB))
-            return excessA > excessB;
-        else if (std::isnan(excessA) && !std::isnan(excessB))
-            return false;
-        else
-            return true;
-    });
+void CutsRecordWriter::sortChildRecords(std::vector<boost::shared_ptr<RecordBuffer>>& childRecords, const Parameters& parameters, Parameters::ScanRateType cutRate) {
+    if (parameters.getModelType() == Parameters::SIGNED_RANK) {
+        std::sort(std::begin(childRecords), std::end(childRecords), [cutRate](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
+            double currentA = recordA->GetFieldValue(DataRecordWriter::SS_CURRENT_FIELD).AsDouble();
+            double currentB = recordB->GetFieldValue(DataRecordWriter::SS_CURRENT_FIELD).AsDouble();
+            return cutRate == Parameters::LOWRATE ? currentA < currentB : currentA > currentB;
+        });
+    } else {
+        std::sort(std::begin(childRecords), std::end(childRecords), [](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
+            double excessA = recordA->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble();
+            double excessB = recordB->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble();
+            if (!std::isnan(excessA) && !std::isnan(excessB))
+                return excessA > excessB;
+            else if (std::isnan(excessA) && !std::isnan(excessB))
+                return false;
+            else
+                return true;
+        });
+    }
 }
 
 void CutsRecordWriter::write(const CutStructure& thisCut) const {
@@ -413,7 +438,7 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
             if (CutsRecordWriter::includeChild(_scanner, thisCut, *(record))) // Add this record if it is interesting.
                 childRecords.push_back(record);
         }
-        CutsRecordWriter::sortChildRecords(childRecords);
+        CutsRecordWriter::sortChildRecords(childRecords, _scanner.getParameters(), thisCut.getRate(_scanner));
         unsigned int writeIdx = 0;
         for (auto& record : childRecords) {
             record->GetFieldValue(CUT_NUM_FIELD).AsString() = printString(buffer, "%u_%u", thisCut.getReportOrder(), ++writeIdx);
@@ -429,7 +454,7 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
 RecordBuffer& CutsRecordWriter::getRecordForCut(RecordBuffer& Record, const CutStructure& thisCut, const ScanRunner& scanner) {
     const Parameters& params = scanner.getParameters();
     std::string buffer;
-    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(scanner.getParameters(), scanner.getTotalC(), scanner.getTotalN(), scanner.isCensoredData()));
+    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(scanner));
     const NodeStructure& cutNode = *(scanner.getNodes()[thisCut.getID()]);
 
     try {
@@ -470,6 +495,17 @@ RecordBuffer& CutsRecordWriter::getRecordForCut(RecordBuffer& Record, const CutS
                 Record.GetFieldValue(OBSERVED_CASES_FIELD).AsDouble() = thisCut.getC();
                 Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = thisCut.getExpected(scanner);
                 break;
+            case Parameters::SIGNED_RANK:{
+                std::pair<double, double> averages = getAverage(thisCut.getSampleSiteData());
+                Record.GetFieldValue(SS_BASELINE_FIELD).AsDouble() = averages.first;
+                Record.GetFieldValue(SS_CURRENT_FIELD).AsDouble() = averages.second;
+                if (averages.first)
+                    Record.GetFieldValue(SS_PERC_CHANGE_FIELD).AsDouble() = averages.second/averages.first - 1;
+                else
+                    Record.GetFieldValue(SS_PERC_CHANGE_FIELD).AsDouble() = std::numeric_limits<double>::infinity();
+                Record.GetFieldValue(SS_ABS_CHANGE_FIELD).AsDouble() = std::abs(averages.second - averages.first);
+                break;
+            }
             case Parameters::UNIFORM:
             case Parameters::MODEL_NOT_APPLICABLE:
             default:
@@ -498,10 +534,12 @@ RecordBuffer& CutsRecordWriter::getRecordForCut(RecordBuffer& Record, const CutS
                 else
                     throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", params.getModelType());
         }
-        Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = thisCut.getRelativeRisk(scanner);
-        Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = thisCut.getExcessCases(scanner);
-        if (params.getReportAttributableRisk())
-            Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = thisCut.getAttributableRisk(scanner);
+        if (params.getModelType() != Parameters::SIGNED_RANK) {
+            Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = thisCut.getRelativeRisk(scanner);
+            Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = thisCut.getExcessCases(scanner);
+            if (params.getReportAttributableRisk())
+                Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = thisCut.getAttributableRisk(scanner);
+        }
         if (params.getIsTestStatistic()) {
             // If we stick with Poisson log-likelihood calculation, then label is 'Test Statistic' in place of 'Log Likelihood Ratio', hyper-geometric is 'Log Likelihood Ratio'.
             Record.GetFieldValue(TEST_STATISTIC_FIELD).AsDouble() = calcLogLikelihood->LogLikelihoodRatio(thisCut.getLogLikelihood());
@@ -571,7 +609,7 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
     } else if (params.getModelType() == Parameters::BERNOULLI_TIME) {
         _C = childNode.getBrC_C()[thisCut.getStartIdx()] - childNode.getBrC_C()[thisCut.getEndIdx() + 1];
         _N = childNode.getBrN_C()[thisCut.getStartIdx()] - childNode.getBrN_C()[thisCut.getEndIdx() + 1];
-    } else {
+    } else if (params.getModelType() != Parameters::SIGNED_RANK) {
         _C = childNode.getBrC();
         _N = childNode.getBrN();
     }
@@ -607,6 +645,19 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
             Record.GetFieldValue(OBSERVED_CASES_FIELD).AsDouble() = _C;
             Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = getExpectedFor(scanner, childNode.getID(), _C, _N, thisCut.getStartIdx(), thisCut.getEndIdx());
             break;
+        case Parameters::SIGNED_RANK: {
+            std::pair<double, double> average = getAverage(childNode.getSampleSiteDataBr());
+            Record.GetFieldValue(SS_BASELINE_FIELD).AsDouble() = average.first;
+            Record.GetFieldValue(SS_CURRENT_FIELD).AsDouble() = average.second;
+            if (average.first && average.second)
+                Record.GetFieldValue(SS_PERC_CHANGE_FIELD).AsDouble() = average.second/average.first - 1.0;
+            else if (!average.first && average.second)
+                Record.GetFieldValue(SS_PERC_CHANGE_FIELD).AsDouble() = std::numeric_limits<double>::infinity();
+            else
+                Record.GetFieldValue(SS_PERC_CHANGE_FIELD).AsDouble() = 0.0;
+            Record.GetFieldValue(SS_ABS_CHANGE_FIELD).AsDouble() = std::abs(average.second - average.first);
+            break;
+        }
         case Parameters::UNIFORM:
         case Parameters::MODEL_NOT_APPLICABLE:
         default:
@@ -638,10 +689,11 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
     MatchedSets ms;
     if (params.getIsSelfControlVariableBerounlli()) // Obtain child node match sets for reporting
         scanner.getNodeMatchSets(&childNode, ms);
-    Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = getRelativeRiskFor(scanner, childNode.getID(), _C, _N, ms, thisCut.getStartIdx(), thisCut.getEndIdx());
-    Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = getExcessCasesFor(scanner, childNode.getID(), _C, _N, ms, thisCut.getStartIdx(), thisCut.getEndIdx());
-    if (params.getReportAttributableRisk()) {
-        Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = getAttributableRiskFor(scanner, childNode.getID(), _C, _N, ms, thisCut.getStartIdx(), thisCut.getEndIdx());
+    if (params.getModelType() != Parameters::SIGNED_RANK) {
+        Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = getRelativeRiskFor(scanner, childNode.getID(), _C, _N, ms, thisCut.getStartIdx(), thisCut.getEndIdx());
+        Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = getExcessCasesFor(scanner, childNode.getID(), _C, _N, ms, thisCut.getStartIdx(), thisCut.getEndIdx());
+        if (params.getReportAttributableRisk())
+            Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = getAttributableRiskFor(scanner, childNode.getID(), _C, _N, ms, thisCut.getStartIdx(), thisCut.getEndIdx());
     }
     return Record;
 }
@@ -727,7 +779,9 @@ LoglikelihoodRatioWriter::LoglikelihoodRatioWriter(const ScanRunner& scanRunner,
   try {
       if (_include_sim_idx)
           CreateField(_dataFieldDefinitions, SIMULATION_IDX_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-      CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
+      CreateField(_dataFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 
+          scanRunner.getParameters().getModelType() == Parameters::SIGNED_RANK ? 0 : 6
+      );
 
     _outfile.open(getFilename(_scanner.getParameters(), buffer, ispower).c_str(), append ? std::ofstream::app : std::ofstream::trunc);
     if (!_outfile.is_open())
