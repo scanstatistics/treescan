@@ -345,8 +345,11 @@
     <ClCompile Include="..\calculation\runner\SampleSiteData.cpp">
       <Filter>Source Files\source\calculation\runner</Filter>
     </ClCompile>
-    <ClCompile Include="..\calculation\randomization\WilcoxonSignedRankRandomizer.cpp">
+    <ClCompile Include="..\calculation\randomization\SignedRankRandomizer.cpp">
       <Filter>Source Files\source\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="squish238.cpp">
+      <Filter>Source Files\integration_tests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -494,7 +497,7 @@
     <ClInclude Include="..\calculation\runner\SampleSiteData.h">
       <Filter>Header Files\source\calculation\runner</Filter>
     </ClInclude>
-    <ClInclude Include="..\calculation\randomization\WilcoxonSignedRankRandomizer.h">
+    <ClInclude Include="..\calculation\randomization\SignedRankRandomizer.h">
       <Filter>Header Files\source\calculation\randomization</Filter>
     </ClInclude>
   </ItemGroup>

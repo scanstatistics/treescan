@@ -90,7 +90,7 @@ bool MCSimSuccessiveFunctor::isEvaluated(const NodeStructure& node, const Simula
     // If the node branch does not have the minimum number of cases in branch, it is not evaluated.
     if (_scanRunner.getParameters().getModelType() == Parameters::SIGNED_RANK && node.getLevel() == 1)
         return false; // skip root nodes for signed rank
-    if (_scanRunner.getParameters().getModelType() != Parameters::SIGNED_RANK && static_cast<unsigned int>(node.getBrC()) < _scanRunner.getNodeEvaluationMinimum())
+    if (_scanRunner.getParameters().getModelType() != Parameters::SIGNED_RANK && static_cast<unsigned int>(simNode.getBrC()) < _scanRunner.getNodeEvaluationMinimum())
         return false; // skip nodes with insufficient cases in branch
     return node.isEvaluated();
 }
@@ -168,14 +168,21 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeS
     int TotalSimC = _randomizer.get()->RandomizeData(param, _scanRunner.getNodes(), _mutex, _treeSimNodes);
 
     //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
+    auto retainBest=[this](double& currentBest, double candidate) {
+        switch (_scanRunner.getParameters().getScanRateType()) {
+            case Parameters::LOWRATE: return std::min(currentBest, candidate);
+            case Parameters::HIGHORLOWRATE: return std::max(currentBest, std::abs(candidate));
+            case Parameters::HIGHRATE:
+            default: return std::max(currentBest, candidate);
+        }
+    };
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
-    double simLogLikelihood = 0;
+    double simLogLikelihood = _scanRunner.getParameters().getScanRateType() == Parameters::LOWRATE ? std::numeric_limits<double>::max() : 0;
     for (size_t n = 0; n < nodes.size(); ++n) {
         const NodeStructure& thisNode(*(nodes[n]));
         if (isEvaluated(thisNode, _treeSimNodes[n])) {
             // always do simple cut
-            simLogLikelihood = std::max(
-                simLogLikelihood, 
+            simLogLikelihood = retainBest(simLogLikelihood,
                 _loglikelihood->LogLikelihoodRatio(SampleSiteVectorDifferenceProxy(_treeSimNodes[n].getSampleSiteDifferencesBr()))
             );
             Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
@@ -189,8 +196,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeS
                         const NodeStructure& childNode(*(thisNode.getChildren()[j]));
                         const auto& childNodeDiffBr = _treeSimNodes[static_cast<size_t>(childNode.getID())].getSampleSiteDifferencesBr();
                         std::transform(childNodeDiffBr.begin(), childNodeDiffBr.end(), accumulation.begin(), accumulation.begin(), std::plus<double>());
-                        simLogLikelihood = std::max(
-                            simLogLikelihood,
+                        simLogLikelihood = retainBest(simLogLikelihood,
                             _loglikelihood->LogLikelihoodRatio(SampleSiteVectorDifferenceProxy(accumulation))
                         );
                     }
@@ -204,8 +210,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeS
                         const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
                         const auto& childNodeDiffBr = _treeSimNodes[static_cast<size_t>(stopChildNode.getID())].getSampleSiteDifferencesBr();
                         std::transform(childNodeDiffBr.begin(), childNodeDiffBr.end(), accumulation.begin(), accumulation.begin(), std::plus<double>());
-                        simLogLikelihood = std::max(
-                            simLogLikelihood,
+                        simLogLikelihood = retainBest(simLogLikelihood,
                             _loglikelihood->LogLikelihoodRatio(SampleSiteVectorDifferenceProxy(accumulation))
                         );
                     }
@@ -219,8 +224,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeS
                         const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
                         const auto& childNodeDiffBr = _treeSimNodes[static_cast<size_t>(stopChildNode.getID())].getSampleSiteDifferencesBr();
                         std::transform(childNodeDiffBr.begin(), childNodeDiffBr.end(), accumulation.begin(), accumulation.begin(), std::plus<double>());
-                        simLogLikelihood = std::max(
-                            simLogLikelihood,
+                        simLogLikelihood = retainBest(simLogLikelihood,
                             _loglikelihood->LogLikelihoodRatio(SampleSiteVectorDifferenceProxy(accumulation))
                         );
                         for (size_t k = i + 1; k < j; ++k) {
@@ -228,8 +232,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeS
                             const NodeStructure& middleChildNode(*(thisNode.getChildren()[k]));
                             const auto& middleChildNodeDiffBr = _treeSimNodes[static_cast<size_t>(middleChildNode.getID())].getSampleSiteDifferencesBr();
                             std::transform(middleChildNodeDiffBr.begin(), middleChildNodeDiffBr.end(), accumulationStartStop.begin(), accumulationStartStop.begin(), std::plus<double>());
-                            simLogLikelihood = std::max(
-                                simLogLikelihood,
+                            simLogLikelihood = retainBest(simLogLikelihood,
                                 _loglikelihood->LogLikelihoodRatio(SampleSiteVectorDifferenceProxy(accumulationStartStop))
                             );
                         }
@@ -240,8 +243,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeS
             };
         }
     } // for i<nNodes
-
-    return std::make_pair(simLogLikelihood, TotalSimC);
+    return std::make_pair(std::abs(simLogLikelihood), TotalSimC);
 }
 
 /** This function randomizes data and scans tree for either the temporal model. */

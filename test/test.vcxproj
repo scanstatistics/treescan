@@ -144,7 +144,7 @@
     <ClCompile Include="..\calculation\randomization\PoissonRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\Randomization.cpp" />
     <ClCompile Include="..\calculation\randomization\TemporalRandomizer.cpp" />
-    <ClCompile Include="..\calculation\randomization\WilcoxonSignedRankRandomizer.cpp" />
+    <ClCompile Include="..\calculation\randomization\SignedRankRandomizer.cpp" />
     <ClCompile Include="..\calculation\runner\DataSource.cpp" />
     <ClCompile Include="..\calculation\runner\DataTimeRanges.cpp" />
     <ClCompile Include="..\calculation\runner\RelativeRiskAdjustment.cpp" />
@@ -179,6 +179,7 @@
     <ClCompile Include="unittest_cumulative.cpp" />
     <ClCompile Include="unittest_Loglikelihood.cpp" />
     <ClCompile Include="unittest_ParametersValidate.cpp" />
+    <ClCompile Include="squish238.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\IniParameterFileAccess.h" />
@@ -202,7 +203,7 @@
     <ClInclude Include="..\calculation\randomization\PoissonRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\Randomization.h" />
     <ClInclude Include="..\calculation\randomization\TemporalRandomizer.h" />
-    <ClInclude Include="..\calculation\randomization\WilcoxonSignedRankRandomizer.h" />
+    <ClInclude Include="..\calculation\randomization\SignedRankRandomizer.h" />
     <ClInclude Include="..\calculation\runner\DataSource.h" />
     <ClInclude Include="..\calculation\runner\DataTimeRanges.h" />
     <ClInclude Include="..\calculation\runner\RelativeRiskAdjustment.h" />

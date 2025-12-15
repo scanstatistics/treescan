@@ -111,11 +111,5 @@ double SignedRankLoglikelihood::LogLikelihoodRatio(const SampleSiteDifferencePro
         for (auto itu=start_it; itu != next; ++itu)
             llr += itu->first > 0.0 ? average_rank : -average_rank;
     }
-
-
     return llr;
-    /*
-    // return the absolute value of the test statistic, so that high and low values are treated equally
-    return std::abs(llr);
-    */
 }

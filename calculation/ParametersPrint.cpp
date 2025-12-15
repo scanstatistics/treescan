@@ -309,9 +309,24 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
     }
     buffer = "Scan Rate";
     switch (_parameters.getScanRateType()) {
-        case Parameters::HIGHRATE: settings.emplace_back(buffer, "High Rates"); break;
-        case Parameters::LOWRATE: settings.emplace_back(buffer, "Low Rates"); break;
-        case Parameters::HIGHORLOWRATE: settings.emplace_back(buffer, "High or Low Rates"); break;
+        case Parameters::HIGHRATE:
+            if (_parameters.getModelType() == Parameters::SIGNED_RANK)
+                settings.emplace_back(buffer, "Increasing Rates");
+            else
+                settings.emplace_back(buffer, "High Rates");
+            break;
+        case Parameters::LOWRATE: 
+            if (_parameters.getModelType() == Parameters::SIGNED_RANK)
+                settings.emplace_back(buffer, "Decreasing Rates");
+            else
+                settings.emplace_back(buffer, "Low Rates");
+            break;
+        case Parameters::HIGHORLOWRATE: 
+            if (_parameters.getModelType() == Parameters::SIGNED_RANK)
+                settings.emplace_back(buffer, "Increasing or Decreasing Rates");
+            else
+                settings.emplace_back(buffer, "High or Low Rates");
+            break;
         default: throw prg_error("Unknown scan rate type (%d).", "getAnalysisParameters()", _parameters.getScanRateType());
     }
     return settings;

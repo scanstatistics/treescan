@@ -1,12 +1,12 @@
 //******************************************************************************
-#ifndef __WilcoxonSignedRankRandomizer_H
-#define __WilcoxonSignedRankRandomizer_H
+#ifndef __SignedRankRandomizer_H
+#define __SignedRankRandomizer_H
 //******************************************************************************
 #include "Randomization.h"
 #include "RandomDistribution.h"
 
-/* Wilcoxon signed rank data randomizer. */
-class WilcoxonSignedRankRandomizer : public AbstractRandomizer {
+/* Signed rank data randomizer. */
+class SignedRankRandomizer : public AbstractRandomizer {
 protected:
     const ScanRunner& _scanner;
     boost::dynamic_bitset<> _sample_site_flips;
@@ -17,10 +17,10 @@ protected:
     virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
 
 public:
-    WilcoxonSignedRankRandomizer(const ScanRunner& scanner, long lInitialSeed = RandomNumberGenerator::glDefaultSeed);
-    virtual ~WilcoxonSignedRankRandomizer() {}
+    SignedRankRandomizer(const ScanRunner& scanner, long lInitialSeed = RandomNumberGenerator::glDefaultSeed);
+    virtual ~SignedRankRandomizer() {}
 
-    virtual WilcoxonSignedRankRandomizer* clone() const { return new WilcoxonSignedRankRandomizer(*this); }
+    virtual SignedRankRandomizer* clone() const { return new SignedRankRandomizer(*this); }
 
     virtual int RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes);
 };

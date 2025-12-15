@@ -1641,14 +1641,25 @@ bool ScanRunner::readProbability(DataSource& source, size_t columnIdx, double& p
 void ScanRunner::rankCutsAndReportMostLikely() {
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
     if (_Cut.size()) {
-        // Sort collection of cuts by log-likelihood.
-        std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
-        // Retain only cuts with a log-likelihood ratio >= the minimum LLR of interest or those which previously signalled (if tree sequential).
-        for (size_t t = 0; t < _Cut.size();) {
-            if (!(macro_less_than(MIN_CUT_LLR, calcLogLikelihood->LogLikelihoodRatio(_Cut[t]->getLogLikelihood()), DBL_CMP_TOLERANCE) ||
-                (_parameters.isSequentialScanTreeOnly() && getSequentialStatistic().testCutSignaled(static_cast<int>(_Cut[t]->getID())))))
-                _Cut.kill(_Cut.begin() + t);
-            else ++t;
+        if (_parameters.getModelType() == Parameters::SIGNED_RANK) {
+            switch (_parameters.getScanRateType()) {
+                case Parameters::LOWRATE:
+                case Parameters::HIGHORLOWRATE:
+                    for (auto cut: _Cut) cut->setLogLikelihood(std::abs(cut->getLogLikelihood()));
+                case Parameters::HIGHRATE:
+                default: 
+                    std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
+            }
+        } else {
+            // Sort collection of cuts by log-likelihood.
+            std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
+            // Retain only cuts with a log-likelihood ratio >= the minimum LLR of interest or those which previously signalled (if tree sequential).
+            for (size_t t = 0; t < _Cut.size();) {
+                if (!(macro_less_than(MIN_CUT_LLR, calcLogLikelihood->LogLikelihoodRatio(_Cut[t]->getLogLikelihood()), DBL_CMP_TOLERANCE) ||
+                    (_parameters.isSequentialScanTreeOnly() && getSequentialStatistic().testCutSignaled(static_cast<int>(_Cut[t]->getID())))))
+                    _Cut.kill(_Cut.begin() + t);
+                else ++t;
+            }
         }
     }
     if (_Cut.size()) {
@@ -2731,7 +2742,7 @@ bool ScanRunner::scanTree() {
     return _Cut.size() != 0;
 }
 
-/** SCANNING THE TREE */
+/** Scan the tree using the signed-rank model and produce candidate cuts. */
 bool ScanRunner::scanTreeSignedRank() {
     _print.Printf("Scanning the tree ...\n", BasePrint::P_STDOUT);
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
@@ -3198,15 +3209,27 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
 /** Calculates the log likelihood of the cut over evaluation currently, then updates collection of best cuts by node. */
 CutStructure* ScanRunner::calculateCut(size_t node_index, const SampleSiteMap_t& samplesiteData, const Loglikelihood_t& logCalculator) {
     double loglikelihood = logCalculator->LogLikelihoodRatio(SampleSiteMapDifferenceProxy(samplesiteData));
-    if (loglikelihood == 0.0 || loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD)
-        // Exclude this cut if log likelihood is unset.
-        return 0;
-
+    // Apply scan rate type filtering to exclude cuts that do not meet criteria.
+    switch (_parameters.getScanRateType()) {
+        case Parameters::LOWRATE:
+            if (loglikelihood >= 0.0 || loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD)
+                return 0;
+            break;
+        case Parameters::HIGHORLOWRATE:
+            if (loglikelihood == 0.0 || loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD)
+                return 0;
+            break;
+        case Parameters::HIGHRATE:
+        default:
+            if (loglikelihood <= 0.0 || loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD)
+                return 0;
+    }
+    // If we reach this point, the cut is valid.
     std::auto_ptr<CutStructure> cut(new CutStructure());
     cut->setLogLikelihood(loglikelihood);
     cut->setID(static_cast<int>(node_index));
     cut->setSampleSiteData(samplesiteData);
-
+    // Now add the cut to the collection of best cuts, possibly replacing an existing cut for this node.
     return updateCut(cut);
 }
 
@@ -3279,7 +3302,32 @@ CutStructure * ScanRunner::updateCut(std::auto_ptr<CutStructure>& cut) {
             return *(_Cut.insert(itr, cut.release()));
     }
     // at this point, we're replacing a cut with better log likelihood cut
-    if (cut->getLogLikelihood() > (*itr)->getLogLikelihood()) {
+    if (_parameters.getModelType() == Parameters::SIGNED_RANK) {
+        switch (_parameters.getScanRateType()) {
+            case Parameters::LOWRATE:
+                if (cut->getLogLikelihood() < (*itr)->getLogLikelihood()) {
+                    size_t idx = std::distance(_Cut.begin(), itr);
+                    delete _Cut[idx]; _Cut[idx] = 0;
+                    _Cut[idx] = cut.release();
+                    return _Cut[idx];
+                } break;
+            case Parameters::HIGHORLOWRATE:
+                if (std::abs(cut->getLogLikelihood()) > std::abs((*itr)->getLogLikelihood())) {
+                    size_t idx = std::distance(_Cut.begin(), itr);
+                    delete _Cut[idx]; _Cut[idx] = 0;
+                    _Cut[idx] = cut.release();
+                    return _Cut[idx];
+                } break;
+            case Parameters::HIGHRATE:
+            default:
+                if (cut->getLogLikelihood() > (*itr)->getLogLikelihood()) {
+                    size_t idx = std::distance(_Cut.begin(), itr);
+                    delete _Cut[idx]; _Cut[idx] = 0;
+                    _Cut[idx] = cut.release();
+                    return _Cut[idx];
+                } break;
+        }
+    } else if (cut->getLogLikelihood() > (*itr)->getLogLikelihood()) { // for other models, higher log likelihood is always better
         size_t idx = std::distance(_Cut.begin(), itr);
         delete _Cut[idx]; _Cut[idx] = 0;
         _Cut[idx] = cut.release();
@@ -3294,11 +3342,21 @@ bool ScanRunner::setupTree() {
 
     // Initialize variables and calculate the total number of cases
     _TotalC = 0; _TotalN = 0;
-    for(auto node:_Nodes) {
-        std::fill(node->refBrC_C().begin(), node->refBrC_C().end(), 0);
-        std::fill(node->refBrN_C().begin(), node->refBrN_C().end(), 0);
-        _TotalC = std::accumulate(node->refIntC_C().begin(), node->refIntC_C().end(), _TotalC);
-        node->ensureSampleSiteDataExists(_sample_site_identifiers.size());
+    if (_parameters.getModelType() == Parameters::SIGNED_RANK) {
+        size_t min_sample_sites = _parameters.getScanRateType() == Parameters::HIGHORLOWRATE ? MIN_SAMPLE_SITES_BOTH : MIN_SAMPLE_SITES;
+        if (getSampleSiteIdentifiers().size() < min_sample_sites) {
+            _print.Printf("Error: The signed rank model requires at least %u sample sites to perform analysis.\n"
+                          "%u sample sites defined in count file.\n", BasePrint::P_ERROR, min_sample_sites, getSampleSiteIdentifiers().size());
+            return false;
+        }
+        for (auto node : _Nodes)
+            _TotalC += static_cast<int>(node->ensureSampleSiteDataExists(_sample_site_identifiers.size()));
+    } else {
+        for (auto node : _Nodes) {
+            std::fill(node->refBrC_C().begin(), node->refBrC_C().end(), 0);
+            std::fill(node->refBrN_C().begin(), node->refBrN_C().end(), 0);
+            _TotalC = std::accumulate(node->refIntC_C().begin(), node->refIntC_C().end(), _TotalC);
+        }
     }
 
     // If executing sequential scan and the number of cases in counts file is less than user specified total sequential cases.

@@ -263,7 +263,7 @@
     <ClCompile Include="..\calculation\runner\SampleSiteData.cpp">
       <Filter>Source Files\calculation\runner</Filter>
     </ClCompile>
-    <ClCompile Include="..\calculation\randomization\WilcoxonSignedRankRandomizer.cpp">
+    <ClCompile Include="..\calculation\randomization\SignedRankRandomizer.cpp">
       <Filter>Source Files\calculation\randomization</Filter>
     </ClCompile>
   </ItemGroup>
@@ -427,7 +427,7 @@
     <ClInclude Include="..\calculation\runner\SampleSiteData.h">
       <Filter>Header Files\calculation\runner</Filter>
     </ClInclude>
-    <ClInclude Include="..\calculation\randomization\WilcoxonSignedRankRandomizer.h">
+    <ClInclude Include="..\calculation\randomization\SignedRankRandomizer.h">
       <Filter>Header Files\calculation\randomization</Filter>
     </ClInclude>
   </ItemGroup>

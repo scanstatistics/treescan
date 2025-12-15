@@ -238,15 +238,13 @@ public:
     typedef MCSimJobSource::result_type result_type;
     typedef MCSimJobSource::successful_result_type successful_result_type;
     
-private:
-    boost::mutex                            & _mutex;
-    SimNodeContainer_t                        _treeSimNodes;
-    Loglikelihood_t               _loglikelihood;
-    boost::shared_ptr<AbstractRandomizer>     _randomizer;
-    const ScanRunner                        & _scanRunner;
-
-    //boost::shared_ptr<std::vector<double> >     _measure;
-    boost::shared_ptr<AbstractMeasureList>     _measure_list;
+protected:
+    boost::mutex& _mutex;
+    SimNodeContainer_t _treeSimNodes;
+    Loglikelihood_t _loglikelihood;
+    boost::shared_ptr<AbstractRandomizer> _randomizer;
+    const ScanRunner& _scanRunner;
+    boost::shared_ptr<AbstractMeasureList> _measure_list;
 
     bool isEvaluated(const NodeStructure& node, const SimulationNode& simNode) const;
     successful_result_type scanTree(param_type const & param);

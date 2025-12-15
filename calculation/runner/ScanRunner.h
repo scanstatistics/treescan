@@ -207,20 +207,22 @@ public:
     }
 
     bool addSampleSiteData(size_t ssIdx, double baseline_proportion, double current_proportion);
-    void ensureSampleSiteDataExists(size_t ssCount) {
+    size_t ensureSampleSiteDataExists(size_t ssCount) {
         // Initialize any missing sample site data entries - for only nodes with any data? TODO: confirm
         if (ssCount == _sample_site_data.size())
-            return; // presumeall all sample sites are present
+            return ssCount; // presume all sample sites are present
+        size_t initial_size = _sample_site_data.size();
         for (size_t ssIdx = 0; ssIdx < ssCount; ++ssIdx) {
             auto itr = _sample_site_data.find(ssIdx);
             if (itr == _sample_site_data.end())
                 _sample_site_data.emplace(ssIdx, SampleSiteData());
         }
+        return initial_size;
     }
     const SampleSiteMap_t & getSampleSiteData() const { return _sample_site_data; }
     SampleSiteMap_t& refSampleSiteData() { return _sample_site_data; }
     const SampleSiteMap_t& getSampleSiteDataBr() const { return _sample_site_data_Br; }
-    SampleSiteMap_t& refSsampleSiteDataBr() { return _sample_site_data_Br; }
+    SampleSiteMap_t& refSampleSiteDataBr() { return _sample_site_data_Br; }
     void addSampleSiteDataToBranch(const SampleSiteMap_t& ssData) {
         combine(_sample_site_data_Br, ssData);
     }

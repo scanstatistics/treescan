@@ -3,7 +3,7 @@
 #define __SAMPLE_SITE_DATA_H_
 //*****************************************************************************
 
-/* Sample site data for the Wilcoxon signed rank data model. */
+/* Sample site data for the signed rank data model. */
 class SampleSiteData {
 private:
     double _baseline; // baseline value
@@ -16,6 +16,9 @@ public:
     }
     bool operator==(const SampleSiteData& other) const {
         return _baseline == other._baseline && _current == other._current;
+    }
+    friend std::ostream& operator<<(std::ostream& os, const SampleSiteData& obj) {
+        return os << obj.baseline() << "," << obj.current();
     }
     void add(const SampleSiteData& other) {
         _baseline += other.baseline();

@@ -2,16 +2,16 @@
 #include "TreeScan.h"
 #pragma hdrstop
 //******************************************************************************
-#include "WilcoxonSignedRankRandomizer.h"
+#include "SignedRankRandomizer.h"
 
 /** Constructor */
-WilcoxonSignedRankRandomizer::WilcoxonSignedRankRandomizer(const ScanRunner& scanner, long lInitialSeed)
+SignedRankRandomizer::SignedRankRandomizer(const ScanRunner& scanner, long lInitialSeed)
     :AbstractRandomizer(scanner.getParameters(), scanner.getMultiParentNodesExist(), lInitialSeed), _scanner(scanner){
     _sample_site_flips.resize(scanner.getSampleSiteIdentifiers().size());
 }
 
 /** Internal method to perform the randomization. */
-int WilcoxonSignedRankRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
+int SignedRankRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
     int TotalSimC = 0;
     setSeed(iSimulation);
     // First flip coins for each sample site.
@@ -33,7 +33,7 @@ int WilcoxonSignedRankRandomizer::randomize(unsigned int iSimulation, const Abst
 }
 
 /** Adds simulated differenced up the tree from node/leaf to all its parents, and so on. */
-void WilcoxonSignedRankRandomizer::addSimDiffs(size_t target_id, const SimulationNode::SampleSiteDiff_t& diffs, SimNodeContainer_t& treeSimNodes, const ScanRunner::NodeStructureContainer_t& treeNodes) {
+void SignedRankRandomizer::addSimDiffs(size_t target_id, const SimulationNode::SampleSiteDiff_t& diffs, SimNodeContainer_t& treeSimNodes, const ScanRunner::NodeStructureContainer_t& treeNodes) {
     for (size_t t = 0; t < diffs.size(); ++t)
         treeSimNodes[target_id].refSampleSiteDifferencesBr()[t] += diffs[t];
     for (size_t j = 0; j < treeNodes[target_id]->getParents().size(); ++j)
@@ -42,7 +42,7 @@ void WilcoxonSignedRankRandomizer::addSimDiffs(size_t target_id, const Simulatio
 
 /** Creates randomized data under the null hypothesis for Poisson model, assigning data to DataSet objects structures.
     Random number generator seed initialized based upon 'iSimulation' index. */
-int WilcoxonSignedRankRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes) {
+int SignedRankRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes) {
     // clear simulation data
     std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
 
@@ -65,7 +65,7 @@ int WilcoxonSignedRankRandomizer::RandomizeData(unsigned int iSimulation, const 
     return TotalSimC;
 }
 
-int WilcoxonSignedRankRandomizer::read(
+int SignedRankRandomizer::read(
     const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes,
     SimNodeContainer_t& treeSimNodes, boost::mutex& mutex
 ) {
@@ -100,7 +100,7 @@ int WilcoxonSignedRankRandomizer::read(
     return 0;
 }
 
-void WilcoxonSignedRankRandomizer::write(const std::string& filename, const SimNodeContainer_t& treeSimNodes) {
+void SignedRankRandomizer::write(const std::string& filename, const SimNodeContainer_t& treeSimNodes) {
     std::ofstream stream;
 
     // open output file

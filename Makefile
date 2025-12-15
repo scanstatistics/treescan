@@ -60,7 +60,7 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(RANDOMIZER)/TemporalRandomizer.cpp \
                $(RANDOMIZER)/AlternativeHypothesisRandomizer.cpp \
                $(RANDOMIZER)/PermutationDataRandomizer.cpp \
-               $(RANDOMIZER)/WilcoxonSignedRankRandomizer.cpp \
+               $(RANDOMIZER)/SignedRankRandomizer.cpp \
                $(LOGLIKELIHOOD)/Loglikelihood.cpp \
                $(LOGLIKELIHOOD)/CriticalValues.cpp \
                $(UTILITY)/RandomDistribution.cpp \

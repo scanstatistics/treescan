@@ -385,8 +385,8 @@ std::string& CutsRecordWriter::getFilename(const Parameters& parameters, std::st
 /* Returns whether child record is reported in output files. */
 bool CutsRecordWriter::includeChild(const ScanRunner& scanner, const CutStructure& thisCut, RecordBuffer& record) {
     if (scanner.getParameters().getModelType() == Parameters::SIGNED_RANK) {
-        std::pair<double, double> average = getAverage(thisCut.getSampleSiteData());
-        return average.first || average.second; // include if either baseline or current average is non-zero
+        // include if either baseline or current average is non-zero
+        return record.GetFieldValue(SS_BASELINE_FIELD).AsDouble() || record.GetFieldValue(SS_CURRENT_FIELD).AsDouble();
     }
     if (thisCut.getRate(scanner) == Parameters::HIGHRATE) {// we're excluding child nodes with no cases
         // Prefer using the number of cases on node field.

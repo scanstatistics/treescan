@@ -6,7 +6,7 @@
 #include "PoissonRandomizer.h"
 #include "BernoulliRandomizer.h"
 #include "TemporalRandomizer.h"
-#include "WilcoxonSignedRankRandomizer.h"
+#include "SignedRankRandomizer.h"
 
 /** Returns new randomizer object given parameter settings. */
 AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const ScanRunner& scanner) {
@@ -14,7 +14,7 @@ AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const ScanRunner& scan
     switch (parameters.getScanType()) {
         case Parameters::TREEONLY : {
             if (parameters.getModelType() == Parameters::SIGNED_RANK)
-                return new WilcoxonSignedRankRandomizer(scanner, parameters.getRandomizationSeed());
+                return new SignedRankRandomizer(scanner, parameters.getRandomizationSeed());
             switch (parameters.getConditionalType()) {
                 case Parameters::UNCONDITIONAL :
                     if (parameters.getModelType() == Parameters::POISSON)

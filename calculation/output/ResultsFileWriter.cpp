@@ -157,8 +157,13 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
         if (!parameters.getPerformPowerEvaluations() ||
             !(parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_ONLY_CASEFILE && parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
             if (parameters.getModelType() == Parameters::SIGNED_RANK) {
+                size_t numSites = _scanRunner.getSampleSiteIdentifiers().size();
                 PrintFormat.PrintSectionLabel(outfile, "Total Sample Sites", false);
-                PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", _scanRunner.getSampleSiteIdentifiers().size()));
+                PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", numSites));
+                PrintFormat.PrintSectionLabel(outfile, "Largest Possible Test Statistic", false);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", (numSites * (numSites + 1))/2));
+                PrintFormat.PrintSectionLabel(outfile, "Total Comparisons", false);
+                PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getTotalC()));
             } else {
                 PrintFormat.PrintSectionLabel(outfile, "Total Cases", false);
                 PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", _scanRunner.getTotalC()));
@@ -520,9 +525,24 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & stat
 	std::stringstream scanrate, buffer;
 	scanrate << newline << "looking for ";
     switch (parameters.getScanRateType()) {
-        case Parameters::LOWRATE: scanrate << "low rate branches" << newline; break;
-        case Parameters::HIGHORLOWRATE: scanrate << "high or low rate branches" << newline; break;
-        case Parameters::HIGHRATE: scanrate << "high rate branches" << newline; break;
+        case Parameters::LOWRATE: 
+            if (parameters.getModelType() == Parameters::SIGNED_RANK)
+                scanrate << "descreasing branches" << newline;
+            else
+                scanrate << "low rate branches" << newline;
+            break;
+        case Parameters::HIGHORLOWRATE: 
+            if (parameters.getModelType() == Parameters::SIGNED_RANK)
+                scanrate << "increasing or descreasing branches" << newline;
+            else
+                scanrate << "high or low rate branches" << newline;
+            break;
+        case Parameters::HIGHRATE: 
+            if (parameters.getModelType() == Parameters::SIGNED_RANK)
+                scanrate << "increasing branches" << newline;
+            else
+                scanrate << "high rate branches" << newline;
+            break;
         default: throw prg_error("Unknown scan rate type'%d'.", "getAnalysisSuccinctStatement()", parameters.getScanRateType());
     }
     switch (parameters.getScanType()) {
@@ -710,7 +730,7 @@ std::stringstream & ResultsFileWriter::getNewickDefinition(const NodeStructure& 
     return destination;
 }
 
-std::string & ResultsFileWriter::getTotalRunningTime(time_t start, time_t end, std::string & buffer) const {
+std::string & ResultsFileWriter::getTotalRunningTime(time_t start, time_t end, std::string & buffer) {
     double nTotalTime = difftime(end, start);
     double nHours     = floor(nTotalTime/(60*60));
     double nMinutes   = floor((nTotalTime - nHours*60*60)/60);
@@ -893,9 +913,12 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         outfile << "<tr><th class='section-caption'><span>Data Summary</span></th><td></td></tr>" << std::endl;
         if (!parameters.getPerformPowerEvaluations() ||
             !(parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_ONLY_CASEFILE && parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
-            if (parameters.getModelType() == Parameters::SIGNED_RANK)
-                outfile << "<tr><th>Total Sample Sites:</th><td>" << _scanRunner.getSampleSiteIdentifiers().size() << "</td></tr>" << std::endl;
-            else 
+            if (parameters.getModelType() == Parameters::SIGNED_RANK) {
+                unsigned int numSites = _scanRunner.getSampleSiteIdentifiers().size();  
+                outfile << "<tr><th>Total Sample Sites:</th><td>" << numSites << "</td></tr>" << std::endl;
+                outfile << "<tr><th>Largest Possible Test Statistic:</th><td>" << (numSites * (numSites + 1))/2 << "</td></tr>" << std::endl;
+                outfile << "<tr><th>Total Comparisons:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
+            } else
                 outfile << "<tr><th>Total Cases:</th><td>" << _scanRunner.getTotalC() << "</td></tr>" << std::endl;
             if (_scanRunner.isCensoredData()) {
                 outfile << "<tr><th>Total Censored Cases:</th><td>" << _scanRunner.getNumCensoredCases() << "</td></tr>" << std::endl;
@@ -1371,7 +1394,10 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
                 case Parameters::SIGNED_RANK:
                     string_values.push_back(printString(buffer, "'%g'", Record->GetFieldValue(CutsRecordWriter::SS_BASELINE_FIELD).AsDouble()));
                     string_values.push_back(printString(buffer, "'%g'", Record->GetFieldValue(CutsRecordWriter::SS_CURRENT_FIELD).AsDouble()));
-                    string_values.push_back(printString(buffer, "'%g'", Record->GetFieldValue(CutsRecordWriter::SS_PERC_CHANGE_FIELD).AsDouble()));
+                    if (Record->GetFieldValue(CutsRecordWriter::SS_PERC_CHANGE_FIELD).AsDouble() == std::numeric_limits<double>::infinity())
+                        string_values.emplace_back("'infinity'");
+                    else
+                        string_values.push_back(printString(buffer, "'%g'", Record->GetFieldValue(CutsRecordWriter::SS_PERC_CHANGE_FIELD).AsDouble()));
                     string_values.push_back(printString(buffer, "'%g'", Record->GetFieldValue(CutsRecordWriter::SS_ABS_CHANGE_FIELD).AsDouble()));
                     break;
                 case Parameters::UNIFORM:
