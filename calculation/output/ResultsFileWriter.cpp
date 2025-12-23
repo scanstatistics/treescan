@@ -560,7 +560,7 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & stat
                     if (_scanRunner.getParameters().getSelfControlDesign())
                         buffer << " (self-control design)";
                     break;
-                case Parameters::SIGNED_RANK: buffer << " Signed Rank model"; break;
+                case Parameters::SIGNED_RANK: buffer << " Trend model"; break;
                 case Parameters::UNIFORM : break;
                 default: throw prg_error("Unknown nodel type (%d).", "getAnalysisSuccinctStatement()", parameters.getModelType());
             }

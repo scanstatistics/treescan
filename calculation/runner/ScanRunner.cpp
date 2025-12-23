@@ -927,25 +927,26 @@ unsigned int ScanRunner::addCN_C(const NodeStructure& sourceNode, NodeStructure&
     }
 
     // add source node's data to destination nodes branch totals
-    std::transform(sourceNode.getIntC_C().begin(), sourceNode.getIntC_C().end(), destinationNode.refBrC_C().begin(), destinationNode.refBrC_C().begin(), std::plus<NodeStructure::count_t>());
-    std::transform(sourceNode.getIntN_C().begin(), sourceNode.getIntN_C().end(), destinationNode.refBrN_C().begin(), destinationNode.refBrN_C().begin(), std::plus<NodeStructure::expected_t>());
-    std::transform(sourceNode.getIntN_Seq_New_C().begin(), sourceNode.getIntN_Seq_New_C().end(), destinationNode.refBrN_Seq_New_C().begin(), destinationNode.refBrN_Seq_New_C().begin(), std::plus<NodeStructure::expected_t>());
-    destinationNode.setMinCensoredBr(std::min(sourceNode.getMinCensoredBr(), destinationNode.getMinCensoredBr()));
-    if (_parameters.getModelType() == Parameters::SIGNED_RANK) {
+    if (_parameters.getModelType() == Parameters::SIGNED_RANK)
         destinationNode.addSampleSiteDataToBranch(sourceNode.getSampleSiteData());
+    else {
+        std::transform(sourceNode.getIntC_C().begin(), sourceNode.getIntC_C().end(), destinationNode.refBrC_C().begin(), destinationNode.refBrC_C().begin(), std::plus<NodeStructure::count_t>());
+        std::transform(sourceNode.getIntN_C().begin(), sourceNode.getIntN_C().end(), destinationNode.refBrN_C().begin(), destinationNode.refBrN_C().begin(), std::plus<NodeStructure::expected_t>());
+        std::transform(sourceNode.getIntN_Seq_New_C().begin(), sourceNode.getIntN_Seq_New_C().end(), destinationNode.refBrN_Seq_New_C().begin(), destinationNode.refBrN_Seq_New_C().begin(), std::plus<NodeStructure::expected_t>());
+        destinationNode.setMinCensoredBr(std::min(sourceNode.getMinCensoredBr(), destinationNode.getMinCensoredBr()));
+
     }
 
     // continue walking up the tree
-    NodeStructure::ParentContainer_t::const_iterator itr=destinationNode.getParents().begin(), itr_end=destinationNode.getParents().end();
-    for (; itr != itr_end; ++itr)
-        source_count += addCN_C(sourceNode, *(itr->first), ancestor_nodes);
+    for (auto& parent: destinationNode.getParents())
+        source_count += addCN_C(sourceNode, *(parent.first), ancestor_nodes);
     return source_count;
 }
 
 /** Returns pair<bool,size_t> - first value indicates node existence, second is index into class vector _Nodes. */
 ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) const {
     std::auto_ptr<NodeStructure> node(new NodeStructure(identifier));
-    NodeStructureContainer_t::const_iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
+    auto itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
     if (itr != _Nodes.end() && (*itr)->getIdentifier() == node.get()->getIdentifier()) {
         size_t tt = std::distance(_Nodes.begin(), itr);
         // sanity check
@@ -3345,7 +3346,7 @@ bool ScanRunner::setupTree() {
     if (_parameters.getModelType() == Parameters::SIGNED_RANK) {
         size_t min_sample_sites = _parameters.getScanRateType() == Parameters::HIGHORLOWRATE ? MIN_SAMPLE_SITES_BOTH : MIN_SAMPLE_SITES;
         if (getSampleSiteIdentifiers().size() < min_sample_sites) {
-            _print.Printf("Error: The signed rank model requires at least %u sample sites to perform analysis.\n"
+            _print.Printf("Error: The trend model requires at least %u sample sites to perform analysis.\n"
                           "%u sample sites defined in count file.\n", BasePrint::P_ERROR, min_sample_sites, getSampleSiteIdentifiers().size());
             return false;
         }

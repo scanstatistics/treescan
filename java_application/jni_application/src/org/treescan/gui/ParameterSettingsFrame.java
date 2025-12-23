@@ -437,6 +437,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _conditionalNodeTimeButton.setSelected(c == Parameters.ConditionalType.NODEANDTIME);
         _PoissonButton.setSelected(m == Parameters.ModelType.POISSON);
         _BernoulliButton.setSelected(m == Parameters.ModelType.BERNOULLI_TREE);
+        _TrendModelButton.setSelected(m == Parameters.ModelType.SIGNED_RANK);
         _uniformButton.setSelected(m == Parameters.ModelType.UNIFORM);
         _bernoulliTimeButton.setSelected(m == Parameters.ModelType.BERNOULLI_TIME);
     }
@@ -478,13 +479,15 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         } else if (_conditionalNodeTimeButton.isSelected()) {
             parameters.setConditionalType(Parameters.ConditionalType.NODEANDTIME.ordinal());
         }
-        if (_PoissonButton.isEnabled() && _PoissonButton.isSelected()) {
+        if (Utils.selected(_PoissonButton)) {
             parameters.setModelType(Parameters.ModelType.POISSON.ordinal());
-        } else if (_BernoulliButton.isEnabled() && _BernoulliButton.isSelected()) {
+        } else if (Utils.selected(_BernoulliButton)) {
             parameters.setModelType(Parameters.ModelType.BERNOULLI_TREE.ordinal());
-        } else if (_uniformButton.isEnabled() && _uniformButton.isSelected()) {
+        } else if (Utils.selected(_TrendModelButton)) {
+            parameters.setModelType(Parameters.ModelType.SIGNED_RANK.ordinal());
+        } else if (Utils.selected(_uniformButton)) {
             parameters.setModelType(Parameters.ModelType.UNIFORM.ordinal());
-        } else if (_bernoulliTimeButton.isEnabled() && _bernoulliTimeButton.isSelected()) {
+        } else if (Utils.selected(_bernoulliTimeButton)) {
             parameters.setModelType(Parameters.ModelType.BERNOULLI_TIME.ordinal());
         }
         parameters.setSelfControlDesign(_self_control_design.isEnabled() && _self_control_design.isSelected());
@@ -533,13 +536,15 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
     }
 
     public Parameters.ModelType getModelType() {
-        if (_PoissonButton.isSelected() && _PoissonButton.isEnabled())
+        if (Utils.selected(_PoissonButton))
             return Parameters.ModelType.POISSON;
-        if (_BernoulliButton.isSelected() && _BernoulliButton.isEnabled())
+        if (Utils.selected(_BernoulliButton))
             return Parameters.ModelType.BERNOULLI_TREE;
-        if (_uniformButton.isSelected() && _uniformButton.isEnabled())
+        if (Utils.selected(_TrendModelButton))
+            return Parameters.ModelType.SIGNED_RANK;        
+        if (Utils.selected(_uniformButton))
             return Parameters.ModelType.UNIFORM;
-        if (_bernoulliTimeButton.isSelected() && _bernoulliTimeButton.isEnabled())
+        if (Utils.selected(_bernoulliTimeButton))
             return Parameters.ModelType.BERNOULLI_TIME;
         return null;
     }
@@ -570,6 +575,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         // Poisson and Bernoulli are only available with tree only
         _PoissonButton.setEnabled(treeOnly);
         _BernoulliButton.setEnabled(treeOnly);
+        _TrendModelButton.setEnabled(treeOnly);
         // uniform is only available with tree-time and conditional on branch or time-only
         _uniformButton.setEnabled((treeAndTime && _conditionalBranchCasesButton.isSelected()) || timeOnly);        
         _bernoulliTimeButton.setEnabled((treeAndTime && _conditionalBranchCasesButton.isSelected()) || timeOnly);        
@@ -688,6 +694,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _eventProbabilityLabel2 = new javax.swing.JLabel();
         _self_control_design = new javax.swing.JCheckBox();
         _variable_case_probability = new javax.swing.JCheckBox();
+        _TrendModelButton = new javax.swing.JRadioButton();
         _scanStatisticPanel = new javax.swing.JPanel();
         _conditionalTotalCasesButton = new javax.swing.JRadioButton();
         _unconditionalButton = new javax.swing.JRadioButton();
@@ -1138,7 +1145,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addComponent(_timePrecisionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_studyPeriodGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -1223,6 +1230,16 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             }
         });
 
+        treeModelButtonGroup.add(_TrendModelButton);
+        _TrendModelButton.setText("Trend");
+        _TrendModelButton.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    enableSettingsForStatisticModelCombination();
+                }
+            }
+        });
+
         javax.swing.GroupLayout _probabilityModelPanelLayout = new javax.swing.GroupLayout(_probabilityModelPanel);
         _probabilityModelPanel.setLayout(_probabilityModelPanelLayout);
         _probabilityModelPanelLayout.setHorizontalGroup(
@@ -1230,6 +1247,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             .addGroup(_probabilityModelPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_probabilityModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_TrendModelButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_PoissonButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(_probabilityModelPanelLayout.createSequentialGroup()
                         .addComponent(_BernoulliButton, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1254,7 +1272,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             _probabilityModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_probabilityModelPanelLayout.createSequentialGroup()
                 .addComponent(_PoissonButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_probabilityModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_BernoulliButton)
                     .addComponent(_self_control_design))
@@ -1266,7 +1284,9 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                     .addComponent(_eventProbabiltyDenominator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_variable_case_probability)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(_TrendModelButton)
+                .addGap(22, 22, 22))
         );
 
         _scanStatisticPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Conditional Analysis"));
@@ -1435,7 +1455,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addComponent(_uniformButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_bernoulliTimeButton)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addGap(0, 76, Short.MAX_VALUE))
         );
 
         _advancedAnalysisButton.setText("Advanced >>"); // NOI18N
@@ -1530,11 +1550,11 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addComponent(_scanStatisticPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_probabilityModelPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE))
+                    .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE)
+                    .addComponent(_probabilityModelPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_scanAreaPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 43, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -1640,7 +1660,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addComponent(_generate_ncbi_asn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_generate_newick)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 145, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 147, Short.MAX_VALUE)
                 .addComponent(_advancedOutputButton)
                 .addContainerGap())
         );
@@ -1674,6 +1694,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton _BernoulliButton;
     private javax.swing.JRadioButton _PoissonButton;
+    private javax.swing.JRadioButton _TrendModelButton;
     private javax.swing.JButton _advancedAnalysisButton;
     private javax.swing.JButton _advancedInputButton;
     private javax.swing.JButton _advancedOutputButton;

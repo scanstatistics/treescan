@@ -32,12 +32,29 @@ int SignedRankRandomizer::randomize(unsigned int iSimulation, const AbstractNode
     return TotalSimC;
 }
 
+/** Adds simulated cases up the tree from node/leaf to all its parents, and so on, for a node without anforlust. */
+void SignedRankRandomizer::addSim(size_t source_id, size_t target_id, const SimulationNode::SampleSiteDiff_t& diffs, SimNodeContainer_t& treeSimNodes, const ScanRunner::NodeStructureContainer_t& treeNodes) {
+    if (_multiparents)
+        addSimDiffs_ancestor_list(source_id, diffs, treeSimNodes, treeNodes);
+    else
+        addSimDiffs_recursive(target_id, diffs, treeSimNodes, treeNodes);
+}
+
+/** Adds simulated cases up the tree from node/leaf to all its parents, and so on, for a node without anforlust. */
+void SignedRankRandomizer::addSimDiffs_ancestor_list(size_t source_id, const SimulationNode::SampleSiteDiff_t& diffs, SimNodeContainer_t& treeSimNodes, const ScanRunner::NodeStructureContainer_t& treeNodes) {
+    const NodeStructure* node = treeNodes[source_id];
+    for (NodeStructure::Ancestors_t::const_iterator itr = node->getAncestors().begin(); itr != node->getAncestors().end(); ++itr) {
+        for (size_t t = 0; t < diffs.size(); ++t)
+            treeSimNodes[*itr].refSampleSiteDifferencesBr()[t] += diffs[t];
+    }
+}
+
 /** Adds simulated differenced up the tree from node/leaf to all its parents, and so on. */
-void SignedRankRandomizer::addSimDiffs(size_t target_id, const SimulationNode::SampleSiteDiff_t& diffs, SimNodeContainer_t& treeSimNodes, const ScanRunner::NodeStructureContainer_t& treeNodes) {
+void SignedRankRandomizer::addSimDiffs_recursive(size_t target_id, const SimulationNode::SampleSiteDiff_t& diffs, SimNodeContainer_t& treeSimNodes, const ScanRunner::NodeStructureContainer_t& treeNodes) {
     for (size_t t = 0; t < diffs.size(); ++t)
         treeSimNodes[target_id].refSampleSiteDifferencesBr()[t] += diffs[t];
     for (size_t j = 0; j < treeNodes[target_id]->getParents().size(); ++j)
-        addSimDiffs(treeNodes[target_id]->getParents()[j].first->getID(), diffs, treeSimNodes, treeNodes);
+        addSimDiffs_recursive(treeNodes[target_id]->getParents()[j].first->getID(), diffs, treeSimNodes, treeNodes);
 }
 
 /** Creates randomized data under the null hypothesis for Poisson model, assigning data to DataSet objects structures.
@@ -60,7 +77,7 @@ int SignedRankRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunn
     }
     //------------------------ UPDATING THE TREE -----------------------------------
     for (size_t i = 0; i < treeNodes.size(); i++)
-        addSimDiffs(i, treeSimNodes[i].getSampleSiteDifferences(), treeSimNodes, treeNodes);
+        addSim(i, i, treeSimNodes[i].getSampleSiteDifferences(), treeSimNodes, treeNodes);
     //checkSewerShedDataConsistency(treeSimNodes, false);
     return TotalSimC;
 }

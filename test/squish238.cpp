@@ -47,7 +47,7 @@ public:
     }
 };
 
-// Test wrapper subclass to expose protected read/write/randomize/addSimDiffs for unit testing
+// Test wrapper subclass to expose protected read/write/randomize/addSimDiffs_recursive for unit testing
 class TestSignedRankRandomizer : public SignedRankRandomizer {
 public:
     TestSignedRankRandomizer(const ScanRunner& scanner, long seed = RandomNumberGenerator::glDefaultSeed)
@@ -58,7 +58,7 @@ public:
         return randomize(iSimulation, proxy, simNodes);
     }
     void invoke_addSimDiffs(size_t target_id, const SimulationNode::SampleSiteDiff_t& diffs, SimNodeContainer_t& treeSimNodes, const ScanRunner::NodeStructureContainer_t& treeNodes) {
-        addSimDiffs(target_id, diffs, treeSimNodes, treeNodes);
+        addSimDiffs_recursive(target_id, diffs, treeSimNodes, treeNodes);
     }
     int invoke_read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex) {
         return read(filename, simulation, treeNodes, treeSimNodes, mutex);
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(AddSimDiffs_PropagatesToParents)
 
     TestSignedRankRandomizer randomizer(runner, 12345);
 
-    // Invoke addSimDiffs for target=2 (child2). It should add to child's branch array and propagate to parent.
+    // Invoke addSimDiffs_recursive for target=2 (child2). It should add to child's branch array and propagate to parent.
     randomizer.invoke_addSimDiffs(2, diffs, simNodes, runner.getNodes());
 
     // child2 branch should have the diffs
@@ -249,7 +249,7 @@ BOOST_AUTO_TEST_CASE(RandomizeData_UpdatesBranchSums)
 
     TestSignedRankRandomizer randomizer(runner, 999);
 
-    // Call RandomizeData which will call randomize() and then addSimDiffs across tree
+    // Call RandomizeData which will call randomize() and then addSimDiffs_recursive across tree
     boost::mutex mtx;
     int rc = randomizer.RandomizeData(1u, runner.getNodes(), mtx, simNodes);
     BOOST_TEST(rc == 0);

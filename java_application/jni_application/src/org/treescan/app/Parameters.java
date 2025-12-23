@@ -19,7 +19,7 @@ public class Parameters implements Cloneable {
         return spent.split(",").length;
     } 
     public enum ResultsFormat {TEXT};
-    public enum ModelType {POISSON, BERNOULLI_TREE, UNIFORM, MODEL_NOT_APPLICABLE, BERNOULLI_TIME};
+    public enum ModelType {POISSON, BERNOULLI_TREE, UNIFORM, MODEL_NOT_APPLICABLE, BERNOULLI_TIME, SIGNED_RANK};
     public enum ScanType {TREEONLY, TREETIME, TIMEONLY};
     public enum ConditionalType {UNCONDITIONAL, TOTALCASES, NODE, NODEANDTIME};
     public enum ScanRateType { HIGHRATE, LOWRATE, HIGHORLOWRATE };

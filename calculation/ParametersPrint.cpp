@@ -292,7 +292,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
     switch (_parameters.getModelType()) {
         case Parameters::POISSON : settings.emplace_back("Probability Model - Tree","Poisson"); break;
         case Parameters::BERNOULLI_TREE: settings.emplace_back("Probability Model - Tree","Bernoulli"); break;
-        case Parameters::SIGNED_RANK: settings.emplace_back("Probability Model - Tree", "Signed Rank"); break;
+        case Parameters::SIGNED_RANK: settings.emplace_back("Probability Model - Tree", "Trend"); break;
         case Parameters::UNIFORM :
             if (_parameters.getConditionalType() == Parameters::NODE)
                 settings.emplace_back("Probability Model - Time","Uniform");
