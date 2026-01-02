@@ -411,15 +411,10 @@ void CutsRecordWriter::sortChildRecords(std::vector<boost::shared_ptr<RecordBuff
             return cutRate == Parameters::LOWRATE ? currentA < currentB : currentA > currentB;
         });
     } else {
-        std::sort(std::begin(childRecords), std::end(childRecords), [](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
-            double excessA = recordA->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble();
-            double excessB = recordB->GetFieldValue(DataRecordWriter::EXCESS_CASES_FIELD).AsDouble();
-            if (!std::isnan(excessA) && !std::isnan(excessB))
-                return excessA > excessB;
-            else if (std::isnan(excessA) && !std::isnan(excessB))
-                return false;
-            else
-                return true;
+        std::sort(std::begin(childRecords), std::end(childRecords), [cutRate](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
+            double rrA = recordA->GetFieldValue(DataRecordWriter::RELATIVE_RISK_FIELD).AsDouble();
+            double rrB = recordB->GetFieldValue(DataRecordWriter::RELATIVE_RISK_FIELD).AsDouble();
+            return cutRate == Parameters::LOWRATE ? rrA < rrB : rrA > rrB;
         });
     }
 }
