@@ -10,7 +10,7 @@
 /** width of label with one dataset for cut section */
 const unsigned int AsciiPrintFormat::giOneDataSetCutLabelWidth   = 22;
 /** width of label for summary section with one data set */
-const unsigned int AsciiPrintFormat::giOneDataSetSummuaryLabelWidth  = 30;
+const unsigned int AsciiPrintFormat::giOneDataSetSummuaryLabelWidth  = 32;
 /** width of label for cut section with multiple datasets */
 const unsigned int AsciiPrintFormat::giMultiDataSetCutLabelWidth = 32;
 /** width of label for summary section with multiple datasets */

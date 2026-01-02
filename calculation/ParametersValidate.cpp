@@ -71,10 +71,6 @@ bool ParametersValidate::ValidateAdjustmentsParameters(BasePrint & PrintDirectio
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nThe day of week adjustment is not implemented for the 'Bernoulli' model type.\n", BasePrint::P_PARAMERROR);
         }
-        if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-            bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nThe day of week adjustment is not implemented for the 'Bernoulli' model type.\n", BasePrint::P_PARAMERROR);
-        }
         if (!(_parameters.getDatePrecisionType() == DataTimeRange::GENERIC || _parameters.getDatePrecisionType() == DataTimeRange::DAY)) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nThe day of week adjustment is only implemented for the date precision of day or generic.\n", BasePrint::P_PARAMERROR);
@@ -454,7 +450,7 @@ bool ParametersValidate::ValidateAnalysisParameters(BasePrint& PrintDirection) c
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree Only' can either be unconditioned or conditioned on the total cases.\n", BasePrint::P_PARAMERROR);
                 }
-                if (!(_parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getModelType() == Parameters::POISSON)) {
+                if (!(_parameters.getModelType() == Parameters::BERNOULLI_TREE || _parameters.getModelType() == Parameters::POISSON || _parameters.getModelType() == Parameters::SIGNED_RANK)) {
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nA scan type of 'Tree Only' is not implemented for selected model.\n", BasePrint::P_PARAMERROR);
                 }
@@ -495,6 +491,10 @@ bool ParametersValidate::ValidateAnalysisParameters(BasePrint& PrintDirection) c
         if (_parameters.getSelfControlDesign() && !(_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL)) {
             bValid = false;
             PrintDirection.Printf("Invalid Parameter Setting:\nSelf control design is implemented for the unconditional Bernoulli model only.\n", BasePrint::P_PARAMERROR);
+        }
+        if (_parameters.getModelType() == Parameters::SIGNED_RANK && _parameters.getConditionalType() != Parameters::UNCONDITIONAL) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe trend model is implemented for unconditional data only.\n", BasePrint::P_PARAMERROR);
         }
         if (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::UNCONDITIONAL && !_parameters.getVariableCaseProbability()) {
            double top, bottom;

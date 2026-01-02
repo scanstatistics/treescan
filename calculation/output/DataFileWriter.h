@@ -44,6 +44,10 @@ class DataRecordWriter {
     static const char         * NODE_NAME_FIELD;
     static const char         * NODE_OBSERVATIONS_FIELD;
     static const char         * NODE_CASES_FIELD;
+    static const char         * SS_BASELINE_FIELD;
+    static const char         * SS_CURRENT_FIELD;
+    static const char         * SS_PERC_CHANGE_FIELD;
+    static const char         * SS_ABS_CHANGE_FIELD;
     static const char         * START_WINDOW_FIELD;
     static const char         * END_WINDOW_FIELD;
     static const char         * OBSERVATIONS_FIELD;
@@ -126,7 +130,7 @@ class CutsRecordWriter : public DataRecordWriter {
        static RecordBuffer& getRecordForCutChild(RecordBuffer& Record, const CutStructure& thisCut, const NodeStructure& childNode, size_t subIndex, const ScanRunner& scanner);
 
        static bool           includeChild(const ScanRunner& scanner, const CutStructure& thisCut, RecordBuffer& record);
-       static void           sortChildRecords(std::vector<boost::shared_ptr<RecordBuffer>>& childRecords);
+       static void           sortChildRecords(std::vector<boost::shared_ptr<RecordBuffer>>& childRecords, const Parameters& parameters, Parameters::ScanRateType cutRate);
        void                  write(const CutStructure& thisCut) const;
 };
 

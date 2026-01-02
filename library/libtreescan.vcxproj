@@ -190,6 +190,8 @@
     <ClCompile Include="..\calculation\output\DataFileWriter.cpp" />
     <ClCompile Include="..\calculation\output\ResultsFileWriter.cpp" />
     <ClCompile Include="..\calculation\output\ChartGenerator.cpp" />
+    <ClCompile Include="..\calculation\randomization\SignedRankRandomizer.cpp" />
+    <ClCompile Include="..\calculation\runner\SampleSiteData.cpp" />
     <ClCompile Include="..\calculation\utility\ZipUtils.cpp" />
     <ClCompile Include="..\calculation\IniParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\IniParameterSpecification.cpp" />
@@ -253,8 +255,10 @@
     <ClInclude Include="..\calculation\randomization\PoissonRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\Randomization.h" />
     <ClInclude Include="..\calculation\randomization\TemporalRandomizer.h" />
+    <ClInclude Include="..\calculation\randomization\SignedRankRandomizer.h" />
     <ClInclude Include="..\calculation\runner\DataSource.h" />
     <ClInclude Include="..\calculation\runner\RelativeRiskAdjustment.h" />
+    <ClInclude Include="..\calculation\runner\SampleSiteData.h" />
     <ClInclude Include="..\calculation\runner\ScanRunner.h" />
     <ClInclude Include="..\calculation\runner\SimulationVariables.h" />
     <ClInclude Include="..\calculation\runner\WindowLength.h" />

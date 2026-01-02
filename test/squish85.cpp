@@ -22,6 +22,7 @@ BOOST_FIXTURE_TEST_SUITE( squish85_suite, squish85_fixture )
 /** Tests the expected power estimation values for unconditional Poisson with zero counts defined. */
 BOOST_AUTO_TEST_CASE( test_unconditional_poison_power_estimation ) {
     _parameters.setDataOnlyOnLeaves(false);
+    _parameters.setNumProcesses(1); // force single process for test consistency
     run_analysis("test", _results_user_directory, _parameters, _print);
 
     // open the power estimation file and confirm expected columns and values match expected for this data set

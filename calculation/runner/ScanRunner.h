@@ -12,6 +12,7 @@
 #include "Parameters.h"
 #include "CriticalValues.h"
 #include "WindowLength.h"
+#include "SampleSiteData.h"
 #include <iostream>
 #include <fstream>
 #include <limits>
@@ -70,6 +71,7 @@ private:
     int                     _ID;            // NodeID
     int                     _C;             // Number of cases.
     double                  _N;             // Expected number of cases.
+    SampleSiteMap_t          _sample_site_data; // sample site data associated with this cut
     mutable MatchedSets     _matched_sets;  // matched sets
     double                  _LogLikelihood; // Loglikelihood value.
     unsigned int            _rank;
@@ -88,6 +90,7 @@ public:
 
     void                    addCutChild(int cutID, bool clear=false) {if (clear) _cut_children.clear(); _cut_children.push_back(cutID);}
     int                     getC() const {return _C; /* Observed */}
+    const SampleSiteMap_t & getSampleSiteData() const { return _sample_site_data; }
     const CutChildContainer_t & getCutChildren() const {return _cut_children;}
     double                  getAttributableRisk(const ScanRunner& scanner) const;
     std::string           & getAttributableRiskAsString(const ScanRunner& scanner, std::string& s) const;
@@ -108,6 +111,7 @@ public:
     DataTimeRange::index_t  getEndIdx() const {return _end_idx;}
     unsigned int            incrementRank() {return ++_rank;}
     void                    setC(int i) {_C = i;}
+    void                    setSampleSiteData(const SampleSiteMap_t& ssData) { _sample_site_data = ssData; }
     void                    setCutChildren(const CutChildContainer_t & c) {_cut_children = c;}
     void                    setBranchOrder(unsigned int u) { _branch_order = u; }
     void                    setReportOrder(unsigned int u) { _report_order = u; }
@@ -132,7 +136,7 @@ public:
     typedef std::list<unsigned int> Ancestors_t;
     typedef std::list<std::pair<int, count_t> > CensorDist_t;
 
-private:
+protected:
     std::string             _identifier;        // node identifier as read from input file
     std::string             _name;              // node name, for ease of use and quicker understanding of the output
     int                     _ID;                // The node ID.
@@ -149,6 +153,9 @@ private:
     CumulativeStatus        _cumulative_status;
     unsigned int            _level;             // calculated node level
     bool                    _is_evaluated;
+
+    SampleSiteMap_t          _sample_site_data;  // sample site data associated with this node
+    SampleSiteMap_t          _sample_site_data_Br;  // sample site data associated with this node
 
     CountContainer_t        _IntC_Censored;     // Number of censored cases internal to the node.
     count_t                 _min_censored_Br;   // minimum censored on branch
@@ -199,7 +206,34 @@ public:
             initialize_containers(parameters, container_size);
     }
 
-    void                          calcMinCensored() {
+    bool addSampleSiteData(size_t ssIdx, double baseline_proportion, double current_proportion);
+    bool ensureSampleSiteDataExists(size_t ssCount, bool fillMissing, BasePrint& print) {
+        // Ensure that sample site data exists for all sample sites or fails then reports error
+        if (ssCount == _sample_site_data.size())
+            return true; // presume all sample sites are present
+        if (!fillMissing) {
+            print.Printf(
+                "Node '%s' defines sample site data for %u sites but expecting %u.", BasePrint::P_ERROR,
+                getIdentifier().c_str(), static_cast<unsigned int>(_sample_site_data.size()), static_cast<unsigned int>(ssCount)
+            );
+            return false;
+        }
+        size_t initial_size = _sample_site_data.size();
+        for (size_t ssIdx = 0; ssIdx < ssCount; ++ssIdx) {
+            auto itr = _sample_site_data.find(ssIdx);
+            if (itr == _sample_site_data.end())
+                _sample_site_data.emplace(ssIdx, SampleSiteData());
+        }
+        return true;
+    }
+    const SampleSiteMap_t & getSampleSiteData() const { return _sample_site_data; }
+    SampleSiteMap_t& refSampleSiteData() { return _sample_site_data; }
+    const SampleSiteMap_t& getSampleSiteDataBr() const { return _sample_site_data_Br; }
+    SampleSiteMap_t& refSampleSiteDataBr() { return _sample_site_data_Br; }
+    void addSampleSiteDataToBranch(const SampleSiteMap_t& ssData) {
+        combine(_sample_site_data_Br, ssData);
+    }
+    void calcMinCensored() {
         _min_censored_Br = static_cast<int>(_IntC_C.size() - 1);
         for (size_t i=0; i < _IntC_Censored.size(); ++i) {
             if (_IntC_Censored[i]) {
@@ -210,8 +244,8 @@ public:
     }
     bool isEvaluated() const { return _is_evaluated; }
     void setIsEvaluated(bool b) { _is_evaluated = b; }
-    const Ancestors_t           & getAncestors() const {return _ancestors;}
-    CensorDist_t                & getCensorDistribution(CensorDist_t& censor_distribution) const {
+    const Ancestors_t& getAncestors() const {return _ancestors;}
+    CensorDist_t& getCensorDistribution(CensorDist_t& censor_distribution) const {
         censor_distribution.clear();
         NodeStructure::count_t nodeCensored=0, nodeCount = getIntC();
         const CountContainer_t& censored = getIntC_Censored();
@@ -222,10 +256,8 @@ public:
                 if (nodeCensored == nodeCount) break;
             }
         }
-
         if (nodeCount - nodeCensored)
             censor_distribution.push_back(std::make_pair(static_cast<int>(_IntC_C.size()) - 1, nodeCount - nodeCensored));
-
         return censor_distribution;
     }
     const std::string           & getIdentifier() const {return _identifier;}
@@ -532,6 +564,7 @@ public:
 protected:
     BasePrint                         & _print;
     NodeStructureContainer_t            _Nodes;
+    std::vector<std::string>            _sample_site_identifiers;
     NodeStructure::ChildContainer_t     _rootNodes;
     CutStructureContainer_t             _Cut;
     CutStructureContainer_t             _trimmed_cuts;
@@ -583,14 +616,17 @@ protected:
     bool                        scanTreeTemporalConditionNode();
     bool                        scanTreeTemporalConditionNodeCensored();
     bool                        scanTreeTemporalConditionNodeTime();
+    bool                        scanTreeSignedRank();
     bool                        setupTree();
     CutStructure *              calculateCut(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx=0, DataTimeRange::index_t endIdx=1, int BrC_All=0, double BrN_All=0.0);
     CutStructure *              calculateCut(size_t node_index, int C, double N, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdxa, DataTimeRange::index_t endIdx);
+    CutStructure              * calculateCut(size_t node_index, const SampleSiteMap_t& samplesiteData, const Loglikelihood_t& logCalculator);
     CutStructure *              updateCut(std::auto_ptr<CutStructure>& cut);
 
 public:
     ScanRunner(const Parameters& parameters, BasePrint& print);
 
+    const std::vector<std::string>& getSampleSiteIdentifiers() const { return _sample_site_identifiers; }
     unsigned int getNumExclusionsInWindow(DataTimeRange::index_t start, DataTimeRange::index_t end) const;
     const boost::dynamic_bitset<>& getWindowExclusions() const { return _window_exclusions; }
     const NodeStructure::ChildContainer_t getCutChildNodes(const CutStructure& cut) const {

@@ -67,6 +67,10 @@ typedef std::pair<double, double> RecurrenceInterval_t;
 #define MIN_REPLICA_RPT_PVALUE 9
 // minimmum cut log likelihood of interest
 #define MIN_CUT_LLR 0.001
+// minimum sample sites for signed rank model
+#define MIN_SAMPLE_SITES 12
+// minimum sample sites for signed rank model with simultaneous increasing and decreasing rates
+#define MIN_SAMPLE_SITES_BOTH 15
 
 // va_copy not defined on all compilers
 #if defined (_MSC_VER) || ( defined(__GNUC__) && (__GNUC__ < 3) )

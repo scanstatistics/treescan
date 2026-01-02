@@ -26,7 +26,7 @@ MCSimJobSource::MCSimJobSource(boost::posix_time::ptime CurrentTime, PrintQueue 
     gfnRegisterResult = &MCSimJobSource::RegisterResult_NoAutoAbort;
   }
 
-  grLoglikelihood.reset((AbstractLoglikelihood::getNewLoglikelihood(grRunner.getParameters(), grRunner.getTotalC(), grRunner.getTotalN(), grRunner.isCensoredData())));
+  grLoglikelihood.reset((AbstractLoglikelihood::getNewLoglikelihood(grRunner)));
   if (grRunner.getParameters().isGeneratingLLRResults())
     _ratio_writer.reset(new LoglikelihoodRatioWriter(grRunner, _isPowerStep, iteration > 0, false));
 }

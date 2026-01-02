@@ -33,7 +33,6 @@ class ResultsFileWriter {
     NodeSet_t       writeJsTreeNode(std::stringstream & outfile, const NodeStructure& node, const std::map<int, const CutStructure*>& cutMap, int collapseAtLevel);
 
     std::ofstream & openStream(const std::string& outputfile, std::ofstream & outfile, bool overwrite=false) const;
-    std::string   & getTotalRunningTime(time_t start, time_t end, std::string & buffer) const;
     std::string   & getAnalysisSuccinctStatement(std::string & statement, const std::string& newline) const;
 
     std::stringstream & getNCBIAsnDefinition(const NodeStructure& node, const ptr_vector<FieldDef>& fieldDefinitions, bool idoffset, const std::map<int, const CutStructure*>& nodeCuts, std::stringstream& destination) const;
@@ -47,6 +46,7 @@ class ResultsFileWriter {
     static std::string & getHtmlFilename(const Parameters& parameters, std::string& buffer);
     static std::string & getAsnFilename(const Parameters& parameters, std::string& buffer);
     static std::string & getNewickFilename(const Parameters& parameters, std::string& buffer);
+    static std::string & getTotalRunningTime(time_t start, time_t end, std::string& buffer);
 
     bool writeASCII(time_t start, time_t end);
     bool writeHTML(time_t start, time_t end);

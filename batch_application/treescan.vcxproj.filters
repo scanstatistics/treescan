@@ -291,6 +291,12 @@
     <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\exception.cpp">
       <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\runner\SampleSiteData.cpp">
+      <Filter>Source Files\calculation\runner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\randomization\SignedRankRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\runner\ScanRunner.h">
@@ -426,6 +432,12 @@
       <Filter>Header Files\calculation\randomization</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\randomization\PermutationDataRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\runner\SampleSiteData.h">
+      <Filter>Header Files\calculation\runner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\SignedRankRandomizer.h">
       <Filter>Header Files\calculation\randomization</Filter>
     </ClInclude>
   </ItemGroup>
