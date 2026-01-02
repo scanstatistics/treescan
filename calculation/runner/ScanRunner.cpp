@@ -3353,6 +3353,7 @@ bool ScanRunner::setupTree() {
         for (auto node : _Nodes)
             success &= static_cast<int>(node->ensureSampleSiteDataExists(_sample_site_identifiers.size(), false, _print));
         if (!success) return false;
+        _TotalC = static_cast<NodeStructure::count_t>(getSampleSiteIdentifiers().size() * _Nodes.size());
     } else {
         for (auto node : _Nodes) {
             std::fill(node->refBrC_C().begin(), node->refBrC_C().end(), 0);
