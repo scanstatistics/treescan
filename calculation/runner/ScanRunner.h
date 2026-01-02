@@ -207,17 +207,24 @@ public:
     }
 
     bool addSampleSiteData(size_t ssIdx, double baseline_proportion, double current_proportion);
-    size_t ensureSampleSiteDataExists(size_t ssCount) {
-        // Initialize any missing sample site data entries - for only nodes with any data? TODO: confirm
+    bool ensureSampleSiteDataExists(size_t ssCount, bool fillMissing, BasePrint& print) {
+        // Ensure that sample site data exists for all sample sites or fails then reports error
         if (ssCount == _sample_site_data.size())
-            return ssCount; // presume all sample sites are present
+            return true; // presume all sample sites are present
+        if (!fillMissing) {
+            print.Printf(
+                "Node '%s' defines sample site data for %u sites but expecting %u.", BasePrint::P_ERROR,
+                getIdentifier().c_str(), static_cast<unsigned int>(_sample_site_data.size()), static_cast<unsigned int>(ssCount)
+            );
+            return false;
+        }
         size_t initial_size = _sample_site_data.size();
         for (size_t ssIdx = 0; ssIdx < ssCount; ++ssIdx) {
             auto itr = _sample_site_data.find(ssIdx);
             if (itr == _sample_site_data.end())
                 _sample_site_data.emplace(ssIdx, SampleSiteData());
         }
-        return initial_size;
+        return true;
     }
     const SampleSiteMap_t & getSampleSiteData() const { return _sample_site_data; }
     SampleSiteMap_t& refSampleSiteData() { return _sample_site_data; }

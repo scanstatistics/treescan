@@ -698,7 +698,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="_probabilityModelPanel1" pref="154" max="32767" attributes="1"/>
-                          <Component id="_probabilityModelPanel" pref="0" max="32767" attributes="1"/>
+                          <Component id="_probabilityModelPanel" pref="154" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_scanAreaPanel" min="-2" max="-2" attributes="1"/>

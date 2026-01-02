@@ -564,7 +564,8 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _conditionalTotalCasesButton.setEnabled(treeOnly || timeOnly);
         _conditionalBranchCasesButton.setEnabled(treeAndTime);
         _conditionalNodeTimeButton.setEnabled(treeAndTime);
-        if ((!_unconditionalButton.isEnabled() && _unconditionalButton.isSelected()) || (!_conditionalTotalCasesButton.isEnabled() && _conditionalTotalCasesButton.isSelected())) {
+        if ((!_unconditionalButton.isEnabled() && _unconditionalButton.isSelected()) || 
+            (!_conditionalTotalCasesButton.isEnabled() && _conditionalTotalCasesButton.isSelected())) {
             _conditionalBranchCasesButton.setSelected(true);
         }
         if ((!_conditionalBranchCasesButton.isEnabled() && _conditionalBranchCasesButton.isSelected()) ||
@@ -572,10 +573,14 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             if (treeOnly) _unconditionalButton.setSelected(true);
             if (timeOnly) _conditionalTotalCasesButton.setSelected(true);
         }
-        // Poisson and Bernoulli are only available with tree only
+        // Poisson, Bernoulli, and trend are only available with tree only
         _PoissonButton.setEnabled(treeOnly);
         _BernoulliButton.setEnabled(treeOnly);
-        _TrendModelButton.setEnabled(treeOnly);
+        _TrendModelButton.setEnabled(treeOnly && Utils.selected(_unconditionalButton));
+        if (!_TrendModelButton.isEnabled() && _TrendModelButton.isSelected()) {
+            if (treeOnly) _PoissonButton.setSelected(true);
+            if (timeOnly) _uniformButton.setSelected(true);
+        }
         // uniform is only available with tree-time and conditional on branch or time-only
         _uniformButton.setEnabled((treeAndTime && _conditionalBranchCasesButton.isSelected()) || timeOnly);        
         _bernoulliTimeButton.setEnabled((treeAndTime && _conditionalBranchCasesButton.isSelected()) || timeOnly);        

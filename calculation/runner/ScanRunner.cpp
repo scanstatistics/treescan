@@ -1205,7 +1205,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
             readSuccess = false;
             _print.Printf(
                 "Error: Record %ld in count file references a tree node that is not a leaf.\n"
-                "Current parameter settings restrict data to only the leaves of the tree.\n",
+                "Unset 'Only Allow Data on Leaves of Tree' in advanced input parameters if this is intended.\n",
                 BasePrint::P_READERROR, dataSource->getCurrentRecordIndex()
             );
             return true;
@@ -1775,9 +1775,8 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
             readSuccess = false;
             _print.Printf(
                 "Error: Record %ld in control file references a tree node that is not a leaf.\n"
-                "Current parameter settings restrict data to only the leaves of the tree.\n",
-                BasePrint::P_READERROR,
-                dataSource->getCurrentRecordIndex()
+                "Unset 'Only Allow Data on Leaves of Tree' in advanced input parameters if this is intended.\n",
+                BasePrint::P_READERROR, dataSource->getCurrentRecordIndex()
             );
             continue;
         }
@@ -3346,12 +3345,14 @@ bool ScanRunner::setupTree() {
     if (_parameters.getModelType() == Parameters::SIGNED_RANK) {
         size_t min_sample_sites = _parameters.getScanRateType() == Parameters::HIGHORLOWRATE ? MIN_SAMPLE_SITES_BOTH : MIN_SAMPLE_SITES;
         if (getSampleSiteIdentifiers().size() < min_sample_sites) {
-            _print.Printf("Error: The trend model requires at least %u sample sites to perform analysis.\n"
-                          "%u sample sites defined in count file.\n", BasePrint::P_ERROR, min_sample_sites, getSampleSiteIdentifiers().size());
+            _print.Printf("Error: The trend model requires at least %u sample sites to perform this analysis.\n"
+                          "The count file defines only %u sample sites.\n", BasePrint::P_ERROR, min_sample_sites, getSampleSiteIdentifiers().size());
             return false;
         }
+        bool success = true;
         for (auto node : _Nodes)
-            _TotalC += static_cast<int>(node->ensureSampleSiteDataExists(_sample_site_identifiers.size()));
+            success &= static_cast<int>(node->ensureSampleSiteDataExists(_sample_site_identifiers.size(), false, _print));
+        if (!success) return false;
     } else {
         for (auto node : _Nodes) {
             std::fill(node->refBrC_C().begin(), node->refBrC_C().end(), 0);
