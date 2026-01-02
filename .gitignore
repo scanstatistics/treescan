@@ -62,3 +62,6 @@ installers/java/jre_x86
 
 zlib/zlib-1.2.7/Win32
 zlib/zlib-1.2.7/x64
+zlib/zlib-1.3.1/Win32
+zlib/zlib-1.3.1/x64
+
