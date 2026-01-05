@@ -682,7 +682,7 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
                 throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", params.getModelType());
     }
     MatchedSets ms;
-    if (params.getIsSelfControlVariableBerounlli()) // Obtain child node match sets for reporting
+    if (params.getIsVariableBerounlli(false)) // Obtain child node match sets for reporting
         scanner.getNodeMatchSets(&childNode, ms);
     if (params.getModelType() != Parameters::SIGNED_RANK) {
         Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = getRelativeRiskFor(scanner, childNode.getID(), _C, _N, ms, thisCut.getStartIdx(), thisCut.getEndIdx());

@@ -299,10 +299,11 @@ unsigned int Parameters::getExecuteEarlyTermThreshold() const {
     return _early_term_threshold;
 }
 
-/** Returns whether analysis is tree-only, unconditioned Bernoulli,with self control design. */
-bool Parameters::getIsSelfControlVariableBerounlli() const {
-    return getScanType() == Parameters::TREEONLY && getConditionalType() == Parameters::UNCONDITIONAL &&
-        getModelType() == Parameters::BERNOULLI_TREE && getVariableCaseProbability() && getSelfControlDesign();
+/** Returns whether analysis is tree-only, unconditioned Bernoulli - with optional self-control design check. */
+bool Parameters::getIsVariableBerounlli(bool includeSelfControlCheck) const {
+    bool test = getScanType() == Parameters::TREEONLY && getConditionalType() == Parameters::UNCONDITIONAL &&
+        getModelType() == Parameters::BERNOULLI_TREE && getVariableCaseProbability();
+    return includeSelfControlCheck ? test && getSelfControlDesign() : test;
 }
 
 /** Returns whether analysis is calculate test statistic. */

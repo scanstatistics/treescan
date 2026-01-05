@@ -338,7 +338,7 @@ class Parameters {
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
 
-    bool                                getIsSelfControlVariableBerounlli() const;
+    bool                                getIsVariableBerounlli(bool includeSelfControlCheck) const;
     bool                                getIsTestStatistic() const;
     PValueReportingType                 getPValueReportingType() const { return _pvalue_reporting_type; }
     void                                setPValueReportingType(PValueReportingType e);

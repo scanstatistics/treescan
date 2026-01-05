@@ -428,7 +428,7 @@ std::string & AttributableRiskAsString(double ar, std::string& s) {
 
 /** Calculates the attributable risk per person for cut. */
 double CutStructure::getAttributableRisk(const ScanRunner& scanner) const {
-    if (scanner.getParameters().getIsSelfControlVariableBerounlli()) {// Specialize for this situation.
+    if (scanner.getParameters().getIsVariableBerounlli(true)) {// Specialize for this situation.
         double excess = getExcessCases(scanner);
         return excess / static_cast<double>(scanner.getParameters().getAttributableRiskExposed());
     }
@@ -451,7 +451,7 @@ std::string & CutStructure::getAttributableRiskAsString(const ScanRunner& scanne
 /** Calculates the excess number of cases. See user guide for formula explanation. */
 double CutStructure::getExcessCases(const ScanRunner& scanner) const {
     // The relative risk calculation is a iterative process in this situation, so use cached value here.
-    if (scanner.getParameters().getIsSelfControlVariableBerounlli()) {
+    if (scanner.getParameters().getIsVariableBerounlli(true)) {
         double rr = getRelativeRisk(scanner);
         return rr && rr != std::numeric_limits<double>::infinity() ? _C * (rr - 1.0) / rr : 0.0;
     }
@@ -2197,7 +2197,7 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
     unsigned int i = 1;
     for (CutStructureContainer_t::iterator itr = _Cut.begin(); itr != _Cut.end(); ++itr, ++i) {
         (*itr)->setReportOrder(i);
-        if (_parameters.getIsSelfControlVariableBerounlli() && (*itr)->getMatchedSets().get().empty()) {
+        if (_parameters.getIsVariableBerounlli(false) && (*itr)->getMatchedSets().get().empty()) {
             MatchedSets ms;
             (*itr)->setMatchedSets(getCutMatchSets(**itr, ms));
         }
