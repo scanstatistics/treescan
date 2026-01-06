@@ -30,8 +30,8 @@ echo building TreeScan for M1 system
 ./makescript.mac.sh $binaries/treescan_arm64 $treescan_src $boost_src -m64 -O3 $cpp_compiler $c_compiler "-arch arm64" $osx_min_version $processors
 
 # Intel JNI library
-echo building TreeScan shared object for x86_64 64-bit system
-./makescript.so.mac.sh $binaries/libtreescan.jnilib $treescan_src $boost_src -m64 -O3 $cpp_compiler $c_compiler "-arch x86_64" $osx_min_version $processors
+echo building TreeScan shared object for arm64 64-bit system
+./makescript.so.mac.sh $binaries/libtreescan.jnilib $treescan_src $boost_src -m64 -O3 $cpp_compiler $c_compiler "-arch arm64" $osx_min_version $processors
 
 # codesign binaries
 security unlock-keychain $HOME/Library/Keychains/login.keychain

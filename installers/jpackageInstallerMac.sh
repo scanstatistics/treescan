@@ -7,14 +7,14 @@ else
   read -p "Apple developer password (TreeScan Mac App Specific): " PASSWORD
 fi
 
-APPVERSION="2.3"
+APPVERSION="2.4"
 SRCDIR="/Users/treescan/prj/treescan.development/treescan"
 INSTALLER_DIR="/prj/treescan/installers/v.${APPVERSION}.x"
 SIGN_KEY="Developer ID Application: Information Management Services, Inc. (VF82MCMA83)"
 TEAM_ID="VF82MCMA83"
 BUNDLEDIR="/Users/treescan/prj/treescan.development/jpackaged"
 BINARIES="/Users/treescan/prj/treescan.development/binaries/mac"
-JAVAJDK="/Users/treescan/prj/java/jdk-17.0.13+11_x86_64/Contents/Home" # AdoptJDK
+JAVAJDK="/Users/treescan/prj/java/jdk-17.0.17+10_aarch64/Contents/Home" # AdoptJDK
 ENTITLEMENTS="${SRCDIR}/installers/macosentitlements.plist"
 XCRUN="/usr/bin/xcrun"
 NOTARYTOOL="notarytool"
