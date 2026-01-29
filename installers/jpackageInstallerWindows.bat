@@ -7,7 +7,7 @@ REM   1) License isn't presented to user -- not sure what I'm doing wrong.
 REM   2) I need to test update process - installing over previous installation.
 REM   3) How to properly identify beta releases vs public releases?
 
-set javabin=c:\jdk\jdk-17.0.17+10\bin
+set javabin=c:\jdk\jdk-25.0.1+8\bin
 set version=2.4
 set srcdir=C:\Users\hostovic\projects\treescan.development\treescan
 set bundledir=C:\Users\hostovic\projects\treescan.development\jpackage
@@ -23,9 +23,7 @@ xcopy /E /I /Y %srcdir%\installers\examples %bundledir%\TreeScan\installers
 xcopy /Y %srcdir%\installers\documents\userguide.pdf %bundledir%\TreeScan
 xcopy /Y %srcdir%\installers\documents\eula.html %bundledir%\TreeScan
 xcopy /Y %srcdir%\installers\documents\eula\License.txt %bundledir%\TreeScan
-xcopy /Y %srcdir%\batch_application\Win32\Release\treescan32.exe %bundledir%\TreeScan
 xcopy /Y %srcdir%\batch_application\x64\Release\treescan64.exe %bundledir%\TreeScan
-xcopy /Y %srcdir%\shared_library\Release\treescan32.dll %bundledir%\TreeScan\app
 xcopy /Y %srcdir%\shared_library\x64\Release\treescan64.dll %bundledir%\TreeScan\app
 
 REM Sign launcher exe but first toggle off read-only flag.
