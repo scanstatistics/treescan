@@ -32,12 +32,6 @@ set signtool=%fileshare%\imsadmin\ims.codesign\AzureSignTool.exe
 set timestamp=http://timestamp.digicert.com/
 set du=https://www.treescan.org/
 
-REM Codesigning 32-bit command-line exe.
-%signtool% sign -du "%du%" -kvu "%1" -kvi "%2" -kvt "%3" -kvs "%4" -kvc "%5" -tr %timestamp% -v %treescan32exe%
-
-REM Codesigning 32-bit dll.
-%signtool% sign -du "%du%" -kvu "%1" -kvi "%2" -kvt "%3" -kvs "%4" -kvc "%5" -tr %timestamp% -v %treescan32dll%
-
 REM Codesigning 64-bit command-line exe.
 %signtool% sign -du "%du%" -kvu "%1" -kvi "%2" -kvt "%3" -kvs "%4" -kvc "%5" -tr %timestamp% -v %treescan64exe%
 
