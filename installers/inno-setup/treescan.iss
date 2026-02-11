@@ -22,13 +22,13 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=U:\eula\LicenseAgreement.rtf
-InfoBeforeFile=U:\build\treescan\installers\inno-setup\before-install.rtf
+LicenseFile=P:\treescan\eula\LicenseAgreement.rtf
+InfoBeforeFile=P:\treescan\build\treescan\installers\inno-setup\before-install.rtf
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputDir=U:\installers\v.2.4.x
+OutputDir=P:\treescan\installers\v.2.4.x
 OutputBaseFilename=install-2_4_windows
-;SetupIconFile=U:\build\treescan\installers\resources\TreeScan.ico
+;SetupIconFile=P:\treescan\build\treescan\installers\resources\TreeScan.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
