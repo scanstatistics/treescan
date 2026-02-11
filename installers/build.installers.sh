@@ -7,7 +7,7 @@ build="/prj/treescan/build"
 installer_version="/prj/treescan/installers/v.${version}.x"
 binaries="/prj/treescan/build/binaries/linux"
 
-javajdk=$build/packages/java/jdk-25.0.2-linux_x64
+javajdk=$build/packages/java/jdk-15.0.2-linux_x64
 launch4j=$build/packages/launch4j/launch4j-3.50
 
 #### Windows ##############################################################################
