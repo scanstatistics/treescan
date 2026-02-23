@@ -97,7 +97,7 @@ zip -r -u $BUNDLEDIR/imagesrc/libs/jna-5.18.1.jar com META-INF
 $JAVAJDK/bin/jpackage --verbose --type app-image --input $BUNDLEDIR/imagesrc --main-jar TreeScan.jar \
                       --icon $SRCDIR/installers/resources/TreeScan.icns \
                       --app-version ${APPVERSION} --name TreeScan --dest $BUNDLEDIR --java-options "-Djava.library.path=\$APPDIR" \
-                      --mac-sign --mac-package-signing-prefix org.treescan.TreeScan --mac-signing-key-user-name "${SIGN_KEY}" --mac-package-name "TreeScan" --mac-entitlements ${ENTITLEMENTS} \
+                      --mac-sign --mac-package-signing-prefix org.treescan.TreeScan. --mac-signing-key-user-name "${SIGN_KEY}" --mac-package-name "TreeScan" --mac-entitlements ${ENTITLEMENTS} \
                       --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.crypto.cryptoki,jdk.accessibility
 
 # Create zip file from TreeScan.app notarize application alone.
