@@ -94,7 +94,7 @@ zip -r -u $BUNDLEDIR/imagesrc/libs/jna-5.18.1.jar com META-INF
 #$JAVAJDK/bin/jpackage --verbose --type dmg --input $BUNDLEDIR/imagesrc --main-jar TreeScan.jar --icon $SRCDIR/installers/resources/TreeScan.icns --app-version ${APPVERSION} --name TreeScan --dest $BUNDLEDIR/bin --java-options "-Djava.library.path=\$APPDIR" --mac-sign --mac-package-signing-prefix VF82MCMA83 --mac-signing-key-user-name "Information Management Services, Inc." --description "Software for the tree-based scan statistic" --vendor "Information Management Services, Inc." --copyright "Copyright 2021, All rights reserved"  --resource-dir $BUNDLEDIR/dmgresources
 
 # Create TreeScan app directory
-$JAVAJDK/bin/jpackage --verbose --type app-image --input $BUNDLEDIR/imagesrc --main-jar TreeScan.jar \
+$JAVAJDK/bin/jpackage --verbose --type app-image --input $BUNDLEDIR/imagesrc --main-jar TreeScan.jar --main-class org.treescan.gui.TreeScanApplication \
                       --icon $SRCDIR/installers/resources/TreeScan.icns \
                       --app-version ${APPVERSION} --name TreeScan --dest $BUNDLEDIR --java-options "-Djava.library.path=\$APPDIR" \
                       --mac-sign --mac-package-signing-prefix org.treescan.TreeScan. --mac-signing-key-user-name "${SIGN_KEY}" --mac-package-name "TreeScan" --mac-entitlements ${ENTITLEMENTS} \
