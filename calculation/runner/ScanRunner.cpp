@@ -945,7 +945,7 @@ unsigned int ScanRunner::addCN_C(const NodeStructure& sourceNode, NodeStructure&
 
 /** Returns pair<bool,size_t> - first value indicates node existence, second is index into class vector _Nodes. */
 ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) const {
-    std::auto_ptr<NodeStructure> node(new NodeStructure(identifier));
+    std::unique_ptr<NodeStructure> node(new NodeStructure(identifier));
     auto itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
     if (itr != _Nodes.end() && (*itr)->getIdentifier() == node.get()->getIdentifier()) {
         size_t tt = std::distance(_Nodes.begin(), itr);
@@ -1015,7 +1015,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& srcfilename, Ri
         startidx = _parameters.getScanType() != Parameters::TIMEONLY ? 2 : 1, 
         endidx = _parameters.getScanType() != Parameters::TIMEONLY ? 3 : 2;
     boost::dynamic_bitset<> nodeSet;
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(srcfilename, _parameters.getInputSource(Parameters::POWER_EVALUATIONS_FILE)));
+    std::unique_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(srcfilename, _parameters.getInputSource(Parameters::POWER_EVALUATIONS_FILE)));
     bool testMultipleNodeRecords(_parameters.getModelType() == Parameters::BERNOULLI_TREE);
     std::string nodeId("all"), filename("alternative hypothesis");
     std::string time_columnname(_parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "day since incidence" : "occurance date");
@@ -1168,7 +1168,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
     // Determine the InputSource for this count file. Typically we just want that defined through the Parameters, but when we're
     // reading accumulated case data in a sequentual scan, the format of the stored data is fixed as CSV.
     Parameters::InputSource csvSource(CSV, FieldMapContainer_t());
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(
+    std::unique_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(
         srcfilename, (_parameters.isSequentialScanTreeOnly() && !sequence_new_data ? &csvSource : _parameters.getInputSource(Parameters::COUNT_FILE))
     ));
 
@@ -1718,7 +1718,7 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
     // Determine the InputSource for this control file. Typically we just want that defined through the Parameters, but when we're
     // reading accumulated control data in a sequential scan, the format of the stored data is fixed as CSV.
     Parameters::InputSource csvSource(CSV, FieldMapContainer_t());
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(
+    std::unique_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(
         srcfilename, (_parameters.isSequentialScanTreeOnly() && !sequence_new_data ? &csvSource : _parameters.getInputSource(Parameters::CONTROL_FILE))
     ));
     int controls = 0, daysSinceIncidence = 0; size_t expectedColumns = (_parameters.getScanType() == Parameters::TREETIME ? 3 : 2);
@@ -1913,7 +1913,7 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
     size_t daysInDataTimeRange = Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
     // tree only does not read the tree structure file, aggregate all data into one node
     if (_parameters.getScanType() == Parameters::TIMEONLY) {
-        std::auto_ptr<NodeStructure> node(new NodeStructure("All", _parameters, daysInDataTimeRange));
+        std::unique_ptr<NodeStructure> node(new NodeStructure("All", _parameters, daysInDataTimeRange));
         _Nodes.insert(_Nodes.begin(), node.release());
         return true;
     }
@@ -1923,7 +1923,7 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
     else
         _print.Printf("Reading %u%s tree file ...\n", BasePrint::P_STDOUT, treeOrdinal, getOrdinalSuffix(treeOrdinal));
     bool readSuccess=true;
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::TREE_FILE)));
+    std::unique_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::TREE_FILE)));
 
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
     while (dataSource->readRecord()) {
@@ -1935,7 +1935,7 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
             continue;
         }
         std::string identifier = dataSource->getValueAt(0);
-        std::auto_ptr<NodeStructure> node(new NodeStructure(trimString(identifier), _parameters, daysInDataTimeRange));
+        std::unique_ptr<NodeStructure> node(new NodeStructure(trimString(identifier), _parameters, daysInDataTimeRange));
         NodeStructureContainer_t::iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
         if (itr == _Nodes.end() || (*itr)->getIdentifier() != node.get()->getIdentifier())
             _Nodes.insert(itr, node.release());
@@ -2029,7 +2029,7 @@ bool ScanRunner::readCuts(const std::string& filename) {
 
     _print.Printf("Reading cuts file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::CUT_FILE)));
+    std::unique_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::CUT_FILE)));
     Parameters::cut_maps_t cut_type_maps = Parameters::getCutTypeMap();
 
     while (dataSource->readRecord()) {
@@ -2068,7 +2068,7 @@ bool ScanRunner::readNodesNotEvaluated(const std::string& filename) {
 
     _print.Printf("Reading the not evaluated nodes file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::NOT_EVALUATED_NODES_FILE)));
+    std::unique_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::NOT_EVALUATED_NODES_FILE)));
     std::vector<char> escape_characters = { '\\', '^', '$', '?', '.', '+', '{', '}', '(', ')', '[', ']', '|' };
     const char asterisk = '*', period = '.', plus = '+';
 
@@ -3225,7 +3225,7 @@ CutStructure* ScanRunner::calculateCut(size_t node_index, const SampleSiteMap_t&
                 return 0;
     }
     // If we reach this point, the cut is valid.
-    std::auto_ptr<CutStructure> cut(new CutStructure());
+    std::unique_ptr<CutStructure> cut(new CutStructure());
     cut->setLogLikelihood(loglikelihood);
     cut->setID(static_cast<int>(node_index));
     cut->setSampleSiteData(samplesiteData);
@@ -3260,7 +3260,7 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, 
         // Exclude this cut if log likelihood is unset -- unless we're tree sequential scanning and this cut has signalled in prior looks.
         return 0;
 
-    std::auto_ptr<CutStructure> cut(new CutStructure());
+    std::unique_ptr<CutStructure> cut(new CutStructure());
     cut->setLogLikelihood(loglikelihood);
     cut->setID(static_cast<int>(node_index));
     cut->setC(BrC);
@@ -3277,7 +3277,7 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int C, double N, int 
     if (BrC < static_cast<int>(_node_evaluation_minimum)) return 0;
     double loglikelihood = logCalculator->LogLikelihood(C, N, BrC, BrN);
     if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) return 0;
-    std::auto_ptr<CutStructure> cut(new CutStructure());
+    std::unique_ptr<CutStructure> cut(new CutStructure());
     cut->setLogLikelihood(loglikelihood);
     cut->setID(static_cast<int>(node_index));
     cut->setC(C);
@@ -3288,7 +3288,7 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int C, double N, int 
     return updateCut(cut);
 }
 
-CutStructure * ScanRunner::updateCut(std::auto_ptr<CutStructure>& cut) {
+CutStructure * ScanRunner::updateCut(std::unique_ptr<CutStructure>& cut) {
     CutStructureContainer_t::iterator itr;
     if (_parameters.getScanType() == Parameters::TIMEONLY) {
         // for time-only scans, we want to keep secondary clusters -- possibly one for each end date
@@ -3502,7 +3502,7 @@ bool ScanRunner::setupTree() {
             _TotalC = _parameters.getPowerEvaluationTotalCases();
         double adjustN = _TotalC/_TotalN;
         for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr)
-            std::transform((*itr)->getIntN_C().begin(), (*itr)->getIntN_C().end(), (*itr)->refIntN_C().begin(), std::bind1st(std::multiplies<double>(), adjustN)); // (*itr)->refIntN() *= adjustN;
+            std::transform((*itr)->getIntN_C().begin(), (*itr)->getIntN_C().end(), (*itr)->refIntN_C().begin(), [adjustN](auto x) { return adjustN * x; }); // (*itr)->refIntN() *= adjustN;
         _TotalN = _TotalC;
     }
     // For each node, calculate the observed and expected number of cases for that node together with all of its children, grandchildren, etc.

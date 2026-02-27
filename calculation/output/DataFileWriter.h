@@ -118,7 +118,7 @@ class CutsRecordWriter : public DataRecordWriter {
   private:
        const ScanRunner & _scanner;
        std::ofstream _outfile;
-       std::auto_ptr<CSVDataFileWriter> _csvWriter;
+       std::unique_ptr<CSVDataFileWriter> _csvWriter;
 
    public:
        CutsRecordWriter(const ScanRunner& scanRunner);
@@ -142,7 +142,7 @@ class PowerEstimationRecordWriter : public DataRecordWriter {
   private:
        const ScanRunner & _scanner;
        std::ofstream _outfile;
-       std::auto_ptr<CSVDataFileWriter> _csvWriter;
+       std::unique_ptr<CSVDataFileWriter> _csvWriter;
 
    public:
        PowerEstimationRecordWriter(const ScanRunner& scanRunner);
@@ -163,7 +163,7 @@ class LoglikelihoodRatioWriter : public DataRecordWriter {
 
         const ScanRunner & _scanner;
         std::ofstream _outfile;
-        std::auto_ptr<CSVDataFileWriter> _csvWriter;
+        std::unique_ptr<CSVDataFileWriter> _csvWriter;
         bool _include_sim_idx;
 
         LoglikelihoodRatioWriter(const ScanRunner& scanRunner);

@@ -116,7 +116,7 @@ int AbstractDenominatorDataRandomizer::RandomizeData(unsigned int iSimulation, c
         write(_write_filename, treeSimNodes);
     };
     if (_read_data) {
-        std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
+        std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fn(&SimulationNode::clear));
         boost::mutex::scoped_lock lock(mutex);
         totalSimC = read(_read_filename, iSimulation, treeNodes, treeSimNodes, mutex);
         if (_write_data) standardWrite(); // write simulation data to file if requested

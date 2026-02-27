@@ -576,7 +576,7 @@ protected:
     Parameters                          _parameters;
     DataTimeRange::index_t              _zero_translation_additive;
     boost::dynamic_bitset<>             _caselessWindows;
-    std::auto_ptr<CriticalValues>       _critical_values;
+    std::unique_ptr<CriticalValues>       _critical_values;
     PowerEstimationContainer_t          _power_estimations;
     DayOfWeekIndexes_t                  _day_of_week_indexes;
     mutable TreeStatistics_t            _tree_statistics;
@@ -621,7 +621,7 @@ protected:
     CutStructure *              calculateCut(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx=0, DataTimeRange::index_t endIdx=1, int BrC_All=0, double BrN_All=0.0);
     CutStructure *              calculateCut(size_t node_index, int C, double N, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdxa, DataTimeRange::index_t endIdx);
     CutStructure              * calculateCut(size_t node_index, const SampleSiteMap_t& samplesiteData, const Loglikelihood_t& logCalculator);
-    CutStructure *              updateCut(std::auto_ptr<CutStructure>& cut);
+    CutStructure *              updateCut(std::unique_ptr<CutStructure>& cut);
 
 public:
     ScanRunner(const Parameters& parameters, BasePrint& print);

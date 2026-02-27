@@ -109,7 +109,7 @@ int TemporalRandomizer::randomize(unsigned int iSimulation, const AbstractNodesP
     Random number generator seed initialized based upon 'iSimulation' index. */
 int TemporalRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes) {
     // clear simulation data
-    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
+    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fn(&SimulationNode::clear));
 
     int TotalSimC = 0;
     if (_read_data) {
@@ -124,7 +124,7 @@ int TemporalRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner
         write(_write_filename, treeSimNodes);
     }
     // now set simulation data structures as cumulative
-    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::setCumulative));
+    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fn(&SimulationNode::setCumulative));
     //------------------------ UPDATING THE TREE -----------------------------------
     for (size_t i=0; i < treeNodes.size(); i++)
         addSimC_C(i, i, treeSimNodes[i].getIntC_C(), treeSimNodes, treeNodes);
@@ -250,7 +250,7 @@ TemporalAlternativeHypothesisRandomizer::TemporalAlternativeHypothesisRandomizer
 int TemporalAlternativeHypothesisRandomizer::randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes) {
     setSeed(iSimulation);
     // clear simulation data
-    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
+    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fn(&SimulationNode::clear));
 
     // This will need refactoring if we ever implement multiple data time ranges.
     const DataTimeRange& range = _time_range_sets.getDataTimeRangeSets().front();
@@ -322,7 +322,7 @@ int TemporalAlternativeHypothesisRandomizer::randomize(unsigned int iSimulation,
         throw prg_error("Number of simulated cases does not equal total cases: %d != %d.", "TemporalAlternativeHypothesisRandomizer::randomize(...)", TotalSimC, _total_C);
 
     // now set simulation data structures as cumulative
-    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::setCumulative));
+    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fn(&SimulationNode::setCumulative));
 
     return _total_C;
 }

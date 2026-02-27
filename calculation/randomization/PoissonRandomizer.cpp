@@ -17,7 +17,7 @@ int PoissonRandomizer::randomize(unsigned int iSimulation, const AbstractNodesPr
     // reset seed of random number generator
     setSeed(iSimulation);
     // reset simData
-    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
+    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fn(&SimulationNode::clear));
 
     //-------------------- GENERATING THE RANDOM DATA ------------------------------
     int cases, CasesLeft, TotalSimC;

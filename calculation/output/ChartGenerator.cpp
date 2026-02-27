@@ -318,12 +318,12 @@ void TemporalChartGenerator::generateChart() const {
             chart_js << TEMPLATE_CHARTHEADER;
             bool is_pt(parameters.getScanType() == Parameters::TIMEONLY); // not if cluster is purely temporal
             // define seach series that we'll graph - next three are always printed.
-            std::auto_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed (Outside Cluster)"), is_pt ? "471D1B" : "7D96B0", "square", 0, true, "1", "Solid", "observed"));
-            std::auto_ptr<ChartSeries> expectedSeries(new ChartSeries("exp", is_pt ? 3 : 2, "line", (is_pt ? "Expected" : "Expected (Outside Cluster)"), is_pt ? "394521" : "89A54E", "triangle", 0));
-            std::auto_ptr<ChartSeries> clusterSeries; // (new ChartSeries("cluster", is_pt ? 2 : 5, "column", "Cluster", "AA4643", "circle", 0));
+            std::unique_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed (Outside Cluster)"), is_pt ? "471D1B" : "7D96B0", "square", 0, true, "1", "Solid", "observed"));
+            std::unique_ptr<ChartSeries> expectedSeries(new ChartSeries("exp", is_pt ? 3 : 2, "line", (is_pt ? "Expected" : "Expected (Outside Cluster)"), is_pt ? "394521" : "89A54E", "triangle", 0));
+            std::unique_ptr<ChartSeries> clusterSeries; // (new ChartSeries("cluster", is_pt ? 2 : 5, "column", "Cluster", "AA4643", "circle", 0));
             // the remaining series are conditionally present in the chart
-            std::auto_ptr<ChartSeries> observedClusterSeries, expectedClusterSeries;
-            std::auto_ptr<ChartSeries> odeSeries, cluster_odeSeries, percentCasesSeries, cluster_percentCasesSeries;
+            std::unique_ptr<ChartSeries> observedClusterSeries, expectedClusterSeries;
+            std::unique_ptr<ChartSeries> odeSeries, cluster_odeSeries, percentCasesSeries, cluster_percentCasesSeries;
             std::stringstream additional_yaxis;
             // space-time clusters also graph series which allow comparison between inside and outside the cluster
             if (!is_pt) {
