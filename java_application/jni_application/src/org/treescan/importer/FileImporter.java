@@ -86,7 +86,7 @@ public class FileImporter {
                 else
                     value = (String)values[iColumn - 1];
                 value = StringUtils.trimToEmpty(value);
-                record.set(variable.getVariableIndex(), StringUtils.contains(value, _delimiter) ? _groupmarker + value + _groupmarker : value);
+                record.set(variable.getVariableIndex(), value.contains(_delimiter) ? _groupmarker + value + _groupmarker : value);
             }
             // Remove columns from record which did not receive an import value. 
             record.removeAll(Collections.singleton(null));
