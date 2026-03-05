@@ -26,7 +26,7 @@ set treescaninstaller=%fileshare%\treescan\installers\v.%treescanversion%.x\inst
 
 set javajdkx64=%fileshare%\treescan\build\packages\java\jdk-17.0.18+8_windows_x64
 set runtimeoutputx64=%fileshare%\treescan\build\treescan\installers\java\jre_x64
-set javajdkx86=%fileshare%\treescan\build\packages\java\jdk-17.0.18+8_windows_x86
+set javajdkx86=%fileshare%\treescan\build\packages\java\jdk-17.0.17+10_windows_x86
 set runtimeoutputx86=%fileshare%\treescan\build\treescan\installers\java\jre_x86
 
 set innosetup="C:\Program Files (x86)\Inno Setup 6\iscc.exe"
