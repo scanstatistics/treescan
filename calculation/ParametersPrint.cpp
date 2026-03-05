@@ -216,6 +216,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParame
         settings.emplace_back("Print Column Headers", (_parameters.isPrintColumnHeaders() ? "Yes" : "No"));
     if (_parameters.getModelType() == Parameters::SIGNED_RANK)
         settings.emplace_back("Report Cluster Attributes As Percentage", (_parameters.getRptDataAsPct() ? "Yes" : "No"));
+    settings.emplace_back("Results Title", _parameters.getResultsTitle());
     return settings;
 }
 

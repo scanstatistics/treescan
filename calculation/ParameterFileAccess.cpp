@@ -118,6 +118,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::ATTR_RISK_NUM_EXPOSED   : return "number of exposed attributable risk is based upon (positive integer)";
             case Parameters::INCLUDE_IDENTICAL_PARENT_CUTS: return "report parent cuts that match child cuts (y/n)";
             case Parameters::RPT_DATA_AS_PERCENTAGE  : return "report trend model cluster data as percentage (y/n)";
+            case Parameters::RESULTS_TITLE           : return "results title (string)";
             case Parameters::OUTPUT_TEMPORAL_GRAPH   : return "output temporal graph HTML file (y/n)";
             case Parameters::TEMPORAL_GRAPH_REPORT_TYPE: return "temporal graph cluster reporting type (0=Only most likely cluster, 1=X most likely clusters, 2=Only significant clusters)";
             case Parameters::TEMPORAL_GRAPH_MLC_COUNT: return "number of most likely clusters to report in temporal graph (positive integer)";
@@ -228,7 +229,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::REPORT_ATTR_RISK         : return AsString(s, _parameters.getReportAttributableRisk());
             case Parameters::ATTR_RISK_NUM_EXPOSED    : return AsString(s, _parameters.getAttributableRiskExposed());
             case Parameters::INCLUDE_IDENTICAL_PARENT_CUTS: return AsString(s, _parameters.getIncludeIdenticalParentCuts());
-            case Parameters::RPT_DATA_AS_PERCENTAGE: return AsString(s, _parameters.getRptDataAsPct());
+            case Parameters::RPT_DATA_AS_PERCENTAGE   : return AsString(s, _parameters.getRptDataAsPct());
+            case Parameters::RESULTS_TITLE            : s = _parameters.getResultsTitle(); return s;
             case Parameters::OUTPUT_TEMPORAL_GRAPH: return AsString(s, _parameters.getOutputTemporalGraphFile());
             case Parameters::TEMPORAL_GRAPH_REPORT_TYPE: return AsString(s, _parameters.getTemporalGraphReportType());
             case Parameters::TEMPORAL_GRAPH_MLC_COUNT: return AsString(s, _parameters.getTemporalGraphMostLikelyCount());
@@ -458,6 +460,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::ATTR_RISK_NUM_EXPOSED    : _parameters.setAttributableRiskExposed(ReadUnsignedInt(value, e)); break;
             case Parameters::INCLUDE_IDENTICAL_PARENT_CUTS: _parameters.setIncludeIdenticalParentCuts(ReadBoolean(value, e)); break;
             case Parameters::RPT_DATA_AS_PERCENTAGE   : _parameters.setRptDataAsPct(ReadBoolean(value, e)); break;
+            case Parameters::RESULTS_TITLE            : _parameters.setResultsTitle(value); break;
             case Parameters::OUTPUT_TEMPORAL_GRAPH:     _parameters.setOutputTemporalGraphFile(ReadBoolean(value, e)); break;
             case Parameters::TEMPORAL_GRAPH_REPORT_TYPE: iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::MLC_ONLY, Parameters::SIGNIFICANT_ONLY);
                                                          _parameters.setTemporalGraphReportType((Parameters::TemporalGraphReportType)iValue); break;

@@ -494,6 +494,7 @@ void IniParameterFileAccess::WriteAdvancedOutputSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, Parameters::ATTR_RISK_NUM_EXPOSED, GetParameterString(Parameters::ATTR_RISK_NUM_EXPOSED, s).c_str(), GetParameterComment(Parameters::ATTR_RISK_NUM_EXPOSED));
         WriteIniParameter(WriteFile, Parameters::INCLUDE_IDENTICAL_PARENT_CUTS, GetParameterString(Parameters::INCLUDE_IDENTICAL_PARENT_CUTS, s).c_str(), GetParameterComment(Parameters::INCLUDE_IDENTICAL_PARENT_CUTS));
         WriteIniParameter(WriteFile, Parameters::RPT_DATA_AS_PERCENTAGE, GetParameterString(Parameters::RPT_DATA_AS_PERCENTAGE, s).c_str(), GetParameterComment(Parameters::RPT_DATA_AS_PERCENTAGE));
+        WriteIniParameter(WriteFile, Parameters::RESULTS_TITLE, GetParameterString(Parameters::RESULTS_TITLE, s).c_str(), GetParameterComment(Parameters::RESULTS_TITLE));
     } catch (prg_exception& x) {
         x.addTrace("WriteAdvancedOutputSettings()","IniParameterFileAccess");
         throw;

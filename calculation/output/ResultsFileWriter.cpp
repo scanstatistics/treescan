@@ -69,6 +69,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_scanRunner));
 
     PrintFormat.PrintVersionHeader(outfile);
+    if (!parameters.getResultsTitle().empty()) PrintFormat.PrintNonRightMarginedDataString(outfile, parameters.getResultsTitle(), false);
     std::string buffer = ctime(&start), buffer2;
     outfile << std::endl << "Program run on: " << buffer << std::endl;
     PrintFormat.PrintNonRightMarginedDataString(outfile, getAnalysisSuccinctStatement(buffer, std::string("\n")), false);
@@ -866,10 +867,12 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
     outfile << "<script src=\"https://www.treescan.org/html-results/treescan-results.1.3.1.js\" type=\"text/javascript\"></script>" << std::endl;
     outfile << "<body>" << std::endl;
     buffer = AppToolkit::getToolkit().GetWebSite();
-    outfile << "<div class='hr' style='margin-top: 5px;'></div><div class='program-info'>" << std::endl;
+    outfile << "<div class='hr' style='margin-top: 5px;'></div>" << std::endl;
+    outfile << "<div class='program-info'>" << std::endl;
+    if (!parameters.getResultsTitle().empty())
+        outfile << "<p style='font-size:15px;font-weight:bold;margin-top:5px;margin-bottom:5px;'>" << parameters.getResultsTitle() << "</p>" << std::endl;
     outfile << "<p style='font-size:15px;font-weight:bold;'>" << getAnalysisSuccinctStatement(buffer, std::string("<br/>")) << "</p>";
-    outfile << "<h2 style='font-size:15px;margin: 8px 0 5px 0;font-weight:bold;'>SUMMARY STATISTICS</h2>" << std::endl;    
-
+    outfile << "<h2 style='font-size:15px;margin: 8px 0 5px 0;font-weight:bold;'>SUMMARY STATISTICS</h2>" << std::endl;
     outfile << "<table class='analysis-summary'><tbody>" << std::endl;
     if (parameters.getScanType() != Parameters::TIMEONLY) {
         const TreeStatistics& treestats = _scanRunner.getTreeStatistics();

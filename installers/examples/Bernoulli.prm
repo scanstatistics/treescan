@@ -177,6 +177,10 @@ report-attributable-risk=n
 attributable-risk-exposed=0
 ;report parent cuts that match child cuts (y/n)
 include-identical-parent-cuts=n
+;report trend model cluster data as percentage (y/n)
+trend-data-as-percentage=n
+;results title (string)
+report-title=
 
 [Power Simulations]
 ;input simulation data (y/n)

@@ -211,6 +211,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= _numMostLikelyClustersGraph.getText().equals("1");
         bReturn &= (Double.parseDouble(_temporalGraphPvalueCutoff.getText()) == 0.05);
         bReturn &= _report_data_as_percentage.isSelected() == false;
+        _results_title.getText().equals("");
         return bReturn;
     }
 
@@ -376,6 +377,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setAttributableRiskExposed(_attributable_risk_exposed.getText().length() > 0 ? Integer.parseInt(_attributable_risk_exposed.getText()): 0);
         parameters.setIncludeIdenticalParentCuts(_chk_include_identical_parent_cuts.isSelected());
         parameters.setRptDataAsPct(Utils.selected(_report_data_as_percentage));
+        parameters.setResultsTitle(_results_title.getText());
         
         // Temporal Output tab
         parameters.setOutputTemporalGraphFile(_reportTemporalGraph.isEnabled() && _reportTemporalGraph.isSelected());
@@ -540,6 +542,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _attributable_risk_exposed.setText(parameters.getAttributableRiskExposed() > 0 ? Integer.toString(parameters.getAttributableRiskExposed()) : "");
         _chk_include_identical_parent_cuts.setSelected(parameters.getIncludeIdenticalParentCuts());
         _report_data_as_percentage.setSelected(parameters.getRptDataAsPct());
+        _results_title.setText(parameters.getResultsTitle());
 
         // Temporal Output tab
         _reportTemporalGraph.setSelected(parameters.getOutputTemporalGraphFile());
@@ -681,6 +684,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _attributable_risk_exposed.setText("");
         _chk_include_identical_parent_cuts.setSelected(false);
         _report_data_as_percentage.setSelected(false);
+        _results_title.setText("");
     }
 
     /** Verifies that settings are valid in the context of all other parameter settings. */
@@ -1475,6 +1479,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _chk_include_identical_parent_cuts = new javax.swing.JCheckBox();
         _trend_model_group = new javax.swing.JPanel();
         _report_data_as_percentage = new javax.swing.JCheckBox();
+        _userDefinedRunTitle = new javax.swing.JPanel();
+        _printTitle = new javax.swing.JTextField();
+        _results_title_group = new javax.swing.JPanel();
+        _results_title = new javax.swing.JTextField();
         _advanced_adjustments_tab = new javax.swing.JPanel();
         _group_exclusions = new javax.swing.JPanel();
         _time_range_restrictions = new javax.swing.JTextField();
@@ -2810,6 +2818,46 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _userDefinedRunTitle.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Title for Results File"));
+
+        javax.swing.GroupLayout _userDefinedRunTitleLayout = new javax.swing.GroupLayout(_userDefinedRunTitle);
+        _userDefinedRunTitle.setLayout(_userDefinedRunTitleLayout);
+        _userDefinedRunTitleLayout.setHorizontalGroup(
+            _userDefinedRunTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_userDefinedRunTitleLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_printTitle)
+                .addContainerGap())
+        );
+        _userDefinedRunTitleLayout.setVerticalGroup(
+            _userDefinedRunTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _userDefinedRunTitleLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(_printTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        _results_title_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Title for Results File"));
+
+        javax.swing.GroupLayout _results_title_groupLayout = new javax.swing.GroupLayout(_results_title_group);
+        _results_title_group.setLayout(_results_title_groupLayout);
+        _results_title_groupLayout.setHorizontalGroup(
+            _results_title_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_results_title_groupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_results_title)
+                .addContainerGap())
+        );
+        _results_title_groupLayout.setVerticalGroup(
+            _results_title_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _results_title_groupLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(_results_title, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        _results_title.getAccessibleContext().setAccessibleName("Results Title");
+
         javax.swing.GroupLayout _advanced_output_tabLayout = new javax.swing.GroupLayout(_advanced_output_tab);
         _advanced_output_tab.setLayout(_advanced_output_tabLayout);
         _advanced_output_tabLayout.setHorizontalGroup(
@@ -2819,8 +2867,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_advanced_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_trend_model_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_trend_model_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_results_title_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
+            .addGroup(_advanced_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_advanced_output_tabLayout.createSequentialGroup()
+                    .addGap(32, 32, 32)
+                    .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGap(33, 33, 33)))
         );
         _advanced_output_tabLayout.setVerticalGroup(
             _advanced_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2831,7 +2885,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_trend_model_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(176, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_results_title_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(112, Short.MAX_VALUE))
+            .addGroup(_advanced_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(_advanced_output_tabLayout.createSequentialGroup()
+                    .addGap(169, 169, 169)
+                    .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(169, Short.MAX_VALUE)))
         );
 
         jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
@@ -3450,6 +3511,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _powerEvaluationWithSpecifiedCases;
     private javax.swing.JLabel _powerEvaluationWithSpecifiedCasesLabel;
     private javax.swing.JPanel _powerEvaluationsGroup;
+    private javax.swing.JTextField _printTitle;
     private javax.swing.JCheckBox _prospective_evaluation;
     private java.awt.Choice _prospective_frequency;
     private javax.swing.JPanel _prospective_frequency_group;
@@ -3462,6 +3524,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JCheckBox _restrictTemporalRangeCheckBox;
     private javax.swing.JCheckBox _restrict_evaluated_levels;
     private javax.swing.JTextField _restricted_levels;
+    private javax.swing.JTextField _results_title;
+    private javax.swing.JPanel _results_title_group;
     private javax.swing.JTextField _risk_window_percentage;
     private javax.swing.JLabel _risk_window_percentage_label;
     private javax.swing.JLabel _sequential_alpha_label;
@@ -3499,6 +3563,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _time_range_restrictions;
     private javax.swing.JTextField _totalPowerCases;
     private javax.swing.JPanel _trend_model_group;
+    private javax.swing.JPanel _userDefinedRunTitle;
     private javax.swing.JPanel _windowCompletePanel;
     private javax.swing.JPanel _windowGenericPanel;
     private javax.swing.JPanel jPanel1;

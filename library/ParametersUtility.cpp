@@ -568,6 +568,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getRptDataAsPct());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setResultsTitle", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(parameters.getResultsTitle().c_str()));
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -1041,6 +1045,13 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   mid = _getMethodId_Checked(Env, clazz, "getRptDataAsPct", "()Z");
   parameters.setRptDataAsPct(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getResultsTitle", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  parameters.setResultsTitle(sFilename);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   return parameters;
 }
