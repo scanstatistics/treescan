@@ -132,6 +132,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_include_identical_parent_cuts != rhs._include_identical_parent_cuts) return false;
   if (_pvalue_reporting_type != rhs._pvalue_reporting_type) return false;
   if (_early_term_threshold != rhs._early_term_threshold) return false;
+  if (_report_data_as_percentage != rhs._report_data_as_percentage) return false;
 
   return true;
 }
@@ -284,6 +285,7 @@ void Parameters::copy(const Parameters &rhs) {
     _include_identical_parent_cuts = rhs._include_identical_parent_cuts;
     _pvalue_reporting_type = rhs._pvalue_reporting_type;
     _early_term_threshold = rhs._early_term_threshold;
+    _report_data_as_percentage = rhs._report_data_as_percentage;
 }
 
 /** Returns whether early termination option is performed. */
@@ -525,6 +527,7 @@ void Parameters::setAsDefaulted() {
     _minimum_censor_percentage = 10;
     _risk_window_censor_alt_denominator = 2.0;
     _apply_risk_window_restriction_censored = false;
+    _report_data_as_percentage = false;
 
     _prospective_frequency_type = DAILY;
     _prospective_frequency = 1;

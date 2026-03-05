@@ -492,13 +492,14 @@ RecordBuffer& CutsRecordWriter::getRecordForCut(RecordBuffer& Record, const CutS
                 break;
             case Parameters::SIGNED_RANK:{
                 std::pair<double, double> averages = getAverage(thisCut.getSampleSiteData());
-                Record.GetFieldValue(SS_BASELINE_FIELD).AsDouble() = averages.first;
-                Record.GetFieldValue(SS_CURRENT_FIELD).AsDouble() = averages.second;
+                double multiplier = params.getRptDataAsPct() ? 100.0 : 1.0;
+                Record.GetFieldValue(SS_BASELINE_FIELD).AsDouble() = averages.first * multiplier;
+                Record.GetFieldValue(SS_CURRENT_FIELD).AsDouble() = averages.second * multiplier;
                 if (averages.first)
-                    Record.GetFieldValue(SS_PERC_CHANGE_FIELD).AsDouble() = averages.second/averages.first - 1;
+                    Record.GetFieldValue(SS_PERC_CHANGE_FIELD).AsDouble() = (averages.second/averages.first - 1) * multiplier;
                 else
                     Record.GetFieldValue(SS_PERC_CHANGE_FIELD).AsDouble() = std::numeric_limits<double>::infinity();
-                Record.GetFieldValue(SS_ABS_CHANGE_FIELD).AsDouble() = std::abs(averages.second - averages.first);
+                Record.GetFieldValue(SS_ABS_CHANGE_FIELD).AsDouble() = std::abs(averages.second - averages.first) * multiplier;
                 break;
             }
             case Parameters::UNIFORM:
@@ -642,15 +643,16 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
             break;
         case Parameters::SIGNED_RANK: {
             std::pair<double, double> average = getAverage(childNode.getSampleSiteDataBr());
-            Record.GetFieldValue(SS_BASELINE_FIELD).AsDouble() = average.first;
-            Record.GetFieldValue(SS_CURRENT_FIELD).AsDouble() = average.second;
+            double multiplier = params.getRptDataAsPct() ? 100.0 : 1.0;
+            Record.GetFieldValue(SS_BASELINE_FIELD).AsDouble() = average.first * multiplier;
+            Record.GetFieldValue(SS_CURRENT_FIELD).AsDouble() = average.second * multiplier;
             if (average.first && average.second)
-                Record.GetFieldValue(SS_PERC_CHANGE_FIELD).AsDouble() = average.second/average.first - 1.0;
+                Record.GetFieldValue(SS_PERC_CHANGE_FIELD).AsDouble() = (average.second/average.first - 1.0) * multiplier;
             else if (!average.first && average.second)
                 Record.GetFieldValue(SS_PERC_CHANGE_FIELD).AsDouble() = std::numeric_limits<double>::infinity();
             else
                 Record.GetFieldValue(SS_PERC_CHANGE_FIELD).AsDouble() = 0.0;
-            Record.GetFieldValue(SS_ABS_CHANGE_FIELD).AsDouble() = std::abs(average.second - average.first);
+            Record.GetFieldValue(SS_ABS_CHANGE_FIELD).AsDouble() = std::abs(average.second - average.first) * multiplier;
             break;
         }
         case Parameters::UNIFORM:

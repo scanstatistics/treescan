@@ -72,8 +72,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * Recursively searches Container objects contained in 'rootComponent' for
-     * 'searchComponent'.
+     * Recursively searches Container objects contained in 'rootComponent' for 'searchComponent'.
      */
     boolean isContainedComponent(Component rootComponent, Component searchComponent) {
         if (rootComponent == searchComponent) {
@@ -211,6 +210,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= _temporalGraphMostLikely.isSelected();
         bReturn &= _numMostLikelyClustersGraph.getText().equals("1");
         bReturn &= (Double.parseDouble(_temporalGraphPvalueCutoff.getText()) == 0.05);
+        bReturn &= _report_data_as_percentage.isSelected() == false;
         return bReturn;
     }
 
@@ -266,6 +266,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         switch (_focusedTabSet) {
             case OUTPUT:
                 setTitle("Advanced Output Options");
+                jTabbedPane1.addTab("Temporal Output", null, _advanced_temporal_output_tab, null);
                 jTabbedPane1.addTab("Additional Output", null, _advanced_output_tab, null);
                 break;
             case ANALYSIS:
@@ -374,6 +375,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setReportAttributableRisk(_chk_rpt_attributable_risk.isEnabled() && _chk_rpt_attributable_risk.isSelected());
         parameters.setAttributableRiskExposed(_attributable_risk_exposed.getText().length() > 0 ? Integer.parseInt(_attributable_risk_exposed.getText()): 0);
         parameters.setIncludeIdenticalParentCuts(_chk_include_identical_parent_cuts.isSelected());
+        parameters.setRptDataAsPct(Utils.selected(_report_data_as_percentage));
+        
+        // Temporal Output tab
         parameters.setOutputTemporalGraphFile(_reportTemporalGraph.isEnabled() && _reportTemporalGraph.isSelected());
         if (_temporalGraphSignificant.isSelected()) {
             parameters.setTemporalGraphReportType(Parameters.TemporalGraphReportType.SIGNIFICANT_ONLY.ordinal());
@@ -535,6 +539,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _chk_rpt_attributable_risk.setSelected(parameters.getReportAttributableRisk());
         _attributable_risk_exposed.setText(parameters.getAttributableRiskExposed() > 0 ? Integer.toString(parameters.getAttributableRiskExposed()) : "");
         _chk_include_identical_parent_cuts.setSelected(parameters.getIncludeIdenticalParentCuts());
+        _report_data_as_percentage.setSelected(parameters.getRptDataAsPct());
 
         // Temporal Output tab
         _reportTemporalGraph.setSelected(parameters.getOutputTemporalGraphFile());
@@ -675,6 +680,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _chk_rpt_attributable_risk.setSelected(false);
         _attributable_risk_exposed.setText("");
         _chk_include_identical_parent_cuts.setSelected(false);
+        _report_data_as_percentage.setSelected(false);
     }
 
     /** Verifies that settings are valid in the context of all other parameter settings. */
@@ -1099,6 +1105,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }          
     }    
     
+    /** Enables/disables the trend model group options. */
+    public void enableTrendModelGroup(boolean enable) {
+        _trend_model_group.setEnabled(enable);
+        _report_data_as_percentage.setEnabled(enable);
+    }
+    
     /** Enables options of the Adjustments tab */
     public void enableAdjustmentsOptions() {
         _perform_dayofweek_adjustments.setEnabled(
@@ -1461,14 +1473,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _attributable_risk_exposed = new javax.swing.JTextField();
         _chk_attributable_risk_extra = new javax.swing.JLabel();
         _chk_include_identical_parent_cuts = new javax.swing.JCheckBox();
-        _graphOutputGroup = new javax.swing.JPanel();
-        _reportTemporalGraph = new javax.swing.JCheckBox();
-        _temporalGraphMostLikely = new javax.swing.JRadioButton();
-        _temporalGraphMostLikelyX = new javax.swing.JRadioButton();
-        _numMostLikelyClustersGraph = new javax.swing.JTextField();
-        _numMostLikelyClustersGraphLabel = new javax.swing.JLabel();
-        _temporalGraphSignificant = new javax.swing.JRadioButton();
-        _temporalGraphPvalueCutoff = new javax.swing.JTextField();
+        _trend_model_group = new javax.swing.JPanel();
+        _report_data_as_percentage = new javax.swing.JCheckBox();
         _advanced_adjustments_tab = new javax.swing.JPanel();
         _group_exclusions = new javax.swing.JPanel();
         _time_range_restrictions = new javax.swing.JTextField();
@@ -1493,6 +1499,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _sequential_alpha_spending_label = new javax.swing.JLabel();
         _sequential_alpha_spending = new javax.swing.JTextField();
         _alpha_spent_to_date_label = new javax.swing.JLabel();
+        _advanced_temporal_output_tab = new javax.swing.JPanel();
+        _graphOutputGroup = new javax.swing.JPanel();
+        _reportTemporalGraph = new javax.swing.JCheckBox();
+        _temporalGraphMostLikely = new javax.swing.JRadioButton();
+        _temporalGraphMostLikelyX = new javax.swing.JRadioButton();
+        _numMostLikelyClustersGraph = new javax.swing.JTextField();
+        _numMostLikelyClustersGraphLabel = new javax.swing.JLabel();
+        _temporalGraphSignificant = new javax.swing.JRadioButton();
+        _temporalGraphPvalueCutoff = new javax.swing.JTextField();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
@@ -1639,7 +1654,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(152, Short.MAX_VALUE))
+                .addContainerGap(122, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced Input", _advanced_input_tab);
@@ -1862,8 +1877,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_risk_window_percentage_label))
                 .addContainerGap(19, Short.MAX_VALUE))
         );
-
-        _risk_window_percentage_label.getAccessibleContext().setAccessibleName("percent of the length between time zero and the end of the temporal window");
 
         _temporalWindowDefinitionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Window"));
 
@@ -2443,7 +2456,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_prospective_frequency_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_group_min_cases, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(72, Short.MAX_VALUE))
+                .addContainerGap(42, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _advanced_inferenece_tab);
@@ -2658,7 +2671,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_alternativeHypothesisFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_alternativeHypothesisFilenameButton))
-                .addContainerGap(181, Short.MAX_VALUE))
+                .addContainerGap(151, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout _advanced_power_evaluation_tabLayout = new javax.swing.GroupLayout(_advanced_power_evaluation_tab);
@@ -2748,15 +2761,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_chk_include_identical_parent_cuts, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(_chk_rpt_attributable_risk)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_attributable_risk_exposed, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_chk_attributable_risk_extra, javax.swing.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(_chk_include_identical_parent_cuts)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(_chk_attributable_risk_extra, javax.swing.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -2773,133 +2784,29 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _graphOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Graphs"));
+        _trend_model_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Trend Model Options"));
 
-        _reportTemporalGraph.setText("Produce Temporal Graphs");
-        _reportTemporalGraph.addItemListener(new java.awt.event.ItemListener() {
+        _report_data_as_percentage.setText("Report cluster attributes as a percentage (assumes input data are proportions)");
+        _reportLLRResultsAsCsvTable.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());
                 enableSetDefaultsButton();
             }
         });
 
-        _temporal_graph_buttongroup.add(_temporalGraphMostLikely);
-        _temporalGraphMostLikely.setSelected(true);
-        _temporalGraphMostLikely.setText("Most likely cluster only");
-        _temporalGraphMostLikely.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());
-                    enableSetDefaultsButton();
-                }
-            }
-        });
-
-        _temporal_graph_buttongroup.add(_temporalGraphMostLikelyX);
-        _temporalGraphMostLikelyX.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());
-                    enableSetDefaultsButton();
-                }
-            }
-        });
-
-        _numMostLikelyClustersGraph.setText("1"); // NOI18N
-        _numMostLikelyClustersGraph.setEnabled(false);
-        _numMostLikelyClustersGraph.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveFloatKeyTyped(_numMostLikelyClustersGraph, e, 5);
-            }
-        });
-        _numMostLikelyClustersGraph.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_numMostLikelyClustersGraph.getText().length() == 0 || Integer.parseInt(_numMostLikelyClustersGraph.getText()) == 0) {
-                    if (undo.canUndo()) undo.undo(); else _numMostLikelyClustersGraph.setText("1");
-                }
-                enableSetDefaultsButton();
-            }
-        });
-        _numMostLikelyClustersGraph.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _numMostLikelyClustersGraph.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                _numMostLikelyClustersGraphFocusGained(evt);
-            }
-        });
-
-        _numMostLikelyClustersGraphLabel.setText("most likely clusters, one graph for each");
-        _numMostLikelyClustersGraphLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                _numMostLikelyClustersGraphLabelMouseClicked(evt);
-            }
-        });
-
-        _temporal_graph_buttongroup.add(_temporalGraphSignificant);
-        _temporalGraphSignificant.setText("All significant clusters, one graph for each, with p-value less than:");
-        _temporalGraphSignificant.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-                    enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());
-                    enableSetDefaultsButton();
-                }
-            }
-        });
-
-        _temporalGraphPvalueCutoff.setText("0.05"); // NOI18N
-        _temporalGraphPvalueCutoff.setEnabled(false);
-        initCutoffJTextField(_temporalGraphPvalueCutoff, AppConstants.DEFAULT_RECURRENCE_CUTOFF, AppConstants.DEFAULT_PVALUE_CUTOFF);
-        _temporalGraphPvalueCutoff.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                _temporalGraphPvalueCutoffFocusGained(evt);
-            }
-        });
-
-        javax.swing.GroupLayout _graphOutputGroupLayout = new javax.swing.GroupLayout(_graphOutputGroup);
-        _graphOutputGroup.setLayout(_graphOutputGroupLayout);
-        _graphOutputGroupLayout.setHorizontalGroup(
-            _graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_graphOutputGroupLayout.createSequentialGroup()
-                .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_graphOutputGroupLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(_reportTemporalGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 726, Short.MAX_VALUE))
-                    .addGroup(_graphOutputGroupLayout.createSequentialGroup()
-                        .addGap(27, 27, 27)
-                        .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(_graphOutputGroupLayout.createSequentialGroup()
-                                .addComponent(_temporalGraphSignificant)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(_temporalGraphPvalueCutoff, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 245, Short.MAX_VALUE))
-                            .addComponent(_temporalGraphMostLikely, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(_graphOutputGroupLayout.createSequentialGroup()
-                                .addComponent(_temporalGraphMostLikelyX)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_numMostLikelyClustersGraph, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_numMostLikelyClustersGraphLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+        javax.swing.GroupLayout _trend_model_groupLayout = new javax.swing.GroupLayout(_trend_model_group);
+        _trend_model_group.setLayout(_trend_model_groupLayout);
+        _trend_model_groupLayout.setHorizontalGroup(
+            _trend_model_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_trend_model_groupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_report_data_as_percentage, javax.swing.GroupLayout.DEFAULT_SIZE, 726, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        _graphOutputGroupLayout.setVerticalGroup(
-            _graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_graphOutputGroupLayout.createSequentialGroup()
-                .addComponent(_reportTemporalGraph)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_temporalGraphMostLikely)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_temporalGraphMostLikelyX)
-                    .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(_numMostLikelyClustersGraph, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(_numMostLikelyClustersGraphLabel)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_temporalGraphSignificant)
-                    .addComponent(_temporalGraphPvalueCutoff, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        _trend_model_groupLayout.setVerticalGroup(
+            _trend_model_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_trend_model_groupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_report_data_as_percentage)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -2912,7 +2819,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_advanced_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_graphOutputGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_trend_model_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _advanced_output_tabLayout.setVerticalGroup(
@@ -2923,8 +2830,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_log_likelihood_ratios_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(111, Short.MAX_VALUE))
+                .addComponent(_trend_model_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(176, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
@@ -3207,7 +3114,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_sequential_alpha_spending_label)
                     .addComponent(_sequential_alpha_spending, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_alpha_spent_to_date_label))
-                .addGap(0, 308, Short.MAX_VALUE))
+                .addGap(0, 278, Short.MAX_VALUE))
         );
 
         _panel_sequential_analysis.add(_panel_sequential_analysis_tree_only, "sequential-treeonly");
@@ -3250,6 +3157,156 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         );
 
         jTabbedPane1.addTab("Sequential", _sequential_analysis_tab);
+
+        _graphOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Graphs"));
+
+        _reportTemporalGraph.setText("Produce Temporal Graphs");
+        _reportTemporalGraph.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());
+                enableSetDefaultsButton();
+            }
+        });
+
+        _temporal_graph_buttongroup.add(_temporalGraphMostLikely);
+        _temporalGraphMostLikely.setSelected(true);
+        _temporalGraphMostLikely.setText("Most likely cluster only");
+        _temporalGraphMostLikely.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());
+                    enableSetDefaultsButton();
+                }
+            }
+        });
+
+        _temporal_graph_buttongroup.add(_temporalGraphMostLikelyX);
+        _temporalGraphMostLikelyX.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());
+                    enableSetDefaultsButton();
+                }
+            }
+        });
+
+        _numMostLikelyClustersGraph.setText("1"); // NOI18N
+        _numMostLikelyClustersGraph.setEnabled(false);
+        _numMostLikelyClustersGraph.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveFloatKeyTyped(_numMostLikelyClustersGraph, e, 5);
+            }
+        });
+        _numMostLikelyClustersGraph.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_numMostLikelyClustersGraph.getText().length() == 0 || Integer.parseInt(_numMostLikelyClustersGraph.getText()) == 0) {
+                    if (undo.canUndo()) undo.undo(); else _numMostLikelyClustersGraph.setText("1");
+                }
+                enableSetDefaultsButton();
+            }
+        });
+        _numMostLikelyClustersGraph.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        _numMostLikelyClustersGraph.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                _numMostLikelyClustersGraphFocusGained(evt);
+            }
+        });
+
+        _numMostLikelyClustersGraphLabel.setText("most likely clusters, one graph for each");
+        _numMostLikelyClustersGraphLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                _numMostLikelyClustersGraphLabelMouseClicked(evt);
+            }
+        });
+
+        _temporal_graph_buttongroup.add(_temporalGraphSignificant);
+        _temporalGraphSignificant.setText("All significant clusters, one graph for each, with p-value less than:");
+        _temporalGraphSignificant.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());
+                    enableSetDefaultsButton();
+                }
+            }
+        });
+
+        _temporalGraphPvalueCutoff.setText("0.05"); // NOI18N
+        _temporalGraphPvalueCutoff.setEnabled(false);
+        initCutoffJTextField(_temporalGraphPvalueCutoff, AppConstants.DEFAULT_RECURRENCE_CUTOFF, AppConstants.DEFAULT_PVALUE_CUTOFF);
+        _temporalGraphPvalueCutoff.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                _temporalGraphPvalueCutoffFocusGained(evt);
+            }
+        });
+
+        javax.swing.GroupLayout _graphOutputGroupLayout = new javax.swing.GroupLayout(_graphOutputGroup);
+        _graphOutputGroup.setLayout(_graphOutputGroupLayout);
+        _graphOutputGroupLayout.setHorizontalGroup(
+            _graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_graphOutputGroupLayout.createSequentialGroup()
+                .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_graphOutputGroupLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(_reportTemporalGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 726, Short.MAX_VALUE))
+                    .addGroup(_graphOutputGroupLayout.createSequentialGroup()
+                        .addGap(27, 27, 27)
+                        .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(_graphOutputGroupLayout.createSequentialGroup()
+                                .addComponent(_temporalGraphSignificant)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(_temporalGraphPvalueCutoff, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 245, Short.MAX_VALUE))
+                            .addComponent(_temporalGraphMostLikely, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(_graphOutputGroupLayout.createSequentialGroup()
+                                .addComponent(_temporalGraphMostLikelyX)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_numMostLikelyClustersGraph, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_numMostLikelyClustersGraphLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                .addContainerGap())
+        );
+        _graphOutputGroupLayout.setVerticalGroup(
+            _graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_graphOutputGroupLayout.createSequentialGroup()
+                .addComponent(_reportTemporalGraph)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_temporalGraphMostLikely)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(_temporalGraphMostLikelyX)
+                    .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_numMostLikelyClustersGraph, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_numMostLikelyClustersGraphLabel)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_temporalGraphSignificant)
+                    .addComponent(_temporalGraphPvalueCutoff, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout _advanced_temporal_output_tabLayout = new javax.swing.GroupLayout(_advanced_temporal_output_tab);
+        _advanced_temporal_output_tab.setLayout(_advanced_temporal_output_tabLayout);
+        _advanced_temporal_output_tabLayout.setHorizontalGroup(
+            _advanced_temporal_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advanced_temporal_output_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_graphOutputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _advanced_temporal_output_tabLayout.setVerticalGroup(
+            _advanced_temporal_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_advanced_temporal_output_tabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(239, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Temporal Output", _advanced_temporal_output_tab);
+        _advanced_temporal_output_tab.getAccessibleContext().setAccessibleName("Temporal Output tab");
 
         _closeButton.setText("Close"); // NOI18N
         _closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -3312,6 +3369,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _advanced_input_tab;
     private javax.swing.JPanel _advanced_output_tab;
     private javax.swing.JPanel _advanced_power_evaluation_tab;
+    private javax.swing.JPanel _advanced_temporal_output_tab;
     private javax.swing.JPanel _advanced_temporal_window_tab;
     private javax.swing.JLabel _alpha_spent_to_date_label;
     private javax.swing.JTextField _alternativeHypothesisFilename;
@@ -3400,6 +3458,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _relaxed_study_data_period_checking;
     private javax.swing.JCheckBox _reportLLRResultsAsCsvTable;
     private javax.swing.JCheckBox _reportTemporalGraph;
+    private javax.swing.JCheckBox _report_data_as_percentage;
     private javax.swing.JCheckBox _restrictTemporalRangeCheckBox;
     private javax.swing.JCheckBox _restrict_evaluated_levels;
     private javax.swing.JTextField _restricted_levels;
@@ -3439,6 +3498,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _timeTemporalRadioButton;
     private javax.swing.JTextField _time_range_restrictions;
     private javax.swing.JTextField _totalPowerCases;
+    private javax.swing.JPanel _trend_model_group;
     private javax.swing.JPanel _windowCompletePanel;
     private javax.swing.JPanel _windowGenericPanel;
     private javax.swing.JPanel jPanel1;

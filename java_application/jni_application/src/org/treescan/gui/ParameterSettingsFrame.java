@@ -608,6 +608,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _advancedParametersSetting.enableAdditionalOutputOptions();
         _advancedParametersSetting.enableTimeRangeExclusionsGroup();
         _advancedParametersSetting.enableTemporalGraphsGroup(treeAndTime || timeOnly);
+        _advancedParametersSetting.enableTrendModelGroup(Utils.selected(_TrendModelButton));
         _advancedParametersSetting.enableMinimumCasesGroup();
         _advancedParametersSetting.enablePValueOptionsGroup();
     }

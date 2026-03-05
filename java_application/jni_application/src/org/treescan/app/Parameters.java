@@ -123,6 +123,7 @@ public class Parameters implements Cloneable {
     /* PValue Reporting variables */
     private PValueReportingType _pvalue_reporting_type=PValueReportingType.STANDARD_PVALUE; /** PValue reporting type */
     private int _early_term_threshold=50; /** early termination threshold */
+    private boolean _report_data_as_percentage=false;
     
     private ArrayList<InputSourceSettings>     _input_sources;
 
@@ -251,10 +252,13 @@ public class Parameters implements Cloneable {
           if (_include_identical_parent_cuts != rhs._include_identical_parent_cuts) return false;
           if (_pvalue_reporting_type != rhs._pvalue_reporting_type) return false;
           if (_early_term_threshold != rhs._early_term_threshold) return false;
-          
+          if (_report_data_as_percentage != rhs._report_data_as_percentage) return false;
+              
           return true;
     }
     
+    public boolean getRptDataAsPct() { return _report_data_as_percentage; }
+    public void setRptDataAsPct(boolean b) { _report_data_as_percentage = b; }    
     public boolean getVariableCaseProbability() { return _variable_case_probablility; }
     public void setVariableCaseProbability(boolean b) { _variable_case_probablility = b; }
     public final String getNotEvaluatedNodesFileName() {return _not_evaluated_nodes_filename;}

@@ -365,17 +365,20 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     PrintFormat.PrintSectionLabel(outfile, "Observed Cases", true);
                 } else if (parameters.getModelType() == Parameters::SIGNED_RANK) {
                     auto proportions = getAverage(thisCut.getSampleSiteData());
-                    PrintFormat.PrintSectionLabel(outfile, "Baseline Average", true);
-                    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%g", proportions.first));
-                    PrintFormat.PrintSectionLabel(outfile, "Current Average", true);
-                    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%g", proportions.second));
-                    PrintFormat.PrintSectionLabel(outfile, "Percent Change", true);
+                    auto multiplier = parameters.getRptDataAsPct() ? std::make_pair(100.0, 2) : std::make_pair(1.0, -1);
+                    PrintFormat.PrintSectionLabel(outfile, parameters.getRptDataAsPct() ? "Baseline Average (%)" : "Baseline Average", true);
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(proportions.first * multiplier.first, buffer, multiplier.second));
+                    PrintFormat.PrintSectionLabel(outfile, parameters.getRptDataAsPct() ? "Current Average (%)" : "Current Average", true);
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(proportions.second * multiplier.first, buffer));
+                    PrintFormat.PrintSectionLabel(outfile, parameters.getRptDataAsPct() ? "Percent Change (%)" : "Percent Change", true);
                     if (proportions.first)
-                        PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%g", proportions.second/proportions.first - 1.0));
+                        PrintFormat.PrintAlignedMarginsDataString(outfile, 
+                            getValueAsString((proportions.second/proportions.first - 1.0) * multiplier.first, buffer, multiplier.second)
+                        );
                     else
                         PrintFormat.PrintAlignedMarginsDataString(outfile, "infinity");
-                    PrintFormat.PrintSectionLabel(outfile, "Absolute Change", true);
-                    PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%g", std::abs(proportions.second - proportions.first)));
+                    PrintFormat.PrintSectionLabel(outfile, parameters.getRptDataAsPct() ? "Absolute Change (%)" : "Absolute Change", true);
+                    PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(std::abs(proportions.second - proportions.first) * multiplier.first, buffer));
                 }
                 if (parameters.getModelType() != Parameters::SIGNED_RANK) {
                     PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", thisCut.getC()));
@@ -954,7 +957,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
 
     outfile << "<div class='hr'></div>" << std::endl;
     if (parameters.isSequentialScanPurelyTemporal() && static_cast<unsigned int>(_scanRunner.getTotalC()) > parameters.getSequentialMaximumSignal()) {
-        outfile << "<div class=\"warning\">Note: The sequential scan reached or exceeded the specified maximum cases. The sequential analysis is over.</div><div class=\"hr\"></div>";
+        outfile << "<div class='warning'>Note: The sequential scan reached or exceeded the specified maximum cases. The sequential analysis is over.</div><div class='hr'></div>";
     } else if (!parameters.getPerformPowerEvaluations() || (parameters.getPerformPowerEvaluations() && parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         if (treeSequentialAnalysisComplete())
             outfile << "<div class='warning'>Note: The alpha spending for sequential scan reached the specified alpha overall. The sequential analysis is over.</div><div class='hr'></div>";
@@ -984,7 +987,8 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             } else if (parameters.getModelType() == Parameters::POISSON) {
                 outfile << "<th>Observed Cases</th>";
             } else if (parameters.getModelType() == Parameters::SIGNED_RANK) {
-                outfile << "<th>Baseline Average</th><th>Current Average</th><th>Percent Change</th><th>Absolute Change</th>";
+                std::string suffix = parameters.getRptDataAsPct() ? " (%)" : "";
+                outfile << "<th>Baseline Average" << suffix << "</th><th>Current Average" << suffix << "</th><th>Percent Change" << suffix << "</th><th>Absolute Change" << suffix << "</th>";
             }
             if (parameters.getModelType() != Parameters::SIGNED_RANK) {
                 outfile << "<th>" << (parameters.getModelType() == Parameters::UNIFORM ? "Expected Cases" : "Expected") << "</th>";
@@ -1219,7 +1223,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         }
         CutsRecordWriter::sortChildRecords(childRecords, _scanRunner.getParameters(), thisCut.getRate(_scanRunner));
         buffer = thisNode.getIdentifier();
-        outfile << "<td>" << (childRecords.size() > 0 ? "<a href=\"#\" class=\"cut-node-w-children\">" : "") << htmlencode(buffer);
+        outfile << "<td>" << (childRecords.size() > 0 ? "<a href='#' class='cut-node-w-children'>" : "") << htmlencode(buffer);
         outfile << (childRecords.size() > 0 ? "</a>" : "") << "</td>";
         if (_scanRunner.hasNodeDescriptions()) {
             buffer = thisNode.getName();
@@ -1295,12 +1299,14 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
     }
     if (parameters.getModelType() == Parameters::SIGNED_RANK) {
         auto proportions = getAverage(thisCut.getSampleSiteData());
-        outfile << "<td>" << printString(buffer, "%g", proportions.first) << "</td><td>" << printString(buffer2, "%g", proportions.second) << "</td>";
+        auto multiplier = parameters.getRptDataAsPct() ? std::make_pair(100.0, 2) : std::make_pair(1.0, -1);
+        outfile << "<td>" << getValueAsString(proportions.first * multiplier.first, buffer  ) << "</td>";
+        outfile << "<td>" << getValueAsString(proportions.second * multiplier.first, buffer2, multiplier.second) << "</td>";
         if (proportions.first)
-            outfile << "<td>" << printString(buffer, "%g", proportions.second/proportions.first - 1.0);
+            outfile << "<td>" << getValueAsString((proportions.second/proportions.first - 1.0) * multiplier.first, buffer, multiplier.second) << "</td>";
         else
-            outfile << "<td data-order=99999>infinity";
-        outfile << "</td><td>" << printString(buffer2, "%g", std::abs(proportions.second - proportions.first)) << "</td>";
+            outfile << "<td data-order=99999>infinity</td>";
+        outfile << "<td>" << getValueAsString(std::abs(proportions.second - proportions.first) * multiplier.first, buffer, multiplier.second) << "</td>";
     } else {
         // write cases in window or cases or observed cases, depending on settings
         outfile << "<td>" << thisCut.getC() << "</td>";
@@ -1388,15 +1394,17 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
                     string_values.push_back(printString(buffer, "'%ld'", static_cast<int>(Record->GetFieldValue(CutsRecordWriter::OBSERVED_CASES_FIELD).AsDouble())));
                     string_values.push_back(printString(buffer, "'%s'", getValueAsString(Record->GetFieldValue(CutsRecordWriter::EXPECTED_FIELD).AsDouble(), buffer2).c_str()));
                     break;
-                case Parameters::SIGNED_RANK:
-                    string_values.push_back(printString(buffer, "'%g'", Record->GetFieldValue(CutsRecordWriter::SS_BASELINE_FIELD).AsDouble()));
-                    string_values.push_back(printString(buffer, "'%g'", Record->GetFieldValue(CutsRecordWriter::SS_CURRENT_FIELD).AsDouble()));
+                case Parameters::SIGNED_RANK: {
+                    int iSignificant = parameters.getRptDataAsPct() ? 2 : -1; // Note: record already multiplied by 100 in CutsRecordWriter::getRecordForCutChild
+                    string_values.push_back(getValueAsString(Record->GetFieldValue(CutsRecordWriter::SS_BASELINE_FIELD).AsDouble(), buffer, iSignificant));
+                    string_values.push_back(getValueAsString(Record->GetFieldValue(CutsRecordWriter::SS_CURRENT_FIELD).AsDouble(), buffer, iSignificant));
                     if (Record->GetFieldValue(CutsRecordWriter::SS_PERC_CHANGE_FIELD).AsDouble() == std::numeric_limits<double>::infinity())
                         string_values.emplace_back("'infinity'");
                     else
-                        string_values.push_back(printString(buffer, "'%g'", Record->GetFieldValue(CutsRecordWriter::SS_PERC_CHANGE_FIELD).AsDouble()));
-                    string_values.push_back(printString(buffer, "'%g'", Record->GetFieldValue(CutsRecordWriter::SS_ABS_CHANGE_FIELD).AsDouble()));
+                        string_values.push_back(getValueAsString(Record->GetFieldValue(CutsRecordWriter::SS_PERC_CHANGE_FIELD).AsDouble(), buffer, iSignificant));
+                    string_values.push_back(getValueAsString(Record->GetFieldValue(CutsRecordWriter::SS_ABS_CHANGE_FIELD).AsDouble(), buffer, iSignificant));
                     break;
+                }
                 case Parameters::UNIFORM:
                 case Parameters::MODEL_NOT_APPLICABLE:
                 default:

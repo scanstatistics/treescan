@@ -11,6 +11,7 @@ const char * IniParameterSpecification::TemporalWindow          = "Temporal Wind
 const char * IniParameterSpecification::Adjustments             = "Adjustments";
 const char * IniParameterSpecification::Inference               = "Inference";
 const char * IniParameterSpecification::Output                  = "Output";
+const char * IniParameterSpecification::TemporalOutput          = "Temporal Output";
 const char * IniParameterSpecification::AdditionalOutput        = "Additional Output";
 const char * IniParameterSpecification::PowerEvaluations        = "Power Evaluations";
 const char * IniParameterSpecification::PowerSimulations        = "Power Simulations";
@@ -75,6 +76,7 @@ void IniParameterSpecification::setup(Parameters::CreationVersion version) {
     _sequential_scan_section = SectionInfo(SequentialScan, 750);
     _power_evaluations_section = SectionInfo(PowerEvaluations, 800);
     _miscellaneous_analysis_section = SectionInfo(MiscellaneousAnalysis, 801);
+    _temporal_output_section = SectionInfo(TemporalOutput, 850);
     _additional_output_section = SectionInfo(AdditionalOutput, 900);
     _power_simulations_section = SectionInfo(PowerSimulations, 1000);
     _run_options_section = SectionInfo(RunOptions, 1100);
@@ -94,8 +96,10 @@ void IniParameterSpecification::setup(Parameters::CreationVersion version) {
         Build_2_1_x_ParameterList();
     else if (version.iMajor == 2 && version.iMinor == 2)
         Build_2_2_x_ParameterList();
-    else
+    else if (version.iMajor == 2 && version.iMinor == 3)
         Build_2_3_x_ParameterList();
+    else
+        Build_2_4_x_ParameterList();
 }
 
 /** Returns ini version setting or default. */
@@ -280,6 +284,20 @@ void IniParameterSpecification::Build_2_3_x_ParameterList() {
 
     assert(_parameter_info.size() == 84);
 }
+
+/** Version 2.4 parameter specifications. */
+void IniParameterSpecification::Build_2_4_x_ParameterList() {
+    Build_2_3_x_ParameterList();
+
+    _parameter_info[Parameters::OUTPUT_TEMPORAL_GRAPH] = ParamInfo(Parameters::OUTPUT_TEMPORAL_GRAPH, "output-temporal-graph-html", 1, _temporal_output_section);
+    _parameter_info[Parameters::TEMPORAL_GRAPH_REPORT_TYPE] = ParamInfo(Parameters::TEMPORAL_GRAPH_REPORT_TYPE, "temporal-graph-type", 2, _temporal_output_section);
+    _parameter_info[Parameters::TEMPORAL_GRAPH_MLC_COUNT] = ParamInfo(Parameters::TEMPORAL_GRAPH_MLC_COUNT, "temporal-graph-most-mlc", 3, _temporal_output_section);
+    _parameter_info[Parameters::TEMPORAL_GRAPH_CUTOFF] = ParamInfo(Parameters::TEMPORAL_GRAPH_CUTOFF, "temporal-graph-significance-cutoff", 4, _temporal_output_section);
+    _parameter_info[Parameters::RPT_DATA_AS_PERCENTAGE] = ParamInfo(Parameters::RPT_DATA_AS_PERCENTAGE, "trend-data-as-percentage", 5, _additional_output_section);
+
+    assert(_parameter_info.size() == 85);
+}
+
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
     Returns true if parameter found else false. */

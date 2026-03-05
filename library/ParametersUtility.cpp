@@ -564,6 +564,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jint)parameters.getEarlyTermThreshold());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setRptDataAsPct", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getRptDataAsPct());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -1032,6 +1036,10 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   parameters.setPValueReportingType((Parameters::PValueReportingType)getEnumTypeOrdinalIndex(Env, jParameters, "getPValueReportingType", "Lorg/treescan/app/Parameters$PValueReportingType;"));
   mid = _getMethodId_Checked(Env, clazz, "getEarlyTermThreshold", "()I");
   parameters.setEarlyTermThreshold(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getRptDataAsPct", "()Z");
+  parameters.setRptDataAsPct(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   return parameters;
