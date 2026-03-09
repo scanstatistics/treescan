@@ -15,7 +15,7 @@ test_suite * init_unit_test_suite( int argc, char* argv[] )
     //framework::master_test_suite().add( BOOST_TEST_CASE( &free_test_function_fail ) );
     //framework::master_test_suite().add( BOOST_TEST_CASE( &free_test_function_fail_another ) );
 
-    //boost::shared_ptr<test_class> tester( new test_class );
+    //std::shared_ptr<test_class> tester( new test_class );
 
     //framework::master_test_suite().add( BOOST_TEST_CASE( boost::bind( &test_class::test_method1, tester )));
     //framework::master_test_suite().add( BOOST_TEST_CASE( boost::bind( &test_class::test_method2, tester )));

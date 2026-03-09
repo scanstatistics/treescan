@@ -8,13 +8,13 @@
     Class objects which are stream derivatives are allocated with shared pointers to facilitate randomizer clone. */
 class OrderedSimulationDataWriter {
     protected:
-        typedef boost::shared_ptr<std::stringstream> CacheStream_t;
+        typedef std::shared_ptr<std::stringstream> CacheStream_t;
         typedef std::pair<unsigned int, CacheStream_t> CacheStreamPair_t;
         typedef std::vector<CacheStreamPair_t> CacheStreamContainer_t;
 
         unsigned int _sim_position;
         unsigned int _num_simulations;
-        boost::shared_ptr<std::ofstream> _sim_stream;
+        std::shared_ptr<std::ofstream> _sim_stream;
         CacheStreamContainer_t _sim_stream_cache;
 
     public:
@@ -27,7 +27,7 @@ class OrderedSimulationDataWriter {
 /** Class which manages a std::ifstream associated with a randomizer object. This object can be shared by randomizer objects. */
 class FileStreamReadManager {
     public:
-        typedef boost::shared_ptr<std::ifstream> SharedStream_t;
+        typedef std::shared_ptr<std::ifstream> SharedStream_t;
         typedef std::pair<const AbstractRandomizer*, SharedStream_t> ManagedStream_t;
 
     protected:
@@ -49,8 +49,8 @@ class FileStreamReadManager {
 /** Abstraction for denominator data randomizer. */
 class AbstractDenominatorDataRandomizer : public AbstractRandomizer {
     protected:
-        typedef boost::shared_ptr<OrderedSimulationDataWriter> SharedSimWriter_t;
-        typedef boost::shared_ptr<FileStreamReadManager> SharedSimReader_t;
+        typedef std::shared_ptr<OrderedSimulationDataWriter> SharedSimWriter_t;
+        typedef std::shared_ptr<FileStreamReadManager> SharedSimReader_t;
 
         BinomialGenerator   _binomial_generator;
         const ScanRunner  & _scanner;

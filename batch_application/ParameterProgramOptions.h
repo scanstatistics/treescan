@@ -15,7 +15,7 @@ namespace po = boost::program_options;
 class ParameterProgramOptions: public AbtractParameterFileAccess {
     public:
         typedef boost::tuple<po::options_description,bool,std::string>  ParamOpt_t; // (po::options_description, visible, extra text)
-        typedef boost::shared_ptr<ParamOpt_t> ParamOptItem_t;
+        typedef std::shared_ptr<ParamOpt_t> ParamOptItem_t;
         typedef std::vector<ParamOptItem_t> ParamOptContainer_t;
 
         const char * getOption(Parameters::ParameterType e, bool withShortName=false) const;

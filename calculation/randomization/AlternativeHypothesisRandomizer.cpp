@@ -6,7 +6,7 @@
 
 /** Constructor */
 AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanRunner::NodeStructureContainer_t& treeNodes,
-                                                                     boost::shared_ptr<AbstractRandomizer> randomizer,
+                                                                     std::shared_ptr<AbstractRandomizer> randomizer,
                                                                      const RelativeRiskAdjustmentHandler& adjustments,
                                                                      const Parameters& parameters, 
                                                                      int totalC,

@@ -84,7 +84,7 @@ FileStreamReadManager::SharedStream_t FileStreamReadManager::getStream(const Abs
     auto it = std::find_if(_managed_streams.begin(), _managed_streams.end(), [r](const ManagedStream_t& element) { return element.first == r; });
     if (it == _managed_streams.end()) {
         boost::mutex::scoped_lock lock(mutex);
-        _managed_streams.push_back(std::make_pair(r, boost::shared_ptr<std::ifstream>(new std::ifstream())));
+        _managed_streams.push_back(std::make_pair(r, std::shared_ptr<std::ifstream>(new std::ifstream())));
         _managed_streams.back().second->open(_filename.c_str());
         return _managed_streams.back().second;
     }

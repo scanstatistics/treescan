@@ -71,7 +71,7 @@ public:
 // Test wrapper to expose protected `MCSimSuccessiveFunctor::scanTreeSignedRank` for unit testing.
 class TestMCSimSuccessiveFunctor : public MCSimSuccessiveFunctor {
 public:
-    TestMCSimSuccessiveFunctor(boost::mutex& mutex, boost::shared_ptr<AbstractRandomizer> randomizer, const ScanRunner& scanRunner)
+    TestMCSimSuccessiveFunctor(boost::mutex& mutex, std::shared_ptr<AbstractRandomizer> randomizer, const ScanRunner& scanRunner)
         : MCSimSuccessiveFunctor(mutex, randomizer, scanRunner) {}
 
     MCSimSuccessiveFunctor::successful_result_type invoke_scanTreeSignedRank(MCSimSuccessiveFunctor::param_type const& param) {
@@ -557,7 +557,7 @@ BOOST_AUTO_TEST_CASE(Functor_BasicProducesLLR)
 
     // Prepare functor with TestSignedRankRandomizer
     boost::mutex mtx;
-    boost::shared_ptr<AbstractRandomizer> rnd(new TestSignedRankRandomizer(runner, 12345));
+    std::shared_ptr<AbstractRandomizer> rnd(new TestSignedRankRandomizer(runner, 12345));
     TestMCSimSuccessiveFunctor functor(mtx, rnd, runner);
 
     auto res = functor.invoke_scanTreeSignedRank(1u);
@@ -583,7 +583,7 @@ BOOST_AUTO_TEST_CASE(Functor_Operator_UnExceptional)
     leaf->refSampleSiteDataBr().emplace(0u, SampleSiteData(0.0, 7.0));
 
     boost::mutex mtx;
-    boost::shared_ptr<AbstractRandomizer> rnd(new TestSignedRankRandomizer(runner, 999));
+    std::shared_ptr<AbstractRandomizer> rnd(new TestSignedRankRandomizer(runner, 999));
     MCSimSuccessiveFunctor functor(mtx, rnd, runner);
 
     auto opres = functor(1u); // calls operator()

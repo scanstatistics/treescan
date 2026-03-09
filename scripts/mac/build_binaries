@@ -15,7 +15,7 @@ c_compiler="/usr/bin/gcc"
 osx_min_version="-mmacosx-version-min=10.13"
 binaries="${3:-/Users/treescan/prj/treescan.development/binaries/mac}"
 treescan_src="${1:-/Users/treescan/prj/treescan.development/treescan}"
-boost_src="${2:-/Users/treescan/prj/boost/boost_1_81_0}"
+boost_src="${2:-/Users/treescan/prj/boost/boost_1_90_0}"
 processors="-j2"
 
 rm -f $binaries/*

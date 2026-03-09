@@ -130,7 +130,7 @@ class CutsRecordWriter : public DataRecordWriter {
        static RecordBuffer& getRecordForCutChild(RecordBuffer& Record, const CutStructure& thisCut, const NodeStructure& childNode, size_t subIndex, const ScanRunner& scanner);
 
        static bool           includeChild(const ScanRunner& scanner, const CutStructure& thisCut, RecordBuffer& record);
-       static void           sortChildRecords(std::vector<boost::shared_ptr<RecordBuffer>>& childRecords, const Parameters& parameters, Parameters::ScanRateType cutRate);
+       static void           sortChildRecords(std::vector<std::shared_ptr<RecordBuffer>>& childRecords, const Parameters& parameters, Parameters::ScanRateType cutRate);
        void                  write(const CutStructure& thisCut) const;
 };
 

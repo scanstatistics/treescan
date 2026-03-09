@@ -403,15 +403,15 @@ bool CutsRecordWriter::includeChild(const ScanRunner& scanner, const CutStructur
 }
 
 /* Sorts child records for reporting in output files by excess cases. */
-void CutsRecordWriter::sortChildRecords(std::vector<boost::shared_ptr<RecordBuffer>>& childRecords, const Parameters& parameters, Parameters::ScanRateType cutRate) {
+void CutsRecordWriter::sortChildRecords(std::vector<std::shared_ptr<RecordBuffer>>& childRecords, const Parameters& parameters, Parameters::ScanRateType cutRate) {
     if (parameters.getModelType() == Parameters::SIGNED_RANK) {
-        std::sort(std::begin(childRecords), std::end(childRecords), [cutRate](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
+        std::sort(std::begin(childRecords), std::end(childRecords), [cutRate](std::shared_ptr<RecordBuffer> recordA, std::shared_ptr<RecordBuffer> recordB) {
             double currentA = recordA->GetFieldValue(DataRecordWriter::SS_CURRENT_FIELD).AsDouble();
             double currentB = recordB->GetFieldValue(DataRecordWriter::SS_CURRENT_FIELD).AsDouble();
             return cutRate == Parameters::LOWRATE ? currentA < currentB : currentA > currentB;
         });
     } else {
-        std::sort(std::begin(childRecords), std::end(childRecords), [cutRate](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
+        std::sort(std::begin(childRecords), std::end(childRecords), [cutRate](std::shared_ptr<RecordBuffer> recordA, std::shared_ptr<RecordBuffer> recordB) {
             double rrA = recordA->GetFieldValue(DataRecordWriter::RELATIVE_RISK_FIELD).AsDouble();
             double rrB = recordB->GetFieldValue(DataRecordWriter::RELATIVE_RISK_FIELD).AsDouble();
             return cutRate == Parameters::LOWRATE ? rrA < rrB : rrA > rrB;
@@ -426,9 +426,9 @@ void CutsRecordWriter::write(const CutStructure& thisCut) const {
         RecordBuffer Record(_dataFieldDefinitions);
         _csvWriter->writeRecord(getRecordForCut(Record, thisCut, _scanner));
         // Now write records for each direct child of this cut/node.
-        std::vector<boost::shared_ptr<RecordBuffer>> childRecords;
+        std::vector<std::shared_ptr<RecordBuffer>> childRecords;
         for (auto pnode : _scanner.getCutChildNodes(thisCut)) {
-            boost::shared_ptr<RecordBuffer> record(new RecordBuffer(_dataFieldDefinitions));
+            std::shared_ptr<RecordBuffer> record(new RecordBuffer(_dataFieldDefinitions));
             getRecordForCutChild(*(record), thisCut, *pnode, thisCut.getReportOrder(), _scanner);
             if (CutsRecordWriter::includeChild(_scanner, thisCut, *(record))) // Add this record if it is interesting.
                 childRecords.push_back(record);

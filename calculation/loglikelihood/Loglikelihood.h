@@ -95,7 +95,7 @@ public:
     }
 };
 
-typedef boost::shared_ptr<AbstractLoglikelihood> Loglikelihood_t;
+typedef std::shared_ptr<AbstractLoglikelihood> Loglikelihood_t;
 
 class SampleSiteDifferenceProxy {
 public:

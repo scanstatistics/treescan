@@ -8,8 +8,10 @@
 #include <fstream>
 #include <boost/math/special_functions/factorials.hpp>
 using namespace boost::math;
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <locale>
+#include <random>
+#include <algorithm>
 #include <boost/regex.hpp>
 
 /** Returns number of combinations, given 'total' to choose from, choosing 'choose'; where order does not matter and repetition not allowed. */
@@ -244,8 +246,27 @@ std::string & GetUserDocumentsDirectory(std::string& s, const std::string& defau
 #endif
 
 std::string & GetUserTemporaryDirectory(std::string& s) {
-    s = boost::filesystem::temp_directory_path().string();
+    s = std::filesystem::temp_directory_path().string();
     return s;
+}
+
+std::string & generate_unique_filename(const std::string& prefix = "tf_", const std::string& ext = ".tmp") {
+    // 1. Define the character set (same as Boost's default)
+    const std::string chars = "0123456789abcdefghijklmnopqrstuvwxyz";
+
+    // 2. Setup the Engine (Static so it's only seeded once)
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+
+    // 3. Setup the Distribution (0 to 35 for our 36 characters)
+    std::uniform_int_distribution<> dis(0, chars.size() - 1);
+
+    // 4. Generate a random suffix (e.g., 8 characters)
+    std::string suffix;
+    for (int i = 0; i < 8; ++i) {
+        suffix += chars[dis(gen)];
+    }
+    return prefix + suffix + ext;
 }
 
 /** Obtains a temporary filename either from user temp directory or specified path. */
@@ -255,9 +276,9 @@ std::string & GetTemporaryFilename(std::string& s, const char * atLocation) {
         filename.getLocation(s);
     } else {
         GetUserTemporaryDirectory(s);
-        s += boost::filesystem::path::preferred_separator;
+        s += std::filesystem::path::preferred_separator;
     }
-    s += boost::filesystem::unique_path().string();
+    s += generate_unique_filename();
     s += ".tmp";
     return s;
 }

@@ -7,7 +7,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <locale>
 
 #include "ScanRunner.h"
@@ -843,12 +843,12 @@ void SequentialStatistic::write(const std::string &casefilename, const std::stri
         accumulated_controls.close();
 	}
     // Overwrite the current simulation data cache file.
-    boost::filesystem::remove(_simulations_filename.c_str()); // delete current
-    boost::filesystem::rename(_write_simulations_filename, _simulations_filename); // rename temp file
+    std::filesystem::remove(_simulations_filename.c_str()); // delete current
+    std::filesystem::rename(_write_simulations_filename, _simulations_filename); // rename temp file
     // Compress the simulation data cache file into archive.
-    boost::filesystem::remove(getSimulationDataArchiveName());
+    std::filesystem::remove(getSimulationDataArchiveName());
     addZip(getSimulationDataArchiveName(), _simulations_filename, false);
-    boost::filesystem::remove(_simulations_filename.c_str()); // delete the file that was just added to zip
+    std::filesystem::remove(_simulations_filename.c_str()); // delete the file that was just added to zip
 }
 
 ////////////////////////// ScanRunner ////////////////////////////////////////
@@ -891,17 +891,17 @@ ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) :
     }
 }
 
-boost::shared_ptr<AbstractWindowLength> ScanRunner::getNewWindowLength() const {
+std::shared_ptr<AbstractWindowLength> ScanRunner::getNewWindowLength() const {
     if (isCensoredData() && _parameters.isApplyingRiskWindowRestrictionCensored())
-        return boost::shared_ptr<AbstractWindowLength>(new CensoredRiskPercentageWindowLength(_parameters, 
+        return std::shared_ptr<AbstractWindowLength>(new CensoredRiskPercentageWindowLength(_parameters, 
                                                                                               static_cast<int>(_parameters.getMinimumWindowLength()) - 1, 
                                                                                               static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1, 
                                                                                               _zero_translation_additive,
                                                                                               _parameters.getRiskWindowAltCensorDenominator()
                                                                                              ));
     if (_parameters.isApplyingRiskWindowRestriction())
-        return boost::shared_ptr<AbstractWindowLength>(new RiskPercentageWindowLength(_parameters, static_cast<int>(_parameters.getMinimumWindowLength()) - 1, static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1, _zero_translation_additive));
-    return boost::shared_ptr<AbstractWindowLength>(new WindowLength(_parameters, static_cast<int>(_parameters.getMinimumWindowLength()) - 1, static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1));
+        return std::shared_ptr<AbstractWindowLength>(new RiskPercentageWindowLength(_parameters, static_cast<int>(_parameters.getMinimumWindowLength()) - 1, static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1, _zero_translation_additive));
+    return std::shared_ptr<AbstractWindowLength>(new WindowLength(_parameters, static_cast<int>(_parameters.getMinimumWindowLength()) - 1, static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1));
 }
 
 /** Returns the number if window indexes in range which are excluded. */
@@ -2377,7 +2377,7 @@ bool ScanRunner::run() {
             if (_print.GetIsCanceled()) return false;
             if (_parameters.getNumReplicationsRequested()) {
                 _print.Printf("Doing the %d Monte Carlo simulations ...\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
-                boost::shared_ptr<AbstractRandomizer> randomizer(AbstractRandomizer::getNewRandomizer(*this));
+                std::shared_ptr<AbstractRandomizer> randomizer(AbstractRandomizer::getNewRandomizer(*this));
                 if (_parameters.isReadingSimulationData())
                     randomizer->setReading(_parameters.getInputSimulationsFilename());
                 if (_parameters.isWritingSimulationData()) {
@@ -2426,7 +2426,7 @@ bool ScanRunner::runPowerEvaluations() {
             // if simulations not already done in analysis stage, perform them now
             if (!_simVars.get_sim_count()) {
                 _print.Printf("Doing the %d Monte Carlo simulations ...\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
-                boost::shared_ptr<AbstractRandomizer> randomizer(AbstractRandomizer::getNewRandomizer(*this));
+                std::shared_ptr<AbstractRandomizer> randomizer(AbstractRandomizer::getNewRandomizer(*this));
                 if (_parameters.isReadingSimulationData())
                     randomizer->setReading(_parameters.getInputSimulationsFilename());
                 if (_parameters.isWritingSimulationData()) {
@@ -2458,7 +2458,7 @@ bool ScanRunner::runPowerEvaluations() {
     SimulationVariables simVarsCopy(_simVars);
     for (size_t t=0; t < riskAdjustments.size(); ++t) {
         _print.Printf("\nDoing the alternative replications for power set %d\n", BasePrint::P_STDOUT, t+1);
-        boost::shared_ptr<AbstractRandomizer> core_randomizer;
+        std::shared_ptr<AbstractRandomizer> core_randomizer;
         if (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::TOTALCASES) {
             // Randomization is specialized for the conditional Bernoulli and power evaluations.
             // calculate the number of individuals in the nodes with an excess risk
@@ -2504,7 +2504,7 @@ bool ScanRunner::runPowerEvaluations() {
             // Use the same randomizer as the null hypothesis randomization.
             core_randomizer.reset(AbstractRandomizer::getNewRandomizer(*this));
         }
-        boost::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, *riskAdjustments[t], _parameters, _TotalC, _has_multi_parent_nodes, _parameters.getRandomizationSeed()));
+        std::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, *riskAdjustments[t], _parameters, _TotalC, _has_multi_parent_nodes, _parameters.getRandomizationSeed()));
         if (_parameters.isWritingSimulationData()) {
             if (t == 0 && _parameters.getCriticalValuesType() == Parameters::CV_POWER_VALUES)
                 // if we didn't perform monte carlo simulations, truncate simulations write file on first power simulation
@@ -2523,7 +2523,7 @@ bool ScanRunner::runPowerEvaluations() {
 }
 
 /** DOING THE MONTE CARLO SIMULATIONS */
-bool ScanRunner::runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep, unsigned int iteration) {
+bool ScanRunner::runsimulations(std::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep, unsigned int iteration) {
     const char* sReplicationFormatString;
     if (_parameters.getModelType() == Parameters::SIGNED_RANK)
         sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %.0lf\n";
@@ -2537,10 +2537,10 @@ bool ScanRunner::runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer
         typedef contractor<MCSimJobSource> contractor_type;
         contractor_type theContractor(jobSource);
 
-        std::deque<boost::shared_ptr<AbstractRandomizer> > _randomizers;
+        std::deque<std::shared_ptr<AbstractRandomizer> > _randomizers;
         _randomizers.push_back(randomizer);
         for (unsigned u=1; u < ulParallelProcessCount; ++u) {
-            _randomizers.push_back(boost::shared_ptr<AbstractRandomizer>(randomizer->clone()));
+            _randomizers.push_back(std::shared_ptr<AbstractRandomizer>(randomizer->clone()));
         }
 
         // run threads:
@@ -2589,8 +2589,8 @@ bool ScanRunner::runsequentialsimulations(unsigned int num_relica) {
         typedef contractor<MCSimJobSource> contractor_type;
         contractor_type theContractor(jobSource);
 
-        boost::shared_ptr<SequentialFileDataSource> source;
-        boost::shared_ptr<SequentialScanLoglikelihoodRatioWriter> sequential_writer;
+        std::shared_ptr<SequentialFileDataSource> source;
+        std::shared_ptr<SequentialScanLoglikelihoodRatioWriter> sequential_writer;
         std::string buffer;
         if (validateFileAccess(SequentialScanLoglikelihoodRatioWriter::getFilename(_parameters, buffer), false)) {
             source.reset(new SequentialFileDataSource(buffer, _parameters));
@@ -2829,7 +2829,7 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
     DataTimeRange startWindow(temporalStartRange().getStart() + _zero_translation_additive, temporalStartRange().getEnd() + _zero_translation_additive),
                   endWindow(temporalEndRange().getStart() + _zero_translation_additive, temporalEndRange().getEnd() + _zero_translation_additive);
     // Define the minimum and maximum window lengths.
-    boost::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
+    std::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
     int iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
 
     for (size_t n=0; n < _Nodes.size(); ++n) {
@@ -2951,7 +2951,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
     DataTimeRange startWindow(temporalStartRange().getStart() + _zero_translation_additive, temporalStartRange().getEnd() + _zero_translation_additive),
                   endWindow(temporalEndRange().getStart() + _zero_translation_additive, temporalEndRange().getEnd() + _zero_translation_additive);
     // Define the minimum and maximum window lengths.
-    boost::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
+    std::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
     int iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
     for (size_t n = 0; n < _Nodes.size(); ++n) {
         if (isEvaluated(*_Nodes[n])) {
@@ -3092,7 +3092,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                   endWindow(temporalEndRange().getStart() + _zero_translation_additive,
                             temporalEndRange().getEnd() + _zero_translation_additive);
     // Define the minimum and maximum window lengths.
-    boost::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
+    std::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
     for (size_t n=0; n < _Nodes.size(); ++n) {
         if (isEvaluated(*_Nodes[n])) {

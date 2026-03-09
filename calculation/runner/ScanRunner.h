@@ -5,7 +5,6 @@
 #include "TreeScan.h"
 #include "ptr_vector.h"
 #include "Loglikelihood.h"
-#include <boost/shared_ptr.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <boost/logic/tribool.hpp>
 #include "SimulationVariables.h"
@@ -552,14 +551,14 @@ public:
     typedef ptr_vector<NodeStructure>                           NodeStructureContainer_t;
     typedef ptr_vector<CutStructure>                            CutStructureContainer_t;
     typedef std::pair<bool,size_t>                              Index_t;
-    typedef boost::shared_ptr<RelativeRiskAdjustmentHandler>    RiskAdjustments_t;
+    typedef std::shared_ptr<RelativeRiskAdjustmentHandler>    RiskAdjustments_t;
     typedef std::vector<RiskAdjustments_t>                      RiskAdjustmentsContainer_t;
     typedef boost::tuple<double, double, double>                PowerEstimationSet_t;
     typedef std::deque<PowerEstimationSet_t>                    PowerEstimationContainer_t;
     typedef std::vector<unsigned int>                           TimeIntervalContainer_t;
     typedef std::vector<TimeIntervalContainer_t>                DayOfWeekIndexes_t;
-    typedef boost::shared_ptr<TreeStatistics>                   TreeStatistics_t;
-    typedef boost::shared_ptr<SequentialStatistic>              SequentialStatistic_t;
+    typedef std::shared_ptr<TreeStatistics>                   TreeStatistics_t;
+    typedef std::shared_ptr<SequentialStatistic>              SequentialStatistic_t;
 
 protected:
     BasePrint                         & _print;
@@ -610,7 +609,7 @@ protected:
     bool                        readTree(const std::string& filename, unsigned int treeOrdinal);
     bool                        reportResults(time_t start, time_t end);
     bool                        runPowerEvaluations();
-    bool                        runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep, unsigned int iteration=0);
+    bool                        runsimulations(std::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep, unsigned int iteration=0);
     bool                        runsequentialsimulations(unsigned int num_relica);
     bool                        scanTree();
     bool                        scanTreeTemporalConditionNode();
@@ -714,7 +713,7 @@ public:
         return _parameters.getRestrictTemporalWindows() ? _parameters.getTemporalEndRange() : _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
     }
 
-    boost::shared_ptr<AbstractWindowLength> getNewWindowLength() const;
+    std::shared_ptr<AbstractWindowLength> getNewWindowLength() const;
     double get_node_n_time_total_cases(DataTimeRange::index_t start_idx, DataTimeRange::index_t end_idx) const {
         // Obtain the total number of cases in window range for all nodes.
         auto test = std::make_pair(start_idx, end_idx);

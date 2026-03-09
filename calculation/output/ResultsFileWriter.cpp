@@ -1202,7 +1202,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
     const Parameters& parameters = _scanRunner.getParameters();
     const NodeStructure& thisNode = *(_scanRunner.getNodes()[thisCut.getID()]);
     std::string node_tr, buffer, buffer2;
-    std::vector<boost::shared_ptr<RecordBuffer>> childRecords;
+    std::vector<std::shared_ptr<RecordBuffer>> childRecords;
     ptr_vector<FieldDef> fieldDefinitions;
 
     printString(node_tr, "ID_%d", thisNode.getID());
@@ -1212,7 +1212,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         // Obtain the child notes for this cut and remove any children which are not interesting.
         CutsRecordWriter::getFieldDefs(fieldDefinitions, parameters, _scanRunner.hasNodeDescriptions());
         for (auto pnode : _scanRunner.getCutChildNodes(thisCut)) {
-            boost::shared_ptr<RecordBuffer> record(new RecordBuffer(fieldDefinitions));
+            std::shared_ptr<RecordBuffer> record(new RecordBuffer(fieldDefinitions));
             CutsRecordWriter::getRecordForCutChild(*(record), thisCut, *pnode, thisCut.getReportOrder(), _scanRunner);
             if (CutsRecordWriter::includeChild(_scanRunner, thisCut, *(record))) // Add this record if it is interesting.
                 childRecords.push_back(record);
@@ -1579,12 +1579,12 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
     unsigned int children_count = 0;
     if (node.getChildren().size()) {
         unsigned int significantChildNodes = 0, significantBranches = 0;
-        std::vector<boost::shared_ptr<std::stringstream> > childNodestreams;
+        std::vector<std::shared_ptr<std::stringstream> > childNodestreams;
         for (size_t t = 0; t < node.getChildren().size(); ++t)
-            childNodestreams.push_back(boost::shared_ptr<std::stringstream>(new std::stringstream()));
+            childNodestreams.push_back(std::shared_ptr<std::stringstream>(new std::stringstream()));
         std::vector<NodeSet_t> childrenNodesets;
         // Iterate over children recursively obtain branch stream and p-value/relative risk by node and best child.
-        std::vector<boost::shared_ptr<std::stringstream> >::iterator itrStream = childNodestreams.begin();
+        std::vector<std::shared_ptr<std::stringstream> >::iterator itrStream = childNodestreams.begin();
         // Copy the children and sort by identifier
         NodeStructure::ChildContainer_t childrenCopy = node.getChildren();
         std::sort(childrenCopy.begin(), childrenCopy.end(), CompareNodeStructureByIdentifier());
