@@ -61,9 +61,6 @@
     <Filter Include="Source Files\source\boost\threads">
       <UniqueIdentifier>{648b42c8-8cfb-47fa-b598-61ccc7a14bba}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\source\boost\system">
-      <UniqueIdentifier>{a4fb61f0-3df3-48f0-ad43-98d23a48cac8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\source\calculation">
       <UniqueIdentifier>{3379c0f1-edb9-474b-9dd2-4eb53c7f5fed}</UniqueIdentifier>
     </Filter>
@@ -84,12 +81,6 @@
     </Filter>
     <Filter Include="Header Files\source\calculation\output">
       <UniqueIdentifier>{4bb443bf-021a-409d-a533-3f51546fd29a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\source\boost\filesystem">
-      <UniqueIdentifier>{cf9480a7-4092-4199-a2d6-230fe6cb3cac}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\source\boost\regex">
-      <UniqueIdentifier>{230332ec-970b-4d93-bdfb-260cf2f9f907}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -249,39 +240,6 @@
     <ClCompile Include="..\boost\boost_1_81_0\libs\thread\src\win32\thread.cpp">
       <Filter>Source Files\source\boost\threads</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\system\src\error_code.cpp">
-      <Filter>Source Files\source\boost\system</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\codecvt_error_category.cpp">
-      <Filter>Source Files\source\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\directory.cpp">
-      <Filter>Source Files\source\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\exception.cpp">
-      <Filter>Source Files\source\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\operations.cpp">
-      <Filter>Source Files\source\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\path.cpp">
-      <Filter>Source Files\source\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\path_traits.cpp">
-      <Filter>Source Files\source\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\portability.cpp">
-      <Filter>Source Files\source\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\unique_path.cpp">
-      <Filter>Source Files\source\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\utf8_codecvt_facet.cpp">
-      <Filter>Source Files\source\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\windows_file_codecvt.cpp">
-      <Filter>Source Files\source\boost\filesystem</Filter>
-    </ClCompile>
     <ClCompile Include="unittest_ParametersValidate.cpp">
       <Filter>Source Files\unit_tests</Filter>
     </ClCompile>
@@ -320,21 +278,6 @@
     </ClCompile>
     <ClCompile Include="unittest_cumulative.cpp">
       <Filter>Source Files\unit_tests</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\posix_api.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\regex.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\regex_debug.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\wide_posix_api.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\static_mutex.cpp">
-      <Filter>Source Files\source\boost\regex</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\output\ChartGenerator.cpp">
       <Filter>Source Files\source\calculation\output</Filter>

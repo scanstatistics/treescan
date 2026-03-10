@@ -97,16 +97,6 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\codecvt_error_category.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\directory.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\exception.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\operations.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\path.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\path_traits.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\portability.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\unique_path.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\utf8_codecvt_facet.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\windows_file_codecvt.cpp" />
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\cmdline.cpp" />
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\config_file.cpp" />
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\convert.cpp" />
@@ -118,13 +108,7 @@
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\value_semantic.cpp" />
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\variables_map.cpp" />
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\winmain.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\system\src\error_code.cpp" />
     <ClCompile Include="..\boost\boost_1_81_0\libs\thread\src\win32\thread.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\posix_api.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\regex.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\regex_debug.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\static_mutex.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\wide_posix_api.cpp" />
     <ClCompile Include="..\calculation\IniParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\IniParameterSpecification.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\CriticalValues.cpp" />
