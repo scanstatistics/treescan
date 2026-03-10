@@ -1209,7 +1209,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
     const Parameters& parameters = _scanRunner.getParameters();
     const NodeStructure& thisNode = *(_scanRunner.getNodes()[thisCut.getID()]);
     std::string node_tr, buffer, buffer2;
-    std::vector<boost::shared_ptr<RecordBuffer>> childRecords;
+    std::vector<CutsRecordWriter::ChildRecord_t> childRecords;
     ptr_vector<FieldDef> fieldDefinitions;
 
     printString(node_tr, "ID_%d", thisNode.getID());
@@ -1222,7 +1222,7 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
             boost::shared_ptr<RecordBuffer> record(new RecordBuffer(fieldDefinitions));
             CutsRecordWriter::getRecordForCutChild(*(record), thisCut, *pnode, thisCut.getReportOrder(), _scanRunner);
             if (CutsRecordWriter::includeChild(_scanRunner, thisCut, *(record))) // Add this record if it is interesting.
-                childRecords.push_back(record);
+                childRecords.push_back(CutsRecordWriter::ChildRecord_t(pnode->getID(), record));
         }
         CutsRecordWriter::sortChildRecords(childRecords, _scanRunner.getParameters(), thisCut.getRate(_scanRunner));
         buffer = thisNode.getIdentifier();
@@ -1364,7 +1364,8 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
         // Now write records for each direct child of this cut/node. This process is slightly brittle and relies on the columns in csv matching html table.
         std::string not_applicable("'-'");
         std::vector<std::string> children_arrays;
-        for (auto& Record : childRecords) {
+        for (const auto& childRec : childRecords) {
+            auto& Record = childRec.second;
             std::vector<std::string> string_values;
             string_values.push_back(printString(buffer, "'%u_%u'", thisCut.getReportOrder(), children_arrays.size() + 1));
             buffer = Record->GetFieldValue(CutsRecordWriter::NODE_ID_FIELD).AsString();
@@ -1399,8 +1400,8 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
                     break;
                 case Parameters::SIGNED_RANK: {
                     int iSignificant = parameters.getRptDataAsPct() ? 2 : -1; // Note: record already multiplied by 100 in CutsRecordWriter::getRecordForCutChild
-                    string_values.push_back(getValueAsString(Record->GetFieldValue(CutsRecordWriter::SS_BASELINE_FIELD).AsDouble(), buffer, iSignificant));
-                    string_values.push_back(getValueAsString(Record->GetFieldValue(CutsRecordWriter::SS_CURRENT_FIELD).AsDouble(), buffer, iSignificant));
+                    string_values.push_back(getValueAsString(Record->GetFieldValue(CutsRecordWriter::SS_BASELINE_AVG_FIELD).AsDouble(), buffer, iSignificant));
+                    string_values.push_back(getValueAsString(Record->GetFieldValue(CutsRecordWriter::SS_CURRENT_AVG_FIELD).AsDouble(), buffer, iSignificant));
                     if (Record->GetFieldValue(CutsRecordWriter::SS_PERC_CHANGE_FIELD).AsDouble() == std::numeric_limits<double>::infinity())
                         string_values.emplace_back("'infinity'");
                     else

@@ -180,8 +180,11 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getAdditionalOutputFiles(S
         };
         if (_parameters.isGeneratingHtmlResults())
             addByFullpath("Results HTML", ResultsFileWriter::getHtmlFilename(_parameters, buffer));
-        if (_parameters.isGeneratingTableResults())
-            addByFullpath("Results CSV Table", CutsRecordWriter::getFilename(_parameters, buffer));
+        if (_parameters.isGeneratingTableResults()) {
+            addByFullpath("Results CSV Table", CutsRecordWriter::getFilename(_parameters, CutsRecordWriter::CUT_FILE_SUFFIX, buffer));
+            if (_parameters.getModelType() == Parameters::SIGNED_RANK)
+                addByFullpath("Results CSV Table with Sample Site Data", CutsRecordWriter::getFilename(_parameters, CutsRecordWriter::CUT_SS_FILE_SUFFIX, buffer)); 
+        }
         if (_parameters.getScanType() != Parameters::TIMEONLY) {
             if (_parameters.isGeneratingNCBIAsnResults())
                 addByFullpath("NCBI Genome Workbench ASN1 File", ResultsFileWriter::getAsnFilename(_parameters, buffer));

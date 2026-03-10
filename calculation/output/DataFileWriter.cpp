@@ -228,8 +228,11 @@ const char * DataRecordWriter::NODE_ID_FIELD                             = "Node
 const char * DataRecordWriter::NODE_NAME_FIELD                           = "Node Name";
 const char * DataRecordWriter::NODE_OBSERVATIONS_FIELD                   = "Node Observations";
 const char * DataRecordWriter::NODE_CASES_FIELD                          = "Node Cases";
-const char * DataRecordWriter::SS_BASELINE_FIELD                         = "Baseline Average";
-const char * DataRecordWriter::SS_CURRENT_FIELD                          = "Current Average";
+const char * DataRecordWriter::SS_NAME_FIELD                             = "Sample Site Name";
+const char * DataRecordWriter::SS_BASELINE_FIELD                         = "Baseline";
+const char * DataRecordWriter::SS_CURRENT_FIELD                          = "Current";
+const char * DataRecordWriter::SS_BASELINE_AVG_FIELD                     = "Baseline Average";
+const char * DataRecordWriter::SS_CURRENT_AVG_FIELD                      = "Current Average";
 const char * DataRecordWriter::SS_PERC_CHANGE_FIELD                      = "Percent Change";
 const char * DataRecordWriter::SS_ABS_CHANGE_FIELD                       = "Absolute Change";
 
@@ -267,27 +270,45 @@ const char * DataRecordWriter::HA_ALPHA001_FIELD                         = "Alph
 
 ///////////// CutsRecordWriter ///////////////////////////////////
 
-const char * CutsRecordWriter::CUT_FILE_SUFFIX                            = "";
+const char * CutsRecordWriter::CUT_FILE_SUFFIX = "";
+const char * CutsRecordWriter::CUT_SS_FILE_SUFFIX = ".samplesites";
 
 CutsRecordWriter::CutsRecordWriter(const ScanRunner& scanRunner) : _scanner(scanRunner) {
-  std::string    buffer;
-  const Parameters& params = _scanner.getParameters();
+    std::string buffer;
+    const Parameters& params(_scanner.getParameters());
 
-  try {
-     getFieldDefs(_dataFieldDefinitions, params, _scanner.hasNodeDescriptions());
-    _outfile.open(getFilename(params, buffer).c_str(), std::ofstream::trunc);
-    if (!_outfile.is_open())
-      throw resolvable_error("Unable to open/create file %s.", buffer.c_str());
-    _csvWriter.reset(new CSVDataFileWriter(_outfile, _dataFieldDefinitions, params.isPrintColumnHeaders()));
-  } catch (prg_exception& x) {
-    x.addTrace("constructor()","CutsRecordWriter");
-    throw;
-  }
+    try {
+        getFieldDefs(_dataFieldDefinitions, params, _scanner.hasNodeDescriptions());
+        _outfile.open(getFilename(params, CUT_FILE_SUFFIX, buffer).c_str(), std::ofstream::trunc);
+        if (!_outfile.is_open()) throw resolvable_error("Unable to open/create file %s.", buffer.c_str());
+        _csvWriter.reset(new CSVDataFileWriter(_outfile, _dataFieldDefinitions, params.isPrintColumnHeaders()));
+        if (params.getModelType() == Parameters::SIGNED_RANK) {
+            // defined fields for signed rank model sample site data and open sample site data file
+            unsigned short uwOffset = 0;
+            CreateField(_ss_field_defs, CUT_NUM_FIELD, FieldValue::ALPHA_FLD, 10, 0, uwOffset, 0);
+            CreateField(_ss_field_defs, NODE_ID_FIELD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()), 0, uwOffset, 0);
+            if (_scanner.hasNodeDescriptions())
+                CreateField(_ss_field_defs, NODE_NAME_FIELD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()), 0, uwOffset, 0);
+            CreateField(_ss_field_defs, P_LEVEL_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+            CreateField(_ss_field_defs, SS_NAME_FIELD, FieldValue::ALPHA_FLD, static_cast<short>(getLocationIdentiferFieldLength()), 0, uwOffset, 0);
+            CreateField(_ss_field_defs, SS_BASELINE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            CreateField(_ss_field_defs, SS_CURRENT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            CreateField(_ss_field_defs, SS_PERC_CHANGE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            CreateField(_ss_field_defs, SS_ABS_CHANGE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            _ss_outfile.open(getFilename(params, CUT_SS_FILE_SUFFIX, buffer).c_str(), std::ofstream::trunc);
+            if (!_ss_outfile.is_open()) throw resolvable_error("Unable to open/create file %s.", buffer.c_str());
+            _ss_csvWriter.reset(new CSVDataFileWriter(_ss_outfile, _ss_field_defs, params.isPrintColumnHeaders()));
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("constructor()","CutsRecordWriter");
+        throw;
+    }
 }
 
 CutsRecordWriter::~CutsRecordWriter() {
     try {
         _outfile.close();
+        if (_ss_outfile.is_open()) _ss_outfile.close();
   } catch (...) { }
 }
 
@@ -324,8 +345,8 @@ ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& field
             CreateField(fields, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             break;
         case Parameters::SIGNED_RANK:
-            CreateField(fields, SS_BASELINE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-            CreateField(fields, SS_CURRENT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            CreateField(fields, SS_BASELINE_AVG_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            CreateField(fields, SS_CURRENT_AVG_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
             CreateField(fields, SS_PERC_CHANGE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
             CreateField(fields, SS_ABS_CHANGE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
             break;
@@ -376,17 +397,15 @@ ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& field
         return fields;
 }
 
-std::string& CutsRecordWriter::getFilename(const Parameters& parameters, std::string& buffer) {
-    std::stringstream suffix;
-    suffix << CutsRecordWriter::CUT_FILE_SUFFIX;
-    return getDerivedFilename(parameters.getOutputFileName(), suffix.str().c_str(), CSVDataFileWriter::CSV_FILE_EXT, buffer);
+std::string& CutsRecordWriter::getFilename(const Parameters& parameters, const std::string& suffix, std::string& buffer) {
+    return getDerivedFilename(parameters.getOutputFileName(), suffix.c_str(), CSVDataFileWriter::CSV_FILE_EXT, buffer);
 }
 
 /* Returns whether child record is reported in output files. */
 bool CutsRecordWriter::includeChild(const ScanRunner& scanner, const CutStructure& thisCut, RecordBuffer& record) {
     if (scanner.getParameters().getModelType() == Parameters::SIGNED_RANK) {
         // include if either baseline or current average is non-zero
-        return record.GetFieldValue(SS_BASELINE_FIELD).AsDouble() || record.GetFieldValue(SS_CURRENT_FIELD).AsDouble();
+        return record.GetFieldValue(SS_BASELINE_AVG_FIELD).AsDouble() || record.GetFieldValue(SS_CURRENT_AVG_FIELD).AsDouble();
     }
     if (thisCut.getRate(scanner) == Parameters::HIGHRATE) {// we're excluding child nodes with no cases
         // Prefer using the number of cases on node field.
@@ -403,41 +422,75 @@ bool CutsRecordWriter::includeChild(const ScanRunner& scanner, const CutStructur
 }
 
 /* Sorts child records for reporting in output files by excess cases. */
-void CutsRecordWriter::sortChildRecords(std::vector<boost::shared_ptr<RecordBuffer>>& childRecords, const Parameters& parameters, Parameters::ScanRateType cutRate) {
+void CutsRecordWriter::sortChildRecords(std::vector<ChildRecord_t>& childRecords, const Parameters& parameters, Parameters::ScanRateType cutRate) {
     if (parameters.getModelType() == Parameters::SIGNED_RANK) {
-        std::sort(std::begin(childRecords), std::end(childRecords), [cutRate](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
-            double currentA = recordA->GetFieldValue(DataRecordWriter::SS_CURRENT_FIELD).AsDouble();
-            double currentB = recordB->GetFieldValue(DataRecordWriter::SS_CURRENT_FIELD).AsDouble();
+        std::sort(std::begin(childRecords), std::end(childRecords), [cutRate](ChildRecord_t& recordA, ChildRecord_t& recordB) {
+            double currentA = recordA.second->GetFieldValue(DataRecordWriter::SS_CURRENT_AVG_FIELD).AsDouble();
+            double currentB = recordB.second->GetFieldValue(DataRecordWriter::SS_CURRENT_AVG_FIELD).AsDouble();
             return cutRate == Parameters::LOWRATE ? currentA < currentB : currentA > currentB;
         });
     } else {
-        std::sort(std::begin(childRecords), std::end(childRecords), [cutRate](boost::shared_ptr<RecordBuffer> recordA, boost::shared_ptr<RecordBuffer> recordB) {
-            double rrA = recordA->GetFieldValue(DataRecordWriter::RELATIVE_RISK_FIELD).AsDouble();
-            double rrB = recordB->GetFieldValue(DataRecordWriter::RELATIVE_RISK_FIELD).AsDouble();
+        std::sort(std::begin(childRecords), std::end(childRecords), [cutRate](ChildRecord_t& recordA, ChildRecord_t& recordB) {
+            double rrA = recordA.second->GetFieldValue(DataRecordWriter::RELATIVE_RISK_FIELD).AsDouble();
+            double rrB = recordB.second->GetFieldValue(DataRecordWriter::RELATIVE_RISK_FIELD).AsDouble();
             return cutRate == Parameters::LOWRATE ? rrA < rrB : rrA > rrB;
         });
     }
 }
 
-void CutsRecordWriter::write(const CutStructure& thisCut) const {
+void CutsRecordWriter::write(const CutStructure& thisCut) {
     std::string buffer;
+    const Parameters& params(_scanner.getParameters());
+    double multiplier = params.getRptDataAsPct() ? 100.0 : 1.0;
+    const auto& samplesites = _scanner.getSampleSiteIdentifiers();
 
     try {
         RecordBuffer Record(_dataFieldDefinitions);
         _csvWriter->writeRecord(getRecordForCut(Record, thisCut, _scanner));
+        auto writeSampleSiteRecords = [&](const SampleSiteMap_t& ssData, RecordBuffer& Record) {
+            for (const auto& ss : ssData) {
+                Record.GetFieldValue(SS_NAME_FIELD).AsString() = samplesites[ss.first];
+                Record.GetFieldValue(SS_BASELINE_FIELD).AsDouble() = ss.second.baseline() * multiplier;
+                Record.GetFieldValue(SS_CURRENT_FIELD).AsDouble() = ss.second.current() * multiplier;
+                if (ss.second.baseline())
+                    Record.GetFieldValue(SS_PERC_CHANGE_FIELD).AsDouble() = (ss.second.current() / ss.second.baseline() - 1) * multiplier;
+                else
+                    Record.GetFieldValue(SS_PERC_CHANGE_FIELD).AsDouble() = std::numeric_limits<double>::infinity();
+                Record.GetFieldValue(SS_ABS_CHANGE_FIELD).AsDouble() = std::abs(ss.second.difference()) * multiplier;
+                _ss_csvWriter->writeRecord(Record);
+            }
+        };
+        if (params.getModelType() == Parameters::SIGNED_RANK) {
+            const NodeStructure& thisNode = *(_scanner.getNodes()[thisCut.getID()]);
+            RecordBuffer ssRecord(_ss_field_defs);
+            ssRecord.GetFieldValue(CUT_NUM_FIELD).AsString() = printString(buffer, "%u", thisCut.getReportOrder());
+            ssRecord.GetFieldValue(NODE_ID_FIELD).AsString() = thisNode.getIdentifier();
+            if (_scanner.hasNodeDescriptions()) ssRecord.GetFieldValue(NODE_NAME_FIELD).AsString() = thisNode.getName();
+            ssRecord.GetFieldValue(P_LEVEL_FLD).AsDouble() = static_cast<int>(thisNode.getLevel());
+            writeSampleSiteRecords(thisCut.getSampleSiteData(), ssRecord);
+        }
         // Now write records for each direct child of this cut/node.
-        std::vector<boost::shared_ptr<RecordBuffer>> childRecords;
+        std::vector<CutsRecordWriter::ChildRecord_t> childRecords;
         for (auto pnode : _scanner.getCutChildNodes(thisCut)) {
             boost::shared_ptr<RecordBuffer> record(new RecordBuffer(_dataFieldDefinitions));
             getRecordForCutChild(*(record), thisCut, *pnode, thisCut.getReportOrder(), _scanner);
             if (CutsRecordWriter::includeChild(_scanner, thisCut, *(record))) // Add this record if it is interesting.
-                childRecords.push_back(record);
+                childRecords.push_back(CutsRecordWriter::ChildRecord_t(pnode->getID(), record));
         }
-        CutsRecordWriter::sortChildRecords(childRecords, _scanner.getParameters(), thisCut.getRate(_scanner));
+        CutsRecordWriter::sortChildRecords(childRecords, params, thisCut.getRate(_scanner));
         unsigned int writeIdx = 0;
         for (auto& record : childRecords) {
-            record->GetFieldValue(CUT_NUM_FIELD).AsString() = printString(buffer, "%u_%u", thisCut.getReportOrder(), ++writeIdx);
-            _csvWriter->writeRecord(*record);
+            record.second->GetFieldValue(CUT_NUM_FIELD).AsString() = printString(buffer, "%u_%u", thisCut.getReportOrder(), ++writeIdx);
+            _csvWriter->writeRecord(*record.second);
+            if (params.getModelType() == Parameters::SIGNED_RANK) {
+                const NodeStructure& thisChildNode = *(_scanner.getNodes()[record.first]); // child node structure
+                RecordBuffer ssRecord(_ss_field_defs);
+                ssRecord.GetFieldValue(CUT_NUM_FIELD).AsString() = buffer;
+                ssRecord.GetFieldValue(NODE_ID_FIELD).AsString() = thisChildNode.getIdentifier();
+                if (_scanner.hasNodeDescriptions()) ssRecord.GetFieldValue(NODE_NAME_FIELD).AsString() = thisChildNode.getName();
+                ssRecord.GetFieldValue(P_LEVEL_FLD).AsDouble() = static_cast<int>(thisChildNode.getLevel());
+                writeSampleSiteRecords(thisChildNode.getSampleSiteDataBr(), ssRecord);
+            }
         }
     } catch (prg_exception& x) {
         x.addTrace("write()","CutsRecordWriter");
@@ -493,8 +546,8 @@ RecordBuffer& CutsRecordWriter::getRecordForCut(RecordBuffer& Record, const CutS
             case Parameters::SIGNED_RANK:{
                 std::pair<double, double> averages = getAverage(thisCut.getSampleSiteData());
                 double multiplier = params.getRptDataAsPct() ? 100.0 : 1.0;
-                Record.GetFieldValue(SS_BASELINE_FIELD).AsDouble() = averages.first * multiplier;
-                Record.GetFieldValue(SS_CURRENT_FIELD).AsDouble() = averages.second * multiplier;
+                Record.GetFieldValue(SS_BASELINE_AVG_FIELD).AsDouble() = averages.first * multiplier;
+                Record.GetFieldValue(SS_CURRENT_AVG_FIELD).AsDouble() = averages.second * multiplier;
                 if (averages.first)
                     Record.GetFieldValue(SS_PERC_CHANGE_FIELD).AsDouble() = (averages.second/averages.first - 1) * multiplier;
                 else
@@ -644,8 +697,8 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
         case Parameters::SIGNED_RANK: {
             std::pair<double, double> average = getAverage(childNode.getSampleSiteDataBr());
             double multiplier = params.getRptDataAsPct() ? 100.0 : 1.0;
-            Record.GetFieldValue(SS_BASELINE_FIELD).AsDouble() = average.first * multiplier;
-            Record.GetFieldValue(SS_CURRENT_FIELD).AsDouble() = average.second * multiplier;
+            Record.GetFieldValue(SS_BASELINE_AVG_FIELD).AsDouble() = average.first * multiplier;
+            Record.GetFieldValue(SS_CURRENT_AVG_FIELD).AsDouble() = average.second * multiplier;
             if (average.first && average.second)
                 Record.GetFieldValue(SS_PERC_CHANGE_FIELD).AsDouble() = (average.second/average.first - 1.0) * multiplier;
             else if (!average.first && average.second)
