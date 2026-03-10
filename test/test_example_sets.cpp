@@ -3,7 +3,7 @@
 #include "ScanRunner.h"
 #include "Toolkit.h"
 #include "DataFileWriter.h"
-#include <boost/any.hpp>
+#include <any>
 
 /** Tests the expected results of the example data sets */
 

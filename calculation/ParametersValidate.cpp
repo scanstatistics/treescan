@@ -161,8 +161,8 @@ bool ParametersValidate::ValidateInputSource(const Parameters::InputSource * sou
             case CSV : {
                 FieldMapContainer_t::const_iterator itrMap=source->getFieldsMap().begin();
                 for (;itrMap != source->getFieldsMap().end(); ++itrMap) {
-                     if (itrMap->type() == typeid(long) && boost::any_cast<long>(*itrMap) < 0) {
-                        PrintDirection.Printf("%s:\nThe field mapping column indexes cannot be unless than zero, got value %ld.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, boost::any_cast<long>(*itrMap));
+                     if (itrMap->type() == typeid(long) && std::any_cast<long>(*itrMap) < 0) {
+                        PrintDirection.Printf("%s:\nThe field mapping column indexes cannot be unless than zero, got value %ld.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, std::any_cast<long>(*itrMap));
                         return false;
                      }
                 }

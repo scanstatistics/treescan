@@ -137,7 +137,7 @@ std::string& CSVFileDataSource::getValueAt(long iFieldIndex) {
     if (_fields_map.size()) {
         if (iFieldIndex < static_cast<long>(_fields_map.size())) {
             if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(FieldType)) {
-                FieldType type = boost::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
+                FieldType type = std::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
                 switch (type) {
                     case ONECOUNT: _read_buffer = "1"; return _read_buffer;
                     default: throw prg_error("Unknown FieldType enumeration %d.", "GetValueAt()", type);
