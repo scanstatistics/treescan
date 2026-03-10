@@ -59,7 +59,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_81_0;$(SolutionDir)zlib\zlib-1.3.1\;$(SolutionDir)zlib\zlib-1.3.1\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_90_0;$(SolutionDir)zlib\zlib-1.3.1\;$(SolutionDir)zlib\zlib-1.3.1\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MinimalRebuild>false</MinimalRebuild>
@@ -80,7 +80,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_81_0;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_90_0;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
