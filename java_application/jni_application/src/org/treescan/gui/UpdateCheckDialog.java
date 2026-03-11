@@ -152,7 +152,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
             case HttpURLConnection.HTTP_MOVED_TEMP:
             case HttpURLConnection.HTTP_SEE_OTHER:
                 connection.disconnect();
-                return (HttpURLConnection)getHttpURLConnection(new URL(connection.getHeaderField("Location")), setDoOutput);
+                return (HttpURLConnection)getHttpURLConnection(URI.create(connection.getHeaderField("Location")).toURL(), setDoOutput);
             default:
                 throw new RuntimeException("Application update failed with error code " + connection.getResponseCode());
         }
@@ -523,12 +523,12 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                 _updateExists = true;
                 //get update information
                 _new_update_version = httpBody[_updateVersionIndex];
-                _update_application_info = new FileInfo(getFile(httpBody[_updateAppNameIndex]), new URL(httpBody[_updateAppUrlIndex] + _get_params));
+                _update_application_info = new FileInfo(getFile(httpBody[_updateAppNameIndex]), URI.create(httpBody[_updateAppUrlIndex] + _get_params).toURL());
                 String updateArchiveUrl = httpBody[_updateDataUrlIndex];
                 if (updateArchiveUrl.endsWith("\n")) {
                     updateArchiveUrl = updateArchiveUrl.split("\n")[0];
                 }
-                _update_archive_info = new FileInfo(getFile(httpBody[_updateDataNameIndex]), new URL(updateArchiveUrl + _get_params));
+                _update_archive_info = new FileInfo(getFile(httpBody[_updateDataNameIndex]), URI.create(updateArchiveUrl + _get_params).toURL());
             }
         }
 
@@ -538,7 +538,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                 String baseurl = (TreeScanApplication.getDebugURL().length() > 0 ? TreeScanApplication.getDebugURL(): AppConstants.getWebSite());
                 String updateURL = String.format(_URLFormat, baseurl);
                 updateURL = updateURL.replace(" ", "%20") + _get_params;
-                readUpdateInfo((HttpURLConnection)getHttpURLConnection(new URL(updateURL), false));
+                readUpdateInfo((HttpURLConnection)getHttpURLConnection(URI.create(updateURL).toURL(), false));
             } catch (FileNotFoundException e) {
                 _error_code = HttpURLConnection.HTTP_GONE;
                 System.out.println(e.getMessage());

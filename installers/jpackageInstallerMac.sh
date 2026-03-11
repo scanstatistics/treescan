@@ -14,7 +14,7 @@ SIGN_KEY="Developer ID Application: Information Management Services, Inc. (VF82M
 TEAM_ID="VF82MCMA83"
 BUNDLEDIR="/Users/treescan/prj/treescan.development/jpackaged"
 BINARIES="/Users/treescan/prj/treescan.development/binaries/mac"
-JAVAJDK="/Users/treescan/prj/java/jdk-17.0.17+10_aarch64/Contents/Home" # AdoptJDK
+JAVAJDK="/Users/treescan/prj/java/jdk-25.0.2+10_aarch64/Contents/Home" # AdoptJDK
 ENTITLEMENTS="${SRCDIR}/installers/macosentitlements.plist"
 XCRUN="/usr/bin/xcrun"
 NOTARYTOOL="notarytool"
@@ -77,12 +77,12 @@ codesign -vvv --strict $BUNDLEDIR/imagesrc/TreeScan.jar
 
 # jna library started failing notorization, need to codesign manually
 mkdir $BUNDLEDIR/temp
-unzip $BUNDLEDIR/imagesrc/libs/jna-5.17.0.jar -d $BUNDLEDIR/temp
+unzip $BUNDLEDIR/imagesrc/libs/jna-5.18.1.jar -d $BUNDLEDIR/temp
 codesign --options runtime --timestamp -f -v -s "${SIGN_KEY}" $BUNDLEDIR/temp/com/sun/jna/darwin-x86-64/libjnidispatch.jnilib
 codesign --options runtime --timestamp -f -v -s "${SIGN_KEY}" $BUNDLEDIR/temp/com/sun/jna/darwin-aarch64/libjnidispatch.jnilib
-rm $BUNDLEDIR/imagesrc/libs/jna-5.17.0.jar
+rm $BUNDLEDIR/imagesrc/libs/jna-5.18.1.jar
 cd $BUNDLEDIR/temp
-zip -r -u $BUNDLEDIR/imagesrc/libs/jna-5.17.0.jar com META-INF
+zip -r -u $BUNDLEDIR/imagesrc/libs/jna-5.18.1.jar com META-INF
 
 # Technically we should be able to just call the following to create the app, codesign and build dmg.
 # Unfortunately the notarization fails - complaining about signatures on the launcher and dylib being invalid.
@@ -94,10 +94,10 @@ zip -r -u $BUNDLEDIR/imagesrc/libs/jna-5.17.0.jar com META-INF
 #$JAVAJDK/bin/jpackage --verbose --type dmg --input $BUNDLEDIR/imagesrc --main-jar TreeScan.jar --icon $SRCDIR/installers/resources/TreeScan.icns --app-version ${APPVERSION} --name TreeScan --dest $BUNDLEDIR/bin --java-options "-Djava.library.path=\$APPDIR" --mac-sign --mac-package-signing-prefix VF82MCMA83 --mac-signing-key-user-name "Information Management Services, Inc." --description "Software for the tree-based scan statistic" --vendor "Information Management Services, Inc." --copyright "Copyright 2021, All rights reserved"  --resource-dir $BUNDLEDIR/dmgresources
 
 # Create TreeScan app directory
-$JAVAJDK/bin/jpackage --verbose --type app-image --input $BUNDLEDIR/imagesrc --main-jar TreeScan.jar \
+$JAVAJDK/bin/jpackage --verbose --type app-image --input $BUNDLEDIR/imagesrc --main-jar TreeScan.jar --main-class org.treescan.gui.TreeScanApplication \
                       --icon $SRCDIR/installers/resources/TreeScan.icns \
-                      --app-version ${APPVERSION} --name TreeScan --dest $BUNDLEDIR --java-options "-Djava.library.path=\$APPDIR" \
-                      --mac-sign --mac-package-signing-prefix org.treescan.TreeScan --mac-signing-key-user-name "${SIGN_KEY}" --mac-package-name "TreeScan" --mac-entitlements ${ENTITLEMENTS} \
+                      --app-version ${APPVERSION} --name TreeScan --dest $BUNDLEDIR --java-options "-Djava.library.path=\$APPDIR --enable-native-access=ALL-UNNAMED"\
+                      --mac-sign --mac-package-signing-prefix org.treescan.TreeScan. --mac-signing-key-user-name "${SIGN_KEY}" --mac-package-name "TreeScan" --mac-entitlements ${ENTITLEMENTS} \
                       --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.crypto.cryptoki,jdk.accessibility
 
 # Create zip file from TreeScan.app notarize application alone.

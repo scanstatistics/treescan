@@ -7,6 +7,7 @@ build="/prj/treescan/build"
 installer_version="/prj/treescan/installers/v.${version}.x"
 binaries="/prj/treescan/build/binaries/linux"
 
+# launch4j won't run properly with jdk versions > 15
 javajdk=$build/packages/java/jdk-15.0.2-linux_x64
 launch4j=$build/packages/launch4j/launch4j-3.50
 
@@ -24,7 +25,6 @@ read dummy
 
 # Build Windows command-line only archive. This is an alternative download option that is command-line only (no GUI/Java).
 rm -f $installer_version/treescan.${version}_windows.zip
-zip $installer_version/treescan.${version}_windows.zip -j $build/treescan/batch_application/Win32/Release/treescan32.exe
 zip $installer_version/treescan.${version}_windows.zip -j $build/treescan/batch_application/x64/Release/treescan64.exe
 cd $build/treescan/installers
 zip $installer_version/treescan.${version}_windows.zip -j documents/*
@@ -58,8 +58,6 @@ $build/treescan/installers/jpackageInstallerLinux.sh $version $installer_version
 # Windows update archive
 rm -f $installer_version/update_data_windows.zip
 
-zip $installer_version/update_data_windows.zip -j $build/treescan/batch_application/Win32/Release/treescan32.exe
-zip $installer_version/update_data_windows.zip -j $build/treescan/library/Win32/Release/treescan32.dll
 zip $installer_version/update_data_windows.zip -j $build/treescan/batch_application/x64/Release/treescan64.exe
 zip $installer_version/update_data_windows.zip -j $build/treescan/library/x64/Release/treescan64.dll
 zip $installer_version/update_data_windows.zip -j $build/treescan/installers/documents/*
@@ -69,7 +67,6 @@ cd $build/treescan/java_application/jni_application/dist
 zip $installer_version/update_data_windows.zip -r lib
 cd $build/treescan/installers/java
 zip $installer_version/update_data_windows.zip -r jre_x64
-zip $installer_version/update_data_windows.zip -r jre_x86
 
 # We can delete the generated Windows Java runtime now.
 rm -rf $build/treescan/installers/java/jre
