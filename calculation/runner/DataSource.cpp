@@ -188,8 +188,8 @@ SequentialFileDataSource::SequentialFileDataSource(const std::string& sSourceFil
 }
 
 /** Returns the next LLR value in data source. */
-boost::optional<double> SequentialFileDataSource::nextLLR() {
-    boost::optional<double> llr;
+std::optional<double> SequentialFileDataSource::nextLLR() {
+    std::optional<double> llr;
 
     if (readRecord()) {
         if (getNumValues() != 1)
@@ -198,7 +198,7 @@ boost::optional<double> SequentialFileDataSource::nextLLR() {
         if (!string_to_numeric_type<double>(getValueAt(0).c_str(), value)) {
             throw resolvable_error("Error: The sequential scan source file contains record with value that is not numeric, record %u, value %s.\n", getCurrentRecordIndex(), getValueAt(0).c_str());
         }
-        llr.reset(value);
+        llr.emplace(value);
     }
     return llr;
 }

@@ -751,9 +751,9 @@ SequentialReadMCSimSuccessiveFunctor::result_type SequentialReadMCSimSuccessiveF
 
     try {
         // read next log likelihood from the data source
-        boost::optional<double> simLogLikelihood = _source->nextLLR();
+        std::optional<double> simLogLikelihood = _source->nextLLR();
         if (simLogLikelihood) {
-            temp_result.dSuccessfulResult = std::make_pair(simLogLikelihood.get(), _scanRunner.getTotalC());
+            temp_result.dSuccessfulResult = std::make_pair(simLogLikelihood.value(), _scanRunner.getTotalC());
             temp_result.bUnExceptional = true;
         } else
             throw prg_error("Simulation %u could not read LLR value from file.", "operator()", param);

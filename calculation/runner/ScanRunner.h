@@ -80,7 +80,7 @@ private:
     DataTimeRange::index_t _end_idx;        // temporal end window index
     CutChildContainer_t    _cut_children;   // optional collection of children indexes
 
-    mutable boost::optional<double> _relative_risk; // cached attributes
+    mutable std::optional<double> _relative_risk; // cached attributes
 
 public:
     CutStructure() : 

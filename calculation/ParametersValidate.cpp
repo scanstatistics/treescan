@@ -281,7 +281,7 @@ bool ParametersValidate::ValidateInputParameters(BasePrint& PrintDirection) cons
             }
             try { // Attempt to parse data time range string into data time ranges.
                 const_cast<Parameters&>(_parameters).setDataTimeRangeSet(
-                    DataTimeRangeSet(_parameters.getDataTimeRangeStr(), _parameters.getDatePrecisionType(), boost::optional<boost::gregorian::date>())
+                    DataTimeRangeSet(_parameters.getDataTimeRangeStr(), _parameters.getDatePrecisionType(), std::optional<boost::gregorian::date>())
                 );
             } catch (std::exception& x) {
                 PrintDirection.Printf(

@@ -229,7 +229,7 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
     std::stringstream buffer;
     try { // try to parse and assign data time range for class strings -- guard against failure (incorrect format)
         parameters.setDataTimeRangeSet(
-            DataTimeRangeSet(parameters.getDataTimeRangeStr(), parameters.getDatePrecisionType(), boost::optional<boost::gregorian::date>())
+            DataTimeRangeSet(parameters.getDataTimeRangeStr(), parameters.getDatePrecisionType(), std::optional<boost::gregorian::date>())
         );
     } catch (std::exception& x) {}
     // Only proceed if we have a defined data time range.

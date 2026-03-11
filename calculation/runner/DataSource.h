@@ -6,7 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include "Parameters.h"
-#include <boost/optional.hpp>
+#include <optional>
 
 /** Input data source abstraction. */
 class DataSource {
@@ -74,7 +74,7 @@ class SequentialFileDataSource : public CSVFileDataSource {
         SequentialFileDataSource(const std::string& sSourceFilename, const Parameters& parameters);
         virtual ~SequentialFileDataSource() {}
 
-        boost::optional<double>  nextLLR();
+        std::optional<double>  nextLLR();
 };
 //******************************************************************************
 #endif

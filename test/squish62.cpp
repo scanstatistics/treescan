@@ -40,12 +40,12 @@ BOOST_FIXTURE_TEST_CASE( test_sequential_file_output, time_only_fixture ) {
     SequentialFileDataSource source2(filename2.str(), _parameters);
     source2.gotoFirstRecord();
     for (unsigned int r=0; r < _parameters.getNumReplicationsRequested(); ++r) {
-        boost::optional<double> loglikelihood1 = source1.nextLLR();
-        boost::optional<double> loglikelihood2 = source2.nextLLR();
+        std::optional<double> loglikelihood1 = source1.nextLLR();
+        std::optional<double> loglikelihood2 = source2.nextLLR();
         if (!loglikelihood1 || !loglikelihood2) {
             BOOST_FAIL("Expecting loglikelihoods for index " << (r + 1) << "to have value in data record.");
         }
-        if (loglikelihood1.get() != loglikelihood2.get()) {
+        if (loglikelihood1.value() != loglikelihood2.value()) {
             BOOST_FAIL("Expecting loglikelihoods for index " << (r + 1) << "be equal.");
         }
     }
@@ -88,7 +88,7 @@ BOOST_FIXTURE_TEST_CASE( test_select_parameters_cannot_change, time_only_fixture
     BOOST_CHECK(parameter_types[3] ==  Parameters::DATA_TIME_RANGES);
     printString(buffer, "[%d,%d]", test.getDataTimeRangeSet().getDataTimeRangeSets().front().getStart(),
                                    test.getDataTimeRangeSet().getDataTimeRangeSets().front().getEnd() + 1);
-    test.setDataTimeRangeSet(DataTimeRangeSet(buffer, _parameters.getDatePrecisionType(), boost::optional<boost::gregorian::date>()));
+    test.setDataTimeRangeSet(DataTimeRangeSet(buffer, _parameters.getDatePrecisionType(), std::optional<boost::gregorian::date>()));
     test.setDataTimeRangeStr(buffer);
     BOOST_REQUIRE_EQUAL( ParametersValidate(test).Validate(_print), true );
     BOOST_CHECK_THROW( run_analysis("test", results_user_directory, test, _print), resolvable_error );
