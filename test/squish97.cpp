@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE( test_treetime_censored ) {
     // open the tabular results file and confirm expected columns and values match expected for this data set
     std::string buffer;
     std::ifstream stream;
-    stream.open(CutsRecordWriter::getFilename(censore_fixture._parameters, buffer).c_str());
+    stream.open(CutsRecordWriter::getFilename(censore_fixture._parameters, CutsRecordWriter::CUT_FILE_SUFFIX, buffer).c_str());
     if (!stream) throw std::exception("could not open file");
 
     CSV_Row_t headers;
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE(test_timeonly_censored) {
     // open the tabular results file and confirm expected columns and values match expected for this data set
     std::string buffer;
     std::ifstream stream;
-    stream.open(CutsRecordWriter::getFilename(censore_fixture._parameters, buffer).c_str());
+    stream.open(CutsRecordWriter::getFilename(censore_fixture._parameters, CutsRecordWriter::CUT_FILE_SUFFIX, buffer).c_str());
     if (!stream) throw std::exception("could not open file");
 
     CSV_Row_t headers;
