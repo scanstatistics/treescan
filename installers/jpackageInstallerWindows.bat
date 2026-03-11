@@ -16,7 +16,7 @@ if exist %bundledir%\TreeScan rmdir %bundledir%\TreeScan /s /q
 if exist %bundledir%\bin rmdir %bundledir%\bin /s /q
 
 REM Build TreeScan app bundle
-%javabin%\jpackage.exe  --verbose --type app-image --input %srcdir%\java_application\jni_application\dist --main-jar TreeScan.jar --icon %srcdir%\installers\resources\TreeScan.ico --app-version %version% --name TreeScan --dest %bundledir% --java-options "'-Djava.library.path=$APPDIR'"
+%javabin%\jpackage.exe  --verbose --type app-image --input %srcdir%\java_application\jni_application\dist --main-jar TreeScan.jar --icon %srcdir%\installers\resources\TreeScan.ico --app-version %version% --name TreeScan --dest %bundledir% --java-options "-Djava.library.path=$APPDIR --enable-native-access=ALL-UNNAMED"
 
 REM Add additional files to bundle - command-line executables, dlls, sample data, user guide, etc.
 xcopy /E /I /Y %srcdir%\installers\examples %bundledir%\TreeScan\installers
