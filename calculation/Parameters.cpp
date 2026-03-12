@@ -9,13 +9,12 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/assign.hpp>
 
 const int Parameters::giNumParameters = 85;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
-   cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
-   cut_map_t cut_type_map = boost::assign::map_list_of("simple",Parameters::SIMPLE) ("pairs",Parameters::PAIRS) ("triplets",Parameters::TRIPLETS) ("ordinal",Parameters::ORDINAL);
+   cut_map_t cut_type_map_abbr = {{"S", Parameters::SIMPLE}, {"P", Parameters::PAIRS}, {"T", Parameters::TRIPLETS}, {"O", Parameters::ORDINAL}};
+   cut_map_t cut_type_map = {{"simple", Parameters::SIMPLE}, {"pairs", Parameters::PAIRS}, {"triplets", Parameters::TRIPLETS}, {"ordinal", Parameters::ORDINAL}};
    return std::make_pair(cut_type_map_abbr, cut_type_map);
 }
 

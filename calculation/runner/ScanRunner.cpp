@@ -2,7 +2,6 @@
 #include <numeric>
 #include <boost/tokenizer.hpp>
 #include <boost/regex.hpp>
-#include <boost/assign.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ini_parser.hpp>
@@ -1183,22 +1182,22 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
         col_baseline_prop("<baseline percentage>"), col_current_prop("<current percentage>"), col_sample_site("<sample site>");
     std::vector<std::string> expectedColumns;
     if (_parameters.getModelType() == Parameters::POISSON)
-        expectedColumns = boost::assign::list_of (col_id) (col_count) (col_pop);
+        expectedColumns = {col_id, col_count, col_pop};
     else if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
-        expectedColumns = boost::assign::list_of (col_id) (col_count);
+        expectedColumns = {col_id, col_count};
         if (bernoulliExpectingControl) expectedColumns.push_back(col_controls);
         if (_parameters.getConditionalType() == Parameters::UNCONDITIONAL && _parameters.getVariableCaseProbability()) {
             expectedColumns.push_back(col_numerator);
             expectedColumns.push_back(col_denominator);
         }
     } else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-        if (_parameters.getScanType() == Parameters::TREETIME) expectedColumns = boost::assign::list_of (col_id) (col_count) (col_time);
-        else expectedColumns = boost::assign::list_of (col_count) (col_time);
+        if (_parameters.getScanType() == Parameters::TREETIME) expectedColumns = {col_id, col_count, col_time};
+        else expectedColumns = {col_count, col_time};
     } else if (_parameters.getModelType() == Parameters::SIGNED_RANK) {
-        expectedColumns = boost::assign::list_of(col_id) (col_baseline_prop) (col_current_prop) (col_sample_site);
+        expectedColumns = {col_id, col_baseline_prop, col_current_prop, col_sample_site};
     } else {
-        if (_parameters.getScanType() != Parameters::TIMEONLY) expectedColumns = boost::assign::list_of (col_id) (col_count) (col_time);
-        else expectedColumns = boost::assign::list_of (col_count) (col_time);
+        if (_parameters.getScanType() != Parameters::TIMEONLY) expectedColumns = {col_id, col_count, col_time};
+        else expectedColumns = {col_count, col_time};
     }
     auto checkNonLeafWithData = [&readSuccess, &dataSource, this](const NodeStructure* node, bool hasData) {
         if (_parameters.getDataOnlyOnLeaves() && !node->isLeaf() && hasData) {
