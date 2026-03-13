@@ -78,6 +78,9 @@ class Parameters {
                         REPORT_ATTR_RISK,
                         ATTR_RISK_NUM_EXPOSED,
                         INCLUDE_IDENTICAL_PARENT_CUTS,
+                        RPT_DATA_AS_PERCENTAGE,
+                        RESULTS_TITLE,
+                        // Advanced Output - Temporal Output
                         OUTPUT_TEMPORAL_GRAPH,          // generate temporal graph output file
                         TEMPORAL_GRAPH_REPORT_TYPE,     // which clusters to generate temporal graph (enum)
                         TEMPORAL_GRAPH_MLC_COUNT,       // number of most likely clusters to generate temporal graph (integer)
@@ -301,6 +304,8 @@ class Parameters {
     unsigned int                        _minimum_censor_percentage;
     bool                                _apply_risk_window_restriction_censored;
     double                              _risk_window_censor_alt_denominator;
+    bool                                _report_data_as_percentage;
+    std::string                         _results_title;
 
     bool                                _forced_censored_algorithm;
     bool                                _apply_exclusion_ranges;
@@ -338,6 +343,10 @@ class Parameters {
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
 
+    const std::string                 & getResultsTitle() const { return _results_title; }
+    void                                setResultsTitle(const std::string& s) { _results_title = s; }
+    bool                                getRptDataAsPct() const { return _report_data_as_percentage; }
+    void                                setRptDataAsPct(bool b) { _report_data_as_percentage = b; }
     bool                                getIsVariableBerounlli(bool includeSelfControlCheck) const;
     bool                                getIsTestStatistic() const;
     PValueReportingType                 getPValueReportingType() const { return _pvalue_reporting_type; }

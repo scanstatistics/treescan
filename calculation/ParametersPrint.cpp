@@ -44,6 +44,8 @@ void ParametersPrint::Print(std::ostream& out) const {
     WriteSettingsContainer(getPowerEvaluationsParameters(settings), "Power Evaluations", out);
     // print 'Miscellaneous' tab settings
     WriteSettingsContainer(getMiscellaneousAnalysisParameters(settings), "Miscellaneous", out);
+    // print 'Temporal Output' tab settings
+    WriteSettingsContainer(getTemporalOutputParameters(settings), "Temporal Output", out);
     // print 'Additional Output' tab settings
     WriteSettingsContainer(getAdditionalOutputParameters(settings), "Additional Output", out);
     // print 'Power Simulations' tab settings
@@ -90,6 +92,8 @@ void ParametersPrint::PrintHTML(std::ostream& out) const {
     WriteSettingsContainerHTML(getPowerEvaluationsParameters(settings), "Power Evaluations", section_class, out);
     // print 'Miscellaneous' tab settings
     WriteSettingsContainerHTML(getMiscellaneousAnalysisParameters(settings), "Miscellaneous", section_class, out);
+    // print 'Temporal Output' tab settings
+    WriteSettingsContainerHTML(getTemporalOutputParameters(settings), "Temporal Output", section_class, out);
     // print 'Additional Output' tab settings
     WriteSettingsContainerHTML(getAdditionalOutputParameters(settings), "Additional Output", section_class, out);
     // print 'Power Simulations' tab settings
@@ -176,8 +180,11 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getAdditionalOutputFiles(S
         };
         if (_parameters.isGeneratingHtmlResults())
             addByFullpath("Results HTML", ResultsFileWriter::getHtmlFilename(_parameters, buffer));
-        if (_parameters.isGeneratingTableResults())
-            addByFullpath("Results CSV Table", CutsRecordWriter::getFilename(_parameters, buffer));
+        if (_parameters.isGeneratingTableResults()) {
+            addByFullpath("Results CSV Table", CutsRecordWriter::getFilename(_parameters, CutsRecordWriter::CUT_FILE_SUFFIX, buffer));
+            if (_parameters.getModelType() == Parameters::SIGNED_RANK)
+                addByFullpath("Results CSV Table with Sample Site Data", CutsRecordWriter::getFilename(_parameters, CutsRecordWriter::CUT_SS_FILE_SUFFIX, buffer)); 
+        }
         if (_parameters.getScanType() != Parameters::TIMEONLY) {
             if (_parameters.isGeneratingNCBIAsnResults())
                 addByFullpath("NCBI Genome Workbench ASN1 File", ResultsFileWriter::getAsnFilename(_parameters, buffer));
@@ -205,25 +212,37 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParame
         printString(buffer, "%u", _parameters.getAttributableRiskExposed());
         settings.emplace_back("Report Attributable Risk Based on # Exposed",buffer);
     }
+    settings.emplace_back("Include Parent Cuts Identical to Child Cuts.", (_parameters.getIncludeIdenticalParentCuts() ? "Yes" : "No"));
     settings.emplace_back("Report Simulated Log Likelihood Ratios",(_parameters.isGeneratingLLRResults() ? "Yes" : "No"));
     settings.emplace_back("Report Critical Values",(_parameters.getReportCriticalValues() ? "Yes" : "No"));
     if (_parameters.isGeneratingTableResults())
         settings.emplace_back("Print Column Headers", (_parameters.isPrintColumnHeaders() ? "Yes" : "No"));
+    if (_parameters.getModelType() == Parameters::SIGNED_RANK)
+        settings.emplace_back("Report Cluster Attributes As Percentage", (_parameters.getRptDataAsPct() ? "Yes" : "No"));
+    settings.emplace_back("Results Title", _parameters.getResultsTitle());
+    return settings;
+}
+
+/** Prints 'Temporal Output' tab parameters to file stream. */
+ParametersPrint::SettingContainer_t& ParametersPrint::getTemporalOutputParameters(SettingContainer_t& settings) const {
+    std::string buffer;
+    settings.clear();
+
     if (_parameters.isTemporalScanType(_parameters.getScanType()))
         settings.emplace_back("Produce Temporal Graphs", (_parameters.getOutputTemporalGraphFile() ? "Yes" : "No"));
     if (_parameters.getOutputTemporalGraphFile()) {
         settings.push_back(std::make_pair("Cluster Graphing", ""));
         switch (_parameters.getTemporalGraphReportType()) {
-            case Parameters::MLC_ONLY: settings.back().second = "Most likely cluster only"; break;
-            case Parameters::X_MCL_ONLY:
-                printString(settings.back().second,
-                    "%d most likely clusters, one graph for each", _parameters.getTemporalGraphMostLikelyCount()
-                ); break;
-            case Parameters::SIGNIFICANT_ONLY:
-                printString(settings.back().second,
-                    "All clusters, one graph for each, meeting cutoff %g", _parameters.getTemporalGraphSignificantCutoff()
-                ); break;
-            default: throw prg_error("Unknown temporal graph type %d.\n", "PrintTemporalOutputParameters()", _parameters.getOutputTemporalGraphFile());
+        case Parameters::MLC_ONLY: settings.back().second = "Most likely cluster only"; break;
+        case Parameters::X_MCL_ONLY:
+            printString(settings.back().second,
+                "%d most likely clusters, one graph for each", _parameters.getTemporalGraphMostLikelyCount()
+            ); break;
+        case Parameters::SIGNIFICANT_ONLY:
+            printString(settings.back().second,
+                "All clusters, one graph for each, meeting cutoff %g", _parameters.getTemporalGraphSignificantCutoff()
+            ); break;
+        default: throw prg_error("Unknown temporal graph type %d.\n", "getTemporalOutputParameters()", _parameters.getOutputTemporalGraphFile());
         }
     }
     return settings;

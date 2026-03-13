@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE( test_poisson_unconditional ) {
     // open the tabular results file and confirm expected columns and values match expected for this data set
     std::string buffer;
     std::ifstream stream;
-    stream.open(CutsRecordWriter::getFilename(_parameters, buffer).c_str());
+    stream.open(CutsRecordWriter::getFilename(_parameters, CutsRecordWriter::CUT_FILE_SUFFIX, buffer).c_str());
     if (!stream) throw std::exception("could not open file");
 
     CSV_Row_t headers;
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE( test_poisson_conditional ) {
     // open the tabular results file and confirm expected columns and values match expected for this data set
     std::string buffer;
     std::ifstream stream;
-    stream.open(CutsRecordWriter::getFilename(_parameters, buffer).c_str());
+    stream.open(CutsRecordWriter::getFilename(_parameters, CutsRecordWriter::CUT_FILE_SUFFIX, buffer).c_str());
     if (!stream) throw std::exception("could not open file");
 
     CSV_Row_t headers;
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_unconditional ) {
     // open the tabular results file and confirm expected columns and values match expected for this data set
     std::string buffer;
     std::ifstream stream;
-    stream.open(CutsRecordWriter::getFilename(_parameters, buffer).c_str());
+    stream.open(CutsRecordWriter::getFilename(_parameters, CutsRecordWriter::CUT_FILE_SUFFIX, buffer).c_str());
     if (!stream) throw std::exception("could not open file");
 
     CSV_Row_t headers;
@@ -264,7 +264,7 @@ BOOST_AUTO_TEST_CASE( test_bernoulli_conditional ) {
     // open the tabular results file and confirm expected columns and values match expected for this data set
     std::string buffer;
     std::ifstream stream;
-    stream.open(CutsRecordWriter::getFilename(_parameters, buffer).c_str());
+    stream.open(CutsRecordWriter::getFilename(_parameters, CutsRecordWriter::CUT_FILE_SUFFIX, buffer).c_str());
     if (!stream) throw std::exception("could not open file");
 
     CSV_Row_t headers;
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node ) {
     // open the tabular results file and confirm expected columns and values match expected for this data set
     std::string buffer;
     std::ifstream stream;
-    stream.open(CutsRecordWriter::getFilename(_parameters, buffer).c_str());
+    stream.open(CutsRecordWriter::getFilename(_parameters, CutsRecordWriter::CUT_FILE_SUFFIX, buffer).c_str());
     if (!stream) throw std::exception("could not open file");
 
     CSV_Row_t headers;
@@ -481,7 +481,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_day_of_week_adjustment ) {
     // open the tabular results file and confirm expected columns and values match expected for this data set
     std::string buffer;
     std::ifstream stream;
-    stream.open(CutsRecordWriter::getFilename(_parameters, buffer).c_str());
+    stream.open(CutsRecordWriter::getFilename(_parameters, CutsRecordWriter::CUT_FILE_SUFFIX, buffer).c_str());
     if (!stream) throw std::exception("could not open file");
 
     CSV_Row_t headers;
@@ -586,7 +586,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
     // open the tabular results file and confirm expected columns and values match expected for this data set
     std::string buffer;
     std::ifstream stream;
-    stream.open(CutsRecordWriter::getFilename(_parameters, buffer).c_str());
+    stream.open(CutsRecordWriter::getFilename(_parameters, CutsRecordWriter::CUT_FILE_SUFFIX, buffer).c_str());
     if (!stream) throw std::exception("could not open file");
 
     CSV_Row_t headers;
@@ -693,7 +693,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
     // open the tabular results file and confirm expected columns and values match expected for this data set
     std::string buffer;
     std::ifstream stream;
-    stream.open(CutsRecordWriter::getFilename(_parameters, buffer).c_str());
+    stream.open(CutsRecordWriter::getFilename(_parameters, CutsRecordWriter::CUT_FILE_SUFFIX, buffer).c_str());
     if (!stream) throw std::exception("could not open file");
 
     CSV_Row_t headers;
@@ -805,7 +805,7 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases ) {
     // open the tabular results file and confirm expected columns and values match expected for this data set
     std::string buffer;
     std::ifstream stream;
-    stream.open(CutsRecordWriter::getFilename(_parameters, buffer).c_str());
+    stream.open(CutsRecordWriter::getFilename(_parameters, CutsRecordWriter::CUT_FILE_SUFFIX, buffer).c_str());
     if (!stream) throw std::exception("could not open file");
 
     CSV_Row_t headers;
@@ -901,7 +901,7 @@ BOOST_AUTO_TEST_CASE( test_time_only_condition_totalcases_day_of_week_adjustment
     // open the tabular results file and confirm expected columns and values match expected for this data set
     std::string buffer;
     std::ifstream stream;
-    stream.open(CutsRecordWriter::getFilename(_parameters, buffer).c_str());
+    stream.open(CutsRecordWriter::getFilename(_parameters, CutsRecordWriter::CUT_FILE_SUFFIX, buffer).c_str());
     if (!stream) throw std::exception("could not open file");
 
     CSV_Row_t headers;

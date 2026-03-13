@@ -123,6 +123,8 @@ public class Parameters implements Cloneable {
     /* PValue Reporting variables */
     private PValueReportingType _pvalue_reporting_type=PValueReportingType.STANDARD_PVALUE; /** PValue reporting type */
     private int _early_term_threshold=50; /** early termination threshold */
+    private boolean _report_data_as_percentage=false;
+    private String _results_title="";
     
     private ArrayList<InputSourceSettings>     _input_sources;
 
@@ -136,31 +138,10 @@ public class Parameters implements Cloneable {
     public Object clone() {
       try {
     	  Parameters newObject = (Parameters)super.clone();
-    	  newObject._sourcefilename = new String(_sourcefilename);
-          newObject._treefilenames = new ArrayList<String>(_treefilenames);
-    	  newObject._cutsfilename = new String(_cutsfilename);
-    	  newObject._countfilename = new String(_countfilename);
-    	  newObject._controlfilename = new String(_controlfilename);
-    	  newObject._outputfilename = new String(_outputfilename);
-    	  newObject._power_alt_hypothesis_filename = new String(_power_alt_hypothesis_filename);
-          newObject._sequential_file = new String(_sequential_file);
-          newObject._exclusion_time_ranges = new String(_exclusion_time_ranges);
-          newObject._input_sources = new ArrayList<InputSourceSettings>();
+          newObject._input_sources = new ArrayList<>();
           for (InputSourceSettings iss : _input_sources) {
             newObject._input_sources.add(iss.clone());
           }
-          newObject._restricted_tree_levels = new String(_restricted_tree_levels);
-   	      newObject._data_time_range_sstart = new String(_data_time_range_sstart);
-          newObject._data_time_range_send = new String(_data_time_range_send);
-          newObject._temporal_start_range_sbegin = new String(_temporal_start_range_sbegin);
-          newObject._temporal_start_range_sclose = new String(_temporal_start_range_sclose);
-          newObject._temporal_end_range_sbegin = new String(_temporal_end_range_sbegin);
-          newObject._temporal_end_range_sclose = new String(_temporal_end_range_sclose);
-          newObject._not_evaluated_nodes_filename = new String(_not_evaluated_nodes_filename);
-          newObject._probability_ratio_numerator = new String(_probability_ratio_numerator);
-          newObject._probability_ratio_denominator = new String(_probability_ratio_denominator);
-          newObject._power_baseline_probability_ratio_numerator = new String(_power_baseline_probability_ratio_numerator);
-          newObject._power_baseline_probability_ratio_denominator = new String(_power_baseline_probability_ratio_denominator);
     	  return newObject;
       } catch (CloneNotSupportedException e) {
         throw new InternalError("clone() failed!");
@@ -168,6 +149,8 @@ public class Parameters implements Cloneable {
     }
     @Override
     public boolean equals(Object _rhs) {
+          if (this == _rhs) return true;
+          if (_rhs == null || getClass() != _rhs.getClass()) return false;
     	  Parameters rhs = (Parameters)_rhs;
    	  if (_scanType != rhs._scanType) return false;
           if (_conditionalType != rhs._conditionalType) return false;
@@ -251,10 +234,16 @@ public class Parameters implements Cloneable {
           if (_include_identical_parent_cuts != rhs._include_identical_parent_cuts) return false;
           if (_pvalue_reporting_type != rhs._pvalue_reporting_type) return false;
           if (_early_term_threshold != rhs._early_term_threshold) return false;
-          
+          if (_report_data_as_percentage != rhs._report_data_as_percentage) return false;
+          if (!_results_title.equals(rhs._results_title)) return false;
+              
           return true;
     }
     
+    public final String getResultsTitle() { return _results_title; }
+    public void setResultsTitle(final String s) { _results_title = s; }    
+    public boolean getRptDataAsPct() { return _report_data_as_percentage; }
+    public void setRptDataAsPct(boolean b) { _report_data_as_percentage = b; }    
     public boolean getVariableCaseProbability() { return _variable_case_probablility; }
     public void setVariableCaseProbability(boolean b) { _variable_case_probablility = b; }
     public final String getNotEvaluatedNodesFileName() {return _not_evaluated_nodes_filename;}

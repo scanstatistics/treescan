@@ -29,6 +29,7 @@ class ParametersPrint {
     SettingContainer_t & getPowerSimulationsParameters(SettingContainer_t & settings) const;
     SettingContainer_t & getRunOptionsParameters(SettingContainer_t & settings) const;
     SettingContainer_t & getSystemParameters(SettingContainer_t & settings) const;
+    SettingContainer_t & getTemporalOutputParameters(SettingContainer_t& settings) const;
     SettingContainer_t & getTemporalWindowParameters(SettingContainer_t & settings) const;
     SettingContainer_t & getMiscellaneousAnalysisParameters(SettingContainer_t & settings) const;
 

@@ -23,7 +23,7 @@ BOOST_FIXTURE_TEST_CASE( test_restrict_tree_levels, poisson_fixture ) {
     // open the csv results file and get the reported levels
     std::string buffer;
     std::ifstream stream;
-    stream.open(CutsRecordWriter::getFilename(_parameters, buffer).c_str());
+    stream.open(CutsRecordWriter::getFilename(_parameters, CutsRecordWriter::CUT_FILE_SUFFIX, buffer).c_str());
     if (!stream) throw std::exception("could not open file");
 
     CSV_Row_t headers;
@@ -63,7 +63,7 @@ BOOST_FIXTURE_TEST_CASE( test_restrict_tree_levels, poisson_fixture ) {
     _parameters.setRestrictedTreeLevels(restricted_levels);
     run_analysis("test", results_user_directory, _parameters, _print);
 
-    stream.open(CutsRecordWriter::getFilename(_parameters, buffer).c_str());
+    stream.open(CutsRecordWriter::getFilename(_parameters, CutsRecordWriter::CUT_FILE_SUFFIX, buffer).c_str());
     if (!stream) throw std::exception("could not open file");
 
     getCSVRow(stream, headers);

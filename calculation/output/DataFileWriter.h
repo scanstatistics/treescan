@@ -5,6 +5,7 @@
 #include "Parameters.h"
 #include "FieldDef.h"
 #include "ptr_vector.h"
+#include "SampleSiteData.h"
 #include <iostream>
 #include <fstream>
 #include "boost/thread/mutex.hpp"
@@ -44,8 +45,11 @@ class DataRecordWriter {
     static const char         * NODE_NAME_FIELD;
     static const char         * NODE_OBSERVATIONS_FIELD;
     static const char         * NODE_CASES_FIELD;
+    static const char         * SS_NAME_FIELD;
     static const char         * SS_BASELINE_FIELD;
     static const char         * SS_CURRENT_FIELD;
+    static const char         * SS_BASELINE_AVG_FIELD;
+    static const char         * SS_CURRENT_AVG_FIELD;
     static const char         * SS_PERC_CHANGE_FIELD;
     static const char         * SS_ABS_CHANGE_FIELD;
     static const char         * START_WINDOW_FIELD;
@@ -113,25 +117,31 @@ class CutStructure; /** forward class declaration */
 class NodeStructure; /** forward class declaration */
 class CutsRecordWriter : public DataRecordWriter {
   public:
-    static const char         * CUT_FILE_SUFFIX;
+    typedef std::pair<int, std::shared_ptr<RecordBuffer>> ChildRecord_t;
+    static const char * CUT_FILE_SUFFIX;
+    static const char * CUT_SS_FILE_SUFFIX;
 
   private:
        const ScanRunner & _scanner;
        std::ofstream _outfile;
        std::unique_ptr<CSVDataFileWriter> _csvWriter;
 
+       std::ofstream _ss_outfile;
+       std::unique_ptr<CSVDataFileWriter> _ss_csvWriter;
+       ptr_vector<FieldDef> _ss_field_defs; // field for sample site data (Trend model)
+
    public:
        CutsRecordWriter(const ScanRunner& scanRunner);
        virtual ~CutsRecordWriter();
 
-       static std::string & getFilename(const Parameters& parameters, std::string& buffer);
+       static std::string & getFilename(const Parameters& parameters, const std::string& suffix, std::string& buffer);
        static ptr_vector<FieldDef>& getFieldDefs(ptr_vector<FieldDef>& fields, const Parameters& params, bool hasNodeNames);
        static RecordBuffer& getRecordForCut(RecordBuffer& Record, const CutStructure& thisCut, const ScanRunner& scanner);
        static RecordBuffer& getRecordForCutChild(RecordBuffer& Record, const CutStructure& thisCut, const NodeStructure& childNode, size_t subIndex, const ScanRunner& scanner);
 
        static bool           includeChild(const ScanRunner& scanner, const CutStructure& thisCut, RecordBuffer& record);
-       static void           sortChildRecords(std::vector<std::shared_ptr<RecordBuffer>>& childRecords, const Parameters& parameters, Parameters::ScanRateType cutRate);
-       void                  write(const CutStructure& thisCut) const;
+       static void           sortChildRecords(std::vector<ChildRecord_t>& childRecords, const Parameters& parameters, Parameters::ScanRateType cutRate);
+       void                  write(const CutStructure& thisCut);
 };
 
 /** Data file writer for the power estimation. */

@@ -19,7 +19,7 @@ import java.util.List;
 
 // http://stackoverflow.com/questions/11041509/elevating-a-processbuilder-process-via-uac
 public interface Shell32X extends Shell32 {
-    Shell32X INSTANCE = (Shell32X)Native.loadLibrary("shell32", Shell32X.class, W32APIOptions.UNICODE_OPTIONS);
+    Shell32X INSTANCE = (Shell32X)Native.load("shell32", Shell32X.class, W32APIOptions.UNICODE_OPTIONS);
 
     int SW_HIDE = 0;
     int SW_MAXIMIZE = 3;
@@ -105,7 +105,8 @@ public interface Shell32X extends Shell32 {
         public HANDLE hMonitor;
         public HANDLE hProcess;
 
-        protected List getFieldOrder() {
+        @Override
+        protected List<String> getFieldOrder() {
             return Arrays.asList(new String[] {
                 "cbSize", "fMask", "hwnd", "lpVerb", "lpFile", "lpParameters",
                 "lpDirectory", "nShow", "hInstApp", "lpIDList", "lpClass",

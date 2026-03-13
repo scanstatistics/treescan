@@ -184,13 +184,15 @@ unsigned int getFormatPrecision(double value, unsigned int iSignificant) {
 
 /** Returns value as string with number of 'iSignificant' significant decimals.
     The 'g' format specifier might have sufficed but Martin wanted this format. */
-std::string& getValueAsString(double value, std::string& s, unsigned int iSignificant) {
+std::string& getValueAsString(double value, std::string& s, int iSignificant) {
     if (std::isinf(value))
         s = "infinity";
     else if (boost::math::isnan(value))
         s = "undefined";
+    else if (iSignificant < 0) // if negative, use the more compact "%g" format specifier
+        printString(s, "%g", value);
     else {
-        unsigned int iPrecision = getFormatPrecision(value, iSignificant);
+        unsigned int iPrecision = getFormatPrecision(value, static_cast<unsigned int>(iSignificant));
         std::string format;
         printString(format, "%%.%dlf", iPrecision);
         printString(s, format.c_str(), value);

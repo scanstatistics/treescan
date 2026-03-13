@@ -212,7 +212,7 @@ public:
             return true; // presume all sample sites are present
         if (!fillMissing) {
             print.Printf(
-                "Node '%s' defines sample site data for %u sites but expecting %u.", BasePrint::P_ERROR,
+                "Node '%s' defines sample site data for %u sites but expecting %u.\n", BasePrint::P_ERROR,
                 getIdentifier().c_str(), static_cast<unsigned int>(_sample_site_data.size()), static_cast<unsigned int>(ssCount)
             );
             return false;

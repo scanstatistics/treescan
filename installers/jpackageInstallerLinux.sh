@@ -9,7 +9,7 @@
 # - icon still wrong
 # - probably other things when looking closer
 
-javajdk="/prj/treescan/build/packages/java/jdk-17.0.17+10_linux_x64"
+javajdk="/prj/treescan/build/packages/java/jdk-25.0.2+10_linux_x64"
 version=$1
 srcdir="/prj/treescan/build/treescan"
 bundleinputdir="/prj/treescan/build/jpackage/treescanbundlesrc"
@@ -37,7 +37,7 @@ cp -f $binaries/libtreescan64.so $bundleinputdir
 $javajdk/bin/jpackage --verbose --type app-image --input $bundleinputdir \
             --main-jar TreeScan.jar --icon $srcdir/installers/resources/TreeScanStatistic.png \
             --app-version $version --name TreeScanStatistic --dest $bundledir \
-            --java-options "-Djava.library.path=\$APPDIR"
+            --java-options "-Djava.library.path=\$APPDIR --enable-native-access=ALL-UNNAMED"
 
 #  Create application rpm
 $javajdk/bin/jpackage --verbose --type rpm --app-image $bundledir/TreeScanStatistic --app-version $version \

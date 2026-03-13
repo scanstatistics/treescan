@@ -1,7 +1,7 @@
 [Analysis]
 ;scan type (TREEONLY=0, TREETIME=1, TIMEONLY=2)
 scan-type=0
-;probability model type (POISSON=0, BERNOULLI_TREE=1, UNIFORM=2, Not-Applicable=3)
+;probability model type (POISSON=0, BERNOULLI_TREE=1, UNIFORM=2, Not-Applicable=3, BERNOULLI_TIME=4, SIGNED_RANK=5)
 probability-model=1
 ;conditional type (UNCONDITIONAL=0, TOTALCASES=1, NODE=2, NODEANDTIME=3)
 conditional-type=1
@@ -156,6 +156,16 @@ prospective-frequency-type=0
 ;frequency of prospective (integer)
 prospective-frequency=1
 
+[Temporal Output]
+;output temporal graph HTML file (y/n)
+output-temporal-graph-html=n
+;temporal graph cluster reporting type (0=Only most likely cluster, 1=X most likely clusters, 2=Only significant clusters)
+temporal-graph-type=0
+;number of most likely clusters to report in temporal graph (positive integer)
+temporal-graph-most-mlc=1
+;cluster cutoff to report in temporal graph (numeric)
+temporal-graph-significance-cutoff=0.05
+
 [Additional Output]
 ;create LLR results (y/n)
 results-llr=n
@@ -167,14 +177,10 @@ report-attributable-risk=n
 attributable-risk-exposed=0
 ;report parent cuts that match child cuts (y/n)
 include-identical-parent-cuts=n
-;output temporal graph HTML file (y/n)
-output-temporal-graph-html=n
-;temporal graph cluster reporting type (0=Only most likely cluster, 1=X most likely clusters, 2=Only significant clusters)
-temporal-graph-type=0
-;number of most likely clusters to report in temporal graph (positive integer)
-temporal-graph-most-mlc=1
-;significant clusters p-value cutoff to report in temporal graph (0.000-1.000)
-temporal-graph-significance-cutoff=0.05
+;report trend model cluster data as percentage (y/n)
+trend-data-as-percentage=n
+;results title (string)
+report-title=
 
 [Power Simulations]
 ;input simulation data (y/n)
@@ -192,5 +198,5 @@ parallel-processes=0
 
 [System]
 ;parameters version - do not modify
-parameters-version=2.3.0
+parameters-version=2.4.0
 
