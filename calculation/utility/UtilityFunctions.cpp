@@ -252,7 +252,7 @@ std::string & GetUserTemporaryDirectory(std::string& s) {
     return s;
 }
 
-std::string & generate_unique_filename(const std::string& prefix = "tf_", const std::string& ext = ".tmp") {
+std::string generate_unique_filename(const std::string& prefix = "tf_", const std::string& ext = ".tmp") {
     // 1. Define the character set (same as Boost's default)
     const std::string chars = "0123456789abcdefghijklmnopqrstuvwxyz";
 
@@ -281,7 +281,6 @@ std::string & GetTemporaryFilename(std::string& s, const char * atLocation) {
         s += std::filesystem::path::preferred_separator;
     }
     s += generate_unique_filename();
-    s += ".tmp";
     return s;
 }
 
