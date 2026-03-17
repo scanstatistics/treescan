@@ -23,21 +23,21 @@ Building Native Binaries
 -----------
 The following are the prerequisites for compiling the command-line C/C++ application and dynamic-link library (.dll) / shared objects file (.so) / java native interface library (.jnilib). 
 ### General Prerequisites
-- Boost C++ Libraries, current version <a target="_blank" href="https://www.boost.org/users/history/version_1_81_0.html">1.81.0</a> (libraries do not need to be build).
-- Java Development Kit 17
+- Boost C++ Libraries, current version <a target="_blank" href="https://www.boost.org/releases/1.90.0/">1.90.0</a> (libraries do not need to be build).
+- Java Development Kit 25
 ### Windows
 #### Prerequisites
 - Visual Studio 2022
 - Microsoft Windows SDK v10.0 (or newer)
 
 The Visual Studio Solution references relative paths to the Boost library and JDK C++ headers. These can be either copied into the repository directory or a symbolic link can be created using mklink to reference shared resources:
-- boost\boost_1_81_0\
+- boost\boost_1_90_0\
  ex. mklink /d boost *"C:\Users\joeuser\boost"*
 - jdk\include\
-  ex. mklink /d jdk *"C:\Program Files\Eclipse Adoptium\jdk-17.0.9.9-hotspot"*
+  ex. mklink /d jdk *"C:\Program Files\Adoptium\jdk-25"*
 ### Linux
 #### Prerequisites
-- GCC (compiled with 4.8.5 or 8.5.0 currently)
+- g++ (GCC, Red Hat 11.5.0-11 currently)
 
 The Linux binaries are built through the [Linux build_binaries](scripts/linux/build_binaries) shell script.
 ### macOS
@@ -50,8 +50,8 @@ Building Java User Interface
 -----------
 The Java user interface provides the graphical front-end to the native library file written in C/C++ (.dll/.so/.jnilib).
 ### Prerequisites
-- NetBeans (<a target="_blank" href="https://netbeans.apache.org/">Version 19</a>)
-- Java Development Kit 17
+- <a target="_blank" href="https://netbeans.apache.org/">NetBeans</a>
+- Java Development Kit 
 
 Architecture
 -----------
