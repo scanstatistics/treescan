@@ -6,7 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include "Parameters.h"
-#include <boost/optional.hpp>
+#include <optional>
 
 /** Input data source abstraction. */
 class DataSource {
@@ -19,7 +19,7 @@ class DataSource {
 
         virtual long tranlateFieldIndex(long idx) const {
             if (idx < static_cast<long>(_fields_map.size())) {
-                return boost::any_cast<long>(_fields_map.at(static_cast<size_t>(idx))) - 1;
+                return std::any_cast<long>(_fields_map.at(static_cast<size_t>(idx))) - 1;
             }
             return idx;
         }
@@ -37,7 +37,7 @@ class DataSource {
         virtual void                       gotoFirstRecord() = 0;
         virtual bool                       readRecord() = 0;
         void                               tripBlankRecordFlag() {_blank_record_flag=true;}
-        void                               setFieldsMap(const std::vector<boost::any>& map) {_fields_map = map;}
+        void                               setFieldsMap(const std::vector<std::any>& map) {_fields_map = map;}
 };
 
 /** CSV file data source. */
@@ -74,7 +74,7 @@ class SequentialFileDataSource : public CSVFileDataSource {
         SequentialFileDataSource(const std::string& sSourceFilename, const Parameters& parameters);
         virtual ~SequentialFileDataSource() {}
 
-        boost::optional<double>  nextLLR();
+        std::optional<double>  nextLLR();
 };
 //******************************************************************************
 #endif

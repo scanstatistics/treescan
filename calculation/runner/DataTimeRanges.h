@@ -5,7 +5,7 @@
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/gregorian_calendar.hpp>
-#include <boost/optional.hpp>
+#include <optional>
 
 class DataTimeRange {
     public:
@@ -17,19 +17,19 @@ class DataTimeRange {
 
     private:
         range_t _range;
-        boost::optional<boost::gregorian::date> _gregorian_start_date;
+        std::optional<boost::gregorian::date> _gregorian_start_date;
 
     public:
         DataTimeRange() : _range(0,0) {}
-        DataTimeRange(index_t start, index_t end, boost::optional<boost::gregorian::date> gregorian_start_date = boost::optional<boost::gregorian::date>()) : _range(start,end), _gregorian_start_date(gregorian_start_date) {}
-        DataTimeRange(const std::string& from, DatePrecisionType precision, boost::optional<boost::gregorian::date> gregorian_start_date) {
+        DataTimeRange(index_t start, index_t end, std::optional<boost::gregorian::date> gregorian_start_date = std::optional<boost::gregorian::date>()) : _range(start,end), _gregorian_start_date(gregorian_start_date) {}
+        DataTimeRange(const std::string& from, DatePrecisionType precision, std::optional<boost::gregorian::date> gregorian_start_date) {
             assign(from, precision, gregorian_start_date);
         }
 
         iterator_t begin() {return boost::counting_iterator<int>(_range.first);}
         iterator_t end() {return boost::counting_iterator<int>(_range.second);}
 
-        static DataTimeRange parse(const std::string& from, DatePrecisionType precision, boost::optional<boost::gregorian::date> dataRangeStart);
+        static DataTimeRange parse(const std::string& from, DatePrecisionType precision, std::optional<boost::gregorian::date> dataRangeStart);
 
         bool operator==(const DataTimeRange& rhs) const {return _range == rhs._range;}
         bool operator!=(const DataTimeRange& rhs) const {return _range != rhs._range;}
@@ -37,7 +37,7 @@ class DataTimeRange {
         std::string rangeIdxToGregorianString(index_t idx, DatePrecisionType precision) const;
         std::pair<std::string, std::string> rangeToGregorianStrings(int startIdx, int endIdx, DatePrecisionType precision) const;
 
-        void assign(const std::string& from, DatePrecisionType precision, boost::optional<boost::gregorian::date> gregorian_start_date) {
+        void assign(const std::string& from, DatePrecisionType precision, std::optional<boost::gregorian::date> gregorian_start_date) {
             *this = parse(from, precision, gregorian_start_date);
         }
         index_t getStart() const {return _range.first;}
@@ -64,7 +64,7 @@ class DataTimeRange {
         size_t numDaysInPositiveRange() const {
             return static_cast<size_t>(std::max(getEnd(), 1) - std::max(getStart(), 1) + 1);
         }
-        boost::optional<boost::gregorian::date> getDateStart() const {
+        std::optional<boost::gregorian::date> getDateStart() const {
             return _gregorian_start_date; 
         }
 };
@@ -93,7 +93,7 @@ public:
     static std::string gregorianToString(boost::gregorian::date dateObj);
     static boost::gregorian::date gregorianFromString(const std::string& s);
 
-    DateStringParser::ParserStatus      Parse(const char * sDateString, int& dateIdx, boost::optional<boost::gregorian::date> startdate);
+    DateStringParser::ParserStatus      Parse(const char * sDateString, int& dateIdx, std::optional<boost::gregorian::date> startdate);
 
     /** Returns whether a date is valid or not. */
     static bool IsDateValid(unsigned int year, unsigned int month, unsigned int day) {
@@ -118,16 +118,16 @@ class DataTimeRangeSet {
 
     public:
         DataTimeRangeSet() {}
-        DataTimeRangeSet(const std::string& from, DataTimeRange::DatePrecisionType precision, boost::optional<boost::gregorian::date> gregorian_start_date)
+        DataTimeRangeSet(const std::string& from, DataTimeRange::DatePrecisionType precision, std::optional<boost::gregorian::date> gregorian_start_date)
             : _rangesets(parse(from, precision, gregorian_start_date)) {}
 
-        static rangeset_t parse(const std::string& from, DataTimeRange::DatePrecisionType precision, boost::optional<boost::gregorian::date> gregorian_start_date);
+        static rangeset_t parse(const std::string& from, DataTimeRange::DatePrecisionType precision, std::optional<boost::gregorian::date> gregorian_start_date);
 
         bool operator==(const DataTimeRangeSet& rhs) const {return _rangesets == rhs._rangesets;}
         bool operator!=(const DataTimeRangeSet& rhs) const {return _rangesets != rhs._rangesets;}
 
         void add(const DataTimeRange& range) {_rangesets.push_back(range);}
-        void assign(const std::string& from, DataTimeRange::DatePrecisionType precision, boost::optional<boost::gregorian::date> gregorian_start_date) {
+        void assign(const std::string& from, DataTimeRange::DatePrecisionType precision, std::optional<boost::gregorian::date> gregorian_start_date) {
             _rangesets = parse(from, precision, gregorian_start_date);
         }
         const rangeset_t & getDataTimeRangeSets() const {return _rangesets;}

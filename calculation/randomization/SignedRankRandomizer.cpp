@@ -61,7 +61,7 @@ void SignedRankRandomizer::addSimDiffs_recursive(size_t target_id, const Simulat
     Random number generator seed initialized based upon 'iSimulation' index. */
 int SignedRankRandomizer::RandomizeData(unsigned int iSimulation, const ScanRunner::NodeStructureContainer_t& treeNodes, boost::mutex& mutex, SimNodeContainer_t& treeSimNodes) {
     // clear simulation data
-    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
+    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fn(&SimulationNode::clear));
 
     int TotalSimC = 0;
     if (_read_data) {

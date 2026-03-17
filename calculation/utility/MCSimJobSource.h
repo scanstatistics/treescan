@@ -49,7 +49,7 @@ private: // data members
   const boost::posix_time::ptime            gConstructionTime;
   PrintQueue                              & grPrintDirection;
   const char                              * gszReplicationFormatString;
-  std::auto_ptr<LoglikelihoodRatioWriter>   _ratio_writer;
+  std::unique_ptr<LoglikelihoodRatioWriter>   _ratio_writer;
   ScanRunner                              & grRunner;
   Loglikelihood_t               grLoglikelihood;
   bool                                      _isPowerStep;

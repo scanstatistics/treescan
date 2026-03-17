@@ -13,7 +13,7 @@
 class AbstractMeasureList {
     protected:
         typedef std::vector<double> list_container_t;
-        typedef boost::shared_ptr<list_container_t> list_t;
+        typedef std::shared_ptr<list_container_t> list_t;
 
         const ScanRunner& _scanRunner;
         Loglikelihood_t _loglikelihood;
@@ -242,9 +242,9 @@ protected:
     boost::mutex& _mutex;
     SimNodeContainer_t _treeSimNodes;
     Loglikelihood_t _loglikelihood;
-    boost::shared_ptr<AbstractRandomizer> _randomizer;
+    std::shared_ptr<AbstractRandomizer> _randomizer;
     const ScanRunner& _scanRunner;
-    boost::shared_ptr<AbstractMeasureList> _measure_list;
+    std::shared_ptr<AbstractMeasureList> _measure_list;
 
     bool isEvaluated(const NodeStructure& node, const SimulationNode& simNode) const;
     successful_result_type scanTree(param_type const & param);
@@ -254,7 +254,7 @@ protected:
     successful_result_type scanTreeTemporalConditionNodeTime(param_type const & param);
 
 public:
-    MCSimSuccessiveFunctor(boost::mutex& mutex, boost::shared_ptr<AbstractRandomizer> randomizer, const ScanRunner& scanRunner);
+    MCSimSuccessiveFunctor(boost::mutex& mutex, std::shared_ptr<AbstractRandomizer> randomizer, const ScanRunner& scanRunner);
     //~MCSimSuccessiveFunctor() {}
     result_type operator() (param_type const & param);
 };
@@ -268,18 +268,18 @@ public:
     
 private:
     boost::mutex & _mutex;
-    boost::shared_ptr<SimulationNode> _treeSimNode;
+    std::shared_ptr<SimulationNode> _treeSimNode;
    Loglikelihood_t _loglikelihood;
     const ScanRunner & _scanRunner;
     RandomNumberGenerator _random_number_generator;  // generates random numbers
     DataTimeRange _range;
     DataTimeRange _startWindow;
     DataTimeRange _endWindow;
-    boost::shared_ptr<AbstractWindowLength> _window;
-    boost::shared_ptr<SequentialScanLoglikelihoodRatioWriter> _sequential_writer;
+    std::shared_ptr<AbstractWindowLength> _window;
+    std::shared_ptr<SequentialScanLoglikelihoodRatioWriter> _sequential_writer;
 
 public:
-    SequentialMCSimSuccessiveFunctor(boost::mutex& mutex, const ScanRunner& scanner, boost::shared_ptr<SequentialScanLoglikelihoodRatioWriter> writer);
+    SequentialMCSimSuccessiveFunctor(boost::mutex& mutex, const ScanRunner& scanner, std::shared_ptr<SequentialScanLoglikelihoodRatioWriter> writer);
     result_type operator() (param_type const & param);
 };
 
@@ -295,10 +295,10 @@ public:
 private:
     boost::mutex & _mutex;
     const ScanRunner & _scanRunner;
-    boost::shared_ptr<SequentialFileDataSource> _source;
+    std::shared_ptr<SequentialFileDataSource> _source;
 
 public:
-    SequentialReadMCSimSuccessiveFunctor(boost::mutex& mutex, const ScanRunner& scanner, boost::shared_ptr<SequentialFileDataSource> source);
+    SequentialReadMCSimSuccessiveFunctor(boost::mutex& mutex, const ScanRunner& scanner, std::shared_ptr<SequentialFileDataSource> source);
     result_type operator() (param_type const & param);
 };
 //******************************************************************************

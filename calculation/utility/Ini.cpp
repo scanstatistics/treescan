@@ -432,7 +432,7 @@ void IniFile::AddSection(IniSection *pSection) {
 
 /** Add a section to the ini-file */
 void IniFile::AddSection(const IniSection& Section) {
-   std::auto_ptr<IniSection> pSection(new IniSection(Section));
+   std::unique_ptr<IniSection> pSection(new IniSection(Section));
    AddSection(pSection.release());
 }
 
@@ -588,7 +588,7 @@ void IniFile::Read(const std::string& file) {
   while (SeekToNextSection(readstream)) {
       getlinePortable(readstream, buffer);
       trimString(buffer);
-      std::auto_ptr<IniSection> pIniSection(new IniSection(buffer.c_str()));
+      std::unique_ptr<IniSection> pIniSection(new IniSection(buffer.c_str()));
       pIniSection->Read(readstream);
       gaSections.push_back(pIniSection.release());
   }

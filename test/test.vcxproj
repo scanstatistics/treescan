@@ -59,10 +59,11 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_81_0;$(SolutionDir)zlib\zlib-1.3.1\;$(SolutionDir)zlib\zlib-1.3.1\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_90_0;$(SolutionDir)zlib\zlib-1.3.1\;$(SolutionDir)zlib\zlib-1.3.1\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MinimalRebuild>false</MinimalRebuild>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>shell32.lib;$(SolutionDir)zlib\zlib-1.3.1\Win32\Debug\zlib32.lib</AdditionalDependencies>
@@ -79,9 +80,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_81_0;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)calculation\output;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\runner;$(SolutionDir)calculation\print;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation;$(SolutionDir)batch_application;$(SolutionDir)boost\boost_1_90_0;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>shell32.lib;$(SolutionDir)zlib\zlib-1.3.1\Win32\Release\zlib32.lib</AdditionalDependencies>
@@ -95,16 +97,6 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\codecvt_error_category.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\directory.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\exception.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\operations.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\path.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\path_traits.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\portability.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\unique_path.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\utf8_codecvt_facet.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\windows_file_codecvt.cpp" />
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\cmdline.cpp" />
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\config_file.cpp" />
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\convert.cpp" />
@@ -116,13 +108,7 @@
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\value_semantic.cpp" />
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\variables_map.cpp" />
     <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\winmain.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\system\src\error_code.cpp" />
     <ClCompile Include="..\boost\boost_1_81_0\libs\thread\src\win32\thread.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\posix_api.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\regex.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\regex_debug.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\static_mutex.cpp" />
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\wide_posix_api.cpp" />
     <ClCompile Include="..\calculation\IniParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\IniParameterSpecification.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\CriticalValues.cpp" />

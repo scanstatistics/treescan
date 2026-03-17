@@ -607,11 +607,11 @@ void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, IniSection& se
                 std::stringstream s;
                 for (FieldMapContainer_t::const_iterator itr=source->getFieldsMap().begin(); itr != source->getFieldsMap().end(); ++itr) {
                     if (itr->type() == typeid(long)) {
-                        s << boost::any_cast<long>(*itr);
+                        s << std::any_cast<long>(*itr);
                     } else if (itr->type() == typeid(DataSource::FieldType)) {
-                        switch (boost::any_cast<DataSource::FieldType>(*itr)) {
+                        switch (std::any_cast<DataSource::FieldType>(*itr)) {
                             case DataSource::ONECOUNT: s << IniParameterSpecification::SourceFieldMapOneCount; break;
-                            default: throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<DataSource::FieldType>(*itr));
+                            default: throw prg_error("Unknown type '%s'.", "WriteInputSource()", std::any_cast<DataSource::FieldType>(*itr));
                         }
                     } else {
                         throw prg_error("Unknown type '%s'.", "WriteInputSource()", itr->type().name());

@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_SUITE(test_poission_censored_loglikelihood)
 /** Tests results with TemporalLoglikelihood with PoissonCensoredLoglikelihood. */
 BOOST_AUTO_TEST_CASE( test_loglikelihood_to_temporal ) {
     Parameters parameters;
-    parameters.setDataTimeRangeSet(DataTimeRangeSet("[1,28]", parameters.getDatePrecisionType(), boost::optional<boost::gregorian::date>()));
+    parameters.setDataTimeRangeSet(DataTimeRangeSet("[1,28]", parameters.getDatePrecisionType(), std::optional<boost::gregorian::date>()));
     parameters.setMaximumWindowType(Parameters::FIXED_LENGTH);
     parameters.setMaximumWindowLength(14);
     TemporalLoglikelihood temporal(98, 98.0, parameters);

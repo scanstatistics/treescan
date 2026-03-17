@@ -6,7 +6,7 @@
 
 /** Constructor */
 AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanRunner::NodeStructureContainer_t& treeNodes,
-                                                                     boost::shared_ptr<AbstractRandomizer> randomizer,
+                                                                     std::shared_ptr<AbstractRandomizer> randomizer,
                                                                      const RelativeRiskAdjustmentHandler& adjustments,
                                                                      const Parameters& parameters, 
                                                                      int totalC,
@@ -31,7 +31,7 @@ AlternativeHypothesisRandomizater::AlternativeHypothesisRandomizater(const ScanR
             }
             double adjustN = static_cast<double>(totalC)/newTotalN;
             for(RelativeRiskAdjustmentHandler::NodesExpectedContainer_t::iterator itr=_nodes_IntN_C.begin(); itr != _nodes_IntN_C.end(); ++itr) {
-                std::transform(itr->begin(), itr->end(), itr->begin(), std::bind1st(std::multiplies<double>(), adjustN));
+                std::transform(itr->begin(), itr->end(), itr->begin(), [adjustN](auto x) { return adjustN * x; });
             }
         }
         _nodes_proxy.reset(new AlternativeExpectedNodesProxy(treeNodes, _parameters.getDataOnlyOnLeaves(), _nodes_IntN_C));

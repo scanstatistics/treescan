@@ -21,7 +21,7 @@ int UnconditionalBernoulliRandomizer::randomize(unsigned int iSimulation, const 
     // reset seed of random number generator
     setSeed(iSimulation);
     // reset simData
-    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
+    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fn(&SimulationNode::clear));
 
     int TotalSimC=0;
     for (size_t i=0; i < treeNodes.size(); ++i) {
@@ -45,7 +45,7 @@ int UnconditionalBernoulliVariableProbabilityRandomizer::randomize(unsigned int 
     // reset seed of random number generator
     setSeed(iSimulation);
     // reset simData
-    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
+    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fn(&SimulationNode::clear));
 
     int TotalSimC = 0;
     for (size_t i = 0; i < treeNodes.size(); ++i) {
@@ -125,7 +125,7 @@ int BernoulliTimeRandomizer::randomize(unsigned int iSimulation, const AbstractN
 	// reset seed of random number generator
 	setSeed(iSimulation);
 	// reset simData
-	std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
+	std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fn(&SimulationNode::clear));
 
 	int TotalSimC = 0;
 	for (size_t i = 0; i < treeNodes.size(); ++i) {
@@ -170,7 +170,7 @@ int ConditionalBernoulliRandomizer::randomize(unsigned int iSimulation, const Ab
     // reset seed of random number generator
     setSeed(iSimulation);
     // reset simData
-    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
+    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fn(&SimulationNode::clear));
     return _randomize(_total_C, _total_Controls, treeNodes, treeSimNodes);
 }
 
@@ -224,7 +224,7 @@ int ConditionalBernoulliAlternativeHypothesisRandomizer::randomize(unsigned int 
     // reset seed of random number generator
     setSeed(iSimulation);
     // reset simData
-    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fun_ref(&SimulationNode::clear));
+    std::for_each(treeSimNodes.begin(), treeSimNodes.end(), std::mem_fn(&SimulationNode::clear));
 
     mt19937 generator(iSimulation);
     Probabilities_t::iterator itr=std::lower_bound(_A.begin(), _A.end(), uniform_01<mt19937>(generator)());

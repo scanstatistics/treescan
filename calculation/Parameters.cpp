@@ -9,13 +9,12 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/assign.hpp>
 
 const int Parameters::giNumParameters = 86;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
-   cut_map_t cut_type_map_abbr = boost::assign::map_list_of("S",Parameters::SIMPLE) ("P",Parameters::PAIRS) ("T",Parameters::TRIPLETS) ("O",Parameters::ORDINAL);
-   cut_map_t cut_type_map = boost::assign::map_list_of("simple",Parameters::SIMPLE) ("pairs",Parameters::PAIRS) ("triplets",Parameters::TRIPLETS) ("ordinal",Parameters::ORDINAL);
+   cut_map_t cut_type_map_abbr = {{"S", Parameters::SIMPLE}, {"P", Parameters::PAIRS}, {"T", Parameters::TRIPLETS}, {"O", Parameters::ORDINAL}};
+   cut_map_t cut_type_map = {{"simple", Parameters::SIMPLE}, {"pairs", Parameters::PAIRS}, {"triplets", Parameters::TRIPLETS}, {"ordinal", Parameters::ORDINAL}};
    return std::make_pair(cut_type_map_abbr, cut_type_map);
 }
 
@@ -625,7 +624,7 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     setCountFileName(pt.get<std::string>("parameters.input.count-filename", "").c_str(), true);
     setControlFileName(pt.get<std::string>("parameters.input.control-filename", "").c_str(), true);
     _date_precision_type = static_cast<DataTimeRange::DatePrecisionType>(pt.get<unsigned int>("parameters.analysis.date-precision", DataTimeRange::GENERIC));
-    _dataTimeRangeSet.assign(pt.get<std::string>("parameters.input.data-time-range", "0,0"), _date_precision_type, boost::optional<boost::gregorian::date>());
+    _dataTimeRangeSet.assign(pt.get<std::string>("parameters.input.data-time-range", "0,0"), _date_precision_type, std::optional<boost::gregorian::date>());
     // Advanced Input
     setCutsFileName(pt.get<std::string>("parameters.input.advanced.input.cuts-filename", "").c_str(), true);
     _cut_type = static_cast<CutType>(pt.get<unsigned int>("parameters.input.advanced.input.cuts-type", SIMPLE));

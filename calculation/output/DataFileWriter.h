@@ -117,17 +117,17 @@ class CutStructure; /** forward class declaration */
 class NodeStructure; /** forward class declaration */
 class CutsRecordWriter : public DataRecordWriter {
   public:
-    typedef std::pair<int, boost::shared_ptr<RecordBuffer>> ChildRecord_t;
+    typedef std::pair<int, std::shared_ptr<RecordBuffer>> ChildRecord_t;
     static const char * CUT_FILE_SUFFIX;
     static const char * CUT_SS_FILE_SUFFIX;
 
   private:
        const ScanRunner & _scanner;
        std::ofstream _outfile;
-       std::auto_ptr<CSVDataFileWriter> _csvWriter;
+       std::unique_ptr<CSVDataFileWriter> _csvWriter;
 
        std::ofstream _ss_outfile;
-       std::auto_ptr<CSVDataFileWriter> _ss_csvWriter;
+       std::unique_ptr<CSVDataFileWriter> _ss_csvWriter;
        ptr_vector<FieldDef> _ss_field_defs; // field for sample site data (Trend model)
 
    public:
@@ -152,7 +152,7 @@ class PowerEstimationRecordWriter : public DataRecordWriter {
   private:
        const ScanRunner & _scanner;
        std::ofstream _outfile;
-       std::auto_ptr<CSVDataFileWriter> _csvWriter;
+       std::unique_ptr<CSVDataFileWriter> _csvWriter;
 
    public:
        PowerEstimationRecordWriter(const ScanRunner& scanRunner);
@@ -173,7 +173,7 @@ class LoglikelihoodRatioWriter : public DataRecordWriter {
 
         const ScanRunner & _scanner;
         std::ofstream _outfile;
-        std::auto_ptr<CSVDataFileWriter> _csvWriter;
+        std::unique_ptr<CSVDataFileWriter> _csvWriter;
         bool _include_sim_idx;
 
         LoglikelihoodRatioWriter(const ScanRunner& scanRunner);

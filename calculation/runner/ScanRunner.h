@@ -5,7 +5,6 @@
 #include "TreeScan.h"
 #include "ptr_vector.h"
 #include "Loglikelihood.h"
-#include <boost/shared_ptr.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <boost/logic/tribool.hpp>
 #include "SimulationVariables.h"
@@ -81,7 +80,7 @@ private:
     DataTimeRange::index_t _end_idx;        // temporal end window index
     CutChildContainer_t    _cut_children;   // optional collection of children indexes
 
-    mutable boost::optional<double> _relative_risk; // cached attributes
+    mutable std::optional<double> _relative_risk; // cached attributes
 
 public:
     CutStructure() : 
@@ -552,14 +551,14 @@ public:
     typedef ptr_vector<NodeStructure>                           NodeStructureContainer_t;
     typedef ptr_vector<CutStructure>                            CutStructureContainer_t;
     typedef std::pair<bool,size_t>                              Index_t;
-    typedef boost::shared_ptr<RelativeRiskAdjustmentHandler>    RiskAdjustments_t;
+    typedef std::shared_ptr<RelativeRiskAdjustmentHandler>    RiskAdjustments_t;
     typedef std::vector<RiskAdjustments_t>                      RiskAdjustmentsContainer_t;
     typedef boost::tuple<double, double, double>                PowerEstimationSet_t;
     typedef std::deque<PowerEstimationSet_t>                    PowerEstimationContainer_t;
     typedef std::vector<unsigned int>                           TimeIntervalContainer_t;
     typedef std::vector<TimeIntervalContainer_t>                DayOfWeekIndexes_t;
-    typedef boost::shared_ptr<TreeStatistics>                   TreeStatistics_t;
-    typedef boost::shared_ptr<SequentialStatistic>              SequentialStatistic_t;
+    typedef std::shared_ptr<TreeStatistics>                   TreeStatistics_t;
+    typedef std::shared_ptr<SequentialStatistic>              SequentialStatistic_t;
 
 protected:
     BasePrint                         & _print;
@@ -576,7 +575,7 @@ protected:
     Parameters                          _parameters;
     DataTimeRange::index_t              _zero_translation_additive;
     boost::dynamic_bitset<>             _caselessWindows;
-    std::auto_ptr<CriticalValues>       _critical_values;
+    std::unique_ptr<CriticalValues>       _critical_values;
     PowerEstimationContainer_t          _power_estimations;
     DayOfWeekIndexes_t                  _day_of_week_indexes;
     mutable TreeStatistics_t            _tree_statistics;
@@ -610,7 +609,7 @@ protected:
     bool                        readTree(const std::string& filename, unsigned int treeOrdinal);
     bool                        reportResults(time_t start, time_t end);
     bool                        runPowerEvaluations();
-    bool                        runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep, unsigned int iteration=0);
+    bool                        runsimulations(std::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep, unsigned int iteration=0);
     bool                        runsequentialsimulations(unsigned int num_relica);
     bool                        scanTree();
     bool                        scanTreeTemporalConditionNode();
@@ -621,7 +620,7 @@ protected:
     CutStructure *              calculateCut(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx=0, DataTimeRange::index_t endIdx=1, int BrC_All=0, double BrN_All=0.0);
     CutStructure *              calculateCut(size_t node_index, int C, double N, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdxa, DataTimeRange::index_t endIdx);
     CutStructure              * calculateCut(size_t node_index, const SampleSiteMap_t& samplesiteData, const Loglikelihood_t& logCalculator);
-    CutStructure *              updateCut(std::auto_ptr<CutStructure>& cut);
+    CutStructure *              updateCut(std::unique_ptr<CutStructure>& cut);
 
 public:
     ScanRunner(const Parameters& parameters, BasePrint& print);
@@ -714,7 +713,7 @@ public:
         return _parameters.getRestrictTemporalWindows() ? _parameters.getTemporalEndRange() : _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
     }
 
-    boost::shared_ptr<AbstractWindowLength> getNewWindowLength() const;
+    std::shared_ptr<AbstractWindowLength> getNewWindowLength() const;
     double get_node_n_time_total_cases(DataTimeRange::index_t start_idx, DataTimeRange::index_t end_idx) const {
         // Obtain the total number of cases in window range for all nodes.
         auto test = std::make_pair(start_idx, end_idx);

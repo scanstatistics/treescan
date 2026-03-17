@@ -229,7 +229,7 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
     std::stringstream buffer;
     try { // try to parse and assign data time range for class strings -- guard against failure (incorrect format)
         parameters.setDataTimeRangeSet(
-            DataTimeRangeSet(parameters.getDataTimeRangeStr(), parameters.getDatePrecisionType(), boost::optional<boost::gregorian::date>())
+            DataTimeRangeSet(parameters.getDataTimeRangeStr(), parameters.getDatePrecisionType(), std::optional<boost::gregorian::date>())
         );
     } catch (std::exception& x) {}
     // Only proceed if we have a defined data time range.
@@ -426,13 +426,13 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
       for (;itrMap != iss.getFieldsMap().end(); ++itrMap) {
           std::stringstream s;
           if (itrMap->type() == typeid(long)) {
-              long c = boost::any_cast<long>(*itrMap);
+              long c = std::any_cast<long>(*itrMap);
               if (c == 0) s << c;
-              else s << (boost::any_cast<long>(*itrMap) + 1);
+              else s << (std::any_cast<long>(*itrMap) + 1);
           } else if (itrMap->type() == typeid(DataSource::FieldType)) {
-              switch (boost::any_cast<DataSource::FieldType>(*itrMap)) {
+              switch (std::any_cast<DataSource::FieldType>(*itrMap)) {
                 case DataSource::ONECOUNT: s << 1; break;
-                default: throw prg_error("Unknown data source type '%s'.", "WriteInputSource()", boost::any_cast<DataSource::FieldType>(*itr));
+                default: throw prg_error("Unknown data source type '%s'.", "WriteInputSource()", std::any_cast<DataSource::FieldType>(*itr));
               }
           } else {
             throw prg_error("Unknown map type '%s'.", "WriteInputSource()", itrMap->type().name());
@@ -836,7 +836,7 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
       jni_error::_detectError(Env);
       jclass vclazz_mappings = Env.GetObjectClass(vectorobject_mappings);
       mid = _getMethodId_Checked(Env, vclazz_mappings, "size", "()I");
-      std::vector<boost::any> map;
+      std::vector<std::any> map;
       jint vsize_mappings = Env.CallIntMethod(vectorobject_mappings, mid);
       for (jint j=0; j < vsize_mappings; ++j) {
         mid = _getMethodId_Checked(Env, vclazz_mappings, "get", "(I)Ljava/lang/Object;");

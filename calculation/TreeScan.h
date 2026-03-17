@@ -45,8 +45,8 @@
 #include <string>
 #include <vector>
 #include <ctime>
+#include <any>
 #include "boost/tuple/tuple.hpp"
-#include <boost/any.hpp>
 
 // average days in year */
 #define AVERAGE_DAYS_IN_YEAR 365.25
@@ -61,7 +61,7 @@
 // DateSource types */
 enum SourceType {CSV=0, EXCEL};
 // data source fields map container typedef
-typedef std::vector<boost::any> FieldMapContainer_t;
+typedef std::vector<std::any> FieldMapContainer_t;
 typedef std::pair<double, double> RecurrenceInterval_t;
 // require more than 9 replications to report p-values
 #define MIN_REPLICA_RPT_PVALUE 9

@@ -2,12 +2,11 @@
 #include <numeric>
 #include <boost/tokenizer.hpp>
 #include <boost/regex.hpp>
-#include <boost/assign.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <locale>
 
 #include "ScanRunner.h"
@@ -843,12 +842,12 @@ void SequentialStatistic::write(const std::string &casefilename, const std::stri
         accumulated_controls.close();
 	}
     // Overwrite the current simulation data cache file.
-    boost::filesystem::remove(_simulations_filename.c_str()); // delete current
-    boost::filesystem::rename(_write_simulations_filename, _simulations_filename); // rename temp file
+    std::filesystem::remove(_simulations_filename.c_str()); // delete current
+    std::filesystem::rename(_write_simulations_filename, _simulations_filename); // rename temp file
     // Compress the simulation data cache file into archive.
-    boost::filesystem::remove(getSimulationDataArchiveName());
+    std::filesystem::remove(getSimulationDataArchiveName());
     addZip(getSimulationDataArchiveName(), _simulations_filename, false);
-    boost::filesystem::remove(_simulations_filename.c_str()); // delete the file that was just added to zip
+    std::filesystem::remove(_simulations_filename.c_str()); // delete the file that was just added to zip
 }
 
 ////////////////////////// ScanRunner ////////////////////////////////////////
@@ -891,17 +890,17 @@ ScanRunner::ScanRunner(const Parameters& parameters, BasePrint& print) :
     }
 }
 
-boost::shared_ptr<AbstractWindowLength> ScanRunner::getNewWindowLength() const {
+std::shared_ptr<AbstractWindowLength> ScanRunner::getNewWindowLength() const {
     if (isCensoredData() && _parameters.isApplyingRiskWindowRestrictionCensored())
-        return boost::shared_ptr<AbstractWindowLength>(new CensoredRiskPercentageWindowLength(_parameters, 
+        return std::shared_ptr<AbstractWindowLength>(new CensoredRiskPercentageWindowLength(_parameters, 
                                                                                               static_cast<int>(_parameters.getMinimumWindowLength()) - 1, 
                                                                                               static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1, 
                                                                                               _zero_translation_additive,
                                                                                               _parameters.getRiskWindowAltCensorDenominator()
                                                                                              ));
     if (_parameters.isApplyingRiskWindowRestriction())
-        return boost::shared_ptr<AbstractWindowLength>(new RiskPercentageWindowLength(_parameters, static_cast<int>(_parameters.getMinimumWindowLength()) - 1, static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1, _zero_translation_additive));
-    return boost::shared_ptr<AbstractWindowLength>(new WindowLength(_parameters, static_cast<int>(_parameters.getMinimumWindowLength()) - 1, static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1));
+        return std::shared_ptr<AbstractWindowLength>(new RiskPercentageWindowLength(_parameters, static_cast<int>(_parameters.getMinimumWindowLength()) - 1, static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1, _zero_translation_additive));
+    return std::shared_ptr<AbstractWindowLength>(new WindowLength(_parameters, static_cast<int>(_parameters.getMinimumWindowLength()) - 1, static_cast<int>(_parameters.getMaximumWindowInTimeUnits()) - 1));
 }
 
 /** Returns the number if window indexes in range which are excluded. */
@@ -945,7 +944,7 @@ unsigned int ScanRunner::addCN_C(const NodeStructure& sourceNode, NodeStructure&
 
 /** Returns pair<bool,size_t> - first value indicates node existence, second is index into class vector _Nodes. */
 ScanRunner::Index_t ScanRunner::getNodeIndex(const std::string& identifier) const {
-    std::auto_ptr<NodeStructure> node(new NodeStructure(identifier));
+    std::unique_ptr<NodeStructure> node(new NodeStructure(identifier));
     auto itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
     if (itr != _Nodes.end() && (*itr)->getIdentifier() == node.get()->getIdentifier()) {
         size_t tt = std::distance(_Nodes.begin(), itr);
@@ -1015,7 +1014,7 @@ bool ScanRunner::readRelativeRisksAdjustments(const std::string& srcfilename, Ri
         startidx = _parameters.getScanType() != Parameters::TIMEONLY ? 2 : 1, 
         endidx = _parameters.getScanType() != Parameters::TIMEONLY ? 3 : 2;
     boost::dynamic_bitset<> nodeSet;
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(srcfilename, _parameters.getInputSource(Parameters::POWER_EVALUATIONS_FILE)));
+    std::unique_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(srcfilename, _parameters.getInputSource(Parameters::POWER_EVALUATIONS_FILE)));
     bool testMultipleNodeRecords(_parameters.getModelType() == Parameters::BERNOULLI_TREE);
     std::string nodeId("all"), filename("alternative hypothesis");
     std::string time_columnname(_parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "day since incidence" : "occurance date");
@@ -1168,7 +1167,7 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
     // Determine the InputSource for this count file. Typically we just want that defined through the Parameters, but when we're
     // reading accumulated case data in a sequentual scan, the format of the stored data is fixed as CSV.
     Parameters::InputSource csvSource(CSV, FieldMapContainer_t());
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(
+    std::unique_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(
         srcfilename, (_parameters.isSequentialScanTreeOnly() && !sequence_new_data ? &csvSource : _parameters.getInputSource(Parameters::COUNT_FILE))
     ));
 
@@ -1183,22 +1182,22 @@ bool ScanRunner::readCounts(const std::string& srcfilename, bool sequence_new_da
         col_baseline_prop("<baseline percentage>"), col_current_prop("<current percentage>"), col_sample_site("<sample site>");
     std::vector<std::string> expectedColumns;
     if (_parameters.getModelType() == Parameters::POISSON)
-        expectedColumns = boost::assign::list_of (col_id) (col_count) (col_pop);
+        expectedColumns = {col_id, col_count, col_pop};
     else if (_parameters.getModelType() == Parameters::BERNOULLI_TREE) {
-        expectedColumns = boost::assign::list_of (col_id) (col_count);
+        expectedColumns = {col_id, col_count};
         if (bernoulliExpectingControl) expectedColumns.push_back(col_controls);
         if (_parameters.getConditionalType() == Parameters::UNCONDITIONAL && _parameters.getVariableCaseProbability()) {
             expectedColumns.push_back(col_numerator);
             expectedColumns.push_back(col_denominator);
         }
     } else if (_parameters.getModelType() == Parameters::BERNOULLI_TIME) {
-        if (_parameters.getScanType() == Parameters::TREETIME) expectedColumns = boost::assign::list_of (col_id) (col_count) (col_time);
-        else expectedColumns = boost::assign::list_of (col_count) (col_time);
+        if (_parameters.getScanType() == Parameters::TREETIME) expectedColumns = {col_id, col_count, col_time};
+        else expectedColumns = {col_count, col_time};
     } else if (_parameters.getModelType() == Parameters::SIGNED_RANK) {
-        expectedColumns = boost::assign::list_of(col_id) (col_baseline_prop) (col_current_prop) (col_sample_site);
+        expectedColumns = {col_id, col_baseline_prop, col_current_prop, col_sample_site};
     } else {
-        if (_parameters.getScanType() != Parameters::TIMEONLY) expectedColumns = boost::assign::list_of (col_id) (col_count) (col_time);
-        else expectedColumns = boost::assign::list_of (col_count) (col_time);
+        if (_parameters.getScanType() != Parameters::TIMEONLY) expectedColumns = {col_id, col_count, col_time};
+        else expectedColumns = {col_count, col_time};
     }
     auto checkNonLeafWithData = [&readSuccess, &dataSource, this](const NodeStructure* node, bool hasData) {
         if (_parameters.getDataOnlyOnLeaves() && !node->isLeaf() && hasData) {
@@ -1718,7 +1717,7 @@ bool ScanRunner::readControls(const std::string& srcfilename, bool sequence_new_
     // Determine the InputSource for this control file. Typically we just want that defined through the Parameters, but when we're
     // reading accumulated control data in a sequential scan, the format of the stored data is fixed as CSV.
     Parameters::InputSource csvSource(CSV, FieldMapContainer_t());
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(
+    std::unique_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(
         srcfilename, (_parameters.isSequentialScanTreeOnly() && !sequence_new_data ? &csvSource : _parameters.getInputSource(Parameters::CONTROL_FILE))
     ));
     int controls = 0, daysSinceIncidence = 0; size_t expectedColumns = (_parameters.getScanType() == Parameters::TREETIME ? 3 : 2);
@@ -1913,7 +1912,7 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
     size_t daysInDataTimeRange = Parameters::isTemporalScanType(_parameters.getScanType()) ? _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1 : 1;
     // tree only does not read the tree structure file, aggregate all data into one node
     if (_parameters.getScanType() == Parameters::TIMEONLY) {
-        std::auto_ptr<NodeStructure> node(new NodeStructure("All", _parameters, daysInDataTimeRange));
+        std::unique_ptr<NodeStructure> node(new NodeStructure("All", _parameters, daysInDataTimeRange));
         _Nodes.insert(_Nodes.begin(), node.release());
         return true;
     }
@@ -1923,7 +1922,7 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
     else
         _print.Printf("Reading %u%s tree file ...\n", BasePrint::P_STDOUT, treeOrdinal, getOrdinalSuffix(treeOrdinal));
     bool readSuccess=true;
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::TREE_FILE)));
+    std::unique_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::TREE_FILE)));
 
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
     while (dataSource->readRecord()) {
@@ -1935,7 +1934,7 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
             continue;
         }
         std::string identifier = dataSource->getValueAt(0);
-        std::auto_ptr<NodeStructure> node(new NodeStructure(trimString(identifier), _parameters, daysInDataTimeRange));
+        std::unique_ptr<NodeStructure> node(new NodeStructure(trimString(identifier), _parameters, daysInDataTimeRange));
         NodeStructureContainer_t::iterator itr = std::lower_bound(_Nodes.begin(), _Nodes.end(), node.get(), CompareNodeStructureByIdentifier());
         if (itr == _Nodes.end() || (*itr)->getIdentifier() != node.get()->getIdentifier())
             _Nodes.insert(itr, node.release());
@@ -2029,7 +2028,7 @@ bool ScanRunner::readCuts(const std::string& filename) {
 
     _print.Printf("Reading cuts file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::CUT_FILE)));
+    std::unique_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::CUT_FILE)));
     Parameters::cut_maps_t cut_type_maps = Parameters::getCutTypeMap();
 
     while (dataSource->readRecord()) {
@@ -2068,7 +2067,7 @@ bool ScanRunner::readNodesNotEvaluated(const std::string& filename) {
 
     _print.Printf("Reading the not evaluated nodes file ...\n", BasePrint::P_STDOUT);
     bool readSuccess=true;
-    std::auto_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::NOT_EVALUATED_NODES_FILE)));
+    std::unique_ptr<DataSource> dataSource(DataSource::getNewDataSourceObject(filename, _parameters.getInputSource(Parameters::NOT_EVALUATED_NODES_FILE)));
     std::vector<char> escape_characters = { '\\', '^', '$', '?', '.', '+', '{', '}', '(', ')', '[', ']', '|' };
     const char asterisk = '*', period = '.', plus = '+';
 
@@ -2377,7 +2376,7 @@ bool ScanRunner::run() {
             if (_print.GetIsCanceled()) return false;
             if (_parameters.getNumReplicationsRequested()) {
                 _print.Printf("Doing the %d Monte Carlo simulations ...\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
-                boost::shared_ptr<AbstractRandomizer> randomizer(AbstractRandomizer::getNewRandomizer(*this));
+                std::shared_ptr<AbstractRandomizer> randomizer(AbstractRandomizer::getNewRandomizer(*this));
                 if (_parameters.isReadingSimulationData())
                     randomizer->setReading(_parameters.getInputSimulationsFilename());
                 if (_parameters.isWritingSimulationData()) {
@@ -2426,7 +2425,7 @@ bool ScanRunner::runPowerEvaluations() {
             // if simulations not already done in analysis stage, perform them now
             if (!_simVars.get_sim_count()) {
                 _print.Printf("Doing the %d Monte Carlo simulations ...\n", BasePrint::P_STDOUT, _parameters.getNumReplicationsRequested());
-                boost::shared_ptr<AbstractRandomizer> randomizer(AbstractRandomizer::getNewRandomizer(*this));
+                std::shared_ptr<AbstractRandomizer> randomizer(AbstractRandomizer::getNewRandomizer(*this));
                 if (_parameters.isReadingSimulationData())
                     randomizer->setReading(_parameters.getInputSimulationsFilename());
                 if (_parameters.isWritingSimulationData()) {
@@ -2458,7 +2457,7 @@ bool ScanRunner::runPowerEvaluations() {
     SimulationVariables simVarsCopy(_simVars);
     for (size_t t=0; t < riskAdjustments.size(); ++t) {
         _print.Printf("\nDoing the alternative replications for power set %d\n", BasePrint::P_STDOUT, t+1);
-        boost::shared_ptr<AbstractRandomizer> core_randomizer;
+        std::shared_ptr<AbstractRandomizer> core_randomizer;
         if (_parameters.getModelType() == Parameters::BERNOULLI_TREE && _parameters.getConditionalType() == Parameters::TOTALCASES) {
             // Randomization is specialized for the conditional Bernoulli and power evaluations.
             // calculate the number of individuals in the nodes with an excess risk
@@ -2504,7 +2503,7 @@ bool ScanRunner::runPowerEvaluations() {
             // Use the same randomizer as the null hypothesis randomization.
             core_randomizer.reset(AbstractRandomizer::getNewRandomizer(*this));
         }
-        boost::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, *riskAdjustments[t], _parameters, _TotalC, _has_multi_parent_nodes, _parameters.getRandomizationSeed()));
+        std::shared_ptr<AbstractRandomizer> randomizer(new AlternativeHypothesisRandomizater(getNodes(), core_randomizer, *riskAdjustments[t], _parameters, _TotalC, _has_multi_parent_nodes, _parameters.getRandomizationSeed()));
         if (_parameters.isWritingSimulationData()) {
             if (t == 0 && _parameters.getCriticalValuesType() == Parameters::CV_POWER_VALUES)
                 // if we didn't perform monte carlo simulations, truncate simulations write file on first power simulation
@@ -2523,7 +2522,7 @@ bool ScanRunner::runPowerEvaluations() {
 }
 
 /** DOING THE MONTE CARLO SIMULATIONS */
-bool ScanRunner::runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep, unsigned int iteration) {
+bool ScanRunner::runsimulations(std::shared_ptr<AbstractRandomizer> randomizer, unsigned int num_relica, bool isPowerStep, unsigned int iteration) {
     const char* sReplicationFormatString;
     if (_parameters.getModelType() == Parameters::SIGNED_RANK)
         sReplicationFormatString = "The result of Monte Carlo replica #%u of %u replications is: %.0lf\n";
@@ -2537,10 +2536,10 @@ bool ScanRunner::runsimulations(boost::shared_ptr<AbstractRandomizer> randomizer
         typedef contractor<MCSimJobSource> contractor_type;
         contractor_type theContractor(jobSource);
 
-        std::deque<boost::shared_ptr<AbstractRandomizer> > _randomizers;
+        std::deque<std::shared_ptr<AbstractRandomizer> > _randomizers;
         _randomizers.push_back(randomizer);
         for (unsigned u=1; u < ulParallelProcessCount; ++u) {
-            _randomizers.push_back(boost::shared_ptr<AbstractRandomizer>(randomizer->clone()));
+            _randomizers.push_back(std::shared_ptr<AbstractRandomizer>(randomizer->clone()));
         }
 
         // run threads:
@@ -2589,8 +2588,8 @@ bool ScanRunner::runsequentialsimulations(unsigned int num_relica) {
         typedef contractor<MCSimJobSource> contractor_type;
         contractor_type theContractor(jobSource);
 
-        boost::shared_ptr<SequentialFileDataSource> source;
-        boost::shared_ptr<SequentialScanLoglikelihoodRatioWriter> sequential_writer;
+        std::shared_ptr<SequentialFileDataSource> source;
+        std::shared_ptr<SequentialScanLoglikelihoodRatioWriter> sequential_writer;
         std::string buffer;
         if (validateFileAccess(SequentialScanLoglikelihoodRatioWriter::getFilename(_parameters, buffer), false)) {
             source.reset(new SequentialFileDataSource(buffer, _parameters));
@@ -2829,7 +2828,7 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
     DataTimeRange startWindow(temporalStartRange().getStart() + _zero_translation_additive, temporalStartRange().getEnd() + _zero_translation_additive),
                   endWindow(temporalEndRange().getStart() + _zero_translation_additive, temporalEndRange().getEnd() + _zero_translation_additive);
     // Define the minimum and maximum window lengths.
-    boost::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
+    std::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
     int iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
 
     for (size_t n=0; n < _Nodes.size(); ++n) {
@@ -2951,7 +2950,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
     DataTimeRange startWindow(temporalStartRange().getStart() + _zero_translation_additive, temporalStartRange().getEnd() + _zero_translation_additive),
                   endWindow(temporalEndRange().getStart() + _zero_translation_additive, temporalEndRange().getEnd() + _zero_translation_additive);
     // Define the minimum and maximum window lengths.
-    boost::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
+    std::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
     int iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
     for (size_t n = 0; n < _Nodes.size(); ++n) {
         if (isEvaluated(*_Nodes[n])) {
@@ -3092,7 +3091,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                   endWindow(temporalEndRange().getStart() + _zero_translation_additive,
                             temporalEndRange().getEnd() + _zero_translation_additive);
     // Define the minimum and maximum window lengths.
-    boost::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
+    std::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
     for (size_t n=0; n < _Nodes.size(); ++n) {
         if (isEvaluated(*_Nodes[n])) {
@@ -3225,7 +3224,7 @@ CutStructure* ScanRunner::calculateCut(size_t node_index, const SampleSiteMap_t&
                 return 0;
     }
     // If we reach this point, the cut is valid.
-    std::auto_ptr<CutStructure> cut(new CutStructure());
+    std::unique_ptr<CutStructure> cut(new CutStructure());
     cut->setLogLikelihood(loglikelihood);
     cut->setID(static_cast<int>(node_index));
     cut->setSampleSiteData(samplesiteData);
@@ -3260,7 +3259,7 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, 
         // Exclude this cut if log likelihood is unset -- unless we're tree sequential scanning and this cut has signalled in prior looks.
         return 0;
 
-    std::auto_ptr<CutStructure> cut(new CutStructure());
+    std::unique_ptr<CutStructure> cut(new CutStructure());
     cut->setLogLikelihood(loglikelihood);
     cut->setID(static_cast<int>(node_index));
     cut->setC(BrC);
@@ -3277,7 +3276,7 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int C, double N, int 
     if (BrC < static_cast<int>(_node_evaluation_minimum)) return 0;
     double loglikelihood = logCalculator->LogLikelihood(C, N, BrC, BrN);
     if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) return 0;
-    std::auto_ptr<CutStructure> cut(new CutStructure());
+    std::unique_ptr<CutStructure> cut(new CutStructure());
     cut->setLogLikelihood(loglikelihood);
     cut->setID(static_cast<int>(node_index));
     cut->setC(C);
@@ -3288,7 +3287,7 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int C, double N, int 
     return updateCut(cut);
 }
 
-CutStructure * ScanRunner::updateCut(std::auto_ptr<CutStructure>& cut) {
+CutStructure * ScanRunner::updateCut(std::unique_ptr<CutStructure>& cut) {
     CutStructureContainer_t::iterator itr;
     if (_parameters.getScanType() == Parameters::TIMEONLY) {
         // for time-only scans, we want to keep secondary clusters -- possibly one for each end date
@@ -3502,7 +3501,7 @@ bool ScanRunner::setupTree() {
             _TotalC = _parameters.getPowerEvaluationTotalCases();
         double adjustN = _TotalC/_TotalN;
         for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr)
-            std::transform((*itr)->getIntN_C().begin(), (*itr)->getIntN_C().end(), (*itr)->refIntN_C().begin(), std::bind1st(std::multiplies<double>(), adjustN)); // (*itr)->refIntN() *= adjustN;
+            std::transform((*itr)->getIntN_C().begin(), (*itr)->getIntN_C().end(), (*itr)->refIntN_C().begin(), [adjustN](auto x) { return adjustN * x; }); // (*itr)->refIntN() *= adjustN;
         _TotalN = _TotalC;
     }
     // For each node, calculate the observed and expected number of cases for that node together with all of its children, grandchildren, etc.

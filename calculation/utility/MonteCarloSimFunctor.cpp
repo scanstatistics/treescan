@@ -22,7 +22,7 @@ AbstractMeasureList * AbstractMeasureList::getNewMeasureList(const ScanRunner& s
 
 /* Constructor */
 MCSimSuccessiveFunctor::MCSimSuccessiveFunctor(
-    boost::mutex& mutex, boost::shared_ptr<AbstractRandomizer> randomizer, const ScanRunner& scanRunner
+    boost::mutex& mutex, std::shared_ptr<AbstractRandomizer> randomizer, const ScanRunner& scanRunner
 ):_mutex(mutex), _randomizer(randomizer), _scanRunner(scanRunner) {
     // This will need refactoring if we ever implement multiple data time ranges.
     const Parameters& parameters = _scanRunner.getParameters();
@@ -257,7 +257,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
     DataTimeRange startWindow(_scanRunner.temporalStartRange().getStart() + idxAdditive, _scanRunner.temporalStartRange().getEnd() + idxAdditive),
                   endWindow(_scanRunner.temporalEndRange().getStart() + idxAdditive, _scanRunner.temporalEndRange().getEnd() + idxAdditive);
     // Define the minimum and maximum window lengths.
-    boost::shared_ptr<AbstractWindowLength> window(_scanRunner.getNewWindowLength());
+    std::shared_ptr<AbstractWindowLength> window(_scanRunner.getNewWindowLength());
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
 
     auto getWindowLength = [this](int iWindowStart, int iWindowEnd){
@@ -388,7 +388,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                   endWindow(_scanRunner.temporalEndRange().getStart() + idxAdditive,
                             _scanRunner.temporalEndRange().getEnd() + idxAdditive);
     // Define the minimum and maximum window lengths.
-    boost::shared_ptr<AbstractWindowLength> window(_scanRunner.getNewWindowLength());
+    std::shared_ptr<AbstractWindowLength> window(_scanRunner.getNewWindowLength());
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
 
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
@@ -536,7 +536,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
                   endWindow(_scanRunner.temporalEndRange().getStart() + idxAdditive, _scanRunner.temporalEndRange().getEnd() + idxAdditive);
     // Define the minimum and maximum window lengths.
 
-    boost::shared_ptr<AbstractWindowLength> window(_scanRunner.getNewWindowLength());
+    std::shared_ptr<AbstractWindowLength> window(_scanRunner.getNewWindowLength());
     int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
 
     const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
@@ -643,7 +643,7 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
 /////////////////////////// SequentialMCSimSuccessiveFunctor //////////////////////////////////////
 
 /* Constructor */
-SequentialMCSimSuccessiveFunctor::SequentialMCSimSuccessiveFunctor(boost::mutex& mutex, const ScanRunner& scanner, boost::shared_ptr<SequentialScanLoglikelihoodRatioWriter> writer) 
+SequentialMCSimSuccessiveFunctor::SequentialMCSimSuccessiveFunctor(boost::mutex& mutex, const ScanRunner& scanner, std::shared_ptr<SequentialScanLoglikelihoodRatioWriter> writer) 
     : _mutex(mutex), _scanRunner(scanner), _sequential_writer(writer) {
     // This will need refactoring if we ever implement multiple data time ranges.
     const Parameters& parameters = _scanRunner.getParameters();
@@ -743,7 +743,7 @@ SequentialMCSimSuccessiveFunctor::result_type SequentialMCSimSuccessiveFunctor::
 /////////////////////////// SequentialReadMCSimSuccessiveFunctor //////////////////////////////////////
 
 /** Constructor */
-SequentialReadMCSimSuccessiveFunctor::SequentialReadMCSimSuccessiveFunctor(boost::mutex& mutex, const ScanRunner& scanner, boost::shared_ptr<SequentialFileDataSource> source) 
+SequentialReadMCSimSuccessiveFunctor::SequentialReadMCSimSuccessiveFunctor(boost::mutex& mutex, const ScanRunner& scanner, std::shared_ptr<SequentialFileDataSource> source) 
     : _mutex(mutex), _scanRunner(scanner), _source(source) {}
 
 SequentialReadMCSimSuccessiveFunctor::result_type SequentialReadMCSimSuccessiveFunctor::operator() (SequentialReadMCSimSuccessiveFunctor::param_type const & param) {
@@ -751,9 +751,9 @@ SequentialReadMCSimSuccessiveFunctor::result_type SequentialReadMCSimSuccessiveF
 
     try {
         // read next log likelihood from the data source
-        boost::optional<double> simLogLikelihood = _source->nextLLR();
+        std::optional<double> simLogLikelihood = _source->nextLLR();
         if (simLogLikelihood) {
-            temp_result.dSuccessfulResult = std::make_pair(simLogLikelihood.get(), _scanRunner.getTotalC());
+            temp_result.dSuccessfulResult = std::make_pair(simLogLikelihood.value(), _scanRunner.getTotalC());
             temp_result.bUnExceptional = true;
         } else
             throw prg_error("Simulation %u could not read LLR value from file.", "operator()", param);

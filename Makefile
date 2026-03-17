@@ -29,7 +29,7 @@ INCLUDEDIRS := -I$(CALCULATION) -I$(UTILITY) -I$(OUTPUT) -I$(PRINT) -I$(UTILITY)
 DEFINES     := -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF $(PLAT_DEFINES)
 INFOPLIST_FILE :=
 
-CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -std=c++11 -Wno-deprecated -Wno-unknown-pragmas -Wall $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE)
+CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -std=c++17 -Wno-deprecated -Wno-unknown-pragmas -Wall $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE)
 LFLAGS      := $(COMPILATION) -L$(ZLIB) -L$(ZLIB_MINIZIP) -Wl,-Bstatic -lz -lm -Wl,-Bdynamic -lrt -lpthread
 
 # Linux link flags
@@ -86,11 +86,6 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(CALCULATION)/IniParameterSpecification.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/once.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/thread.cpp \
-               $(BOOSTDIR)/libs/regex/src/posix_api.cpp \
-               $(BOOSTDIR)/libs/regex/src/regex.cpp \
-               $(BOOSTDIR)/libs/regex/src/regex_debug.cpp \
-               $(BOOSTDIR)/libs/regex/src/static_mutex.cpp \
-               $(BOOSTDIR)/libs/regex/src/wide_posix_api.cpp \
                $(BOOSTDIR)/libs/program_options/src/cmdline.cpp \
                $(BOOSTDIR)/libs/program_options/src/config_file.cpp \
                $(BOOSTDIR)/libs/program_options/src/convert.cpp \
@@ -99,17 +94,7 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(BOOSTDIR)/libs/program_options/src/split.cpp \
                $(BOOSTDIR)/libs/program_options/src/utf8_codecvt_facet.cpp \
                $(BOOSTDIR)/libs/program_options/src/value_semantic.cpp \
-               $(BOOSTDIR)/libs/program_options/src/variables_map.cpp \
-               $(BOOSTDIR)/libs/system/src/error_code.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/codecvt_error_category.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/directory.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/exception.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/operations.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/path.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/path_traits.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/portability.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/unique_path.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/utf8_codecvt_facet.cpp
+               $(BOOSTDIR)/libs/program_options/src/variables_map.cpp
 
 APP_SRC     := $(TREESCAN)/batch_application/TreeScan.cpp \
                $(TREESCAN)/batch_application/ParameterProgramOptions.cpp

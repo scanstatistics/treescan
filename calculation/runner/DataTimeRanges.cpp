@@ -12,7 +12,7 @@
 
 /** Parses date time range from string - using DataTimeRange::DatePrecisionType to determine how to parse. 
     If parameter gregorian_start_date is defined, uses that date as base date when translating to time index. */
-DataTimeRange DataTimeRange::parse(const std::string& from, DataTimeRange::DatePrecisionType precision, boost::optional<boost::gregorian::date> dataRangeStart) {
+DataTimeRange DataTimeRange::parse(const std::string& from, DataTimeRange::DatePrecisionType precision, std::optional<boost::gregorian::date> dataRangeStart) {
     std::string fromMod = from;
     fromMod.erase(std::remove(fromMod.begin(), fromMod.end(), ' '), fromMod.end());
     trimString(trimString(fromMod, "["), "]");
@@ -31,7 +31,7 @@ DataTimeRange DataTimeRange::parse(const std::string& from, DataTimeRange::DateP
                 //else if (indexes.size() == 1 && (dateValue.month() != 12 || dateValue.day() != boost::gregorian::gregorian_calendar::end_of_month_day(dateValue.year(), dateValue.month())))
                 //    throw resolvable_error("The range end date '%s' is invalid for yearly time precision - must be last day of year.", itrR->c_str());
                 if (!dataRangeStart) dataRangeStart = dateValue;
-                indexes.push_back(static_cast<int>(dateValue.year() - dataRangeStart.get().year()));
+                indexes.push_back(static_cast<int>(dateValue.year() - dataRangeStart.value().year()));
             } break;
             case MONTH: {
                 boost::gregorian::date dateValue = DateStringParser::gregorianFromString((*itrR));
@@ -43,12 +43,12 @@ DataTimeRange DataTimeRange::parse(const std::string& from, DataTimeRange::DateP
                 //else if (indexes.size() == 1 && dateValue.day() != boost::gregorian::gregorian_calendar::end_of_month_day(dateValue.year(), dateValue.month()))
                 //    throw resolvable_error("The range end date '%s' is invalid for monthly time precision - must be last day of month.", itrR->c_str());
                 if (!dataRangeStart) dataRangeStart = dateValue;
-                indexes.push_back(static_cast<int>((dateValue.year() - dataRangeStart.get().year()) * 12 + (dateValue.month() - dataRangeStart.get().month())));
+                indexes.push_back(static_cast<int>((dateValue.year() - dataRangeStart.value().year()) * 12 + (dateValue.month() - dataRangeStart.value().month())));
             } break;
             case DAY: {
                 boost::gregorian::date dateValue = DateStringParser::gregorianFromString((*itrR));
                 if (!dataRangeStart) dataRangeStart = dateValue;
-                indexes.push_back(static_cast<int>((dateValue - dataRangeStart.get()).days()));
+                indexes.push_back(static_cast<int>((dateValue - dataRangeStart.value()).days()));
             } break;
             case GENERIC:
             default:
@@ -70,13 +70,13 @@ std::string DataTimeRange::rangeIdxToGregorianString(index_t idx, DatePrecisionT
     boost::gregorian::date translatedDate;
     switch (precision) {
         case YEAR:
-            translatedDate = boost::gregorian::date(_gregorian_start_date.get().year() + idx, 1, 1);
+            translatedDate = boost::gregorian::date(_gregorian_start_date.value().year() + idx, 1, 1);
             break;
         case MONTH:
-            translatedDate = boost::gregorian::date(_gregorian_start_date.get().year() + (idx / 12), (idx % 12) + 1, 1);
+            translatedDate = boost::gregorian::date(_gregorian_start_date.value().year() + (idx / 12), (idx % 12) + 1, 1);
             break;
         case DAY:
-            translatedDate = _gregorian_start_date.get() + boost::gregorian::date_duration(idx);
+            translatedDate = _gregorian_start_date.value() + boost::gregorian::date_duration(idx);
             break;
         default: throw prg_error("Unknown precision '%d'.", "rangeIdxToGregorianString()", precision);
     };
@@ -88,18 +88,18 @@ std::pair<std::string, std::string> DataTimeRange::rangeToGregorianStrings(int s
     boost::gregorian::date translatedStart, translatedEnd;
     switch (precision) {
         case YEAR:
-            translatedStart = boost::gregorian::date(_gregorian_start_date.get().year() + startIdx, 1, 1);
-            translatedEnd = boost::gregorian::date(_gregorian_start_date.get().year() + endIdx, 12, 31);
+            translatedStart = boost::gregorian::date(_gregorian_start_date.value().year() + startIdx, 1, 1);
+            translatedEnd = boost::gregorian::date(_gregorian_start_date.value().year() + endIdx, 12, 31);
             break;
         case MONTH: {
-            boost::gregorian::date temp = _gregorian_start_date.get() + boost::gregorian::years(startIdx / 12) + boost::gregorian::months(startIdx % 12);
+            boost::gregorian::date temp = _gregorian_start_date.value() + boost::gregorian::years(startIdx / 12) + boost::gregorian::months(startIdx % 12);
             translatedStart = boost::gregorian::date(temp.year(), temp.month(), 1);
-            temp = _gregorian_start_date.get() + boost::gregorian::years(endIdx / 12) + boost::gregorian::months(endIdx % 12);
+            temp = _gregorian_start_date.value() + boost::gregorian::years(endIdx / 12) + boost::gregorian::months(endIdx % 12);
             translatedEnd = boost::gregorian::date(temp.year(), temp.month(), boost::gregorian::gregorian_calendar::end_of_month_day(temp.year(), temp.month()));
         } break;
         case DAY:
-            translatedStart = _gregorian_start_date.get() + boost::gregorian::date_duration(startIdx);
-            translatedEnd = _gregorian_start_date.get() + boost::gregorian::date_duration(endIdx);
+            translatedStart = _gregorian_start_date.value() + boost::gregorian::date_duration(startIdx);
+            translatedEnd = _gregorian_start_date.value() + boost::gregorian::date_duration(endIdx);
             break;
         default: throw prg_error("Unknown precision '%d'.", "rangeIdxToGregorianString()", precision);
     };
@@ -154,7 +154,7 @@ boost::gregorian::date DateStringParser::gregorianFromString(const std::string& 
 }
 
 /** Parses passed date string. */
-DateStringParser::ParserStatus DateStringParser::Parse(const char * sDateString, int& dateIdx, boost::optional<boost::gregorian::date> startdate) {
+DateStringParser::ParserStatus DateStringParser::Parse(const char * sDateString, int& dateIdx, std::optional<boost::gregorian::date> startdate) {
     // if time precision is generic, conversion is simple.
     if (geTimePrecision == DataTimeRange::GENERIC) {
         if (!string_to_numeric_type<int>(sDateString, dateIdx))
@@ -174,17 +174,17 @@ DateStringParser::ParserStatus DateStringParser::Parse(const char * sDateString,
         case DataTimeRange::YEAR:
             if (!IsDateValid(iYear, DEFAULT_MONTH, DEFAULT_DAY)) return INVALID_DATE;
             thisDate = boost::gregorian::date(iYear, DEFAULT_MONTH, DEFAULT_DAY);
-            dateIdx = static_cast<int>(thisDate.year() - startdate.get().year());
+            dateIdx = static_cast<int>(thisDate.year() - startdate.value().year());
             break;
         case DataTimeRange::MONTH:
             if (!IsDateValid(iYear, iMonth, DEFAULT_DAY)) return INVALID_DATE;
             thisDate = boost::gregorian::date(iYear, iMonth, DEFAULT_DAY);
-            dateIdx = (thisDate.year() - startdate.get().year()) * 12 + (thisDate.month() - startdate.get().month());
+            dateIdx = (thisDate.year() - startdate.value().year()) * 12 + (thisDate.month() - startdate.value().month());
             break;
         case DataTimeRange::DAY:
             if (!IsDateValid(iYear, iMonth, iDay)) return INVALID_DATE;
             thisDate = boost::gregorian::date(iYear, iMonth, iDay);
-            dateIdx = static_cast<int>((thisDate - startdate.get()).days());
+            dateIdx = static_cast<int>((thisDate - startdate.value()).days());
             break;
         default: return INVALID_DATE;
     };
@@ -228,7 +228,7 @@ DateStringParser::ParserStatus DateStringParser::GetInParts(const char * s,  uns
 
 /////////////////////////////////// DataTimeRangeSet //////////////////////////////////////////////
 
-DataTimeRangeSet::rangeset_t DataTimeRangeSet::parse(const std::string& from, DataTimeRange::DatePrecisionType precision, boost::optional<boost::gregorian::date> gregorian_start_date) {
+DataTimeRangeSet::rangeset_t DataTimeRangeSet::parse(const std::string& from, DataTimeRange::DatePrecisionType precision, std::optional<boost::gregorian::date> gregorian_start_date) {
     rangeset_t rangeset;
     boost::escaped_list_separator<char> separate_ranges('\\', ';');
     boost::tokenizer<boost::escaped_list_separator<char> > range_csv(from, separate_ranges);

@@ -472,7 +472,7 @@ void CutsRecordWriter::write(const CutStructure& thisCut) {
         // Now write records for each direct child of this cut/node.
         std::vector<CutsRecordWriter::ChildRecord_t> childRecords;
         for (auto pnode : _scanner.getCutChildNodes(thisCut)) {
-            boost::shared_ptr<RecordBuffer> record(new RecordBuffer(_dataFieldDefinitions));
+            std::shared_ptr<RecordBuffer> record(new RecordBuffer(_dataFieldDefinitions));
             getRecordForCutChild(*(record), thisCut, *pnode, thisCut.getReportOrder(), _scanner);
             if (CutsRecordWriter::includeChild(_scanner, thisCut, *(record))) // Add this record if it is interesting.
                 childRecords.push_back(CutsRecordWriter::ChildRecord_t(pnode->getID(), record));

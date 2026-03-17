@@ -84,10 +84,10 @@ class ConditionalBernoulliAlternativeHypothesisRandomizer : public AbstractCondi
         double _p1; // event probability for excess risk nodes
         Probabilities_t _A;
 
-        boost::shared_ptr<ScanRunner::NodeStructureContainer_t> _alternative_hypothesis_nodes;
-        boost::shared_ptr<AbstractNodesProxy> _alternative_hypothesis_nodes_proxy;
-        boost::shared_ptr<ScanRunner::NodeStructureContainer_t> _null_hypothesis_nodes;
-        boost::shared_ptr<AbstractNodesProxy> _null_hypothesis_nodes_proxy;
+        std::shared_ptr<ScanRunner::NodeStructureContainer_t> _alternative_hypothesis_nodes;
+        std::shared_ptr<AbstractNodesProxy> _alternative_hypothesis_nodes_proxy;
+        std::shared_ptr<ScanRunner::NodeStructureContainer_t> _null_hypothesis_nodes;
+        std::shared_ptr<AbstractNodesProxy> _null_hypothesis_nodes_proxy;
 
         virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
 

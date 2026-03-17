@@ -8,10 +8,10 @@
 /** Abstraction for denominator data randomizer. */
 class AlternativeHypothesisRandomizater : public AbstractRandomizer {
     protected:
-        boost::shared_ptr<AbstractRandomizer> _randomizer;
+        std::shared_ptr<AbstractRandomizer> _randomizer;
         const RelativeRiskAdjustmentHandler&  _alternative_adjustments;
         RelativeRiskAdjustmentHandler::NodesExpectedContainer_t _nodes_IntN_C;
-        boost::shared_ptr<AbstractNodesProxy> _nodes_proxy;
+        std::shared_ptr<AbstractNodesProxy> _nodes_proxy;
 
         virtual int randomize(unsigned int iSimulation, const AbstractNodesProxy& treeNodes, SimNodeContainer_t& treeSimNodes);
         virtual int read(const std::string& filename, unsigned int simulation, const ScanRunner::NodeStructureContainer_t& treeNodes, SimNodeContainer_t& treeSimNodes, boost::mutex& mutex);
@@ -19,7 +19,7 @@ class AlternativeHypothesisRandomizater : public AbstractRandomizer {
 
     public:
         AlternativeHypothesisRandomizater(const ScanRunner::NodeStructureContainer_t& treeNodes,
-                                          boost::shared_ptr<AbstractRandomizer> randomizer,
+                                          std::shared_ptr<AbstractRandomizer> randomizer,
                                           const RelativeRiskAdjustmentHandler& adjustments,
                                           const Parameters& parameters, 
                                           int totalC,
