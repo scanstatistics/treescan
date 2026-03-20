@@ -184,21 +184,28 @@ CSVDataFileWriter::CSVDataFileWriter(std::ofstream& outfile, const ptr_vector<Fi
     }
 }
 
+/** Encodes string for write to standard CSV file format. */
+std::string& CSVDataFileWriter::encodeForCSV(std::string& destString, const std::string& srcString) {
+    std::string temp;
+    for (size_t pos = 0; pos != srcString.size(); ++pos) {
+        switch (srcString[pos]) {
+            case '\"': temp.append("\"\""); break;
+            default: temp.append(&srcString[pos], 1); break;
+        }
+    }
+    if (temp.find(",") != std::string::npos) {
+        printString(destString, "\"%s\"", temp.c_str());
+    } else destString = temp;
+    return destString;
+}
+
 /** Creates a formatted string for field value suitable for use in csv string. */
 std::string& CSVDataFileWriter::encodeForCSV(std::string& sValue, const FieldDef& FieldDef, const FieldValue& fv) {
     std::string temp;
     switch(fv.GetType()) {
-        case FieldValue::ALPHA_FLD : {
-                for (size_t pos=0; pos != fv.AsString().size(); ++pos) {
-                    switch (fv.AsString()[pos]) {
-                        case '\"': temp.append("\"\""); break;
-                        default: temp.append(&fv.AsString()[pos], 1); break;
-                    }
-                }
-                if (temp.find(",") != std::string::npos) {
-                    printString(sValue, "\"%s\"", temp.c_str());
-                } else sValue = temp;
-            } break;
+        case FieldValue::ALPHA_FLD :
+            encodeForCSV(sValue, fv.AsString());
+            break;
         case FieldValue::NUMBER_FLD:
             sValue = getValueAsString(fv.AsDouble(), temp, FieldDef.GetAsciiDecimals());
             break;

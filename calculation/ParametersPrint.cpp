@@ -193,8 +193,11 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getAdditionalOutputFiles(S
         }
         if (_parameters.isGeneratingLLRResults())
             addByFullpath("Simulated Log Likelihood Ratios", LoglikelihoodRatioWriter::getFilename(_parameters, buffer, false));
-        if (_parameters.getOutputTemporalGraphFile())
-            addByFullpath("Temporal Graph File", TemporalChartGenerator::getFilename(filename).getFullPath(buffer));
+        if (_parameters.getOutputTemporalGraphFile()) {
+            addByFullpath("Temporal Graph File", TemporalChartGenerator::getFilename(filename, TemporalChartGenerator::HTML_FILE_EXT).getFullPath(buffer));
+            if (static_cast<int>(_parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets()) <= TemporalChartGenerator::MAX_INTERVALS)
+                addByFullpath("Temporal Graph File Data", TemporalChartGenerator::getFilename(filename, TemporalChartGenerator::CSV_FILE_EXT).getFullPath(buffer));
+        }
     } catch (prg_exception& x) {
         x.addTrace("getAdditionalOutputFiles()", "ParametersPrint");
         throw;

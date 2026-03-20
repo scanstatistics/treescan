@@ -567,7 +567,7 @@ SequentialStatistic::SequentialStatistic(const Parameters& parameters, const Sca
     // Get alpha spending for this look via user parameter setting.
     _alpha_spending = _parameters.getSequentialAlphaSpending();
     if (!isFirstLook()) {
-		const_cast<ScanRunner&>(scanner).getPrint().Printf("Reading sequential scan data from cache files ...\n", BasePrint::P_STDOUT);
+		scanner.getPrint().Printf("Reading sequential scan data from cache files ...\n", BasePrint::P_STDOUT);
         readSettings(_settings_filename);
         parameters.setCurrentLook(_look_idx);
         // Read the look index.

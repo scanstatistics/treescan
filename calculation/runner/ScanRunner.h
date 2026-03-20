@@ -675,7 +675,7 @@ public:
     const NodeStructure::ChildContainer_t & getRootNodes() const { return _rootNodes; }
     const Parameters                 & getParameters() const {return _parameters;}
     const PowerEstimationContainer_t & getPowerEstimations() const {return _power_estimations;}
-    BasePrint                        & getPrint() {return _print;}
+    BasePrint                        & getPrint() const {return _print;}
     SequentialStatistic              & refSequentialStatistic() { return *_sequential_statistic; }
     const SequentialStatistic        & getSequentialStatistic() const { return *_sequential_statistic; }
     const boost::dynamic_bitset<>    & getSequentialTreeNodesToRead() const { return _sequential_read_nodes; }

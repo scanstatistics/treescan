@@ -9,8 +9,11 @@
 
 /** Abstract base class for chart generation */
 class AbstractChartGenerator {
+    public:
+        static const char* HTML_FILE_EXT;
+        static const char* CSV_FILE_EXT;
+
     protected:
-        static const char * HTML_FILE_EXT;
         static const char * TEMPLATE_BODY;
 
     public:
@@ -27,11 +30,11 @@ class ChartSeries {
         std::string _color;
         std::string _symbol;
         unsigned int _y_axis;
-        bool         _visible;
+        bool _visible;
         std::string _opacity;
         std::string _dashstyle;
 		std::string _stack;
-        std::stringstream _data_stream;
+        mutable std::vector<std::string> _data_values;
 
     public:
         ChartSeries(const std::string& id, unsigned int zindex, const std::string& type, 
@@ -40,18 +43,30 @@ class ChartSeries {
                     : _id(id), _zindex(zindex), _type(type), _name(name), _color(color), _symbol(symbol), _y_axis(y_axis), _visible(visible),
 			          _opacity(opacity), _dashstyle(dashstyle), _stack(stack) {}
 
-        std::stringstream & datastream() {return _data_stream;}
-        std::string & toString(std::string& r) const {
-            std::stringstream s;
-
+		const std::string& name() const { return _name; }
+		std::vector<std::string>& dataValues() { return _data_values; }
+        std::string& toStringThenDataReset(std::string& r) const {
+            std::stringstream s, data;
             s << "{ id: '" << _id.c_str() << "', zIndex: " << _zindex << ", type: '" << _type.c_str() << "', name: '" << _name.c_str()
-              << "', color: '#" << _color.c_str() << "', dashStyle: '" << _dashstyle.c_str() << "', yAxis: " << _y_axis << ", visible:" << (_visible ? "true" : "false") << ", opacity: " << _opacity
-              <<", marker: { enabled: true, symbol: '" << _symbol.c_str() << "', radius: 0 }, data: [" << _data_stream.str().c_str() << "]";
-			if (!_stack.empty())
+                << "', color: '#" << _color.c_str() << "', dashStyle: '" << _dashstyle.c_str() << "', yAxis: " << _y_axis << ", visible:" << (_visible ? "true" : "false") << ", opacity: " << _opacity
+                << ", marker: { enabled: true, symbol: '" << _symbol.c_str() << "', radius: 0 }, data: [" << toStringStream(_data_values, data).str().c_str() << "]";
+			_data_values.clear(); // reset data values after writing out the series
+            if (!_stack.empty())
 				s << ", stack: '" << _stack << "'";
 			s << " }";
             r = s.str();
             return r;
+        }
+        static std::stringstream& toStringStream(const std::vector<std::string>& dv, std::stringstream& dest, std::string_view wrap = "") {
+            dest.clear();
+            dest << wrap << *(dv.begin()) << wrap;
+            for (auto itr = dv.begin() + 1; itr != dv.end(); ++itr) {
+                if (itr->empty())
+                    dest << ",null";
+                else
+                    dest << "," << wrap << *itr << wrap;
+            }
+            return dest;
         }
 };
 
@@ -75,6 +90,7 @@ class TemporalChartGenerator : public AbstractChartGenerator {
         const ScanRunner &  _scanner;
         std::vector<int>    _ptcases;
         const SimulationVariables & _simVars;
+        mutable std::unique_ptr<std::ofstream> _csv_out;
 
         // 0: Inside Cut Window, Inside Cut Node
         // 1: Outside Cut Window, Inside Cut Node
@@ -93,26 +109,27 @@ class TemporalChartGenerator : public AbstractChartGenerator {
                 const intervals_t& getGroups() const {return _interval_grps;}
         };
         intervalGroups getIntervalGroups(const CutStructure& cluster) const;
-        std::pair<int, int> getSeriesStreams(const CutStructure& cluster,
-                                              const intervalGroups& groups,
-                                              size_t dataSetIdx,
-                                              std::stringstream& categories,
-                                              ChartSeries*  clusterSeries,
-                                              ChartSeries& observedSeries,
-                                              ChartSeries& expectedSeries,
-                                              ChartSeries * cluster_observedSeries,
-                                              ChartSeries * cluster_expectedSeries,
-                                              ChartSeries * odeSeries,
-                                              ChartSeries * cluster_odeSeries,
-                                              ChartSeries * percCasesSeries,
-                                              ChartSeries * cluster_percCasesSeries
-            ) const;
+        std::pair<int, int> getSeriesStreams(
+            const CutStructure& cluster,
+            const intervalGroups& groups,
+            size_t dataSetIdx,
+            std::vector<std::string>& categories,
+            ChartSeries*  clusterSeries,
+            ChartSeries& observedSeries,
+            ChartSeries& expectedSeries,
+            ChartSeries * cluster_observedSeries,
+            ChartSeries * cluster_expectedSeries,
+            ChartSeries * odeSeries,
+            ChartSeries * cluster_odeSeries,
+            ChartSeries * percCasesSeries,
+            ChartSeries * cluster_percCasesSeries
+        ) const;
 
     public:
         TemporalChartGenerator(const ScanRunner& dataHub, const SimulationVariables& simVars);
 
         virtual void generateChart() const;
-        static FileName& getFilename(FileName& filename);
+        static FileName& getFilename(FileName& filename, const std::string& ext);
 };
 //******************************************************************************
 #endif

@@ -189,7 +189,7 @@ void AbstractDenominatorDataRandomizer::sequentialSetup(const ScanRunner& scanne
             /** Since the cached simulation data file can be enormous with some analyses, and a sparse matrix at times,
                 we store the resting file in a zip archive to reduce the burden on the file system.
                 The archive will contain only a file named _read_filename, which is the previous simulation data. */
-            const_cast<ScanRunner&>(scanner).getPrint().Printf("Unpacking sequential scan simulation data cache file ...\n", BasePrint::P_STDOUT);
+            scanner.getPrint().Printf("Unpacking sequential scan simulation data cache file ...\n", BasePrint::P_STDOUT);
             unZip(scanner.getSequentialStatistic().getSimulationDataArchiveName());
         }
 		_write_filename = scanner.getSequentialStatistic().getWriteSimulationDataFilename();
