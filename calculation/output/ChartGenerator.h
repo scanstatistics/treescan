@@ -7,20 +7,6 @@
 #include "SimulationVariables.h"
 #include <fstream>
 
-/** Abstract base class for chart generation */
-class AbstractChartGenerator {
-    public:
-        static const char* HTML_FILE_EXT;
-        static const char* CSV_FILE_EXT;
-
-    protected:
-        static const char * TEMPLATE_BODY;
-
-    public:
-        AbstractChartGenerator() {}
-        virtual void generateChart() const = 0;
-};
-
 class ChartSeries {
     protected:
         std::string _id;
@@ -73,15 +59,18 @@ class ChartSeries {
 class ScanRunner;
 class CutStructure;
 
-/** Generator for temporal chart */
-class TemporalChartGenerator : public AbstractChartGenerator {
+/** Generator for temporal graph chart. */
+class TemporalChartGenerator {
     public:
         static const char * FILE_SUFFIX_EXT;
         static const int    MAX_INTERVALS;
         static const int    MAX_X_AXIS_TICKS;
+        static const char * HTML_FILE_EXT;
+        static const char * CSV_FILE_EXT;
 
-    protected:
+    private:
         static const char * BASE_TEMPLATE;
+        static const char * TEMPLATE_BODY;
         static const char * TEMPLATE_CHARTHEADER;
 		static const char * TEMPLATE_CHARTSERIES;
 		static const char * TEMPLATE_CHARTSERIES_PT;
@@ -126,10 +115,25 @@ class TemporalChartGenerator : public AbstractChartGenerator {
         ) const;
 
     public:
-        TemporalChartGenerator(const ScanRunner& dataHub, const SimulationVariables& simVars);
+        TemporalChartGenerator(const ScanRunner& scanner, const SimulationVariables& simVars);
 
-        virtual void generateChart() const;
+        void generateChart() const;
         static FileName& getFilename(FileName& filename, const std::string& ext);
+};
+
+/** Generator for cluster window chart. */
+class ClusterWindowChartGenerator {
+    private:
+        static const char * HTML_FILE_EXT;
+        static const char * FILE_SUFFIX_EXT;
+        static const char * BASE_TEMPLATE;
+        const ScanRunner  & _scanner;
+
+    public:
+        ClusterWindowChartGenerator(const ScanRunner& scanner): _scanner(scanner){}
+
+        void generateChart() const;
+        static FileName& getFilename(FileName& filename);
 };
 //******************************************************************************
 #endif

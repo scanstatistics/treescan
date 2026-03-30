@@ -6,13 +6,15 @@
 #include "ScanRunner.h"
 #include "SimulationVariables.h"
 #include "DataFileWriter.h"
+#include "ResultsFileWriter.h"
 #include "Toolkit.h"
 
-/** ------------------- AbstractChartGenerator --------------------------------*/
-const char * AbstractChartGenerator::HTML_FILE_EXT = ".html";
-const char * AbstractChartGenerator::CSV_FILE_EXT = ".csv";
+//////////////////////// TemporalChartGenerator ///////////////////////////////
 
-const char * AbstractChartGenerator::TEMPLATE_BODY = "\n \
+const char * TemporalChartGenerator::HTML_FILE_EXT = ".html";
+const char * TemporalChartGenerator::CSV_FILE_EXT = ".csv";
+
+const char * TemporalChartGenerator::TEMPLATE_BODY = "\n \
         <body style='margin:0;background-color: #fff;'> \n \
         <div id='load_error' style='color:#101010; text-align: center;font-size: 1.2em; padding: 20px;background-color: #ece1e1; border: 1px solid #e49595; display:none;'></div> \n \
 	    <div style='position: relative;'> \n \
@@ -57,8 +59,6 @@ const char * AbstractChartGenerator::TEMPLATE_BODY = "\n \
             </div> \n \
         </div> \n \
         --main-content-- \n";
-
-/** ------------------- TemporalChartGenerator --------------------------------*/
 
 const char * TemporalChartGenerator::FILE_SUFFIX_EXT = ".temporal";
 const int TemporalChartGenerator::MAX_INTERVALS = 4000;
@@ -663,3 +663,191 @@ FileName& TemporalChartGenerator::getFilename(FileName& filename, const std::str
     return filename;
 }
 
+//////////////////////// ClusterWindowChartGenerator //////////////////////////
+
+const char* ClusterWindowChartGenerator::HTML_FILE_EXT = ".html";
+const char* ClusterWindowChartGenerator::FILE_SUFFIX_EXT = ".clusterwindow";
+
+const char* ClusterWindowChartGenerator::BASE_TEMPLATE = "\n \
+ <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'> \n \
+ <html lang='en'> \n \
+    <head><title>Cluster Window Duration</title> \n \
+    <meta http-equiv='content-type' content='text/html; charset=utf-8'> \n \
+    <link href='--resource-path--libs/bootstrap-5.3.8/css/bootstrap.min.css' rel='stylesheet'> \n \
+    <link href='--resource-path--libs/nouislider-15.8.1/nouislider.css' rel='stylesheet'> \n \
+    <link href='--resource-path--html-results/treescan-windows.css' rel='stylesheet'> \n \
+    <script src='--resource-path--javascript/jquery/jquery-4.0.0/jquery-4.0.0.min.js'></script> \n \
+    <script src='--resource-path--javascript/highcharts/highcharts-12.5.0/code/highcharts.js'></script> \n \
+    <script src='--resource-path--javascript/highcharts/highcharts-12.5.0/code/highcharts-more.js'></script> \n \
+    <script src='--resource-path--javascript/highcharts/highcharts-12.5.0/code/modules/exporting.js'></script> \n \
+    <script src='--resource-path--javascript/highcharts/highcharts-12.5.0/code/modules/export-data.js'></script> \n \
+    <script src='--resource-path--javascript/highcharts/highcharts-12.5.0/code/modules/accessibility.js'></script> \n \
+    <script src='--resource-path--javascript/highcharts/highcharts-12.5.0/code/modules/no-data-to-display.js'></script> \n \
+    <script src='--resource-path--libs/bootstrap-5.3.8/js/bootstrap.min.js'></script> \n \
+    <script src='--resource-path--libs/nouislider-15.8.1/nouislider.js'></script> \n \
+    <script src='--resource-path--html-results/treescan-windows.js'></script> \n \
+    <script type='text/javascript'> \n \
+        const parameters = { prospective: --prospective--, teststatistic : --teststatistic--, reportableinference: --reportableinference--, genericdate: --genericdate--  }; \n \
+        const fullData = [--full-data--]; \n \
+    </script></head> \n \
+    <body> \n \
+        <div class='chart-options-section'> \n \
+            <div class='options-row'> \n \
+            <form><fieldset> \n \
+            <div class='form-group'> \n \
+                <label labelfor='id_sort_by'>Sort By:</label><select id='id_sort_by' class = 'form-control'> \n \
+                <option value='llr' data-order='desc' selected=selected>Test Statistic</option><option value='pv' data-order='asc'>P-Value</option> \n \
+                <option value='ri' data-order='desc'>Recurrence Interval</option><option value='rr' data-order='desc'>Relative Risk</option> \n \
+                <option value='ex' data-order='desc'>Excess Cases</option><option value='category' data-order='desc'>Node ID</option> \n \
+                <option value='low' data-order='desc'>Start Date</option><option value='cl' data-order='asc'>Cluster Length</option></select></div> \n \
+            <div class='form-group'> \n \
+                <label labelfor='id_color_by'>Color By:</label><select id='id_color_by' class='form-control'> \n \
+                <option value='rr'>Relative Risk</option><option value='ex' selected=selected>Excess Cases</option> \n \
+                <option value='ri'>Recurrence Interval</option><option value='pv'>P-Value</option></select></div> \n \
+            <div class='form-group'> \n \
+                <label for='slider_display_rr' title='Filter Relative Risk'>Relative Risk:</label><div class='slider-styled slider-round' id='slider_display_rr'></div> \n \
+                <div class='slider_display_range'><span id='id_range_rr_low'>-</span> to <span id='id_range_rr_high'>-</span></div></div> \n \
+            <div class='form-group'> \n \
+                <label for='slider_display_ex' title='Filter Excess Cases'>Excess Cases:</label><div class='slider-styled slider-round' id='slider_display_ex'></div> \n \
+                <div class='slider_display_range'><span id='id_range_ex_low'>-</span> to <span id='id_range_ex_high'>-</span></div></div> \n \
+            </fieldset> \n \
+            <button id='id_apply_filter' class='btn btn-primary' disabled>Apply</button> <button id='id_reset' class='btn btn-warning' disabled>Reset</button> \n \
+            </form> \n \
+            </div> \n \
+            <div class='clearfix'></div><hr/> \n \
+            <div class='legend-container'> \n \
+                <div class='legend-title'>Summary Statistics</div> \n \
+                <div class='legend-item'><span>Clusters Displayed:</span><span id='id_cluster_count'></span></div> \n \
+                <div class='legend-item'><span>Total Clusters:</span><span id='id_cluster_total'></span></div> \n \
+                <div class = 'legend-item'><span>Relative Risk:</span><span><span id='id_rr_min'></span> to <span id='id_rr_max'></span></span></div> \n \
+                <div class='legend-item'><span>Excess Cases:</span><span><span id='id_ex_min'></span> to <span id='id_ex_max'></span></span></div> \n \
+                <div class='key-section' id='id_ex_key_section'> \n \
+                    <div class='legend-title'>Excess Cases Key</div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color:#203764;'></div><span>&gt; 1,000</span></div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color:#305496;'></div><span>&gt; 100</span></div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color:#8EA9DB;'></div><span>&gt; 25</span></div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color: #B4C6E7;'></div><span>&le; 25</span></div> \n \
+                </div> \n \
+                <div class='key-section' id='id_rr_key_section'> \n \
+                    <div class='legend-title'>Relative Risk Key</div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color:#FF5733;'></div><span>&ge; 8</span></div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color:#FFC300;'></div><span>&ge; 4</span></div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color:#DBD51B;'></div><span>&ge; 2</span></div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color:#566573;'></div><span>&le; 2</span></div> \n \
+                </div> \n \
+                <div class='key-section' id='id_ri_key_section'> \n \
+                    <div class='legend-title'>Recurrence Interval Key</div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color:#8A1901;'></div><span>&ge; 100 years</span></div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color:#FF5733;'></div><span>&ge; 5 years</span></div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color:#FFC300;'></div><span>&ge; 1 year</span></div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color:#DBD51B;'></div><span>&ge; 100 days</span></div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color:#566573;'></div><span>&lt; 100 days</span></div> \n \
+                </div> \n \
+                <div class='key-section' id='id_pv_key_section'> \n \
+                    <div class='legend-title'>P-Value Key</div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color:#FF5733;'></div><span>&le; 0.001</span></div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color:#FFC300;'></div><span>&le; 0.01</span></div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color:#DBD51B;'></div><span>&le; 0.05</span></div> \n \
+                    <div class='key-row'><div class='key-color' style='background-color:#566573;'></div><span>&gt; 0.05</span></div> \n \
+                </div> \n \
+            </div> \n \
+            <div class='version'>Generated with --treescan-version--</div> \n \
+        </div><div id='resizer'><figure class='highcharts-figure'><div id='container'></div></figure></div> \n \
+</body></html>";
+
+/** Generates the cluster window HTML output. */
+void ClusterWindowChartGenerator::generateChart() const {
+    FileName fileName;
+    const Parameters parameters = _scanner.getParameters();
+    bool is_pt(parameters.getScanType() == Parameters::TIMEONLY);
+    std::stringstream html, full_data;
+    std::string buffer, format, replicas;
+    std::ofstream HTMLout;
+
+    try {
+        if (_scanner.getCuts().size() == 0 || !_scanner.reportableCut(*_scanner.getCuts()[0]))
+            return; // no reportable clusters, so don't generate a graph
+        // open HTML output file
+        fileName.setFullPath(parameters.getOutputFileName().c_str());
+        getFilename(fileName);
+        HTMLout.open(fileName.getFullPath(buffer).c_str());
+        if (!HTMLout) throw resolvable_error("Error: Could not open cluster window chart file '%s'.\n", buffer.c_str());
+        html << BASE_TEMPLATE << std::endl; // read template into stringstream
+        templateReplace(html, "--resource-path--", AppToolkit::getToolkit().GetWebSite()); // site resource link path
+        templateReplace(html, "--tech-support-email--", AppToolkit::getToolkit().GetTechnicalSupportEmail()); // tech support link path
+        templateReplace(html, "--prospective--", parameters.getIsProspectiveAnalysis() ? "true" : "false");
+        templateReplace(html, "--teststatistic--", parameters.getIsTestStatistic() ? "true" : "false");
+        templateReplace(html, "--reportableinference--", parameters.getNumReplicationsRequested() > MIN_REPLICA_RPT_PVALUE ? "true" : "false");
+        templateReplace(html, "--genericdate--", parameters.getDatePrecisionType() == DataTimeRange::GENERIC ? "true" : "false");
+        // Iterate through collection of clusters to graph.
+        Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(_scanner));
+        printString(replicas, "%u", parameters.getNumReplicationsRequested());
+        printString(format, "%%.%dlf", replicas.size());
+        for (size_t clusterIdx = 0; clusterIdx < _scanner.getCuts().size(); ++clusterIdx) {
+            const CutStructure& cluster = *_scanner.getCuts()[clusterIdx];
+            full_data << std::endl << std::string(13, ' ');
+            if (is_pt) {
+                full_data << "{ category: 'Cluster " << (clusterIdx + 1) << "', label: '', ";
+            } else {
+                auto node = _scanner.getNodes().at(cluster.getID());
+                full_data << "{ category: `" << node->getIdentifier() << "`, label: `" << node->getName() << "`, ";
+            }
+            switch(parameters.getDatePrecisionType()) {
+                case DataTimeRange::DAY:
+                case DataTimeRange::MONTH:
+                case DataTimeRange::YEAR: {
+                    std::pair<std::string, std::string> rangeDates = parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().rangeToGregorianStrings(
+                        cluster.getStartIdx() - _scanner.getZeroTranslationAdditive(),
+                        cluster.getEndIdx() - _scanner.getZeroTranslationAdditive(),
+                        parameters.getDatePrecisionType()
+                    );
+                    full_data << "low: Date.parse('" << rangeDates.first << "'), high: Date.parse('" << rangeDates.second << "'), ";
+                } break;
+                case DataTimeRange::GENERIC:
+                    full_data << "low: " << (cluster.getStartIdx() - _scanner.getZeroTranslationAdditive()) <<
+                        ", high: " << (cluster.getEndIdx() - _scanner.getZeroTranslationAdditive()) << ", ";
+                    break;
+                case DataTimeRange::NONE:
+                default: throw prg_error("Unsupported enumeration for date time precision (%d)", "generate()", parameters.getDatePrecisionType());
+            }
+            double llr = calcLogLikelihood->LogLikelihoodRatio(cluster.getLogLikelihood());
+            full_data << "llr: " << printString(buffer, "%.6lf", llr) << ", ";
+            if (_scanner.reportablePValue(cluster))
+                full_data << "pv: " << printString(buffer, format.c_str(), cluster.getPValue(_scanner)) << ", ";
+            if (_scanner.reportableRecurrenceInterval(cluster)) {
+                auto ri = _scanner.getRecurrenceInterval(cluster);
+                full_data << "ri: " << getRoundAsString(ri.second, buffer, std::min(std::to_string(_scanner.getSimulationVariables().get_sim_count()).size(), (size_t)10));
+                full_data << ", ritext: '" << ResultsFileWriter::getRecurranceIntervalAsString(ri, buffer) << "', ";
+            }
+            double rr = cluster.getRelativeRisk(_scanner);
+            full_data << "rr: ";
+            if (rr == std::numeric_limits<double>::infinity()) 
+                full_data << std::scientific << std::numeric_limits<double>::max() << ", ";
+            else 
+                full_data << getValueAsString(rr, buffer) << ", ";
+            full_data << "rrtext: '" << std::fixed << getValueAsString(rr, buffer) << "', ";
+            full_data << "ex: " << std::fixed << getValueAsString(cluster.getExcessCases(_scanner), buffer) << "},";
+        }
+        full_data << std::endl;
+        templateReplace(html, "--full-data--", full_data.str());
+        printString(buffer, "TreeScan v%s.%s%s%s%s%s",
+            VERSION_MAJOR, VERSION_MINOR, (!strcmp(VERSION_RELEASE, "0") ? "" : "."),
+            (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE), (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE
+        );
+        templateReplace(html, "--treescan-version--", buffer.c_str());
+        HTMLout << html.str() << std::endl;
+        HTMLout.close();
+    } catch (prg_exception& x) {
+        x.addTrace("generate()", "ClusterWindowChartGenerator");
+        throw;
+    }
+}
+
+/** Alters passed filename to include suffix and extension. */
+FileName& ClusterWindowChartGenerator::getFilename(FileName& filename) {
+    std::string buffer;
+    printString(buffer, "%s%s", filename.getFileName().c_str(), FILE_SUFFIX_EXT);
+    filename.setFileName(buffer.c_str());
+    filename.setExtension(HTML_FILE_EXT);
+    return filename;
+}

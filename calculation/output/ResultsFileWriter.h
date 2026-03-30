@@ -26,7 +26,6 @@ class ResultsFileWriter {
     const char    * getPvalueClass(double pval, bool childClass);
     const char    * getRelativeRiskClass(double rr, bool childClass);
     const char    * getRecurranceIntervalClass(const RecurrenceInterval_t& ri, bool childClass) const;
-    std::string   & getRecurranceIntervalAsString(const RecurrenceInterval_t& ri, std::string& buffer) const;
     const char    * getSignalClass(double pval, bool childClass);
     std::string   & encodeForJavascript(std::string & text) const;
     bool            treeSequentialAnalysisComplete() const;
@@ -46,6 +45,7 @@ class ResultsFileWriter {
     static std::string & getHtmlFilename(const Parameters& parameters, std::string& buffer);
     static std::string & getAsnFilename(const Parameters& parameters, std::string& buffer);
     static std::string & getNewickFilename(const Parameters& parameters, std::string& buffer);
+    static std::string & getRecurranceIntervalAsString(const RecurrenceInterval_t& ri, std::string& buffer);
     static std::string & getTotalRunningTime(time_t start, time_t end, std::string& buffer);
 
     bool writeASCII(time_t start, time_t end);

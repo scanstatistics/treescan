@@ -85,6 +85,7 @@ class Parameters {
                         TEMPORAL_GRAPH_REPORT_TYPE,     // which clusters to generate temporal graph (enum)
                         TEMPORAL_GRAPH_MLC_COUNT,       // number of most likely clusters to generate temporal graph (integer)
                         TEMPORAL_GRAPH_CUTOFF,          // cutoff for signicant clusters when generating temporal graph (numeric)
+                        OUTPUT_CLUSTERWINDOW_GRAPH,     // generate cluster window graph output file
                         // Advanced Analysis - power evaluations
                         POWER_EVALUATIONS,
                         POWER_EVALUATION_TYPE,
@@ -324,6 +325,7 @@ class Parameters {
     TemporalGraphReportType             _temporal_graph_report_type;            // which clusters to report in temporal graph
     int                                 _temporal_graph_report_count;           // number of MLC clusters to graph with TemporalGraphReportType.X_MCL_ONLY
     double                              _temporal_graph_report_cutoff;          // P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY
+    bool                                _output_cluster_window_graph;           // generate cluster window graph output file
 
     PValueReportingType                 _pvalue_reporting_type;
     unsigned int                        _early_term_threshold;
@@ -400,6 +402,8 @@ class Parameters {
     void                                setTemporalGraphSignificantCutoff(double d) { _temporal_graph_report_cutoff = d; }
     int                                 getTemporalGraphMostLikelyCount() const { return _temporal_graph_report_count; }
     void                                setTemporalGraphMostLikelyCount(int i) { _temporal_graph_report_count = i; }
+    bool                                getOutputClusterWindowGraphFile() const { return _output_cluster_window_graph; }
+    void                                setOutputClusterWindowGraphFile(bool b) { _output_cluster_window_graph = b; }
 
     void                                setCurrentLook(unsigned int u) const { _look_index = u; }
     unsigned int                        getCurrentLook() const { return _look_index; }

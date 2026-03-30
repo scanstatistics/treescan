@@ -123,6 +123,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::TEMPORAL_GRAPH_REPORT_TYPE: return "temporal graph cluster reporting type (0=Only most likely cluster, 1=X most likely clusters, 2=Only significant clusters)";
             case Parameters::TEMPORAL_GRAPH_MLC_COUNT: return "number of most likely clusters to report in temporal graph (positive integer)";
             case Parameters::TEMPORAL_GRAPH_CUTOFF   : return "cluster cutoff to report in temporal graph (numeric)";
+            case Parameters::OUTPUT_CLUSTERWINDOW_GRAPH: return "output cluster window graph HTML file (y/n)";
             // Power Evaluations
             case Parameters::POWER_EVALUATIONS       : return "perform power evaluations (y/n)";
             case Parameters::POWER_EVALUATION_TYPE   : return "power evaluation type (0=Analysis And Power Evaluation Together, 1=Only Power Evaluation With Count File, 2=Only Power Evaluation With Defined Total Cases)";
@@ -235,6 +236,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::TEMPORAL_GRAPH_REPORT_TYPE: return AsString(s, _parameters.getTemporalGraphReportType());
             case Parameters::TEMPORAL_GRAPH_MLC_COUNT: return AsString(s, _parameters.getTemporalGraphMostLikelyCount());
             case Parameters::TEMPORAL_GRAPH_CUTOFF: return AsString(s, _parameters.getTemporalGraphSignificantCutoff());
+            case Parameters::OUTPUT_CLUSTERWINDOW_GRAPH: return AsString(s, _parameters.getOutputClusterWindowGraphFile());
             // Power Evaluations
             case Parameters::POWER_EVALUATIONS        : return AsString(s, _parameters.getPerformPowerEvaluations());
             case Parameters::POWER_EVALUATION_TYPE    : return AsString(s, _parameters.getPowerEvaluationType());
@@ -466,6 +468,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
                                                          _parameters.setTemporalGraphReportType((Parameters::TemporalGraphReportType)iValue); break;
             case Parameters::TEMPORAL_GRAPH_MLC_COUNT : _parameters.setTemporalGraphMostLikelyCount(ReadUnsignedInt(value, e)); break;
             case Parameters::TEMPORAL_GRAPH_CUTOFF    : _parameters.setTemporalGraphSignificantCutoff(ReadDouble(value, e)); break;
+            case Parameters::OUTPUT_CLUSTERWINDOW_GRAPH: _parameters.setOutputClusterWindowGraphFile(ReadBoolean(value, e)); break;
             // Power Evaluations
             case Parameters::POWER_EVALUATIONS        : _parameters.setPerformPowerEvaluations(ReadBoolean(value, e)); break;
             case Parameters::POWER_EVALUATION_TYPE    : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::PE_WITH_ANALYSIS, Parameters::PE_ONLY_SPECIFIED_CASES);

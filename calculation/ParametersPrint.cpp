@@ -187,16 +187,19 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getAdditionalOutputFiles(S
         }
         if (_parameters.getScanType() != Parameters::TIMEONLY) {
             if (_parameters.isGeneratingNCBIAsnResults())
-                addByFullpath("NCBI Genome Workbench ASN1 File", ResultsFileWriter::getAsnFilename(_parameters, buffer));
+                addByFullpath("NCBI Genome Workbench ASN1", ResultsFileWriter::getAsnFilename(_parameters, buffer));
             if (_parameters.isGeneratingNewickFile())
-                addByFullpath("Newick Tree Format File", ResultsFileWriter::getNewickFilename(_parameters, buffer));
+                addByFullpath("Newick Tree Format", ResultsFileWriter::getNewickFilename(_parameters, buffer));
         }
         if (_parameters.isGeneratingLLRResults())
             addByFullpath("Simulated Log Likelihood Ratios", LoglikelihoodRatioWriter::getFilename(_parameters, buffer, false));
         if (_parameters.getOutputTemporalGraphFile()) {
-            addByFullpath("Temporal Graph File", TemporalChartGenerator::getFilename(filename, TemporalChartGenerator::HTML_FILE_EXT).getFullPath(buffer));
+            addByFullpath("Temporal Graph", TemporalChartGenerator::getFilename(filename, TemporalChartGenerator::HTML_FILE_EXT).getFullPath(buffer));
             if (static_cast<int>(_parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets()) <= TemporalChartGenerator::MAX_INTERVALS)
-                addByFullpath("Temporal Graph File Data", TemporalChartGenerator::getFilename(filename, TemporalChartGenerator::CSV_FILE_EXT).getFullPath(buffer));
+                addByFullpath("Temporal Graph Data", TemporalChartGenerator::getFilename(filename, TemporalChartGenerator::CSV_FILE_EXT).getFullPath(buffer));
+        }
+        if (_parameters.getOutputClusterWindowGraphFile()) {
+            addByFullpath("Cluster Window Graph", ClusterWindowChartGenerator::getFilename(filename).getFullPath(buffer));
         }
     } catch (prg_exception& x) {
         x.addTrace("getAdditionalOutputFiles()", "ParametersPrint");
@@ -228,25 +231,25 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdditionalOutputParame
 
 /** Prints 'Temporal Output' tab parameters to file stream. */
 ParametersPrint::SettingContainer_t& ParametersPrint::getTemporalOutputParameters(SettingContainer_t& settings) const {
-    std::string buffer;
     settings.clear();
-
-    if (_parameters.isTemporalScanType(_parameters.getScanType()))
+    if (_parameters.isTemporalScanType(_parameters.getScanType())) {
         settings.emplace_back("Produce Temporal Graphs", (_parameters.getOutputTemporalGraphFile() ? "Yes" : "No"));
-    if (_parameters.getOutputTemporalGraphFile()) {
-        settings.push_back(std::make_pair("Cluster Graphing", ""));
-        switch (_parameters.getTemporalGraphReportType()) {
-        case Parameters::MLC_ONLY: settings.back().second = "Most likely cluster only"; break;
-        case Parameters::X_MCL_ONLY:
-            printString(settings.back().second,
-                "%d most likely clusters, one graph for each", _parameters.getTemporalGraphMostLikelyCount()
-            ); break;
-        case Parameters::SIGNIFICANT_ONLY:
-            printString(settings.back().second,
-                "All clusters, one graph for each, meeting cutoff %g", _parameters.getTemporalGraphSignificantCutoff()
-            ); break;
-        default: throw prg_error("Unknown temporal graph type %d.\n", "getTemporalOutputParameters()", _parameters.getOutputTemporalGraphFile());
+        if (_parameters.getOutputTemporalGraphFile()) {
+            settings.push_back(std::make_pair("Cluster Graphing", ""));
+            switch (_parameters.getTemporalGraphReportType()) {
+                case Parameters::MLC_ONLY: settings.back().second = "Most likely cluster only"; break;
+                case Parameters::X_MCL_ONLY:
+                    printString(settings.back().second,
+                        "%d most likely clusters, one graph for each", _parameters.getTemporalGraphMostLikelyCount()
+                    ); break;
+                case Parameters::SIGNIFICANT_ONLY:
+                    printString(settings.back().second,
+                        "All clusters, one graph for each, meeting cutoff %g", _parameters.getTemporalGraphSignificantCutoff()
+                    ); break;
+                default: throw prg_error("Unknown temporal graph type %d.\n", "getTemporalOutputParameters()", _parameters.getOutputTemporalGraphFile());
+            }
         }
+        settings.emplace_back("Produce Cluster Window Graph", (_parameters.getOutputClusterWindowGraphFile() ? "Yes" : "No"));
     }
     return settings;
 }
@@ -620,7 +623,7 @@ void ParametersPrint::WriteSettingsContainerHTML(const SettingContainer_t& setti
         out << "<table><tbody>" << std::endl;
         // print settings
         for (auto& setting: settings) {
-            if (setting.first == "Temporal Graph File")
+            if (setting.first == "Temporal Graph" || setting.first == "Cluster Window Graph")
                 out << "<tr><th>" << setting.first << " :</th><td><a target=\"_blank\" href=\"file:///" << setting.second << "\">" << setting.second << "</a></td></tr>" << std::endl;
             else
                 out << "<tr><th>" << setting.first << " :</th><td>" << setting.second << "</td></tr>" << std::endl;

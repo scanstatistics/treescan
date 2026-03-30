@@ -1032,7 +1032,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             outfile << "</div></div>" << std::endl;
             outfile << "<script>" << std::endl << "var sub_rows = {" << subrows.str() << "};" << std::endl << "</script>" << std::endl;
 
-            outfile << "<div id=\"id_trimmed_cuts\" style=\"display:none;\"><table>";
+            outfile << "<div id='id_trimmed_cuts' style='display:none;'><table>";
             itrCuts = _scanRunner.getTrimmedCuts().begin();
             itrCutsEnd = _scanRunner.getTrimmedCuts().end();
             for (; itrCuts != itrCutsEnd; ++itrCuts)
@@ -1500,7 +1500,7 @@ const char * ResultsFileWriter::getRecurranceIntervalClass(const RecurrenceInter
 }
 
 /** Returns the RecurrenceInterval_t as a formatted string. */
-std::string& ResultsFileWriter::getRecurranceIntervalAsString(const RecurrenceInterval_t& ri, std::string& buffer) const {
+std::string& ResultsFileWriter::getRecurranceIntervalAsString(const RecurrenceInterval_t& ri, std::string& buffer) {
     if (ri.first < 1.0)
         return printString(buffer, "%.0lf %s%s", ri.second, "day", (ri.second < 1.5 ? "" : "s"));
     else if (ri.first <= 10.0)

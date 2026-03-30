@@ -10,7 +10,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-const int Parameters::giNumParameters = 86;
+const int Parameters::giNumParameters = 87;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = {{"S", Parameters::SIMPLE}, {"P", Parameters::PAIRS}, {"T", Parameters::TRIPLETS}, {"O", Parameters::ORDINAL}};
@@ -121,6 +121,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;
   if (_temporal_graph_report_count != rhs._temporal_graph_report_count) return false;
   if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
+  if (_output_cluster_window_graph != rhs._output_cluster_window_graph) return false;
   if (_minimum_highrate_nodes_cases != rhs._minimum_highrate_nodes_cases) return false;
   if (_minimum_lowrate_nodes_cases != rhs._minimum_lowrate_nodes_cases) return false;
   if (_scan_rate_type != rhs._scan_rate_type) return false;
@@ -277,6 +278,7 @@ void Parameters::copy(const Parameters &rhs) {
     _temporal_graph_report_type = rhs._temporal_graph_report_type;
     _temporal_graph_report_count = rhs._temporal_graph_report_count;
     _temporal_graph_report_cutoff = rhs._temporal_graph_report_cutoff;
+    _output_cluster_window_graph = rhs._output_cluster_window_graph;
     _scan_rate_type = rhs._scan_rate_type;
     _data_only_on_leaves = rhs._data_only_on_leaves;
     _relaxed_study_data_period_checking = rhs._relaxed_study_data_period_checking;
@@ -544,6 +546,7 @@ void Parameters::setAsDefaulted() {
     _temporal_graph_report_cutoff = 0.05;
     _temporal_graph_report_count = 1;
     _temporal_graph_report_type = MLC_ONLY;
+    _output_cluster_window_graph = false;
 
     _pvalue_reporting_type = STANDARD_PVALUE;
     _early_term_threshold = 50;

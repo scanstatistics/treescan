@@ -529,6 +529,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jint)parameters.getTemporalGraphMostLikelyCount());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setOutputClusterWindowGraphFile", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getOutputClusterWindowGraphFile());
+  jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "setMinimumHighRateNodeCases", "(I)V");
   Env.CallVoidMethod(jParameters, mid, (jint)parameters.getMinimumHighRateNodeCases());
   jni_error::_detectError(Env);
@@ -1008,6 +1012,10 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
 
   mid = _getMethodId_Checked(Env, clazz, "getTemporalGraphMostLikelyCount", "()I");
   parameters.setTemporalGraphMostLikelyCount(Env.CallIntMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getOutputClusterWindowGraphFile", "()Z");
+  parameters.setOutputClusterWindowGraphFile(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getMinimumHighRateNodeCases", "()I");

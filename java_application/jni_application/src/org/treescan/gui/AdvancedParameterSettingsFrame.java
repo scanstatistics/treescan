@@ -210,8 +210,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= _temporalGraphMostLikely.isSelected();
         bReturn &= _numMostLikelyClustersGraph.getText().equals("1");
         bReturn &= (Double.parseDouble(_temporalGraphPvalueCutoff.getText()) == 0.05);
+        bReturn &= _reportClusterWindowGraph.isSelected() == false;
         bReturn &= _report_data_as_percentage.isSelected() == false;
-        _results_title.getText().equals("");
+        bReturn &= _results_title.getText().equals("");
         return bReturn;
     }
 
@@ -380,7 +381,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setResultsTitle(_results_title.getText());
         
         // Temporal Output tab
-        parameters.setOutputTemporalGraphFile(_reportTemporalGraph.isEnabled() && _reportTemporalGraph.isSelected());
+        parameters.setOutputTemporalGraphFile(Utils.selected(_reportTemporalGraph));
         if (_temporalGraphSignificant.isSelected()) {
             parameters.setTemporalGraphReportType(Parameters.TemporalGraphReportType.SIGNIFICANT_ONLY.ordinal());
         } else if (_temporalGraphMostLikelyX.isSelected()) {
@@ -392,7 +393,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (parameters.getIsProspectiveAnalysis())
             parameters.setTemporalGraphSignificantCutoff(Double.valueOf(_temporalGraphPvalueCutoff.getText()).intValue());
         else
-            parameters.setTemporalGraphSignificantCutoff(Double.parseDouble(_temporalGraphPvalueCutoff.getText()));        
+            parameters.setTemporalGraphSignificantCutoff(Double.parseDouble(_temporalGraphPvalueCutoff.getText()));
+        parameters.setOutputClusterWindowGraphFile(Utils.selected(_reportClusterWindowGraph));
     }
 
     /**
@@ -554,6 +556,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _temporalGraphPvalueCutoff.setText(Integer.toString((int)parameters.getTemporalGraphSignificantCutoff()));
         else
             _temporalGraphPvalueCutoff.setText(Double.toString(parameters.getTemporalGraphSignificantCutoff()));
+        _reportClusterWindowGraph.setSelected(parameters.getOutputClusterWindowGraphFile());
         
         enablePowerEvaluationsGroup();
         enableSequentialAnalysisGroup();
@@ -685,6 +688,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _chk_include_identical_parent_cuts.setSelected(false);
         _report_data_as_percentage.setSelected(false);
         _results_title.setText("");
+        _reportTemporalGraph.setSelected(false);
+        _reportClusterWindowGraph.setSelected(false);
     }
 
     /** Verifies that settings are valid in the context of all other parameter settings. */
@@ -1106,7 +1111,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         } else {
             _temporalGraphSignificant.setText("All clusters, one graph for each, with p-value less than or equal:");
             if (val < 0 || val > 1) _temporalGraphPvalueCutoff.setText(AppConstants.DEFAULT_PVALUE_CUTOFF);
-        }          
+        }
+        _reportClusterWindowGraph.setEnabled(_graphOutputGroup.isEnabled());
     }    
     
     /** Enables/disables the trend model group options. */
@@ -1516,6 +1522,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _numMostLikelyClustersGraphLabel = new javax.swing.JLabel();
         _temporalGraphSignificant = new javax.swing.JRadioButton();
         _temporalGraphPvalueCutoff = new javax.swing.JTextField();
+        _reportClusterWindowGraph = new javax.swing.JCheckBox();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
@@ -3304,6 +3311,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _reportClusterWindowGraph.setText("Produce Cluster Window Graph");
+
         javax.swing.GroupLayout _graphOutputGroupLayout = new javax.swing.GroupLayout(_graphOutputGroup);
         _graphOutputGroup.setLayout(_graphOutputGroupLayout);
         _graphOutputGroupLayout.setHorizontalGroup(
@@ -3327,7 +3336,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(_numMostLikelyClustersGraph, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_numMostLikelyClustersGraphLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                                .addComponent(_numMostLikelyClustersGraphLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                    .addGroup(_graphOutputGroupLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(_reportClusterWindowGraph, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         _graphOutputGroupLayout.setVerticalGroup(
@@ -3346,6 +3358,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_temporalGraphSignificant)
                     .addComponent(_temporalGraphPvalueCutoff, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_reportClusterWindowGraph)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -3363,7 +3377,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advanced_temporal_output_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(239, Short.MAX_VALUE))
+                .addContainerGap(207, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Output", _advanced_temporal_output_tab);
@@ -3518,6 +3532,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _radioEarlyTerminationPValues;
     private javax.swing.JRadioButton _radioStandardPValues;
     private javax.swing.JRadioButton _relaxed_study_data_period_checking;
+    private javax.swing.JCheckBox _reportClusterWindowGraph;
     private javax.swing.JCheckBox _reportLLRResultsAsCsvTable;
     private javax.swing.JCheckBox _reportTemporalGraph;
     private javax.swing.JCheckBox _report_data_as_percentage;

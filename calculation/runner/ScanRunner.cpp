@@ -2249,7 +2249,9 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
     }
     // generate temporal chart - if requested
     if (_parameters.getOutputTemporalGraphFile())
-        TemporalChartGenerator(*this, this->_simVars).generateChart();
+        TemporalChartGenerator(*this, _simVars).generateChart();
+    if (_parameters.getOutputClusterWindowGraphFile())
+        ClusterWindowChartGenerator(*this).generateChart();
     // write cuts to csv file
     if (_parameters.isGeneratingTableResults()) {
         CutsRecordWriter cutsWriter(*this);

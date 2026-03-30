@@ -44,7 +44,7 @@ public class Parameters implements Cloneable {
     }
     private CreationVersion _creationversion = new CreationVersion(1,1,0);
     private String _sourcefilename="";
-    private ArrayList<String> _treefilenames;
+    private final ArrayList<String> _treefilenames;
     private String _cutsfilename="";
     private String _countfilename="";
     private String _controlfilename="";
@@ -114,6 +114,7 @@ public class Parameters implements Cloneable {
     private TemporalGraphReportType _temporal_graph_report_type=TemporalGraphReportType.MLC_ONLY; // which clusters to report in temporal graph
     private int _temporal_graph_report_count=1; // number of MLC clusters to graph with TemporalGraphReportType.X_MCL_ONLY
     private double _temporal_graph_report_cutoff=0.05; // P-Value used limit graphed clusters with TemporalGraphReportType.SIGNIFICANT_ONLY
+    private boolean _output_cluster_window_graph=false; // report cluster window graph file
     private int _minimum_highrate_nodes_cases=2; // minimum number of high rate nodes cases
     private boolean _data_only_on_leaves=true;
     private boolean _relaxed_study_data_period_checking=false;
@@ -226,6 +227,7 @@ public class Parameters implements Cloneable {
           if (_temporal_graph_report_count != rhs._temporal_graph_report_count) return false;
           if (_temporal_graph_report_cutoff != rhs._temporal_graph_report_cutoff) return false;
           if (_temporal_graph_report_type != rhs._temporal_graph_report_type) return false;          
+          if (_output_cluster_window_graph != rhs._output_cluster_window_graph) return false;
           if (_minimum_highrate_nodes_cases != rhs._minimum_highrate_nodes_cases) return false;
           if (_data_only_on_leaves != rhs._data_only_on_leaves) return false;
           if (_relaxed_study_data_period_checking != rhs._relaxed_study_data_period_checking) return false;
@@ -280,6 +282,8 @@ public class Parameters implements Cloneable {
     public void setTemporalGraphMostLikelyCount(int i) {_temporal_graph_report_count = i;}
     public TemporalGraphReportType getTemporalGraphReportType() {return _temporal_graph_report_type;}
     public void setTemporalGraphReportType(int ord){try {_temporal_graph_report_type = TemporalGraphReportType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, TemporalGraphReportType.values());}}
+    public boolean getOutputClusterWindowGraphFile() {return _output_cluster_window_graph;}
+    public void setOutputClusterWindowGraphFile(boolean b) {_output_cluster_window_graph = b;}    
     
     public ProspectiveFrequency getProspectiveFrequencyType() { return _prospective_frequency_type; }
     public void setProspectiveFrequencyType(ProspectiveFrequency e) { _prospective_frequency_type = e; }

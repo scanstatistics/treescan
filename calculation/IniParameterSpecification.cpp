@@ -293,10 +293,11 @@ void IniParameterSpecification::Build_2_4_x_ParameterList() {
     _parameter_info[Parameters::TEMPORAL_GRAPH_REPORT_TYPE] = ParamInfo(Parameters::TEMPORAL_GRAPH_REPORT_TYPE, "temporal-graph-type", 2, _temporal_output_section);
     _parameter_info[Parameters::TEMPORAL_GRAPH_MLC_COUNT] = ParamInfo(Parameters::TEMPORAL_GRAPH_MLC_COUNT, "temporal-graph-most-mlc", 3, _temporal_output_section);
     _parameter_info[Parameters::TEMPORAL_GRAPH_CUTOFF] = ParamInfo(Parameters::TEMPORAL_GRAPH_CUTOFF, "temporal-graph-significance-cutoff", 4, _temporal_output_section);
+    _parameter_info[Parameters::OUTPUT_CLUSTERWINDOW_GRAPH] = ParamInfo(Parameters::OUTPUT_CLUSTERWINDOW_GRAPH, "output-clusterwindow-graph-html", 5, _temporal_output_section);
     _parameter_info[Parameters::RPT_DATA_AS_PERCENTAGE] = ParamInfo(Parameters::RPT_DATA_AS_PERCENTAGE, "trend-data-as-percentage", 5, _additional_output_section);
     _parameter_info[Parameters::RESULTS_TITLE] = ParamInfo(Parameters::RESULTS_TITLE, "report-title", 6, _additional_output_section);
 
-    assert(_parameter_info.size() == 86);
+    assert(_parameter_info.size() == 87);
 }
 
 

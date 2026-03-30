@@ -509,8 +509,8 @@ void IniParameterFileAccess::WriteTemporalOutputSettings(IniFile& WriteFile) {
         WriteIniParameter(WriteFile, Parameters::TEMPORAL_GRAPH_REPORT_TYPE, GetParameterString(Parameters::TEMPORAL_GRAPH_REPORT_TYPE, s).c_str(), GetParameterComment(Parameters::TEMPORAL_GRAPH_REPORT_TYPE));
         WriteIniParameter(WriteFile, Parameters::TEMPORAL_GRAPH_MLC_COUNT, GetParameterString(Parameters::TEMPORAL_GRAPH_MLC_COUNT, s).c_str(), GetParameterComment(Parameters::TEMPORAL_GRAPH_MLC_COUNT));
         WriteIniParameter(WriteFile, Parameters::TEMPORAL_GRAPH_CUTOFF, GetParameterString(Parameters::TEMPORAL_GRAPH_CUTOFF, s).c_str(), GetParameterComment(Parameters::TEMPORAL_GRAPH_CUTOFF));
-    }
-    catch (prg_exception& x) {
+        WriteIniParameter(WriteFile, Parameters::OUTPUT_CLUSTERWINDOW_GRAPH, GetParameterString(Parameters::OUTPUT_CLUSTERWINDOW_GRAPH, s).c_str(), GetParameterComment(Parameters::OUTPUT_CLUSTERWINDOW_GRAPH));
+    } catch (prg_exception& x) {
         x.addTrace("WriteTemporalOutputSettings()", "IniParameterFileAccess");
         throw;
     }
