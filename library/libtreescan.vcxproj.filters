@@ -104,7 +104,7 @@
     <ClCompile Include="..\calculation\utility\contractor.cpp">
       <Filter>Source Files\calculation\utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\thread\src\win32\thread.cpp">
+    <ClCompile Include="..\boost\boost_1_90_0\libs\thread\src\win32\thread.cpp">
       <Filter>Source Files\boost\threads</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\utility\MonteCarloSimFunctor.cpp">
