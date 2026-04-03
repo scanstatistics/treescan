@@ -785,12 +785,12 @@ void ClusterWindowChartGenerator::generateChart() const {
         printString(format, "%%.%dlf", replicas.size());
         for (size_t clusterIdx = 0; clusterIdx < _scanner.getCuts().size(); ++clusterIdx) {
             const CutStructure& cluster = *_scanner.getCuts()[clusterIdx];
-            full_data << std::endl << std::string(13, ' ');
+            full_data << std::endl << std::string(13, ' ') << "{ no: " << (clusterIdx + 1) << ", ";
             if (is_pt) {
-                full_data << "{ category: 'Cluster " << (clusterIdx + 1) << "', label: '', ";
+                full_data << "category: 'Cluster " << (clusterIdx + 1) << "', label: '', ";
             } else {
                 auto node = _scanner.getNodes().at(cluster.getID());
-                full_data << "{ category: `" << node->getIdentifier() << "`, label: `" << node->getName() << "`, ";
+                full_data << "category: `" << node->getIdentifier() << "`, label: `" << node->getName() << "`, ";
             }
             switch(parameters.getDatePrecisionType()) {
                 case DataTimeRange::DAY:
