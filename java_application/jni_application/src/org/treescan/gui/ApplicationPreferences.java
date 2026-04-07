@@ -132,6 +132,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
 
         parallelProcessorsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Software Updates"));
 
+        jLabel1.setLabelFor(_checkFrequency);
         jLabel1.setText("Automatically check for updates:");
 
         javax.swing.GroupLayout parallelProcessorsGroupLayout = new javax.swing.GroupLayout(parallelProcessorsGroup);

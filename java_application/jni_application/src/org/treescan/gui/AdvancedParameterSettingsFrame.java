@@ -1485,8 +1485,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _chk_include_identical_parent_cuts = new javax.swing.JCheckBox();
         _trend_model_group = new javax.swing.JPanel();
         _report_data_as_percentage = new javax.swing.JCheckBox();
-        _userDefinedRunTitle = new javax.swing.JPanel();
-        _printTitle = new javax.swing.JTextField();
         _results_title_group = new javax.swing.JPanel();
         _results_title = new javax.swing.JTextField();
         _advanced_adjustments_tab = new javax.swing.JPanel();
@@ -1529,6 +1527,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
         setResizable(true);
 
+        _cutFileLabel.setLabelFor(_cutFileTextField);
         _cutFileLabel.setText("Cut File:"); // NOI18N
 
         _cutFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -1996,6 +1995,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 11, Short.MAX_VALUE))
         );
+
+        _startRangeStartYearTextField.getAccessibleContext().setAccessibleDescription("start time range begin year");
+        _startRangeStartMonthTextField.getAccessibleContext().setAccessibleDescription("start time range begin month");
+        _startRangeStartDayTextField.getAccessibleContext().setAccessibleDescription("start time range begin day");
+        _startRangeEndYearTextField.getAccessibleContext().setAccessibleDescription("start time range end year");
+        _startRangeEndMonthTextField.getAccessibleContext().setAccessibleDescription("start time range end month");
+        _startRangeEndDayTextField.getAccessibleContext().setAccessibleDescription("start time range end day");
+        _endRangeEndDayTextField.getAccessibleContext().setAccessibleDescription("end time range end day");
+        _endRangeEndMonthTextField.getAccessibleContext().setAccessibleDescription("end time range end month");
+        _endRangeEndYearTextField.getAccessibleContext().setAccessibleDescription("end time range end year");
+        _endRangeStartDayTextField.getAccessibleContext().setAccessibleDescription("end time range begin day");
+        _endRangeStartMonthTextField.getAccessibleContext().setAccessibleDescription("end time range begin month");
+        _endRangeStartYearTextField.getAccessibleContext().setAccessibleDescription("end time range begin year");
 
         _temporal_window_cards.add(_windowCompletePanel, "temporal_window_complete");
 
@@ -2825,25 +2837,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _userDefinedRunTitle.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Title for Results File"));
-
-        javax.swing.GroupLayout _userDefinedRunTitleLayout = new javax.swing.GroupLayout(_userDefinedRunTitle);
-        _userDefinedRunTitle.setLayout(_userDefinedRunTitleLayout);
-        _userDefinedRunTitleLayout.setHorizontalGroup(
-            _userDefinedRunTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_userDefinedRunTitleLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_printTitle)
-                .addContainerGap())
-        );
-        _userDefinedRunTitleLayout.setVerticalGroup(
-            _userDefinedRunTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _userDefinedRunTitleLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(_printTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-
         _results_title_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Title for Results File"));
 
         javax.swing.GroupLayout _results_title_groupLayout = new javax.swing.GroupLayout(_results_title_group);
@@ -2877,11 +2870,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_trend_model_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_results_title_group, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
-            .addGroup(_advanced_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(_advanced_output_tabLayout.createSequentialGroup()
-                    .addGap(32, 32, 32)
-                    .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGap(33, 33, 33)))
         );
         _advanced_output_tabLayout.setVerticalGroup(
             _advanced_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2895,11 +2883,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_results_title_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(112, Short.MAX_VALUE))
-            .addGroup(_advanced_output_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(_advanced_output_tabLayout.createSequentialGroup()
-                    .addGap(169, 169, 169)
-                    .addComponent(_userDefinedRunTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(169, Short.MAX_VALUE)))
         );
 
         jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
@@ -3284,6 +3267,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _numMostLikelyClustersGraphLabel.setLabelFor(_numMostLikelyClustersGraph);
         _numMostLikelyClustersGraphLabel.setText("most likely clusters, one graph for each");
         _numMostLikelyClustersGraphLabel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -3362,6 +3346,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_reportClusterWindowGraph)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        _temporalGraphMostLikelyX.getAccessibleContext().setAccessibleName("most likely clusters, one per graph");
 
         javax.swing.GroupLayout _advanced_temporal_output_tabLayout = new javax.swing.GroupLayout(_advanced_temporal_output_tab);
         _advanced_temporal_output_tab.setLayout(_advanced_temporal_output_tabLayout);
@@ -3525,7 +3511,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _powerEvaluationWithSpecifiedCases;
     private javax.swing.JLabel _powerEvaluationWithSpecifiedCasesLabel;
     private javax.swing.JPanel _powerEvaluationsGroup;
-    private javax.swing.JTextField _printTitle;
     private javax.swing.JCheckBox _prospective_evaluation;
     private java.awt.Choice _prospective_frequency;
     private javax.swing.JPanel _prospective_frequency_group;
@@ -3578,7 +3563,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _time_range_restrictions;
     private javax.swing.JTextField _totalPowerCases;
     private javax.swing.JPanel _trend_model_group;
-    private javax.swing.JPanel _userDefinedRunTitle;
     private javax.swing.JPanel _windowCompletePanel;
     private javax.swing.JPanel _windowGenericPanel;
     private javax.swing.JPanel jPanel1;

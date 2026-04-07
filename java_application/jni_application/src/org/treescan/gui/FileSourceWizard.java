@@ -1308,6 +1308,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _main_content_panel.setLayout(new java.awt.CardLayout());
 
         _file_selection_label.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        _file_selection_label.setLabelFor(_source_filename);
         _file_selection_label.setText("Case File:");
 
         _browse_source.setText("..."); // NOI18N
@@ -1364,6 +1365,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         _main_content_panel.add(_fileSourceSettingsPanel, "source-settings");
 
+        jLabel1.setLabelFor(_fileContentsTextArea);
         jLabel1.setText("Sample of File Contents:"); // NOI18N
 
         _fileContentsTextArea.setEditable(false);
@@ -1371,6 +1373,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _fileContentsTextArea.setRows(5);
         jScrollPane1.setViewportView(_fileContentsTextArea);
 
+        jLabel4.setLabelFor(_ignoreRowsTextField);
         jLabel4.setText("Ignore first"); // NOI18N
 
         _ignoreRowsTextField.setText("0"); // NOI18N
@@ -1458,6 +1461,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _otherFieldSeparatorTextField.getAccessibleContext().setAccessibleDescription("other field separator");
+
         _groupIndiocatorGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Group Indicator"));
 
         _doubleQuotesRadioButton.setSelected(true);
@@ -1538,6 +1543,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setBorder(null);
 
+        _displayVariablesLabel.setLabelFor(_displayVariablesComboBox);
         _displayVariablesLabel.setText("Import TreeScan Variables For Analysis Using:"); // NOI18N
 
         _displayVariablesComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -1710,6 +1716,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addComponent(_progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(227, 227, 227))
         );
+
+        _outputDirectoryTextField.getAccessibleContext().setAccessibleDescription("save imported input file full path");
 
         _main_content_panel.add(_outputSettingsPanel, "output-settings");
 

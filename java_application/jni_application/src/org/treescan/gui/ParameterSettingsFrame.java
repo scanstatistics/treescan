@@ -719,16 +719,16 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _scanAreaHighRates = new javax.swing.JRadioButton();
         _scanAreaHighOrLowRates = new javax.swing.JRadioButton();
         _outputTab = new javax.swing.JPanel();
-        _reportResultsAsHTML = new javax.swing.JCheckBox();
         _outputFileTextField = new javax.swing.JTextField();
         _resultsFileLabel = new javax.swing.JLabel();
         _resultsFileBrowseButton = new javax.swing.JButton();
-        _resultsFileLabel1 = new javax.swing.JLabel();
-        _reportResultsAsCsvTable = new javax.swing.JCheckBox();
         _advancedOutputButton = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
         _generate_ncbi_asn = new javax.swing.JCheckBox();
         _generate_newick = new javax.swing.JCheckBox();
-        jLabel1 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        _reportResultsAsHTML = new javax.swing.JCheckBox();
+        _reportResultsAsCsvTable = new javax.swing.JCheckBox();
 
         _timePrecisionButtonGroup.add(_timePrecisionNone);
         _timePrecisionButtonGroup.add(_timePrecisionYear);
@@ -1012,6 +1012,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
 
         _startRangeYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         _startRangeYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _startRangeYearLabel.setLabelFor(_studyPeriodStartDateGenericTextField);
         _startRangeYearLabel.setText("Generic Unit"); // NOI18N
 
         _studyPeriodStartDateGenericTextField.setText("0"); // NOI18N
@@ -1057,6 +1058,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
 
         _endRangeYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         _endRangeYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _endRangeYearLabel.setLabelFor(_studyPeriodEndDateGenericTextField);
         _endRangeYearLabel.setText("Generic Unit"); // NOI18N
 
         javax.swing.GroupLayout _studyPeriodGenericLayout = new javax.swing.GroupLayout(_studyPeriodGeneric);
@@ -1076,7 +1078,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addGroup(_studyPeriodGenericLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(_endRangeYearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_studyPeriodEndDateGenericTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE))
-                .addContainerGap(229, Short.MAX_VALUE))
+                .addContainerGap(259, Short.MAX_VALUE))
         );
         _studyPeriodGenericLayout.setVerticalGroup(
             _studyPeriodGenericLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1151,10 +1153,12 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addComponent(_timePrecisionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_studyPeriodGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
+
+        _controlFileImportButton.getAccessibleContext().setAccessibleDescription("Import control file ...");
 
         jTabbedPane1.addTab("Input", _inputTab);
 
@@ -1218,6 +1222,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             }
         });
 
+        _eventProbabilityLabel.setLabelFor(_BernoulliButton);
         _eventProbabilityLabel.setText("Case Probability:");
 
         _eventProbabilityLabel2.setText("/");
@@ -1294,6 +1299,9 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addComponent(_TrendModelButton)
                 .addGap(22, 22, 22))
         );
+
+        _eventProbabiltyDenominator.getAccessibleContext().setAccessibleName("");
+        _eventProbabiltyDenominator.getAccessibleContext().setAccessibleDescription("case probability denominator");
 
         _scanStatisticPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Conditional Analysis"));
 
@@ -1451,8 +1459,8 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             .addGroup(_probabilityModelPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_probabilityModelPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_uniformButton, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
-                    .addComponent(_bernoulliTimeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE))
+                    .addComponent(_uniformButton, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                    .addComponent(_bernoulliTimeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _probabilityModelPanel1Layout.setVerticalGroup(
@@ -1557,7 +1565,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(_probabilityModelPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE)
-                    .addComponent(_probabilityModelPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                    .addComponent(_probabilityModelPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 154, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_scanAreaPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1567,14 +1575,13 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
 
         jTabbedPane1.addTab("Analysis", _analysisTab);
 
-        _reportResultsAsHTML.setText("Report Results as HTML");
-
         _outputFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
                 _advancedParametersSetting.enableSequentialAnalysisGroup();
             }
         });
 
+        _resultsFileLabel.setLabelFor(_outputFileTextField);
         _resultsFileLabel.setText("Results File:"); // NOI18N
 
         _resultsFileBrowseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/folder_open_small.png"))); // NOI18N
@@ -1597,10 +1604,6 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             }
         });
 
-        _resultsFileLabel1.setText("Additional Output Files:"); // NOI18N
-
-        _reportResultsAsCsvTable.setText("Report Results as CSV Table");
-
         _advancedOutputButton.setText("Advanced >>"); // NOI18N
         _advancedOutputButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -1608,6 +1611,8 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 getAdvancedParameterInternalFrame().requestFocus();
             }
         });
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Whole Tree Visualizations:"));
 
         _generate_ncbi_asn.setText("Generate NCBI Genome Workbench ASN1 File");
         _generate_ncbi_asn.addActionListener(new java.awt.event.ActionListener() {
@@ -1618,7 +1623,55 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
 
         _generate_newick.setText("Generate Newick Tree Format File");
 
-        jLabel1.setText("Whole Tree Visualizations:");
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_generate_ncbi_asn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(_generate_newick, javax.swing.GroupLayout.PREFERRED_SIZE, 595, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_generate_ncbi_asn)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_generate_newick)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Additional Output Files:"));
+
+        _reportResultsAsHTML.setText("Report Results as HTML");
+
+        _reportResultsAsCsvTable.setText("Report Results as CSV Table");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_reportResultsAsHTML, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_reportResultsAsCsvTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_reportResultsAsHTML)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_reportResultsAsCsvTable)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout _outputTabLayout = new javax.swing.GroupLayout(_outputTab);
         _outputTab.setLayout(_outputTabLayout);
@@ -1628,21 +1681,17 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addContainerGap()
                 .addGroup(_outputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(_outputTabLayout.createSequentialGroup()
-                        .addComponent(_outputFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE)
+                        .addComponent(_outputFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_resultsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(_reportResultsAsCsvTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_reportResultsAsHTML, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_resultsFileLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _outputTabLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(_advancedOutputButton))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(_outputTabLayout.createSequentialGroup()
                         .addComponent(_resultsFileLabel)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_generate_ncbi_asn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_generate_newick, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _outputTabLayout.setVerticalGroup(
@@ -1655,18 +1704,10 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                     .addComponent(_resultsFileBrowseButton)
                     .addComponent(_outputFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_resultsFileLabel1)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_reportResultsAsHTML)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_reportResultsAsCsvTable)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_generate_ncbi_asn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_generate_newick)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 147, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 134, Short.MAX_VALUE)
                 .addComponent(_advancedOutputButton)
                 .addContainerGap())
         );
@@ -1736,7 +1777,6 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
     private javax.swing.JCheckBox _reportResultsAsHTML;
     private javax.swing.JButton _resultsFileBrowseButton;
     private javax.swing.JLabel _resultsFileLabel;
-    private javax.swing.JLabel _resultsFileLabel1;
     private javax.swing.JRadioButton _scanAreaHighOrLowRates;
     private javax.swing.JRadioButton _scanAreaHighRates;
     private javax.swing.JRadioButton _scanAreaLowRates;
@@ -1778,7 +1818,8 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
     private javax.swing.JRadioButton _uniformButton;
     public javax.swing.JCheckBox _variable_case_probability;
     private javax.swing.ButtonGroup conditionalButtonGroup;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.ButtonGroup scanAreaButtonGroup;
     private javax.swing.ButtonGroup scanButtonGroup;

@@ -140,7 +140,7 @@
                       <Component id="_timePrecisionGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_studyPeriodGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="58" max="32767" attributes="0"/>
+                      <EmptySpace pref="59" max="32767" attributes="0"/>
                       <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -206,6 +206,9 @@
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" value="Import count file ..." noResource="true"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Import control file ..."/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Controls.toString() + &quot;1&quot;;&#xa;        if (!_input_source_map.containsKey(key)) {&#xa;          _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Controls));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, ParameterSettingsFrame.this, true);&#xa;    }&#xa;});"/>
                 <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="ParameterSettingsFrame__controlFileImportButton"/>
@@ -581,7 +584,7 @@
                                   <Component id="_endRangeYearLabel" alignment="0" max="32767" attributes="1"/>
                                   <Component id="_studyPeriodEndDateGenericTextField" alignment="0" pref="80" max="32767" attributes="1"/>
                               </Group>
-                              <EmptySpace pref="229" max="32767" attributes="0"/>
+                              <EmptySpace pref="259" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -616,6 +619,9 @@
                           <Font name="Tahoma" size="10" style="0"/>
                         </Property>
                         <Property name="horizontalAlignment" type="int" value="0"/>
+                        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                          <ComponentRef name="_studyPeriodStartDateGenericTextField"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Generic Unit" noResource="true"/>
                       </Properties>
                     </Component>
@@ -647,6 +653,9 @@
                           <Font name="Tahoma" size="10" style="0"/>
                         </Property>
                         <Property name="horizontalAlignment" type="int" value="0"/>
+                        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                          <ComponentRef name="_studyPeriodEndDateGenericTextField"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Generic Unit" noResource="true"/>
                       </Properties>
                     </Component>
@@ -813,6 +822,10 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="2"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="case probability denominator"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_eventProbabiltyDenominator.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_eventProbabiltyDenominator.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _eventProbabiltyDenominator.setText(&quot;2&quot;);&#xa;    }&#xa;});&#xa;_eventProbabiltyDenominator.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_eventProbabiltyDenominator, e, 6);&#xa;    }&#xa;});&#xa;_eventProbabiltyDenominator.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -827,6 +840,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_eventProbabilityLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_BernoulliButton"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Case Probability:"/>
                   </Properties>
                 </Component>
@@ -1055,8 +1071,8 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_uniformButton" pref="273" max="32767" attributes="0"/>
-                              <Component id="_bernoulliTimeButton" alignment="0" pref="273" max="32767" attributes="0"/>
+                              <Component id="_uniformButton" pref="288" max="32767" attributes="0"/>
+                              <Component id="_bernoulliTimeButton" alignment="0" pref="288" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -1202,24 +1218,20 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="_outputFileTextField" pref="594" max="32767" attributes="0"/>
+                              <Component id="_outputFileTextField" pref="624" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_resultsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="_reportResultsAsCsvTable" alignment="0" max="32767" attributes="0"/>
-                          <Component id="_reportResultsAsHTML" alignment="0" max="32767" attributes="0"/>
-                          <Component id="_resultsFileLabel1" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               <Component id="_advancedOutputButton" min="-2" max="-2" attributes="0"/>
                           </Group>
+                          <Component id="jPanel2" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" attributes="0">
                               <Component id="_resultsFileLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="jLabel1" max="32767" attributes="0"/>
-                          <Component id="_generate_ncbi_asn" alignment="0" max="32767" attributes="0"/>
-                          <Component id="_generate_newick" max="32767" attributes="0"/>
+                          <Component id="jPanel1" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1236,18 +1248,10 @@
                           <Component id="_outputFileTextField" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_resultsFileLabel1" min="-2" max="-2" attributes="0"/>
+                      <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_reportResultsAsHTML" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_reportResultsAsCsvTable" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_generate_ncbi_asn" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="_generate_newick" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="147" max="32767" attributes="0"/>
+                      <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="134" max="32767" attributes="0"/>
                       <Component id="_advancedOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1255,11 +1259,6 @@
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JCheckBox" name="_reportResultsAsHTML">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Report Results as HTML"/>
-              </Properties>
-            </Component>
             <Component class="javax.swing.JTextField" name="_outputFileTextField">
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_outputFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        _advancedParametersSetting.enableSequentialAnalysisGroup();&#xa;    }&#xa;});"/>
@@ -1268,6 +1267,9 @@
             </Component>
             <Component class="javax.swing.JLabel" name="_resultsFileLabel">
               <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="_outputFileTextField"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Results File:" noResource="true"/>
               </Properties>
             </Component>
@@ -1282,16 +1284,6 @@
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        List&lt;InputFileFilter&gt; filters = new ArrayList&lt;InputFileFilter&gt;();&#xa;        filters.add(new InputFileFilter(&quot;txt&quot;,&quot;Results Files (*.txt)&quot;));&#xa;        FileSelectionDialog select = new FileSelectionDialog(TreeScanApplication.getInstance(), &quot;Select Results File&quot;, filters, TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_saveas();&#xa;        if (file != null) {&#xa;            TreeScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            String filename = file.getAbsolutePath();&#xa;            if (new File(filename).getName().lastIndexOf(&apos;.&apos;) == -1){&#xa;                filename = filename + &quot;.txt&quot;;&#xa;            } &#xa;            _outputFileTextField.setText(filename);  &#xa;        }&#xa;        _advancedParametersSetting.enableSequentialAnalysisGroup();&#xa;    }&#xa;});&#xa;"/>
               </AuxValues>
             </Component>
-            <Component class="javax.swing.JLabel" name="_resultsFileLabel1">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Additional Output Files:" noResource="true"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JCheckBox" name="_reportResultsAsCsvTable">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Report Results as CSV Table"/>
-              </Properties>
-            </Component>
             <Component class="javax.swing.JButton" name="_advancedOutputButton">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Advanced &gt;&gt;" noResource="true"/>
@@ -1300,24 +1292,106 @@
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_advancedOutputButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.OUTPUT);&#xa;        getAdvancedParameterInternalFrame().requestFocus();&#xa;    }&#xa;});"/>
               </AuxValues>
             </Component>
-            <Component class="javax.swing.JCheckBox" name="_generate_ncbi_asn">
+            <Container class="javax.swing.JPanel" name="jPanel1">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Generate NCBI Genome Workbench ASN1 File"/>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Whole Tree Visualizations:"/>
+                  </Border>
+                </Property>
               </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_generate_ncbi_asnActionPerformed"/>
-              </Events>
-            </Component>
-            <Component class="javax.swing.JCheckBox" name="_generate_newick">
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_generate_ncbi_asn" alignment="0" max="32767" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_generate_newick" min="-2" pref="595" max="-2" attributes="0"/>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_generate_ncbi_asn" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_generate_newick" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JCheckBox" name="_generate_ncbi_asn">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Generate NCBI Genome Workbench ASN1 File"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_generate_ncbi_asnActionPerformed"/>
+                  </Events>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_generate_newick">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Generate Newick Tree Format File"/>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JPanel" name="jPanel2">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Generate Newick Tree Format File"/>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Additional Output Files:"/>
+                  </Border>
+                </Property>
               </Properties>
-            </Component>
-            <Component class="javax.swing.JLabel" name="jLabel1">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Whole Tree Visualizations:"/>
-              </Properties>
-            </Component>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_reportResultsAsHTML" max="32767" attributes="0"/>
+                              <Component id="_reportResultsAsCsvTable" max="32767" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_reportResultsAsHTML" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_reportResultsAsCsvTable" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JCheckBox" name="_reportResultsAsHTML">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Report Results as HTML"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_reportResultsAsCsvTable">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Report Results as CSV Table"/>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
           </SubComponents>
         </Container>
       </SubComponents>

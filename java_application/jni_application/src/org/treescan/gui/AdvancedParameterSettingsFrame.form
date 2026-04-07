@@ -121,6 +121,9 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="_cutFileLabel">
               <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="_cutFileTextField"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Cut File:" noResource="true"/>
               </Properties>
             </Component>
@@ -678,16 +681,25 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="start time range begin year"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_startRangeStartMonthTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="01" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="start time range begin month"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_startRangeStartDayTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="01" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="start time range begin day"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="_startRangeToLabel">
                           <Properties>
@@ -698,31 +710,49 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="start time range end year"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_startRangeEndMonthTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="01" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="start time range end month"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_startRangeEndDayTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="01" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="start time range end day"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_endRangeEndDayTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="31" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="end time range end day"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_endRangeEndMonthTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="12" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="end time range end month"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_endRangeEndYearTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="end time range end year"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="_endRangeToLabel">
                           <Properties>
@@ -733,16 +763,25 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="31" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="end time range begin day"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_endRangeStartMonthTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="12" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="end time range begin month"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_endRangeStartYearTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="end time range begin year"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="_endWindowRangeLabel">
                           <Properties>
@@ -1536,13 +1575,6 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
-                  <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
-                          <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
-                          <Component id="_userDefinedRunTitle" max="32767" attributes="0"/>
-                          <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
@@ -1557,13 +1589,6 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_results_title_group" min="-2" max="-2" attributes="0"/>
                       <EmptySpace pref="112" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace min="-2" pref="169" max="-2" attributes="0"/>
-                          <Component id="_userDefinedRunTitle" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="169" max="32767" attributes="0"/>
-                      </Group>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1733,44 +1758,6 @@
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportLLRResultsAsCsvTable.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
-                </Component>
-              </SubComponents>
-            </Container>
-            <Container class="javax.swing.JPanel" name="_userDefinedRunTitle">
-              <Properties>
-                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Title for Results File">
-                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-                        <EtchetBorder/>
-                      </Border>
-                    </TitledBorder>
-                  </Border>
-                </Property>
-              </Properties>
-
-              <Layout>
-                <DimensionLayout dim="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_printTitle" max="32767" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                </DimensionLayout>
-                <DimensionLayout dim="1">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="1" attributes="0">
-                          <EmptySpace max="32767" attributes="0"/>
-                          <Component id="_printTitle" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                </DimensionLayout>
-              </Layout>
-              <SubComponents>
-                <Component class="javax.swing.JTextField" name="_printTitle">
                 </Component>
               </SubComponents>
             </Container>
@@ -2348,6 +2335,9 @@
                       <ComponentRef name="_temporal_graph_buttongroup"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="most likely clusters, one per graph"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalGraphMostLikelyX.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());&#xa;            enableSetDefaultsButton();&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -2366,6 +2356,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_numMostLikelyClustersGraphLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_numMostLikelyClustersGraph"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="most likely clusters, one graph for each"/>
                   </Properties>
                   <Events>
