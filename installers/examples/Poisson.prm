@@ -165,6 +165,8 @@ temporal-graph-type=0
 temporal-graph-most-mlc=1
 ;cluster cutoff to report in temporal graph (numeric)
 temporal-graph-significance-cutoff=0.05
+;output cluster window graph HTML file (y/n)
+output-clusterwindow-graph-html=n
 
 [Additional Output]
 ;create LLR results (y/n)
