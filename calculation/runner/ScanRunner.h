@@ -199,9 +199,9 @@ protected:
 
 public:
     NodeStructure(const std::string& identifier) 
-        :_identifier(identifier), _ID(0), _cumulative_status(NON_CUMULATIVE), _level(0), _min_censored_Br(0), _is_evaluated(true) {}
+        :_identifier(identifier), _ID(0), _cut_type(Parameters::SIMPLE), _cumulative_status(NON_CUMULATIVE), _level(0), _is_evaluated(true), _min_censored_Br(0) { }
     NodeStructure(const std::string& identifier, const Parameters& parameters, size_t container_size) 
-        : _identifier(identifier), _ID(0), _cut_type(parameters.getCutType()), _cumulative_status(NON_CUMULATIVE), _level(0), _min_censored_Br(0), _is_evaluated(true) {
+        : _identifier(identifier), _ID(0), _cut_type(parameters.getCutType()), _cumulative_status(NON_CUMULATIVE), _level(0), _is_evaluated(true), _min_censored_Br(0) {
             initialize_containers(parameters, container_size);
     }
 
@@ -217,7 +217,6 @@ public:
             );
             return false;
         }
-        size_t initial_size = _sample_site_data.size();
         for (size_t ssIdx = 0; ssIdx < ssCount; ++ssIdx) {
             auto itr = _sample_site_data.find(ssIdx);
             if (itr == _sample_site_data.end())

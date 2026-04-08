@@ -190,7 +190,6 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeS
             case Parameters::SIMPLE: break; // already done
             case Parameters::ORDINAL: {// Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
                 for (size_t i = 0; i < thisNode.getChildren().size() - 1; ++i) {
-                    const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
                     SimulationNode::SampleSiteDiff_t accumulation = _treeSimNodes[i].getSampleSiteDifferencesBr();
                     for (size_t j = i + 1; j < thisNode.getChildren().size(); ++j) {
                         const NodeStructure& childNode(*(thisNode.getChildren()[j]));

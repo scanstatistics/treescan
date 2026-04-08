@@ -171,9 +171,9 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getAdditionalOutputFiles(S
     std::string buffer;
 
     try {
-        auto addByExtension = [&](const std::string& file_label, const std::string& extension) {
-            files.emplace_back(file_label, filename.setExtension(extension.c_str()).getFullPath(buffer));
-        };
+        //auto addByExtension = [&](const std::string& file_label, const std::string& extension) {
+        //    files.emplace_back(file_label, filename.setExtension(extension.c_str()).getFullPath(buffer));
+        //};
         auto addByFullpath = [&](const std::string& file_label, const std::string& full_path) {
             files.emplace_back(file_label, full_path);
             filename.setFullPath(_parameters.getOutputFileName().c_str()); // reset

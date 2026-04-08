@@ -440,7 +440,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
                                                         std::vector<unsigned int> list;
                                                         if (!csv_string_to_typelist<unsigned int>(value.c_str(), list))
                                                             throw parameter_error("Invalid Parameter Setting:\nFor parameter '%s', unable to read as comma separated list of integers.\n", GetParameterLabel(e), value.c_str());
-                                                            _parameters.setRestrictedTreeLevels(list);
+                                                        _parameters.setRestrictedTreeLevels(list);
                                                         }
                                                         break;
             case Parameters::RESTRICT_EVALUATED_NODES : _parameters.setRestrictEvaluatedTreeNodes(ReadBoolean(value, e)); break;

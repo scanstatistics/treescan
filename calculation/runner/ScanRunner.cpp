@@ -3441,7 +3441,6 @@ bool ScanRunner::setupTree() {
                 if (_censored_data) {
                     // If there exists censored data, the expected counts were added during the case file read. Now we need to add expected counts for cases that are not censored.
                     size_t daysInDataTimeRange = _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets();
-                    DataTimeRange minmax = _parameters.getDataTimeRangeSet().getMinMax();
                     for (size_t n=0; n < _Nodes.size(); ++n) {
                         NodeStructure::count_t nodeCount=0, nodeNonCensored=0, nodeCensored=0;
                         NodeStructure& node = *(_Nodes[n]);

@@ -599,8 +599,8 @@ std::string & ResultsFileWriter::getAnalysisSuccinctStatement(std::string & stat
         default: throw prg_error("Unknown scan type (%d).", "getAnalysisSuccinctStatement()", parameters.getScanType());
     }
     if (parameters.getPerformDayOfWeekAdjustment())
-        buffer << newline << "adjusting for weekly trends nonparametrically";
-	statement = buffer.str();
+         buffer << newline << "adjusting for weekly trends nonparametrically";
+    statement = buffer.str();
     return statement;
 }
 

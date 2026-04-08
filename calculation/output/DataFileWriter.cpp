@@ -647,8 +647,8 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
         }
     }
     // Calculate case and expected based on analysis type - this mirrors the scan process.
-    int _C;
-    double _N;
+    int _C=0;
+    double _N=0;
     if ((params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODEANDTIME) ||
         (params.getScanType() == Parameters::TIMEONLY && params.isPerformingDayOfWeekAdjustment()) ||
         (params.getScanType() == Parameters::TREETIME && params.getConditionalType() == Parameters::NODE && params.isPerformingDayOfWeekAdjustment())) {

@@ -239,29 +239,30 @@ int addZip(const std::string& filename_try, const std::string& add_filename, boo
                 throw prg_error("Error in opening %s for reading.", "addZip()", filenameinzip);
         }
 
-        if (err == ZIP_OK)
+        if (err == ZIP_OK) {
             do {
                 err = ZIP_OK;
-                size_read = (int)fread(buf,1,size_buf,fin);
+                size_read = (int)fread(buf, 1, size_buf, fin);
                 if (size_read < size_buf)
                     if (feof(fin) == 0)
                         throw prg_error("Error in reading %s.", "add_zip()", filenameinzip);
-                 if (size_read>0) {
-                    err = zipWriteInFileInZip (zf,buf,size_read);
+                if (size_read > 0) {
+                    err = zipWriteInFileInZip(zf, buf, size_read);
                     if (err < 0) throw prg_error("Error in writing %s in the zipfile.", "addZip()", filenameinzip);
-                 }
+                }
             } while ((err == ZIP_OK) && (size_read > 0));
-            if (fin) fclose(fin);
-            if (err < 0)
-                err = ZIP_ERRNO;
-            else {
-                err = zipCloseFileInZip(zf);
-                if (err != ZIP_OK) throw prg_error("Error in closing %s in the zipfile.", "addZip()", filenameinzip);
-            }
+        }
+        if (fin) fclose(fin);
+        if (err < 0)
+            err = ZIP_ERRNO;
+        else {
+            err = zipCloseFileInZip(zf);
+            if (err != ZIP_OK) throw prg_error("Error in closing %s in the zipfile.", "addZip()", filenameinzip);
+        }
 
-            errclose = zipClose(zf,NULL);
-            if (errclose != ZIP_OK)
-                throw prg_error("Error in closing %s.", "addZip()", filename_try.c_str());
+        errclose = zipClose(zf,NULL);
+        if (errclose != ZIP_OK)
+            throw prg_error("Error in closing %s.", "addZip()", filename_try.c_str());
     }
     free(buf);
     return 0;
@@ -297,36 +298,36 @@ void do_extract_currentfile(unzFile uf, const std::string& extractTo) {
     void* buf = (void*)malloc(size_buf);
     if (buf == NULL)
         throw prg_error("Error allocating memory.", "do_extract_currentfile()");
-        std::string write_filename(extractTo);
-        write_filename += filename_inzip;
-        err = unzOpenCurrentFilePassword(uf, 0);
-        if (err != UNZ_OK)
-            throw prg_error("error %d with zipfile in unzOpenCurrentFilePassword\n", "do_extract_currentfile()", err);
-        if (err == UNZ_OK) {
-            fout = FOPEN_FUNC(write_filename.c_str(), "wb");
-            if (fout == NULL)
-                prg_error("error opening %s\n", "do_extract_currentfile()", write_filename.c_str());
-        }
-        if (fout != NULL) {
-            do {
-                err = unzReadCurrentFile(uf, buf, size_buf);
-                if (err < 0)
-                    throw prg_error("error %d with zipfile in unzReadCurrentFile\n", "do_extract_currentfile()", err);
-                if (err > 0) {
-                    if (fwrite(buf, err, 1, fout) != 1)
-                        throw prg_error("error %d in writing extracted file", "do_extract_currentfile()", err);
-                }
-            } while (err > 0);
-            if (fout) fclose(fout);
-            //if (err == 0) { change_file_date(write_filename, file_info.dosDate, file_info.tmu_date); }
-        }
-        if (err == UNZ_OK) {
-            err = unzCloseCurrentFile(uf);
-            if (err != UNZ_OK) {
-                throw prg_error("error %d with zipfile in unzCloseCurrentFile\n", "do_extract_currentfile()", err);
+    std::string write_filename(extractTo);
+    write_filename += filename_inzip;
+    err = unzOpenCurrentFilePassword(uf, 0);
+    if (err != UNZ_OK)
+        throw prg_error("error %d with zipfile in unzOpenCurrentFilePassword\n", "do_extract_currentfile()", err);
+    if (err == UNZ_OK) {
+        fout = FOPEN_FUNC(write_filename.c_str(), "wb");
+        if (fout == NULL)
+           throw prg_error("error opening %s\n", "do_extract_currentfile()", write_filename.c_str());
+    }
+    if (fout != NULL) {
+        do {
+            err = unzReadCurrentFile(uf, buf, size_buf);
+            if (err < 0)
+                throw prg_error("error %d with zipfile in unzReadCurrentFile\n", "do_extract_currentfile()", err);
+            if (err > 0) {
+                if (fwrite(buf, err, 1, fout) != 1)
+                   throw prg_error("error %d in writing extracted file", "do_extract_currentfile()", err);
             }
-        } else
-            unzCloseCurrentFile(uf); // don't lose the error
+        } while (err > 0);
+        if (fout) fclose(fout);
+        //if (err == 0) { change_file_date(write_filename, file_info.dosDate, file_info.tmu_date); }
+    }
+    if (err == UNZ_OK) {
+        err = unzCloseCurrentFile(uf);
+        if (err != UNZ_OK) {
+            throw prg_error("error %d with zipfile in unzCloseCurrentFile\n", "do_extract_currentfile()", err);
+        }
+    } else
+        unzCloseCurrentFile(uf); // don't lose the error
     free(buf);
 }
 
