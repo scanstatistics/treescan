@@ -19,10 +19,11 @@ AbstractRandomizer * AbstractRandomizer::getNewRandomizer(const ScanRunner& scan
                 case Parameters::UNCONDITIONAL :
                     if (parameters.getModelType() == Parameters::POISSON)
                         return new PoissonRandomizer(false, scanner, parameters.getRandomizationSeed());
-                    if (parameters.getModelType() == Parameters::BERNOULLI_TREE)
+                    if (parameters.getModelType() == Parameters::BERNOULLI_TREE) {
                         if (parameters.getVariableCaseProbability())
                             return new UnconditionalBernoulliVariableProbabilityRandomizer(scanner, parameters.getRandomizationSeed());
                         return new UnconditionalBernoulliRandomizer(scanner, parameters.getRandomizationSeed());
+                    }
                     throw prg_error("Cannot determine randomizer: tree-only, unconditonal, model (%d).", "getNewRandomizer()", parameters.getModelType());
                 case Parameters::TOTALCASES :
                     if (parameters.getModelType() == Parameters::POISSON)
