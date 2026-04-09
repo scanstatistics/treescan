@@ -78,7 +78,6 @@ class TemporalChartGenerator {
         static const char * TEMPLATE_CLUSTERDETAILS;
         const ScanRunner &  _scanner;
         std::vector<int>    _ptcases;
-        const SimulationVariables & _simVars;
         mutable std::unique_ptr<std::ofstream> _csv_out;
 
         // 0: Inside Cut Window, Inside Cut Node
@@ -115,7 +114,7 @@ class TemporalChartGenerator {
         ) const;
 
     public:
-        TemporalChartGenerator(const ScanRunner& scanner, const SimulationVariables& simVars);
+        TemporalChartGenerator(const ScanRunner& scanner);
 
         void generateChart() const;
         static FileName& getFilename(FileName& filename, const std::string& ext);

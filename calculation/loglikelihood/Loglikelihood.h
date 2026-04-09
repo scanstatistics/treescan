@@ -137,7 +137,6 @@ public:
 /** Log likelihood class for the signed rank model. */
 class SignedRankLoglikelihood : public AbstractLoglikelihood {
 private:
-    unsigned int _num_sample_sites;
     mutable std::vector<std::pair<double,double>> _ranker;
 
 public:

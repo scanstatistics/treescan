@@ -18,7 +18,6 @@ DataTimeRange DataTimeRange::parse(const std::string& from, DataTimeRange::DateP
     trimString(trimString(fromMod, "["), "]");
 
     std::deque<index_t> indexes;
-    boost::gregorian::date rangeStart;
     boost::escaped_list_separator<char> separate_indices('\\', ',');
     boost::tokenizer<boost::escaped_list_separator<char> > rangeCSV(fromMod, separate_indices);
     for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itrR=rangeCSV.begin(); itrR != rangeCSV.end(); ++itrR) {

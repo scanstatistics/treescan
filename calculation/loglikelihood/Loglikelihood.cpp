@@ -81,7 +81,7 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
 //////////////////////////////////////// SignedRankLoglikelihood ////////////////////////////////////////
 
 SignedRankLoglikelihood::SignedRankLoglikelihood(const Parameters& parameters, unsigned int num_sample_sites):
-    AbstractLoglikelihood(parameters), _num_sample_sites(num_sample_sites) {
+    AbstractLoglikelihood(parameters) {
     _ranker.resize(num_sample_sites);
 }
 

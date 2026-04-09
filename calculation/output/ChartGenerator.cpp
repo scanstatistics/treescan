@@ -239,7 +239,7 @@ const char* TemporalChartGenerator::TEMPLATE_CLUSTERDETAILS = "\n \
             </div> \n";
 
 /** Constructor */
-TemporalChartGenerator::TemporalChartGenerator(const ScanRunner& scanner, const SimulationVariables& simVars):_scanner(scanner), _simVars(simVars) {
+TemporalChartGenerator::TemporalChartGenerator(const ScanRunner& scanner):_scanner(scanner) {
     if (_scanner.getParameters().getScanType() == Parameters::TREETIME) {
         _ptcases = std::vector<int>(static_cast<int>(_scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets()) + 1, 0);
         // number of cases by time interval for all nodes

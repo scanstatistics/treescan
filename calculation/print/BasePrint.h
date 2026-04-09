@@ -9,7 +9,7 @@ class BasePrint {
   public:
     enum eInputFileType {CASEFILE, CONTROLFILE,COORDFILE, GRIDFILE, MAXCIRCLEPOPFILE, ADJ_BY_RR_FILE,
                          LOCATION_NEIGHBORS_FILE, META_LOCATIONS_FILE};
-    enum PrintType {P_STDOUT=0, P_WARNING, P_ERROR, P_READERROR, P_NOTICE, P_PARAMERROR};
+    enum PrintType : int {P_STDOUT=0, P_WARNING, P_ERROR, P_READERROR, P_NOTICE, P_PARAMERROR};
 
   protected:
     int                                 giMaximumReadErrors;

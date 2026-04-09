@@ -29,7 +29,7 @@ INCLUDEDIRS := -I$(CALCULATION) -I$(UTILITY) -I$(OUTPUT) -I$(PRINT) -I$(UTILITY)
 DEFINES     := -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF $(PLAT_DEFINES)
 INFOPLIST_FILE :=
 
-CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -std=c++17 -Wno-deprecated -Wno-unknown-pragmas -Wall $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE)
+CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -std=c++17 -Wall -Wno-deprecated -Wno-unknown-pragmas $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE)
 LFLAGS      := $(COMPILATION) -L$(ZLIB) -L$(ZLIB_MINIZIP) -Wl,-Bstatic -lz -lm -Wl,-Bdynamic -lrt -lpthread
 
 # Linux link flags
@@ -39,7 +39,7 @@ L_DLFLAGS   := -shared $(COMPILATION) -Wl,-soname,$(LINUX_LIBRARY).x.x -o $(LINU
 S_DLFLAGS   := -shared $(COMPILATION) -z text -o $(SOLARIS_LIBRARY).x.x.0
 
 # Mac OS X flags
-M_LFLAGS      := $(COMPILATION) -sectcreate __TEXT __info_plist $(INFOPLIST_FILE) -L$(ZLIB) -L$(ZLIB_MINIZIP) -Wl,-dynamic -lz -lstdc++ -lm
+M_LFLAGS      := $(COMPILATION) -sectcreate __TEXT __info_plist $(INFOPLIST_FILE) -L$(ZLIB) -L$(ZLIB_MINIZIP) -Wl,-dynamic -lz -lm
 M_DLFLAGS     := -shared -sectcreate __TEXT __info_plist $(INFOPLIST_FILE) $(COMPILATION) -install_name $(MAC_LIBRARY)
 
 SRC         := $(RUNNER)/ScanRunner.cpp \
@@ -129,7 +129,7 @@ $(SOLARIS_LIBRARY) : $(OBJS) $(LIB_OBJS)
 	$(CC) $(S_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(ZLIB) -L$(ZLIB_MINIZIP) -lz -lm -lrt -lpthread
 
 $(MAC_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(M_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(ZLIB) -L$(ZLIB_MINIZIP) -lz -lstdc++ -lm -o $@
+	$(CC) $(M_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(ZLIB) -L$(ZLIB_MINIZIP) -lz -lm -o $@
 %.o : %.cpp
 	$(CC) $(CFLAGS) $< -o $@
 

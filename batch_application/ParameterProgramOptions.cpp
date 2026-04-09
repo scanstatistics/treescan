@@ -77,7 +77,7 @@ bool ParameterProgramOptions::setParameterOverrides(const po::variables_map& vm)
 void ParameterProgramOptions::listOptions(FILE * fp) {
     std::string buffer;
     for (Parameters::ParameterType e=Parameters::TREE_FILE; e <= _parameters.giNumParameters; e = Parameters::ParameterType(e + 1)) {
-        if (e != Parameters::CREATION_VERSION || e != Parameters::RANDOMIZATION_SEED || e != Parameters::RANDOMLY_GENERATE_SEED) { // skip certain parameters
+        if (!(e == Parameters::CREATION_VERSION || e == Parameters::RANDOMIZATION_SEED || e == Parameters::RANDOMLY_GENERATE_SEED)) { // skip certain parameters
             const char * option = getOption(e, true);
             fprintf(fp, " --%s \"%s\" ", option, GetParameterString(e, buffer).c_str());
         }

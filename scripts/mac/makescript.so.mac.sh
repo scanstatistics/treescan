@@ -12,7 +12,7 @@ fi
 echo building zlib library ...
 cd $2/zlib/zlib-1.3.1
 make clean
-make libz.dylib CC="$7 $8 $9" CFLAGS="-stdlib=libc++ -O3 -Wall $4 -fPIC -DHAVE_HIDDEN -DHAVE_UNISTD_H" AR="/usr/bin/libtool" ARFLAGS="-o" ${10}
+make libz.dylib CC="$7 $8 $9" CFLAGS="-O3 -Wall $4 -fPIC -DHAVE_HIDDEN -DHAVE_UNISTD_H" AR="/usr/bin/libtool" ARFLAGS="-o" ${10}
 echo zlib done
 echo
 
@@ -20,7 +20,7 @@ echo building TreeScan binary ...
 cd $2
 make clean TREESCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/scripts/mac/sharedlibrary-info.plist" CC="$6 $8 $9" M_CFLAGS=-fPIC
 make libtreescan.jnilib TREESCAN=$2 BOOSTDIR=$3 COMPILATION=$4 OPTIMIZATION=$5 INFOPLIST_FILE="$2/scripts/mac/sharedlibrary-info.plist" CC="$6 $8 $9" ${10} M_CFLAGS=-fPIC JNI=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home/include JNI_PLAT=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home/include/darwin
-strip libtreescan.jnilib
+strip -S -x libtreescan.jnilib
 mv libtreescan.jnilib $1
 
 echo TreeScan done
