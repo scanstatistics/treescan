@@ -895,6 +895,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
 
         _startDateYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         _startDateYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _startDateYearLabel.setLabelFor(_studyPeriodStartDateYearTextField);
         _startDateYearLabel.setText("Year"); // NOI18N
 
         _studyPeriodStartDateYearTextField.setText("2000"); // NOI18N
@@ -903,10 +904,12 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
 
         _startDateMonthLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         _startDateMonthLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _startDateMonthLabel.setLabelFor(_studyPeriodStartDateMonthTextField);
         _startDateMonthLabel.setText("Month"); // NOI18N
 
         _startDateDayLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         _startDateDayLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _startDateDayLabel.setLabelFor(_studyPeriodStartDateDayTextField);
         _startDateDayLabel.setText("Day"); // NOI18N
 
         _studyPeriodStartDateDayTextField.setText("01"); // NOI18N
@@ -922,10 +925,12 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
 
         _endDateYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         _endDateYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _endDateYearLabel.setLabelFor(_studyPeriodEndDateYearTextField);
         _endDateYearLabel.setText("Year"); // NOI18N
 
         _endDateMonthLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         _endDateMonthLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _endDateMonthLabel.setLabelFor(_studyPeriodEndDateMonthTextField);
         _endDateMonthLabel.setText("Month"); // NOI18N
 
         _studyPeriodEndDateMonthTextField.setText("12"); // NOI18N
@@ -944,6 +949,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
 
         _endDateDayLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         _endDateDayLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _endDateDayLabel.setLabelFor(_studyPeriodEndDateDayTextField);
         _endDateDayLabel.setText("Day"); // NOI18N
 
         javax.swing.GroupLayout _studyPeriodCompleteLayout = new javax.swing.GroupLayout(_studyPeriodComplete);

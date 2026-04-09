@@ -455,6 +455,9 @@
                           <Font name="Tahoma" size="10" style="0"/>
                         </Property>
                         <Property name="horizontalAlignment" type="int" value="0"/>
+                        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                          <ComponentRef name="_studyPeriodStartDateYearTextField"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Year" noResource="true"/>
                       </Properties>
                     </Component>
@@ -474,6 +477,9 @@
                           <Font name="Tahoma" size="10" style="0"/>
                         </Property>
                         <Property name="horizontalAlignment" type="int" value="0"/>
+                        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                          <ComponentRef name="_studyPeriodStartDateMonthTextField"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Month" noResource="true"/>
                       </Properties>
                     </Component>
@@ -483,6 +489,9 @@
                           <Font name="Tahoma" size="10" style="0"/>
                         </Property>
                         <Property name="horizontalAlignment" type="int" value="0"/>
+                        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                          <ComponentRef name="_studyPeriodStartDateDayTextField"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Day" noResource="true"/>
                       </Properties>
                     </Component>
@@ -511,6 +520,9 @@
                           <Font name="Tahoma" size="10" style="0"/>
                         </Property>
                         <Property name="horizontalAlignment" type="int" value="0"/>
+                        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                          <ComponentRef name="_studyPeriodEndDateYearTextField"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Year" noResource="true"/>
                       </Properties>
                     </Component>
@@ -520,6 +532,9 @@
                           <Font name="Tahoma" size="10" style="0"/>
                         </Property>
                         <Property name="horizontalAlignment" type="int" value="0"/>
+                        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                          <ComponentRef name="_studyPeriodEndDateMonthTextField"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Month" noResource="true"/>
                       </Properties>
                     </Component>
@@ -547,6 +562,9 @@
                           <Font name="Tahoma" size="10" style="0"/>
                         </Property>
                         <Property name="horizontalAlignment" type="int" value="0"/>
+                        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                          <ComponentRef name="_studyPeriodEndDateDayTextField"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Day" noResource="true"/>
                       </Properties>
                     </Component>
