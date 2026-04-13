@@ -44,7 +44,7 @@ public class Parameters implements Cloneable {
     }
     private CreationVersion _creationversion = new CreationVersion(1,1,0);
     private String _sourcefilename="";
-    private final ArrayList<String> _treefilenames;
+    private ArrayList<String> _treefilenames;
     private String _cutsfilename="";
     private String _countfilename="";
     private String _controlfilename="";
@@ -139,6 +139,7 @@ public class Parameters implements Cloneable {
     public Object clone() {
       try {
     	  Parameters newObject = (Parameters)super.clone();
+          newObject._treefilenames = new ArrayList<>(_treefilenames);
           newObject._input_sources = new ArrayList<>();
           for (InputSourceSettings iss : _input_sources) {
             newObject._input_sources.add(iss.clone());
