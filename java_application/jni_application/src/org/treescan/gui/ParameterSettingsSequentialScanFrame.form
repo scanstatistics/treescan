@@ -115,6 +115,9 @@
         </Component>
         <Component class="javax.swing.JLabel" name="_sequential_alpha_spending_label">
           <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="_sequential_alpha_spending"/>
+            </Property>
             <Property name="text" type="java.lang.String" value="Alpha Spend Current Look"/>
             <Property name="toolTipText" type="java.lang.String" value=""/>
           </Properties>
@@ -225,6 +228,9 @@
         </Component>
         <Component class="javax.swing.JLabel" name="_controlFileLabel">
           <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="_controlFileTextField"/>
+            </Property>
             <Property name="text" type="java.lang.String" value="Control File:" noResource="true"/>
           </Properties>
         </Component>
@@ -237,6 +243,9 @@
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Import count file ..." noResource="true"/>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Import control file ..."/>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Controls.toString() + &quot;1&quot;;&#xa;        if (!_input_source_map.containsKey(key)) {&#xa;          _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Controls));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(TreeScanApplication.getInstance(), inputSourceSettings.getInputFileType(), TreeScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, ParameterSettingsSequentialScanFrame.this, true);&#xa;    }&#xa;});"/>
             <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="ParameterSettingsFrame__controlFileImportButton"/>

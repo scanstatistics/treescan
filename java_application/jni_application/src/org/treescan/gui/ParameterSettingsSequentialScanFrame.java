@@ -236,6 +236,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
 
         _sequential_alpha_label.setText("Alpha Overall = 0.0");
 
+        _sequential_alpha_spending_label.setLabelFor(_sequential_alpha_spending);
         _sequential_alpha_spending_label.setText("Alpha Spend Current Look");
         _sequential_alpha_spending_label.setToolTipText("");
 
@@ -306,6 +307,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
             }
         });
 
+        _controlFileLabel.setLabelFor(_controlFileTextField);
         _controlFileLabel.setText("Control File:"); // NOI18N
 
         _controlFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
@@ -366,6 +368,8 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
                         .addComponent(_controlFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        _controlFileImportButton.getAccessibleContext().setAccessibleDescription("Import control file ...");
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jLabel1.setText("Sequential  Analysis Window");

@@ -231,6 +231,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
             }
         });
 
+        jLabel3.setLabelFor(_checkFrequency);
         jLabel3.setText("Automatically check for updates:");
 
         javax.swing.GroupLayout _noUpdatePanelLayout = new javax.swing.GroupLayout(_noUpdatePanel);

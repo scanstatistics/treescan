@@ -152,6 +152,9 @@
             </Component>
             <Component class="javax.swing.JLabel" name="_treeFileLabel">
               <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="_treelFileTextField"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Tree File (not used for Time Only scan):" noResource="true"/>
               </Properties>
             </Component>
@@ -168,6 +171,9 @@
             </Component>
             <Component class="javax.swing.JLabel" name="_countFileLabel">
               <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="_countFileTextField"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Count File:" noResource="true"/>
               </Properties>
             </Component>
@@ -194,6 +200,9 @@
             </Component>
             <Component class="javax.swing.JLabel" name="_controlFileLabel">
               <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="_controlFileTextField"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Control File (Bernoulli Only):" noResource="true"/>
               </Properties>
             </Component>
@@ -852,6 +861,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="1"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="case probability numerator"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_eventProbabiltyNumerator.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_eventProbabiltyNumerator.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _eventProbabiltyNumerator.setText(&quot;1&quot;);&#xa;    }&#xa;});&#xa;_eventProbabiltyNumerator.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_eventProbabiltyNumerator, e, 20);&#xa;    }&#xa;});&#xa;_eventProbabiltyNumerator.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -859,7 +871,7 @@
                 <Component class="javax.swing.JLabel" name="_eventProbabilityLabel">
                   <Properties>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-                      <ComponentRef name="_BernoulliButton"/>
+                      <ComponentRef name="_eventProbabiltyNumerator"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Case Probability:"/>
                   </Properties>

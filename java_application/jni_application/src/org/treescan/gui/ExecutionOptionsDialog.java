@@ -106,6 +106,7 @@ public class ExecutionOptionsDialog extends javax.swing.JDialog {
             }
         });
 
+        jLabel1.setLabelFor(_atMostProcessesTextField);
         jLabel1.setText("processors");
 
         javax.swing.GroupLayout parallelProcessorsGroupLayout = new javax.swing.GroupLayout(parallelProcessorsGroup);

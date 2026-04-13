@@ -32,9 +32,6 @@ public class AboutDialog extends javax.swing.JDialog {
         if (!engineVersion.equals(guiVersion)) {
             version.append("  -- App v").append(guiVersion);
         }       
-        if (System.getProperty("java.vm.name").toLowerCase().indexOf("64") >= 0) {
-           version.append(" 64-bit");
-        }
         versionLabel.setText(version.toString());
         releaseDateLabel.setText(AppConstants.getReleaseDate());
         
@@ -180,6 +177,7 @@ public class AboutDialog extends javax.swing.JDialog {
         );
 
         jTabbedPane1.addTab("TreeScan", jPanel1);
+        jPanel1.getAccessibleContext().setAccessibleName("about treescan");
 
         _textAreaSystemInformation.setColumns(20);
         _textAreaSystemInformation.setEditable(false);
@@ -229,6 +227,7 @@ public class AboutDialog extends javax.swing.JDialog {
         );
 
         jTabbedPane1.addTab("Java", jPanel2);
+        jPanel2.getAccessibleContext().setAccessibleName("about java");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

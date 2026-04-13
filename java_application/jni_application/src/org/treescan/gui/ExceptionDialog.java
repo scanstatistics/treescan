@@ -92,8 +92,8 @@ public class ExceptionDialog extends javax.swing.JDialog {
 
         _AlarmInfo.setText("An unexpected exception occurred in the program.");
 
-        _errorMessage.setColumns(20);
         _errorMessage.setEditable(false);
+        _errorMessage.setColumns(20);
         _errorMessage.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         _errorMessage.setLineWrap(true);
         _errorMessage.setRows(5);
@@ -120,6 +120,7 @@ public class ExceptionDialog extends javax.swing.JDialog {
             }
         });
 
+        jLabel1.setLabelFor(_errorMessage);
         jLabel1.setText(" Please contact technical support with the following information:");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -133,9 +134,7 @@ public class ExceptionDialog extends javax.swing.JDialog {
                     .addComponent(_AlarmInfo, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                .addComponent(_printButton, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                            .addComponent(_printButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()

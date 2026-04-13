@@ -740,6 +740,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         setIconifiable(true);
         setResizable(true);
 
+        _treeFileLabel.setLabelFor(_treelFileTextField);
         _treeFileLabel.setText("Tree File (not used for Time Only scan):"); // NOI18N
 
         _treeFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
@@ -757,6 +758,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             }
         });
 
+        _countFileLabel.setLabelFor(_countFileTextField);
         _countFileLabel.setText("Count File:"); // NOI18N
 
         _countFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
@@ -782,6 +784,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             }
         });
 
+        _controlFileLabel.setLabelFor(_controlFileTextField);
         _controlFileLabel.setText("Control File (Bernoulli Only):"); // NOI18N
 
         _controlFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N
@@ -1228,7 +1231,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
             }
         });
 
-        _eventProbabilityLabel.setLabelFor(_BernoulliButton);
+        _eventProbabilityLabel.setLabelFor(_eventProbabiltyNumerator);
         _eventProbabilityLabel.setText("Case Probability:");
 
         _eventProbabilityLabel2.setText("/");
@@ -1308,6 +1311,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
 
         _eventProbabiltyDenominator.getAccessibleContext().setAccessibleName("");
         _eventProbabiltyDenominator.getAccessibleContext().setAccessibleDescription("case probability denominator");
+        _eventProbabiltyNumerator.getAccessibleContext().setAccessibleName("case probability numerator");
 
         _scanStatisticPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Conditional Analysis"));
 
