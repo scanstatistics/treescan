@@ -22,11 +22,11 @@
   </jre>
   <versionInfo>
     <fileVersion>2.4.0.0</fileVersion>
-    <txtFileVersion>Version 2.4.0</txtFileVersion>
+    <txtFileVersion>Version 2.4.0 Beta 3</txtFileVersion>
     <fileDescription>TreeScan - Software for the Tree Scan Statistic</fileDescription>
     <copyright>Copyright</copyright>
     <productVersion>2.4.0.0</productVersion>
-    <txtProductVersion>Version 2.4.0</txtProductVersion>
+    <txtProductVersion>Version 2.4.0 Beta 3</txtProductVersion>
     <productName>TreeScan</productName>
     <companyName>TreeScan.org</companyName>
     <internalName>TreeScan</internalName>
