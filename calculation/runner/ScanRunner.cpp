@@ -1648,11 +1648,11 @@ void ScanRunner::rankCutsAndReportMostLikely() {
                     for (auto cut: _Cut) cut->setLogLikelihood(std::abs(cut->getLogLikelihood()));
                 case Parameters::HIGHRATE:
                 default: 
-                    std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
+                    std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood(true));
             }
         } else {
             // Sort collection of cuts by log-likelihood.
-            std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
+            std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood(false));
             // Retain only cuts with a log-likelihood ratio >= the minimum LLR of interest or those which previously signalled (if tree sequential).
             for (size_t t = 0; t < _Cut.size();) {
                 if (!(macro_less_than(MIN_CUT_LLR, calcLogLikelihood->LogLikelihoodRatio(_Cut[t]->getLogLikelihood()), DBL_CMP_TOLERANCE) ||
@@ -1699,7 +1699,7 @@ void ScanRunner::removeIdenticalParentCuts() {
             if (!matchFound) ++t;
         }
         // Restore sort order by log-likelihood
-        std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood());
+        std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood(_parameters.getModelType() == Parameters::SIGNED_RANK));
     }
 }
 

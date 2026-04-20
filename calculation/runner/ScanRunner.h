@@ -411,11 +411,25 @@ public:
 };
 
 class CompareCutsByLoglikelihood {
+private:
+    bool _signed_rank;
+
 public:
+    CompareCutsByLoglikelihood(bool signed_rank) : _signed_rank(signed_rank) {}
     bool operator() (const CutStructure * lhs, const CutStructure * rhs) {
-        if (macro_equal(lhs->getLogLikelihood(), rhs->getLogLikelihood(), DBL_CMP_TOLERANCE))
-            return lhs->getID() < rhs->getID(); // Break ties in a deterministic way.
-        return lhs->getLogLikelihood() > rhs->getLogLikelihood();
+        if (macro_equal(lhs->getLogLikelihood(), rhs->getLogLikelihood(), DBL_CMP_TOLERANCE)) {  // Break ties in a deterministic way.
+            if (_signed_rank) {
+                auto lhs_proportions = getAverage(lhs->getSampleSiteData());
+                auto rhs_proportions = getAverage(rhs->getSampleSiteData());
+                auto lhs_abs = std::abs(lhs_proportions.second - lhs_proportions.first);
+                auto rhs_abs = std::abs(rhs_proportions.second - rhs_proportions.first);
+                if (!macro_equal(lhs_abs, rhs_abs, DBL_CMP_TOLERANCE))
+                    return lhs_abs > rhs_abs;
+                if (!macro_equal(lhs_proportions.second, rhs_proportions.second, DBL_CMP_TOLERANCE))
+                    return lhs_proportions.second > rhs_proportions.second;
+            }
+            return lhs->getID() < rhs->getID();
+        } return lhs->getLogLikelihood() > rhs->getLogLikelihood();
     }
 };
 
