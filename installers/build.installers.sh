@@ -66,7 +66,9 @@ zip $installer_version/update_data_windows.zip -j $build/treescan/java_applicati
 cd $build/treescan/java_application/jni_application/dist
 zip $installer_version/update_data_windows.zip -r lib
 cd $build/treescan/installers/java
-zip $installer_version/update_data_windows.zip -r jre_x64
+ln -s jre_x64 jre
+zip $installer_version/update_data_windows.zip -r jre
+rm jre
 
 # We can delete the generated Windows Java runtime now.
 rm -rf $build/treescan/installers/java/jre
