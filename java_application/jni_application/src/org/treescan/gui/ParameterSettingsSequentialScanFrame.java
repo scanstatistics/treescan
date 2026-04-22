@@ -290,6 +290,7 @@ public class ParameterSettingsSequentialScanFrame extends AbstractParameterSetti
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Input"));
 
+        _countFileLabel.setLabelFor(_countFileTextField);
         _countFileLabel.setText("Count File:"); // NOI18N
 
         _countFileImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/document_add_small.png"))); // NOI18N

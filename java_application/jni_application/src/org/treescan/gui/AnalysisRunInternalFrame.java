@@ -296,18 +296,21 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setResizeWeight(1.0);
 
-        _progressTextArea.setColumns(20);
         _progressTextArea.setEditable(false);
-        _progressTextArea.setFont(new java.awt.Font("Monospaced", 0, 11));
+        _progressTextArea.setColumns(20);
+        _progressTextArea.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
         _progressTextArea.setRows(5);
         jScrollPane1.setViewportView(_progressTextArea);
+        _progressTextArea.getAccessibleContext().setAccessibleDescription("run window / analysis results");
 
         jSplitPane1.setTopComponent(jScrollPane1);
 
+        jLabel1.setLabelFor(_warningsErrorsTextArea);
         jLabel1.setText("Warnings/Errors:");
 
         _warningsErrorsTextArea.setEditable(false);
         jScrollPane2.setViewportView(_warningsErrorsTextArea);
+        _warningsErrorsTextArea.getAccessibleContext().setAccessibleDescription("");
 
         _cancelButton.setText("Cancel");
         _cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -339,23 +342,23 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGap(429, 429, 429)
-                .addComponent(_emailButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_cancelButton)
-                .addContainerGap())
+            .addComponent(jScrollPane2)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jLabel1)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGap(429, 429, 429)
+                        .addComponent(_emailButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_cancelButton))
+                    .addComponent(jLabel1))
                 .addContainerGap())
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_cancelButton)
@@ -370,14 +373,14 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 559, Short.MAX_VALUE)
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 559, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE)
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
                 .addContainerGap())
         );
 

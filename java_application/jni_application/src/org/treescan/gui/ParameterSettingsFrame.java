@@ -731,6 +731,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _reportResultsAsCsvTable = new javax.swing.JCheckBox();
 
         _timePrecisionButtonGroup.add(_timePrecisionNone);
+        _timePrecisionButtonGroup.add(_timePrecisionGeneric);
         _timePrecisionButtonGroup.add(_timePrecisionYear);
         _timePrecisionButtonGroup.add(_timePrecisionMonth);
         _timePrecisionButtonGroup.add(_timePrecisionDay);
@@ -1013,6 +1014,16 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _studyPeriodStartDateYearTextField.getAccessibleContext().setAccessibleDescription("start range year");
+        _studyPeriodStartDateMonthTextField.getAccessibleContext().setAccessibleName("");
+        _studyPeriodStartDateMonthTextField.getAccessibleContext().setAccessibleDescription("start range month");
+        _studyPeriodStartDateDayTextField.getAccessibleContext().setAccessibleDescription("start range day");
+        _studyPeriodEndDateYearTextField.getAccessibleContext().setAccessibleName("");
+        _studyPeriodEndDateYearTextField.getAccessibleContext().setAccessibleDescription("end range year");
+        _studyPeriodEndDateMonthTextField.getAccessibleContext().setAccessibleDescription("end range month");
+        _studyPeriodEndDateDayTextField.getAccessibleContext().setAccessibleName("");
+        _studyPeriodEndDateDayTextField.getAccessibleContext().setAccessibleDescription("end range day");
+
         _studyPeriodGroup.add(_studyPeriodComplete, "study_complete");
 
         _studyPeriodGeneric.setBorder(javax.swing.BorderFactory.createTitledBorder("Data Time Range"));
@@ -1103,6 +1114,10 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
                     .addComponent(_startRangeDateLabel))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        _studyPeriodStartDateGenericTextField.getAccessibleContext().setAccessibleDescription("range start");
+        _studyPeriodEndDateGenericTextField.getAccessibleContext().setAccessibleName("");
+        _studyPeriodEndDateGenericTextField.getAccessibleContext().setAccessibleDescription("range end");
 
         _studyPeriodGroup.add(_studyPeriodGeneric, "study_generic");
 

@@ -12,7 +12,7 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_timePrecisionButtonGroup">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timePrecisionButtonGroup.add(_timePrecisionNone);&#xa;_timePrecisionButtonGroup.add(_timePrecisionYear);&#xa;_timePrecisionButtonGroup.add(_timePrecisionMonth);&#xa;_timePrecisionButtonGroup.add(_timePrecisionDay);"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timePrecisionButtonGroup.add(_timePrecisionNone);&#xa;_timePrecisionButtonGroup.add(_timePrecisionGeneric);&#xa;_timePrecisionButtonGroup.add(_timePrecisionYear);&#xa;_timePrecisionButtonGroup.add(_timePrecisionMonth);&#xa;_timePrecisionButtonGroup.add(_timePrecisionDay);"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.ButtonGroup" name="scanAreaButtonGroup">
@@ -474,11 +474,18 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="start range year"/>
+                      </AccessibilityProperties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="_studyPeriodStartDateMonthTextField">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="01" noResource="true"/>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="start range month"/>
+                      </AccessibilityProperties>
                     </Component>
                     <Component class="javax.swing.JLabel" name="_startDateMonthLabel">
                       <Properties>
@@ -508,6 +515,9 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="01" noResource="true"/>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="start range day"/>
+                      </AccessibilityProperties>
                     </Component>
                     <Component class="javax.swing.JLabel" name="_endDateLabel">
                       <Properties>
@@ -518,6 +528,10 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="end range year"/>
+                      </AccessibilityProperties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodEndDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        _advancedParametersSetting.enableDates();&#xa;    }&#xa;});"/>
                         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
@@ -551,6 +565,9 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="12" noResource="true"/>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="end range month"/>
+                      </AccessibilityProperties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodEndDateMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        _advancedParametersSetting.enableDates();&#xa;    }&#xa;});"/>
                         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
@@ -560,6 +577,10 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="31" noResource="true"/>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="end range day"/>
+                      </AccessibilityProperties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodEndDateDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        _advancedParametersSetting.enableDates();&#xa;    }&#xa;});"/>
                         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
@@ -656,6 +677,9 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="0" noResource="true"/>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="range start"/>
+                      </AccessibilityProperties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodStartDateGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        if (undo != null ) undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_studyPeriodStartDateGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateNumericKeyTyped(_studyPeriodStartDateGenericTextField, e, 10);&#xa;    }&#xa;});&#xa;_studyPeriodStartDateGenericTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        if (ParameterSettingsFrame.this.getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.GENERIC) {&#xa;           Utils.validateGenericDateField(_studyPeriodStartDateGenericTextField, undo);&#xa;        }&#xa;    }&#xa;});"/>
                       </AuxValues>
@@ -669,6 +693,10 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="31" noResource="true"/>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="range end"/>
+                      </AccessibilityProperties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodEndDateGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        if (undo != null ) undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_studyPeriodEndDateGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateNumericKeyTyped(_studyPeriodEndDateGenericTextField, e, 10);&#xa;    }&#xa;});&#xa;_studyPeriodEndDateGenericTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        if (ParameterSettingsFrame.this.getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.GENERIC) {&#xa;           Utils.validateGenericDateField(_studyPeriodEndDateGenericTextField, undo);&#xa;           _advancedParametersSetting.enableDates();&#xa;        }&#xa;    }&#xa;});"/>
                         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>

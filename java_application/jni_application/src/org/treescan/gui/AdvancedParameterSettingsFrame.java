@@ -1713,6 +1713,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _percentageOfStudyPeriodLabel.setLabelFor(_maxTemporalClusterSizeTextField);
         _percentageOfStudyPeriodLabel.setText("percent of the data time range (<= 50%)"); // NOI18N
 
         maximumWindowButtonGroup.add(_timeTemporalRadioButton);
@@ -1729,6 +1730,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _maxTemporalTimeUnitsLabel.setLabelFor(_maxTemporalClusterSizeUnitsTextField);
         _maxTemporalTimeUnitsLabel.setText("data time units"); // NOI18N
 
         _maxTemporalClusterSizeUnitsTextField.setText("1"); // NOI18N
@@ -1810,6 +1812,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _minTemporalTimeUnitsLabel.setLabelFor(_minTemporalClusterSizeUnitsTextField);
         _minTemporalTimeUnitsLabel.setText("data time units"); // NOI18N
 
         _minTemporalTimeLabel.setText("Minimum temporal size is ");
@@ -1851,6 +1854,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _risk_window_percentage_label.setLabelFor(_risk_window_percentage);
         _risk_window_percentage_label.setText("percent of the length between time zero and the end of the temporal window");
 
         javax.swing.GroupLayout _minTemporalOptionsGroupLayout = new javax.swing.GroupLayout(_minTemporalOptionsGroup);
@@ -2183,6 +2187,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Replications"));
 
+        _labelMonteCarloReplications.setLabelFor(_montCarloReplicationsTextField);
         _labelMonteCarloReplications.setText("Number of replications (0, 9, 999, or value ending in 999):"); // NOI18N
 
         _montCarloReplicationsTextField.setText("999"); // NOI18N
@@ -2300,8 +2305,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(8, Short.MAX_VALUE))
         );
 
+        _restricted_levels.getAccessibleContext().setAccessibleDescription("tree levels not evaluated");
+        _noEvalNodesFileTextField.getAccessibleContext().setAccessibleDescription("nodes not evaluated filename");
+
         _prospective_frequency_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Prospective Analyses"));
 
+        _label_prospective_frequency.setLabelFor(_prospective_frequency);
         _label_prospective_frequency.setText("How frequently are analyses performed?");
 
         _prospective_frequency.addItemListener(new java.awt.event.ItemListener() {
@@ -2456,6 +2465,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _earlyTerminationThreshold.getAccessibleContext().setAccessibleDescription("Early termination cutoff");
+
         javax.swing.GroupLayout _advanced_inferenece_tabLayout = new javax.swing.GroupLayout(_advanced_inferenece_tab);
         _advanced_inferenece_tab.setLayout(_advanced_inferenece_tabLayout);
         _advanced_inferenece_tabLayout.setHorizontalGroup(
@@ -2545,8 +2556,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _powerEvaluationWithSpecifiedCasesLabel.setLabelFor(_totalPowerCases);
         _powerEvaluationWithSpecifiedCasesLabel.setText("Total Cases");
 
+        _numberPowerReplicationsLabel.setLabelFor(_numberPowerReplications);
         _numberPowerReplicationsLabel.setText("Number of replications (100, 1000 or multiple of 100):"); // NOI18N
 
         _numberPowerReplications.setText("1000"); // NOI18N
@@ -2568,6 +2581,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _alternativeHypothesisFilenameLabel.setLabelFor(_alternativeHypothesisFilename);
         _alternativeHypothesisFilenameLabel.setText("Alternative Hypothesis File:"); // NOI18N
 
         _alternativeHypothesisFilename.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -2701,6 +2715,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(151, Short.MAX_VALUE))
         );
 
+        _eventProbabiltyNumerator.getAccessibleContext().setAccessibleDescription("case probability numerator");
+        _eventProbabiltyDenominator.getAccessibleContext().setAccessibleDescription("case probability denominator");
+
         javax.swing.GroupLayout _advanced_power_evaluation_tabLayout = new javax.swing.GroupLayout(_advanced_power_evaluation_tab);
         _advanced_power_evaluation_tab.setLayout(_advanced_power_evaluation_tabLayout);
         _advanced_power_evaluation_tabLayout.setHorizontalGroup(
@@ -2772,6 +2789,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _chk_attributable_risk_extra.setLabelFor(_attributable_risk_exposed);
         _chk_attributable_risk_extra.setText("exposed.");
 
         _chk_include_identical_parent_cuts.setText("Include parent cuts that are identical to child cuts.");
@@ -2857,6 +2875,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         );
 
         _results_title.getAccessibleContext().setAccessibleName("Results Title");
+        _results_title.getAccessibleContext().setAccessibleDescription("title to be reported in output files");
 
         javax.swing.GroupLayout _advanced_output_tabLayout = new javax.swing.GroupLayout(_advanced_output_tab);
         _advanced_output_tab.setLayout(_advanced_output_tabLayout);
@@ -2924,6 +2943,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGap(11, 11, 11))
         );
 
+        _time_range_restrictions.getAccessibleContext().setAccessibleDescription("data time range exclusion ranges");
+
         _perform_dayofweek_adjustments.setText("Perform Day of Week Adjustments");
         _perform_dayofweek_adjustments.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -2979,6 +3000,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _panel_sequential_analysis.setLayout(new java.awt.CardLayout());
 
+        _maximum_cases_signal_label.setLabelFor(_maximum_cases_signal);
         _maximum_cases_signal_label.setText("Maximum Cases to Signal");
 
         _maximum_cases_signal.setText("200");
@@ -3000,6 +3022,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _minimum_cases_signal_label.setLabelFor(_minimum_cases_signal);
         _minimum_cases_signal_label.setText("Minimum Cases to Signal");
 
         _minimum_cases_signal.setText("3");
@@ -3021,6 +3044,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _sequential_analysis_file_label.setLabelFor(_sequential_analysis_file);
         _sequential_analysis_file_label.setText("Sequential Analysis File:"); // NOI18N
 
         _sequential_analysis_file.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -3348,6 +3372,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         );
 
         _temporalGraphMostLikelyX.getAccessibleContext().setAccessibleName("most likely clusters, one per graph");
+        _temporalGraphPvalueCutoff.getAccessibleContext().setAccessibleDescription("cutoff for significant clusters");
 
         javax.swing.GroupLayout _advanced_temporal_output_tabLayout = new javax.swing.GroupLayout(_advanced_temporal_output_tab);
         _advanced_temporal_output_tab.setLayout(_advanced_temporal_output_tabLayout);

@@ -377,6 +377,7 @@ public class AdvancedParameterSettingsSequentialFrame extends javax.swing.JInter
         );
 
         jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
+        _advanced_output_tab.getAccessibleContext().setAccessibleName("Additional Output");
 
         _closeButton.setText("Close"); // NOI18N
         _closeButton.addActionListener(new java.awt.event.ActionListener() {
