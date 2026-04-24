@@ -2113,6 +2113,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGap(0, 11, Short.MAX_VALUE))
         );
 
+        _startRangeStartGenericTextField.getAccessibleContext().setAccessibleDescription("start time range begin");
+        _startRangeEndGenericTextField.getAccessibleContext().setAccessibleDescription("start time range stop");
+        _endRangeEndGenericTextField.getAccessibleContext().setAccessibleDescription("end time range stop");
+        _endRangeStartGenericTextField.getAccessibleContext().setAccessibleDescription("end time range begin");
+
         _temporal_window_cards.add(_windowGenericPanel, "temporal_window_generic");
 
         _restrictTemporalRangeCheckBox.setText("Include only windows with:");
@@ -3115,6 +3120,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _panel_sequential_analysis.add(_panel_sequential_analysis_time_only, "sequential-timeonly");
 
+        _sequential_alpha_label.setLabelFor(_sequentual_alpha_overall);
         _sequential_alpha_label.setText("Alpha Overall");
 
         _sequentual_alpha_overall.setText("0.05");
@@ -3136,6 +3142,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _sequential_alpha_spending_label.setLabelFor(_sequential_alpha_spending);
         _sequential_alpha_spending_label.setText("Alpha Spend Current Look");
         _sequential_alpha_spending_label.setToolTipText("");
 
