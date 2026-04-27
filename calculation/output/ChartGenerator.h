@@ -125,7 +125,8 @@ class ClusterWindowChartGenerator {
     private:
         static const char * HTML_FILE_EXT;
         static const char * FILE_SUFFIX_EXT;
-        static const char * BASE_TEMPLATE;
+        static const char * TEMPLATE_START;
+        static const char * TEMPLATE_END;
         const ScanRunner  & _scanner;
 
     public:

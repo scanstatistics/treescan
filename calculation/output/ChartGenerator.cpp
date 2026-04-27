@@ -668,14 +668,14 @@ FileName& TemporalChartGenerator::getFilename(FileName& filename, const std::str
 const char* ClusterWindowChartGenerator::HTML_FILE_EXT = ".html";
 const char* ClusterWindowChartGenerator::FILE_SUFFIX_EXT = ".clusterwindow";
 
-const char* ClusterWindowChartGenerator::BASE_TEMPLATE = "\n \
+const char* ClusterWindowChartGenerator::TEMPLATE_START = "\
  <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'> \n \
  <html lang='en'> \n \
     <head><title>Cluster Window Duration</title> \n \
     <meta http-equiv='content-type' content='text/html; charset=utf-8'> \n \
     <link href='--resource-path--libs/bootstrap-5.3.8/css/bootstrap.min.css' rel='stylesheet'> \n \
     <link href='--resource-path--libs/nouislider-15.8.1/nouislider.css' rel='stylesheet'> \n \
-    <link href='--resource-path--html-results/treescan-windows.css' rel='stylesheet'> \n \
+    <link href='--resource-path--html-results/treescan-windows.1.0.css' rel='stylesheet'> \n \
     <script src='--resource-path--javascript/jquery/jquery-4.0.0/jquery-4.0.0.min.js'></script> \n \
     <script src='--resource-path--javascript/highcharts/highcharts-12.5.0/code/highcharts.js'></script> \n \
     <script src='--resource-path--javascript/highcharts/highcharts-12.5.0/code/highcharts-more.js'></script> \n \
@@ -685,10 +685,11 @@ const char* ClusterWindowChartGenerator::BASE_TEMPLATE = "\n \
     <script src='--resource-path--javascript/highcharts/highcharts-12.5.0/code/modules/no-data-to-display.js'></script> \n \
     <script src='--resource-path--libs/bootstrap-5.3.8/js/bootstrap.min.js'></script> \n \
     <script src='--resource-path--libs/nouislider-15.8.1/nouislider.js'></script> \n \
-    <script src='--resource-path--html-results/treescan-windows.js'></script> \n \
+    <script src='--resource-path--html-results/treescan-windows.1.0.js'></script> \n \
     <script type='text/javascript'> \n \
-        const parameters = { prospective: --prospective--, teststatistic : --teststatistic--, reportableinference: --reportableinference--, genericdate: --genericdate--  }; \n \
-        const fullData = [--full-data--]; \n \
+        const parameters = { prospective: --prospective--, teststatistic : --teststatistic--, reportableinference: --reportableinference--, genericdate: --genericdate--  }; \
+";
+const char* ClusterWindowChartGenerator::TEMPLATE_END = "\
     </script></head> \n \
     <body> \n \
         <div class='chart-options-section'> \n \
@@ -772,7 +773,7 @@ void ClusterWindowChartGenerator::generateChart() const {
         getFilename(fileName);
         HTMLout.open(fileName.getFullPath(buffer).c_str());
         if (!HTMLout) throw resolvable_error("Error: Could not open cluster window chart file '%s'.\n", buffer.c_str());
-        html << BASE_TEMPLATE << std::endl; // read template into stringstream
+        html << TEMPLATE_START << std::endl; // read template into stringstream
         templateReplace(html, "--resource-path--", AppToolkit::getToolkit().GetWebSite()); // site resource link path
         templateReplace(html, "--tech-support-email--", AppToolkit::getToolkit().GetTechnicalSupportEmail()); // tech support link path
         templateReplace(html, "--prospective--", parameters.getIsProspectiveAnalysis() ? "true" : "false");
@@ -828,14 +829,17 @@ void ClusterWindowChartGenerator::generateChart() const {
             full_data << "rrtext: '" << std::fixed << getValueAsString(rr, buffer) << "', ";
             full_data << "ex: " << std::fixed << getValueAsString(cluster.getExcessCases(_scanner), buffer) << "},";
         }
-        full_data << std::endl;
-        templateReplace(html, "--full-data--", full_data.str());
+        HTMLout << html.str();
+        // Write the full data hash directly to the html file - some characters cause problems with templateReplace method.
+        HTMLout << std::string(9, ' ') << "const fullData = [" << full_data.str() << "];" << std::endl;
+        html.str("");
+        html << TEMPLATE_END << std::endl; // read the end template into stringstream
         printString(buffer, "TreeScan v%s.%s%s%s%s%s",
             VERSION_MAJOR, VERSION_MINOR, (!strcmp(VERSION_RELEASE, "0") ? "" : "."),
             (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE), (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE
         );
         templateReplace(html, "--treescan-version--", buffer.c_str());
-        HTMLout << html.str() << std::endl;
+        HTMLout << html.str();
         HTMLout.close();
     } catch (prg_exception& x) {
         x.addTrace("generate()", "ClusterWindowChartGenerator");
