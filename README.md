@@ -4,6 +4,7 @@ TreeScan™ is a free data mining software that implements the tree-based scan s
 
 -   In pharmacovigilance, it can be used to simultaneously evaluate hundreds or thousands of potential adverse events and groups of adverse events, to determine if any one of them occur with higher probability among patients exposed to a particular pharmaceutical drug, device or vaccine, adjusting for the multiple tests inherent in the many adverse events evaluated.
 -   Also in pharmacovigilance, for a particular disease outcome such as liver failure, it can be used to simultaneously evaluate if it occurs with increased risk among people exposed any of hundreds of pharmaceutical drugs, or groups of related drugs, adjusting for the multiple testing inherent in the many drugs evaluated.
+-   In asyndromic surveillance of emergency department visit data, it can be used to detect increases or decreases in any diagnosis or group of related diagnoses over any time period.
 -   In genomic surveillance for infectious diseases, it can be used to detect clusters on a phylogenetic tree representing disease variants, adjusting for multiple variants and time periods evaluated.
 -   In occupational health surveillance, it can be used for a particular disease to evaluate whether certain occupations, or group of related occupations, are at higher risk to die from that disease.
 
