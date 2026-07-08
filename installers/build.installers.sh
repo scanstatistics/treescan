@@ -35,7 +35,7 @@ zip $installer_version/treescan.${version}_windows.zip examples/*
 
 # Build batch binaries archive for Linux.
 rm -f $installer_version/treescan.${version}_linux.tar.gz
-cd $build/binaries/linux
+cd $build/treescan/build/binaries/linux
 tar -cf $installer_version/treescan.${version}_linux.tar treescan*
 cd $build/treescan/installers
 tar -rf $installer_version/treescan.${version}_linux.tar documents/*

@@ -26,6 +26,8 @@ library/Win32/
 library/x64/
 library/libtreescan.vcxproj.user
 
+build
+
 .vs/
 
 test/Win32/
