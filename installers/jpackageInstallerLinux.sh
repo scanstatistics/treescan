@@ -14,7 +14,7 @@ version=$1
 srcdir="/prj/treescan/build/treescan"
 bundleinputdir="/prj/treescan/build/jpackage/treescanbundlesrc"
 bundledir="/prj/treescan/build/jpackage"
-binaries="/prj/treescan/build/binaries/linux"
+binaries=$srcdir/build/binaries/linux
 
 rm -rf $bundleinputdir
 rm -rf $bundledir/TreeScanStatistic
