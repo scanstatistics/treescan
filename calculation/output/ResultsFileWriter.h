@@ -40,7 +40,7 @@ class ResultsFileWriter {
     std::string & encodeForNewick(std::string & text) const;
 
   public:
-    ResultsFileWriter(const ScanRunner& scanRunner) : _scanRunner(scanRunner) {}
+      ResultsFileWriter(const ScanRunner& scanRunner) : _scanRunner(scanRunner) {}
 
     static std::string & getHtmlFilename(const Parameters& parameters, std::string& buffer);
     static std::string & getAsnFilename(const Parameters& parameters, std::string& buffer);

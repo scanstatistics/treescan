@@ -345,6 +345,8 @@ class Parameters {
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
 
+    bool                                getIsOddsRatio() const;
+    const char                        * getRelativeRiskReportingLabel() const;
     const std::string                 & getResultsTitle() const { return _results_title; }
     void                                setResultsTitle(const std::string& s) { _results_title = s; }
     bool                                getRptDataAsPct() const { return _report_data_as_percentage; }

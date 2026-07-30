@@ -18,6 +18,16 @@ Parameters::cut_maps_t Parameters::getCutTypeMap() {
    return std::make_pair(cut_type_map_abbr, cut_type_map);
 }
 
+/** Returns whether the parameter settings indicate that the reported cluster relative risk is actually an odds ratio. */
+bool Parameters::getIsOddsRatio() const {
+    return getScanType() == TREETIME && getConditionalType() == NODEANDTIME;
+}
+
+/** Returns label reported for relative risk/odds ratio in output files. */
+const char * Parameters::getRelativeRiskReportingLabel() const {
+    return getIsOddsRatio() ? "Odds Ratio" : "Relative Risk";
+}
+
 /* Returns the global event probability as decimal value. */
 double Parameters::getProbability() const {
     double top, bottom;

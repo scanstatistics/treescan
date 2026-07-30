@@ -698,15 +698,15 @@ const char* ClusterWindowChartGenerator::TEMPLATE_END = "\
             <div class='form-group'> \n \
                 <label labelfor='id_sort_by'>Sort By:</label><select id='id_sort_by' class = 'form-control'> \n \
                 <option value='llr' data-order='desc' selected=selected>Test Statistic</option><option value='pv' data-order='asc'>P-Value</option> \n \
-                <option value='ri' data-order='desc'>Recurrence Interval</option><option value='rr' data-order='desc'>Relative Risk</option> \n \
+                <option value='ri' data-order='desc'>Recurrence Interval</option><option value='rr' data-order='desc'>--relative-risk-label--</option> \n \
                 <option value='ex' data-order='desc'>Excess Cases</option><option value='category' data-order='desc'>Node ID</option> \n \
                 <option value='low' data-order='desc'>Start Date</option><option value='cl' data-order='asc'>Cluster Length</option></select></div> \n \
             <div class='form-group'> \n \
                 <label labelfor='id_color_by'>Color By:</label><select id='id_color_by' class='form-control'> \n \
-                <option value='rr'>Relative Risk</option><option value='ex' selected=selected>Excess Cases</option> \n \
+                <option value='rr'>--relative-risk-label--</option><option value='ex' selected=selected>Excess Cases</option> \n \
                 <option value='ri'>Recurrence Interval</option><option value='pv'>P-Value</option></select></div> \n \
             <div class='form-group'> \n \
-                <label for='slider_display_rr' title='Filter Relative Risk'>Relative Risk:</label><div class='slider-styled slider-round' id='slider_display_rr'></div> \n \
+                <label for='slider_display_rr' title='Filter --relative-risk-label--'>--relative-risk-label--:</label><div class='slider-styled slider-round' id='slider_display_rr'></div> \n \
                 <div class='slider_display_range'><span id='id_range_rr_low'>-</span> to <span id='id_range_rr_high'>-</span></div></div> \n \
             <div class='form-group'> \n \
                 <label for='slider_display_ex' title='Filter Excess Cases'>Excess Cases:</label><div class='slider-styled slider-round' id='slider_display_ex'></div> \n \
@@ -720,7 +720,7 @@ const char* ClusterWindowChartGenerator::TEMPLATE_END = "\
                 <div class='legend-title'>Summary Statistics</div> \n \
                 <div class='legend-item'><span>Clusters Displayed:</span><span id='id_cluster_count'></span></div> \n \
                 <div class='legend-item'><span>Total Clusters:</span><span id='id_cluster_total'></span></div> \n \
-                <div class = 'legend-item'><span>Relative Risk:</span><span><span id='id_rr_min'></span> to <span id='id_rr_max'></span></span></div> \n \
+                <div class = 'legend-item'><span>--relative-risk-label--:</span><span><span id='id_rr_min'></span> to <span id='id_rr_max'></span></span></div> \n \
                 <div class='legend-item'><span>Excess Cases:</span><span><span id='id_ex_min'></span> to <span id='id_ex_max'></span></span></div> \n \
                 <div class='key-section' id='id_ex_key_section'> \n \
                     <div class='legend-title'>Excess Cases Key</div> \n \
@@ -730,7 +730,7 @@ const char* ClusterWindowChartGenerator::TEMPLATE_END = "\
                     <div class='key-row'><div class='key-color' style='background-color: #B4C6E7;'></div><span>&le; 25</span></div> \n \
                 </div> \n \
                 <div class='key-section' id='id_rr_key_section'> \n \
-                    <div class='legend-title'>Relative Risk Key</div> \n \
+                    <div class='legend-title'>--relative-risk-label-- Key</div> \n \
                     <div class='key-row'><div class='key-color' style='background-color:#FF5733;'></div><span>&ge; 8</span></div> \n \
                     <div class='key-row'><div class='key-color' style='background-color:#FFC300;'></div><span>&ge; 4</span></div> \n \
                     <div class='key-row'><div class='key-color' style='background-color:#DBD51B;'></div><span>&ge; 2</span></div> \n \
@@ -834,6 +834,7 @@ void ClusterWindowChartGenerator::generateChart() const {
         HTMLout << std::string(9, ' ') << "const fullData = [" << full_data.str() << "];" << std::endl;
         html.str("");
         html << TEMPLATE_END << std::endl; // read the end template into stringstream
+        templateReplace(html, "--relative-risk-label--", parameters.getRelativeRiskReportingLabel());
         printString(buffer, "TreeScan v%s.%s%s%s%s%s",
             VERSION_MAJOR, VERSION_MINOR, (!strcmp(VERSION_RELEASE, "0") ? "" : "."),
             (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE), (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE

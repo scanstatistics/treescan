@@ -385,7 +385,7 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
                     PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%ld", thisCut.getC()));
                     PrintFormat.PrintSectionLabel(outfile, parameters.getModelType() == Parameters::UNIFORM ? "Expected Cases" : "Expected", true);
                     PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getExpected(_scanRunner), buffer));
-                    PrintFormat.PrintSectionLabel(outfile, "Relative Risk", true);
+                    PrintFormat.PrintSectionLabel(outfile, parameters.getRelativeRiskReportingLabel(), true);
                 }
                 if (parameters.getIsVariableBerounlli(true))
                     PrintFormat.PrintAlignedMarginsDataString(outfile, getValueAsString(thisCut.getRelativeRisk(_scanRunner), buffer));
@@ -995,7 +995,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             }
             if (parameters.getModelType() != Parameters::SIGNED_RANK) {
                 outfile << "<th>" << (parameters.getModelType() == Parameters::UNIFORM ? "Expected Cases" : "Expected") << "</th>";
-                outfile << "<th>Relative Risk</th><th>Excess Cases</th>" << std::endl;
+                outfile << "<th>" << parameters.getRelativeRiskReportingLabel() << "</th><th>Excess Cases</th>" << std::endl;
                 if (parameters.getReportAttributableRisk())
                     outfile << "<th>Attributable Risk</th>" << std::endl;
             }
@@ -1061,7 +1061,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         }
         outfile << "<div class=\"custom-control custom-radio mb-3\">" << std::endl;
         outfile << "<input type=\"radio\" class=\"custom-control-input\" id=\"customControlValidation3\" name=\"radio-stacked\" legend=\"legend-relative-risk\" required>" << std::endl;
-        outfile << "<label class=\"custom-control-label\" for=\"customControlValidation3\">Color Nodes by Relative Risk</label></div></div>" << std::endl;
+        outfile << "<label class=\"custom-control-label\" for=\"customControlValidation3\">Color Nodes by " << parameters.getRelativeRiskReportingLabel() << "</label></div></div>" << std::endl;
         outfile << "<div class=\"col-9\">";
         if (sequentialTreeOnly) {
             outfile << "<div class='chart-legend legend-signalled'><div class='legend-title'>Signal Legend</div><div class='legend-scale'>" << std::endl;
@@ -1078,7 +1078,7 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
             outfile << "<li><span style='background:#FFC300;'></span><span class=\"legend-val\">1 year</span></li><li><span style='background:#FF5733;'></span><span class=\"legend-val\">5 years</span></li>" << std::endl;
             outfile << "<li><span style='background:#8A1901;'></span><span class=\"legend-val\">100 years</span></li></ul></div></div>" << std::endl;
         }
-        outfile << "<div class='chart-legend legend-relative-risk'><div class='legend-title'>Relative Risk Legend</div><div class='legend-scale'>";
+        outfile << "<div class='chart-legend legend-relative-risk'><div class='legend-title'>" << parameters.getRelativeRiskReportingLabel() << " Legend</div><div class='legend-scale'>";
         outfile << "<ul class='legend-labels'><li><span style='background:#566573;'></span><span class=\"legend-val\">&lt; 2</span></li><li><span style='background:#DBD51B;'></span><span class=\"legend-val\">2</span></li>";
         outfile << "<li><span style='background:#FFC300;'></span><span class=\"legend-val\">4</span></li><li><span style='background:#FF5733;'></span><span class=\"legend-val\">8</span></li></ul></div></div></div>" << std::endl;
         outfile << "</div><div class=\"chart\" id=\"treescan-tree-visualization\" style=\"background-color: #EAEDED; border: 2px solid #566573; border-radius: 5px; padding:2px;\"> </div>" << std::endl;
@@ -1428,7 +1428,11 @@ std::ofstream & ResultsFileWriter::addTableRowForCut(CutStructure& thisCut, Logl
                         throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", parameters.getModelType());
             }
             if (parameters.getModelType() != Parameters::SIGNED_RANK) {
-                string_values.push_back(printString(buffer, "'%s'", getValueAsString(Record->GetFieldValue(CutsRecordWriter::RELATIVE_RISK_FIELD).AsDouble(), buffer2).c_str()));
+                string_values.push_back(printString(buffer, "'%s'", 
+                    getValueAsString(Record->GetFieldValue(
+                        parameters.getIsOddsRatio() ? CutsRecordWriter::ODDS_RATIO_FIELD : CutsRecordWriter::RELATIVE_RISK_FIELD).AsDouble(), buffer2
+                    ).c_str()
+                ));
                 string_values.push_back(printString(buffer, "'%s'", getValueAsString(Record->GetFieldValue(CutsRecordWriter::EXCESS_CASES_FIELD).AsDouble(), buffer2).c_str()));
                 if (parameters.getReportAttributableRisk())
                     string_values.push_back(printString(buffer, "'%s'", AttributableRiskAsString(Record->GetFieldValue(CutsRecordWriter::ATTRIBUTABLE_RISK_FIELD).AsDouble(), buffer2).c_str()));
@@ -1554,7 +1558,7 @@ ResultsFileWriter::NodeSet_t ResultsFileWriter::writeJsTreeNode(std::stringstrea
         // There might be some future request to revise this feature for signed-rank model, so
         // I'm not guesss to what might be nor am I going to remove it currently.
         node_attr_rr.get<1>() = signedrank ? 0.0 : itr->second->getRelativeRisk(_scanRunner);
-        nodestream << "<li>RR = " << getValueAsString(node_attr_rr.get<1>(), buffer);
+        nodestream << "<li>" << (parameters.getIsOddsRatio() ? "OR" : "RR") << " = " << getValueAsString(node_attr_rr.get<1>(), buffer);
         if (sequentialTreeOnly) {
             if (node_attr_rr.get<0>() != 0.0)
                 nodestream << ", signalled look " << node_attr_rr.get<0>();
