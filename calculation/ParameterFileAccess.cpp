@@ -270,21 +270,15 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
 
 /** Attempts to interpret passed string as a boolean value. Throws parameter_error. */
 bool AbtractParameterFileAccess::ReadBoolean(const std::string& sValue, Parameters::ParameterType e) const {
-  bool          bReadResult;
-
-  if (sValue.size() == 0) {
+  if (sValue.size() == 0)
     throw parameter_error("Invalid Parameter Setting:\nParameter '%s' is not set.\n", GetParameterLabel(e));
-  }
-  else if (!(!stricmp(sValue.c_str(),"y")   || !stricmp(sValue.c_str(),"n") ||
-             !strcmp(sValue.c_str(),"1")    || !strcmp(sValue.c_str(),"0")   ||
-             !strcmp(sValue.c_str(),"true")    || !strcmp(sValue.c_str(),"false")   ||
-             !stricmp(sValue.c_str(),"yes")  || !stricmp(sValue.c_str(),"no"))) {
-    throw parameter_error("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is invalid. Valid values are 'y' or 'n'.\n",
-                          GetParameterLabel(e), sValue.c_str());
-  }
-  else
-    bReadResult = (!stricmp(sValue.c_str(),"y") || !stricmp(sValue.c_str(),"yes") || !strcmp(sValue.c_str(),"1"));
-  return bReadResult;
+  const auto to_bool = toBool(sValue);
+  if (boost::logic::indeterminate(to_bool))
+    throw parameter_error(
+        "Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is invalid. Valid values are 'y' or 'n'.\n",
+        GetParameterLabel(e), sValue.c_str()
+    );
+  return static_cast<bool>(to_bool);
 }
 
 /** Attempts to interpret passed string as a double value. Throws parameter_error. */

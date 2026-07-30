@@ -1926,9 +1926,11 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
 
     // first collect all nodes -- this will allow the referencing of parent nodes not yet encountered
     while (dataSource->readRecord()) {
-        if (dataSource->getNumValues() > 4) {
+        if (dataSource->getNumValues() > 5) {
             readSuccess = false;
-            _print.Printf("Error: Record %ld in tree file has %ld values but expecting 1 to 4:\n<node id>,<parent node id>(optional),<distance between>(optional),<node label>(optional).\n", 
+            _print.Printf(
+                "Error: Record %ld in tree file has %ld values but expecting 1 to 4:\n"
+                "<node id>,<parent node id>(optional),<distance between>(optional),<node label>,<do not evaluate>(optional).\n", 
                 BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), dataSource->getNumValues()
             );
             continue;
@@ -1956,13 +1958,52 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
         ScanRunner::Index_t index = getNodeIndex(dataSource->getValueAt(0));
         NodeStructure * node = _Nodes[index.second];
         // Read optional node name in fourth column.
-        if (dataSource->getNumValues() == 4) {
+        if (dataSource->getNumValues() >= 4) {
             record_value = dataSource->getValueAt(3);
+			// Check that this node has not already been set to a conflicting value in a previous record.
+			// We're not doing to be concerned about blank node names (e.g. one record gives name, another has blank).
             if (!record_value.empty()) {
+                if (!node->getName().empty() && record_value != node->getName()) {
+                    readSuccess = false;
+                    _print.Printf(
+                        "Error: Record %ld in tree file references a conflicting 'node label' for the node '%s'.\n",
+                        BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str()
+                    );
+                    continue;
+                }
                 node->setName(record_value);
                 _has_node_descriptions = true;
             }
         }
+        // Read optional node name in fifth column.
+		boost::logic::tribool evaluated(true);
+        if (dataSource->getNumValues() == 5) {
+            record_value = dataSource->getValueAt(4);
+            // treat no value as true (i.e., evaluated), this maintains backward compatibility
+			if (!record_value.empty()) {
+				auto not_evaluated = toBool(record_value);
+                if (!not_evaluated || boost::logic::indeterminate(not_evaluated)) {
+                    readSuccess = false;
+                    _print.Printf(
+                        "Error: Unable to read 'do not evaluate' column value (%s) as positive boolean in record %ld of tree file.\n"
+                        "       Column value must be either positive boolean or no value at all.\n",
+                        BasePrint::P_READERROR,record_value.c_str(), dataSource->getCurrentRecordIndex()
+                    );
+                    continue;
+                }
+                evaluated = false;
+            }
+        }
+		// Check that this node has not already been set to a conflicting value in a previous record.
+        if (!boost::logic::indeterminate(node->getIsEvaluatedTriBool()) && node->getIsEvaluatedTriBool() != evaluated) {
+            readSuccess = false;
+            _print.Printf(
+                "Error: Record %ld in tree file references a conflicting 'not evaluated' indication for the node '%s'.\n",
+				BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), node->getIdentifier().c_str()
+            );
+            continue;
+        }
+        node->setIsEvaluated(static_cast<bool>(evaluated));
         // Read optional parent node.
         record_value = dataSource->getValueAt(1);
         if (dataSource->getNumValues() == 1 || record_value.empty())
@@ -1993,7 +2034,14 @@ bool ScanRunner::readTree(const std::string& filename, unsigned int treeOrdinal)
             }
         }
         // Add node as parent.
-        node->addAsParent(*_Nodes[index.second], record_value.empty() ? "1" : record_value);
+        if (!node->addAsParent(*_Nodes[index.second], record_value.empty() ? "1" : record_value)) {
+            readSuccess = false;
+            _print.Printf(
+                "Error: Record %ld in tree file references a conflicting distance to parent node '%s'.\n",
+                BasePrint::P_READERROR, dataSource->getCurrentRecordIndex(), _Nodes[index.second]->getIdentifier().c_str()
+            );
+            continue;
+        }
         nodesWithParents.set(node->getID());
         // Detect nodes with multiple parents.
         if (node->getParents().size() > 1) {

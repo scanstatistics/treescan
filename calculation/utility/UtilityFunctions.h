@@ -6,9 +6,10 @@
 #include "PrjException.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
-#include<boost/tokenizer.hpp>
+#include <boost/tokenizer.hpp>
 #include <boost/uuid/detail/md5.hpp>
 #include <boost/algorithm/hex.hpp>
+#include <boost/logic/tribool.hpp>
 
 using namespace TreeScan;
 
@@ -132,5 +133,6 @@ std::string toString(const md5::digest_type &digest);
 std::stringstream & templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith);
 std::string& getWrappedText(const std::string& text, unsigned int marginLeft, unsigned int marginRight, const std::string& newline, std::string& wrapped);
 std::string& humanize(double n, std::string& humanized, int decimals = 1);
+boost::logic::tribool toBool(const std::string& text);
 //******************************************************************************
 #endif

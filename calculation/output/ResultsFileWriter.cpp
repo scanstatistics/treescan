@@ -95,15 +95,15 @@ bool ResultsFileWriter::writeASCII(time_t start, time_t end) {
             stringbuffer << itr->second << (itr->first == treestats._nodes_per_level.size() ? "" : ", ");
         }
         PrintFormat.PrintAlignedMarginsDataString(outfile, stringbuffer.str().c_str());
-        if (parameters.getRestrictTreeLevels() || parameters.getRestrictEvaluatedTreeNodes()) {
+        if (treestats._num_nodes != treestats._num_nodes_evaluated) {
             PrintFormat.PrintSectionLabel(outfile, "Number of Nodes Evaluated", false);
             PrintFormat.PrintAlignedMarginsDataString(outfile, printString(buffer, "%u", treestats._num_nodes_evaluated));
-            if (parameters.getRestrictTreeLevels()) {
-                PrintFormat.PrintSectionLabel(outfile, "Tree Levels Included", false);
-                PrintFormat.PrintAlignedMarginsDataString(outfile, treestats.toCsvString(treestats._levels_included, buffer));
-                PrintFormat.PrintSectionLabel(outfile, "Tree Levels Excluded", false);
-                PrintFormat.PrintAlignedMarginsDataString(outfile, treestats.toCsvString(treestats._levels_excluded, buffer));
-            }
+        }
+        if (parameters.getRestrictTreeLevels()) {
+            PrintFormat.PrintSectionLabel(outfile, "Tree Levels Included", false);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, treestats.toCsvString(treestats._levels_included, buffer));
+            PrintFormat.PrintSectionLabel(outfile, "Tree Levels Excluded", false);
+            PrintFormat.PrintAlignedMarginsDataString(outfile, treestats.toCsvString(treestats._levels_excluded, buffer));
         }
     }
     if (parameters.isSequentialScanTreeOnly()) {
@@ -886,13 +886,11 @@ bool ResultsFileWriter::writeHTML(time_t start, time_t end) {
         for (TreeStatistics::NodesLevel_t::const_iterator itr = treestats._nodes_per_level.begin(); itr != treestats._nodes_per_level.end(); ++itr)
             stringbuffer << itr->second << (itr->first == treestats._nodes_per_level.size() ? "" : ", ");
         outfile << "<tr><th>Nodes per Levels:</th><td>" << stringbuffer.str().c_str() << "</td></tr>" << std::endl;
-
-        if (parameters.getRestrictTreeLevels() || parameters.getRestrictEvaluatedTreeNodes()) {
+        if (treestats._num_nodes_evaluated != treestats._num_nodes)
             outfile << "<tr><th>Number of Nodes Evaluated:</th><td>" << treestats._num_nodes_evaluated << "</td></tr>" << std::endl;
-            if (parameters.getRestrictTreeLevels()) {
-                outfile << "<tr><th>Tree Levels Included:</th><td>" << treestats.toCsvString(treestats._levels_included, buffer) << "</td></tr>" << std::endl;
-                outfile << "<tr><th>Tree Levels Excluded:</th><td>" << treestats.toCsvString(treestats._levels_excluded, buffer) << "</td></tr>" << std::endl;
-            }
+        if (parameters.getRestrictTreeLevels()) {
+            outfile << "<tr><th>Tree Levels Included:</th><td>" << treestats.toCsvString(treestats._levels_included, buffer) << "</td></tr>" << std::endl;
+            outfile << "<tr><th>Tree Levels Excluded:</th><td>" << treestats.toCsvString(treestats._levels_excluded, buffer) << "</td></tr>" << std::endl;
         }
     }
     if (parameters.isSequentialScanTreeOnly()) {
