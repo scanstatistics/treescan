@@ -3519,7 +3519,6 @@ bool ScanRunner::setupTree() {
 
     // calculate the number of expected cases
     if (Parameters::isTemporalScanType(_parameters.getScanType())) {
-        //NodeStructure::CountContainer_t totalcases_by_dayofweek;
         if (_parameters.isPerformingDayOfWeekAdjustment()) {
             // calculate the total number of cases for each day of the week
             _totalcases_by_dayofweek.resize(7, 0);
@@ -3540,7 +3539,6 @@ bool ScanRunner::setupTree() {
             case Parameters::NODEANDTIME : {
                 // calculate total cases by time interval -- we'll need this to calculate the expected cases for conditional tree-temporal scan
                 size_t daysInDataTimeRange = _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1;
-                //TimeIntervalContainer_t totalcases_by_timeinterval(daysInDataTimeRange, 0);
                 _totalcases_by_timeinterval.resize(daysInDataTimeRange, 0);
                 for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
                     for (size_t t=0; t < (*itr)->refIntC_C().size(); ++t) {

@@ -376,10 +376,9 @@ ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& field
                 throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", params.getModelType());
         }
         if (params.getModelType() != Parameters::SIGNED_RANK) {
-            if (params.getIsOddsRatio())
-                CreateField(fields, ODDS_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-            else
-                CreateField(fields, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            CreateField(fields, params.getIsOddsRatio() ? ODDS_RATIO_FIELD : RELATIVE_RISK_FIELD, 
+                FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2
+            );
             CreateField(fields, EXCESS_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             if (params.getReportAttributableRisk())
                 CreateField(fields, ATTRIBUTABLE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
