@@ -70,7 +70,7 @@ public:
     }
     /** Returns the probability at cases windows count, spatial count, and cases in cluster. */
     double getProbabilityFor_Checked(count_t T, count_t S, count_t x) const {
-        if (!_spatial_cases.size() || S > _spatial_cases.size() - 1) return PROBABILITY_UNSET;
+        if (!_spatial_cases.size() || static_cast<size_t>(S) > _spatial_cases.size() - 1U) return PROBABILITY_UNSET;
         return _spatial_cases[S].getProbabilityAtChecked(_T_index[T], x);
     }
     const SpatialCases& getSpatialCases(size_t S) const {

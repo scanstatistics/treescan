@@ -43,7 +43,7 @@ void HypergeometricProbabilityLookup::calculateHG(Parameters::ScanRateType scanr
             std::fill(negativeProbabilities.begin(), negativeProbabilities.end(), PROBABILITY_UNSET);
             count_t min = std::max((count_t)0, S + T - C);
             count_t max = std::min(S, T);
-            count_t mean = ceil((double)S * (double)T / (double)C);
+            count_t mean = static_cast<count_t>(ceil((double)S * (double)T / (double)C));
             // The natural logarithm of the probability of x cases in cylinder, based on hypergeometric distribution,
             // to be temporarily stored in a one-dimensional array. To get the actial probability, take exp[hgp(x)].
             std::vector<double> hgp(max + 1, 0);
@@ -67,7 +67,7 @@ void HypergeometricProbabilityLookup::calculateHG(Parameters::ScanRateType scanr
             }
             _spatial_cases[S].addNegativeProbabilitiesFor(i, negativeProbabilities);
         }
-        _T_index[T] = i; // map T to index in HG table
+        _T_index[T] = static_cast<unsigned int>(i); // map T to index in HG table
         ++i;
     }
 }
