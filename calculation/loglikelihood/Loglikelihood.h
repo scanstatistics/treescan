@@ -235,6 +235,24 @@ public:
     }
 };
 
+/** Log likelihood class for hypergeometric. */
+class HypergeometricLoglikelihood : public AbstractLoglikelihood {
+public:
+    HypergeometricLoglikelihood(const Parameters& parameters):
+        AbstractLoglikelihood(parameters) {
+        switch (parameters.getScanRateType()) {
+            case Parameters::LOWRATE: _uncond_of_interest = &AbstractLoglikelihood::LowRateUnconditioned; break;
+            case Parameters::HIGHORLOWRATE: _uncond_of_interest = &AbstractLoglikelihood::HighOrLowRateUnconditioned; break;
+            case Parameters::HIGHRATE:
+            default: _uncond_of_interest = &AbstractLoglikelihood::HighRateUnconditioned; break;
+        }
+    }
+    virtual double LogLikelihoodRatio(double logLikelihood) const {
+        if (logLikelihood == UNSET_LOGLIKELIHOOD) return 0.0;
+        return -log(-logLikelihood);
+    }
+};
+
 /* Log likelihood class for conditional Bernoulli. */
 class BernoulliLoglikelihood : public AbstractLoglikelihood {
 protected:

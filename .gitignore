@@ -31,6 +31,7 @@ build
 .vs/
 
 test/Win32/
+test/x64/
 
 batch_application/Win32/
 batch_application/x64/
@@ -45,8 +46,8 @@ installers/izpack/mac/treescan2app/TreeScan.app
 
 test/test.vcxproj.user
 installers/examples/*.txt
-test/test-log.txt
-test/test-results.xml
+test/*test-log.txt
+test/*test-results.xml
 test/test-sets/multiple-trees/poisson.txt
 test/test-sets/squish97/TreeTemporal-censordata.txt
 test/test-sets/squish97/TreeTemporal-timeonly-censordata.txt

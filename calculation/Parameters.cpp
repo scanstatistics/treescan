@@ -289,6 +289,9 @@ void Parameters::copy(const Parameters &rhs) {
     _early_term_threshold = rhs._early_term_threshold;
     _report_data_as_percentage = rhs._report_data_as_percentage;
     _results_title = rhs._results_title;
+
+    _stp_algorithm_type = rhs._stp_algorithm_type;
+    _stp_as_hypergeometric = rhs._stp_as_hypergeometric;
 }
 
 /** Returns whether early termination option is performed. */
@@ -550,6 +553,9 @@ void Parameters::setAsDefaulted() {
 
     _pvalue_reporting_type = STANDARD_PVALUE;
     _early_term_threshold = 50;
+
+    _stp_algorithm_type = STP_POISSON;
+    _stp_as_hypergeometric = false;
 }
 
 /** Sets output data file name.
@@ -598,6 +604,29 @@ void Parameters::setTemporalGraphReportType(TemporalGraphReportType e) {
     if (e < MLC_ONLY || e > SIGNIFICANT_ONLY)
         throw prg_error("Enumeration %d out of range [%d,%d].", "setTemporalGraphReportType()", e, MLC_ONLY, SIGNIFICANT_ONLY);
     _temporal_graph_report_type = e;
+}
+
+/** Sets the STP algorithm type. */
+void Parameters::setSTPAlgorithmType(STPAlgorithmType e) {
+	if (!(_scan_type == TREETIME && _conditional_type == NODEANDTIME)) return; // skip if not tree-temporal, conditional node-and-time analysis
+    _stp_algorithm_type = e < STP_DERIVED || e > STP_POISSON ? STP_DERIVED : e;
+    // Check that setting agrees with other parameter settings. Later we'll do follow-up validation based on read data.
+    switch (_stp_algorithm_type) {
+    case STP_DERIVED:
+        _stp_as_hypergeometric = !getPerformDayOfWeekAdjustment();
+        break;
+    case STP_HYPERGEOMETRIC:
+        if (getPerformDayOfWeekAdjustment())
+            throw resolvable_error(
+                "Error: The tree-temporal, conditioned on node and time, using the hypergeometric algorithm is not supported when:\n"
+                "- adjusting for weekly trends\n"
+                "Please select derived or the Poisson approximation option instead.\n"
+            );
+        break;
+    case STP_POISSON:
+        _stp_as_hypergeometric = false;
+        break;
+    }
 }
 
 void Parameters::setInputSimulationsFilename(const char * s, bool bCorrectForRelativePath) {

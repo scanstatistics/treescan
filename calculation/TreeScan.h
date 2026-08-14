@@ -80,6 +80,8 @@ typedef std::pair<double, double> RecurrenceInterval_t;
 #endif
 
 namespace TreeScan {
+    typedef int count_t;
+    typedef double expected_t;
 }
 
 #include "BasePrint.h"

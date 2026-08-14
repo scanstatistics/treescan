@@ -245,6 +245,7 @@ protected:
     std::shared_ptr<AbstractRandomizer> _randomizer;
     const ScanRunner& _scanRunner;
     std::shared_ptr<AbstractMeasureList> _measure_list;
+    ScanRunner::TimeIntervalContainer_t _cases_by_time;
 
     bool isEvaluated(const NodeStructure& node, const SimulationNode& simNode) const;
     successful_result_type scanTree(param_type const & param);
@@ -252,6 +253,7 @@ protected:
     successful_result_type scanTreeTemporalConditionNode(param_type const & param);
     successful_result_type scanTreeTemporalConditionNodeCensored(param_type const & param);
     successful_result_type scanTreeTemporalConditionNodeTime(param_type const & param);
+    successful_result_type scanTreeTemporalConditionNodeTimeHypergeometric(param_type const& param);
 
 public:
     MCSimSuccessiveFunctor(boost::mutex& mutex, std::shared_ptr<AbstractRandomizer> randomizer, const ScanRunner& scanRunner);

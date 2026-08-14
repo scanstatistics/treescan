@@ -47,6 +47,7 @@ SRC         := $(RUNNER)/ScanRunner.cpp \
                $(RUNNER)/DataTimeRanges.cpp \
                $(RUNNER)/RelativeRiskAdjustment.cpp \
                $(RUNNER)/SampleSiteData.cpp \
+               $(RUNNER)/HypergeometricProbabilityLookup.cpp \
                $(OUTPUT)/DataFileWriter.cpp \
                $(OUTPUT)/ResultsFileWriter.cpp \
                $(OUTPUT)/ChartGenerator.cpp \

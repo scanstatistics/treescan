@@ -2389,7 +2389,7 @@ bool ScanRunner::run() {
         }
     }
     if (!setupTree())
-       throw resolvable_error("\nProblem encountered when setting up tree.");
+        throw resolvable_error("\nProblem encountered when setting up tree.");
     if (_print.GetIsCanceled()) return false;
     if (_parameters.isSequentialScanPurelyTemporal() && static_cast<unsigned int>(_TotalC) > _parameters.getSequentialMaximumSignal()) {
         // The sequential scan reached target number of cases. Don't continue analysis - instead report such in results file.
@@ -2402,10 +2402,43 @@ bool ScanRunner::run() {
     if (_parameters.getReportCriticalValues() || (_parameters.getPerformPowerEvaluations() && _parameters.getCriticalValuesType() == Parameters::CV_MONTECARLO)) {
         _critical_values.reset(new CriticalValues(_parameters.getNumReplicationsRequested()));
     }
+
+    if (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) {
+        /*
+            The decision whether we're using hypergeometric algorithms versus the Poisson approximation is finalized here.
+            The choice is based on the total number of cases. The hypergeometric lookup table can
+            be memory and execution-time intensive, so we're only using it when the total number of cases is below
+            a somewhat arbitrary threshold. See reasoning in issue https://squishlist.com/ims-ext/treescan/250/
+        */
+        count_t HYPERGEOMETRIC_CASE_THRESHOLD = 5000;
+        switch (_parameters.getSTPAlgorithmType()) {
+        case Parameters::STP_POISSON:
+            _parameters.setSTPasHypergeometric(false); break;
+        case Parameters::STP_HYPERGEOMETRIC:
+            if (_parameters.getPerformDayOfWeekAdjustment() || _TotalC > HYPERGEOMETRIC_CASE_THRESHOLD) {
+                throw resolvable_error(
+                    "Error: The tree-temporal, conditioned on node and time, using the hypergeometric algorithm is not supported for:\n"
+                    "- total number of cases exceeding %ld\n- when adjusting for weekly trends\n"
+                    "Please select derived or the Poisson approximation option instead.\n", HYPERGEOMETRIC_CASE_THRESHOLD
+                );
+            }
+        case Parameters::STP_DERIVED:
+        default:
+            if (_parameters.getPerformDayOfWeekAdjustment() || _TotalC > HYPERGEOMETRIC_CASE_THRESHOLD) {
+                _parameters.setSTPasHypergeometric(false);
+                _parameters.setSTPAlgorithmType(Parameters::STP_POISSON);
+            } else
+                _parameters.setSTPasHypergeometric(true);
+            break;
+        };
+    }
+
     // Scan real data.
     if (!_parameters.getPerformPowerEvaluations() || (_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         bool scan_success=false;
-        if ((_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) ||
+        if (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME && _parameters.getSTPasHypergeometric())
+            scan_success = scanTreeTemporalConditionNodeTimeHypergeometric();
+		else if ((_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) ||
             (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.isPerformingDayOfWeekAdjustment()) ||
             (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODE && _parameters.isPerformingDayOfWeekAdjustment()))
             scan_success = scanTreeTemporalConditionNodeTime();
@@ -3130,6 +3163,181 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
     return _Cut.size() != 0;
 }
 
+/** SCANNING THE TREE for tree-temporal model -- conditioned on the total cases across nodes and time, using hypergeometric distribution. */
+bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometric() {
+    _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
+    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
+
+    // Define the start and end windows with the zero index offset already incorporated.
+    DataTimeRange startWindow(temporalStartRange().getStart() + _zero_translation_additive,
+                              temporalStartRange().getEnd() + _zero_translation_additive),
+                  endWindow(temporalEndRange().getStart() + _zero_translation_additive,
+                            temporalEndRange().getEnd() + _zero_translation_additive);
+
+    std::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
+    int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
+    // First compile collection of cases in time window, over the whole geographical region. 
+	TimeIntervalContainer_t casesByTime = _totalcases_by_timeinterval; // create cumulative cases by time interval data
+    TreeScan::cumulative_backward(casesByTime);
+    count_t cases_in_window = 0;
+    std::set<count_t> cases_collection;
+    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
+    for (iWindowEnd = endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+            cases_in_window = static_cast<int>(casesByTime[iWindowStart] - casesByTime[iWindowEnd + 1]);
+            if (cases_in_window) cases_collection.emplace(cases_in_window);
+        }
+    }
+    window->reset();
+    auto casesEvaluated=[&](NodeStructure::count_t spatialAreaCases) {
+		// spatialAreaCases is the number of cases in the spatial area of the cluster, over all time.
+        // Nothing to evaluate if fewer than 2 cases or if greater than total cases - 2.
+        return spatialAreaCases >= 2 && spatialAreaCases <= _TotalC - 2;
+    };
+	// Calculate the hypergeometric probability lookup table for all possible cases in the time window, given the total number of cases across all time and space.
+	_hypergeometric_probability_lookup.calculateHG(_parameters.getScanRateType(), cases_collection, _TotalC);
+    const auto& hgLookup = getHypergeometricProbabilityLookup();
+    // Define the minimum and maximum window lengths.
+    for (size_t n=0; n < _Nodes.size(); ++n) {
+        if (isEvaluated(*_Nodes[n])) {
+            const NodeStructure& thisNode(*(_Nodes[n]));
+            int CB = thisNode.getBrC(); // the total number of cases assigned to branch B, over all time
+            if (!casesEvaluated(CB)) continue;
+            const auto& spatialcases = hgLookup.getSpatialCases(CB);
+            // always do simple cut
+            iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
+            for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                    //_print.Printf("%d to %d\n", BasePrint::P_STDOUT,iWindowStart, iWindowEnd);
+                    calculateCut(n, 
+                        thisNode.getBrC_C()[iWindowStart] - thisNode.getBrC_C()[iWindowEnd + 1],
+                        thisNode.getBrN_C()[iWindowStart] - thisNode.getBrN_C()[iWindowEnd + 1],
+                        calcLogLikelihood, iWindowStart, iWindowEnd, spatialcases, 
+                        casesByTime[iWindowStart] - casesByTime[iWindowEnd + 1]
+                    );
+                }
+            }
+            Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
+            NodeStructure::count_t cutCWB = 0, cutCWB_2 = 0;
+            NodeStructure::expected_t cutNWB = 0, cutNWB_2 = 0;
+            switch (cutType) {
+                case Parameters::SIMPLE: break; // already done, regardless of specified node cut
+                case Parameters::ORDINAL: {
+                    // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
+                    CutStructure::CutChildContainer_t currentChildren;
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
+                    for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                            NodeStructure::count_t CW = casesByTime[iWindowStart] - casesByTime[iWindowEnd + 1];
+                            for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                                const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
+                                int CB = firstChildNode.getBrC(); // the total number of cases assigned to branch B, over all time
+                                currentChildren.clear();
+                                currentChildren.push_back(firstChildNode.getID());
+                                NodeStructure::count_t CWB = firstChildNode.getBrC_C()[iWindowStart] - firstChildNode.getBrC_C()[iWindowEnd + 1];
+                                NodeStructure::expected_t NWB = firstChildNode.getBrN_C()[iWindowStart] - firstChildNode.getBrN_C()[iWindowEnd + 1];
+                                for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                                    const NodeStructure& childNode(*(thisNode.getChildren()[j]));
+                                    currentChildren.push_back(childNode.getID());
+									CB += childNode.getBrC(); // the total number of cases assigned to branch B, over all time
+                                    CWB += childNode.getBrC_C()[iWindowStart] - childNode.getBrC_C()[iWindowEnd + 1];
+                                    NWB += childNode.getBrN_C()[iWindowStart] - childNode.getBrN_C()[iWindowEnd + 1];
+                                    if (!casesEvaluated(CB)) continue;
+                                    CutStructure * cut = calculateCut(n, CWB, NWB, calcLogLikelihood, iWindowStart, iWindowEnd, hgLookup.getSpatialCases(CB), CW);
+                                    if (cut) cut->setCutChildren(currentChildren);
+                                }
+                            }
+                        }
+                    }
+                } break;
+                case Parameters::PAIRS:
+                    // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
+                    for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                            NodeStructure::count_t CW = casesByTime[iWindowStart] - casesByTime[iWindowEnd + 1];
+                            for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                                const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
+                                int CB = startChildNode.getBrC(); // the total number of cases assigned to branch B, over all time
+                                NodeStructure::count_t CWB = startChildNode.getBrC_C()[iWindowStart] - startChildNode.getBrC_C()[iWindowEnd + 1];
+                                NodeStructure::expected_t NWB = startChildNode.getBrN_C()[iWindowStart] - startChildNode.getBrN_C()[iWindowEnd + 1];
+                                for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                                    const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
+                                    NodeStructure::count_t pairCB = CB + stopChildNode.getBrC();
+                                    if (!casesEvaluated(pairCB)) continue;
+                                    CutStructure * cut = calculateCut(n, 
+                                        CWB + stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1],
+                                        NWB + stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1],
+                                        calcLogLikelihood, iWindowStart, iWindowEnd, hgLookup.getSpatialCases(pairCB), CW
+                                    );
+                                    if (cut) {
+                                        cut->addCutChild(startChildNode.getID(), true);
+                                        cut->addCutChild(stopChildNode.getID());
+                                    }
+                                }
+                            }
+                        }
+                    } break;
+                case Parameters::TRIPLETS:
+                    // Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
+                    for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                            NodeStructure::count_t CW = casesByTime[iWindowStart] - casesByTime[iWindowEnd + 1];
+                            for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                                const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
+                                int CB = startChildNode.getBrC(); // the total number of cases assigned to branch B, over all time
+                                NodeStructure::count_t CWB = startChildNode.getBrC_C()[iWindowStart] - startChildNode.getBrC_C()[iWindowEnd + 1];
+                                NodeStructure::expected_t NWB = startChildNode.getBrN_C()[iWindowStart] - startChildNode.getBrN_C()[iWindowEnd + 1];
+                                for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                                    const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
+                                    NodeStructure::count_t pairCB = CB + stopChildNode.getBrC();
+                                    cutCWB = CWB + stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
+                                    cutNWB = NWB + stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1];
+                                    if (casesEvaluated(pairCB)) {
+                                        CutStructure* cut = calculateCut(n, cutCWB, cutNWB,
+                                            calcLogLikelihood, iWindowStart, iWindowEnd, hgLookup.getSpatialCases(pairCB), CW
+                                        );
+                                        if (cut) {
+                                            cut->addCutChild(startChildNode.getID(), true);
+                                            cut->addCutChild(stopChildNode.getID());
+                                        }
+                                    }
+                                    for (size_t k=i+1; k < j; ++k) {
+                                        const NodeStructure& middleChildNode(*(thisNode.getChildren()[k]));
+                                        NodeStructure::count_t tripleCB = pairCB + middleChildNode.getBrC();
+                                        //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
+                                        if (casesEvaluated(tripleCB)) {
+                                            CutStructure* cut = calculateCut(n,
+                                                cutCWB + middleChildNode.getBrC_C()[iWindowStart] - middleChildNode.getBrC_C()[iWindowEnd + 1],
+                                                cutNWB + middleChildNode.getBrN_C()[iWindowStart] - middleChildNode.getBrN_C()[iWindowEnd + 1],
+                                                calcLogLikelihood, iWindowStart, iWindowEnd, hgLookup.getSpatialCases(tripleCB), CW
+                                            );
+                                            if (cut) {
+                                                cut->addCutChild(startChildNode.getID(), true);
+                                                cut->addCutChild(middleChildNode.getID());
+                                                cut->addCutChild(stopChildNode.getID());
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } break;
+                case Parameters::COMBINATORIAL:
+                default: throw prg_error("Unknown cut type (%d).", "scanTreeTemporalConditionNodeTime()", cutType);
+            }
+        }
+    } 
+    rankCutsAndReportMostLikely();
+    return _Cut.size() != 0;
+}
+
 /** SCANNING THE TREE for temporal model -- conditioned on the total cases across nodes and time. */
 bool ScanRunner::scanTreeTemporalConditionNodeTime() {
     _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
@@ -3320,6 +3528,30 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, 
     return updateCut(cut);
 }
 
+/** Calculates the hypergeometric maximizing value of current evaluation, then updates collection of best cuts for node. */
+CutStructure* ScanRunner::calculateCut(
+    size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator,
+    DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx, 
+    const HypergeometricProbabilityLookup::SpatialCases& spatialcases, int WindowCases) {
+    // Skip calculation if branch count does not meet evaluation minimum.
+    if (BrC < static_cast<int>(_node_evaluation_minimum)) return 0;
+    double loglikelihood = AbstractLoglikelihood::UNSET_LOGLIKELIHOOD;
+    AbstractLoglikelihood::SCANRATE_UNCOND_FUNCPTR pRateCheck = logCalculator->_uncond_of_interest;
+    if (((*logCalculator).*pRateCheck)(BrC, BrN))
+        loglikelihood = _hypergeometric_probability_lookup.getProbabilityFor(WindowCases, spatialcases, BrC);
+    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) // Exclude this cut if log likelihood is unset;
+        return 0;
+    std::unique_ptr<CutStructure> cut(new CutStructure());
+    cut->setLogLikelihood(loglikelihood);
+    cut->setID(static_cast<int>(node_index));
+    cut->setC(BrC);
+    cut->setN(BrN);
+    cut->setStartIdx(startIdx);
+    cut->setEndIdx(endIdx);
+
+    return updateCut(cut);
+}
+
 /** Calculates the log likelihood of the cut over evaluation currently, then updates collection of best cuts by node. */
 CutStructure * ScanRunner::calculateCut(size_t node_index, int C, double N, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx) {
     // Skip calculation if branch count does not meet evaluation minimum.
@@ -3451,10 +3683,10 @@ bool ScanRunner::setupTree() {
             case Parameters::NODEANDTIME : {
                 // calculate total cases by time interval -- we'll need this to calculate the expected cases for conditional tree-temporal scan
                 size_t daysInDataTimeRange = _parameters.getDataTimeRangeSet().getTotalDaysAcrossRangeSets() + 1;
-                TimeIntervalContainer_t totalcases_by_timeinterval(daysInDataTimeRange, 0);
+                _totalcases_by_timeinterval.resize(daysInDataTimeRange, 0);
                 for (NodeStructureContainer_t::iterator itr=_Nodes.begin(); itr != _Nodes.end(); ++itr) {
                     for (size_t t=0; t < (*itr)->refIntC_C().size(); ++t) {
-                        totalcases_by_timeinterval[t] += (*itr)->refIntC_C()[t];
+                        _totalcases_by_timeinterval[t] += (*itr)->refIntC_C()[t];
                     }
                 }
                 // expected number of cases is calculated slightly different when performing day of week adjustment
@@ -3469,17 +3701,17 @@ bool ScanRunner::setupTree() {
                         }
                         // now we can calculate the expected number of cases for this node
                         NodeStructure::ExpectedContainer_t& nodeExpected = node.refIntN_C();
-                        for (size_t t=0; t < totalcases_by_timeinterval.size(); ++t) {
+                        for (size_t t=0; t < _totalcases_by_timeinterval.size(); ++t) {
                             double cases_day_of_week = static_cast<double>(totalcases_by_dayofweek[t % 7]);
-                            if (cases_day_of_week) nodeExpected[t] += static_cast<double>(totalcases_by_timeinterval[t]) * static_cast<double>(node_cases_by_dayofweek[t % 7]) / cases_day_of_week;
+                            if (cases_day_of_week) nodeExpected[t] += static_cast<double>(_totalcases_by_timeinterval[t]) * static_cast<double>(node_cases_by_dayofweek[t % 7]) / cases_day_of_week;
                         }
                     }
                 } else {
                     // now we can calculate the expected number of cases
                     for (size_t n=0; n < _Nodes.size(); ++n) {
                         NodeStructure::ExpectedContainer_t& nodeExpected = _Nodes[n]->refIntN_C();
-                        for (size_t t=0; t < totalcases_by_timeinterval.size(); ++t) {
-                            nodeExpected[t] += static_cast<double>(totalcases_by_timeinterval[t]) * static_cast<double>(totalcases_by_node[n]) / static_cast<double>(_TotalC);
+                        for (size_t t=0; t < _totalcases_by_timeinterval.size(); ++t) {
+                            nodeExpected[t] += static_cast<double>(_totalcases_by_timeinterval[t]) * static_cast<double>(totalcases_by_node[n]) / static_cast<double>(_TotalC);
                         }
                     }
                 }

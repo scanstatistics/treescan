@@ -47,8 +47,11 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
             for that, as well as for the ones adjusted for day-of-week (note second was never worked on).
         */
         case Parameters::TREETIME:
-            if (parameters.getConditionalType() == Parameters::NODEANDTIME)
+            if (parameters.getConditionalType() == Parameters::NODEANDTIME) {
+                if (parameters.getSTPasHypergeometric())
+                    return new HypergeometricLoglikelihood(parameters);
                 return new PoissonLoglikelihood(TotalC, TotalN, parameters);
+            }
         case Parameters::TIMEONLY: {
             switch (parameters.getModelType()) {
                 case Parameters::UNIFORM :

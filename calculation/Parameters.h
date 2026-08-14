@@ -147,6 +147,11 @@ class Parameters {
     enum MaximumWindowType {PERCENTAGE_WINDOW=0, FIXED_LENGTH};    
     enum ScanRateType { HIGHRATE=0, LOWRATE, HIGHORLOWRATE };
     enum PValueReportingType { STANDARD_PVALUE=0, TERMINATION_PVALUE };
+    enum STPAlgorithmType {/** STP algorithm */
+        STP_DERIVED = 0,   /* derived from original data */
+        STP_HYPERGEOMETRIC,/* hypergeometric distribution */
+        STP_POISSON        /* Poisson distribution */
+    };
     typedef std::map<std::string,Parameters::CutType> cut_map_t;
     typedef std::pair<cut_map_t, cut_map_t> cut_maps_t;
     typedef std::vector<std::string> FileNameContainer_t;
@@ -330,6 +335,9 @@ class Parameters {
     PValueReportingType                 _pvalue_reporting_type;
     unsigned int                        _early_term_threshold;
 
+    STPAlgorithmType                    _stp_algorithm_type;
+    bool                                _stp_as_hypergeometric; // perform STP as hypergeometric
+
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
     const char                        * getRelativeToParameterName(const FileName& fParameterName, const std::string& sFilename, std::string& sValue) const;
@@ -344,6 +352,11 @@ class Parameters {
     Parameters                        & operator=(const Parameters &rhs)  {if (this != &rhs) copy(rhs); return (*this);}
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
+
+    STPAlgorithmType                    getSTPAlgorithmType() const { return _stp_algorithm_type; }
+    void                                setSTPAlgorithmType(STPAlgorithmType e);
+    bool                                getSTPasHypergeometric() const { return _scan_type == TREETIME && _conditional_type == NODEANDTIME && _stp_as_hypergeometric; }
+    void                                setSTPasHypergeometric(bool b) { _stp_as_hypergeometric = b; }
 
     const std::string                 & getResultsTitle() const { return _results_title; }
     void                                setResultsTitle(const std::string& s) { _results_title = s; }

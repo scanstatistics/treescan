@@ -58,6 +58,7 @@ int main(int argc, char* argv[]) {
     po::variables_map vm;
     PrintScreen console(false);
     bool verifyParameters=false, printParameters=false;
+    unsigned int stpAlgorithm = 2; // default to Poisson Approximation (see #250)
 
     try {
         __TreeScanInit(argv[0]);
@@ -71,6 +72,7 @@ int main(int argc, char* argv[]) {
             ("verify-parameters,c", po::bool_switch(&verifyParameters), "verify parameters only")
             ("print-parameters,p", po::bool_switch(&printParameters), "print parameters only")
             ("write-parameters,w", po::value<std::string>(), "write parameters to file")
+            ("stp-algorithm,w", po::value<unsigned int>(&stpAlgorithm)->default_value(Parameters::STP_POISSON), "STP algorithm (0=derived, 1=hypergeometric, 2=Poisson Approximation)")
             ("help,h", "Help");
 
         // try to determine if user has specified parameter options version
@@ -151,6 +153,7 @@ int main(int argc, char* argv[]) {
         // additional program options processing
         if (printParameters) {ParametersPrint(parameters).Print(std::cout); return 0;}
         if (verifyParameters) {console.Printf("Parameters verified, no setting errors detected.\n", BasePrint::P_STDOUT); return 0;}
+        parameters.setSTPAlgorithmType((Parameters::STPAlgorithmType)stpAlgorithm);
 
         std::string buffer;
         console.Printf(AppToolkit::getToolkit().GetAcknowledgment(buffer), BasePrint::P_STDOUT);

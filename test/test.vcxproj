@@ -133,6 +133,7 @@
     <ClCompile Include="..\calculation\randomization\SignedRankRandomizer.cpp" />
     <ClCompile Include="..\calculation\runner\DataSource.cpp" />
     <ClCompile Include="..\calculation\runner\DataTimeRanges.cpp" />
+    <ClCompile Include="..\calculation\runner\HypergeometricProbabilityLookup.cpp" />
     <ClCompile Include="..\calculation\runner\RelativeRiskAdjustment.cpp" />
     <ClCompile Include="..\calculation\runner\SampleSiteData.cpp" />
     <ClCompile Include="..\calculation\runner\ScanRunner.cpp" />
@@ -164,6 +165,8 @@
     <ClCompile Include="test_helper.cpp" />
     <ClCompile Include="unittest_cumulative.cpp" />
     <ClCompile Include="unittest_Loglikelihood.cpp" />
+    <ClCompile Include="unittest_HypergeometricProbabilityLookup.cpp" />
+    <ClCompile Include="unittest_MinimalGrowthArray.cpp" />
     <ClCompile Include="unittest_ParametersValidate.cpp" />
     <ClCompile Include="squish238.cpp" />
   </ItemGroup>
@@ -192,6 +195,7 @@
     <ClInclude Include="..\calculation\randomization\SignedRankRandomizer.h" />
     <ClInclude Include="..\calculation\runner\DataSource.h" />
     <ClInclude Include="..\calculation\runner\DataTimeRanges.h" />
+    <ClInclude Include="..\calculation\runner\HypergeometricProbabilityLookup.h" />
     <ClInclude Include="..\calculation\runner\RelativeRiskAdjustment.h" />
     <ClInclude Include="..\calculation\runner\SampleSiteData.h" />
     <ClInclude Include="..\calculation\runner\ScanRunner.h" />
@@ -206,6 +210,7 @@
     <ClInclude Include="..\calculation\utility\FileName.h" />
     <ClInclude Include="..\calculation\utility\Ini.h" />
     <ClInclude Include="..\calculation\utility\MCSimJobSource.h" />
+    <ClInclude Include="..\calculation\utility\MinimalGrowthArray.h" />
     <ClInclude Include="..\calculation\utility\MonteCarloSimFunctor.h" />
     <ClInclude Include="..\calculation\utility\PrjException.h" />
     <ClInclude Include="..\calculation\utility\ptr_vector.h" />

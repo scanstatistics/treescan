@@ -209,6 +209,9 @@
     <ClCompile Include="..\calculation\randomization\SignedRankRandomizer.cpp">
       <Filter>Source Files\calculation\randomization</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\runner\HypergeometricProbabilityLookup.cpp">
+      <Filter>Source Files\calculation\runner</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\runner\ScanRunner.h">
@@ -266,6 +269,9 @@
       <Filter>Header Files\calculation\utility</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\utility\MCSimJobSource.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\utility\MinimalGrowthArray.h">
       <Filter>Header Files\calculation\utility</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\randomization\Randomization.h">
@@ -372,6 +378,9 @@
     </ClInclude>
     <ClInclude Include="..\calculation\randomization\SignedRankRandomizer.h">
       <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\runner\HypergeometricProbabilityLookup.h">
+      <Filter>Header Files\calculation\runner</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

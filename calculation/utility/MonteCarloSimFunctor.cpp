@@ -32,17 +32,23 @@ MCSimSuccessiveFunctor::MCSimSuccessiveFunctor(
     //_treeSimNodes.resize(_scanRunner.getNodes().size(), SimulationNode(daysInDataTimeRange));
     _loglikelihood.reset(AbstractLoglikelihood::getNewLoglikelihood(_scanRunner));
 
-    if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||
+    if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME && !parameters.getSTPasHypergeometric()) ||
         (parameters.getScanType() == Parameters::TIMEONLY && parameters.isPerformingDayOfWeekAdjustment()) ||
         (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODE && parameters.isPerformingDayOfWeekAdjustment()))
         _measure_list.reset(AbstractMeasureList::getNewMeasureList(_scanRunner, _loglikelihood));
+    if (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME && parameters.getSTPasHypergeometric()) {
+		_cases_by_time = _scanRunner.getTotalCasesByTimeInterval();
+        TreeScan::cumulative_backward(_cases_by_time);
+    }
 }
 
 MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuccessiveFunctor::param_type const & param) {
     result_type temp_result;
     try {
         const Parameters& parameters = _scanRunner.getParameters();
-        if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||
+        if (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME && parameters.getSTPasHypergeometric())
+            temp_result.dSuccessfulResult = scanTreeTemporalConditionNodeTimeHypergeometric(param);
+        else if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||
             (parameters.getScanType() == Parameters::TIMEONLY && parameters.isPerformingDayOfWeekAdjustment()) ||
             (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODE && parameters.isPerformingDayOfWeekAdjustment()))
             temp_result.dSuccessfulResult = scanTreeTemporalConditionNodeTime(param);
@@ -637,6 +643,158 @@ MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeT
     } // for i<nNodes
 
     return std::make_pair(_measure_list->loglikelihood(),TotalSimC);
+}
+
+/** This function randomizes data and scans tree for either the temporal model. */
+MCSimSuccessiveFunctor::successful_result_type MCSimSuccessiveFunctor::scanTreeTemporalConditionNodeTimeHypergeometric(MCSimSuccessiveFunctor::param_type const& param) {
+    // randomize data
+    int TotalSimC = _randomizer.get()->RandomizeData(param, _scanRunner.getNodes(), _mutex, _treeSimNodes);
+
+    //--------------------- SCANNING THE TREE, SIMULATIONS -------------------------
+    DataTimeRange::index_t idxAdditive = _scanRunner.getZeroTranslationAdditive();
+    // Define the start and end windows with the zero index offset already incorporated.
+    DataTimeRange startWindow(_scanRunner.temporalStartRange().getStart() + idxAdditive, _scanRunner.temporalStartRange().getEnd() + idxAdditive),
+        endWindow(_scanRunner.temporalEndRange().getStart() + idxAdditive, _scanRunner.temporalEndRange().getEnd() + idxAdditive);
+    // Define the minimum and maximum window lengths.
+    std::shared_ptr<AbstractWindowLength> window(_scanRunner.getNewWindowLength());
+    int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
+    const auto& hgLookup = _scanRunner.getHypergeometricProbabilityLookup();
+    AbstractLoglikelihood::SCANRATE_UNCOND_FUNCPTR pRateCheck = _loglikelihood->_uncond_of_interest;
+    const ScanRunner::NodeStructureContainer_t& nodes = _scanRunner.getNodes();
+    NodeStructure::count_t cutCWB = 0, cutCWB_2 = 0;
+    NodeStructure::expected_t cutNWB = 0, cutNWB_2 = 0;
+    double simLogLikelihood = -std::numeric_limits<double>::max(), minimum_cases = _scanRunner.getNodeEvaluationMinimum();
+    auto _TotalC = _scanRunner.getTotalC();
+    auto casesEvaluated = [&](NodeStructure::count_t spatialAreaCases) {
+        // spatialAreaCases is the number of cases in the spatial area of the cluster, over all time.
+        // Nothing to evaluate if fewer than 2 cases or if greater than total cases - 2.
+        return spatialAreaCases >= 2 && spatialAreaCases <= _TotalC - 2;
+    };
+    for (size_t n = 0; n < nodes.size(); ++n) {
+        const NodeStructure& thisNode(*(nodes[n]));
+        const SimulationNode& thisSimNode(_treeSimNodes[n]);
+        int CB = thisSimNode.getBrC(); // the total number of cases assigned to branch B, over all time
+        if (!casesEvaluated(CB)) continue;
+        const auto& spatialcases = hgLookup.getSpatialCases(CB);
+        if (isEvaluated(thisNode, thisSimNode)) {
+            // always do simple cut
+            iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
+            for (iWindowEnd = endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                    NodeStructure::count_t CWB = thisSimNode.getBrC_C()[iWindowStart] - thisSimNode.getBrC_C()[iWindowEnd + 1];
+                    double NWB = thisNode.getBrN_C()[iWindowStart] - thisNode.getBrN_C()[iWindowEnd + 1];
+                    if (CWB >= minimum_cases && ((*_loglikelihood).*pRateCheck)(CWB, NWB)) {
+                        simLogLikelihood = std::max(simLogLikelihood, 
+                            hgLookup.getProbabilityForChecked(_cases_by_time[iWindowStart] - _cases_by_time[iWindowEnd + 1], spatialcases, CWB)
+                        );
+                    }
+                }
+            }
+            Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
+            switch (cutType) {
+            case Parameters::SIMPLE: break; // already done
+            case Parameters::ORDINAL:
+                // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
+                iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
+                for (iWindowEnd = endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                    window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                    for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                        NodeStructure::count_t CW = _cases_by_time[iWindowStart] - _cases_by_time[iWindowEnd + 1];
+                        for (size_t i = 0; i < thisNode.getChildren().size() - 1; ++i) {
+                            const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
+                            const SimulationNode& firstSimChildNode(_treeSimNodes[thisNode.getChildren()[i]->getID()]);
+                            int CB = firstSimChildNode.getBrC(); // the total number of cases assigned to branch B, over all time
+                            NodeStructure::count_t CWB = firstSimChildNode.getBrC_C()[iWindowStart] - firstSimChildNode.getBrC_C()[iWindowEnd + 1];
+                            NodeStructure::expected_t NWB = firstChildNode.getBrN_C()[iWindowStart] - firstChildNode.getBrN_C()[iWindowEnd + 1];
+                            for (size_t j = i + 1; j < thisNode.getChildren().size(); ++j) {
+                                const NodeStructure& childNode(*(thisNode.getChildren()[j]));
+                                const SimulationNode& childSimNode(_treeSimNodes[thisNode.getChildren()[j]->getID()]);
+                                CB += childSimNode.getBrC(); // the total number of cases assigned to branch B, over all time
+                                CWB += childSimNode.getBrC_C()[iWindowStart] - childSimNode.getBrC_C()[iWindowEnd + 1];
+                                NWB += childNode.getBrN_C()[iWindowStart] - childNode.getBrN_C()[iWindowEnd + 1];
+                                if (CWB >= minimum_cases && ((*_loglikelihood).*pRateCheck)(CWB, NWB))
+                                    simLogLikelihood = std::max(simLogLikelihood, 
+                                        hgLookup.getProbabilityForChecked(CW, hgLookup.getSpatialCases(CB), CWB)
+                                    );
+                            }
+                        }
+                    }
+                }
+                break;
+            case Parameters::PAIRS:
+                // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
+                iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
+                for (iWindowEnd = endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                    window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                    for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                        NodeStructure::count_t CW = _cases_by_time[iWindowStart] - _cases_by_time[iWindowEnd + 1];
+                        for (size_t i = 0; i < thisNode.getChildren().size() - 1; ++i) {
+                            const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
+                            const SimulationNode& startSimChildNode(_treeSimNodes[thisNode.getChildren()[i]->getID()]);
+                            int CB = startSimChildNode.getBrC(); // the total number of cases assigned to branch B, over all time
+                            NodeStructure::count_t CWB = startSimChildNode.getBrC_C()[iWindowStart] - startSimChildNode.getBrC_C()[iWindowEnd + 1];
+                            NodeStructure::expected_t NWB = startChildNode.getBrN_C()[iWindowStart] - startChildNode.getBrN_C()[iWindowEnd + 1];
+                            for (size_t j = i + 1; j < thisNode.getChildren().size(); ++j) {
+                                const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
+                                const SimulationNode& stopSimChildNode(_treeSimNodes[thisNode.getChildren()[j]->getID()]);
+                                NodeStructure::count_t pairCB = CB + stopSimChildNode.getBrC();
+                                if (!casesEvaluated(pairCB)) continue;
+                                cutCWB = CWB + (stopSimChildNode.getBrC_C()[iWindowStart] - stopSimChildNode.getBrC_C()[iWindowEnd + 1]);
+								cutNWB = NWB + stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1];
+                                if (cutCWB >= minimum_cases && ((*_loglikelihood).*pRateCheck)(cutCWB, cutNWB))
+                                    simLogLikelihood = std::max(simLogLikelihood, 
+                                        hgLookup.getProbabilityFor(CW, hgLookup.getSpatialCases(pairCB), cutCWB)
+                                    );
+                            }
+                        }
+                    }
+                }
+                break;
+            case Parameters::TRIPLETS:
+                // Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
+                iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
+                for (iWindowEnd = endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                    window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                    for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                        NodeStructure::count_t CW = _cases_by_time[iWindowStart] - _cases_by_time[iWindowEnd + 1];
+                        for (size_t i = 0; i < thisNode.getChildren().size() - 1; ++i) {
+                            const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
+                            const SimulationNode& startSimChildNode(_treeSimNodes[thisNode.getChildren()[i]->getID()]);
+                            int CB = startSimChildNode.getBrC(); // the total number of cases assigned to branch B, over all time
+                            NodeStructure::count_t CWB = startSimChildNode.getBrC_C()[iWindowStart] - startSimChildNode.getBrC_C()[iWindowEnd + 1];
+                            NodeStructure::expected_t NWB = startChildNode.getBrN_C()[iWindowStart] - startChildNode.getBrN_C()[iWindowEnd + 1];
+                            for (size_t j = i + 1; j < thisNode.getChildren().size(); ++j) {
+                                const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
+                                const SimulationNode& stopSimChildNode(_treeSimNodes[thisNode.getChildren()[j]->getID()]);
+                                NodeStructure::count_t pairCB = CB + stopSimChildNode.getBrC();
+                                cutCWB = CWB + (stopSimChildNode.getBrC_C()[iWindowStart] - stopSimChildNode.getBrC_C()[iWindowEnd + 1]);
+                                cutNWB = NWB + stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1];
+                                if (cutCWB >= minimum_cases && ((*_loglikelihood).*pRateCheck)(cutCWB, cutNWB))
+                                    simLogLikelihood = std::max(simLogLikelihood,
+                                        hgLookup.getProbabilityFor(CW, hgLookup.getSpatialCases(pairCB), cutCWB)
+                                    );
+                                for (size_t k = i + 1; k < j; ++k) {
+                                    const NodeStructure& middleChildNode(*(thisNode.getChildren()[k]));
+                                    const SimulationNode& middleSimChildNode(_treeSimNodes[thisNode.getChildren()[k]->getID()]);
+                                    NodeStructure::count_t tripleCB = pairCB + middleSimChildNode.getBrC();
+                                    cutCWB_2 = cutCWB + (middleSimChildNode.getBrC_C()[iWindowStart] - middleSimChildNode.getBrC_C()[iWindowEnd + 1]);
+                                    cutNWB_2 = cutNWB + middleChildNode.getBrN_C()[iWindowStart] - middleChildNode.getBrN_C()[iWindowEnd + 1];
+                                    if (cutCWB_2 >= minimum_cases && ((*_loglikelihood).*pRateCheck)(cutCWB_2, cutNWB_2))
+                                        simLogLikelihood = std::max(simLogLikelihood,
+                                            hgLookup.getProbabilityFor(CW, hgLookup.getSpatialCases(tripleCB), cutCWB_2)
+                                        );
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+            case Parameters::COMBINATORIAL: default: throw prg_error("Unknown cut type (%d).", "scanTree()", cutType);
+            }
+        }
+    } // for i<nNodes
+    return std::make_pair(simLogLikelihood, TotalSimC);
 }
 
 /////////////////////////// SequentialMCSimSuccessiveFunctor //////////////////////////////////////

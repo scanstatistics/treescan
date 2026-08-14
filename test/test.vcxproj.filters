@@ -279,6 +279,12 @@
     <ClCompile Include="unittest_cumulative.cpp">
       <Filter>Source Files\unit_tests</Filter>
     </ClCompile>
+    <ClCompile Include="unittest_HypergeometricProbabilityLookup.cpp">
+      <Filter>Source Files\unit_tests</Filter>
+    </ClCompile>
+    <ClCompile Include="unittest_MinimalGrowthArray.cpp">
+      <Filter>Source Files\unit_tests</Filter>
+    </ClCompile>
     <ClCompile Include="..\calculation\output\ChartGenerator.cpp">
       <Filter>Source Files\source\calculation\output</Filter>
     </ClCompile>
@@ -293,6 +299,9 @@
     </ClCompile>
     <ClCompile Include="squish238.cpp">
       <Filter>Source Files\integration_tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\runner\HypergeometricProbabilityLookup.cpp">
+      <Filter>Source Files\source\calculation\runner</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -380,6 +389,9 @@
     <ClInclude Include="..\calculation\utility\MCSimJobSource.h">
       <Filter>Header Files\source\calculation\utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\utility\MinimalGrowthArray.h">
+      <Filter>Header Files\source\calculation\utility</Filter>
+    </ClInclude>
     <ClInclude Include="..\calculation\utility\MonteCarloSimFunctor.h">
       <Filter>Header Files\source\calculation\utility</Filter>
     </ClInclude>
@@ -442,6 +454,9 @@
     </ClInclude>
     <ClInclude Include="..\calculation\randomization\SignedRankRandomizer.h">
       <Filter>Header Files\source\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\runner\HypergeometricProbabilityLookup.h">
+      <Filter>Header Files\source\calculation\runner</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -233,6 +233,7 @@
     <ClCompile Include="..\calculation\utility\TimeStamp.cpp" />
     <ClCompile Include="..\calculation\utility\UtilityFunctions.cpp" />
     <ClCompile Include="..\calculation\utility\Ini.cpp" />
+    <ClCompile Include="..\calculation\runner\HypergeometricProbabilityLookup.cpp" />
     <ClCompile Include="TreeScan.cpp" />
     <ClCompile Include="ParameterProgramOptions.cpp" />
   </ItemGroup>
@@ -282,7 +283,9 @@
     <ClInclude Include="..\calculation\utility\TimeStamp.h" />
     <ClInclude Include="..\calculation\utility\UtilityFunctions.h" />
     <ClInclude Include="..\calculation\utility\Ini.h" />
+    <ClInclude Include="..\calculation\utility\MinimalGrowthArray.h" />
     <ClInclude Include="..\calculation\utility\ZipUtils.h" />
+    <ClInclude Include="..\calculation\runner\HypergeometricProbabilityLookup.h" />
     <ClInclude Include="ParameterProgramOptions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

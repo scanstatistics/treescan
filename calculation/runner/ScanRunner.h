@@ -11,6 +11,7 @@
 #include "CriticalValues.h"
 #include "WindowLength.h"
 #include "SampleSiteData.h"
+#include "HypergeometricProbabilityLookup.h"
 #include <iostream>
 #include <fstream>
 #include <limits>
@@ -123,8 +124,8 @@ public:
 
 class NodeStructure {
 public:
-    typedef int count_t;
-    typedef double expected_t;
+    typedef TreeScan::count_t count_t;
+    typedef TreeScan::expected_t expected_t;
     typedef std::vector<NodeStructure*> ChildContainer_t;
     typedef std::pair<NodeStructure*, std::string> ParentDefinition_t;
     typedef std::vector<ParentDefinition_t> ParentContainer_t;
@@ -568,14 +569,14 @@ public:
     typedef ptr_vector<NodeStructure>                           NodeStructureContainer_t;
     typedef ptr_vector<CutStructure>                            CutStructureContainer_t;
     typedef std::pair<bool,size_t>                              Index_t;
-    typedef std::shared_ptr<RelativeRiskAdjustmentHandler>    RiskAdjustments_t;
+    typedef std::shared_ptr<RelativeRiskAdjustmentHandler>      RiskAdjustments_t;
     typedef std::vector<RiskAdjustments_t>                      RiskAdjustmentsContainer_t;
     typedef boost::tuple<double, double, double>                PowerEstimationSet_t;
     typedef std::deque<PowerEstimationSet_t>                    PowerEstimationContainer_t;
     typedef std::vector<unsigned int>                           TimeIntervalContainer_t;
     typedef std::vector<TimeIntervalContainer_t>                DayOfWeekIndexes_t;
-    typedef std::shared_ptr<TreeStatistics>                   TreeStatistics_t;
-    typedef std::shared_ptr<SequentialStatistic>              SequentialStatistic_t;
+    typedef std::shared_ptr<TreeStatistics>                     TreeStatistics_t;
+    typedef std::shared_ptr<SequentialStatistic>                SequentialStatistic_t;
 
 protected:
     BasePrint                         & _print;
@@ -592,7 +593,7 @@ protected:
     Parameters                          _parameters;
     DataTimeRange::index_t              _zero_translation_additive;
     boost::dynamic_bitset<>             _caselessWindows;
-    std::unique_ptr<CriticalValues>       _critical_values;
+    std::unique_ptr<CriticalValues>     _critical_values;
     PowerEstimationContainer_t          _power_estimations;
     DayOfWeekIndexes_t                  _day_of_week_indexes;
     mutable TreeStatistics_t            _tree_statistics;
@@ -609,7 +610,9 @@ protected:
     boost::dynamic_bitset<>             _sequential_write_nodes; // node indexes which will be written to simulations cache
     // cache for storing total cases in time window
     mutable std::map<std::pair<DataTimeRange::index_t, DataTimeRange::index_t>, double> _node_n_time_total_cases_cache;
-	boost::dynamic_bitset<> _window_exclusions;
+	boost::dynamic_bitset<>             _window_exclusions;
+	HypergeometricProbabilityLookup     _hypergeometric_probability_lookup;
+    TimeIntervalContainer_t             _totalcases_by_timeinterval;
 
     unsigned int                addCN_C(const NodeStructure& sourceNode, NodeStructure& destinationNode, boost::dynamic_bitset<>& ancestor_nodes);
     size_t                      calculateCutsCount() const;
@@ -632,16 +635,23 @@ protected:
     bool                        scanTreeTemporalConditionNode();
     bool                        scanTreeTemporalConditionNodeCensored();
     bool                        scanTreeTemporalConditionNodeTime();
+    bool                        scanTreeTemporalConditionNodeTimeHypergeometric();
     bool                        scanTreeSignedRank();
     bool                        setupTree();
     CutStructure *              calculateCut(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx=0, DataTimeRange::index_t endIdx=1, int BrC_All=0, double BrN_All=0.0);
+    CutStructure *              calculateCut(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, 
+                                             DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx,
+                                             const HypergeometricProbabilityLookup::SpatialCases& spatialcases, int WindowCases
+                                );
     CutStructure *              calculateCut(size_t node_index, int C, double N, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdxa, DataTimeRange::index_t endIdx);
-    CutStructure              * calculateCut(size_t node_index, const SampleSiteMap_t& samplesiteData, const Loglikelihood_t& logCalculator);
+    CutStructure *              calculateCut(size_t node_index, const SampleSiteMap_t& samplesiteData, const Loglikelihood_t& logCalculator);
     CutStructure *              updateCut(std::unique_ptr<CutStructure>& cut);
 
 public:
     ScanRunner(const Parameters& parameters, BasePrint& print);
 
+    const HypergeometricProbabilityLookup & getHypergeometricProbabilityLookup() const { return _hypergeometric_probability_lookup; }
+    const auto& getTotalCasesByTimeInterval() const { return _totalcases_by_timeinterval; }
     const std::vector<std::string>& getSampleSiteIdentifiers() const { return _sample_site_identifiers; }
     unsigned int getNumExclusionsInWindow(DataTimeRange::index_t start, DataTimeRange::index_t end) const;
     const boost::dynamic_bitset<>& getWindowExclusions() const { return _window_exclusions; }
