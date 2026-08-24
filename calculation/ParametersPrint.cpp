@@ -303,7 +303,9 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
     switch (_parameters.getScanType()) {
         case Parameters::TREEONLY : settings.emplace_back(buffer,"Tree Only"); break;
         case Parameters::TREETIME : settings.emplace_back(buffer,"Tree and Time"); 
-			if (_parameters.getSTPasHypergeometric()) settings.back().second += " (Hypergeometric)";
+            if (_parameters.getSTPasHypergeometric()) {
+                settings.back().second += printString(buffer, " (Hypergeometric - lookup threshold = %u)", _parameters.getDenseThreshold());
+            }
             break;
         case Parameters::TIMEONLY : settings.emplace_back(buffer,"Time Only"); break;
         default: throw prg_error("Unknown scan type (%d).", "getAnalysisParameters()", _parameters.getScanType());

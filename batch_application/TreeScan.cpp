@@ -59,6 +59,7 @@ int main(int argc, char* argv[]) {
     PrintScreen console(false);
     bool verifyParameters=false, printParameters=false;
     unsigned int stpAlgorithm = 2; // default to Poisson Approximation (see #250)
+    unsigned int denseLookupThreshold = 5000;
 
     try {
         __TreeScanInit(argv[0]);
@@ -72,7 +73,8 @@ int main(int argc, char* argv[]) {
             ("verify-parameters,c", po::bool_switch(&verifyParameters), "verify parameters only")
             ("print-parameters,p", po::bool_switch(&printParameters), "print parameters only")
             ("write-parameters,w", po::value<std::string>(), "write parameters to file")
-            ("stp-algorithm,w", po::value<unsigned int>(&stpAlgorithm)->default_value(Parameters::STP_POISSON), "STP algorithm (0=derived, 1=hypergeometric, 2=Poisson Approximation)")
+            ("stp-algorithm,q", po::value<unsigned int>(&stpAlgorithm)->default_value(Parameters::STP_POISSON), "STP algorithm (0=derived, 1=hypergeometric, 2=Poisson Approximation)")
+            ("dense-threshold,k,", po::value<unsigned int>(&denseLookupThreshold)->default_value(5000), "dense lookup threshold (default=5000)")
             ("help,h", "Help");
 
         // try to determine if user has specified parameter options version
@@ -154,6 +156,7 @@ int main(int argc, char* argv[]) {
         if (printParameters) {ParametersPrint(parameters).Print(std::cout); return 0;}
         if (verifyParameters) {console.Printf("Parameters verified, no setting errors detected.\n", BasePrint::P_STDOUT); return 0;}
         parameters.setSTPAlgorithmType((Parameters::STPAlgorithmType)stpAlgorithm);
+        parameters.setDenseThreshold(denseLookupThreshold);
 
         std::string buffer;
         console.Printf(AppToolkit::getToolkit().GetAcknowledgment(buffer), BasePrint::P_STDOUT);

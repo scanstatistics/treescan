@@ -254,7 +254,8 @@ protected:
     successful_result_type scanTreeTemporalConditionNodeCensored(param_type const & param);
     successful_result_type scanTreeTemporalConditionNodeTime(param_type const & param);
     successful_result_type scanTreeTemporalConditionNodeTimeHypergeometric(param_type const& param);
-
+    successful_result_type scanTreeTemporalConditionNodeTimeHypergeometricStandard(param_type const& param);
+    successful_result_type scanTreeTemporalConditionNodeTimeHypergeometricDayOfWeek(param_type const& param);
 public:
     MCSimSuccessiveFunctor(boost::mutex& mutex, std::shared_ptr<AbstractRandomizer> randomizer, const ScanRunner& scanRunner);
     //~MCSimSuccessiveFunctor() {}

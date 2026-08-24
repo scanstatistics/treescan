@@ -417,13 +417,18 @@ public:
 
 class CompareCutsByLoglikelihood {
 private:
-    bool _signed_rank;
+    const Parameters& _parameters;
 
 public:
-    CompareCutsByLoglikelihood(bool signed_rank) : _signed_rank(signed_rank) {}
+    CompareCutsByLoglikelihood(const Parameters& parameters):
+        _parameters(parameters) {}
     bool operator() (const CutStructure * lhs, const CutStructure * rhs) {
-        if (macro_equal(lhs->getLogLikelihood(), rhs->getLogLikelihood(), DBL_CMP_TOLERANCE)) {  // Break ties in a deterministic way.
-            if (_signed_rank) {
+        if (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME && _parameters.getSTPasHypergeometric()) {
+            // The cut loglikelihood (negative tail) can be very small, and there is no reasonable tolerance for equality.
+            if (lhs->getLogLikelihood() == rhs->getLogLikelihood())
+                return lhs->getID() < rhs->getID();
+        } else if (macro_equal(lhs->getLogLikelihood(), rhs->getLogLikelihood(), DBL_CMP_TOLERANCE)) {  // Break ties in a deterministic way.
+            if (_parameters.getModelType() == Parameters::SIGNED_RANK) {
                 auto lhs_proportions = getAverage(lhs->getSampleSiteData());
                 auto rhs_proportions = getAverage(rhs->getSampleSiteData());
                 auto lhs_abs = std::abs(lhs_proportions.second - lhs_proportions.first);
@@ -434,7 +439,9 @@ public:
                     return lhs_proportions.second > rhs_proportions.second;
             }
             return lhs->getID() < rhs->getID();
-        } return lhs->getLogLikelihood() > rhs->getLogLikelihood();
+        } 
+        
+        return lhs->getLogLikelihood() > rhs->getLogLikelihood(); // Comparing log likelihoods is the default behavior.
     }
 };
 
@@ -613,6 +620,7 @@ protected:
 	boost::dynamic_bitset<>             _window_exclusions;
 	HypergeometricProbabilityLookup     _hypergeometric_probability_lookup;
     TimeIntervalContainer_t             _totalcases_by_timeinterval;
+    NodeStructure::CountContainer_t     _totalcases_by_dayofweek;
 
     unsigned int                addCN_C(const NodeStructure& sourceNode, NodeStructure& destinationNode, boost::dynamic_bitset<>& ancestor_nodes);
     size_t                      calculateCutsCount() const;
@@ -636,12 +644,20 @@ protected:
     bool                        scanTreeTemporalConditionNodeCensored();
     bool                        scanTreeTemporalConditionNodeTime();
     bool                        scanTreeTemporalConditionNodeTimeHypergeometric();
+    bool                        scanTreeTemporalConditionNodeTimeHypergeometricStandard();
+    bool                        scanTreeTemporalConditionNodeTimeHypergeometricDayOfWeek();
     bool                        scanTreeSignedRank();
     bool                        setupTree();
     CutStructure *              calculateCut(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdx=0, DataTimeRange::index_t endIdx=1, int BrC_All=0, double BrN_All=0.0);
-    CutStructure *              calculateCut(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, 
+    CutStructure *              calculateHypergeometricCut(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator, 
+                                                           DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx,
+                                                           int SpatialCases, int WindowCases
+                                              );
+    CutStructure * calculateHypergeometricCutDayOfWeek(size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator,
                                              DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx,
-                                             const HypergeometricProbabilityLookup::SpatialCases& spatialcases, int WindowCases
+                                             const HypergeometricProbabilityLookup::CountByDay_t& totalCasesByDay,
+                                             const HypergeometricProbabilityLookup::CountByDay_t& spatialCasesByDay,
+                                             const HypergeometricProbabilityLookup::CountByDay_t& windowCasesByDay
                                 );
     CutStructure *              calculateCut(size_t node_index, int C, double N, int BrC, double BrN, const Loglikelihood_t& logCalculator, DataTimeRange::index_t startIdxa, DataTimeRange::index_t endIdx);
     CutStructure *              calculateCut(size_t node_index, const SampleSiteMap_t& samplesiteData, const Loglikelihood_t& logCalculator);
@@ -650,8 +666,9 @@ protected:
 public:
     ScanRunner(const Parameters& parameters, BasePrint& print);
 
-    const HypergeometricProbabilityLookup & getHypergeometricProbabilityLookup() const { return _hypergeometric_probability_lookup; }
+    const HypergeometricProbabilityLookup& getHypergeometricProbabilityLookup() const { return _hypergeometric_probability_lookup; }
     const auto& getTotalCasesByTimeInterval() const { return _totalcases_by_timeinterval; }
+    const NodeStructure::CountContainer_t& getTotalCasesByDayOfWeek() const { return _totalcases_by_dayofweek; }
     const std::vector<std::string>& getSampleSiteIdentifiers() const { return _sample_site_identifiers; }
     unsigned int getNumExclusionsInWindow(DataTimeRange::index_t start, DataTimeRange::index_t end) const;
     const boost::dynamic_bitset<>& getWindowExclusions() const { return _window_exclusions; }

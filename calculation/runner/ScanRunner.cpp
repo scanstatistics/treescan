@@ -29,6 +29,28 @@
 #include "ChartGenerator.h"
 #include "ZipUtils.h"
 
+static std::string reportHypergeometricProbabilityCache(const HypergeometricProbabilityLookup::ProbabilityCacheStatistics& statistics) {
+    const size_t cacheLookups = statistics.cacheHits + statistics.cacheMisses;
+    std::stringstream buffer;
+    buffer << "C=" << statistics.C << ", T = " << statistics.T << std::endl;
+    buffer << "Hypergeometric probability cache: "
+        << statistics.entries << " entries, "
+        //<< statistics.evaluatedMarginPairs << " margin pairs, "
+        //<< statistics.estimatedMaxCacheEntries << " estimated max entries, "
+        << (static_cast<double>(statistics.estimatedMemoryBytes) / 1000000.0) << " MB, "
+        << statistics.onDemandRequests << " requests, "
+        << statistics.cacheHits << " hits, "
+        << statistics.cacheMisses << " misses, "
+        << statistics.invalidRequests << " invalid, "
+        << (cacheLookups ? static_cast<double>(statistics.cacheHits) / static_cast<double>(cacheLookups) : 0.0) << " hit rate, "
+        << statistics.tailEvaluations << " tail evaluations, "
+        << (statistics.tailEvaluations ? static_cast<double>(statistics.totalTailTerms) / static_cast<double>(statistics.tailEvaluations) : 0.0) << " avg tail terms, "
+        << statistics.maxTailTerms << " max tail terms"
+        << std::endl;
+
+    std::cout << buffer.str();
+    return buffer.str();
+}
 double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _N, const MatchedSets& ms, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
     const Parameters& parameters = scanner.getParameters();
     if (parameters.getModelType() == Parameters::SIGNED_RANK)
@@ -236,13 +258,13 @@ double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, dou
                 case Parameters::NODEANDTIME: {
                     double exp = getExpectedFor(scanner, nodeID, _C, _N, _start_idx, _end_idx);
                     double NodeCases = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
-                    // O/Eout = (NodeCases – CasesInWindow) / (NodeCases-  - Expected)
+                    // O/Eout = (NodeCases â€“ CasesInWindow) / (NodeCases-  - Expected)
                     double o_eout = (NodeCases - C) / (NodeCases - exp);
                     // EHA = Expected * O/Eout
                     double eha = exp * o_eout;
                     // RR = CasesInWindow / EHA
                     //double rr = C / eha;
-                    // EC = CasesInWindow – EHA 
+                    // EC = CasesInWindow â€“ EHA 
                     double ec = C - eha;
                     return ec / static_cast<double>(parameters.getAttributableRiskExposed());
                 }
@@ -1648,11 +1670,11 @@ void ScanRunner::rankCutsAndReportMostLikely() {
                     for (auto cut: _Cut) cut->setLogLikelihood(std::abs(cut->getLogLikelihood()));
                 case Parameters::HIGHRATE:
                 default: 
-                    std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood(true));
+                    std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood(_parameters));
             }
         } else {
             // Sort collection of cuts by log-likelihood.
-            std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood(false));
+            std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood(_parameters));
             // Retain only cuts with a log-likelihood ratio >= the minimum LLR of interest or those which previously signalled (if tree sequential).
             for (size_t t = 0; t < _Cut.size();) {
                 if (!(macro_less_than(MIN_CUT_LLR, calcLogLikelihood->LogLikelihoodRatio(_Cut[t]->getLogLikelihood()), DBL_CMP_TOLERANCE) ||
@@ -1699,7 +1721,7 @@ void ScanRunner::removeIdenticalParentCuts() {
             if (!matchFound) ++t;
         }
         // Restore sort order by log-likelihood
-        std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood(_parameters.getModelType() == Parameters::SIGNED_RANK));
+        std::sort(_Cut.begin(), _Cut.end(), CompareCutsByLoglikelihood(_parameters));
     }
 }
 
@@ -2253,6 +2275,14 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
     // Create the main text output file.
     if (!resultsWriter.writeASCII(start, end))
         return false;
+
+    // Debug code only.
+    if (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME && _parameters.getSTPasHypergeometric()) {
+        std::ofstream outfile(_parameters.getOutputFileName().c_str(), std::ios::app);
+        outfile << std::endl << std::endl << reportHypergeometricProbabilityCache(getHypergeometricProbabilityLookup().getProbabilityCacheStatistics());
+        outfile.close();
+    }
+
     if (_parameters.isGeneratingHtmlResults() || _parameters.isGeneratingTableResults()) {
         /* First whittle the cut list down to those that are reportable. */
         CutStructureContainer_t::iterator itr = _Cut.begin();
@@ -2402,37 +2432,6 @@ bool ScanRunner::run() {
     if (_parameters.getReportCriticalValues() || (_parameters.getPerformPowerEvaluations() && _parameters.getCriticalValuesType() == Parameters::CV_MONTECARLO)) {
         _critical_values.reset(new CriticalValues(_parameters.getNumReplicationsRequested()));
     }
-
-    if (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) {
-        /*
-            The decision whether we're using hypergeometric algorithms versus the Poisson approximation is finalized here.
-            The choice is based on the total number of cases. The hypergeometric lookup table can
-            be memory and execution-time intensive, so we're only using it when the total number of cases is below
-            a somewhat arbitrary threshold. See reasoning in issue https://squishlist.com/ims-ext/treescan/250/
-        */
-        count_t HYPERGEOMETRIC_CASE_THRESHOLD = 5000;
-        switch (_parameters.getSTPAlgorithmType()) {
-        case Parameters::STP_POISSON:
-            _parameters.setSTPasHypergeometric(false); break;
-        case Parameters::STP_HYPERGEOMETRIC:
-            if (_parameters.getPerformDayOfWeekAdjustment() || _TotalC > HYPERGEOMETRIC_CASE_THRESHOLD) {
-                throw resolvable_error(
-                    "Error: The tree-temporal, conditioned on node and time, using the hypergeometric algorithm is not supported for:\n"
-                    "- total number of cases exceeding %ld\n- when adjusting for weekly trends\n"
-                    "Please select derived or the Poisson approximation option instead.\n", HYPERGEOMETRIC_CASE_THRESHOLD
-                );
-            }
-        case Parameters::STP_DERIVED:
-        default:
-            if (_parameters.getPerformDayOfWeekAdjustment() || _TotalC > HYPERGEOMETRIC_CASE_THRESHOLD) {
-                _parameters.setSTPasHypergeometric(false);
-                _parameters.setSTPAlgorithmType(Parameters::STP_POISSON);
-            } else
-                _parameters.setSTPasHypergeometric(true);
-            break;
-        };
-    }
-
     // Scan real data.
     if (!_parameters.getPerformPowerEvaluations() || (_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         bool scan_success=false;
@@ -2474,6 +2473,7 @@ bool ScanRunner::run() {
             }
         }
     }
+
     if (_print.GetIsCanceled()) return false;
     if (_parameters.getPerformPowerEvaluations()) {
         if (!runPowerEvaluations()) return false;
@@ -3015,7 +3015,7 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
                         }
                     } break;
                 case Parameters::COMBINATORIAL:
-                default: throw prg_error("Unknown cut type (%d).", "scanTreeTemporalConditionNode()", cutType);
+                default: throw prg_error("Unknown cut type (%d).", __func__, cutType);
             }
         }
     }   
@@ -3155,16 +3155,27 @@ bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
                     }
                 } break;
             case Parameters::COMBINATORIAL:
-            default: throw prg_error("Unknown cut type (%d).", "scanTreeTemporalConditionNode()", cutType);
+            default: throw prg_error("Unknown cut type (%d).", __func__, cutType);
             }
         }
     }
+
     rankCutsAndReportMostLikely();
     return _Cut.size() != 0;
 }
 
 /** SCANNING THE TREE for tree-temporal model -- conditioned on the total cases across nodes and time, using hypergeometric distribution. */
 bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometric() {
+    bool response = true;
+    if (_parameters.isPerformingDayOfWeekAdjustment())
+        response = scanTreeTemporalConditionNodeTimeHypergeometricDayOfWeek();
+    else
+        response = scanTreeTemporalConditionNodeTimeHypergeometricStandard();
+    reportHypergeometricProbabilityCache(getHypergeometricProbabilityLookup().getProbabilityCacheStatistics());
+    return response;
+}
+/** SCANNING THE TREE for tree-temporal model -- conditioned on total cases, using scalar hypergeometric distribution. */
+bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometricStandard() {
     _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
 
@@ -3195,27 +3206,25 @@ bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometric() {
         // Nothing to evaluate if fewer than 2 cases or if greater than total cases - 2.
         return spatialAreaCases >= 2 && spatialAreaCases <= _TotalC - 2;
     };
-	// Calculate the hypergeometric probability lookup table for all possible cases in the time window, given the total number of cases across all time and space.
-	_hypergeometric_probability_lookup.calculateHG(_parameters.getScanRateType(), cases_collection, _TotalC);
-    const auto& hgLookup = getHypergeometricProbabilityLookup();
+    // Initialize hypergeometric probability evaluation. Small C builds the dense
+    // lookup; large C records scan state and evaluates requested tails on demand.
+	_hypergeometric_probability_lookup.calculateHG(_parameters.getScanRateType(), cases_collection, _TotalC, (int)_parameters.getDenseThreshold());
     // Define the minimum and maximum window lengths.
     for (size_t n=0; n < _Nodes.size(); ++n) {
         if (isEvaluated(*_Nodes[n])) {
             const NodeStructure& thisNode(*(_Nodes[n]));
             int CB = thisNode.getBrC(); // the total number of cases assigned to branch B, over all time
             if (!casesEvaluated(CB)) continue;
-            const auto& spatialcases = hgLookup.getSpatialCases(CB);
             // always do simple cut
             iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
             for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
                 window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                 for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
                     //_print.Printf("%d to %d\n", BasePrint::P_STDOUT,iWindowStart, iWindowEnd);
-                    calculateCut(n, 
-                        thisNode.getBrC_C()[iWindowStart] - thisNode.getBrC_C()[iWindowEnd + 1],
-                        thisNode.getBrN_C()[iWindowStart] - thisNode.getBrN_C()[iWindowEnd + 1],
-                        calcLogLikelihood, iWindowStart, iWindowEnd, spatialcases, 
-                        casesByTime[iWindowStart] - casesByTime[iWindowEnd + 1]
+                    NodeStructure::count_t CWB = thisNode.getBrC_C()[iWindowStart] - thisNode.getBrC_C()[iWindowEnd + 1];
+                    NodeStructure::expected_t NWB = thisNode.getBrN_C()[iWindowStart] - thisNode.getBrN_C()[iWindowEnd + 1];
+                    calculateHypergeometricCut(n, 
+                        CWB, NWB, calcLogLikelihood, iWindowStart, iWindowEnd, CB, casesByTime[iWindowStart] - casesByTime[iWindowEnd + 1]
                     );
                 }
             }
@@ -3246,7 +3255,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometric() {
                                     CWB += childNode.getBrC_C()[iWindowStart] - childNode.getBrC_C()[iWindowEnd + 1];
                                     NWB += childNode.getBrN_C()[iWindowStart] - childNode.getBrN_C()[iWindowEnd + 1];
                                     if (!casesEvaluated(CB)) continue;
-                                    CutStructure * cut = calculateCut(n, CWB, NWB, calcLogLikelihood, iWindowStart, iWindowEnd, hgLookup.getSpatialCases(CB), CW);
+                                    CutStructure * cut = calculateHypergeometricCut(n, CWB, NWB, calcLogLikelihood, iWindowStart, iWindowEnd, CB, CW);
                                     if (cut) cut->setCutChildren(currentChildren);
                                 }
                             }
@@ -3269,10 +3278,10 @@ bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometric() {
                                     const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
                                     NodeStructure::count_t pairCB = CB + stopChildNode.getBrC();
                                     if (!casesEvaluated(pairCB)) continue;
-                                    CutStructure * cut = calculateCut(n, 
+                                    CutStructure * cut = calculateHypergeometricCut(n, 
                                         CWB + stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1],
                                         NWB + stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1],
-                                        calcLogLikelihood, iWindowStart, iWindowEnd, hgLookup.getSpatialCases(pairCB), CW
+                                        calcLogLikelihood, iWindowStart, iWindowEnd, pairCB, CW
                                     );
                                     if (cut) {
                                         cut->addCutChild(startChildNode.getID(), true);
@@ -3300,8 +3309,8 @@ bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometric() {
                                     cutCWB = CWB + stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
                                     cutNWB = NWB + stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1];
                                     if (casesEvaluated(pairCB)) {
-                                        CutStructure* cut = calculateCut(n, cutCWB, cutNWB,
-                                            calcLogLikelihood, iWindowStart, iWindowEnd, hgLookup.getSpatialCases(pairCB), CW
+                                        CutStructure* cut = calculateHypergeometricCut(n, cutCWB, cutNWB,
+                                            calcLogLikelihood, iWindowStart, iWindowEnd, pairCB, CW
                                         );
                                         if (cut) {
                                             cut->addCutChild(startChildNode.getID(), true);
@@ -3313,10 +3322,9 @@ bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometric() {
                                         NodeStructure::count_t tripleCB = pairCB + middleChildNode.getBrC();
                                         //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
                                         if (casesEvaluated(tripleCB)) {
-                                            CutStructure* cut = calculateCut(n,
-                                                cutCWB + middleChildNode.getBrC_C()[iWindowStart] - middleChildNode.getBrC_C()[iWindowEnd + 1],
+                                            CutStructure* cut = calculateHypergeometricCut(n, cutCWB + middleChildNode.getBrC_C()[iWindowStart] - middleChildNode.getBrC_C()[iWindowEnd + 1],
                                                 cutNWB + middleChildNode.getBrN_C()[iWindowStart] - middleChildNode.getBrN_C()[iWindowEnd + 1],
-                                                calcLogLikelihood, iWindowStart, iWindowEnd, hgLookup.getSpatialCases(tripleCB), CW
+                                                calcLogLikelihood, iWindowStart, iWindowEnd, tripleCB, CW
                                             );
                                             if (cut) {
                                                 cut->addCutChild(startChildNode.getID(), true);
@@ -3330,13 +3338,234 @@ bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometric() {
                         }
                     } break;
                 case Parameters::COMBINATORIAL:
-                default: throw prg_error("Unknown cut type (%d).", "scanTreeTemporalConditionNodeTime()", cutType);
+                default: throw prg_error("Unknown cut type (%d).", __func__, cutType);
             }
         }
-    } 
+    }
     rankCutsAndReportMostLikely();
     return _Cut.size() != 0;
 }
+
+
+/** SCANNING THE TREE for tree-temporal model -- conditioned on total cases, using DOW-adjusted hypergeometric distribution. */
+bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometricDayOfWeek() {
+    _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
+    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
+
+    // Define the start and end windows with the zero index offset already incorporated.
+    DataTimeRange startWindow(temporalStartRange().getStart() + _zero_translation_additive,
+                              temporalStartRange().getEnd() + _zero_translation_additive),
+                  endWindow(temporalEndRange().getStart() + _zero_translation_additive,
+                            temporalEndRange().getEnd() + _zero_translation_additive);
+
+    std::shared_ptr<AbstractWindowLength> window(getNewWindowLength());
+    int  iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
+    // First compile collection of cases in time window, over the whole geographical region. 
+	TimeIntervalContainer_t casesByTime = _totalcases_by_timeinterval; // create cumulative cases by time interval data
+    TreeScan::cumulative_backward(casesByTime);
+    count_t cases_in_window = 0;
+    std::set<count_t> cases_collection;
+    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
+    for (iWindowEnd = endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+            cases_in_window = static_cast<int>(casesByTime[iWindowStart] - casesByTime[iWindowEnd + 1]);
+            if (cases_in_window) cases_collection.emplace(cases_in_window);
+        }
+    }
+    window->reset();
+    auto casesEvaluated=[&](NodeStructure::count_t spatialAreaCases) {
+		// spatialAreaCases is the number of cases in the spatial area of the cluster, over all time.
+        // Nothing to evaluate if fewer than 2 cases or if greater than total cases - 2.
+        return spatialAreaCases >= 2 && spatialAreaCases <= _TotalC - 2;
+    };
+
+    // Initialize hypergeometric probability evaluation. Small C builds the dense
+    // lookup; large C records scan state and evaluates requested tails on demand.
+	_hypergeometric_probability_lookup.calculateHG(_parameters.getScanRateType(), cases_collection, _TotalC, (int)_parameters.getDenseThreshold());
+
+    // Converts a cumulative branch count array into S_d values: the number of
+    // spatial branch cases on each day-of-week across the full study period.
+    auto getCasesByDay = [](const NodeStructure::CountContainer_t& cumulativeCases) {
+        HypergeometricProbabilityLookup::CountByDay_t counts = { 0, 0, 0, 0, 0, 0, 0 };
+        for (size_t t = 0; t + 1 < cumulativeCases.size(); ++t)
+            counts[t % counts.size()] += cumulativeCases[t] - cumulativeCases[t + 1];
+        return counts;
+    };
+    auto addCasesByDay = [](HypergeometricProbabilityLookup::CountByDay_t& target, const HypergeometricProbabilityLookup::CountByDay_t& source) {
+        for (size_t d = 0; d < target.size(); ++d) target[d] += source[d];
+    };
+    // Converts a candidate time window into T_d values: total cases in the window
+    // on each day-of-week, summed over all spatial branches.
+    auto getWindowCasesByDay = [&](DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx) {
+        HypergeometricProbabilityLookup::CountByDay_t counts = { 0, 0, 0, 0, 0, 0, 0 };
+        for (DataTimeRange::index_t t = startIdx; t <= endIdx; ++t)
+            counts[static_cast<size_t>(t) % counts.size()] += _totalcases_by_timeinterval[t];
+        return counts;
+    };
+
+    /** TODO: replace with ScanRunner::getTotalCasesByTimeInterval() - find common type with HypergeometricProbabilityLookup::CountByDay_t */
+    // C_d values: total study cases for each day-of-week. These are the stratum
+    // populations for the day-of-week adjusted hypergeometric calculation.
+    HypergeometricProbabilityLookup::CountByDay_t totalCasesByDay = { 0, 0, 0, 0, 0, 0, 0 };
+    for (size_t t = 0; t < _totalcases_by_timeinterval.size(); ++t)
+        totalCasesByDay[t % totalCasesByDay.size()] += _totalcases_by_timeinterval[t];
+
+
+    // Define the minimum and maximum window lengths.
+    for (size_t n=0; n < _Nodes.size(); ++n) {
+        if (isEvaluated(*_Nodes[n])) {
+            const NodeStructure& thisNode(*(_Nodes[n]));
+            int CB = thisNode.getBrC(); // the total number of cases assigned to branch B, over all time
+            if (!casesEvaluated(CB)) continue;
+            // always do simple cut
+            iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
+            for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                    //_print.Printf("%d to %d\n", BasePrint::P_STDOUT,iWindowStart, iWindowEnd);
+                    NodeStructure::count_t CWB = thisNode.getBrC_C()[iWindowStart] - thisNode.getBrC_C()[iWindowEnd + 1];
+                    NodeStructure::expected_t NWB = thisNode.getBrN_C()[iWindowStart] - thisNode.getBrN_C()[iWindowEnd + 1];
+                    // DOW-adjusted hypergeometric uses the seven C_d, S_d, and T_d
+                    // margins instead of one scalar C, S, and T margin.
+                    calculateHypergeometricCutDayOfWeek(n, CWB, NWB, calcLogLikelihood, iWindowStart, iWindowEnd,
+                                 totalCasesByDay, getCasesByDay(thisNode.getBrC_C()), getWindowCasesByDay(iWindowStart, iWindowEnd));
+                }
+            }
+            Parameters::CutType cutType = thisNode.getChildren().size() >= 2 ? thisNode.getCutType() : Parameters::SIMPLE;
+            NodeStructure::count_t cutCWB = 0, cutCWB_2 = 0;
+            NodeStructure::expected_t cutNWB = 0, cutNWB_2 = 0;
+            switch (cutType) {
+                case Parameters::SIMPLE: break; // already done, regardless of specified node cut
+                case Parameters::ORDINAL: {
+                    // Ordinal cuts: ABCD -> AB, ABC, ABCD, BC, BCD, CD
+                    CutStructure::CutChildContainer_t currentChildren;
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
+                    for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                            NodeStructure::count_t CW = casesByTime[iWindowStart] - casesByTime[iWindowEnd + 1];
+                            HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = getWindowCasesByDay(iWindowStart, iWindowEnd);
+                            for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                                const NodeStructure& firstChildNode(*(thisNode.getChildren()[i]));
+                                int CB = firstChildNode.getBrC(); // the total number of cases assigned to branch B, over all time
+                                HypergeometricProbabilityLookup::CountByDay_t spatialCasesByDay = getCasesByDay(firstChildNode.getBrC_C());
+                                currentChildren.clear();
+                                currentChildren.push_back(firstChildNode.getID());
+                                NodeStructure::count_t CWB = firstChildNode.getBrC_C()[iWindowStart] - firstChildNode.getBrC_C()[iWindowEnd + 1];
+                                NodeStructure::expected_t NWB = firstChildNode.getBrN_C()[iWindowStart] - firstChildNode.getBrN_C()[iWindowEnd + 1];
+                                for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                                    const NodeStructure& childNode(*(thisNode.getChildren()[j]));
+                                    currentChildren.push_back(childNode.getID());
+									CB += childNode.getBrC(); // the total number of cases assigned to branch B, over all time
+                                    addCasesByDay(spatialCasesByDay, getCasesByDay(childNode.getBrC_C()));
+                                    CWB += childNode.getBrC_C()[iWindowStart] - childNode.getBrC_C()[iWindowEnd + 1];
+                                    NWB += childNode.getBrN_C()[iWindowStart] - childNode.getBrN_C()[iWindowEnd + 1];
+                                    if (!casesEvaluated(CB)) continue;
+                                    CutStructure * cut = calculateHypergeometricCutDayOfWeek(n, 
+                                        CWB, NWB, calcLogLikelihood, iWindowStart, iWindowEnd, totalCasesByDay, spatialCasesByDay, windowCasesByDay
+                                    );
+                                    if (cut) cut->setCutChildren(currentChildren);
+                                }
+                            }
+                        }
+                    }
+                } break;
+                case Parameters::PAIRS:
+                    // Pair cuts: ABCD -> AB, AC, AD, BC, BD, CD
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
+                    for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                            NodeStructure::count_t CW = casesByTime[iWindowStart] - casesByTime[iWindowEnd + 1];
+                            HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = getWindowCasesByDay(iWindowStart, iWindowEnd);
+                            for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                                const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
+                                int CB = startChildNode.getBrC(); // the total number of cases assigned to branch B, over all time
+                                HypergeometricProbabilityLookup::CountByDay_t startCasesByDay = getCasesByDay(startChildNode.getBrC_C());
+                                NodeStructure::count_t CWB = startChildNode.getBrC_C()[iWindowStart] - startChildNode.getBrC_C()[iWindowEnd + 1];
+                                NodeStructure::expected_t NWB = startChildNode.getBrN_C()[iWindowStart] - startChildNode.getBrN_C()[iWindowEnd + 1];
+                                for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                                    const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
+                                    NodeStructure::count_t pairCB = CB + stopChildNode.getBrC();
+                                    if (!casesEvaluated(pairCB)) continue;
+                                    HypergeometricProbabilityLookup::CountByDay_t pairCasesByDay = startCasesByDay;
+                                    addCasesByDay(pairCasesByDay, getCasesByDay(stopChildNode.getBrC_C()));
+                                    CutStructure * cut = calculateHypergeometricCutDayOfWeek(n,
+                                        CWB + stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1],
+                                        NWB + stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1],
+                                        calcLogLikelihood, iWindowStart, iWindowEnd, totalCasesByDay, pairCasesByDay, windowCasesByDay
+                                    );
+                                    if (cut) {
+                                        cut->addCutChild(startChildNode.getID(), true);
+                                        cut->addCutChild(stopChildNode.getID());
+                                    }
+                                }
+                            }
+                        }
+                    } break;
+                case Parameters::TRIPLETS:
+                    // Triple cuts: ABCD -> AB, AC, ABC, AD, ABD, ACD, BC, BD, BCD, CD
+                    iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
+                    for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+                        window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
+                        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+                            NodeStructure::count_t CW = casesByTime[iWindowStart] - casesByTime[iWindowEnd + 1];
+                            HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = getWindowCasesByDay(iWindowStart, iWindowEnd);
+                            for (size_t i=0; i < thisNode.getChildren().size() - 1; ++i) {
+                                const NodeStructure& startChildNode(*(thisNode.getChildren()[i]));
+                                int CB = startChildNode.getBrC(); // the total number of cases assigned to branch B, over all time
+                                HypergeometricProbabilityLookup::CountByDay_t startCasesByDay = getCasesByDay(startChildNode.getBrC_C());
+                                NodeStructure::count_t CWB = startChildNode.getBrC_C()[iWindowStart] - startChildNode.getBrC_C()[iWindowEnd + 1];
+                                NodeStructure::expected_t NWB = startChildNode.getBrN_C()[iWindowStart] - startChildNode.getBrN_C()[iWindowEnd + 1];
+                                for (size_t j=i+1; j < thisNode.getChildren().size(); ++j) {
+                                    const NodeStructure& stopChildNode(*(thisNode.getChildren()[j]));
+                                    NodeStructure::count_t pairCB = CB + stopChildNode.getBrC();
+                                    cutCWB = CWB + stopChildNode.getBrC_C()[iWindowStart] - stopChildNode.getBrC_C()[iWindowEnd + 1];
+                                    cutNWB = NWB + stopChildNode.getBrN_C()[iWindowStart] - stopChildNode.getBrN_C()[iWindowEnd + 1];
+                                    HypergeometricProbabilityLookup::CountByDay_t pairCasesByDay = startCasesByDay;
+                                    addCasesByDay(pairCasesByDay, getCasesByDay(stopChildNode.getBrC_C()));
+                                    if (casesEvaluated(pairCB)) {
+                                        CutStructure* cut = calculateHypergeometricCutDayOfWeek(n, cutCWB, cutNWB,
+                                            calcLogLikelihood, iWindowStart, iWindowEnd, totalCasesByDay, pairCasesByDay, windowCasesByDay
+                                        );
+                                        if (cut) {
+                                            cut->addCutChild(startChildNode.getID(), true);
+                                            cut->addCutChild(stopChildNode.getID());
+                                        }
+                                    }
+                                    for (size_t k=i+1; k < j; ++k) {
+                                        const NodeStructure& middleChildNode(*(thisNode.getChildren()[k]));
+                                        NodeStructure::count_t tripleCB = pairCB + middleChildNode.getBrC();
+                                        //printf("Evaluating cut [%s,%s,%s]\n", startChildNode.getIdentifier().c_str(), middleChildNode.getIdentifier().c_str(), stopChildNode.getIdentifier().c_str());
+                                        if (casesEvaluated(tripleCB)) {
+                                            HypergeometricProbabilityLookup::CountByDay_t tripleCasesByDay = pairCasesByDay;
+                                            addCasesByDay(tripleCasesByDay, getCasesByDay(middleChildNode.getBrC_C()));
+                                            CutStructure* cut = calculateHypergeometricCutDayOfWeek(n,
+                                                cutCWB + middleChildNode.getBrC_C()[iWindowStart] - middleChildNode.getBrC_C()[iWindowEnd + 1],
+                                                cutNWB + middleChildNode.getBrN_C()[iWindowStart] - middleChildNode.getBrN_C()[iWindowEnd + 1],
+                                                calcLogLikelihood, iWindowStart, iWindowEnd, totalCasesByDay, tripleCasesByDay, windowCasesByDay
+                                            );
+                                            if (cut) {
+                                                cut->addCutChild(startChildNode.getID(), true);
+                                                cut->addCutChild(middleChildNode.getID());
+                                                cut->addCutChild(stopChildNode.getID());
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } break;
+                case Parameters::COMBINATORIAL:
+                default: throw prg_error("Unknown cut type (%d).", __func__, cutType);
+            }
+        }
+    }
+    rankCutsAndReportMostLikely();
+    return _Cut.size() != 0;
+}
+
 
 /** SCANNING THE TREE for temporal model -- conditioned on the total cases across nodes and time. */
 bool ScanRunner::scanTreeTemporalConditionNodeTime() {
@@ -3455,7 +3684,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
                         }
                     } break;
                 case Parameters::COMBINATORIAL:
-                default: throw prg_error("Unknown cut type (%d).", "scanTreeTemporalConditionNodeTime()", cutType);
+                default: throw prg_error("Unknown cut type (%d).", __func__, cutType);
             }
         }
     } 
@@ -3529,18 +3758,49 @@ CutStructure * ScanRunner::calculateCut(size_t node_index, int BrC, double BrN, 
 }
 
 /** Calculates the hypergeometric maximizing value of current evaluation, then updates collection of best cuts for node. */
-CutStructure* ScanRunner::calculateCut(
+CutStructure* ScanRunner::calculateHypergeometricCut(
     size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator,
-    DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx, 
-    const HypergeometricProbabilityLookup::SpatialCases& spatialcases, int WindowCases) {
+    DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx,
+    int SpatialCases, int WindowCases) {
     // Skip calculation if branch count does not meet evaluation minimum.
     if (BrC < static_cast<int>(_node_evaluation_minimum)) return 0;
     double loglikelihood = AbstractLoglikelihood::UNSET_LOGLIKELIHOOD;
     AbstractLoglikelihood::SCANRATE_UNCOND_FUNCPTR pRateCheck = logCalculator->_uncond_of_interest;
     if (((*logCalculator).*pRateCheck)(BrC, BrN))
-        loglikelihood = _hypergeometric_probability_lookup.getProbabilityFor(WindowCases, spatialcases, BrC);
-    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD) // Exclude this cut if log likelihood is unset;
+        loglikelihood = _hypergeometric_probability_lookup.getProbabilityForChecked(WindowCases, SpatialCases, BrC);
+    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD || loglikelihood == HypergeometricProbabilityLookup::PROBABILITY_UNSET)
         return 0;
+    std::unique_ptr<CutStructure> cut(new CutStructure());
+    cut->setLogLikelihood(loglikelihood);
+    cut->setID(static_cast<int>(node_index));
+    cut->setC(BrC);
+    cut->setN(BrN);
+    cut->setStartIdx(startIdx);
+    cut->setEndIdx(endIdx);
+
+    return updateCut(cut);
+}
+
+/** Calculates the day-of-week stratified hypergeometric maximizing value of current evaluation,
+    then updates collection of best cuts for node. */
+CutStructure* ScanRunner::calculateHypergeometricCutDayOfWeek(
+    size_t node_index, int BrC, double BrN, const Loglikelihood_t& logCalculator,
+    DataTimeRange::index_t startIdx, DataTimeRange::index_t endIdx,
+    const HypergeometricProbabilityLookup::CountByDay_t& totalCasesByDay,
+    const HypergeometricProbabilityLookup::CountByDay_t& spatialCasesByDay,
+    const HypergeometricProbabilityLookup::CountByDay_t& windowCasesByDay) {
+    // Skip calculation if branch count does not meet evaluation minimum.
+    if (BrC < static_cast<int>(_node_evaluation_minimum)) return 0;
+    double loglikelihood = AbstractLoglikelihood::UNSET_LOGLIKELIHOOD;
+    AbstractLoglikelihood::SCANRATE_UNCOND_FUNCPTR pRateCheck = logCalculator->_uncond_of_interest;
+    if (((*logCalculator).*pRateCheck)(BrC, BrN)) {
+        loglikelihood = _hypergeometric_probability_lookup.getStratifiedProbabilityFor(
+            _parameters.getScanRateType(), totalCasesByDay, spatialCasesByDay, windowCasesByDay, BrC
+        );
+    }
+    if (loglikelihood == logCalculator->UNSET_LOGLIKELIHOOD || loglikelihood == HypergeometricProbabilityLookup::PROBABILITY_UNSET)
+        return 0;
+
     std::unique_ptr<CutStructure> cut(new CutStructure());
     cut->setLogLikelihood(loglikelihood);
     cut->setID(static_cast<int>(node_index));
@@ -3662,15 +3922,14 @@ bool ScanRunner::setupTree() {
 
     // calculate the number of expected cases
     if (Parameters::isTemporalScanType(_parameters.getScanType())) {
-        NodeStructure::CountContainer_t totalcases_by_dayofweek;
         if (_parameters.isPerformingDayOfWeekAdjustment()) {
             // calculate the total number of cases for each day of the week
-            totalcases_by_dayofweek.resize(7, 0);
+            _totalcases_by_dayofweek.resize(7, 0);
             for (size_t n=0; n < _Nodes.size(); ++n) {
                 NodeStructure& node = *(_Nodes[n]);
                 const NodeStructure::CountContainer_t& cases = node.getIntC_C();
                 for (size_t idx=0; idx < cases.size(); ++idx) {
-                    totalcases_by_dayofweek[idx % 7] += cases[idx];
+                    _totalcases_by_dayofweek[idx % 7] += cases[idx];
                 }
             }
         }
@@ -3702,7 +3961,7 @@ bool ScanRunner::setupTree() {
                         // now we can calculate the expected number of cases for this node
                         NodeStructure::ExpectedContainer_t& nodeExpected = node.refIntN_C();
                         for (size_t t=0; t < _totalcases_by_timeinterval.size(); ++t) {
-                            double cases_day_of_week = static_cast<double>(totalcases_by_dayofweek[t % 7]);
+                            double cases_day_of_week = static_cast<double>(_totalcases_by_dayofweek[t % 7]);
                             if (cases_day_of_week) nodeExpected[t] += static_cast<double>(_totalcases_by_timeinterval[t]) * static_cast<double>(node_cases_by_dayofweek[t % 7]) / cases_day_of_week;
                         }
                     }
@@ -3737,7 +3996,7 @@ bool ScanRunner::setupTree() {
                         if (totalcases_by_node[n]) {
                             NodeStructure::ExpectedContainer_t& nodeExpected = _Nodes[n]->refIntN_C();
                             for (size_t t=0; t < nodeExpected.size(); ++t) {
-                                nodeExpected[t] += static_cast<double>(totalcases_by_node[n]) * (static_cast<double>(totalcases_by_dayofweek[t % 7])/static_cast<double>(_TotalC) / static_cast<double>(_day_of_week_indexes[t % 7].size()));
+                                nodeExpected[t] += static_cast<double>(totalcases_by_node[n]) * (static_cast<double>(_totalcases_by_dayofweek[t % 7])/static_cast<double>(_TotalC) / static_cast<double>(_day_of_week_indexes[t % 7].size()));
                             }
                         }
                     }
@@ -3839,3 +4098,8 @@ bool ScanRunner::setupTree() {
     }
     return true;
 }
+
+
+
+
+

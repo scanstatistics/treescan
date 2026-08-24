@@ -292,6 +292,7 @@ void Parameters::copy(const Parameters &rhs) {
 
     _stp_algorithm_type = rhs._stp_algorithm_type;
     _stp_as_hypergeometric = rhs._stp_as_hypergeometric;
+    _stp_dense_threshold = rhs._stp_dense_threshold;
 }
 
 /** Returns whether early termination option is performed. */
@@ -613,15 +614,10 @@ void Parameters::setSTPAlgorithmType(STPAlgorithmType e) {
     // Check that setting agrees with other parameter settings. Later we'll do follow-up validation based on read data.
     switch (_stp_algorithm_type) {
     case STP_DERIVED:
-        _stp_as_hypergeometric = !getPerformDayOfWeekAdjustment();
+        _stp_as_hypergeometric = true;
         break;
     case STP_HYPERGEOMETRIC:
-        if (getPerformDayOfWeekAdjustment())
-            throw resolvable_error(
-                "Error: The tree-temporal, conditioned on node and time, using the hypergeometric algorithm is not supported when:\n"
-                "- adjusting for weekly trends\n"
-                "Please select derived or the Poisson approximation option instead.\n"
-            );
+        _stp_as_hypergeometric = true;
         break;
     case STP_POISSON:
         _stp_as_hypergeometric = false;
@@ -837,3 +833,4 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
         }
     }
 }
+

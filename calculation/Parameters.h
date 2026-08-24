@@ -337,6 +337,7 @@ class Parameters {
 
     STPAlgorithmType                    _stp_algorithm_type;
     bool                                _stp_as_hypergeometric; // perform STP as hypergeometric
+    unsigned int                        _stp_dense_threshold = 5000;
 
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
@@ -357,6 +358,8 @@ class Parameters {
     void                                setSTPAlgorithmType(STPAlgorithmType e);
     bool                                getSTPasHypergeometric() const { return _scan_type == TREETIME && _conditional_type == NODEANDTIME && _stp_as_hypergeometric; }
     void                                setSTPasHypergeometric(bool b) { _stp_as_hypergeometric = b; }
+    unsigned int                        getDenseThreshold() const { return _stp_dense_threshold; }
+    void                                setDenseThreshold(unsigned int u) { _stp_dense_threshold = u; }
 
     const std::string                 & getResultsTitle() const { return _results_title; }
     void                                setResultsTitle(const std::string& s) { _results_title = s; }
