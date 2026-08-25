@@ -1,6 +1,6 @@
 
 
-set app=%~dp0Win32\Release\test32.exe
+set app=%~dp0x64\Release\test64.exe
 set log=%~dp0test-log.txt
 set report=%~dp0test-results.xml
 set examples_path=%~dp0..\installers\examples

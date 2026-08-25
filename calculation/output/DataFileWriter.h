@@ -62,6 +62,7 @@ class DataRecordWriter {
     static const char         * EXPECTED_FIELD;
     static const char         * EXPECTED_CASES_FIELD;
     static const char         * RELATIVE_RISK_FIELD;
+    static const char         * ODDS_RATIO_FIELD;
     static const char         * EXCESS_CASES_FIELD;
     static const char         * ATTRIBUTABLE_RISK_FIELD;
     static const char         * LOG_LIKL_RATIO_FIELD;
