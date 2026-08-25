@@ -599,7 +599,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
     std::vector<std::string>::iterator itrWndEnd = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::END_WINDOW_FIELD);
     std::vector<std::string>::iterator itrWndCase = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::WNDW_CASES_FIELD);
     std::vector<std::string>::iterator itrExpected = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXPECTED_CASES_FIELD);
-    std::vector<std::string>::iterator itrRR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::RELATIVE_RISK_FIELD);
+    std::vector<std::string>::iterator itrRR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ODDS_RATIO_FIELD);
     std::vector<std::string>::iterator itrExcess = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXCESS_CASES_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
     std::vector<std::string>::iterator itrTestStat = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::TEST_STATISTIC_FIELD);
@@ -637,7 +637,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(21) );
                       BOOST_CHECK_CLOSE( expected, 10.43, 0.001 );
                       BOOST_CHECK_CLOSE( rr, 42.0, 0.001 );
-                      BOOST_CHECK_CLOSE( excess, 20.5, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 10.57, 0.001 );
                       BOOST_CHECK_CLOSE(ar, 0.068, 0.00001);
                       BOOST_CHECK_CLOSE( teststat, 4.796446, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.0470, 0.0001 ); break;
@@ -648,7 +648,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(4) );
                       BOOST_CHECK_CLOSE( expected, 0.87, 0.001 );
                       BOOST_CHECK_CLOSE( rr, 13.67, 0.001 );
-                      BOOST_CHECK_CLOSE( excess, 3.71, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 3.13, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.018, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 3.038383, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.547, 0.0001 ); break;
@@ -659,7 +659,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time ) {
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(6) );
                       BOOST_CHECK_CLOSE( expected, 2.35, 0.001 );
                       BOOST_CHECK_CLOSE( rr, 5.54, 0.001 );
-                      BOOST_CHECK_CLOSE( excess, 4.92, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 3.65, 0.001 );
                       BOOST_CHECK_CLOSE(ar, 0.023, 0.00001);
                       BOOST_CHECK_CLOSE( teststat, 2.044545, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.990, 0.0001 ); break;
@@ -706,7 +706,7 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
     std::vector<std::string>::iterator itrWndEnd = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::END_WINDOW_FIELD);
     std::vector<std::string>::iterator itrWndCase = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::WNDW_CASES_FIELD);
     std::vector<std::string>::iterator itrExpected = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXPECTED_CASES_FIELD);
-    std::vector<std::string>::iterator itrRR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::RELATIVE_RISK_FIELD);
+    std::vector<std::string>::iterator itrRR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ODDS_RATIO_FIELD);
     std::vector<std::string>::iterator itrExcess = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::EXCESS_CASES_FIELD);
     std::vector<std::string>::iterator itrAR = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::ATTRIBUTABLE_RISK_FIELD);
     std::vector<std::string>::iterator itrTestStat = getHeaderColumnIteratorOrFail(headers, DataRecordWriter::TEST_STATISTIC_FIELD);
@@ -743,8 +743,8 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
                       BOOST_CHECK_EQUAL(wndend, static_cast<unsigned int>(27));
                       BOOST_CHECK_EQUAL(wndcases, static_cast<unsigned int>(3));
                       BOOST_CHECK_CLOSE(expected, 0.57, 0.001);
-                      BOOST_CHECK_CLOSE(rr, 15.75, 0.001);
-                      BOOST_CHECK_CLOSE(excess, 2.81, 0.001);
+                      BOOST_CHECK(rr == std::numeric_limits<double>::infinity());
+                      BOOST_CHECK_CLOSE(excess, 2.43, 0.001);
                       BOOST_CHECK_CLOSE(ar, 0.014, 0.00001);
                       BOOST_CHECK_CLOSE(teststat, 2.598209, 0.00001);
                       BOOST_CHECK_CLOSE(p_value, 0.370, 0.0001); break;
@@ -754,8 +754,8 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(11) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(2) );
                       BOOST_CHECK_CLOSE( expected, 0.27, 0.001 );
-                      BOOST_CHECK_CLOSE( rr, 11.6, 0.001 );
-                      BOOST_CHECK_CLOSE( excess, 1.83, 0.001 );
+                      BOOST_CHECK(rr == std::numeric_limits<double>::infinity());
+                      BOOST_CHECK_CLOSE( excess, 1.73, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.009, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 2.312096, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.556, 0.0001 ); break;
@@ -765,8 +765,8 @@ BOOST_AUTO_TEST_CASE( test_tree_time_condition_node_and_time_day_of_week_adjustm
                       BOOST_CHECK_EQUAL( wndend, static_cast<unsigned int>(5) );
                       BOOST_CHECK_EQUAL( wndcases, static_cast<unsigned int>(28) );
                       BOOST_CHECK_CLOSE( expected, 21.41, 0.001 );
-                      BOOST_CHECK_CLOSE( rr, 6.38, 0.001 );
-                      BOOST_CHECK_CLOSE( excess, 23.61, 0.001 );
+                      BOOST_CHECK_CLOSE( rr, 6.28, 0.001 );
+                      BOOST_CHECK_CLOSE( excess, 6.59, 0.001 );
                       BOOST_CHECK_CLOSE( ar, 0.062, 0.00001 );
                       BOOST_CHECK_CLOSE( teststat, 1.219591, 0.00001 );
                       BOOST_CHECK_CLOSE( p_value, 0.997, 0.0001 ); break;
