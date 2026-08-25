@@ -431,3 +431,12 @@ std::string& humanize(double n, std::string& humanized, int decimals) {
     return printString(humanized, fmt[exp < 3].c_str(), decimals, m, units[exp / 3].c_str());
 }
 
+/** Attempts to convert string to boolean, with possible states of: true, false, indeterminate. */
+boost::logic::tribool toBool(const std::string& text) {
+    boost::logic::tribool boolval(boost::logic::indeterminate);
+    if (!stricmp(text.c_str(), "y") || !stricmp(text.c_str(), "yes") || !stricmp(text.c_str(), "true") || !stricmp(text.c_str(), "on") || !strcmp(text.c_str(), "1"))
+        boolval = true;
+    else if (!stricmp(text.c_str(), "n") || !stricmp(text.c_str(), "no") || !stricmp(text.c_str(), "false") || !stricmp(text.c_str(), "off") || !strcmp(text.c_str(), "0"))
+        boolval = false;
+    return boolval;
+}

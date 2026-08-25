@@ -6,7 +6,6 @@
 #include "ptr_vector.h"
 #include "Loglikelihood.h"
 #include <boost/dynamic_bitset.hpp>
-#include <boost/logic/tribool.hpp>
 #include "SimulationVariables.h"
 #include "Parameters.h"
 #include "CriticalValues.h"
@@ -151,7 +150,7 @@ protected:
     Parameters::CutType     _cut_type;
     CumulativeStatus        _cumulative_status;
     unsigned int            _level;             // calculated node level
-    bool                    _is_evaluated;
+    boost::logic::tribool   _is_evaluated;
 
     SampleSiteMap_t          _sample_site_data;  // sample site data associated with this node
     SampleSiteMap_t          _sample_site_data_Br;  // sample site data associated with this node
@@ -199,9 +198,9 @@ protected:
 
 public:
     NodeStructure(const std::string& identifier) 
-        :_identifier(identifier), _ID(0), _cut_type(Parameters::SIMPLE), _cumulative_status(NON_CUMULATIVE), _level(0), _is_evaluated(true), _min_censored_Br(0) { }
+        :_identifier(identifier), _ID(0), _cut_type(Parameters::SIMPLE), _cumulative_status(NON_CUMULATIVE), _level(0), _is_evaluated(boost::logic::indeterminate), _min_censored_Br(0) { }
     NodeStructure(const std::string& identifier, const Parameters& parameters, size_t container_size) 
-        : _identifier(identifier), _ID(0), _cut_type(parameters.getCutType()), _cumulative_status(NON_CUMULATIVE), _level(0), _is_evaluated(true), _min_censored_Br(0) {
+        : _identifier(identifier), _ID(0), _cut_type(parameters.getCutType()), _cumulative_status(NON_CUMULATIVE), _level(0), _is_evaluated(boost::logic::indeterminate), _min_censored_Br(0) {
             initialize_containers(parameters, container_size);
     }
 
@@ -240,7 +239,11 @@ public:
             }
         }
     }
-    bool isEvaluated() const { return _is_evaluated; }
+	boost::logic::tribool getIsEvaluatedTriBool() const { return _is_evaluated; }
+    bool isEvaluated() const { 
+		// indeterminate or true are considered evaluated, otherwise is not evaluated
+        return boost::logic::indeterminate(_is_evaluated) || static_cast<bool>(_is_evaluated); 
+    }
     void setIsEvaluated(bool b) { _is_evaluated = b; }
     const Ancestors_t& getAncestors() const {return _ancestors;}
     CensorDist_t& getCensorDistribution(CensorDist_t& censor_distribution) const {
@@ -336,25 +339,26 @@ public:
     void                          setCutType(Parameters::CutType cut_type) {_cut_type = cut_type;}
     void                          setMinCensoredBr(count_t c) { _min_censored_Br = c; }
 
-    void addAsParent(NodeStructure& parent, const std::string& distance) {
-        if (getID() == parent.getID()) return; // skip adding self as parent
+    bool addAsParent(NodeStructure& parent, const std::string& distance) {
+        if (getID() == parent.getID()) return true; // skip adding self as parent
         // add node of collection parents
         auto itrParent = std::find_if(_Parent.begin(), _Parent.end(), [&parent](const ParentDefinition_t& pd) { return pd.first->getIdentifier() == parent.getIdentifier(); });
         if (itrParent == _Parent.end())
             _Parent.push_back(std::make_pair(&parent, distance));
         else if (itrParent->second != distance)
-            throw resolvable_error(
-                "\nProblem encountered when reading the data from the tree file.\nDistance from node '%s' to parent '%s' conflicts in tree file.\n",
-                getIdentifier().c_str(), itrParent->first->getIdentifier().c_str()
-            );
+            return false;
         // and add this node as child in parent's collection
         if (parent.refChildren().end() == std::find(parent.refChildren().begin(), parent.refChildren().end(), this))
             parent.refChildren().push_back(this);
+        return true;
     }
     unsigned int assignLevel(const Parameters::RestrictTreeLevels_t& notEvaluatedLevels) {
         // Warning - this method could cause infinite loop if check for circular dependency is not first performed.
         _level = getLevel(*this);
-        _is_evaluated &= std::find(notEvaluatedLevels.begin(), notEvaluatedLevels.end(), _level) == notEvaluatedLevels.end();
+		// Possibly set this node to not evaluated if it is in the list of levels to not evaluate.
+        bool evaluated = isEvaluated();
+        evaluated &= std::find(notEvaluatedLevels.begin(), notEvaluatedLevels.end(), _level) == notEvaluatedLevels.end();
+		_is_evaluated = evaluated;
         return _level;
     }
     void setAncestors(boost::dynamic_bitset<>& ancestor_nodes) {
