@@ -113,7 +113,7 @@
                       <Component id="jPanel6" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jPanel4" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="122" max="32767" attributes="0"/>
+                      <EmptySpace pref="142" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -285,7 +285,6 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="_prospective_evaluation" max="32767" attributes="0"/>
                           <Component id="_maxTemporalOptionsGroup" max="32767" attributes="0"/>
                           <Component id="_minTemporalOptionsGroup" alignment="0" max="32767" attributes="0"/>
                           <Component id="_temporalWindowDefinitionGroup" alignment="0" max="32767" attributes="0"/>
@@ -302,8 +301,6 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_minTemporalOptionsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_prospective_evaluation" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="_temporalWindowDefinitionGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -498,7 +495,7 @@
                               <Component id="_risk_window_percentage" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_risk_window_percentage_label" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="19" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -571,19 +568,35 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" attributes="0">
-                                  <EmptySpace min="21" pref="21" max="-2" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_prospective_evaluation" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                                  <Component id="_prospectie_enddate_lag_label" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_prospectie_enddate_lag" min="-2" pref="90" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_prospectie_enddate_lag_label_units" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
                                   <Component id="_temporal_window_cards" max="32767" attributes="0"/>
                               </Group>
-                              <Component id="_restrictTemporalRangeCheckBox" max="32767" attributes="0"/>
+                              <Component id="_restrictTemporalRangeCheckBox" alignment="0" max="32767" attributes="0"/>
                           </Group>
-                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
+                      <Group type="102" alignment="1" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_prospective_evaluation" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_prospectie_enddate_lag_label" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_prospectie_enddate_lag" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_prospectie_enddate_lag_label_units" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="_restrictTemporalRangeCheckBox" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_temporal_window_cards" min="-2" max="-2" attributes="0"/>
@@ -650,7 +663,7 @@
                                           <Component id="_endRangeEndDayTextField" min="-2" pref="40" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="250" max="32767" attributes="0"/>
+                                  <EmptySpace pref="262" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -836,7 +849,7 @@
                                           <Component id="_endRangeEndGenericTextField" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="326" max="32767" attributes="0"/>
+                                  <EmptySpace pref="338" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -934,20 +947,41 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Include only windows with:"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_restrictTemporalRangeCheckBoxActionPerformed"/>
+                  </Events>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_restrictTemporalRangeCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        Parameters.ScanType scanType = _settings_window.getScanType();&#xa;        enableTemporalOptionGroups(scanType == Parameters.ScanType.TREETIME || scanType == Parameters.ScanType.TIMEONLY);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
+                <Component class="javax.swing.JCheckBox" name="_prospective_evaluation">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Prospective Evaluation"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospective_evaluation.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        Parameters.ScanType scanType = _settings_window.getScanType();&#xa;        enableTemporalOptionGroups(scanType == Parameters.ScanType.TREETIME || scanType == Parameters.ScanType.TIMEONLY);&#xa;        enableProspectiveFrequencyGroup();&#xa;        enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_prospectie_enddate_lag_label">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="End time maximum lag:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_prospectie_enddate_lag">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="0"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectie_enddate_lag.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_prospectie_enddate_lag.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _prospectie_enddate_lag.setText(&quot;0&quot;);&#xa;    }&#xa;});&#xa;_prospectie_enddate_lag.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_prospectie_enddate_lag, e, 4);&#xa;    }&#xa;});&#xa;_prospectie_enddate_lag.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_prospectie_enddate_lag_label_units">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="data time units"/>
+                  </Properties>
+                </Component>
               </SubComponents>
             </Container>
-            <Component class="javax.swing.JCheckBox" name="_prospective_evaluation">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Prospective Evaluation"/>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospective_evaluation.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        Parameters.ScanType scanType = _settings_window.getScanType();&#xa;        enableTemporalOptionGroups(scanType == Parameters.ScanType.TREETIME || scanType == Parameters.ScanType.TIMEONLY);&#xa;        enableProspectiveFrequencyGroup();&#xa;        enableTemporalGraphsGroup(_graphOutputGroup.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
-              </AuxValues>
-            </Component>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_advanced_inferenece_tab">
@@ -988,7 +1022,7 @@
                       <Component id="_prospective_frequency_group" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_group_min_cases" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="42" max="32767" attributes="0"/>
+                      <EmptySpace pref="62" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1467,7 +1501,7 @@
                               <Component id="_alternativeHypothesisFilename" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_alternativeHypothesisFilenameButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="151" max="32767" attributes="0"/>
+                          <EmptySpace pref="171" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1642,7 +1676,7 @@
                       <Component id="_trend_model_group" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_results_title_group" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="112" max="32767" attributes="0"/>
+                      <EmptySpace pref="132" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2223,7 +2257,7 @@
                                       <Component id="_sequential_alpha_spending" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="_alpha_spent_to_date_label" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace min="0" pref="278" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="298" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -2302,7 +2336,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_graphOutputGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="207" max="32767" attributes="0"/>
+                      <EmptySpace pref="227" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

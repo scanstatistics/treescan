@@ -10,7 +10,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-const int Parameters::giNumParameters = 87;
+const int Parameters::giNumParameters = 88;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = {{"S", Parameters::SIMPLE}, {"P", Parameters::PAIRS}, {"T", Parameters::TRIPLETS}, {"O", Parameters::ORDINAL}};
@@ -122,6 +122,7 @@ bool  Parameters::operator==(const Parameters& rhs) const {
   if (_prospective_frequency_type != rhs._prospective_frequency_type) return false;
   if (_prospective_frequency != rhs._prospective_frequency) return false;
   if (_prospective_analysis != rhs._prospective_analysis) return false;
+  if (_prospective_end_date_lag != rhs._prospective_end_date_lag) return false;
   if (_restrict_temporal_windows != rhs._restrict_temporal_windows) return false;
   if (_data_time_range_str != rhs._data_time_range_str) return false;
   if (_temporal_start_range_str != rhs._temporal_start_range_str) return false;
@@ -278,6 +279,7 @@ void Parameters::copy(const Parameters &rhs) {
     _prospective_frequency_type = rhs._prospective_frequency_type;
     _prospective_frequency = rhs._prospective_frequency;
     _prospective_analysis = rhs._prospective_analysis;
+    _prospective_end_date_lag = rhs._prospective_end_date_lag;
 
     _data_time_range_str = rhs._data_time_range_str;
     _temporal_start_range_str = rhs._temporal_start_range_str;
@@ -546,6 +548,7 @@ void Parameters::setAsDefaulted() {
     _prospective_frequency_type = DAILY;
     _prospective_frequency = 1;
     _prospective_analysis = false;
+    _prospective_end_date_lag = 0;
 
     _data_time_range_str = "";
     _temporal_start_range_str = "";
@@ -658,6 +661,7 @@ void Parameters::read(const std::string &filename, ParametersFormat type) {
     _maximum_window_type = static_cast<MaximumWindowType>(pt.get<unsigned int>("parameters.analysis.advanced.temporal-window.maximum-window-type", PERCENTAGE_WINDOW));
     _minimum_window_length = pt.get<unsigned int>("parameters.analysis.advanced.temporal-window.minimum-window-length", 2);
     _prospective_analysis = pt.get<bool>("parameters.analysis.advanced.temporal-window.prospective-analysis", false);
+    _prospective_end_date_lag = pt.get<unsigned int>("parameters.analysis.advanced.temporal-window.prospective-lag", 0);
     _restrict_temporal_windows = pt.get<bool>("parameters.analysis.advanced.temporal-window.restrict-temporal-windows", false);
     _temporalStartRange.assign(pt.get<std::string>("parameters.analysis.advanced.temporal-window.start-range", "0,0"), _date_precision_type, _dataTimeRangeSet.getDataTimeRangeSets().front().getDateStart());
     _temporalEndRange.assign(pt.get<std::string>("parameters.analysis.advanced.temporal-window.end-range", "0,0"), _date_precision_type, _dataTimeRangeSet.getDataTimeRangeSets().front().getDateStart());
@@ -750,6 +754,7 @@ void Parameters::write(const std::string &filename, ParametersFormat type) const
     pt.put("parameters.analysis.advanced.temporal-window.maximum-window-type", static_cast<unsigned int>(_maximum_window_type));
     pt.put("parameters.analysis.advanced.temporal-window.minimum-window-length", _minimum_window_length);
     pt.put("parameters.analysis.advanced.temporal-window.prospective-analysis", _prospective_analysis);
+    pt.put("parameters.analysis.advanced.temporal-window.prospective-lag", static_cast<unsigned int>(_prospective_end_date_lag));
     pt.put("parameters.analysis.advanced.temporal-window.restrict-temporal-windows", _restrict_temporal_windows);
     pt.put("parameters.analysis.advanced.temporal-window.start-range", _temporalStartRange.toString(buffer, _date_precision_type));
     pt.put("parameters.analysis.advanced.temporal-window.end-range", _temporalEndRange.toString(buffer, _date_precision_type));

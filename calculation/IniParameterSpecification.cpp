@@ -98,8 +98,10 @@ void IniParameterSpecification::setup(Parameters::CreationVersion version) {
         Build_2_2_x_ParameterList();
     else if (version.iMajor == 2 && version.iMinor == 3)
         Build_2_3_x_ParameterList();
-    else
+    else if (version.iMajor == 2 && version.iMinor == 4)
         Build_2_4_x_ParameterList();
+    else
+        Build_2_5_x_ParameterList();
 }
 
 /** Returns ini version setting or default. */
@@ -300,6 +302,14 @@ void IniParameterSpecification::Build_2_4_x_ParameterList() {
     assert(_parameter_info.size() == 87);
 }
 
+/** Version 2.5 parameter specifications. */
+void IniParameterSpecification::Build_2_5_x_ParameterList() {
+    Build_2_4_x_ParameterList();
+
+    _parameter_info[Parameters::PROSPECTIVE_ANALYSIS_LAG] = ParamInfo(Parameters::PROSPECTIVE_ANALYSIS_LAG, "prospective-analysis-lag", 8, _temporal_window_section);
+
+    assert(_parameter_info.size() == 88);
+}
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
     Returns true if parameter found else false. */

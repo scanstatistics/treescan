@@ -155,6 +155,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getIsProspectiveAnalysis());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setProspectiveEnddateLag", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getProspectiveEnddateLag());
+  jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "setRandomlyGeneratingSeed", "(Z)V");
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.isRandomlyGeneratingSeed());
   jni_error::_detectError(Env);
@@ -683,6 +687,10 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
 
   mid = _getMethodId_Checked(Env, clazz, "getIsProspectiveAnalysis", "()Z");
   parameters.setIsProspectiveAnalysis(static_cast<bool>(Env.CallBooleanMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getProspectiveEnddateLag", "()I");
+  parameters.setProspectiveEnddateLag(static_cast<long>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   Parameters::ratio_t ratio;

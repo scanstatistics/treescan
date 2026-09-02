@@ -19,6 +19,10 @@ import javax.swing.undo.UndoManager;
 import org.treescan.app.AdvFeaturesExpection;
 import org.treescan.app.AppConstants;
 import org.treescan.app.Parameters;
+import static org.treescan.app.Parameters.DatePrecisionType.DAY;
+import static org.treescan.app.Parameters.DatePrecisionType.MONTH;
+import static org.treescan.app.Parameters.DatePrecisionType.NONE;
+import static org.treescan.app.Parameters.DatePrecisionType.YEAR;
 import org.treescan.app.UnknownEnumException;
 import org.treescan.gui.utils.DateComponentsGroup;
 import org.treescan.gui.utils.FileSelectionDialog;
@@ -178,6 +182,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (_apply_risk_window_restriction.isSelected() == true);
         bReturn &= (Double.parseDouble(_risk_window_percentage.getText()) == 20.0);
         bReturn &= (_prospective_evaluation.isSelected() == false);
+        bReturn &= (Integer.parseInt(_prospectie_enddate_lag.getText()) == 1);
         bReturn &= (_restrictTemporalRangeCheckBox.isSelected() == false);
         // Sequential Scan tab
         bReturn &= (_perform_sequential_scan.isSelected() == false);
@@ -346,6 +351,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             parameters.setEndRangeEndDate("0");    
         }      
         parameters.setIsProspectiveAnalysis(Utils.selected(_prospective_evaluation));
+        parameters.setProspectiveEnddateLag(Integer.parseInt(_prospectie_enddate_lag.getText()));
                 
         // Adjustments tab
         parameters.setPerformDayOfWeekAdjustment(_perform_dayofweek_adjustments.isEnabled() && _perform_dayofweek_adjustments.isSelected());
@@ -448,6 +454,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _apply_risk_window_restriction.setSelected(true);
         _risk_window_percentage.setText("20");
         _prospective_evaluation.setSelected(false);
+        _prospectie_enddate_lag.setText("0");
         _restrictTemporalRangeCheckBox.setSelected(false);
         // Adjustments tab
         _perform_dayofweek_adjustments.setSelected(false);
@@ -498,6 +505,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _maxTemporalClusterSizeUnitsTextField.setText(Integer.toString(parameters.getMaximumWindowLength()));
         _minTemporalClusterSizeUnitsTextField.setText(Integer.toString(parameters.getMinimumWindowLength()));
         _prospective_evaluation.setSelected(parameters.getIsProspectiveAnalysis());
+        _prospectie_enddate_lag.setText(Integer.toString(parameters.getProspectiveEnddateLag()));
         _restrictTemporalRangeCheckBox.setSelected(parameters.getRestrictTemporalWindows());
         if (parameters.getPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
             Utils.parseDateStringToControl(parameters.getStartRangeStartDate(), _startRangeStartGenericTextField);
@@ -697,6 +705,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         CheckInferenceSettings();
         CheckTemporalWindowSettings();
         CheckTemporalWindowSize();
+        CheckProspectiveWindowSettings();
         CheckAdjustmentSettings();
         CheckSequentialAnalysisSettings();
         CheckPowerEvaluationSettings();
@@ -991,6 +1000,29 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _cutFileImportButton.setEnabled(enableCutFile);
     }
 
+    /** Validates the prospective window settings - throws exception */
+    private void CheckProspectiveWindowSettings() {
+        if (Utils.selected(_prospective_evaluation)) {
+            // TODO: Is this really needed and correct?
+            /*int unitsInEndateLag = Integer.parseInt(_prospectie_enddate_lag.getText());
+            int unitsInDataTimeRange = _settings_window.getNumUnitsInRange();
+            // 50% percent of the study period is the cutoff.
+            double unitsInFiftyPercOfStudyPeriod = Math.floor((double)unitsInDataTimeRange * 0.5);
+            int unitsInMaxTemporalSize=0;
+            if (Utils.selected(_percentageTemporalRadioButton)) {
+                unitsInMaxTemporalSize = (int)Math.floor((double)unitsInDataTimeRange * Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) / 100.0);
+            } else if (Utils.selected(_timeTemporalRadioButton)) {
+                unitsInMaxTemporalSize = Integer.parseInt(_maxTemporalClusterSizeUnitsTextField.getText());
+            }
+            if (unitsInEndateLag > 0 && (unitsInEndateLag + unitsInMaxTemporalSize) > unitsInFiftyPercOfStudyPeriod) {
+                throw new AdvFeaturesExpection(
+                    "The maximum temporal size plus lag(to account for data delays) must be <= 50% of the data time range.",
+                    FocusedTabSet.ANALYSIS, (Component) _prospectie_enddate_lag
+                );                
+            }*/
+        }
+    }
+    
     /** Validates scanning window range settings - throws exception. */
     private void CheckTemporalWindowSettings() {
         if (Utils.selected(_restrictTemporalRangeCheckBox)) {
@@ -1084,7 +1116,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _apply_risk_window_restriction.setEnabled(bEnable);
         _risk_window_percentage.setEnabled(bEnable && _apply_risk_window_restriction.isSelected());
         _risk_window_percentage_label.setEnabled(bEnable);
-        _prospective_evaluation.setEnabled(bEnable);        
+        _prospective_evaluation.setEnabled(bEnable);
+        _prospectie_enddate_lag_label.setEnabled(Utils.selected(_prospective_evaluation));
+        _prospectie_enddate_lag.setEnabled(Utils.selected(_prospective_evaluation));
+        _prospectie_enddate_lag_label_units.setEnabled(Utils.selected(_prospective_evaluation));
         enableDates();
     }
 
@@ -1437,6 +1472,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _endGenericWindowRangeLabel = new javax.swing.JLabel();
         _restrictTemporalRangeCheckBox = new javax.swing.JCheckBox();
         _prospective_evaluation = new javax.swing.JCheckBox();
+        _prospectie_enddate_lag_label = new javax.swing.JLabel();
+        _prospectie_enddate_lag = new javax.swing.JTextField();
+        _prospectie_enddate_lag_label_units = new javax.swing.JLabel();
         _advanced_inferenece_tab = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         _labelMonteCarloReplications = new javax.swing.JLabel();
@@ -1668,7 +1706,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(122, Short.MAX_VALUE))
+                .addContainerGap(142, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced Input", _advanced_input_tab);
@@ -1893,7 +1931,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_minTemporalOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_risk_window_percentage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_risk_window_percentage_label))
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         _temporalWindowDefinitionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Window"));
@@ -1973,7 +2011,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_endRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(250, Short.MAX_VALUE))
+                .addContainerGap(262, Short.MAX_VALUE))
         );
         _windowCompletePanelLayout.setVerticalGroup(
             _windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2094,7 +2132,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_endGenericRangeToLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(_endRangeEndGenericTextField)))
-                .addContainerGap(326, Short.MAX_VALUE))
+                .addContainerGap(338, Short.MAX_VALUE))
         );
         _windowGenericPanelLayout.setVerticalGroup(
             _windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2128,27 +2166,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableSetDefaultsButton();
             }
         });
-
-        javax.swing.GroupLayout _temporalWindowDefinitionGroupLayout = new javax.swing.GroupLayout(_temporalWindowDefinitionGroup);
-        _temporalWindowDefinitionGroup.setLayout(_temporalWindowDefinitionGroupLayout);
-        _temporalWindowDefinitionGroupLayout.setHorizontalGroup(
-            _temporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_temporalWindowDefinitionGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_temporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_temporalWindowDefinitionGroupLayout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addComponent(_temporal_window_cards, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(_restrictTemporalRangeCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        _temporalWindowDefinitionGroupLayout.setVerticalGroup(
-            _temporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_temporalWindowDefinitionGroupLayout.createSequentialGroup()
-                .addComponent(_restrictTemporalRangeCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_temporal_window_cards, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
+        _restrictTemporalRangeCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                _restrictTemporalRangeCheckBoxActionPerformed(evt);
+            }
+        });
 
         _prospective_evaluation.setText("Prospective Evaluation");
         _prospective_evaluation.addItemListener(new java.awt.event.ItemListener() {
@@ -2161,6 +2183,63 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        _prospectie_enddate_lag_label.setText("End time maximum lag:");
+
+        _prospectie_enddate_lag.setText("0");
+        _prospectie_enddate_lag.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_prospectie_enddate_lag.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _prospectie_enddate_lag.setText("0");
+            }
+        });
+        _prospectie_enddate_lag.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_prospectie_enddate_lag, e, 4);
+            }
+        });
+        _prospectie_enddate_lag.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        _prospectie_enddate_lag_label_units.setText("data time units");
+
+        javax.swing.GroupLayout _temporalWindowDefinitionGroupLayout = new javax.swing.GroupLayout(_temporalWindowDefinitionGroup);
+        _temporalWindowDefinitionGroup.setLayout(_temporalWindowDefinitionGroupLayout);
+        _temporalWindowDefinitionGroupLayout.setHorizontalGroup(
+            _temporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_temporalWindowDefinitionGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_temporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_temporalWindowDefinitionGroupLayout.createSequentialGroup()
+                        .addComponent(_prospective_evaluation)
+                        .addGap(18, 18, 18)
+                        .addComponent(_prospectie_enddate_lag_label)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_prospectie_enddate_lag, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_prospectie_enddate_lag_label_units)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(_temporalWindowDefinitionGroupLayout.createSequentialGroup()
+                        .addGap(15, 15, 15)
+                        .addComponent(_temporal_window_cards, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_restrictTemporalRangeCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+        );
+        _temporalWindowDefinitionGroupLayout.setVerticalGroup(
+            _temporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _temporalWindowDefinitionGroupLayout.createSequentialGroup()
+                .addGroup(_temporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_prospective_evaluation)
+                    .addComponent(_prospectie_enddate_lag_label)
+                    .addComponent(_prospectie_enddate_lag, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_prospectie_enddate_lag_label_units))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_restrictTemporalRangeCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_temporal_window_cards, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
         javax.swing.GroupLayout _advanced_temporal_window_tabLayout = new javax.swing.GroupLayout(_advanced_temporal_window_tab);
         _advanced_temporal_window_tab.setLayout(_advanced_temporal_window_tabLayout);
         _advanced_temporal_window_tabLayout.setHorizontalGroup(
@@ -2168,7 +2247,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advanced_temporal_window_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_advanced_temporal_window_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_prospective_evaluation, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_maxTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_temporalWindowDefinitionGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -2182,8 +2260,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_minTemporalOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_prospective_evaluation)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_temporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -2499,7 +2575,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_prospective_frequency_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_group_min_cases, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(42, Short.MAX_VALUE))
+                .addContainerGap(62, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _advanced_inferenece_tab);
@@ -2717,7 +2793,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_powerEvaluationsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_alternativeHypothesisFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_alternativeHypothesisFilenameButton))
-                .addContainerGap(151, Short.MAX_VALUE))
+                .addContainerGap(171, Short.MAX_VALUE))
         );
 
         _eventProbabiltyNumerator.getAccessibleContext().setAccessibleDescription("case probability numerator");
@@ -2906,7 +2982,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_trend_model_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_results_title_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(112, Short.MAX_VALUE))
+                .addContainerGap(132, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _advanced_output_tab);
@@ -3196,7 +3272,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_sequential_alpha_spending_label)
                     .addComponent(_sequential_alpha_spending, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_alpha_spent_to_date_label))
-                .addGap(0, 278, Short.MAX_VALUE))
+                .addGap(0, 298, Short.MAX_VALUE))
         );
 
         _panel_sequential_analysis.add(_panel_sequential_analysis_tree_only, "sequential-treeonly");
@@ -3217,7 +3293,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_sequential_analysis_groupLayout.createSequentialGroup()
                 .addComponent(_perform_sequential_scan)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_panel_sequential_analysis, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(_panel_sequential_analysis, javax.swing.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -3395,7 +3471,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_advanced_temporal_output_tabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_graphOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(207, Short.MAX_VALUE))
+                .addContainerGap(227, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Output", _advanced_temporal_output_tab);
@@ -3430,7 +3506,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -3455,6 +3531,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private void _numMostLikelyClustersGraphFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event__numMostLikelyClustersGraphFocusGained
         _temporalGraphMostLikelyX.setSelected(true);
     }//GEN-LAST:event__numMostLikelyClustersGraphFocusGained
+
+    private void _restrictTemporalRangeCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__restrictTemporalRangeCheckBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event__restrictTemporalRangeCheckBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel _advanced_adjustments_tab;
@@ -3543,6 +3623,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _powerEvaluationWithSpecifiedCases;
     private javax.swing.JLabel _powerEvaluationWithSpecifiedCasesLabel;
     private javax.swing.JPanel _powerEvaluationsGroup;
+    private javax.swing.JTextField _prospectie_enddate_lag;
+    private javax.swing.JLabel _prospectie_enddate_lag_label;
+    private javax.swing.JLabel _prospectie_enddate_lag_label_units;
     private javax.swing.JCheckBox _prospective_evaluation;
     private java.awt.Choice _prospective_frequency;
     private javax.swing.JPanel _prospective_frequency_group;

@@ -677,6 +677,7 @@ bool ParametersValidate::ValidateTemporalWindowParameters(BasePrint & PrintDirec
         PrintDirection.Printf("Invalid Parameter Setting:\nThe prospective evaluation option is only implemtend for temporal analyses.\n", BasePrint::P_PARAMERROR);
     }
     if (Parameters::isTemporalScanType(_parameters.getScanType()) && _parameters.getDataTimeRangeSet().getDataTimeRangeSets().size() > 0) {
+        unsigned int unitsInMaxTemporalSize = 0;
         switch (_parameters.getMaximumWindowType()) {
             case Parameters::PERCENTAGE_WINDOW: {
                 if (_parameters.getMaximumWindowPercentage() <= 0) {
@@ -685,57 +686,81 @@ bool ParametersValidate::ValidateTemporalWindowParameters(BasePrint & PrintDirec
                 } else if (_parameters.getMaximumWindowPercentage() > 50.0) {
                     PrintDirection.Printf("Parameter Setting Warning:\nThe maximum temporal size is greater than 50 percent of data time range.\n", BasePrint::P_WARNING);
                 }
-                unsigned int max_length = static_cast<unsigned int>(std::floor(static_cast<double>(_parameters.getDataTimeRangeSet().getMinMax().numDaysInRange()) * _parameters.getMaximumWindowPercentage()/100.0));
-                if (_parameters.getMinimumWindowLength() <= 0 || _parameters.getMinimumWindowLength() > max_length) {
+                unitsInMaxTemporalSize = static_cast<unsigned int>(std::floor(static_cast<double>(_parameters.getDataTimeRangeSet().getMinMax().numDaysInRange()) * _parameters.getMaximumWindowPercentage()/100.0));
+                if (_parameters.getMinimumWindowLength() <= 0 || _parameters.getMinimumWindowLength() > unitsInMaxTemporalSize) {
                     bValid = false;
-                    PrintDirection.Printf("Invalid Parameter Setting:\nThe minimum temporal window length must be greater than zero and no greater than the specified maximum temporal window length.\nWith a specifed maximum as %g%%, the maximum window length is %u.\n", BasePrint::P_PARAMERROR, _parameters.getMaximumWindowPercentage(), max_length);
+                    PrintDirection.Printf("""Invalid Parameter Setting:\n"
+                        "The minimum temporal window length must be greater than zero and no greater than the specified maximum temporal window length.\n"
+                        "With a specifed maximum as %g%%, the maximum window length is %u.\n",
+                        BasePrint::P_PARAMERROR, _parameters.getMaximumWindowPercentage(), unitsInMaxTemporalSize
+                    );
                 }
             } break;
             case Parameters::FIXED_LENGTH: {
-                unsigned int max_length = static_cast<unsigned int>(std::floor(static_cast<double>(_parameters.getDataTimeRangeSet().getMinMax().numDaysInRange()) * 0.5));
+                unitsInMaxTemporalSize = static_cast<unsigned int>(std::floor(static_cast<double>(_parameters.getDataTimeRangeSet().getMinMax().numDaysInRange()) * 0.5));
                 if (_parameters.getMaximumWindowLength() <= 0) {
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum temporal window length must be greater than zero.\n", BasePrint::P_PARAMERROR);
-                } else if (_parameters.getMaximumWindowLength() > max_length) {
-                    PrintDirection.Printf("Parameter Setting Warning:\nThe maximum temporal window length is greater than 50 percent of data time range (%u time units).\n", BasePrint::P_WARNING, max_length);
+                } else if (_parameters.getMaximumWindowLength() > unitsInMaxTemporalSize) {
+                    PrintDirection.Printf(
+                        "Parameter Setting Warning:\nThe maximum temporal window length is greater than 50 percent of data time range (%u time units).\n", 
+                        BasePrint::P_WARNING, 
+                        unitsInMaxTemporalSize
+                    );
                 }
                 if (_parameters.getMinimumWindowLength() <= 0 || _parameters.getMinimumWindowLength() > _parameters.getMaximumWindowLength()) {
                     bValid = false;
                     PrintDirection.Printf("Invalid Parameter Setting:\nThe minimum window length must be greater than zero and no greater than the specified maximum window length.\n", BasePrint::P_PARAMERROR);
                 }
+                unitsInMaxTemporalSize = _parameters.getMaximumWindowLength();
             } break;
             default: throw prg_error("Unknown maximum window type (%d).", "getTemporalWindowParameters()", _parameters.getMaximumWindowType());
         }
 
-        const DataTimeRange * pStart, * pEnd;
+        DataTimeRange start, end;
         if (_parameters.getRestrictTemporalWindows()) {
-            pStart = &_parameters.getTemporalStartRange();
-            pEnd = &_parameters.getTemporalEndRange();
+            start = _parameters.getTemporalStartRange();
+            end = _parameters.getTemporalEndRange();
         } else {
             if (_parameters.getDataTimeRangeSet().getDataTimeRangeSets().size() == 0) return bValid;
-            pStart = &_parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
-            pEnd = &_parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
+            start = _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
+            end = _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front();
+        }
+
+        if (_parameters.getIsProspectiveAnalysis() && _parameters.getProspectiveEnddateLag() > 0) {
+            // TODO: Is this really needed and correct?
+            /*unsigned int unitsInFiftyPercOfStudyPeriod = static_cast<unsigned int>(std::floor(
+                static_cast<double>(_parameters.getDataTimeRangeSet().getMinMax().numDaysInRange()) * 0.5
+            ));
+            if ((_parameters.getProspectiveEnddateLag() + unitsInMaxTemporalSize) > unitsInFiftyPercOfStudyPeriod) {
+                bValid = false;
+                PrintDirection.Printf(
+                    "Invalid Parameter Setting:\nThe maximum temporal size plus lag(to account for data delays) must be <= 50% of the data time range.\n", 
+                    BasePrint::P_PARAMERROR
+                );
+            }*/
         }
 
         // check whether any cuts will be evaluated given the specified maximum temporal window size and temporal window ranges
-        int unitsInShortestWindow;
-        if (pStart->getEnd() >= pEnd->getStart()) {
-            unitsInShortestWindow = 1;
-        } else {
-            unitsInShortestWindow = pEnd->getEnd() - pStart->getEnd() + 1;
-        }
+        int unitsInShortestWindow = start.getEnd() >= end.getStart() ? 1 : end.getEnd() - start.getEnd() + 1;
         if (static_cast<DataTimeRange::index_t>(_parameters.getMaximumWindowInTimeUnits()) < unitsInShortestWindow) {
             bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nNo cuts will be evaluated since the maximum window size is %u yet the minimum number of time units in temporal window is %d.\n", 
-                                  BasePrint::P_NOTICE, _parameters.getMaximumWindowInTimeUnits(), unitsInShortestWindow);
+            PrintDirection.Printf(
+                "Invalid Parameter Setting:\n"
+                "No cuts will be evaluated since the maximum window size is %u yet the minimum number of time units in temporal window is %d.\n", 
+                BasePrint::P_NOTICE, _parameters.getMaximumWindowInTimeUnits(), unitsInShortestWindow
+            );
         }
 
         // check whether any cuts will be evaluated given the specified minimum temporal window size and temporal window ranges
-        DataTimeRange::index_t unitsInTemporalWindow = pEnd->getEnd() - pStart->getStart() + 1;
+        DataTimeRange::index_t unitsInTemporalWindow = end.getEnd() - start.getStart() + 1;
         if (static_cast<DataTimeRange::index_t>(_parameters.getMinimumWindowLength()) > unitsInTemporalWindow) {
             bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nNo cuts will be evaluated since the minimum window size is %u yet the maximum number of time units in temporal window is %d.\n", 
-                                  BasePrint::P_NOTICE, _parameters.getMinimumWindowLength(), unitsInTemporalWindow);
+            PrintDirection.Printf(
+                "Invalid Parameter Setting:\n"
+                "No cuts will be evaluated since the minimum window size is %u yet the maximum number of time units in temporal window is %d.\n", 
+                BasePrint::P_NOTICE, _parameters.getMinimumWindowLength(), unitsInTemporalWindow
+            );
         }
     }
     return bValid;

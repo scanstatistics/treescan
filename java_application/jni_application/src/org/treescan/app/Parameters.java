@@ -109,6 +109,7 @@ public class Parameters implements Cloneable {
     private double _sequential_alpha_spending = 0.01;
     private DatePrecisionType _date_precision_type=DatePrecisionType.NONE;
     private boolean _prospective_analysis = false;
+    private int _prospective_end_date_lag = 0;
     private ProspectiveFrequency _prospective_frequency_type = ProspectiveFrequency.DAILY;
     private boolean _output_temporal_graph=false; // report temporal graph file
     private TemporalGraphReportType _temporal_graph_report_type=TemporalGraphReportType.MLC_ONLY; // which clusters to report in temporal graph
@@ -222,6 +223,7 @@ public class Parameters implements Cloneable {
           
           if (_date_precision_type != rhs._date_precision_type) return false;
           if (_prospective_analysis != rhs._prospective_analysis) return false;
+          if (_prospective_end_date_lag != rhs._prospective_end_date_lag) return false;
           if (_prospective_frequency_type != rhs._prospective_frequency_type) return false;
 
           if (_output_temporal_graph != rhs._output_temporal_graph) return false;
@@ -243,6 +245,8 @@ public class Parameters implements Cloneable {
           return true;
     }
     
+    public int getProspectiveEnddateLag() { return _prospective_end_date_lag; }
+    public void setProspectiveEnddateLag(int u) { _prospective_end_date_lag = u; }    
     public final String getResultsTitle() { return _results_title; }
     public void setResultsTitle(final String s) { _results_title = s; }    
     public boolean getRptDataAsPct() { return _report_data_as_percentage; }

@@ -3288,7 +3288,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTime() {
             for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
                 window->windowstart(startWindow, iWindowEnd, iMinWindowStart, iWindowStart);
                 for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
-                    //_print.Printf("%d to %d\n", BasePrint::P_STDOUT,iWindowStart, iWindowEnd);
+                    _print.Printf("%d to %d\n", BasePrint::P_STDOUT,iWindowStart, iWindowEnd);
                     calculateCut(n, thisNode.getBrC_C()[iWindowStart] - thisNode.getBrC_C()[iWindowEnd + 1],
                                   thisNode.getBrN_C()[iWindowStart] - thisNode.getBrN_C()[iWindowEnd + 1],
                                   calcLogLikelihood, iWindowStart, iWindowEnd);

@@ -729,7 +729,7 @@ public:
         // If restricting temporal windows, returns user specified temporal time range, otherwise the overall data time range.
         if (_parameters.getIsProspectiveAnalysis())
             return DataTimeRange(
-                _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getEnd(),
+                _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getEnd() - static_cast<DataTimeRange::index_t>(_parameters.getProspectiveEnddateLag()),
                 _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getEnd(),
                 _parameters.getDataTimeRangeSet().getDataTimeRangeSets().front().getDateStart()
             );

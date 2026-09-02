@@ -428,6 +428,7 @@ void IniParameterFileAccess::WriteAdvancedAnalysisTemporalWindowSettings(IniFile
         WriteIniParameter(WriteFile, Parameters::APPLY_RISK_WINDOW_RESTRICTION, GetParameterString(Parameters::APPLY_RISK_WINDOW_RESTRICTION, s).c_str(), GetParameterComment(Parameters::APPLY_RISK_WINDOW_RESTRICTION));
         WriteIniParameter(WriteFile, Parameters::RISK_WINDOW_PERCENTAGE, GetParameterString(Parameters::RISK_WINDOW_PERCENTAGE, s).c_str(), GetParameterComment(Parameters::RISK_WINDOW_PERCENTAGE));
         WriteIniParameter(WriteFile, Parameters::PROSPECTIVE_ANALYSIS, GetParameterString(Parameters::PROSPECTIVE_ANALYSIS, s).c_str(), GetParameterComment(Parameters::PROSPECTIVE_ANALYSIS));
+        WriteIniParameter(WriteFile, Parameters::PROSPECTIVE_ANALYSIS_LAG, GetParameterString(Parameters::PROSPECTIVE_ANALYSIS_LAG, s).c_str(), GetParameterComment(Parameters::PROSPECTIVE_ANALYSIS_LAG));
         WriteIniParameter(WriteFile, Parameters::RESTRICTED_TIME_RANGE, GetParameterString(Parameters::RESTRICTED_TIME_RANGE, s).c_str(), GetParameterComment(Parameters::RESTRICTED_TIME_RANGE));
         WriteIniParameter(WriteFile, Parameters::START_DATA_TIME_RANGE, GetParameterString(Parameters::START_DATA_TIME_RANGE, s).c_str(), GetParameterComment(Parameters::START_DATA_TIME_RANGE));
         WriteIniParameter(WriteFile, Parameters::END_DATA_TIME_RANGE, GetParameterString(Parameters::END_DATA_TIME_RANGE, s).c_str(), GetParameterComment(Parameters::END_DATA_TIME_RANGE));

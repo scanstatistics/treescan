@@ -86,6 +86,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::MAXIMUM_WINDOW_TYPE     : return "maximum temporal size selection (PERCENTAGE_WINDOW=0, FIXED_LENGTH=1)";
             case Parameters::MINIMUM_WINDOW_FIXED    : return "minimum temporal size as fixed time length (integer)";
             case Parameters::PROSPECTIVE_ANALYSIS    : return "prospective analysis (y/n)";
+            case Parameters::PROSPECTIVE_ANALYSIS_LAG: return "prospective analysis lag (positive integer)";
             case Parameters::SEQUENTIAL_MIN_SIGNAL   : return "sequential scan - minimum cases to signal (integer)";
             case Parameters::SEQUENTIAL_FILE         : return "sequential scan filename";
             case Parameters::SEQUENTIAL_ALPHA_OVERALL: return "sequential alpha overall";
@@ -203,7 +204,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::MAXIMUM_WINDOW_TYPE      : return AsString(s, _parameters.getMaximumWindowType());
             case Parameters::MINIMUM_WINDOW_FIXED     : return AsString(s, _parameters.getMinimumWindowLength());
             case Parameters::PROSPECTIVE_ANALYSIS     : return AsString(s, _parameters.getIsProspectiveAnalysis());
-            // Advanced Analysis - Adjustments
+            case Parameters::PROSPECTIVE_ANALYSIS_LAG : return AsString(s, _parameters.getProspectiveEnddateLag());
+                // Advanced Analysis - Adjustments
             case Parameters::DAYOFWEEK_ADJUSTMENT     : return AsString(s, _parameters.getPerformDayOfWeekAdjustment());
             case Parameters::APPLY_EXCLUSION_RANGES   : return AsString(s, _parameters.isApplyingExclusionTimeRanges());
             case Parameters::EXCLUSION_RANGES         : s = _parameters.getExclusionTimeRangeStr(); return s;
@@ -421,6 +423,7 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
                                                         _parameters.setMaximumWindowType((Parameters::MaximumWindowType)iValue); break;
             case Parameters::MINIMUM_WINDOW_FIXED     : _parameters.setMinimumWindowLength(ReadUnsignedInt(value, e)); break;
             case Parameters::PROSPECTIVE_ANALYSIS     : _parameters.setIsProspectiveAnalysis(ReadBoolean(value, e)); break;
+            case Parameters::PROSPECTIVE_ANALYSIS_LAG : _parameters.setProspectiveEnddateLag(ReadUnsignedInt(value, e)); break;
             // Advanced Analysis - Adjustments
             case Parameters::DAYOFWEEK_ADJUSTMENT     : _parameters.setPerformDayOfWeekAdjustment(ReadBoolean(value, e)); break;
             case Parameters::APPLY_EXCLUSION_RANGES   : _parameters.setApplyingExclusionTimeRanges(ReadBoolean(value, e)); break;

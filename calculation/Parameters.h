@@ -42,6 +42,7 @@ class Parameters {
                         SEQUENTIAL_ALPHA_OVERALL,
                         SEQUENTIAL_ALPHA_SPENDING,
                         PROSPECTIVE_ANALYSIS,
+                        PROSPECTIVE_ANALYSIS_LAG,
                         RESTRICTED_TIME_RANGE,
                         START_DATA_TIME_RANGE,
                         END_DATA_TIME_RANGE,
@@ -316,6 +317,7 @@ class Parameters {
     ProspectiveFrequency                _prospective_frequency_type;
     unsigned int                        _prospective_frequency;
     bool                                _prospective_analysis;
+    unsigned int                        _prospective_end_date_lag;
 
     unsigned int                        _minimum_highrate_nodes_cases;
     unsigned int                        _minimum_lowrate_nodes_cases;
@@ -389,6 +391,8 @@ class Parameters {
 
     bool                                getIsProspectiveAnalysis() const { return _prospective_analysis; }
     void                                setIsProspectiveAnalysis(bool b) { _prospective_analysis = b; }
+    unsigned int                        getProspectiveEnddateLag() const { return _prospective_end_date_lag; }
+    void                                setProspectiveEnddateLag(unsigned int u) { _prospective_end_date_lag = u; }
     DataTimeRange::DatePrecisionType    getDatePrecisionType() const { return _date_precision_type; }
     void                                setDatePrecisionType(DataTimeRange::DatePrecisionType e) { _date_precision_type = e; }
     ProspectiveFrequency                getProspectiveFrequencyType() const { return _prospective_frequency_type; }

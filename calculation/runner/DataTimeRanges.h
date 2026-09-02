@@ -40,6 +40,7 @@ class DataTimeRange {
         void assign(const std::string& from, DatePrecisionType precision, std::optional<boost::gregorian::date> gregorian_start_date) {
             *this = parse(from, precision, gregorian_start_date);
         }
+        range_t& range() { return _range; }
         index_t getStart() const {return _range.first;}
         index_t getEnd() const {return _range.second;}
         std::string & toString(std::string& s, DatePrecisionType precision) const;

@@ -572,6 +572,10 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getTemporalWindowParamete
             settings.emplace_back("Maximum Temporal Window", buffer);
         }
         settings.emplace_back("Prospective Analysis", (_parameters.getIsProspectiveAnalysis() ? "Yes" : "No"));
+        if (_parameters.getIsProspectiveAnalysis() && _parameters.getProspectiveEnddateLag())
+            settings.emplace_back("End Time Maximum Lag",
+                printString(buffer, "%u Time Unit%s", _parameters.getProspectiveEnddateLag(), _parameters.getProspectiveEnddateLag() == 1 ? "" : "s")
+            );
         if (!_parameters.getIsProspectiveAnalysis()) {
             settings.emplace_back("Restrict Temporal Windows", (_parameters.getRestrictTemporalWindows() ? "Yes" : "No"));
             if (_parameters.getRestrictTemporalWindows()) {
