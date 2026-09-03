@@ -31,14 +31,20 @@
 
 static std::string reportHypergeometricProbabilityCache(const HypergeometricProbabilityLookup::ProbabilityCacheStatistics& statistics) {
     const size_t cacheLookups = statistics.cacheHits + statistics.cacheMisses;
+    const char* cacheDescription = "Hypergeometric probability cache";
+    if (statistics.cacheType == HypergeometricProbabilityLookup::ProbabilityCacheStatistics::STRATIFIED_DAY_OF_WEEK)
+        cacheDescription = "DOW hypergeometric tail cache";
+    else if (statistics.cacheType == HypergeometricProbabilityLookup::ProbabilityCacheStatistics::SCALAR_ON_DEMAND)
+        cacheDescription = "Hypergeometric probability cache";
+
     std::stringstream buffer;
-    buffer << "C=" << statistics.C << ", T = " << statistics.T << std::endl;
-    buffer << "Hypergeometric probability cache: "
+    buffer << "C=" << statistics.C << ", T=" << statistics.T << std::endl;
+    buffer << cacheDescription << ": "
         << statistics.entries << " entries, "
         //<< statistics.evaluatedMarginPairs << " margin pairs, "
         //<< statistics.estimatedMaxCacheEntries << " estimated max entries, "
         << (static_cast<double>(statistics.estimatedMemoryBytes) / 1000000.0) << " MB, "
-        << statistics.onDemandRequests << " requests, "
+        << statistics.requests << " requests, "
         << statistics.cacheHits << " hits, "
         << statistics.cacheMisses << " misses, "
         << statistics.invalidRequests << " invalid, "
@@ -48,9 +54,31 @@ static std::string reportHypergeometricProbabilityCache(const HypergeometricProb
         << statistics.maxTailTerms << " max tail terms"
         << std::endl;
 
+    if (statistics.cacheType == HypergeometricProbabilityLookup::ProbabilityCacheStatistics::STRATIFIED_DAY_OF_WEEK) {
+        const size_t dayPmfCacheLookups = statistics.dayPmfCacheHits + statistics.dayPmfCacheMisses;
+        buffer << "DOW PMF diagnostics: "
+            << statistics.dayPmfRequests << " day PMF requests, "
+            << statistics.dayPmfCacheEntries << " day PMF cache entries, "
+            << statistics.dayPmfCacheHits << " day PMF cache hits, "
+            << statistics.dayPmfCacheMisses << " day PMF cache misses, "
+            << (dayPmfCacheLookups ? static_cast<double>(statistics.dayPmfCacheHits) / static_cast<double>(dayPmfCacheLookups) : 0.0) << " day PMF hit rate, "
+            << statistics.uniqueDayPmfMargins << " unique day margins, "
+            << statistics.dayPmfReuseOpportunities << " reusable day margins, "
+            << statistics.uniqueStratifiedMarginSets << " unique DOW margin sets, "
+            << statistics.stratifiedMarginSetReuseOpportunities << " reusable DOW margin sets, "
+            << (statistics.dayPmfRequests ? static_cast<double>(statistics.totalDayPmfTerms) / static_cast<double>(statistics.dayPmfRequests) : 0.0) << " avg day PMF terms, "
+            << statistics.maxDayPmfTerms << " max day PMF terms, "
+            << statistics.convolutionCount << " convolutions, "
+            << (statistics.convolutionCount ? static_cast<double>(statistics.totalConvolutionInputTerms) / static_cast<double>(statistics.convolutionCount) : 0.0) << " avg convolution input terms, "
+            << (statistics.convolutionCount ? static_cast<double>(statistics.totalCombinedPmfSize) / static_cast<double>(statistics.convolutionCount) : 0.0) << " avg combined PMF size, "
+            << statistics.maxCombinedPmfSize << " max combined PMF size"
+            << std::endl;
+    }
+
     std::cout << buffer.str();
     return buffer.str();
 }
+
 double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _N, const MatchedSets& ms, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
     const Parameters& parameters = scanner.getParameters();
     if (parameters.getModelType() == Parameters::SIGNED_RANK)

@@ -133,8 +133,9 @@ BOOST_AUTO_TEST_CASE( on_demand_probability_cache_statistics_report_entries_and_
     // The on-demand cache starts empty after initialization. It should grow only
     // when a probability is actually requested.
     HypergeometricProbabilityLookup::ProbabilityCacheStatistics statistics = lookup.getProbabilityCacheStatistics();
+    BOOST_CHECK_EQUAL(statistics.cacheType, HypergeometricProbabilityLookup::ProbabilityCacheStatistics::NONE);
     BOOST_CHECK_EQUAL(statistics.entries, 0U);
-    BOOST_CHECK_EQUAL(statistics.onDemandRequests, 0U);
+    BOOST_CHECK_EQUAL(statistics.requests, 0U);
     BOOST_CHECK_EQUAL(statistics.cacheHits, 0U);
     BOOST_CHECK_EQUAL(statistics.cacheMisses, 0U);
     BOOST_CHECK_EQUAL(statistics.invalidRequests, 0U);
@@ -145,8 +146,9 @@ BOOST_AUTO_TEST_CASE( on_demand_probability_cache_statistics_report_entries_and_
 
     lookup.getProbabilityFor_Checked(4, 5000, 2);
     statistics = lookup.getProbabilityCacheStatistics();
+    BOOST_CHECK_EQUAL(statistics.cacheType, HypergeometricProbabilityLookup::ProbabilityCacheStatistics::SCALAR_ON_DEMAND);
     BOOST_CHECK_EQUAL(statistics.entries, 1U);
-    BOOST_CHECK_EQUAL(statistics.onDemandRequests, 1U);
+    BOOST_CHECK_EQUAL(statistics.requests, 1U);
     BOOST_CHECK_EQUAL(statistics.cacheHits, 0U);
     BOOST_CHECK_EQUAL(statistics.cacheMisses, 1U);
     BOOST_CHECK_EQUAL(statistics.tailEvaluations, 1U);
@@ -158,8 +160,9 @@ BOOST_AUTO_TEST_CASE( on_demand_probability_cache_statistics_report_entries_and_
     // second entry or another tail evaluation for the same (scanrate, T, S, x) key.
     lookup.getProbabilityFor_Checked(4, 5000, 2);
     statistics = lookup.getProbabilityCacheStatistics();
+    BOOST_CHECK_EQUAL(statistics.cacheType, HypergeometricProbabilityLookup::ProbabilityCacheStatistics::SCALAR_ON_DEMAND);
     BOOST_CHECK_EQUAL(statistics.entries, 1U);
-    BOOST_CHECK_EQUAL(statistics.onDemandRequests, 2U);
+    BOOST_CHECK_EQUAL(statistics.requests, 2U);
     BOOST_CHECK_EQUAL(statistics.cacheHits, 1U);
     BOOST_CHECK_EQUAL(statistics.cacheMisses, 1U);
     BOOST_CHECK_EQUAL(statistics.tailEvaluations, 1U);
@@ -167,13 +170,104 @@ BOOST_AUTO_TEST_CASE( on_demand_probability_cache_statistics_report_entries_and_
 
     lookup.getProbabilityFor_Checked(4, 5000, 4);
     statistics = lookup.getProbabilityCacheStatistics();
+    BOOST_CHECK_EQUAL(statistics.cacheType, HypergeometricProbabilityLookup::ProbabilityCacheStatistics::SCALAR_ON_DEMAND);
     BOOST_CHECK_EQUAL(statistics.entries, 2U);
-    BOOST_CHECK_EQUAL(statistics.onDemandRequests, 3U);
+    BOOST_CHECK_EQUAL(statistics.requests, 3U);
     BOOST_CHECK_EQUAL(statistics.cacheHits, 1U);
     BOOST_CHECK_EQUAL(statistics.cacheMisses, 2U);
     BOOST_CHECK_EQUAL(statistics.tailEvaluations, 2U);
     BOOST_CHECK_EQUAL(statistics.totalTailTerms, 4U);
     BOOST_CHECK_EQUAL(statistics.maxTailTerms, 3U);
+}
+BOOST_AUTO_TEST_CASE( stratified_probability_cache_statistics_report_entries_and_hits ) {
+    HypergeometricProbabilityLookup lookup;
+    HypergeometricProbabilityLookup::CountByDay_t totalCasesByDay = { 10, 10, 10, 10, 10, 10, 10 };
+    HypergeometricProbabilityLookup::CountByDay_t spatialCasesByDay = { 5, 5, 5, 5, 5, 5, 5 };
+    HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = { 4, 4, 4, 4, 4, 4, 4 };
+
+    // This asks for the final day-of-week adjusted upper tail. The first request
+    // must convolve the seven daily PMFs and store the finished tail probability.
+    double firstProbability = lookup.getStratifiedProbabilityFor(
+        Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 15
+    );
+    HypergeometricProbabilityLookup::ProbabilityCacheStatistics statistics = lookup.getProbabilityCacheStatistics();
+    BOOST_CHECK(firstProbability < 0.0);
+    BOOST_CHECK_EQUAL(statistics.cacheType, HypergeometricProbabilityLookup::ProbabilityCacheStatistics::STRATIFIED_DAY_OF_WEEK);
+    BOOST_CHECK_EQUAL(statistics.entries, 1U);
+    BOOST_CHECK_EQUAL(statistics.requests, 1U);
+    BOOST_CHECK_EQUAL(statistics.cacheHits, 0U);
+    BOOST_CHECK_EQUAL(statistics.cacheMisses, 1U);
+    BOOST_CHECK_EQUAL(statistics.invalidRequests, 0U);
+    BOOST_CHECK_EQUAL(statistics.tailEvaluations, 1U);
+    BOOST_CHECK_EQUAL(statistics.dayPmfRequests, 7U);
+    BOOST_CHECK_EQUAL(statistics.dayPmfCacheEntries, 1U);
+    BOOST_CHECK_EQUAL(statistics.dayPmfCacheHits, 6U);
+    BOOST_CHECK_EQUAL(statistics.dayPmfCacheMisses, 1U);
+    BOOST_CHECK_EQUAL(statistics.uniqueDayPmfMargins, 1U);
+    BOOST_CHECK_EQUAL(statistics.dayPmfReuseOpportunities, 6U);
+    BOOST_CHECK_EQUAL(statistics.uniqueStratifiedMarginSets, 1U);
+    BOOST_CHECK_EQUAL(statistics.stratifiedMarginSetReuseOpportunities, 0U);
+    BOOST_CHECK_EQUAL(statistics.totalDayPmfTerms, 35U);
+    BOOST_CHECK_EQUAL(statistics.maxDayPmfTerms, 5U);
+    BOOST_CHECK_EQUAL(statistics.convolutionCount, 6U);
+    BOOST_CHECK_EQUAL(statistics.totalConvolutionInputTerms, 450U);
+    BOOST_CHECK_EQUAL(statistics.totalCombinedPmfSize, 114U);
+    BOOST_CHECK_EQUAL(statistics.maxCombinedPmfSize, 29U);
+    BOOST_CHECK(statistics.estimatedMemoryBytes > sizeof(double));
+
+    // Repeating the exact same DOW margins and x should reuse the cached final
+    // tail value instead of rebuilding and reconvolving the weekday PMFs.
+    double secondProbability = lookup.getStratifiedProbabilityFor(
+        Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 15
+    );
+    statistics = lookup.getProbabilityCacheStatistics();
+    BOOST_CHECK_EQUAL(firstProbability, secondProbability);
+    BOOST_CHECK_EQUAL(statistics.cacheType, HypergeometricProbabilityLookup::ProbabilityCacheStatistics::STRATIFIED_DAY_OF_WEEK);
+    BOOST_CHECK_EQUAL(statistics.entries, 1U);
+    BOOST_CHECK_EQUAL(statistics.requests, 2U);
+    BOOST_CHECK_EQUAL(statistics.cacheHits, 1U);
+    BOOST_CHECK_EQUAL(statistics.cacheMisses, 1U);
+    BOOST_CHECK_EQUAL(statistics.tailEvaluations, 1U);
+    BOOST_CHECK_EQUAL(statistics.dayPmfRequests, 7U);
+    BOOST_CHECK_EQUAL(statistics.dayPmfCacheEntries, 1U);
+    BOOST_CHECK_EQUAL(statistics.dayPmfCacheHits, 6U);
+    BOOST_CHECK_EQUAL(statistics.dayPmfCacheMisses, 1U);
+    BOOST_CHECK_EQUAL(statistics.uniqueDayPmfMargins, 1U);
+    BOOST_CHECK_EQUAL(statistics.dayPmfReuseOpportunities, 6U);
+    BOOST_CHECK_EQUAL(statistics.uniqueStratifiedMarginSets, 1U);
+    BOOST_CHECK_EQUAL(statistics.stratifiedMarginSetReuseOpportunities, 0U);
+    BOOST_CHECK_EQUAL(statistics.convolutionCount, 6U);
+
+    // Changing only x misses the final tail cache, but it reuses the same seven
+    // day-of-week margins. This is the diagnostic that tells us whether a future
+    // combined PMF/CDF cache could answer several x values from one distribution.
+    lookup.getStratifiedProbabilityFor(
+        Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 16
+    );
+    statistics = lookup.getProbabilityCacheStatistics();
+    BOOST_CHECK_EQUAL(statistics.entries, 2U);
+    BOOST_CHECK_EQUAL(statistics.requests, 3U);
+    BOOST_CHECK_EQUAL(statistics.cacheHits, 1U);
+    BOOST_CHECK_EQUAL(statistics.cacheMisses, 2U);
+    BOOST_CHECK_EQUAL(statistics.tailEvaluations, 2U);
+    BOOST_CHECK_EQUAL(statistics.dayPmfRequests, 7U);
+    BOOST_CHECK_EQUAL(statistics.uniqueStratifiedMarginSets, 1U);
+    BOOST_CHECK_EQUAL(statistics.stratifiedMarginSetReuseOpportunities, 1U);
+    BOOST_CHECK_EQUAL(statistics.convolutionCount, 6U);
+}
+BOOST_AUTO_TEST_CASE( stratified_probability_uses_positive_support_offsets ) {
+    HypergeometricProbabilityLookup lookup;
+    HypergeometricProbabilityLookup::CountByDay_t totalCasesByDay = { 10, 10, 10, 10, 10, 10, 10 };
+    HypergeometricProbabilityLookup::CountByDay_t spatialCasesByDay = { 8, 8, 8, 8, 8, 8, 8 };
+    HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = { 7, 7, 7, 7, 7, 7, 7 };
+
+    // Each day has support x_d=5..7, so the seven-day total has support 35..49.
+    // Asking for P(X>=35) should return the whole distribution, not treat 35 as
+    // an out-of-range vector index after trimming impossible leading values.
+    double probability = lookup.getStratifiedProbabilityFor(
+        Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 35
+    );
+    check_probability(probability, -1.0);
 }
 BOOST_AUTO_TEST_CASE( spatial_cases_trim_unset_values_and_preserve_x_offset ) {
     HypergeometricProbabilityLookup::SpatialCases spatialCases;

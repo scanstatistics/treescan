@@ -63,30 +63,105 @@ namespace {
     }
     // Builds the ordinary PMF array used by the day-of-week convolution. The
     // scalar non-DOW tails use log-space directly and do not need this array.
-    std::vector<double> calculateHypergeometricPmf(count_t C, count_t S, count_t T) {
-        if (C == 0) return (S == 0 && T == 0) ? std::vector<double>(1, 1.0) : std::vector<double>();
-        if (S > C || T > C) return std::vector<double>();
+    HypergeometricProbabilityLookup::OffsetPmf calculateHypergeometricPmf(count_t C, count_t S, count_t T) {
+        if (C == 0) {
+            return (S == 0 && T == 0) ?
+                HypergeometricProbabilityLookup::OffsetPmf{ 0, std::vector<double>(1, 1.0) } :
+                HypergeometricProbabilityLookup::OffsetPmf();
+        }
+        if (S > C || T > C) return HypergeometricProbabilityLookup::OffsetPmf();
 
         count_t min_x = std::max(static_cast<count_t>(0), S + T - C);
         count_t max_x = std::min(S, T);
-        std::vector<double> pmf(max_x + 1, 0.0);
+        HypergeometricProbabilityLookup::OffsetPmf pmf;
+        pmf.offset = min_x;
+        pmf.probabilities.resize(max_x - min_x + 1, 0.0);
         for (count_t x = min_x; x <= max_x; ++x) {
-            pmf[x] = probabilityFromLog(logHypergeometricPmf(C, S, T, x));
+            pmf.probabilities[x - min_x] = probabilityFromLog(logHypergeometricPmf(C, S, T, x));
         }
         return pmf;
     }
-    // Convolution combines independent daily PMFs. After convolving all seven
-    // days, result[k] is the probability of observing k total cases in the cluster.
-    std::vector<double> convolve(const std::vector<double>& left, const std::vector<double>& right) {
-        if (left.empty() || right.empty()) return std::vector<double>();
-        std::vector<double> result(left.size() + right.size() - 1, 0.0);
+    // Convolution combines independent daily PMFs. Offsets let us store only
+    // possible x values, so impossible leading zeroes do not inflate each multiply.
+    HypergeometricProbabilityLookup::OffsetPmf convolve(
+        const HypergeometricProbabilityLookup::OffsetPmf& left,
+        const HypergeometricProbabilityLookup::OffsetPmf& right
+    ) {
+        if (left.empty() || right.empty()) return HypergeometricProbabilityLookup::OffsetPmf();
+
+        HypergeometricProbabilityLookup::OffsetPmf result;
+        result.offset = left.offset + right.offset;
+        result.probabilities.assign(left.size() + right.size() - 1, 0.0);
         for (size_t i = 0; i < left.size(); ++i) {
-            if (left[i] == 0.0) continue;
+            if (left.probabilities[i] == 0.0) continue;
             for (size_t j = 0; j < right.size(); ++j) {
-                if (right[j] != 0.0) result[i + j] += left[i] * right[j];
+                if (right.probabilities[j] != 0.0)
+                    result.probabilities[i + j] += left.probabilities[i] * right.probabilities[j];
             }
         }
         return result;
+    }
+
+    // Stores both cumulative directions for a combined DOW distribution. That
+    // lets later requests with the same margins but a different x answer the
+    // requested tail by one array lookup instead of reconvolving seven PMFs.
+    HypergeometricProbabilityLookup::OffsetTailProbabilities buildTailProbabilities(
+        const HypergeometricProbabilityLookup::OffsetPmf& pmf, double expected
+    ) {
+        if (pmf.empty()) return HypergeometricProbabilityLookup::OffsetTailProbabilities();
+
+        HypergeometricProbabilityLookup::OffsetTailProbabilities tails;
+        tails.offset = pmf.offset;
+        tails.expected = expected;
+        tails.lowerTailProbabilities.resize(pmf.size(), 0.0);
+        tails.upperTailProbabilities.resize(pmf.size(), 0.0);
+
+        double lowerTail = 0.0;
+        for (size_t i = 0; i < pmf.size(); ++i) {
+            lowerTail += pmf.probabilities[i];
+            tails.lowerTailProbabilities[i] = lowerTail;
+        }
+
+        double upperTail = 0.0;
+        for (size_t i = pmf.size(); i > 0; --i) {
+            upperTail += pmf.probabilities[i - 1];
+            tails.upperTailProbabilities[i - 1] = upperTail;
+        }
+        return tails;
+    }
+
+    double getProbabilityFromTailProbabilities(
+        Parameters::ScanRateType scanrate,
+        const HypergeometricProbabilityLookup::OffsetTailProbabilities& tails,
+        count_t x
+    ) {
+        if (tails.empty()) return HypergeometricProbabilityLookup::PROBABILITY_UNSET;
+
+        bool useHighTail = false;
+        bool useLowTail = false;
+        switch (scanrate) {
+            case Parameters::LOWRATE:
+                useLowTail = true;
+                break;
+            case Parameters::HIGHORLOWRATE:
+                useHighTail = static_cast<double>(x) > tails.expected;
+                useLowTail = static_cast<double>(x) < tails.expected;
+                break;
+            case Parameters::HIGHRATE:
+            default:
+                useHighTail = true;
+                break;
+        }
+
+        double tail = 0.0;
+        if (useHighTail && x <= tails.maxX()) {
+            size_t start = x <= tails.offset ? 0 : static_cast<size_t>(x - tails.offset);
+            tail = tails.upperTailProbabilities[start];
+        } else if (useLowTail && x >= tails.offset) {
+            size_t end = std::min(static_cast<size_t>(x - tails.offset), tails.size() - 1);
+            tail = tails.lowerTailProbabilities[end];
+        }
+        return tail > 0.0 ? -tail : HypergeometricProbabilityLookup::PROBABILITY_UNSET;
     }
 }
 
@@ -117,6 +192,56 @@ size_t HypergeometricProbabilityLookup::ProbabilityMarginKeyHash::operator()(con
     };
     combine(std::hash<count_t>()(key.T));
     combine(std::hash<count_t>()(key.S));
+    return seed;
+}
+
+/** Hashes the final day-of-week adjusted probability key. The key is deliberately
+    wide because the stratified tail depends on all seven C_d, S_d, and T_d margins,
+    not just scalar C, S, and T values. */
+size_t HypergeometricProbabilityLookup::StratifiedProbabilityKeyHash::operator()(const StratifiedProbabilityKey& key) const {
+    size_t seed = 0;
+    auto combine = [&seed](size_t value) {
+        seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    };
+    auto combineCounts = [&combine](const CountByDay_t& counts) {
+        for (count_t count : counts) combine(std::hash<count_t>()(count));
+    };
+    combine(std::hash<int>()(static_cast<int>(key.scanrate)));
+    combineCounts(key.totalCasesByDay);
+    combineCounts(key.spatialCasesByDay);
+    combineCounts(key.windowCasesByDay);
+    combine(std::hash<count_t>()(key.x));
+    return seed;
+}
+
+/** Hashes a day-of-week adjusted margin set without x. If this key repeats while
+    the full tail key misses, then the same convolved distribution is being reused
+    with different observed cluster counts. */
+size_t HypergeometricProbabilityLookup::StratifiedMarginSetKeyHash::operator()(const StratifiedMarginSetKey& key) const {
+    size_t seed = 0;
+    auto combine = [&seed](size_t value) {
+        seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    };
+    auto combineCounts = [&combine](const CountByDay_t& counts) {
+        for (count_t count : counts) combine(std::hash<count_t>()(count));
+    };
+    combine(std::hash<int>()(static_cast<int>(key.scanrate)));
+    combineCounts(key.totalCasesByDay);
+    combineCounts(key.spatialCasesByDay);
+    combineCounts(key.windowCasesByDay);
+    return seed;
+}
+
+/** Hashes one weekday hypergeometric margin triple. These keys are diagnostics for
+    reusing the same per-day PMF across final-tail cache misses. */
+size_t HypergeometricProbabilityLookup::DayPmfMarginKeyHash::operator()(const DayPmfMarginKey& key) const {
+    size_t seed = 0;
+    auto combine = [&seed](size_t value) {
+        seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    };
+    combine(std::hash<count_t>()(key.C));
+    combine(std::hash<count_t>()(key.S));
+    combine(std::hash<count_t>()(key.T));
     return seed;
 }
 
@@ -156,21 +281,68 @@ HypergeometricProbabilityLookup::ProbabilityCacheStatistics HypergeometricProbab
     ProbabilityCacheStatistics statistics;
     statistics.C = _total_cases;
     statistics.T = _case_window_count;
-    //statistics.evaluatedMarginPairs = _probability_margin_pairs.size();
-    //statistics.estimatedMaxCacheEntries = _estimated_max_cache_entries;
+
+    const bool hasStratifiedActivity = _stratified_probability_cache.size() ||
+        _stratified_probability_cache_hits || _stratified_probability_cache_misses ||
+        _stratified_probability_cache_invalid_requests || _stratified_probability_cache_tail_evaluations;
+    const bool hasScalarActivity = _probability_cache.size() ||
+        _probability_cache_hits || _probability_cache_misses ||
+        _probability_cache_invalid_requests || _probability_cache_tail_evaluations;
+
+    if (hasStratifiedActivity && !hasScalarActivity) {
+        statistics.cacheType = ProbabilityCacheStatistics::STRATIFIED_DAY_OF_WEEK;
+        statistics.entries = _stratified_probability_cache.size();
+        statistics.estimatedMemoryBytes = sizeof(_stratified_probability_cache) +
+            _stratified_probability_cache.bucket_count() * sizeof(void*) +
+            _stratified_probability_cache.size() * (sizeof(StratifiedProbabilityCache_t::value_type) + 2U * sizeof(void*)) +
+            sizeof(_stratified_margin_set_cache) +
+            _stratified_margin_set_cache.bucket_count() * sizeof(void*) +
+            _stratified_margin_set_cache.size() * (sizeof(StratifiedMarginSetCache_t::value_type) + 2U * sizeof(void*)) +
+            sizeof(_stratified_day_pmf_cache) +
+            _stratified_day_pmf_cache.bucket_count() * sizeof(void*);
+        for (const DayPmfCache_t::value_type& cachedPmf : _stratified_day_pmf_cache) {
+            statistics.estimatedMemoryBytes += sizeof(DayPmfCache_t::value_type) + 2U * sizeof(void*) +
+                cachedPmf.second.probabilities.capacity() * sizeof(double);
+        }
+        statistics.cacheHits = _stratified_probability_cache_hits;
+        statistics.cacheMisses = _stratified_probability_cache_misses;
+        statistics.invalidRequests = _stratified_probability_cache_invalid_requests;
+        statistics.requests = statistics.cacheHits + statistics.cacheMisses;
+        statistics.tailEvaluations = _stratified_probability_cache_tail_evaluations;
+        statistics.dayPmfRequests = _stratified_day_pmf_requests;
+        statistics.dayPmfCacheEntries = _stratified_day_pmf_cache.size();
+        statistics.dayPmfCacheHits = _stratified_day_pmf_cache_hits;
+        statistics.dayPmfCacheMisses = _stratified_day_pmf_cache_misses;
+        statistics.uniqueDayPmfMargins = _stratified_day_pmf_cache.size();
+        statistics.dayPmfReuseOpportunities = _stratified_day_pmf_reuse_opportunities;
+        statistics.uniqueStratifiedMarginSets = _stratified_margin_set_cache.size();
+        statistics.stratifiedMarginSetReuseOpportunities = _stratified_margin_set_reuse_opportunities;
+        statistics.totalDayPmfTerms = _stratified_day_pmf_total_terms;
+        statistics.maxDayPmfTerms = _stratified_day_pmf_max_terms;
+        statistics.convolutionCount = _stratified_convolution_count;
+        statistics.totalConvolutionInputTerms = _stratified_convolution_input_terms;
+        statistics.totalCombinedPmfSize = _stratified_combined_pmf_total_size;
+        statistics.maxCombinedPmfSize = _stratified_combined_pmf_max_size;
+        return statistics;
+    }
+
+    if (hasScalarActivity) statistics.cacheType = ProbabilityCacheStatistics::SCALAR_ON_DEMAND;
     statistics.entries = _probability_cache.size();
     statistics.estimatedMemoryBytes = sizeof(_probability_cache) +
         _probability_cache.bucket_count() * sizeof(void*) +
         _probability_cache.size() * (sizeof(ProbabilityCache_t::value_type) + 2U * sizeof(void*));
+    //statistics.evaluatedMarginPairs = _probability_margin_pairs.size();
+    //statistics.estimatedMaxCacheEntries = _estimated_max_cache_entries;
     statistics.cacheHits = _probability_cache_hits;
     statistics.cacheMisses = _probability_cache_misses;
     statistics.invalidRequests = _probability_cache_invalid_requests;
-    statistics.onDemandRequests = statistics.cacheHits + statistics.cacheMisses + statistics.invalidRequests;
+    statistics.requests = statistics.cacheHits + statistics.cacheMisses + statistics.invalidRequests;
     statistics.tailEvaluations = _probability_cache_tail_evaluations;
     statistics.totalTailTerms = _probability_cache_total_tail_terms;
     statistics.maxTailTerms = _probability_cache_max_tail_terms;
     return statistics;
 }
+
 /** Calculates the negative tail probability for one observed scalar cluster.
     This path is used when C is too large for the dense lookup table. It keeps the
     calculation in log-space until the final return value, then caches the result.
@@ -248,6 +420,7 @@ double HypergeometricProbabilityLookup::getOnDemandProbabilityFor(Parameters::Sc
     }
     return probability;
 }
+
 /** Initializes the hypergeometric lookup machinery for a scan.
     Small C: precompute dense negative tails for every evaluated S and T.
     Large C: skip the dense table and memoize individual tail probabilities.
@@ -335,59 +508,123 @@ void HypergeometricProbabilityLookup::calculateHG(Parameters::ScanRateType scanr
 
 /** Returns negative tail probability for the day-of-week stratified hypergeometric distribution.
     Each weekday contributes X_d ~ Hypergeometric(C_d, S_d, T_d), and this calculates
-    the tail probability for X = sum_d X_d. */
+    the tail probability for X = sum_d X_d. The final tail is memoized by x, while
+    the combined DOW tail arrays are memoized by margins without x. */
 double HypergeometricProbabilityLookup::getStratifiedProbabilityFor(
     Parameters::ScanRateType scanrate, const CountByDay_t& totalCasesByDay, const CountByDay_t& spatialCasesByDay, const CountByDay_t& windowCasesByDay, count_t x
 ) const {
+    StratifiedProbabilityKey key = { scanrate, totalCasesByDay, spatialCasesByDay, windowCasesByDay, x };
+    //std::cout << "key=" << key.toString() << std::endl;
+    StratifiedMarginSetKey marginSetKey = { scanrate, totalCasesByDay, spatialCasesByDay, windowCasesByDay };
+    //std::cout << "marginSetKey=" << marginSetKey.toString() << std::endl;
+    {
+        boost::mutex::scoped_lock lock(_probability_cache_mutex);
+        auto found = _stratified_probability_cache.find(key);
+        if (found != _stratified_probability_cache.end()) {
+            ++_stratified_probability_cache_hits;
+            return found->second;
+        }
+        ++_stratified_probability_cache_misses;
 
-    // TODO: 
-    // We need to find a way to incorporate the on-demand cache here.
-    // It is uncertain whether we can conditionally utilize the lookup cache here in some way.
+        auto foundTails = _stratified_margin_set_cache.find(marginSetKey);
+        if (foundTails != _stratified_margin_set_cache.end()) {
+            ++_stratified_margin_set_reuse_opportunities;
+            double probability = getProbabilityFromTailProbabilities(scanrate, foundTails->second, x);
+            if (probability == PROBABILITY_UNSET) {
+                ++_stratified_probability_cache_invalid_requests;
+            } else {
+                _stratified_probability_cache.emplace(key, probability);
+                ++_stratified_probability_cache_tail_evaluations;
+            }
+            return probability;
+        }
+    }
 
-    // Start with a degenerate distribution: before considering any weekday,
-    // probability is 1.0 that the total count is zero.
-    std::vector<double> pmf(1, 1.0);
+    std::vector<OffsetPmf> dayPmfs;
+    dayPmfs.reserve(totalCasesByDay.size());
+    size_t totalDayPmfTerms = 0;
+    size_t maxDayPmfTerms = 0;
+    size_t convolutionCount = 0;
+    size_t totalConvolutionInputTerms = 0;
+    size_t totalCombinedPmfSize = 0;
+    size_t maxCombinedPmfSize = 0;
     double expected = 0.0;
+    double probability = PROBABILITY_UNSET;
+    OffsetTailProbabilities tails;
 
     for (size_t d = 0; d < totalCasesByDay.size(); ++d) {
         count_t C = totalCasesByDay[d], S = spatialCasesByDay[d], T = windowCasesByDay[d];
         if (C) expected += static_cast<double>(S) * static_cast<double>(T) / static_cast<double>(C);
 
-        // For this weekday, X_d follows Hypergeometric(C_d, S_d, T_d). Convolving
-        // this PMF with the running PMF updates the distribution of sum(X_d).
-        std::vector<double> dayPmf = calculateHypergeometricPmf(C, S, T);
-        if (dayPmf.empty()) return PROBABILITY_UNSET;
-        pmf = convolve(pmf, dayPmf);
-        if (pmf.empty()) return PROBABILITY_UNSET;
+        DayPmfMarginKey dayPmfKey = { C, S, T };
+        //std::cout << "dayPmfKey=" << dayPmfKey.toString() << std::endl;
+        OffsetPmf dayPmf;
+        bool foundDayPmf = false;
+        {
+            boost::mutex::scoped_lock lock(_probability_cache_mutex);
+            ++_stratified_day_pmf_requests;
+            auto found = _stratified_day_pmf_cache.find(dayPmfKey);
+            if (found != _stratified_day_pmf_cache.end()) {
+                ++_stratified_day_pmf_cache_hits;
+                ++_stratified_day_pmf_reuse_opportunities;
+                dayPmf = found->second;
+                foundDayPmf = true;
+            } else {
+                ++_stratified_day_pmf_cache_misses;
+            }
+        }
+        if (!foundDayPmf) {
+            dayPmf = calculateHypergeometricPmf(C, S, T);
+            boost::mutex::scoped_lock lock(_probability_cache_mutex);
+            _stratified_day_pmf_cache.emplace(dayPmfKey, dayPmf);
+        }
+
+        totalDayPmfTerms += dayPmf.size();
+        maxDayPmfTerms = std::max(maxDayPmfTerms, dayPmf.size());
+        if (dayPmf.empty()) {
+            dayPmfs.clear();
+            break;
+        }
+        dayPmfs.push_back(dayPmf);
     }
 
-    bool useHighTail = false;
-    bool useLowTail = false;
-    switch (scanrate) {
-        case Parameters::LOWRATE:
-            useLowTail = true;
-            break;
-        case Parameters::HIGHORLOWRATE:
-            useHighTail = static_cast<double>(x) > expected;
-            useLowTail = static_cast<double>(x) < expected;
-            break;
-        case Parameters::HIGHRATE:
-        default:
-            useHighTail = true;
-            break;
+    if (!dayPmfs.empty()) {
+        std::sort(dayPmfs.begin(), dayPmfs.end(), [](const OffsetPmf& left, const OffsetPmf& right) {
+            return left.size() < right.size();
+        });
+
+        OffsetPmf pmf = dayPmfs.front();
+        for (size_t i = 1; i < dayPmfs.size(); ++i) {
+            ++convolutionCount;
+            totalConvolutionInputTerms += pmf.size() * dayPmfs[i].size();
+            pmf = convolve(pmf, dayPmfs[i]);
+            totalCombinedPmfSize += pmf.size();
+            maxCombinedPmfSize = std::max(maxCombinedPmfSize, pmf.size());
+            if (pmf.empty()) break;
+        }
+
+        tails = buildTailProbabilities(pmf, expected);
+        probability = getProbabilityFromTailProbabilities(scanrate, tails, x);
     }
 
-    if (!useHighTail && !useLowTail) return PROBABILITY_UNSET;
-
-    double tail = 0.0;
-    if (useHighTail) {
-        if (static_cast<size_t>(x) >= pmf.size()) return PROBABILITY_UNSET;
-        tail = std::accumulate(pmf.begin() + x, pmf.end(), 0.0);
-    } else {
-        size_t end = std::min(static_cast<size_t>(x), pmf.size() - 1);
-        tail = std::accumulate(pmf.begin(), pmf.begin() + end + 1, 0.0);
+    {
+        boost::mutex::scoped_lock lock(_probability_cache_mutex);
+        _stratified_day_pmf_total_terms += totalDayPmfTerms;
+        _stratified_day_pmf_max_terms = std::max(_stratified_day_pmf_max_terms, maxDayPmfTerms);
+        _stratified_convolution_count += convolutionCount;
+        _stratified_convolution_input_terms += totalConvolutionInputTerms;
+        _stratified_combined_pmf_total_size += totalCombinedPmfSize;
+        _stratified_combined_pmf_max_size = std::max(_stratified_combined_pmf_max_size, maxCombinedPmfSize);
+        if (!tails.empty())
+            _stratified_margin_set_cache.emplace(marginSetKey, tails);
+        if (probability == PROBABILITY_UNSET) {
+            ++_stratified_probability_cache_invalid_requests;
+        } else {
+            _stratified_probability_cache.emplace(key, probability);
+            ++_stratified_probability_cache_tail_evaluations;
+        }
     }
-    return tail > 0.0 ? -tail : PROBABILITY_UNSET;
+    return probability;
 }
 
 /** Adds negative probabilities for a given index T, reducing the storage by removing PROBABILITY_UNSET values. */
