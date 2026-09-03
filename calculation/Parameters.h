@@ -361,6 +361,8 @@ class Parameters {
     unsigned int                        getDenseThreshold() const { return _stp_dense_threshold; }
     void                                setDenseThreshold(unsigned int u) { _stp_dense_threshold = u; }
 
+    bool                                getIsOddsRatio() const;
+    const char                        * getRelativeRiskReportingLabel() const;
     const std::string                 & getResultsTitle() const { return _results_title; }
     void                                setResultsTitle(const std::string& s) { _results_title = s; }
     bool                                getRptDataAsPct() const { return _report_data_as_percentage; }

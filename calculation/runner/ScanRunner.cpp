@@ -79,6 +79,152 @@ static std::string reportHypergeometricProbabilityCache(const HypergeometricProb
     return buffer.str();
 }
 
+/**
+ * Calculate one day-of-week-adjusted Mantel--Haenszel
+ * odds ratio for a tree-temporal scan conditioned on node and time.
+ *
+ * For weekday stratum s, construct:
+ *
+ *                         Inside window      Outside window
+ *     Inside branch          a_s                 b_s
+ *     Outside branch         c_s                 d_s
+ *
+ * with:
+ *
+ *     a_s = cases inside both the candidate branch and candidate window
+ *     b_s = cases inside the branch but outside the window
+ *     c_s = cases outside the branch but inside the window
+ *     d_s = cases outside both the branch and the window
+ *
+ * The returned common ratio is:
+ *
+ *                    sum_s (a_s d_s / N_s)
+ *     RR_DOW = -----------------------------------
+ *                    sum_s (b_s c_s / N_s)
+ *
+ * where:
+ *
+ *     N_s = a_s + b_s + c_s + d_s.
+ *
+ * This is the stratified Mantel--Haenszel common odds ratio. It is the
+ * direct stratified extension of TreeScan's node-and-time cross-product
+ * measure, which TreeScan labels "relative risk".
+ */
+double getDayOfWeekAdjustedNodeAndTimeRR(
+    const ScanRunner& scanner, int nodeID, DataTimeRange::index_t start_idx, DataTimeRange::index_t end_idx
+) {
+    constexpr std::size_t kWeekdayStrata = 7U;
+    using WeekdayCounts = std::array<double, kWeekdayStrata>;
+
+    /*
+     * Candidate-branch marginals by weekday.
+     *
+     * branch_in_window[s] = a_s
+     * branch_all_time[s]  = a_s + b_s
+     */
+    WeekdayCounts branch_in_window{};
+    WeekdayCounts branch_all_time{};
+
+    const auto& nodes = scanner.getNodes();
+
+    if (nodeID < 0 || static_cast<std::size_t>(nodeID) >= nodes.size() || nodes[static_cast<std::size_t>(nodeID)] == nullptr)
+        throw prg_error("Invalid nodeID %d", __func__, nodeID);
+
+    const auto* candidate_node = nodes[static_cast<std::size_t>(nodeID)];
+
+    /*
+     * A TreeScan cut represents the selected node and its descendants,
+     * so use branch cumulative counts for the candidate cluster.
+     */
+    const auto& branch_cumulative = candidate_node->getBrC_C();
+    const std::size_t number_of_times = branch_cumulative.size() - 1U;
+
+    /*
+     * Reject an invalid window rather than silently returning a misleading
+     * value. The caller may choose a different error-handling convention.
+     */
+    if (start_idx < 0 || end_idx < start_idx || static_cast<std::size_t>(end_idx) >= number_of_times)
+        throw prg_error("Window indexes out of range", __func__);
+
+    /*
+     * Iterate through each exact time index once.
+     *
+     * The weekday stratum follows TreeScan's existing convention:
+     *
+     *     weekday = zero_based_time_index % 7.
+     */
+    for (std::size_t t = 0U; t < number_of_times; ++t) {
+        const std::size_t weekday = t % kWeekdayStrata;
+        const auto time_idx = static_cast<DataTimeRange::index_t>(t);
+        // Candidate branch count at this exact time.
+        const double branch_cases_t = static_cast<double>(branch_cumulative[t]) - static_cast<double>(branch_cumulative[t + 1U]);
+        branch_all_time[weekday] += branch_cases_t;
+        if (start_idx <= time_idx && time_idx <= end_idx) // inside cluster window
+            branch_in_window[weekday] += branch_cases_t;
+    }
+
+    double mh_numerator = 0.0;
+    double mh_denominator = 0.0;
+    /*
+     * Whole-tree marginals by weekday.
+     *
+     * tree_in_window[s] = a_s + c_s
+     * tree_all_time[s]  = N_s
+     */
+    WeekdayCounts tree_in_window{};
+    for (size_t t = static_cast<size_t>(start_idx); t <= static_cast<size_t>(end_idx); ++t)
+        tree_in_window[t % 7] += static_cast<double>(scanner.getTotalCasesByTimeInterval()[t]);
+    const auto& tree_all_time = scanner.getTotalCasesByDayOfWeek();
+
+    for (std::size_t weekday = 0U; weekday < kWeekdayStrata; ++weekday) {
+        const double a = branch_in_window[weekday];
+        const double branch_total = branch_all_time[weekday]; // a + b
+        const double window_total = tree_in_window[weekday]; // a + c
+        const double stratum_total = static_cast<double>(tree_all_time[weekday]); // N_s
+
+        /*
+         * A stratum with no cases contributes no information and would
+         * otherwise require division by zero.
+         */
+        if (stratum_total <= 0.0) {
+            continue;
+        }
+
+        /*
+         * Derive the remaining cells of the weekday-specific 2 x 2 table.
+         */
+        const double b = branch_total - a;
+        const double c = window_total - a;
+        const double d = stratum_total - branch_total - window_total + a;
+
+        /*
+         * With integer counts these cells should be non-negative.
+         * A negative value indicates inconsistent marginals, overlapping
+         * counting, or use of the wrong count container.
+         */
+        if (a < 0.0 || b < 0.0 || c < 0.0 || d < 0.0)
+            throw prg_error("Negative values found in 2 x 2 cells.", __func__);
+
+        mh_numerator += (a * d) / stratum_total;
+        mh_denominator += (b * c) / stratum_total;
+    }
+
+    /*
+     * Handle zero-denominator cases explicitly.
+     *
+     * Positive numerator / zero denominator corresponds to an infinite
+     * estimated common ratio. A 0/0 result is undefined.
+     */
+    if (mh_denominator == 0.0) {
+        return mh_numerator > 0.0 ? std::numeric_limits<double>::infinity() : std::numeric_limits<double>::quiet_NaN();
+    }
+
+    return mh_numerator / mh_denominator;
+}
+
+
+
+
 double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _N, const MatchedSets& ms, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx) {
     const Parameters& parameters = scanner.getParameters();
     if (parameters.getModelType() == Parameters::SIGNED_RANK)
@@ -147,20 +293,7 @@ double getExcessCasesFor(const ScanRunner& scanner, int nodeID, int _C, double _
                     }
                     throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getExcessCases()", parameters.getModelType());
                 case Parameters::NODEANDTIME: {
-                    /** c = cases in detected cluster
-                        C = total cases in the whole tree
-                        C(n)=total cases in the cluster node, summed over the whole study time period
-                        C(t)=total cases in the cluster time window, summed over all the nodes
-                        Let E2 = (C(n)-c)*(C(t)-c) / (C-C(n)-C(t)+c) -- this is an alternative method for calculating expected counts
-                        Excess Cases = c-E2 */
-                    double Cn = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
-                    double Ct = scanner.get_node_n_time_total_cases(_start_idx, _end_idx);
-                    double denominator = totalC - Cn - Ct + C;
-                    if (denominator == 0.0) // This should never happen.
-                        return std::numeric_limits<double>::quiet_NaN();
-                    double e2 = (Cn - C) * (Ct - C) / denominator;
-                    if (e2 == 0.0 && C == 0.0) return 0;
-                    return C - e2;
+					return static_cast<double>(_C) - _N; // observed - expected for node-and-time conditioning
                 }
                 default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getExcessCases()", parameters.getConditionalType());
             }
@@ -396,21 +529,25 @@ double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double 
             }
             throw prg_error("Cannot calculate excess cases: tree-time/time-only, total-cases/node, model (%d).", "getRelativeRisk()", parameters.getModelType());
         case Parameters::NODEANDTIME: {
-            /** c = cases in detected cluster
-                C = total cases in the whole tree
-                C(n)=total cases in the cluster node, summed over the whole study time period
-                C(t)=total cases in the cluster time window, summed over all the nodes
-                Let E2 = (C(n)-c)*(C(t)-c) / (C-C(n)-C(t)+c) -- this is an alternative method for calculating expected counts
-                RR = c/E2 */
-            double Cn = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
-            double Ct = scanner.get_node_n_time_total_cases(_start_idx, _end_idx);
-            double denominator = totalC - Cn - Ct + C;
-            if (denominator == 0.0) // This will never happen when looking for clusters with high rates.
-                return std::numeric_limits<double>::quiet_NaN();
-            double e2 = (Cn - C) * (Ct - C) / denominator;
-            if (e2 == 0.0) // C == 0.0 will never happen when looking for clusters with high rates.
-                return C == 0.0 ? std::numeric_limits<double>::quiet_NaN() : std::numeric_limits<double>::infinity(); // This will happen now and then.
-            return C / e2;
+            if (parameters.isPerformingDayOfWeekAdjustment())
+                return getDayOfWeekAdjustedNodeAndTimeRR(scanner, nodeID, _start_idx, _end_idx);
+            else {
+                /** c = cases in detected cluster
+                    C = total cases in the whole tree
+                    C(n)=total cases in the cluster node, summed over the whole study time period
+                    C(t)=total cases in the cluster time window, summed over all the nodes
+                    Let E2 = (C(n)-c)*(C(t)-c) / (C-C(n)-C(t)+c) -- this is an alternative method for calculating expected counts
+                    RR = c/E2 */
+                double Cn = static_cast<double>(scanner.getNodes()[nodeID]->getBrC());
+                double Ct = scanner.get_node_n_time_total_cases(_start_idx, _end_idx);
+                double denominator = totalC - Cn - Ct + C;
+                if (denominator == 0.0) // This will never happen when looking for clusters with high rates.
+                    return std::numeric_limits<double>::quiet_NaN();
+                double e2 = (Cn - C) * (Ct - C) / denominator;
+                if (e2 == 0.0) // C == 0.0 will never happen when looking for clusters with high rates.
+                    return C == 0.0 ? std::numeric_limits<double>::quiet_NaN() : std::numeric_limits<double>::infinity(); // This will happen now and then.
+                return C / e2;
+            }
         }
         default: throw prg_error("Cannot calculate excess cases: tree-time/time-only, condition type (%d).", "getRelativeRisk()", parameters.getConditionalType());
         }

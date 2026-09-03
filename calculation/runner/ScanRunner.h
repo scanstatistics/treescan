@@ -60,6 +60,7 @@ double getExpectedFor(const ScanRunner& scanner, int nodeID, int _C, double _N, 
 double getAttributableRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, const MatchedSets& ms, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx);
 double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, double _N, const MatchedSets& ms, DataTimeRange::index_t _start_idx, DataTimeRange::index_t _end_idx);
 double getRelativeRiskFor(const ScanRunner& scanner, int nodeID, int _C, const MatchedSets& matchedsets, double converge=0.00001);
+double getDayOfWeekAdjustedNodeAndTimeRR(const ScanRunner& scanner, int nodeID, DataTimeRange::index_t start_idx, DataTimeRange::index_t end_idx);
 std::string & AttributableRiskAsString(double ar, std::string& s);
 
 class CutStructure {
@@ -618,9 +619,9 @@ protected:
     // cache for storing total cases in time window
     mutable std::map<std::pair<DataTimeRange::index_t, DataTimeRange::index_t>, double> _node_n_time_total_cases_cache;
 	boost::dynamic_bitset<>             _window_exclusions;
-	HypergeometricProbabilityLookup     _hypergeometric_probability_lookup;
-    TimeIntervalContainer_t             _totalcases_by_timeinterval;
     NodeStructure::CountContainer_t     _totalcases_by_dayofweek;
+    TimeIntervalContainer_t             _totalcases_by_timeinterval;
+	HypergeometricProbabilityLookup     _hypergeometric_probability_lookup;
 
     unsigned int                addCN_C(const NodeStructure& sourceNode, NodeStructure& destinationNode, boost::dynamic_bitset<>& ancestor_nodes);
     size_t                      calculateCutsCount() const;
@@ -667,8 +668,9 @@ public:
     ScanRunner(const Parameters& parameters, BasePrint& print);
 
     const HypergeometricProbabilityLookup& getHypergeometricProbabilityLookup() const { return _hypergeometric_probability_lookup; }
+    const auto& getTotalCasesByDayOfWeek() const { return _totalcases_by_dayofweek; }
     const auto& getTotalCasesByTimeInterval() const { return _totalcases_by_timeinterval; }
-    const NodeStructure::CountContainer_t& getTotalCasesByDayOfWeek() const { return _totalcases_by_dayofweek; }
+
     const std::vector<std::string>& getSampleSiteIdentifiers() const { return _sample_site_identifiers; }
     unsigned int getNumExclusionsInWindow(DataTimeRange::index_t start, DataTimeRange::index_t end) const;
     const boost::dynamic_bitset<>& getWindowExclusions() const { return _window_exclusions; }

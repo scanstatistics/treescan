@@ -256,6 +256,7 @@ const char * DataRecordWriter::EXPECTED_FIELD                            = "Expe
 const char * DataRecordWriter::EXPECTED_CASES_FIELD                      = "Expected Cases";
 
 const char * DataRecordWriter::RELATIVE_RISK_FIELD                       = "Relative Risk";
+const char * DataRecordWriter::ODDS_RATIO_FIELD                          = "Odds Ratio";
 const char * DataRecordWriter::EXCESS_CASES_FIELD                        = "Excess Cases";
 const char * DataRecordWriter::ATTRIBUTABLE_RISK_FIELD                   = "Attributable Risk";
 const char * DataRecordWriter::LOG_LIKL_RATIO_FIELD                      = "Log Likelihood Ratio";
@@ -375,7 +376,9 @@ ptr_vector<FieldDef>& CutsRecordWriter::getFieldDefs(ptr_vector<FieldDef>& field
                 throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", params.getModelType());
         }
         if (params.getModelType() != Parameters::SIGNED_RANK) {
-            CreateField(fields, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            CreateField(fields, params.getIsOddsRatio() ? ODDS_RATIO_FIELD : RELATIVE_RISK_FIELD, 
+                FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2
+            );
             CreateField(fields, EXCESS_CASES_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             if (params.getReportAttributableRisk())
                 CreateField(fields, ATTRIBUTABLE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
@@ -437,9 +440,10 @@ void CutsRecordWriter::sortChildRecords(std::vector<ChildRecord_t>& childRecords
             return cutRate == Parameters::LOWRATE ? currentA < currentB : currentA > currentB;
         });
     } else {
-        std::sort(std::begin(childRecords), std::end(childRecords), [cutRate](ChildRecord_t& recordA, ChildRecord_t& recordB) {
-            double rrA = recordA.second->GetFieldValue(DataRecordWriter::RELATIVE_RISK_FIELD).AsDouble();
-            double rrB = recordB.second->GetFieldValue(DataRecordWriter::RELATIVE_RISK_FIELD).AsDouble();
+        const std::string TEST_COLUMN(parameters.getIsOddsRatio() ? DataRecordWriter::ODDS_RATIO_FIELD : DataRecordWriter::RELATIVE_RISK_FIELD);
+        std::sort(std::begin(childRecords), std::end(childRecords), [cutRate, &TEST_COLUMN](ChildRecord_t& recordA, ChildRecord_t& recordB) {
+            double rrA = recordA.second->GetFieldValue(TEST_COLUMN).AsDouble();
+            double rrB = recordB.second->GetFieldValue(TEST_COLUMN).AsDouble();
             return cutRate == Parameters::LOWRATE ? rrA < rrB : rrA > rrB;
         });
     }
@@ -591,7 +595,7 @@ RecordBuffer& CutsRecordWriter::getRecordForCut(RecordBuffer& Record, const CutS
                     throw prg_error("Unknown model type (%d).", "CutsRecordWriter()", params.getModelType());
         }
         if (params.getModelType() != Parameters::SIGNED_RANK) {
-            Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = thisCut.getRelativeRisk(scanner);
+            Record.GetFieldValue(params.getIsOddsRatio() ? ODDS_RATIO_FIELD : RELATIVE_RISK_FIELD).AsDouble() = thisCut.getRelativeRisk(scanner);
             Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = thisCut.getExcessCases(scanner);
             if (params.getReportAttributableRisk())
                 Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = thisCut.getAttributableRisk(scanner);
@@ -747,7 +751,9 @@ RecordBuffer& CutsRecordWriter::getRecordForCutChild(RecordBuffer& Record, const
     if (params.getIsVariableBerounlli(false)) // Obtain child node match sets for reporting
         scanner.getNodeMatchSets(&childNode, ms);
     if (params.getModelType() != Parameters::SIGNED_RANK) {
-        Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = getRelativeRiskFor(scanner, childNode.getID(), _C, _N, ms, thisCut.getStartIdx(), thisCut.getEndIdx());
+        Record.GetFieldValue(params.getIsOddsRatio() ? ODDS_RATIO_FIELD : RELATIVE_RISK_FIELD).AsDouble() = getRelativeRiskFor(
+            scanner, childNode.getID(), _C, _N, ms, thisCut.getStartIdx(), thisCut.getEndIdx()
+        );
         Record.GetFieldValue(EXCESS_CASES_FIELD).AsDouble() = getExcessCasesFor(scanner, childNode.getID(), _C, _N, ms, thisCut.getStartIdx(), thisCut.getEndIdx());
         if (params.getReportAttributableRisk())
             Record.GetFieldValue(ATTRIBUTABLE_RISK_FIELD).AsDouble() = getAttributableRiskFor(scanner, childNode.getID(), _C, _N, ms, thisCut.getStartIdx(), thisCut.getEndIdx());
