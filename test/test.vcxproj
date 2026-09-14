@@ -167,6 +167,7 @@
     <ClCompile Include="unittest_Loglikelihood.cpp" />
     <ClCompile Include="unittest_Parameters.cpp" />
     <ClCompile Include="unittest_ParametersValidate.cpp" />
+    <ClCompile Include="unittest_ResultsFileWriter.cpp" />
     <ClCompile Include="squish238.cpp" />
   </ItemGroup>
   <ItemGroup>
