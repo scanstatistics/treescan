@@ -8,7 +8,10 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <chrono>
+#include <limits>
 #include <stdexcept>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <boost/thread/mutex.hpp>
@@ -30,6 +33,18 @@ public:
     /** Above this case count, calculating every possible S in a dense table can
         consume too much memory. Larger populations use the memoized on-demand path. */
     static constexpr int DENSE_LOOKUP_CASE_THRESHOLD = 5000;
+    /** A convolved day-of-week PMF must sum to one. What counts as an acceptable deviation
+        is a judgment, not a trigger: the noise floor is set by lgamma precision in the
+        per-day PMF entries and rises with C - about 2e-9 at C=1e6 and 8e-9 at C=3e6, since
+        the absolute error of lgamma(C_d) scales with its magnitude - so any fixed threshold
+        needs revisiting as C grows. This value sits several decades above the floor measured
+        at C=3e6, and genuine mass loss would be orders of magnitude larger again. Used by
+        tests and as the yardstick for reading maxMassDeviation in a scan report. */
+    static constexpr double MASS_CONSERVATION_TOLERANCE = 1e-6;
+    /** Sample one acquisition in this many when timing how long the cache mutex is held.
+        A power of two so the check is a mask. Hold time varies little between acquisitions
+        of the same kind, so a sparse sample estimates the mean well at negligible cost. */
+    static constexpr size_t CACHE_LOCK_HOLD_SAMPLE_INTERVAL = 1024;
 
     struct ProbabilityCacheStatistics {
         enum CacheType { NONE, SCALAR_ON_DEMAND, STRATIFIED_DAY_OF_WEEK };
@@ -37,14 +52,30 @@ public:
         CacheType cacheType = NONE;
         size_t C = 0;
         size_t T = 0;
-        //size_t evaluatedMarginPairs = 0;
-        //size_t estimatedMaxCacheEntries = 0;
         size_t entries = 0;
         size_t estimatedMemoryBytes = 0;
+        /** Per-tier split of estimatedMemoryBytes for the stratified path, which they sum
+            to. Kept separate because the tiers scale differently: the final tail cache grows
+            with the number of distinct (margins, x) pairs, while the margin set cache grows
+            with both the number of margin sets and the size of each convolved distribution. */
+        size_t tailCacheBytes = 0;
+        size_t marginSetCacheBytes = 0;
+        size_t dayPmfCacheBytes = 0;
         size_t requests = 0;
         size_t cacheHits = 0;
         size_t cacheMisses = 0;
         size_t invalidRequests = 0;
+        /** Tail outcomes for the stratified path. outOfSupportRequests and
+            noDistributionRequests are the two conditions that yield PROBABILITY_UNSET and
+            together they sum to invalidRequests. underflowRequests is NOT invalid: those
+            requests return a probability clamped to the smallest representable value because
+            the true tail was too small to hold. It is tracked because every cluster clamped
+            that way ties with the others and cannot be ranked against them, so a non-zero
+            value is what would justify carrying an explicit log scale through the
+            convolution. */
+        size_t outOfSupportRequests = 0;
+        size_t underflowRequests = 0;
+        size_t noDistributionRequests = 0;
         size_t tailEvaluations = 0;
         size_t totalTailTerms = 0;
         size_t maxTailTerms = 0;
@@ -62,6 +93,37 @@ public:
         size_t totalConvolutionInputTerms = 0;
         size_t totalCombinedPmfSize = 0;
         size_t maxCombinedPmfSize = 0;
+        /** Total doubles held by each cache. The totalDayPmfTerms and totalCombinedPmfSize
+            figures above are weighted by request and by convolution stage, so they describe
+            the distributions being evaluated rather than the ones being stored - cached day
+            PMFs run several times larger than their request-weighted average, because common
+            margins are small and rare margins are large. These are entry-weighted and are
+            the ones to reason about memory with. */
+        size_t cachedDayPmfTerms = 0;
+        size_t cachedMarginSetTailTerms = 0;
+        /** Mass conservation of the convolved day-of-week PMFs. One check is recorded per
+            convolution, which is the miss path, so this counts distinct margin sets except
+            where concurrent threads duplicate one. maxMassDeviation is the worst observed
+            |1 - total mass| and minCombinedPmfMass the smallest observed total mass; read
+            those directly rather than against a fixed threshold, since the floating-point
+            noise floor rises with C. */
+        size_t massConservationChecks = 0;
+        double maxMassDeviation = 0.0;
+        double minCombinedPmfMass = 0.0;
+        std::string worstMassDeviationMargins;
+        /** Contention on the single mutex guarding every cache tier. lockWaitNanoseconds is
+            summed across threads, so it is thread-time lost to waiting and can exceed the
+            wall clock. Hold time is sampled one acquisition in
+            CACHE_LOCK_HOLD_SAMPLE_INTERVAL; its mean sets the ceiling on lookups per second
+            that no amount of additional threads can pass, which is what says whether
+            sharding this mutex would be worth the work. */
+        size_t lockAcquisitions = 0;
+        size_t lockContentions = 0;
+        unsigned long long lockWaitNanoseconds = 0;
+        unsigned long long maxLockWaitNanoseconds = 0;
+        size_t lockHoldSamples = 0;
+        unsigned long long lockHoldNanoseconds = 0;
+        unsigned long long maxLockHoldNanoseconds = 0;
     };
 
     struct OffsetPmf {
@@ -73,15 +135,19 @@ public:
         count_t maxX() const { return probabilities.empty() ? offset : offset + static_cast<count_t>(probabilities.size() - 1); }
     };
 
+    /** Cumulative tail probabilities for a combined day-of-week distribution. Only the
+        direction(s) the scan rate actually reads are populated: a high-rate scan never
+        consults the lower tail, and storing it doubles the largest cache in the stratified
+        path for nothing. Both vectors have the same length whenever they are populated. */
     struct OffsetTailProbabilities {
         count_t offset = 0;
         double expected = 0.0;
         std::vector<double> lowerTailProbabilities;
         std::vector<double> upperTailProbabilities;
 
-        bool empty() const { return lowerTailProbabilities.empty() || upperTailProbabilities.empty(); }
-        size_t size() const { return lowerTailProbabilities.size(); }
-        count_t maxX() const { return empty() ? offset : offset + static_cast<count_t>(lowerTailProbabilities.size() - 1); }
+        bool empty() const { return lowerTailProbabilities.empty() && upperTailProbabilities.empty(); }
+        size_t size() const { return std::max(lowerTailProbabilities.size(), upperTailProbabilities.size()); }
+        count_t maxX() const { return empty() ? offset : offset + static_cast<count_t>(size() - 1); }
     };
     class SpatialCases {
     public:
@@ -128,19 +194,7 @@ protected:
     struct ProbabilityKeyHash {
         size_t operator()(const ProbabilityKey& key) const;
     };
-    struct ProbabilityMarginKey {
-        count_t T;
-        count_t S;
-
-        bool operator==(const ProbabilityMarginKey& other) const {
-            return T == other.T && S == other.S;
-        }
-    };
-    struct ProbabilityMarginKeyHash {
-        size_t operator()(const ProbabilityMarginKey& key) const;
-    };
     typedef std::unordered_map<ProbabilityKey, double, ProbabilityKeyHash> ProbabilityCache_t;
-    //typedef std::unordered_set<ProbabilityMarginKey, ProbabilityMarginKeyHash> ProbabilityMarginSet_t;
     struct StratifiedProbabilityKey {
         Parameters::ScanRateType scanrate;
         CountByDay_t totalCasesByDay;
@@ -213,6 +267,29 @@ protected:
     };
     typedef std::unordered_map<DayPmfMarginKey, OffsetPmf, DayPmfMarginKeyHash> DayPmfCache_t;
 
+    /** Scoped lock over _probability_cache_mutex that measures its own contention. One
+        mutex guards every cache tier here, so it serializes all probability lookups and is
+        the first suspect for limiting throughput as threads are added - but that was never
+        measured, only assumed.
+
+        try_lock is attempted first so an uncontended acquire costs the same single atomic
+        as a plain lock, and the clock reads are paid only by a thread that actually has to
+        wait. Hold time is sampled rather than always measured, because timing every
+        acquisition would cost two clock reads on a path taken hundreds of millions of times
+        per scan. Mean hold time is the number that matters most: it sets the ceiling on
+        lookups per second no matter how many threads are running. */
+    class CacheLock {
+        const HypergeometricProbabilityLookup& _owner;
+        std::chrono::steady_clock::time_point _held_from;
+        bool _sample_hold_time = false;
+
+    public:
+        explicit CacheLock(const HypergeometricProbabilityLookup& owner);
+        ~CacheLock();
+        CacheLock(const CacheLock&) = delete;
+        CacheLock& operator=(const CacheLock&) = delete;
+    };
+
     std::vector<SpatialCases> _spatial_cases; // spatial cases dimension
     mutable std::vector<unsigned int> _T_index; // index mapping for T values
     count_t _total_cases = 0;
@@ -221,8 +298,6 @@ protected:
     bool _use_lookup_table = true;
     mutable boost::mutex _probability_cache_mutex;
     mutable ProbabilityCache_t _probability_cache;
-    //mutable ProbabilityMarginSet_t _probability_margin_pairs;
-    //mutable size_t _estimated_max_cache_entries = 0;
     mutable size_t _probability_cache_hits = 0;
     mutable size_t _probability_cache_misses = 0;
     mutable size_t _probability_cache_invalid_requests = 0;
@@ -234,6 +309,9 @@ protected:
     mutable size_t _stratified_probability_cache_hits = 0;
     mutable size_t _stratified_probability_cache_misses = 0;
     mutable size_t _stratified_probability_cache_invalid_requests = 0;
+    mutable size_t _stratified_probability_cache_out_of_support_requests = 0;
+    mutable size_t _stratified_probability_cache_underflow_requests = 0;
+    mutable size_t _stratified_probability_cache_no_distribution_requests = 0;
     mutable size_t _stratified_probability_cache_tail_evaluations = 0;
     mutable size_t _stratified_margin_set_reuse_opportunities = 0;
     mutable DayPmfCache_t _stratified_day_pmf_cache;
@@ -247,11 +325,21 @@ protected:
     mutable size_t _stratified_convolution_input_terms = 0;
     mutable size_t _stratified_combined_pmf_total_size = 0;
     mutable size_t _stratified_combined_pmf_max_size = 0;
+    mutable size_t _stratified_mass_conservation_checks = 0;
+    mutable double _stratified_max_mass_deviation = 0.0;
+    mutable double _stratified_min_combined_pmf_mass = std::numeric_limits<double>::infinity();
+    mutable std::string _stratified_worst_mass_deviation_margins;
+    mutable size_t _cache_lock_acquisitions = 0;
+    mutable size_t _cache_lock_contentions = 0;
+    mutable unsigned long long _cache_lock_wait_nanoseconds = 0;
+    mutable unsigned long long _cache_lock_max_wait_nanoseconds = 0;
+    mutable size_t _cache_lock_hold_samples = 0;
+    mutable unsigned long long _cache_lock_hold_nanoseconds = 0;
+    mutable unsigned long long _cache_lock_max_hold_nanoseconds = 0;
 
     /** Calculates a scalar negative tail probability without using the dense
         lookup table. This is used for large C values and memoizes each result. */
     double getOnDemandProbabilityFor(Parameters::ScanRateType scanrate, count_t T, count_t S, count_t x) const;
-    size_t estimateCacheEntriesForMargin(Parameters::ScanRateType scanrate, count_t T, count_t S) const;
 
 public:
     HypergeometricProbabilityLookup() = default;
@@ -309,8 +397,6 @@ public:
         _T_index.clear();
         _case_window_count = 0;
         _probability_cache.clear();
-        //_probability_margin_pairs.clear();
-        //_estimated_max_cache_entries = 0;
         _probability_cache_hits = 0;
         _probability_cache_misses = 0;
         _probability_cache_invalid_requests = 0;
@@ -322,6 +408,9 @@ public:
         _stratified_probability_cache_hits = 0;
         _stratified_probability_cache_misses = 0;
         _stratified_probability_cache_invalid_requests = 0;
+        _stratified_probability_cache_out_of_support_requests = 0;
+        _stratified_probability_cache_underflow_requests = 0;
+        _stratified_probability_cache_no_distribution_requests = 0;
         _stratified_probability_cache_tail_evaluations = 0;
         _stratified_margin_set_reuse_opportunities = 0;
         _stratified_day_pmf_cache.clear();
@@ -335,6 +424,17 @@ public:
         _stratified_convolution_input_terms = 0;
         _stratified_combined_pmf_total_size = 0;
         _stratified_combined_pmf_max_size = 0;
+        _stratified_mass_conservation_checks = 0;
+        _stratified_max_mass_deviation = 0.0;
+        _stratified_min_combined_pmf_mass = std::numeric_limits<double>::infinity();
+        _stratified_worst_mass_deviation_margins.clear();
+        _cache_lock_acquisitions = 0;
+        _cache_lock_contentions = 0;
+        _cache_lock_wait_nanoseconds = 0;
+        _cache_lock_max_wait_nanoseconds = 0;
+        _cache_lock_hold_samples = 0;
+        _cache_lock_hold_nanoseconds = 0;
+        _cache_lock_max_hold_nanoseconds = 0;
     }
 };
 #endif

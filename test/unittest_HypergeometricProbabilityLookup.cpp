@@ -255,6 +255,318 @@ BOOST_AUTO_TEST_CASE( stratified_probability_cache_statistics_report_entries_and
     BOOST_CHECK_EQUAL(statistics.stratifiedMarginSetReuseOpportunities, 1U);
     BOOST_CHECK_EQUAL(statistics.convolutionCount, 6U);
 }
+BOOST_AUTO_TEST_CASE( stratified_probability_reports_convolved_pmf_mass_conservation ) {
+    HypergeometricProbabilityLookup lookup;
+    HypergeometricProbabilityLookup::CountByDay_t totalCasesByDay = { 10, 10, 10, 10, 10, 10, 10 };
+    HypergeometricProbabilityLookup::CountByDay_t spatialCasesByDay = { 5, 5, 5, 5, 5, 5, 5 };
+    HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = { 4, 4, 4, 4, 4, 4, 4 };
+
+    HypergeometricProbabilityLookup::ProbabilityCacheStatistics statistics = lookup.getProbabilityCacheStatistics();
+    BOOST_CHECK_EQUAL(statistics.massConservationChecks, 0U);
+    BOOST_CHECK_EQUAL(statistics.minCombinedPmfMass, 0.0);
+    BOOST_CHECK(statistics.worstMassDeviationMargins.empty());
+
+    // These margins are small enough that no bin of the convolved distribution underflows,
+    // so the combined PMF must still sum to one within summation noise.
+    lookup.getStratifiedProbabilityFor(Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 15);
+    statistics = lookup.getProbabilityCacheStatistics();
+    BOOST_CHECK_EQUAL(statistics.massConservationChecks, 1U);
+    BOOST_CHECK(statistics.maxMassDeviation <= HypergeometricProbabilityLookup::MASS_CONSERVATION_TOLERANCE);
+    BOOST_CHECK_CLOSE(statistics.minCombinedPmfMass, 1.0, 1e-6);
+
+    // Repeating the same margins with a different x answers from the margin set cache, so
+    // no convolution runs and no additional check is recorded.
+    lookup.getStratifiedProbabilityFor(Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 16);
+    statistics = lookup.getProbabilityCacheStatistics();
+    BOOST_CHECK_EQUAL(statistics.massConservationChecks, 1U);
+
+    // A new margin set convolves again and is checked in its turn.
+    windowCasesByDay = { 3, 3, 3, 3, 3, 3, 3 };
+    lookup.getStratifiedProbabilityFor(Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 12);
+    statistics = lookup.getProbabilityCacheStatistics();
+    BOOST_CHECK_EQUAL(statistics.massConservationChecks, 2U);
+    BOOST_CHECK(statistics.maxMassDeviation <= HypergeometricProbabilityLookup::MASS_CONSERVATION_TOLERANCE);
+    BOOST_CHECK_CLOSE(statistics.minCombinedPmfMass, 1.0, 1e-6);
+}
+BOOST_AUTO_TEST_CASE( stratified_probability_classifies_out_of_support_requests ) {
+    HypergeometricProbabilityLookup lookup;
+    HypergeometricProbabilityLookup::CountByDay_t totalCasesByDay = { 10, 10, 10, 10, 10, 10, 10 };
+    HypergeometricProbabilityLookup::CountByDay_t spatialCasesByDay = { 8, 8, 8, 8, 8, 8, 8 };
+    HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = { 7, 7, 7, 7, 7, 7, 7 };
+
+    // Support is 35..49, so x=50 cannot occur. The sentinel is the correct answer here and
+    // must be attributed to the support check rather than to underflow.
+    double probability = lookup.getStratifiedProbabilityFor(
+        Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 50
+    );
+    BOOST_CHECK_EQUAL(probability, HypergeometricProbabilityLookup::PROBABILITY_UNSET);
+
+    HypergeometricProbabilityLookup::ProbabilityCacheStatistics statistics = lookup.getProbabilityCacheStatistics();
+    BOOST_CHECK_EQUAL(statistics.invalidRequests, 1U);
+    BOOST_CHECK_EQUAL(statistics.outOfSupportRequests, 1U);
+    BOOST_CHECK_EQUAL(statistics.underflowRequests, 0U);
+    BOOST_CHECK_EQUAL(statistics.noDistributionRequests, 0U);
+}
+BOOST_AUTO_TEST_CASE( stratified_probability_clamps_underflowed_tail_instead_of_discarding_cluster ) {
+    HypergeometricProbabilityLookup lookup;
+    HypergeometricProbabilityLookup::CountByDay_t totalCasesByDay = { 1000, 1000, 1000, 1000, 1000, 1000, 1000 };
+    HypergeometricProbabilityLookup::CountByDay_t spatialCasesByDay = { 200, 200, 200, 200, 200, 200, 200 };
+    HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = { 200, 200, 200, 200, 200, 200, 200 };
+
+    // Each day can contribute x_d=0..200, so x=1400 is the top of the support and is a
+    // legitimate, maximally extreme cluster. Its true probability is about 1e-1521: each
+    // day contributes about 1e-217, which is representable, but the convolution multiplies
+    // them in ordinary space and the product collapses to exactly zero.
+    double probability = lookup.getStratifiedProbabilityFor(
+        Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 1400
+    );
+    HypergeometricProbabilityLookup::ProbabilityCacheStatistics statistics = lookup.getProbabilityCacheStatistics();
+
+    // The cluster must survive at the representable floor rather than being dropped, which
+    // is the same contract the scalar path gets from negativeProbabilityFromLogTail. It is
+    // still counted as a clamped tail, because ranking it against other clamped clusters is
+    // not possible without carrying a log scale through the convolution.
+    BOOST_CHECK_EQUAL(probability, -std::numeric_limits<double>::denorm_min());
+    BOOST_CHECK(probability != HypergeometricProbabilityLookup::PROBABILITY_UNSET);
+    BOOST_CHECK_EQUAL(statistics.underflowRequests, 1U);
+    BOOST_CHECK_EQUAL(statistics.invalidRequests, 0U);
+    BOOST_CHECK_EQUAL(statistics.outOfSupportRequests, 0U);
+    BOOST_CHECK_EQUAL(statistics.noDistributionRequests, 0U);
+    // A clamped result is a real answer, so it is cached and counted like any other.
+    BOOST_CHECK_EQUAL(statistics.entries, 1U);
+    BOOST_CHECK_EQUAL(statistics.tailEvaluations, 1U);
+
+    // Mass conservation stays clean even though the far tail underflowed, which is exactly
+    // why it cannot be used on its own to decide whether underflow is happening.
+    BOOST_CHECK_EQUAL(statistics.massConservationChecks, 1U);
+    BOOST_CHECK(statistics.maxMassDeviation <= HypergeometricProbabilityLookup::MASS_CONSERVATION_TOLERANCE);
+}
+BOOST_AUTO_TEST_CASE( stratified_cache_memory_estimate_includes_tail_array_payload ) {
+    HypergeometricProbabilityLookup lookup;
+    HypergeometricProbabilityLookup::CountByDay_t totalCasesByDay = { 500, 500, 500, 500, 500, 500, 500 };
+    HypergeometricProbabilityLookup::CountByDay_t spatialCasesByDay = { 100, 100, 100, 100, 100, 100, 100 };
+    HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = { 100, 100, 100, 100, 100, 100, 100 };
+
+    lookup.getStratifiedProbabilityFor(
+        Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 300
+    );
+    HypergeometricProbabilityLookup::ProbabilityCacheStatistics statistics = lookup.getProbabilityCacheStatistics();
+
+    // The margin set cache holds one entry whose tail array spans the 0..700 support. Those
+    // doubles live on the heap, so counting only sizeof(value_type) would miss them and
+    // understate the cache that dominates this path.
+    const size_t oneTailArrayBytes = 701U * sizeof(double);
+    BOOST_CHECK_EQUAL(statistics.uniqueStratifiedMarginSets, 1U);
+    BOOST_CHECK(statistics.marginSetCacheBytes > oneTailArrayBytes);
+    // The tiers must account for the whole estimate between them.
+    BOOST_CHECK_EQUAL(statistics.estimatedMemoryBytes,
+        statistics.tailCacheBytes + statistics.marginSetCacheBytes + statistics.dayPmfCacheBytes);
+
+    // Entry-weighted term counts describe what is stored: one high tail over the 0..700
+    // support, and one cached day PMF over each day's 0..100 support. The request-weighted
+    // averages alongside them count the same day PMF once per request instead of once per
+    // entry, so only these two track the memory.
+    BOOST_CHECK_EQUAL(statistics.cachedMarginSetTailTerms, 701U);
+    BOOST_CHECK_EQUAL(statistics.dayPmfCacheEntries, 1U);
+    BOOST_CHECK_EQUAL(statistics.cachedDayPmfTerms, 101U);
+}
+BOOST_AUTO_TEST_CASE( stratified_margin_set_cache_entry_survives_being_moved_in ) {
+    HypergeometricProbabilityLookup::CountByDay_t totalCasesByDay = { 10, 10, 10, 10, 10, 10, 10 };
+    HypergeometricProbabilityLookup::CountByDay_t spatialCasesByDay = { 5, 5, 5, 5, 5, 5, 5 };
+    HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = { 4, 4, 4, 4, 4, 4, 4 };
+
+    // The tail arrays are moved into the margin set cache instead of copied, so the entry
+    // must still hold them afterwards. A moved-out entry would leave an empty array behind
+    // and every later x for these margins would come back wrong or unset.
+    HypergeometricProbabilityLookup cachingLookup;
+    cachingLookup.getStratifiedProbabilityFor(
+        Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 20
+    );
+    double fromCache = cachingLookup.getStratifiedProbabilityFor(
+        Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 21
+    );
+
+    // A fresh lookup convolves from scratch for the same x and must agree exactly.
+    HypergeometricProbabilityLookup freshLookup;
+    double fromConvolution = freshLookup.getStratifiedProbabilityFor(
+        Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 21
+    );
+
+    BOOST_CHECK(fromCache < 0.0);
+    BOOST_CHECK(fromCache != HypergeometricProbabilityLookup::PROBABILITY_UNSET);
+    BOOST_CHECK_EQUAL(fromCache, fromConvolution);
+
+    HypergeometricProbabilityLookup::ProbabilityCacheStatistics statistics = cachingLookup.getProbabilityCacheStatistics();
+    // Each day spans x_d=0..4, so the combined support is 0..28 and the one stored high tail
+    // holds 29 terms. Reading zero here would mean the entry was left moved-out.
+    BOOST_CHECK_EQUAL(statistics.uniqueStratifiedMarginSets, 1U);
+    BOOST_CHECK_EQUAL(statistics.cachedMarginSetTailTerms, 29U);
+    BOOST_CHECK_EQUAL(statistics.stratifiedMarginSetReuseOpportunities, 1U);
+    BOOST_CHECK_EQUAL(statistics.convolutionCount, 6U); // the second x reused the cached tails
+}
+BOOST_AUTO_TEST_CASE( stratified_day_pmf_cache_serves_shared_day_margins_across_margin_sets ) {
+    HypergeometricProbabilityLookup lookup;
+    HypergeometricProbabilityLookup::CountByDay_t totalCasesByDay = { 10, 10, 10, 10, 10, 10, 10 };
+    HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = { 4, 4, 4, 4, 4, 4, 4 };
+
+    // Two different margin sets built from the same multiset of day margins: the odd day is
+    // last in one and first in the other. The day PMF keys are (C_d, S_d, T_d) with no day
+    // index, so the second set hits the day PMF cache for all seven days, which is the path
+    // that now reads the cached PMF through a pointer after releasing the lock rather than
+    // copying it out. Both sets convolve the same seven distributions, so the tails must
+    // agree.
+    //
+    // They agree to within rounding rather than exactly. Both day margins here have support
+    // 0..4, since min(S_d, T_d) is 4 either way, so all seven PMFs are the same length and
+    // the sort by size leaves them in whatever order std::sort happens to produce for that
+    // input - it is not stable. The two sets therefore multiply and add the same values in
+    // different orders, and floating point is not associative. The result stays
+    // deterministic for a given margin set, which is what the caches depend on.
+    HypergeometricProbabilityLookup::CountByDay_t oddDayLast = { 5, 5, 5, 5, 5, 5, 6 };
+    HypergeometricProbabilityLookup::CountByDay_t oddDayFirst = { 6, 5, 5, 5, 5, 5, 5 };
+
+    double first = lookup.getStratifiedProbabilityFor(
+        Parameters::HIGHRATE, totalCasesByDay, oddDayLast, windowCasesByDay, 21
+    );
+    double second = lookup.getStratifiedProbabilityFor(
+        Parameters::HIGHRATE, totalCasesByDay, oddDayFirst, windowCasesByDay, 21
+    );
+    BOOST_CHECK(first < 0.0);
+    BOOST_CHECK(first != HypergeometricProbabilityLookup::PROBABILITY_UNSET);
+    check_probability(second, first);
+
+    HypergeometricProbabilityLookup::ProbabilityCacheStatistics statistics = lookup.getProbabilityCacheStatistics();
+    BOOST_CHECK_EQUAL(statistics.uniqueStratifiedMarginSets, 2U);
+    // Only two distinct day margins exist: (10,5,4) and (10,6,4).
+    BOOST_CHECK_EQUAL(statistics.dayPmfCacheEntries, 2U);
+    BOOST_CHECK_EQUAL(statistics.dayPmfRequests, 14U);
+    BOOST_CHECK_EQUAL(statistics.dayPmfCacheMisses, 2U);
+    BOOST_CHECK_EQUAL(statistics.dayPmfCacheHits, 12U);
+}
+BOOST_AUTO_TEST_CASE( probability_cache_lock_records_acquisitions_without_contention ) {
+    HypergeometricProbabilityLookup lookup;
+    HypergeometricProbabilityLookup::CountByDay_t totalCasesByDay = { 10, 10, 10, 10, 10, 10, 10 };
+    HypergeometricProbabilityLookup::CountByDay_t spatialCasesByDay = { 5, 5, 5, 5, 5, 5, 5 };
+    HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = { 4, 4, 4, 4, 4, 4, 4 };
+
+    HypergeometricProbabilityLookup::ProbabilityCacheStatistics statistics = lookup.getProbabilityCacheStatistics();
+    const size_t acquisitionsForOneReport = statistics.lockAcquisitions;
+    BOOST_CHECK_EQUAL(acquisitionsForOneReport, 1U); // reading the statistics takes the lock itself
+    BOOST_CHECK_EQUAL(statistics.lockContentions, 0U);
+
+    // One miss takes the lock to check the caches, once per weekday to look up the day PMF,
+    // once per weekday to store it, and once to record the result. Nothing else is running,
+    // so every acquisition must be uncontended and no wait time can accrue.
+    lookup.getStratifiedProbabilityFor(Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 15);
+    statistics = lookup.getProbabilityCacheStatistics();
+    BOOST_CHECK(statistics.lockAcquisitions > acquisitionsForOneReport);
+    BOOST_CHECK_EQUAL(statistics.lockContentions, 0U);
+    BOOST_CHECK_EQUAL(statistics.lockWaitNanoseconds, 0U);
+    BOOST_CHECK_EQUAL(statistics.maxLockWaitNanoseconds, 0U);
+
+    // Hold time is sampled sparsely, so a handful of acquisitions should produce none.
+    BOOST_CHECK(statistics.lockAcquisitions < HypergeometricProbabilityLookup::CACHE_LOCK_HOLD_SAMPLE_INTERVAL);
+    BOOST_CHECK_EQUAL(statistics.lockHoldSamples, 0U);
+
+    // clear() has to reset the lock counters along with everything else, or a second scan
+    // reports the first scan's contention.
+    lookup.clear();
+    statistics = lookup.getProbabilityCacheStatistics();
+    BOOST_CHECK_EQUAL(statistics.lockAcquisitions, 1U);
+    BOOST_CHECK_EQUAL(statistics.lockContentions, 0U);
+    BOOST_CHECK_EQUAL(statistics.lockHoldSamples, 0U);
+}
+BOOST_AUTO_TEST_CASE( stratified_margin_set_cache_stores_only_the_tail_the_scan_rate_reads ) {
+    HypergeometricProbabilityLookup::CountByDay_t totalCasesByDay = { 500, 500, 500, 500, 500, 500, 500 };
+    HypergeometricProbabilityLookup::CountByDay_t spatialCasesByDay = { 100, 100, 100, 100, 100, 100, 100 };
+    HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = { 100, 100, 100, 100, 100, 100, 100 };
+
+    // A single-sided scan rate never consults the opposite cumulative direction, so storing
+    // it doubles the largest cache for nothing. Both one-sided rates should cache about half
+    // of what the two-sided rate needs, for the same margins and the same support.
+    HypergeometricProbabilityLookup highRateLookup, lowRateLookup, bothTailsLookup;
+    highRateLookup.getStratifiedProbabilityFor(
+        Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 300
+    );
+    lowRateLookup.getStratifiedProbabilityFor(
+        Parameters::LOWRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 100
+    );
+    bothTailsLookup.getStratifiedProbabilityFor(
+        Parameters::HIGHORLOWRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 300
+    );
+
+    const size_t highRateBytes = highRateLookup.getProbabilityCacheStatistics().marginSetCacheBytes;
+    const size_t lowRateBytes = lowRateLookup.getProbabilityCacheStatistics().marginSetCacheBytes;
+    const size_t bothTailsBytes = bothTailsLookup.getProbabilityCacheStatistics().marginSetCacheBytes;
+    const size_t oneTailArrayBytes = 701U * sizeof(double);
+
+    BOOST_CHECK_EQUAL(highRateBytes, lowRateBytes);
+    BOOST_CHECK(bothTailsBytes >= highRateBytes + oneTailArrayBytes);
+}
+BOOST_AUTO_TEST_CASE( stratified_probability_agrees_across_scan_rates_storing_one_or_both_tails ) {
+    HypergeometricProbabilityLookup::CountByDay_t totalCasesByDay = { 10, 10, 10, 10, 10, 10, 10 };
+    HypergeometricProbabilityLookup::CountByDay_t spatialCasesByDay = { 5, 5, 5, 5, 5, 5, 5 };
+    HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = { 4, 4, 4, 4, 4, 4, 4 };
+
+    // Dropping the unread direction must not change any answer. The high-or-low rate stores
+    // both tails and picks by side of the expectation, so for an x above the mean it has to
+    // return exactly what the high rate returns from its single stored tail, and likewise
+    // below the mean against the low rate.
+    HypergeometricProbabilityLookup highRateLookup, lowRateLookup, bothTailsLookup;
+    double high = highRateLookup.getStratifiedProbabilityFor(
+        Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 20
+    );
+    double low = lowRateLookup.getStratifiedProbabilityFor(
+        Parameters::LOWRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 5
+    );
+    double bothHigh = bothTailsLookup.getStratifiedProbabilityFor(
+        Parameters::HIGHORLOWRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 20
+    );
+    double bothLow = bothTailsLookup.getStratifiedProbabilityFor(
+        Parameters::HIGHORLOWRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 5
+    );
+
+    BOOST_CHECK(high < 0.0);
+    BOOST_CHECK(low < 0.0);
+    BOOST_CHECK_EQUAL(high, bothHigh);
+    BOOST_CHECK_EQUAL(low, bothLow);
+}
+BOOST_AUTO_TEST_CASE( stratified_high_or_low_rate_covers_x_at_the_expected_value ) {
+    HypergeometricProbabilityLookup::CountByDay_t totalCasesByDay = { 10, 10, 10, 10, 10, 10, 10 };
+    HypergeometricProbabilityLookup::CountByDay_t spatialCasesByDay = { 5, 5, 5, 5, 5, 5, 5 };
+    HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = { 4, 4, 4, 4, 4, 4, 4 };
+
+    // Each day expects 5*4/10 = 2 cases exactly, so the stratified expectation is exactly
+    // 14.0 and x=14 lands precisely on it. Strict comparisons against the expectation
+    // selected neither tail for that x, so a legitimate cluster fell through the tail
+    // selection and was reported as unset. x at the mode has a large tail probability either
+    // way, so this was quietly discarding an entirely ordinary result.
+    HypergeometricProbabilityLookup bothTailsLookup;
+    double atExpectation = bothTailsLookup.getStratifiedProbabilityFor(
+        Parameters::HIGHORLOWRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 14
+    );
+    BOOST_CHECK(atExpectation != HypergeometricProbabilityLookup::PROBABILITY_UNSET);
+    BOOST_CHECK(atExpectation < 0.0);
+
+    HypergeometricProbabilityLookup::ProbabilityCacheStatistics statistics = bothTailsLookup.getProbabilityCacheStatistics();
+    BOOST_CHECK_EQUAL(statistics.invalidRequests, 0U);
+    BOOST_CHECK_EQUAL(statistics.outOfSupportRequests, 0U);
+
+    // A tie goes to the high tail, matching the x >= ceil(S*T/C) convention the scalar and
+    // dense-table paths use, and one below the expectation must still take the low tail.
+    HypergeometricProbabilityLookup highRateLookup, lowRateLookup;
+    double highRateAt14 = highRateLookup.getStratifiedProbabilityFor(
+        Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 14
+    );
+    double lowRateAt13 = lowRateLookup.getStratifiedProbabilityFor(
+        Parameters::LOWRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 13
+    );
+    double belowExpectation = bothTailsLookup.getStratifiedProbabilityFor(
+        Parameters::HIGHORLOWRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 13
+    );
+    BOOST_CHECK_EQUAL(atExpectation, highRateAt14);
+    BOOST_CHECK_EQUAL(belowExpectation, lowRateAt13);
+}
 BOOST_AUTO_TEST_CASE( stratified_probability_uses_positive_support_offsets ) {
     HypergeometricProbabilityLookup lookup;
     HypergeometricProbabilityLookup::CountByDay_t totalCasesByDay = { 10, 10, 10, 10, 10, 10, 10 };

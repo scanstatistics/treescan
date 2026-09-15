@@ -37,24 +37,66 @@ static std::string reportHypergeometricProbabilityCache(const HypergeometricProb
     else if (statistics.cacheType == HypergeometricProbabilityLookup::ProbabilityCacheStatistics::SCALAR_ON_DEMAND)
         cacheDescription = "Hypergeometric probability cache";
 
+    const bool isStratified =
+        statistics.cacheType == HypergeometricProbabilityLookup::ProbabilityCacheStatistics::STRATIFIED_DAY_OF_WEEK;
+
     std::stringstream buffer;
     buffer << "C=" << statistics.C << ", T=" << statistics.T << std::endl;
     buffer << cacheDescription << ": "
         << statistics.entries << " entries, "
-        //<< statistics.evaluatedMarginPairs << " margin pairs, "
-        //<< statistics.estimatedMaxCacheEntries << " estimated max entries, "
         << (static_cast<double>(statistics.estimatedMemoryBytes) / 1000000.0) << " MB, "
         << statistics.requests << " requests, "
         << statistics.cacheHits << " hits, "
         << statistics.cacheMisses << " misses, "
         << statistics.invalidRequests << " invalid, "
         << (cacheLookups ? static_cast<double>(statistics.cacheHits) / static_cast<double>(cacheLookups) : 0.0) << " hit rate, "
-        << statistics.tailEvaluations << " tail evaluations, "
-        << (statistics.tailEvaluations ? static_cast<double>(statistics.totalTailTerms) / static_cast<double>(statistics.tailEvaluations) : 0.0) << " avg tail terms, "
-        << statistics.maxTailTerms << " max tail terms"
-        << std::endl;
+        << statistics.tailEvaluations << " tail evaluations";
+    // Tail term counts belong to the scalar path, which sums one tail at a time. The
+    // stratified path convolves instead and never sets them, so printing them there is just
+    // two zeros that read as real measurements.
+    if (!isStratified)
+        buffer << ", "
+            << (statistics.tailEvaluations ? static_cast<double>(statistics.totalTailTerms) / static_cast<double>(statistics.tailEvaluations) : 0.0) << " avg tail terms, "
+            << statistics.maxTailTerms << " max tail terms";
+    buffer << std::endl;
 
-    if (statistics.cacheType == HypergeometricProbabilityLookup::ProbabilityCacheStatistics::STRATIFIED_DAY_OF_WEEK) {
+    // One mutex guards every cache tier, so it serializes all probability lookups. Mean hold
+    // time sets the ceiling on lookups per second that adding threads cannot pass; the
+    // contended share and total wait say how close the scan is running to it. Total wait is
+    // summed across threads, so it is thread-time lost and may exceed the wall clock.
+    if (statistics.lockAcquisitions) {
+        buffer << "Probability cache lock: "
+            << statistics.lockAcquisitions << " acquisitions, "
+            << statistics.lockContentions << " contended, "
+            << (static_cast<double>(statistics.lockContentions) / static_cast<double>(statistics.lockAcquisitions)) << " contended rate, "
+            << (static_cast<double>(statistics.lockWaitNanoseconds) / 1000000000.0) << " s total wait across threads, "
+            << (statistics.lockContentions ? static_cast<double>(statistics.lockWaitNanoseconds) / static_cast<double>(statistics.lockContentions) : 0.0) << " ns mean wait when contended, "
+            << statistics.maxLockWaitNanoseconds << " ns max wait, "
+            << (statistics.lockHoldSamples ? static_cast<double>(statistics.lockHoldNanoseconds) / static_cast<double>(statistics.lockHoldSamples) : 0.0) << " ns mean hold over "
+            << statistics.lockHoldSamples << " samples, "
+            << statistics.maxLockHoldNanoseconds << " ns max sampled hold"
+            << std::endl;
+    }
+
+    if (isStratified) {
+        const double toMB = 1.0 / 1000000.0;
+        buffer << "DOW cache memory: "
+            << (static_cast<double>(statistics.tailCacheBytes) * toMB) << " MB final tails, "
+            << (static_cast<double>(statistics.marginSetCacheBytes) * toMB) << " MB margin sets, "
+            << (static_cast<double>(statistics.dayPmfCacheBytes) * toMB) << " MB day PMFs"
+            << std::endl;
+
+        // Out of support and no distribution are the two conditions behind the invalid count
+        // above; out of support is expected and harmless. Clamped tails are not invalid -
+        // they returned the smallest representable probability because the true tail could
+        // not be held in a double - but they all tie at that floor and so cannot be ranked
+        // against each other.
+        buffer << "DOW tail outcomes: "
+            << statistics.underflowRequests << " clamped to smallest representable, "
+            << statistics.outOfSupportRequests << " out of support, "
+            << statistics.noDistributionRequests << " no distribution"
+            << std::endl;
+
         const size_t dayPmfCacheLookups = statistics.dayPmfCacheHits + statistics.dayPmfCacheMisses;
         buffer << "DOW PMF diagnostics: "
             << statistics.dayPmfRequests << " day PMF requests, "
@@ -73,6 +115,31 @@ static std::string reportHypergeometricProbabilityCache(const HypergeometricProb
             << (statistics.convolutionCount ? static_cast<double>(statistics.totalCombinedPmfSize) / static_cast<double>(statistics.convolutionCount) : 0.0) << " avg combined PMF size, "
             << statistics.maxCombinedPmfSize << " max combined PMF size"
             << std::endl;
+
+        // The two averages above are weighted by request and by convolution stage, so they
+        // describe what is being evaluated. These are weighted per cache entry and describe
+        // what is being stored, which is what the memory figures follow from. They run well
+        // above their request-weighted counterparts because common margins are small and
+        // rare margins are large.
+        buffer << "DOW cached sizes: "
+            << (statistics.dayPmfCacheEntries ? static_cast<double>(statistics.cachedDayPmfTerms) / static_cast<double>(statistics.dayPmfCacheEntries) : 0.0) << " avg terms per cached day PMF, "
+            << (statistics.uniqueStratifiedMarginSets ? static_cast<double>(statistics.cachedMarginSetTailTerms) / static_cast<double>(statistics.uniqueStratifiedMarginSets) : 0.0) << " avg terms per cached margin set"
+            << std::endl;
+
+        // A convolved PMF must sum to one. Read the worst deviation directly rather than
+        // against a fixed threshold: the floating-point noise floor rises with C, so what
+        // counts as acceptable is a judgment. Genuine mass loss would be orders of magnitude
+        // larger than the precision noise.
+        buffer << "DOW mass conservation: "
+            << statistics.massConservationChecks << " margin sets checked, "
+            << std::scientific << statistics.maxMassDeviation << " worst deviation, "
+            // Enough digits to actually resolve a mass a few parts per billion short of one;
+            // the default 6 renders every near-miss as an indistinguishable 1.000000e+00.
+            << std::setprecision(12) << statistics.minCombinedPmfMass << " smallest total mass"
+            << std::defaultfloat << std::setprecision(6);
+        if (!statistics.worstMassDeviationMargins.empty())
+            buffer << ", worst at " << statistics.worstMassDeviationMargins;
+        buffer << std::endl;
     }
 
     std::cout << buffer.str();
