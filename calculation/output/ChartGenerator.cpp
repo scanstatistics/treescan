@@ -84,6 +84,7 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
             var charts = {}; \n \
             var tech_support = '--tech-support-email--'; \n \
             $(document).ready(function () { \n \
+                const parameters = {dailydata: --daily-data--}; \n \
                 --charts--   \n\n \
             }); \n \
         </script> \n \
@@ -106,7 +107,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTHEADER = "\n \
                     exporting: {fallbackToExportServer: false, filename: 'cluster_graph', chartOptions: { plotOptions: { series: { showInLegend: false } } }, buttons: get_extended_export_buttons('Chart Options', showChartOptions)}, \n \
                     plotOptions: { column: { grouping: true, stacking: 'normal' }}, \n \
                     responsive: { rules: [{ condition: {  maxWidth: null }, chartOptions: { chart: { height: 400 }, subtitle: { text: null }, navigator: { enabled: false } } }] }, \n \
-                    tooltip: { crosshairs: true, shared: true, formatter: function(){var is_cluster = false;var has_observed = false;$.each(this.points, function(i, point) {if (point.series.options.id == 'cluster') {is_cluster = true;}if (point.series.options.id == 'obs') {has_observed = true;}});var s = '<b>'+ this.x +'</b>'; if (is_cluster) {s+= '<br/><b>Cluster Point</b>';}$.each(this.points,function(i, point){if (point.series.options.id == 'cluster'){if (!has_observed) {s += '<br/>Observed: '+ point.y;}} else {s += '<br/>'+ point.series.name +': '+ point.y;}});return s;}, }, \n \
+                    tooltip: { crosshairs: true, shared: true, formatter: function(){var is_cluster = false;var has_observed = false;$.each(this.points, function(i, point) {if (point.series.options.id == 'cluster') {is_cluster = true;}if (point.series.options.id == 'obs') {has_observed = true;}});const suffix=parameters.dailydata?`(${new Date(this.x).toLocaleDateString('en-US',{weekday:'long'})})`:'';var s=`<b>${this.x} ${suffix}</b>`; if (is_cluster) {s+= '<br/><b>Cluster Point</b>';}$.each(this.points,function(i, point){if (point.series.options.id == 'cluster'){if (!has_observed) {s += '<br/>Observed: '+ point.y;}} else {s += '<br/>'+ point.series.name +': '+ point.y;}});return s;}, }, \n \
                     legend: { enabled: false, backgroundColor: '#F5F5F5', verticalAlign: 'bottom', y: 20 }, \n \
                     xAxis: [{ categories: [--categories--], tickmarkPlacement: 'on', labels: { step: --step--, rotation: -45, align: 'right' }, tickInterval: --tickinterval-- }], \n \
                     yAxis: [{allowDecimals: false, title: { enabled: true, text: 'Number of Cases', style: { fontWeight: 'normal' } }, min: 0, showEmpty: false }--additional-yaxis--], \n \
@@ -206,6 +207,7 @@ const char * TemporalChartGenerator::TEMPLATE_CHARTSECTION = "\
                       <div class='options-row'>To zoom a portion of the chart, select and drag mouse within the chart. Hold down shift key to pan zoomed chart.</div> \n \
                     </div> \n \
                     --cluster-details-- \n \
+                    --cluster-details-dow-- \n \
                     </div> \n \
                     </div> \n \
                     <div class='hide-chart-options'><a href='#'>Close Chart Options</a></div> \n \
@@ -233,6 +235,26 @@ const char* TemporalChartGenerator::TEMPLATE_CLUSTERDETAILS = "\n \
                     <tr><th class='cluster-details-sub-header'>Inside</th><td>--inside-inside--</td><td>--outside-inside--</td></tr> \n \
                     <tr><th class='cluster-details-sub-header'>Outside</th><td>--inside-outside--</td><td>--outside-outside--</td></tr> \n \
                     <tr class='cluster-details-percentages'><th></th><td>--inside-percent--%</td><td>--outside-percent--%</td></tr> \n \
+                  </tbody> \n \
+                </table> \n \
+              </div> \n \
+            </div> \n";
+
+const char* TemporalChartGenerator::TEMPLATE_CLUSTERDETAILS_DOW = "\n \
+            <div class='col-md-6'> \n \
+              <h4 style='text-align:left;margin-bottom:5px;'>Node By Day-Of-Week Interaction Effect--node-byday-title-suffice--</h4> \n \
+              <div class='row' style='margin-left:10px;'> \n \
+                <table class='table table-condensed cluster-details' cellpadding='3' cellspacing='0'> \n \
+                  <thead> \n \
+                   <tr> \n \
+                     <th style='text-align:left;border-top:none;'></th> \n \
+                     <th class='cluster-details-sub-header'>Cluster Node</th> \n \
+                     <th class='cluster-details-sub-header'>All Nodes</th> \n \
+                     <th class='cluster-details-sub-header'>Ratio</th> \n \
+                    </tr> \n \
+                  </thead> \n \
+                  <tbody> \n \
+                  --node-byday-rows-- \n \
                   </tbody> \n \
                 </table> \n \
               </div> \n \
@@ -455,12 +477,30 @@ void TemporalChartGenerator::generateChart() const {
                     printString(buffer, "%.1f", static_cast<double>(caseTotals.get<1>()) / static_cast<double>(caseTotals.get<1>() + caseTotals.get<3>()) * 100.0)
                 );
                 templateReplace(chart_section, "--cluster-details--", cluster_details.str());
+
+                if (parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::DAY) {
+                    cluster_details.str("");
+                    cluster_details << TEMPLATE_CLUSTERDETAILS_DOW;
+                    std::stringstream day_rows;
+                    auto casesByDayOfWeek = getNodeCasesByDayOfWeek(cluster);
+                    for (auto& day : casesByDayOfWeek) {
+                        day_rows << "<tr><th class='cluster-details-sub-header'>" << day._shortname
+                            << "</th><td>" << printString(buffer, "%.1f", day._node_percent * 100.0) << "&#37; (" << day._node_count << ")</td><td>"
+                            << printString(buffer, "%.1f", day._all_node_percent * 100.0) << "&#37; (" << day._all_node_count << ")</td><td>"
+                            << printString(buffer, "%.1f", day._all_node_percent ? day._node_percent / day._all_node_percent : 0.0) << "</td></tr>";
+                    }
+                    templateReplace(cluster_details, "--node-byday-rows--", day_rows.str());
+                    templateReplace(cluster_details, "--node-byday-title-suffice--", parameters.isPerformingDayOfWeekAdjustment() ? "" : " (not applied)");
+                    templateReplace(chart_section, "--cluster-details-dow--", cluster_details.str());
+                } else
+                    templateReplace(chart_section, "--cluster-details-dow--", "");
             } else {
                 templateReplace(chart_section, "--cluster-details--", "");
             }
             // add section to collection of sections
             cluster_sections << chart_section.str();
         }
+        templateReplace(html, "--daily-data--", parameters.getDatePrecisionType() == DataTimeRange::DatePrecisionType::DAY ? "true": "false");
         templateReplace(html, "--charts--", charts_javascript.str());
 		templateReplace(html, "--graph-list-options--", chart_select_options.str());
 		if (graphClusters.size()) {
@@ -493,11 +533,11 @@ void TemporalChartGenerator::generateChart() const {
       Inside Cluster Window, Outside Cluster Node
       Outside Cluster Window, Outside Cluster Node */
 TemporalChartGenerator::CutCaseTotals_t TemporalChartGenerator::getCutCaseTotals(const CutStructure& cluster) const {
+    const NodeStructure& thisNode(*(_scanner.getNodes()[cluster.getID()]));
     int intervals = static_cast<int>(_scanner.getParameters().getDataTimeRangeSet().getTotalDaysAcrossRangeSets()) + 1;
     CutCaseTotals_t caseTotals(0, 0, 0, 0);
     for (int i = 0; i < intervals; ++i) {
         // calculate the expected and observed for this interval
-        const NodeStructure& thisNode(*(_scanner.getNodes()[cluster.getID()]));
         int intervalClusterObserved = (i == intervals - 1 ? thisNode.getBrC_C()[i] : thisNode.getBrC_C()[i] - thisNode.getBrC_C()[i + 1]);
         int intervalTotalCases = (i == intervals - 1 ? _ptcases[i] : _ptcases[i] - _ptcases[i + 1]);
         if (cluster.getStartIdx() <= i && i <= cluster.getEndIdx()) {
@@ -509,6 +549,37 @@ TemporalChartGenerator::CutCaseTotals_t TemporalChartGenerator::getCutCaseTotals
         }
     }
     return caseTotals;
+}
+
+/* Calculates day of week metrics for cluster node, and entrie data set. **/
+TemporalChartGenerator::NodeCasesDayTally_t TemporalChartGenerator::getNodeCasesByDayOfWeek(const CutStructure& cluster) const {
+    auto& params = _scanner.getParameters();
+    const NodeStructure& thisNode(*(_scanner.getNodes()[cluster.getID()]));
+    NodeCasesDayTally_t nodeCases(7);
+    int intervals = static_cast<int>(params.getDataTimeRangeSet().getTotalDaysAcrossRangeSets()) + 1;
+    for (int i = 0; i < intervals; ++i) {
+        // calculate the expected and observed for this interval
+        int intervalClusterObserved = (i == intervals - 1 ? thisNode.getBrC_C()[i] : thisNode.getBrC_C()[i] - thisNode.getBrC_C()[i + 1]);
+        int intervalTotalCases = (i == intervals - 1 ? _ptcases[i] : _ptcases[i] - _ptcases[i + 1]);
+        nodeCases[i % 7]._node_count += intervalClusterObserved;
+        nodeCases[i % 7]._all_node_count += intervalTotalCases;
+    }
+    // assign day percentage for cluster node and all nodes.
+    double totalCasesInStudyPeriod = static_cast<double>(_scanner.getTotalC());
+    double totalNodeCasesInStudyPeriod = static_cast<double>(thisNode.getBrC());
+    for (size_t d = 0; d < nodeCases.size(); ++d) {
+        nodeCases[d]._node_percent = static_cast<double>(nodeCases[d]._node_count) / totalNodeCasesInStudyPeriod;
+        nodeCases[d]._all_node_percent = static_cast<double>(nodeCases[d]._all_node_count) / totalCasesInStudyPeriod;
+        auto info = params.getDataTimeRangeSet().getDataTimeRangeSets().front().rangeIdxToDayOfWeekInfo(
+            d - _scanner.getZeroTranslationAdditive(), params.getDatePrecisionType()
+        );
+        nodeCases[d]._ordinal = info.first == 0 ? 6 : info.first - 1; // start with Monday, end with Sunday
+        nodeCases[d]._shortname = info.second;
+    }
+    std::sort(nodeCases.begin(), nodeCases.end(), 
+        [](const DayTally& a, const DayTally& b) { return a._ordinal < b._ordinal; }
+    );
+    return nodeCases;
 }
 
 /** Calculates the best fit graph groupings for this cluster. */
