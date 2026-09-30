@@ -88,7 +88,7 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
                 --charts--   \n\n \
             }); \n \
         </script> \n \
-        <script type='text/javascript' src='--resource-path--html-results/treescan-temporal.1.1.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--html-results/treescan-temporal.1.2.js'></script> \n \
     </head> \n \
     <body> \n \
         <!--[if lt IE 9]> \n \
