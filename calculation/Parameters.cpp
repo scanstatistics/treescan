@@ -10,7 +10,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-const int Parameters::giNumParameters = 87;
+const int Parameters::giNumParameters = 89;
 
 Parameters::cut_maps_t Parameters::getCutTypeMap() {
    cut_map_t cut_type_map_abbr = {{"S", Parameters::SIMPLE}, {"P", Parameters::PAIRS}, {"T", Parameters::TRIPLETS}, {"O", Parameters::ORDINAL}};
@@ -299,10 +299,8 @@ void Parameters::copy(const Parameters &rhs) {
     _early_term_threshold = rhs._early_term_threshold;
     _report_data_as_percentage = rhs._report_data_as_percentage;
     _results_title = rhs._results_title;
-
-    _stp_algorithm_type = rhs._stp_algorithm_type;
-    _stp_as_hypergeometric = rhs._stp_as_hypergeometric;
-    _stp_dense_threshold = rhs._stp_dense_threshold;
+    _node_time_model_type = rhs._node_time_model_type;
+    _memoized_hypergeometric = rhs._memoized_hypergeometric;
 }
 
 /** Returns whether early termination option is performed. */
@@ -565,8 +563,8 @@ void Parameters::setAsDefaulted() {
     _pvalue_reporting_type = STANDARD_PVALUE;
     _early_term_threshold = 50;
 
-    _stp_algorithm_type = STP_POISSON;
-    _stp_as_hypergeometric = false;
+    _node_time_model_type = POISSON_APPROXIMATION;
+    _memoized_hypergeometric = true;
 }
 
 /** Sets output data file name.
@@ -596,6 +594,13 @@ void Parameters::setPowerEvaluationAltHypothesisFilename(const char * s, bool bC
   if (bCorrectForRelativePath) assignMissingPath(_power_alt_hypothesis_filename, false);
 }
 
+/** Sets node-time probability model type. Throws exception if out of range. */
+void Parameters::setNodeTimeModelType(NodeTimeModelType e) {
+    if (e < POISSON_APPROXIMATION || e > HYPERGEOMETRIC_DISTRIBUTION)
+        throw prg_error("Enumeration %d out of range [%d,%d].", __func__, e, POISSON_APPROXIMATION, HYPERGEOMETRIC_DISTRIBUTION);
+    _node_time_model_type = e;
+}
+
 /** Sets p-value reporting type. Throws exception if out of range. */
 void Parameters::setPValueReportingType(PValueReportingType e) {
     if (e < STANDARD_PVALUE || e > TERMINATION_PVALUE)
@@ -615,24 +620,6 @@ void Parameters::setTemporalGraphReportType(TemporalGraphReportType e) {
     if (e < MLC_ONLY || e > SIGNIFICANT_ONLY)
         throw prg_error("Enumeration %d out of range [%d,%d].", "setTemporalGraphReportType()", e, MLC_ONLY, SIGNIFICANT_ONLY);
     _temporal_graph_report_type = e;
-}
-
-/** Sets the STP algorithm type. */
-void Parameters::setSTPAlgorithmType(STPAlgorithmType e) {
-	if (!(_scan_type == TREETIME && _conditional_type == NODEANDTIME)) return; // skip if not tree-temporal, conditional node-and-time analysis
-    _stp_algorithm_type = e < STP_DERIVED || e > STP_POISSON ? STP_DERIVED : e;
-    // Check that setting agrees with other parameter settings. Later we'll do follow-up validation based on read data.
-    switch (_stp_algorithm_type) {
-    case STP_DERIVED:
-        _stp_as_hypergeometric = true;
-        break;
-    case STP_HYPERGEOMETRIC:
-        _stp_as_hypergeometric = true;
-        break;
-    case STP_POISSON:
-        _stp_as_hypergeometric = false;
-        break;
-    }
 }
 
 void Parameters::setInputSimulationsFilename(const char * s, bool bCorrectForRelativePath) {

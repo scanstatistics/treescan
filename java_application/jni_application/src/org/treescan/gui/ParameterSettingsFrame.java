@@ -601,6 +601,7 @@ public class ParameterSettingsFrame extends AbstractParameterSettingsFrame {
         _advancedParametersSetting.enableAdvancedInputsSettings(!timeOnly);
         _advancedParametersSetting.enableTemporalOptionGroups(treeAndTime || timeOnly);
         _advancedParametersSetting.enableAdjustmentsOptions();
+        _advancedParametersSetting.enableTimeNodeModelGroup();
         _advancedParametersSetting.enablePowerEvaluationsGroup();
         _advancedParametersSetting.enableRestrictedLevelsGroup();
         _advancedParametersSetting.enableRestrictNodesEvaluatedGroup();

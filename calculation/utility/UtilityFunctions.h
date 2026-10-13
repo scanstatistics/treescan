@@ -43,7 +43,7 @@ namespace TreeScan {
 
 double                          getNumCombinations(unsigned int total, unsigned int choose);
 unsigned int                    GetNumSystemProcessors();
-void                            ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection);
+void                            ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection, bool alwaysReport=false);
 boost::posix_time::ptime        GetCurrentTime_HighResolution();
 bool                            validateFileAccess(const std::string& filename, bool bWriteEnable=false, bool useTempFile=false);
 std::string                   & trimString(std::string &source, const char * t=" ");

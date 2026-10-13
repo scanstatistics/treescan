@@ -271,32 +271,56 @@ namespace {
     descheduled while holding the lock, the hold times include any time it spent off a
     processor - on a fully subscribed machine that, not the work inside, is what produces the
     occasional hold of a hundred microseconds or more. */
-HypergeometricProbabilityLookup::CacheLock::CacheLock(const HypergeometricProbabilityLookup& owner) : _owner(owner) {
-    if (!_owner._probability_cache_mutex.try_lock()) {
+HypergeometricProbabilityLookup::CacheLock::CacheLock(const CacheShard& shard) : _shard(shard) {
+    StratifiedCounters& counters = _shard.counters;
+    if (!_shard.mutex.try_lock()) {
         const std::chrono::steady_clock::time_point waitFrom = std::chrono::steady_clock::now();
-        _owner._probability_cache_mutex.lock();
+        _shard.mutex.lock();
         const unsigned long long waited = static_cast<unsigned long long>(
             std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - waitFrom).count());
-        ++_owner._cache_lock_contentions;
-        _owner._cache_lock_wait_nanoseconds += waited;
-        _owner._cache_lock_max_wait_nanoseconds = std::max(_owner._cache_lock_max_wait_nanoseconds, waited);
+        ++counters.lockContentions;
+        counters.lockWaitNanoseconds += waited;
+        counters.maxLockWaitNanoseconds = std::max(counters.maxLockWaitNanoseconds, waited);
     }
-    // Safe to touch the counters unsynchronized only because the mutex is now held.
-    ++_owner._cache_lock_acquisitions;
-    _sample_hold_time = (_owner._cache_lock_acquisitions % CACHE_LOCK_HOLD_SAMPLE_INTERVAL) == 0;
+    // Safe to touch the counters unsynchronized only because this shard's mutex is now held.
+    ++counters.lockAcquisitions;
+    _sample_hold_time = (counters.lockAcquisitions % CACHE_LOCK_HOLD_SAMPLE_INTERVAL) == 0;
     if (_sample_hold_time) _held_from = std::chrono::steady_clock::now();
 }
 
-/** Releases the cache mutex, closing out a hold-time sample when this acquisition was one. */
+/** Releases the shard mutex, closing out a hold-time sample when this acquisition was one. */
 HypergeometricProbabilityLookup::CacheLock::~CacheLock() {
     if (_sample_hold_time) {
+        StratifiedCounters& counters = _shard.counters;
         const unsigned long long held = static_cast<unsigned long long>(
             std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - _held_from).count());
-        ++_owner._cache_lock_hold_samples;
-        _owner._cache_lock_hold_nanoseconds += held;
-        _owner._cache_lock_max_hold_nanoseconds = std::max(_owner._cache_lock_max_hold_nanoseconds, held);
+        ++counters.lockHoldSamples;
+        counters.lockHoldNanoseconds += held;
+        counters.maxLockHoldNanoseconds = std::max(counters.maxLockHoldNanoseconds, held);
     }
-    _owner._probability_cache_mutex.unlock();
+    _shard.mutex.unlock();
+}
+
+/** Sizes the shard array from the thread count the user asked for.
+
+    Collision probability on any one shard falls roughly as utilization divided by the shard
+    count, so eight shards per thread keeps it well under one percent at any thread count
+    while the array stays small - each shard is a mutex, three empty maps and a block of
+    counters, and the maps allocate their buckets lazily. A power of two so the index is a
+    shift of a mixed hash rather than a division. The floor keeps single-threaded runs from
+    degenerating to one lock; the ceiling bounds the fixed cost on very large machines. */
+void HypergeometricProbabilityLookup::allocateShards(unsigned int threads) {
+    size_t requested = static_cast<size_t>(std::max(1u, threads)) * 8U;
+    size_t count = 64;
+    while (count < requested && count < 1024) count <<= 1;
+
+    _shard_count = count;
+    unsigned int log2Count = 0;
+    while ((static_cast<size_t>(1) << log2Count) < count) ++log2Count;
+    // 64, not sizeof(size_t)*8: shardIndexFor mixes in a fixed 64-bit type so that the index
+    // is correct whether size_t is 32 or 64 bits wide.
+    _shard_shift = 64U - log2Count;
+    _shards = std::unique_ptr<CacheShard[]>(new CacheShard[count]);
 }
 
 /** Hashes the four values that uniquely identify an on-demand probability result.
@@ -371,85 +395,110 @@ size_t HypergeometricProbabilityLookup::DayPmfMarginKeyHash::operator()(const Da
     node and allocator overhead are implementation-dependent; it includes the map
     object, bucket array, stored key/value payload, and a small per-node pointer estimate. */
 HypergeometricProbabilityLookup::ProbabilityCacheStatistics HypergeometricProbabilityLookup::getProbabilityCacheStatistics() const {
-    CacheLock lock(*this);
-
     ProbabilityCacheStatistics statistics;
     statistics.C = _total_cases;
     statistics.T = _case_window_count;
-    // Contention belongs to the mutex, not to either cache, so it is reported for both paths.
-    statistics.lockAcquisitions = _cache_lock_acquisitions;
-    statistics.lockContentions = _cache_lock_contentions;
-    statistics.lockWaitNanoseconds = _cache_lock_wait_nanoseconds;
-    statistics.maxLockWaitNanoseconds = _cache_lock_max_wait_nanoseconds;
-    statistics.lockHoldSamples = _cache_lock_hold_samples;
-    statistics.lockHoldNanoseconds = _cache_lock_hold_nanoseconds;
-    statistics.maxLockHoldNanoseconds = _cache_lock_max_hold_nanoseconds;
+    statistics.shards = _shard_count;
 
-    const bool hasStratifiedActivity = _stratified_probability_cache.size() ||
-        _stratified_probability_cache_hits || _stratified_probability_cache_misses ||
-        _stratified_probability_cache_invalid_requests || _stratified_probability_cache_tail_evaluations;
-    const bool hasScalarActivity = _probability_cache.size() ||
-        _probability_cache_hits || _probability_cache_misses ||
-        _probability_cache_invalid_requests || _probability_cache_tail_evaluations;
+    // Each shard is locked only long enough to read its own state. The totals are therefore
+    // a composite of moments rather than one instant, which is fine for diagnostics and is
+    // the price of not stopping every thread to take a consistent snapshot.
+    double minCombinedPmfMass = std::numeric_limits<double>::infinity();
+    for (size_t index = 0; index < _shard_count; ++index) {
+        const CacheShard& shard = _shards[index];
+        // Deliberately not a CacheLock: reading the statistics would otherwise add one
+        // acquisition per shard to the very counters being reported.
+        boost::mutex::scoped_lock lock(shard.mutex);
+        const StratifiedCounters& counters = shard.counters;
 
-    if (hasStratifiedActivity && !hasScalarActivity) {
-        statistics.cacheType = ProbabilityCacheStatistics::STRATIFIED_DAY_OF_WEEK;
-        statistics.entries = _stratified_probability_cache.size();
+        statistics.entries += shard.tailCache.size();
+        statistics.uniqueStratifiedMarginSets += shard.marginSetCache.size();
+        statistics.dayPmfCacheEntries += shard.dayPmfCache.size();
+
         // Tracked per tier because they scale differently and the totals alone hide which
         // one is growing. Tail arrays and day PMFs are heap allocated, so sizeof(value_type)
         // accounts for the vector objects but none of the doubles they own; that payload
         // dominates the margin set cache and has to be walked to be counted.
-        statistics.tailCacheBytes = sizeof(_stratified_probability_cache) +
-            _stratified_probability_cache.bucket_count() * sizeof(void*) +
-            _stratified_probability_cache.size() * (sizeof(StratifiedProbabilityCache_t::value_type) + 2U * sizeof(void*));
-        statistics.marginSetCacheBytes = sizeof(_stratified_margin_set_cache) +
-            _stratified_margin_set_cache.bucket_count() * sizeof(void*);
-        for (const StratifiedMarginSetCache_t::value_type& cachedTails : _stratified_margin_set_cache) {
+        statistics.tailCacheBytes += sizeof(shard.tailCache) +
+            shard.tailCache.bucket_count() * sizeof(void*) +
+            shard.tailCache.size() * (sizeof(StratifiedProbabilityCache_t::value_type) + 2U * sizeof(void*));
+        statistics.marginSetCacheBytes += sizeof(shard.marginSetCache) +
+            shard.marginSetCache.bucket_count() * sizeof(void*);
+        for (const StratifiedMarginSetCache_t::value_type& cachedTails : shard.marginSetCache) {
             const size_t tailTerms = cachedTails.second.lowerTailProbabilities.capacity() +
                                      cachedTails.second.upperTailProbabilities.capacity();
             statistics.cachedMarginSetTailTerms += tailTerms;
             statistics.marginSetCacheBytes += sizeof(StratifiedMarginSetCache_t::value_type) +
                 2U * sizeof(void*) + tailTerms * sizeof(double);
         }
-        statistics.dayPmfCacheBytes = sizeof(_stratified_day_pmf_cache) +
-            _stratified_day_pmf_cache.bucket_count() * sizeof(void*);
-        for (const DayPmfCache_t::value_type& cachedPmf : _stratified_day_pmf_cache) {
+        statistics.dayPmfCacheBytes += sizeof(shard.dayPmfCache) +
+            shard.dayPmfCache.bucket_count() * sizeof(void*);
+        for (const DayPmfCache_t::value_type& cachedPmf : shard.dayPmfCache) {
             statistics.cachedDayPmfTerms += cachedPmf.second.probabilities.capacity();
             statistics.dayPmfCacheBytes += sizeof(DayPmfCache_t::value_type) + 2U * sizeof(void*) +
                 cachedPmf.second.probabilities.capacity() * sizeof(double);
         }
-        statistics.estimatedMemoryBytes = statistics.tailCacheBytes + statistics.marginSetCacheBytes + statistics.dayPmfCacheBytes;
-        statistics.cacheHits = _stratified_probability_cache_hits;
-        statistics.cacheMisses = _stratified_probability_cache_misses;
-        statistics.invalidRequests = _stratified_probability_cache_invalid_requests;
-        statistics.outOfSupportRequests = _stratified_probability_cache_out_of_support_requests;
-        statistics.underflowRequests = _stratified_probability_cache_underflow_requests;
-        statistics.noDistributionRequests = _stratified_probability_cache_no_distribution_requests;
+
+        statistics.cacheHits += counters.probabilityCacheHits;
+        statistics.cacheMisses += counters.probabilityCacheMisses;
+        statistics.invalidRequests += counters.invalidRequests;
+        statistics.outOfSupportRequests += counters.outOfSupportRequests;
+        statistics.underflowRequests += counters.underflowRequests;
+        statistics.noDistributionRequests += counters.noDistributionRequests;
+        statistics.tailEvaluations += counters.tailEvaluations;
+        statistics.stratifiedMarginSetReuseOpportunities += counters.marginSetReuseOpportunities;
+        statistics.dayPmfRequests += counters.dayPmfRequests;
+        statistics.dayPmfCacheHits += counters.dayPmfCacheHits;
+        statistics.dayPmfCacheMisses += counters.dayPmfCacheMisses;
+        statistics.dayPmfReuseOpportunities += counters.dayPmfReuseOpportunities;
+        statistics.totalDayPmfTerms += counters.dayPmfTotalTerms;
+        statistics.maxDayPmfTerms = std::max(statistics.maxDayPmfTerms, counters.dayPmfMaxTerms);
+        statistics.convolutionCount += counters.convolutionCount;
+        statistics.totalConvolutionInputTerms += counters.convolutionInputTerms;
+        statistics.totalCombinedPmfSize += counters.combinedPmfTotalSize;
+        statistics.maxCombinedPmfSize = std::max(statistics.maxCombinedPmfSize, counters.combinedPmfMaxSize);
+        statistics.massConservationChecks += counters.massConservationChecks;
+        if (counters.massConservationChecks)
+            minCombinedPmfMass = std::min(minCombinedPmfMass, counters.minCombinedPmfMass);
+        // The worst deviation and the margins that produced it have to travel together.
+        if (counters.maxMassDeviation > statistics.maxMassDeviation) {
+            statistics.maxMassDeviation = counters.maxMassDeviation;
+            statistics.worstMassDeviationMargins = counters.worstMassDeviationMargins;
+        }
+        statistics.lockAcquisitions += counters.lockAcquisitions;
+        statistics.lockContentions += counters.lockContentions;
+        statistics.lockWaitNanoseconds += counters.lockWaitNanoseconds;
+        statistics.maxLockWaitNanoseconds = std::max(statistics.maxLockWaitNanoseconds, counters.maxLockWaitNanoseconds);
+        statistics.lockHoldSamples += counters.lockHoldSamples;
+        statistics.lockHoldNanoseconds += counters.lockHoldNanoseconds;
+        statistics.maxLockHoldNanoseconds = std::max(statistics.maxLockHoldNanoseconds, counters.maxLockHoldNanoseconds);
+        statistics.maxShardAcquisitions = std::max(statistics.maxShardAcquisitions, counters.lockAcquisitions);
+    }
+    statistics.uniqueDayPmfMargins = statistics.dayPmfCacheEntries;
+    statistics.estimatedMemoryBytes = statistics.tailCacheBytes + statistics.marginSetCacheBytes + statistics.dayPmfCacheBytes;
+    // Leave the minimum mass at its default rather than reporting infinity when nothing
+    // has been convolved yet.
+    if (statistics.massConservationChecks) statistics.minCombinedPmfMass = minCombinedPmfMass;
+
+    const bool hasStratifiedActivity = statistics.entries || statistics.cacheHits ||
+        statistics.cacheMisses || statistics.invalidRequests || statistics.tailEvaluations;
+
+    boost::mutex::scoped_lock scalarLock(_probability_cache_mutex);
+    const bool hasScalarActivity = _probability_cache.size() ||
+        _probability_cache_hits || _probability_cache_misses ||
+        _probability_cache_invalid_requests || _probability_cache_tail_evaluations;
+
+    if (hasStratifiedActivity && !hasScalarActivity) {
+        statistics.cacheType = ProbabilityCacheStatistics::STRATIFIED_DAY_OF_WEEK;
         statistics.requests = statistics.cacheHits + statistics.cacheMisses;
-        statistics.tailEvaluations = _stratified_probability_cache_tail_evaluations;
-        statistics.dayPmfRequests = _stratified_day_pmf_requests;
-        statistics.dayPmfCacheEntries = _stratified_day_pmf_cache.size();
-        statistics.dayPmfCacheHits = _stratified_day_pmf_cache_hits;
-        statistics.dayPmfCacheMisses = _stratified_day_pmf_cache_misses;
-        statistics.uniqueDayPmfMargins = _stratified_day_pmf_cache.size();
-        statistics.dayPmfReuseOpportunities = _stratified_day_pmf_reuse_opportunities;
-        statistics.uniqueStratifiedMarginSets = _stratified_margin_set_cache.size();
-        statistics.stratifiedMarginSetReuseOpportunities = _stratified_margin_set_reuse_opportunities;
-        statistics.totalDayPmfTerms = _stratified_day_pmf_total_terms;
-        statistics.maxDayPmfTerms = _stratified_day_pmf_max_terms;
-        statistics.convolutionCount = _stratified_convolution_count;
-        statistics.totalConvolutionInputTerms = _stratified_convolution_input_terms;
-        statistics.totalCombinedPmfSize = _stratified_combined_pmf_total_size;
-        statistics.maxCombinedPmfSize = _stratified_combined_pmf_max_size;
-        statistics.massConservationChecks = _stratified_mass_conservation_checks;
-        statistics.maxMassDeviation = _stratified_max_mass_deviation;
-        // Leave the minimum mass at its default rather than reporting infinity when nothing
-        // has been convolved yet.
-        if (_stratified_mass_conservation_checks) statistics.minCombinedPmfMass = _stratified_min_combined_pmf_mass;
-        statistics.worstMassDeviationMargins = _stratified_worst_mass_deviation_margins;
         return statistics;
     }
 
+    // The scalar path has its own unsharded mutex and its own counters; reset whatever the
+    // shard walk accumulated so the scalar report is not a mixture of the two.
+    statistics = ProbabilityCacheStatistics();
+    statistics.C = _total_cases;
+    statistics.T = _case_window_count;
     if (hasScalarActivity) statistics.cacheType = ProbabilityCacheStatistics::SCALAR_ON_DEMAND;
     statistics.entries = _probability_cache.size();
     statistics.estimatedMemoryBytes = sizeof(_probability_cache) +
@@ -474,7 +523,7 @@ HypergeometricProbabilityLookup::ProbabilityCacheStatistics HypergeometricProbab
     High-or-low chooses the side of the expected value S*T/C. */
 double HypergeometricProbabilityLookup::getOnDemandProbabilityFor(Parameters::ScanRateType scanrate, count_t T, count_t S, count_t x) const {
     if (!_total_cases || S > _total_cases || T > _total_cases) {
-        CacheLock lock(*this);
+        boost::mutex::scoped_lock lock(_probability_cache_mutex);
         ++_probability_cache_invalid_requests;
         return PROBABILITY_UNSET;
     }
@@ -482,14 +531,14 @@ double HypergeometricProbabilityLookup::getOnDemandProbabilityFor(Parameters::Sc
     count_t min = std::max(static_cast<count_t>(0), S + T - _total_cases);
     count_t max = std::min(S, T);
     if (x < min || x > max) {
-        CacheLock lock(*this);
+        boost::mutex::scoped_lock lock(_probability_cache_mutex);
         ++_probability_cache_invalid_requests;
         return PROBABILITY_UNSET;
     }
 
     ProbabilityKey key = { scanrate, T, S, x };
     {   // Check existence in a critical section.
-        CacheLock lock(*this);
+        boost::mutex::scoped_lock lock(_probability_cache_mutex);
         auto found = _probability_cache.find(key);
         if (found != _probability_cache.end()) {
             ++_probability_cache_hits;
@@ -524,14 +573,14 @@ double HypergeometricProbabilityLookup::getOnDemandProbabilityFor(Parameters::Sc
         tailTerms = static_cast<size_t>(x - min + 1);
         logTail = logSumExpHypergeometricTail(_total_cases, S, T, min, x);
     } else {
-        CacheLock lock(*this);
+        boost::mutex::scoped_lock lock(_probability_cache_mutex);
         ++_probability_cache_invalid_requests;
         return PROBABILITY_UNSET;
     }
 
     double probability = negativeProbabilityFromLogTail(logTail);
     {   // Add to cache in a critical section and record the miss-side work.
-        CacheLock lock(*this);
+        boost::mutex::scoped_lock lock(_probability_cache_mutex);
         _probability_cache.emplace(key, probability);
         ++_probability_cache_tail_evaluations;
         _probability_cache_total_tail_terms += tailTerms;
@@ -541,17 +590,19 @@ double HypergeometricProbabilityLookup::getOnDemandProbabilityFor(Parameters::Sc
 }
 
 /** Initializes the hypergeometric lookup machinery for a scan.
-    Small C: precompute dense negative tails for every evaluated S and T.
-    Large C: skip the dense table and memoize individual tail probabilities.
+    Option 1: precompute dense negative tails for every evaluated S and T.
+    :option 2 skip the dense table and memoize individual tail probabilities.
 
     The dense table still computes cumulative tails in log-space. We only convert
     to negative probability when storing the finished tail for a particular x. */
-void HypergeometricProbabilityLookup::calculateHG(Parameters::ScanRateType scanrate, const std::set<count_t>& caseWindows, count_t C, int threshold) {
+void HypergeometricProbabilityLookup::calculateHG(Parameters::ScanRateType scanrate, const std::set<count_t>& caseWindows, count_t C, bool use_lookup_table, unsigned int threads) {
+    // Before clear(), which walks the shards that this allocates.++
+    allocateShards(threads);
     clear();
     _total_cases = C;
     _case_window_count = caseWindows.size();
     _scanrate = scanrate;
-    _use_lookup_table = C <= threshold;
+    _use_lookup_table = use_lookup_table;
     if (!_use_lookup_table) {
         std::cout << "Using memoized on-demand Hypergeometric probabilities for C=" << C << ", T=" << caseWindows.size() << std::endl;
         return;
@@ -636,44 +687,50 @@ double HypergeometricProbabilityLookup::getStratifiedProbabilityFor(
     //std::cout << "key=" << key.toString() << std::endl;
     StratifiedMarginSetKey marginSetKey = { scanrate, totalCasesByDay, spatialCasesByDay, windowCasesByDay };
     //std::cout << "marginSetKey=" << marginSetKey.toString() << std::endl;
+    // Tier 1 and tier 2 share a shard because both are keyed on these margins, so the whole
+    // lookup below stays a single lock acquisition. The per-day PMF lookups further down take
+    // a different shard's lock, which is safe only because that lock is never held at the same
+    // time as this one. Nesting two shard locks would make deadlock possible; do not.
+    CacheShard& marginShard = shardForMargins(marginSetKey);
     // Both paths that evaluate a tail classify the result the same way. Only the two
     // conditions that yield no probability count as invalid; a clamped underflow is a usable
-    // answer and is tracked separately. Callers must already hold _probability_cache_mutex.
-    auto recordTailOutcome = [this](TailOutcome outcome) {
+    // answer and is tracked separately. Callers must already hold the shard's mutex.
+    auto recordTailOutcome = [&marginShard](TailOutcome outcome) {
+        StratifiedCounters& counters = marginShard.counters;
         switch (outcome) {
             case TailOutcome::VALID:
                 break;
             case TailOutcome::UNDERFLOWED:
-                ++_stratified_probability_cache_underflow_requests;
+                ++counters.underflowRequests;
                 break;
             case TailOutcome::OUT_OF_SUPPORT:
-                ++_stratified_probability_cache_out_of_support_requests;
-                ++_stratified_probability_cache_invalid_requests;
+                ++counters.outOfSupportRequests;
+                ++counters.invalidRequests;
                 break;
             default:
-                ++_stratified_probability_cache_no_distribution_requests;
-                ++_stratified_probability_cache_invalid_requests;
+                ++counters.noDistributionRequests;
+                ++counters.invalidRequests;
                 break;
         }
     };
     {
-        CacheLock lock(*this);
-        auto found = _stratified_probability_cache.find(key);
-        if (found != _stratified_probability_cache.end()) {
-            ++_stratified_probability_cache_hits;
+        CacheLock lock(marginShard);
+        auto found = marginShard.tailCache.find(key);
+        if (found != marginShard.tailCache.end()) {
+            ++marginShard.counters.probabilityCacheHits;
             return found->second;
         }
-        ++_stratified_probability_cache_misses;
+        ++marginShard.counters.probabilityCacheMisses;
 
-        auto foundTails = _stratified_margin_set_cache.find(marginSetKey);
-        if (foundTails != _stratified_margin_set_cache.end()) {
-            ++_stratified_margin_set_reuse_opportunities;
+        auto foundTails = marginShard.marginSetCache.find(marginSetKey);
+        if (foundTails != marginShard.marginSetCache.end()) {
+            ++marginShard.counters.marginSetReuseOpportunities;
             TailOutcome outcome = TailOutcome::NO_DISTRIBUTION;
             double probability = getProbabilityFromTailProbabilities(scanrate, foundTails->second, x, outcome);
             recordTailOutcome(outcome);
             if (probability != PROBABILITY_UNSET) {
-                _stratified_probability_cache.emplace(key, probability);
-                ++_stratified_probability_cache_tail_evaluations;
+                marginShard.tailCache.emplace(key, probability);
+                ++marginShard.counters.tailEvaluations;
             }
             return probability;
         }
@@ -705,17 +762,18 @@ double HypergeometricProbabilityLookup::getStratifiedProbabilityFor(
         // lock is released. Copying instead would put a multi-kilobyte memcpy plus an
         // allocation inside the critical section on every cache hit, and this cache is hit
         // over a million times per scan.
+        CacheShard& dayShard = shardForDayMargins(dayPmfKey);
         const OffsetPmf* cachedDayPmf = nullptr;
         {
-            CacheLock lock(*this);
-            ++_stratified_day_pmf_requests;
-            auto found = _stratified_day_pmf_cache.find(dayPmfKey);
-            if (found != _stratified_day_pmf_cache.end()) {
-                ++_stratified_day_pmf_cache_hits;
-                ++_stratified_day_pmf_reuse_opportunities;
+            CacheLock lock(dayShard);
+            ++dayShard.counters.dayPmfRequests;
+            auto found = dayShard.dayPmfCache.find(dayPmfKey);
+            if (found != dayShard.dayPmfCache.end()) {
+                ++dayShard.counters.dayPmfCacheHits;
+                ++dayShard.counters.dayPmfReuseOpportunities;
                 cachedDayPmf = &found->second;
             } else {
-                ++_stratified_day_pmf_cache_misses;
+                ++dayShard.counters.dayPmfCacheMisses;
             }
         }
         OffsetPmf computedDayPmf;
@@ -726,8 +784,8 @@ double HypergeometricProbabilityLookup::getStratifiedProbabilityFor(
             // miss on the same margins both compute; the second emplace is discarded and
             // each thread goes on using its own copy, which is equivalent.
             OffsetPmf pmfToCache = computedDayPmf;
-            CacheLock lock(*this);
-            _stratified_day_pmf_cache.emplace(dayPmfKey, std::move(pmfToCache));
+            CacheLock lock(dayShard);
+            dayShard.dayPmfCache.emplace(dayPmfKey, std::move(pmfToCache));
         }
         const OffsetPmf& dayPmf = cachedDayPmf ? *cachedDayPmf : computedDayPmf;
 
@@ -761,35 +819,36 @@ double HypergeometricProbabilityLookup::getStratifiedProbabilityFor(
     }
 
     {
-        CacheLock lock(*this);
+        CacheLock lock(marginShard);
+        StratifiedCounters& counters = marginShard.counters;
         if (massDeviation >= 0.0) {
             // Checked once per convolution rather than once per request, since this branch
             // only runs when the margin set cache missed. That is one check per distinct
             // margin set, except where two threads miss on the same margins and duplicate
             // the convolution.
-            ++_stratified_mass_conservation_checks;
-            _stratified_min_combined_pmf_mass = std::min(_stratified_min_combined_pmf_mass, observedCombinedPmfMass(tails));
-            if (massDeviation > _stratified_max_mass_deviation) {
-                _stratified_max_mass_deviation = massDeviation;
-                _stratified_worst_mass_deviation_margins = marginSetKey.toString();
+            ++counters.massConservationChecks;
+            counters.minCombinedPmfMass = std::min(counters.minCombinedPmfMass, observedCombinedPmfMass(tails));
+            if (massDeviation > counters.maxMassDeviation) {
+                counters.maxMassDeviation = massDeviation;
+                counters.worstMassDeviationMargins = marginSetKey.toString();
             }
         }
-        _stratified_day_pmf_total_terms += totalDayPmfTerms;
-        _stratified_day_pmf_max_terms = std::max(_stratified_day_pmf_max_terms, maxDayPmfTerms);
-        _stratified_convolution_count += convolutionCount;
-        _stratified_convolution_input_terms += totalConvolutionInputTerms;
-        _stratified_combined_pmf_total_size += totalCombinedPmfSize;
-        _stratified_combined_pmf_max_size = std::max(_stratified_combined_pmf_max_size, maxCombinedPmfSize);
+        counters.dayPmfTotalTerms += totalDayPmfTerms;
+        counters.dayPmfMaxTerms = std::max(counters.dayPmfMaxTerms, maxDayPmfTerms);
+        counters.convolutionCount += convolutionCount;
+        counters.convolutionInputTerms += totalConvolutionInputTerms;
+        counters.combinedPmfTotalSize += totalCombinedPmfSize;
+        counters.combinedPmfMaxSize = std::max(counters.combinedPmfMaxSize, maxCombinedPmfSize);
         // Moved, not copied: tails is a local with no use after this point, and its arrays
         // run to tens of thousands of doubles on the largest margin sets. Copying one in
         // here is a several-hundred-kilobyte memcpy plus an allocation held against every
         // other thread, which is what produces the longest holds on this mutex.
         if (!tails.empty())
-            _stratified_margin_set_cache.emplace(marginSetKey, std::move(tails));
+            marginShard.marginSetCache.emplace(marginSetKey, std::move(tails));
         recordTailOutcome(outcome);
         if (probability != PROBABILITY_UNSET) {
-            _stratified_probability_cache.emplace(key, probability);
-            ++_stratified_probability_cache_tail_evaluations;
+            marginShard.tailCache.emplace(key, probability);
+            ++counters.tailEvaluations;
         }
     }
     return probability;

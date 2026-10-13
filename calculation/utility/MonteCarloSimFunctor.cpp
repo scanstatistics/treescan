@@ -32,11 +32,11 @@ MCSimSuccessiveFunctor::MCSimSuccessiveFunctor(
     //_treeSimNodes.resize(_scanRunner.getNodes().size(), SimulationNode(daysInDataTimeRange));
     _loglikelihood.reset(AbstractLoglikelihood::getNewLoglikelihood(_scanRunner));
 
-    if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME && !parameters.getSTPasHypergeometric()) ||
+    if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME && !parameters.isHypergeometric()) ||
         (parameters.getScanType() == Parameters::TIMEONLY && parameters.isPerformingDayOfWeekAdjustment()) ||
         (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODE && parameters.isPerformingDayOfWeekAdjustment()))
         _measure_list.reset(AbstractMeasureList::getNewMeasureList(_scanRunner, _loglikelihood));
-    if (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME && parameters.getSTPasHypergeometric()) {
+    if (parameters.isHypergeometric()) {
 		_cases_by_time = _scanRunner.getTotalCasesByTimeInterval();
         TreeScan::cumulative_backward(_cases_by_time);
     }
@@ -46,7 +46,7 @@ MCSimSuccessiveFunctor::result_type MCSimSuccessiveFunctor::operator() (MCSimSuc
     result_type temp_result;
     try {
         const Parameters& parameters = _scanRunner.getParameters();
-        if (parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME && parameters.getSTPasHypergeometric())
+        if (parameters.isHypergeometric())
             temp_result.dSuccessfulResult = scanTreeTemporalConditionNodeTimeHypergeometric(param);
         else if ((parameters.getScanType() == Parameters::TREETIME && parameters.getConditionalType() == Parameters::NODEANDTIME) ||
             (parameters.getScanType() == Parameters::TIMEONLY && parameters.isPerformingDayOfWeekAdjustment()) ||

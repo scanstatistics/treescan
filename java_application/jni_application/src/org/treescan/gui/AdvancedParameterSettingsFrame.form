@@ -12,6 +12,8 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_pValueButtonGroup">
     </Component>
+    <Component class="javax.swing.ButtonGroup" name="_buttonGroupNodeTimeModel">
+    </Component>
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="1"/>
@@ -88,7 +90,7 @@
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Component id="_cutFileLabel" max="32767" attributes="0"/>
-                                  <Component id="_cutFileTextField" pref="719" max="32767" attributes="1"/>
+                                  <Component id="_cutFileTextField" pref="734" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_cutFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
@@ -215,7 +217,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="_checkbox_data_leaves_only" pref="740" max="32767" attributes="0"/>
+                      <Component id="_checkbox_data_leaves_only" pref="755" max="32767" attributes="0"/>
                       <Group type="102" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="_checkbox_allow_multi_parent_nodes" max="32767" attributes="0"/>
@@ -650,7 +652,7 @@
                                           <Component id="_endRangeEndDayTextField" min="-2" pref="40" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="250" max="32767" attributes="0"/>
+                                  <EmptySpace pref="265" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -836,7 +838,7 @@
                                           <Component id="_endRangeEndGenericTextField" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="326" max="32767" attributes="0"/>
+                                  <EmptySpace pref="341" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -1074,7 +1076,7 @@
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_restricted_levels" pref="556" max="32767" attributes="0"/>
+                              <Component id="_restricted_levels" pref="571" max="32767" attributes="0"/>
                               <Group type="102" attributes="0">
                                   <Component id="_noEvalNodesFileTextField" max="32767" attributes="1"/>
                                   <EmptySpace max="-2" attributes="0"/>
@@ -1289,7 +1291,7 @@
                                   <Component id="_radioEarlyTerminationPValues" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_earlyTerminationThreshold" min="-2" pref="80" max="-2" attributes="0"/>
-                                  <EmptySpace min="0" pref="344" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="359" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -1402,7 +1404,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_totalPowerCases" min="-2" pref="78" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_powerEvaluationWithSpecifiedCasesLabel" pref="466" max="32767" attributes="0"/>
+                                  <Component id="_powerEvaluationWithSpecifiedCasesLabel" pref="481" max="32767" attributes="0"/>
                               </Group>
                               <Component id="_alternativeHypothesisFilenameLabel" alignment="0" max="32767" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
@@ -1666,7 +1668,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_reportLLRResultsAsCsvTable" pref="726" max="32767" attributes="0"/>
+                          <Component id="_reportLLRResultsAsCsvTable" pref="741" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1717,7 +1719,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_attributable_risk_exposed" min="-2" pref="80" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_chk_attributable_risk_extra" pref="437" max="32767" attributes="0"/>
+                                  <Component id="_chk_attributable_risk_extra" pref="452" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -1792,7 +1794,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_report_data_as_percentage" pref="726" max="32767" attributes="0"/>
+                          <Component id="_report_data_as_percentage" pref="741" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1879,6 +1881,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jPanel5" max="32767" attributes="0"/>
                           <Component id="_group_exclusions" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_nodeTimeModelGroup" alignment="0" pref="765" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1890,6 +1893,8 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="jPanel5" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="_nodeTimeModelGroup" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="_group_exclusions" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1917,7 +1922,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_apply_time_range_restrictions" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_time_range_restrictions" pref="572" max="32767" attributes="0"/>
+                          <Component id="_time_range_restrictions" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1961,7 +1966,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="_perform_dayofweek_adjustments" alignment="1" pref="750" max="32767" attributes="0"/>
+                      <Component id="_perform_dayofweek_adjustments" alignment="1" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
@@ -1978,6 +1983,56 @@
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_perform_dayofweek_adjustments.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enablePowerEvaluationsGroup();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JPanel" name="_nodeTimeModelGroup">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Tree-Temporal Scan Statistic Conditioned on Node and Time"/>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JRadioButton" name="_poission_approximation">
+                  <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_buttonGroupNodeTimeModel"/>
+                    </Property>
+                    <Property name="selected" type="boolean" value="true"/>
+                    <Property name="text" type="java.lang.String" value="Poisson Approximation"/>
+                  </Properties>
+                  <Constraints>
+                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+                      <GridBagConstraints gridX="0" gridY="0" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="3" insetsLeft="10" insetsBottom="0" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>
+                    </Constraint>
+                  </Constraints>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_hypergeometric">
+                  <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_buttonGroupNodeTimeModel"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="Hypergeometric"/>
+                  </Properties>
+                  <Constraints>
+                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+                      <GridBagConstraints gridX="0" gridY="1" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="4" insetsLeft="10" insetsBottom="0" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>
+                    </Constraint>
+                  </Constraints>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_node_time_model_helptext">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;p&gt;Hypergeometric evaluation is &lt;b&gt;exact&lt;/b&gt; but &lt;b&gt;substantially slower&lt;/b&gt; and requires considerably &lt;b&gt;more memory&lt;/b&gt; on large data sets.&lt;/p&gt;&lt;/html&gt;&#xa;"/>
+                  </Properties>
+                  <Constraints>
+                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+                      <GridBagConstraints gridX="0" gridY="2" gridWidth="2" gridHeight="1" fill="2" ipadX="395" ipadY="1" insetsTop="5" insetsLeft="30" insetsBottom="7" insetsRight="10" anchor="17" weightX="1.0" weightY="0.0"/>
+                    </Constraint>
+                  </Constraints>
                 </Component>
               </SubComponents>
             </Container>
@@ -2091,7 +2146,7 @@
                                               <Component id="_maximum_cases_signal" pref="100" max="32767" attributes="0"/>
                                               <Component id="_minimum_cases_signal" max="32767" attributes="0"/>
                                           </Group>
-                                          <EmptySpace min="0" pref="470" max="32767" attributes="0"/>
+                                          <EmptySpace min="0" pref="485" max="32767" attributes="0"/>
                                       </Group>
                                       <Component id="_sequential_analysis_file_label" alignment="0" max="32767" attributes="0"/>
                                   </Group>
@@ -2328,7 +2383,7 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_reportTemporalGraph" pref="726" max="32767" attributes="0"/>
+                                  <Component id="_reportTemporalGraph" pref="741" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
@@ -2337,7 +2392,7 @@
                                           <Component id="_temporalGraphSignificant" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                           <Component id="_temporalGraphPvalueCutoff" min="-2" pref="80" max="-2" attributes="1"/>
-                                          <EmptySpace min="0" pref="245" max="32767" attributes="0"/>
+                                          <EmptySpace min="0" pref="260" max="32767" attributes="0"/>
                                       </Group>
                                       <Component id="_temporalGraphMostLikely" alignment="0" max="32767" attributes="0"/>
                                       <Group type="102" alignment="0" attributes="0">

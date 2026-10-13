@@ -263,9 +263,17 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAdjustmentsParameters(
             case Parameters::TOTALCASES: // this is the time-only scan
             case Parameters::NODE: buffer = "Perform Day-of-Week Adjustment"; break;
             case Parameters::NODEANDTIME: buffer = "Perform Node by Day-of-Week Adjustment"; break;
-            default: throw prg_error("Unknown conditional type (%d).", "getAdjustmentsParameters()", _parameters.getConditionalType());
+            default: throw prg_error("Unknown conditional type (%d).", __func__, _parameters.getConditionalType());
         }
         settings.emplace_back("Perform Day of Week Adjustment",(_parameters.getPerformDayOfWeekAdjustment() ? "Yes" : "No"));
+    }
+    if (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) {
+        switch (_parameters.getNodeTimeModelType()) {
+            case Parameters::POISSON_APPROXIMATION: buffer = "Poisson Approximation"; break;
+            case Parameters::HYPERGEOMETRIC_DISTRIBUTION: buffer = "Hypergeometric"; break;
+            default: throw prg_error("Unknown conditional type (%d).", __func__, _parameters.getNodeTimeModelType());
+        }
+        settings.emplace_back("Node-Time Probability Model", buffer);
     }
     if (_parameters.isTemporalScanType(_parameters.getScanType())) {
         settings.emplace_back("Apply Data Time Range Exclusions", (_parameters.isApplyingExclusionTimeRanges() ? "Yes" : "No"));
@@ -302,11 +310,7 @@ ParametersPrint::SettingContainer_t & ParametersPrint::getAnalysisParameters(Set
     buffer = "Type of Scan";
     switch (_parameters.getScanType()) {
         case Parameters::TREEONLY : settings.emplace_back(buffer,"Tree Only"); break;
-        case Parameters::TREETIME : settings.emplace_back(buffer,"Tree and Time"); 
-            if (_parameters.getSTPasHypergeometric()) {
-                settings.back().second += printString(buffer, " (Hypergeometric - lookup threshold = %u)", _parameters.getDenseThreshold());
-            }
-            break;
+        case Parameters::TREETIME : settings.emplace_back(buffer,"Tree and Time"); break;
         case Parameters::TIMEONLY : settings.emplace_back(buffer,"Time Only"); break;
         default: throw prg_error("Unknown scan type (%d).", "getAnalysisParameters()", _parameters.getScanType());
     }

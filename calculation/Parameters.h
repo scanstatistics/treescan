@@ -53,6 +53,8 @@ class Parameters {
                         MINIMUM_WINDOW_FIXED,
                         // Advanced Analysis - Adjustments
                         DAYOFWEEK_ADJUSTMENT,
+                        NODETIME_MODEL_TYPE,
+                        MEMOIZED_HYPERGEOMETRIC,
                         APPLY_EXCLUSION_RANGES,
                         EXCLUSION_RANGES,
                         // Advanced Analysis - Inference
@@ -147,10 +149,9 @@ class Parameters {
     enum MaximumWindowType {PERCENTAGE_WINDOW=0, FIXED_LENGTH};    
     enum ScanRateType { HIGHRATE=0, LOWRATE, HIGHORLOWRATE };
     enum PValueReportingType { STANDARD_PVALUE=0, TERMINATION_PVALUE };
-    enum STPAlgorithmType {/** STP algorithm */
-        STP_DERIVED = 0,   /* derived from original data */
-        STP_HYPERGEOMETRIC,/* hypergeometric distribution */
-        STP_POISSON        /* Poisson distribution */
+    enum NodeTimeModelType {/** tree-time, node-time model */
+        POISSON_APPROXIMATION=0, /* Poisson distribution */
+        HYPERGEOMETRIC_DISTRIBUTION /* hypergeometric distribution */
     };
     typedef std::map<std::string,Parameters::CutType> cut_map_t;
     typedef std::pair<cut_map_t, cut_map_t> cut_maps_t;
@@ -335,9 +336,8 @@ class Parameters {
     PValueReportingType                 _pvalue_reporting_type;
     unsigned int                        _early_term_threshold;
 
-    STPAlgorithmType                    _stp_algorithm_type;
-    bool                                _stp_as_hypergeometric; // perform STP as hypergeometric
-    unsigned int                        _stp_dense_threshold = 5000;
+    NodeTimeModelType                   _node_time_model_type;
+    bool                                _memoized_hypergeometric;
 
     void                                assignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                copy(const Parameters &rhs);
@@ -354,12 +354,11 @@ class Parameters {
     bool                                operator==(const Parameters& rhs) const;
     bool                                operator!=(const Parameters& rhs) const {return !(*this == rhs);}
 
-    STPAlgorithmType                    getSTPAlgorithmType() const { return _stp_algorithm_type; }
-    void                                setSTPAlgorithmType(STPAlgorithmType e);
-    bool                                getSTPasHypergeometric() const { return _scan_type == TREETIME && _conditional_type == NODEANDTIME && _stp_as_hypergeometric; }
-    void                                setSTPasHypergeometric(bool b) { _stp_as_hypergeometric = b; }
-    unsigned int                        getDenseThreshold() const { return _stp_dense_threshold; }
-    void                                setDenseThreshold(unsigned int u) { _stp_dense_threshold = u; }
+    NodeTimeModelType                   getNodeTimeModelType() const { return _node_time_model_type; }
+    void                                setNodeTimeModelType(NodeTimeModelType e);
+    bool                                isHypergeometric() const { return _node_time_model_type == HYPERGEOMETRIC_DISTRIBUTION && _scan_type == TREETIME && _conditional_type == NODEANDTIME; }
+    bool                                getMemoizedHypergeometric() const { return _memoized_hypergeometric; }
+    void                                setMemoizedHypergeometric(bool b) { _memoized_hypergeometric = b; }
 
     bool                                getIsOddsRatio() const;
     const char                        * getRelativeRiskReportingLabel() const;

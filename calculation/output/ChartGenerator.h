@@ -61,6 +61,8 @@ class CutStructure;
 
 /** Generator for temporal graph chart. */
 class TemporalChartGenerator {
+    friend class TemporalChartGeneratorTester; // unit test access to private helpers
+
     public:
         static const char * FILE_SUFFIX_EXT;
         static const int    MAX_INTERVALS;
@@ -76,6 +78,7 @@ class TemporalChartGenerator {
 		static const char * TEMPLATE_CHARTSERIES_PT;
 		static const char * TEMPLATE_CHARTSECTION;
         static const char * TEMPLATE_CLUSTERDETAILS;
+        static const char * TEMPLATE_CLUSTERDETAILS_DOW;
         const ScanRunner &  _scanner;
         std::vector<int>    _ptcases;
         mutable std::unique_ptr<std::ofstream> _csv_out;
@@ -86,6 +89,17 @@ class TemporalChartGenerator {
         // 3: Outside Cut Window, Outside Cut Node
         typedef boost::tuple<int, int, int, int>  CutCaseTotals_t;
         CutCaseTotals_t getCutCaseTotals(const CutStructure& cluster) const;
+
+        struct DayTally { 
+            unsigned int _node_count=0; 
+            double _node_percent=0.0; 
+            unsigned int _all_node_count = 0;
+            double _all_node_percent = 0.0;
+            unsigned short _ordinal=0;
+            std::string _shortname; 
+        };
+        typedef std::vector<DayTally> NodeCasesDayTally_t;
+        NodeCasesDayTally_t getNodeCasesByDayOfWeek(const CutStructure& cluster) const;
 
         class intervalGroups {
             public:

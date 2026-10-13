@@ -194,6 +194,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= _numberPowerReplications.getText().equals("1000");
         // Adjustments tab
         bReturn &= _perform_dayofweek_adjustments.isSelected() == false;
+        bReturn &= _poission_approximation.isSelected();
         bReturn &= _apply_time_range_restrictions.isSelected() == false;
         bReturn &= _time_range_restrictions.getText().equals("");
                 
@@ -349,6 +350,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 
         // Adjustments tab
         parameters.setPerformDayOfWeekAdjustment(_perform_dayofweek_adjustments.isEnabled() && _perform_dayofweek_adjustments.isSelected());
+        parameters.setNodeTimeModelType(
+           Utils.selected(_hypergeometric) ? Parameters.NodeTimeModelType.HYPERGEOMETRIC_DISTRIBUTION.ordinal() : Parameters.NodeTimeModelType.POISSON_APPROXIMATION.ordinal()
+        );        
         parameters.setApplyingExclusionTimeRanges(_apply_time_range_restrictions.isEnabled() && _apply_time_range_restrictions.isSelected());
         parameters.setExclusionTimeRangeSet(_time_range_restrictions.getText());
 
@@ -451,6 +455,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _restrictTemporalRangeCheckBox.setSelected(false);
         // Adjustments tab
         _perform_dayofweek_adjustments.setSelected(false);
+        _poission_approximation.setSelected(true);
         _apply_time_range_restrictions.setSelected(false);
         _time_range_restrictions.setText("");
         // Sequential Scan tab
@@ -513,6 +518,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         
         // Adjustments tab
         _perform_dayofweek_adjustments.setSelected(parameters.getPerformDayOfWeekAdjustment());
+        _poission_approximation.setSelected(parameters.getNodeTimeModelType() == Parameters.NodeTimeModelType.POISSON_APPROXIMATION);
+        _hypergeometric.setSelected(parameters.getNodeTimeModelType() == Parameters.NodeTimeModelType.HYPERGEOMETRIC_DISTRIBUTION);
         _apply_time_range_restrictions.setSelected(parameters.isApplyingExclusionTimeRanges());
         _time_range_restrictions.setText(parameters.getExclusionTimeRangeSet());
 
@@ -1133,14 +1140,24 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (_perform_dayofweek_adjustments.isEnabled()) {
             // switch label based upon condition type
             switch (_settings_window.getConditionalType()) {
-                case TOTALCASES:
-                case NODE: _perform_dayofweek_adjustments.setText("Perform Day-of-Week Adjustment"); break;
-                case NODEANDTIME: _perform_dayofweek_adjustments.setText("Perform Node by Day-of-Week Adjustment"); break;
-                default: throw new UnknownEnumException(_settings_window.getConditionalType());
+                case TOTALCASES, NODE -> _perform_dayofweek_adjustments.setText("Perform Day-of-Week Adjustment");
+                case NODEANDTIME -> _perform_dayofweek_adjustments.setText("Perform Node by Day-of-Week Adjustment");
+                default -> throw new UnknownEnumException(_settings_window.getConditionalType());
             }
         }
     }
 
+    /* Enables/disables the tree-time, conditioned on node-time probability model selection. */
+    public void enableTimeNodeModelGroup() {
+        _nodeTimeModelGroup.setEnabled(
+            _settings_window.getScanType() == Parameters.ScanType.TREETIME && 
+            _settings_window.getConditionalType() == Parameters.ConditionalType.NODEANDTIME
+        );
+        _poission_approximation.setEnabled(_nodeTimeModelGroup.isEnabled());
+        _hypergeometric.setEnabled(_nodeTimeModelGroup.isEnabled());
+        _node_time_model_helptext.setEnabled(_nodeTimeModelGroup.isEnabled());
+    }
+    
     public void enableTimeRangeExclusionsGroup() {
         _group_exclusions.setEnabled(Parameters.isTemporalScanType(_settings_window.getScanType()));
         _apply_time_range_restrictions.setEnabled(_group_exclusions.isEnabled());
@@ -1374,12 +1391,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         maximumWindowButtonGroup = new javax.swing.ButtonGroup();
         _powerEstimationButtonGroup = new javax.swing.ButtonGroup();
         _temporal_graph_buttongroup = new javax.swing.ButtonGroup();
         _temporal_data_check_buttongroup = new javax.swing.ButtonGroup();
         _pValueButtonGroup = new javax.swing.ButtonGroup();
+        _buttonGroupNodeTimeModel = new javax.swing.ButtonGroup();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         _advanced_input_tab = new javax.swing.JPanel();
         _cutFileLabel = new javax.swing.JLabel();
@@ -1493,6 +1512,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _apply_time_range_restrictions = new javax.swing.JCheckBox();
         jPanel5 = new javax.swing.JPanel();
         _perform_dayofweek_adjustments = new javax.swing.JCheckBox();
+        _nodeTimeModelGroup = new javax.swing.JPanel();
+        _poission_approximation = new javax.swing.JRadioButton();
+        _hypergeometric = new javax.swing.JRadioButton();
+        _node_time_model_helptext = new javax.swing.JLabel();
         _sequential_analysis_tab = new javax.swing.JPanel();
         _sequential_analysis_group = new javax.swing.JPanel();
         _perform_sequential_scan = new javax.swing.JCheckBox();
@@ -1619,7 +1642,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_checkbox_data_leaves_only, javax.swing.GroupLayout.DEFAULT_SIZE, 740, Short.MAX_VALUE)
+            .addComponent(_checkbox_data_leaves_only, javax.swing.GroupLayout.DEFAULT_SIZE, 755, Short.MAX_VALUE)
             .addGroup(jPanel6Layout.createSequentialGroup()
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_checkbox_allow_multi_parent_nodes, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1649,7 +1672,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addGroup(_advanced_input_tabLayout.createSequentialGroup()
                         .addGroup(_advanced_input_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(_cutFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(_cutFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 719, Short.MAX_VALUE))
+                            .addComponent(_cutFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 734, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_cutFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -1973,7 +1996,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_endRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(250, Short.MAX_VALUE))
+                .addContainerGap(265, Short.MAX_VALUE))
         );
         _windowCompletePanelLayout.setVerticalGroup(
             _windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2094,7 +2117,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_endGenericRangeToLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(_endRangeEndGenericTextField)))
-                .addContainerGap(326, Short.MAX_VALUE))
+                .addContainerGap(341, Short.MAX_VALUE))
         );
         _windowGenericPanelLayout.setVerticalGroup(
             _windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2288,7 +2311,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_restrict_evaluated_levels, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_restricted_levels, javax.swing.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
+                    .addComponent(_restricted_levels, javax.swing.GroupLayout.DEFAULT_SIZE, 571, Short.MAX_VALUE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(_noEvalNodesFileTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2456,7 +2479,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_radioEarlyTerminationPValues)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_earlyTerminationThreshold, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 344, Short.MAX_VALUE)))
+                        .addGap(0, 359, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         _pValueOptionsGroupLayout.setVerticalGroup(
@@ -2665,7 +2688,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_totalPowerCases, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_powerEvaluationWithSpecifiedCasesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE))
+                        .addComponent(_powerEvaluationWithSpecifiedCasesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE))
                     .addComponent(_alternativeHypothesisFilenameLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(_powerEvaluationsGroupLayout.createSequentialGroup()
                         .addComponent(_alternativeHypothesisFilename)
@@ -2754,7 +2777,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _log_likelihood_ratios_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_log_likelihood_ratios_groupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_reportLLRResultsAsCsvTable, javax.swing.GroupLayout.DEFAULT_SIZE, 726, Short.MAX_VALUE)
+                .addComponent(_reportLLRResultsAsCsvTable, javax.swing.GroupLayout.DEFAULT_SIZE, 741, Short.MAX_VALUE)
                 .addContainerGap())
         );
         _log_likelihood_ratios_groupLayout.setVerticalGroup(
@@ -2817,7 +2840,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_attributable_risk_exposed, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_chk_attributable_risk_extra, javax.swing.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)))
+                        .addComponent(_chk_attributable_risk_extra, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -2849,7 +2872,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _trend_model_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_trend_model_groupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_report_data_as_percentage, javax.swing.GroupLayout.DEFAULT_SIZE, 726, Short.MAX_VALUE)
+                .addComponent(_report_data_as_percentage, javax.swing.GroupLayout.DEFAULT_SIZE, 741, Short.MAX_VALUE)
                 .addContainerGap())
         );
         _trend_model_groupLayout.setVerticalGroup(
@@ -2934,7 +2957,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addComponent(_apply_time_range_restrictions)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_time_range_restrictions, javax.swing.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
+                .addComponent(_time_range_restrictions)
                 .addContainerGap())
         );
         _group_exclusionsLayout.setVerticalGroup(
@@ -2962,12 +2985,47 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_perform_dayofweek_adjustments, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 750, Short.MAX_VALUE)
+            .addComponent(_perform_dayofweek_adjustments, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(_perform_dayofweek_adjustments)
         );
+
+        _nodeTimeModelGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Tree-Temporal Scan Statistic Conditioned on Node and Time"));
+        _nodeTimeModelGroup.setLayout(new java.awt.GridBagLayout());
+
+        _buttonGroupNodeTimeModel.add(_poission_approximation);
+        _poission_approximation.setSelected(true);
+        _poission_approximation.setText("Poisson Approximation");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 10, 0, 0);
+        _nodeTimeModelGroup.add(_poission_approximation, gridBagConstraints);
+
+        _buttonGroupNodeTimeModel.add(_hypergeometric);
+        _hypergeometric.setText("Hypergeometric");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 10, 0, 0);
+        _nodeTimeModelGroup.add(_hypergeometric, gridBagConstraints);
+
+        _node_time_model_helptext.setText("<html><p>Hypergeometric evaluation is <b>exact</b> but <b>substantially slower</b> and requires considerably <b>more memory</b> on large data sets.</p></html>\n");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 395;
+        gridBagConstraints.ipady = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 30, 7, 10);
+        _nodeTimeModelGroup.add(_node_time_model_helptext, gridBagConstraints);
 
         javax.swing.GroupLayout _advanced_adjustments_tabLayout = new javax.swing.GroupLayout(_advanced_adjustments_tab);
         _advanced_adjustments_tab.setLayout(_advanced_adjustments_tabLayout);
@@ -2977,7 +3035,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addGroup(_advanced_adjustments_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_group_exclusions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_group_exclusions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_nodeTimeModelGroup, javax.swing.GroupLayout.DEFAULT_SIZE, 765, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _advanced_adjustments_tabLayout.setVerticalGroup(
@@ -2986,6 +3045,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_nodeTimeModelGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_group_exclusions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -3096,7 +3157,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addGroup(_panel_sequential_analysis_time_onlyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(_maximum_cases_signal, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
                             .addComponent(_minimum_cases_signal))
-                        .addGap(0, 470, Short.MAX_VALUE))
+                        .addGap(0, 485, Short.MAX_VALUE))
                     .addComponent(_sequential_analysis_file_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         _panel_sequential_analysis_time_onlyLayout.setVerticalGroup(
@@ -3336,7 +3397,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(_graphOutputGroupLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(_reportTemporalGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 726, Short.MAX_VALUE))
+                        .addComponent(_reportTemporalGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 741, Short.MAX_VALUE))
                     .addGroup(_graphOutputGroupLayout.createSequentialGroup()
                         .addGap(27, 27, 27)
                         .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3344,7 +3405,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                 .addComponent(_temporalGraphSignificant)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(_temporalGraphPvalueCutoff, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 245, Short.MAX_VALUE))
+                                .addGap(0, 260, Short.MAX_VALUE))
                             .addComponent(_temporalGraphMostLikely, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(_graphOutputGroupLayout.createSequentialGroup()
                                 .addComponent(_temporalGraphMostLikelyX)
@@ -3471,6 +3532,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JCheckBox _apply_risk_window_restriction;
     private javax.swing.JCheckBox _apply_time_range_restrictions;
     private javax.swing.JTextField _attributable_risk_exposed;
+    private javax.swing.ButtonGroup _buttonGroupNodeTimeModel;
     private javax.swing.JCheckBox _checkbox_allow_multi_parent_nodes;
     private javax.swing.JCheckBox _checkbox_allow_multiple_roots;
     private javax.swing.JCheckBox _checkbox_data_leaves_only;
@@ -3502,6 +3564,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _graphOutputGroup;
     private javax.swing.JPanel _group_exclusions;
     private javax.swing.JPanel _group_min_cases;
+    private javax.swing.JRadioButton _hypergeometric;
     private javax.swing.JLabel _labelMonteCarloReplications;
     private javax.swing.JLabel _label_prospective_frequency;
     private javax.swing.JLabel _label_restrict_cuts;
@@ -3523,6 +3586,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _montCarloReplicationsTextField;
     private javax.swing.JButton _noEvalNodesFileButton;
     public javax.swing.JTextField _noEvalNodesFileTextField;
+    private javax.swing.JPanel _nodeTimeModelGroup;
+    private javax.swing.JLabel _node_time_model_helptext;
     private javax.swing.JTextField _numMostLikelyClustersGraph;
     private javax.swing.JLabel _numMostLikelyClustersGraphLabel;
     private javax.swing.JTextField _numberPowerReplications;
@@ -3538,6 +3603,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JCheckBox _performPowerEvaluations;
     private javax.swing.JCheckBox _perform_dayofweek_adjustments;
     private javax.swing.JCheckBox _perform_sequential_scan;
+    private javax.swing.JRadioButton _poission_approximation;
     private javax.swing.ButtonGroup _powerEstimationButtonGroup;
     private javax.swing.JRadioButton _powerEvaluationWithCaseFile;
     private javax.swing.JRadioButton _powerEvaluationWithSpecifiedCases;

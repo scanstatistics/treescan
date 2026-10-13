@@ -92,6 +92,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::SEQUENTIAL_ALPHA_SPENDING: return "sequential alpha spending";
             // Advanced Analysis - Adjustments
             case Parameters::DAYOFWEEK_ADJUSTMENT    : return "perform day of week adjustments (y/n)";
+            case Parameters::NODETIME_MODEL_TYPE     : return "model type for tree-time, conditioned on node-time (POISSON_APPROXIMATION=0, HYPERGEOMETRIC_DISTRIBUTION=1)";
+            case Parameters::MEMOIZED_HYPERGEOMETRIC : return "memoized hypergeometric calculations=y, lookup table=n (y/n)";
             case Parameters::APPLY_EXCLUSION_RANGES  : return "apply exclusion time ranges (y/n)";
             case Parameters::EXCLUSION_RANGES        : return "exclusion time ranges (semi-colon separated list of ranges: [integer,integer];[integer,integer] or [yyyy/mm/dd,yyyy/mm/dd];[yyyy/mm/dd,yyyy/mm/dd])";
             // Advanced Analysis - Inference
@@ -103,7 +105,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(Parameters::Paramet
             case Parameters::RESTRICT_EVALUATED_NODES: return "restrict tree nodes evaluated (y/n)";
             case Parameters::NOT_EVALUATED_NODES_FILE: return "not evaluated tree nodes filename";
             case Parameters::MINIMUM_CASES_NODE      : return "minimum number of cases in a node (integer)";
-            case Parameters::PVALUE_REPORT_TYPE      : return "p-value reporting type (STANDARD_PVALUE=0, TERMINATION_PVALUE)";
+            case Parameters::PVALUE_REPORT_TYPE      : return "p-value reporting type (STANDARD_PVALUE=0, TERMINATION_PVALUE=1)";
             case Parameters::EARLY_TERM_THRESHOLD    : return "early termination threshold (> 0)";
                 /* Output */
             case Parameters::RESULTS_FILE            : return "results filename";
@@ -205,6 +207,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(Parameters::Paramet
             case Parameters::PROSPECTIVE_ANALYSIS     : return AsString(s, _parameters.getIsProspectiveAnalysis());
             // Advanced Analysis - Adjustments
             case Parameters::DAYOFWEEK_ADJUSTMENT     : return AsString(s, _parameters.getPerformDayOfWeekAdjustment());
+            case Parameters::NODETIME_MODEL_TYPE      : return AsString(s, _parameters.getNodeTimeModelType());
+            case Parameters::MEMOIZED_HYPERGEOMETRIC  : return AsString(s, _parameters.getMemoizedHypergeometric());
             case Parameters::APPLY_EXCLUSION_RANGES   : return AsString(s, _parameters.isApplyingExclusionTimeRanges());
             case Parameters::EXCLUSION_RANGES         : s = _parameters.getExclusionTimeRangeStr(); return s;
             // Advanced Analysis - Inference
@@ -423,6 +427,9 @@ void AbtractParameterFileAccess::SetParameter(Parameters::ParameterType e, const
             case Parameters::PROSPECTIVE_ANALYSIS     : _parameters.setIsProspectiveAnalysis(ReadBoolean(value, e)); break;
             // Advanced Analysis - Adjustments
             case Parameters::DAYOFWEEK_ADJUSTMENT     : _parameters.setPerformDayOfWeekAdjustment(ReadBoolean(value, e)); break;
+            case Parameters::NODETIME_MODEL_TYPE      : iValue = ReadEnumeration(ReadInt(value, e), e, Parameters::POISSON_APPROXIMATION, Parameters::HYPERGEOMETRIC_DISTRIBUTION);
+                                                        _parameters.setNodeTimeModelType((Parameters::NodeTimeModelType)iValue); break;
+            case Parameters::MEMOIZED_HYPERGEOMETRIC  : _parameters.setMemoizedHypergeometric(ReadBoolean(value, e)); break;
             case Parameters::APPLY_EXCLUSION_RANGES   : _parameters.setApplyingExclusionTimeRanges(ReadBoolean(value, e)); break;
             case Parameters::EXCLUSION_RANGES         : _parameters.setExclusionTimeRangeStr(value); break;
             // Advanced Analysis Inference

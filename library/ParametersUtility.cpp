@@ -356,6 +356,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, Parameters
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getPerformDayOfWeekAdjustment());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setNodeTimeModelType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)parameters.getNodeTimeModelType());
+  jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "setReportAttributableRisk", "(Z)V");
   Env.CallVoidMethod(jParameters, mid, (jboolean)parameters.getReportAttributableRisk());
   jni_error::_detectError(Env);
@@ -785,6 +789,8 @@ Parameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobject
   jni_error::_detectError(Env);
 
   parameters.setPowerEvaluationType((Parameters::PowerEvaluationType)getEnumTypeOrdinalIndex(Env, jParameters, "getPowerEvaluationType", "Lorg/treescan/app/Parameters$PowerEvaluationType;"));
+
+  parameters.setNodeTimeModelType((Parameters::NodeTimeModelType)getEnumTypeOrdinalIndex(Env, jParameters, "getNodeTimeModelType", "Lorg/treescan/app/Parameters$NodeTimeModelType;"));
 
   mid = _getMethodId_Checked(Env, clazz, "getPowerEvaluationTotalCases", "()I");
   parameters.setPowerEvaluationTotalCases(static_cast<int>(Env.CallIntMethod(jParameters, mid)));

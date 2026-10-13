@@ -282,9 +282,15 @@
     <ClCompile Include="unittest_cumulative.cpp">
       <Filter>Source Files\unit_tests</Filter>
     </ClCompile>
+    <ClCompile Include="unittest_ChartGenerator.cpp">
+      <Filter>Source Files\unit_tests</Filter>
+    </ClCompile>
     <ClCompile Include="unittest_CutReportedAttributes.cpp">
       <Filter>Source Files\unit_tests</Filter>
     </ClCompile>
+    <ClCompile Include="unittest_ResultsFileWriter.cpp">
+      <Filter>Source Files\unit_tests</Filter>
+    </ClCompile>    
     <ClCompile Include="unittest_HypergeometricProbabilityLookup.cpp">
       <Filter>Source Files\unit_tests</Filter>
     </ClCompile>

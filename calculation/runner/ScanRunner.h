@@ -424,7 +424,7 @@ public:
     CompareCutsByLoglikelihood(const Parameters& parameters):
         _parameters(parameters) {}
     bool operator() (const CutStructure * lhs, const CutStructure * rhs) {
-        if (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME && _parameters.getSTPasHypergeometric()) {
+        if (_parameters.isHypergeometric()) {
             // The cut loglikelihood (negative tail) can be very small, and there is no reasonable tolerance for equality.
             if (lhs->getLogLikelihood() == rhs->getLogLikelihood())
                 return lhs->getID() < rhs->getID();

@@ -9,7 +9,9 @@
 #include <set>
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <limits>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -45,6 +47,9 @@ public:
         A power of two so the check is a mask. Hold time varies little between acquisitions
         of the same kind, so a sparse sample estimates the mean well at negligible cost. */
     static constexpr size_t CACHE_LOCK_HOLD_SAMPLE_INTERVAL = 1024;
+    /** Separation between independently locked shards, in bytes. The largest cache line
+        across the supported targets: 64 on x86-64, 128 on Apple Silicon. */
+    static constexpr size_t CACHE_LINE_ALIGNMENT = 128;
 
     struct ProbabilityCacheStatistics {
         enum CacheType { NONE, SCALAR_ON_DEMAND, STRATIFIED_DAY_OF_WEEK };
@@ -124,6 +129,12 @@ public:
         size_t lockHoldSamples = 0;
         unsigned long long lockHoldNanoseconds = 0;
         unsigned long long maxLockHoldNanoseconds = 0;
+        /** How the load actually fell across the shards. If the key hashes distribute poorly
+            the busiest shard carries far more than its share and the sharding underdelivers
+            while looking like it should have worked, so the imbalance has to be visible.
+            With an even spread, maxShardAcquisitions is close to lockAcquisitions/shards. */
+        size_t shards = 0;
+        size_t maxShardAcquisitions = 0;
     };
 
     struct OffsetPmf {
@@ -267,24 +278,84 @@ protected:
     };
     typedef std::unordered_map<DayPmfMarginKey, OffsetPmf, DayPmfMarginKeyHash> DayPmfCache_t;
 
-    /** Scoped lock over _probability_cache_mutex that measures its own contention. One
-        mutex guards every cache tier here, so it serializes all probability lookups and is
-        the first suspect for limiting throughput as threads are added - but that was never
-        measured, only assumed.
+    /** Counters for the stratified path. One copy lives in each shard and they are summed
+        when statistics are requested, so no counter is ever shared between threads working
+        on different shards. Making these atomics instead would put a hundred million
+        read-modify-writes on one cache line, which is the contention this design removes. */
+    struct StratifiedCounters {
+        size_t probabilityCacheHits = 0;
+        size_t probabilityCacheMisses = 0;
+        size_t invalidRequests = 0;
+        size_t outOfSupportRequests = 0;
+        size_t underflowRequests = 0;
+        size_t noDistributionRequests = 0;
+        size_t tailEvaluations = 0;
+        size_t marginSetReuseOpportunities = 0;
+        size_t dayPmfRequests = 0;
+        size_t dayPmfCacheHits = 0;
+        size_t dayPmfCacheMisses = 0;
+        size_t dayPmfReuseOpportunities = 0;
+        size_t dayPmfTotalTerms = 0;
+        size_t dayPmfMaxTerms = 0;
+        size_t convolutionCount = 0;
+        size_t convolutionInputTerms = 0;
+        size_t combinedPmfTotalSize = 0;
+        size_t combinedPmfMaxSize = 0;
+        size_t massConservationChecks = 0;
+        double maxMassDeviation = 0.0;
+        double minCombinedPmfMass = std::numeric_limits<double>::infinity();
+        std::string worstMassDeviationMargins;
+        size_t lockAcquisitions = 0;
+        size_t lockContentions = 0;
+        unsigned long long lockWaitNanoseconds = 0;
+        unsigned long long maxLockWaitNanoseconds = 0;
+        size_t lockHoldSamples = 0;
+        unsigned long long lockHoldNanoseconds = 0;
+        unsigned long long maxLockHoldNanoseconds = 0;
+    };
+
+    /** One independently locked slice of the stratified caches.
+
+        A single mutex over all of these serialized every probability lookup: measured at 16
+        threads it was held about 60 seconds of CPU while threads lost roughly 1,750
+        thread-seconds waiting for it, and adding processors past ten made the scan slower
+        rather than faster. Splitting the caches into independently locked shards divides
+        both the collision rate and the time any one lock is held.
+
+        alignas keeps each shard's mutex and counters off the cache lines of its neighbours.
+        Without that the lock word of one shard shares a line with the next and the line
+        still ping-pongs between cores, which silently undoes the sharding. The alignment is
+        128 rather than 64 because Apple Silicon uses 128-byte cache lines where x86-64 uses
+        64; over-aligning on x86 costs a few kilobytes across the whole array and under-
+        aligning on arm64 would reintroduce exactly the false sharing this avoids. */
+    struct alignas(CACHE_LINE_ALIGNMENT) CacheShard {
+        mutable boost::mutex mutex;
+        mutable StratifiedProbabilityCache_t tailCache;
+        mutable StratifiedMarginSetCache_t marginSetCache;
+        mutable DayPmfCache_t dayPmfCache;
+        mutable StratifiedCounters counters;
+    };
+
+    /** Scoped lock over one shard's mutex that measures its own contention.
 
         try_lock is attempted first so an uncontended acquire costs the same single atomic
         as a plain lock, and the clock reads are paid only by a thread that actually has to
         wait. Hold time is sampled rather than always measured, because timing every
         acquisition would cost two clock reads on a path taken hundreds of millions of times
-        per scan. Mean hold time is the number that matters most: it sets the ceiling on
-        lookups per second no matter how many threads are running. */
+        per scan.
+
+        Two things to keep in mind when reading the numbers. try_lock is permitted to fail
+        spuriously, so the contended count is an upper bound. And because a thread can be
+        descheduled while holding a lock, hold times include any period it spent off a
+        processor - on a fully subscribed machine that, not the work inside, is what produces
+        the occasional hold of tens of microseconds. */
     class CacheLock {
-        const HypergeometricProbabilityLookup& _owner;
+        const CacheShard& _shard;
         std::chrono::steady_clock::time_point _held_from;
         bool _sample_hold_time = false;
 
     public:
-        explicit CacheLock(const HypergeometricProbabilityLookup& owner);
+        explicit CacheLock(const CacheShard& shard);
         ~CacheLock();
         CacheLock(const CacheLock&) = delete;
         CacheLock& operator=(const CacheLock&) = delete;
@@ -304,45 +375,51 @@ protected:
     mutable size_t _probability_cache_tail_evaluations = 0;
     mutable size_t _probability_cache_total_tail_terms = 0;
     mutable size_t _probability_cache_max_tail_terms = 0;
-    mutable StratifiedProbabilityCache_t _stratified_probability_cache;
-    mutable StratifiedMarginSetCache_t _stratified_margin_set_cache;
-    mutable size_t _stratified_probability_cache_hits = 0;
-    mutable size_t _stratified_probability_cache_misses = 0;
-    mutable size_t _stratified_probability_cache_invalid_requests = 0;
-    mutable size_t _stratified_probability_cache_out_of_support_requests = 0;
-    mutable size_t _stratified_probability_cache_underflow_requests = 0;
-    mutable size_t _stratified_probability_cache_no_distribution_requests = 0;
-    mutable size_t _stratified_probability_cache_tail_evaluations = 0;
-    mutable size_t _stratified_margin_set_reuse_opportunities = 0;
-    mutable DayPmfCache_t _stratified_day_pmf_cache;
-    mutable size_t _stratified_day_pmf_requests = 0;
-    mutable size_t _stratified_day_pmf_cache_hits = 0;
-    mutable size_t _stratified_day_pmf_cache_misses = 0;
-    mutable size_t _stratified_day_pmf_reuse_opportunities = 0;
-    mutable size_t _stratified_day_pmf_total_terms = 0;
-    mutable size_t _stratified_day_pmf_max_terms = 0;
-    mutable size_t _stratified_convolution_count = 0;
-    mutable size_t _stratified_convolution_input_terms = 0;
-    mutable size_t _stratified_combined_pmf_total_size = 0;
-    mutable size_t _stratified_combined_pmf_max_size = 0;
-    mutable size_t _stratified_mass_conservation_checks = 0;
-    mutable double _stratified_max_mass_deviation = 0.0;
-    mutable double _stratified_min_combined_pmf_mass = std::numeric_limits<double>::infinity();
-    mutable std::string _stratified_worst_mass_deviation_margins;
-    mutable size_t _cache_lock_acquisitions = 0;
-    mutable size_t _cache_lock_contentions = 0;
-    mutable unsigned long long _cache_lock_wait_nanoseconds = 0;
-    mutable unsigned long long _cache_lock_max_wait_nanoseconds = 0;
-    mutable size_t _cache_lock_hold_samples = 0;
-    mutable unsigned long long _cache_lock_hold_nanoseconds = 0;
-    mutable unsigned long long _cache_lock_max_hold_nanoseconds = 0;
+    std::unique_ptr<CacheShard[]> _shards;
+    size_t _shard_count = 0;
+    unsigned int _shard_shift = 0; // how far to shift a mixed hash down to get a shard index
 
     /** Calculates a scalar negative tail probability without using the dense
         lookup table. This is used for large C values and memoizes each result. */
     double getOnDemandProbabilityFor(Parameters::ScanRateType scanrate, count_t T, count_t S, count_t x) const;
+    /** Picks a shard from the high bits of a key's hash.
+
+        The high bits specifically. Every key routed to a shard shares whichever bits chose
+        that shard, so those bits must not be the ones the map inside the shard buckets on.
+        Microsoft's unordered_map uses power-of-two bucket counts and masks the low bits, so
+        sharding on the low bits there would collapse each map into a handful of buckets;
+        libstdc++ and libc++ use prime bucket counts and a modulo, which tolerates it better.
+        Taking the high bits is correct for the worst of the three and costs nothing on the
+        others. The multiply is a standard mixing step so that keys differing only in their
+        low bits still spread across shards. */
+    size_t shardIndexFor(size_t hash) const {
+        // Mixed and shifted in a fixed 64-bit type rather than in size_t. On a 32-bit build
+        // the multiply would still promote to 64 bits while a size_t-derived shift would
+        // leave far more than log2(shards) significant bits, and the truncating cast would
+        // then index past the end of the array.
+        const uint64_t mixed = static_cast<uint64_t>(hash) * 0x9E3779B97F4A7C15ULL;
+        return static_cast<size_t>(mixed >> _shard_shift);
+    }
+    /** Tier 1 and tier 2 are sharded on the margins alone, excluding x, so that a margin set
+        and every x asked about it land in the same shard. That keeps the existing lookup -
+        check the final tail, fall through to the margin set tails - as one lock acquisition
+        rather than two. */
+    CacheShard& shardForMargins(const StratifiedMarginSetKey& key) const {
+        return _shards[shardIndexFor(StratifiedMarginSetKeyHash()(key))];
+    }
+    /** Tier 3 has its own key, so a day PMF lookup may land in a different shard than the
+        margin set that needed it. That is safe only because the two locks are never held at
+        the same time; see the note on getStratifiedProbabilityFor. */
+    CacheShard& shardForDayMargins(const DayPmfMarginKey& key) const {
+        return _shards[shardIndexFor(DayPmfMarginKeyHash()(key))];
+    }
+    void allocateShards(unsigned int threads);
 
 public:
-    HypergeometricProbabilityLookup() = default;
+    /** Shards are allocated here as well as in calculateHG, so a lookup used without a scan
+        setup - as tests do - is still usable. calculateHG reallocates them once it knows how
+        many threads the scan will run. */
+    HypergeometricProbabilityLookup() { allocateShards(1); }
     HypergeometricProbabilityLookup(const HypergeometricProbabilityLookup& other) {
         throw prg_error("copy constructor not implemented.", "HypergeometricProbabilityLookup");
     }
@@ -350,7 +427,7 @@ public:
     /** Initializes hypergeometric evaluation for a scan.
         For small C, this precomputes the dense table of negative tail probabilities.
         For large C, this records C and scanrate, then evaluates probabilities on demand. */
-    void calculateHG(Parameters::ScanRateType scanrate, const std::set<count_t>& caseWindows, count_t C, int threshold=DENSE_LOOKUP_CASE_THRESHOLD);
+    void calculateHG(Parameters::ScanRateType scanrate, const std::set<count_t>& caseWindows, count_t C, bool use_lookup_table, unsigned int threads=1);
     /** Returns a negative tail probability for the day-of-week stratified distribution.
         Each day-of-week is treated as its own hypergeometric distribution, then the
         seven daily PMFs are convolved to obtain the total cluster count distribution. */
@@ -403,38 +480,14 @@ public:
         _probability_cache_tail_evaluations = 0;
         _probability_cache_total_tail_terms = 0;
         _probability_cache_max_tail_terms = 0;
-        _stratified_probability_cache.clear();
-        _stratified_margin_set_cache.clear();
-        _stratified_probability_cache_hits = 0;
-        _stratified_probability_cache_misses = 0;
-        _stratified_probability_cache_invalid_requests = 0;
-        _stratified_probability_cache_out_of_support_requests = 0;
-        _stratified_probability_cache_underflow_requests = 0;
-        _stratified_probability_cache_no_distribution_requests = 0;
-        _stratified_probability_cache_tail_evaluations = 0;
-        _stratified_margin_set_reuse_opportunities = 0;
-        _stratified_day_pmf_cache.clear();
-        _stratified_day_pmf_requests = 0;
-        _stratified_day_pmf_cache_hits = 0;
-        _stratified_day_pmf_cache_misses = 0;
-        _stratified_day_pmf_reuse_opportunities = 0;
-        _stratified_day_pmf_total_terms = 0;
-        _stratified_day_pmf_max_terms = 0;
-        _stratified_convolution_count = 0;
-        _stratified_convolution_input_terms = 0;
-        _stratified_combined_pmf_total_size = 0;
-        _stratified_combined_pmf_max_size = 0;
-        _stratified_mass_conservation_checks = 0;
-        _stratified_max_mass_deviation = 0.0;
-        _stratified_min_combined_pmf_mass = std::numeric_limits<double>::infinity();
-        _stratified_worst_mass_deviation_margins.clear();
-        _cache_lock_acquisitions = 0;
-        _cache_lock_contentions = 0;
-        _cache_lock_wait_nanoseconds = 0;
-        _cache_lock_max_wait_nanoseconds = 0;
-        _cache_lock_hold_samples = 0;
-        _cache_lock_hold_nanoseconds = 0;
-        _cache_lock_max_hold_nanoseconds = 0;
+        // Empties every shard's caches and counters but keeps the shards themselves, so a
+        // lookup reused across scans stays sharded as it was allocated.
+        for (size_t shard = 0; shard < _shard_count; ++shard) {
+            _shards[shard].tailCache.clear();
+            _shards[shard].marginSetCache.clear();
+            _shards[shard].dayPmfCache.clear();
+            _shards[shard].counters = StratifiedCounters();
+        }
     }
 };
 #endif

@@ -105,6 +105,17 @@ std::pair<std::string, std::string> DataTimeRange::rangeToGregorianStrings(int s
     return std::make_pair(DateStringParser::gregorianToString(translatedStart), DateStringParser::gregorianToString(translatedEnd));
 }
 
+std::pair<unsigned short, std::string> DataTimeRange::rangeIdxToDayOfWeekInfo(index_t idx, DatePrecisionType precision) const {
+    boost::gregorian::date translatedDate;
+    switch (precision) {
+        case DAY: translatedDate = _gregorian_start_date.value() + boost::gregorian::date_duration(idx); break;
+        default: throw prg_error("Unknown or invalid precision '%d'.", "rangeIdxToDayOfWeekInfo()", precision);
+    };
+    boost::gregorian::greg_weekday dow = translatedDate.day_of_week();
+    return std::make_pair(static_cast<unsigned short>(dow.as_number()), dow.as_short_string());
+}
+
+
 std::string & DataTimeRange::toString(std::string& s, DataTimeRange::DatePrecisionType precision) const {
     s.clear();
     std::stringstream worker;

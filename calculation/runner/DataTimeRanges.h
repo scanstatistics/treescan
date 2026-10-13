@@ -36,6 +36,7 @@ class DataTimeRange {
 
         std::string rangeIdxToGregorianString(index_t idx, DatePrecisionType precision) const;
         std::pair<std::string, std::string> rangeToGregorianStrings(int startIdx, int endIdx, DatePrecisionType precision) const;
+        std::pair<unsigned short, std::string> rangeIdxToDayOfWeekInfo(index_t idx, DatePrecisionType precision) const;
 
         void assign(const std::string& from, DatePrecisionType precision, std::optional<boost::gregorian::date> gregorian_start_date) {
             *this = parse(from, precision, gregorian_start_date);

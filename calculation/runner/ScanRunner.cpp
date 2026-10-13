@@ -66,6 +66,12 @@ static std::string reportHypergeometricProbabilityCache(const HypergeometricProb
     // summed across threads, so it is thread-time lost and may exceed the wall clock.
     if (statistics.lockAcquisitions) {
         buffer << "Probability cache lock: "
+            << statistics.shards << " shards, "
+            // An even spread puts the busiest shard near acquisitions/shards. Well above that
+            // means the key hashes are clustering and the sharding is underdelivering.
+            << (statistics.shards ? static_cast<double>(statistics.maxShardAcquisitions) /
+                (static_cast<double>(statistics.lockAcquisitions) / static_cast<double>(statistics.shards)) : 0.0)
+            << "x busiest shard vs even, "
             << statistics.lockAcquisitions << " acquisitions, "
             << statistics.lockContentions << " contended, "
             << (static_cast<double>(statistics.lockContentions) / static_cast<double>(statistics.lockAcquisitions)) << " contended rate, "
@@ -2509,7 +2515,7 @@ bool ScanRunner::reportResults(time_t start, time_t end) {
         return false;
 
     // Debug code only.
-    if (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME && _parameters.getSTPasHypergeometric()) {
+    if (_parameters.isHypergeometric()) {
         std::ofstream outfile(_parameters.getOutputFileName().c_str(), std::ios::app);
         outfile << std::endl << std::endl << reportHypergeometricProbabilityCache(getHypergeometricProbabilityLookup().getProbabilityCacheStatistics());
         outfile.close();
@@ -2667,7 +2673,7 @@ bool ScanRunner::run() {
     // Scan real data.
     if (!_parameters.getPerformPowerEvaluations() || (_parameters.getPerformPowerEvaluations() && _parameters.getPowerEvaluationType() == Parameters::PE_WITH_ANALYSIS)) {
         bool scan_success=false;
-        if (_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME && _parameters.getSTPasHypergeometric())
+        if (_parameters.isHypergeometric())
             scan_success = scanTreeTemporalConditionNodeTimeHypergeometric();
 		else if ((_parameters.getScanType() == Parameters::TREETIME && _parameters.getConditionalType() == Parameters::NODEANDTIME) ||
             (_parameters.getScanType() == Parameters::TIMEONLY && _parameters.isPerformingDayOfWeekAdjustment()) ||
@@ -3136,7 +3142,7 @@ bool ScanRunner::scanTreeSignedRank() {
 
 /** SCANNING THE TREE for temporal model */
 bool ScanRunner::scanTreeTemporalConditionNode() {
-    _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
+    _print.Printf("Scanning the tree ...\n", BasePrint::P_STDOUT);
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
 
     // Define the start and end windows with the zero index offset already incorporated.
@@ -3258,7 +3264,7 @@ bool ScanRunner::scanTreeTemporalConditionNode() {
 
 /** SCANNING THE TREE for temporal model conditioned on node and censored. */
 bool ScanRunner::scanTreeTemporalConditionNodeCensored() {
-    _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
+    _print.Printf("Scanning the tree ...\n", BasePrint::P_STDOUT);
    Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
 
     // Define the start and end windows with the zero index offset already incorporated.
@@ -3408,7 +3414,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometric() {
 }
 /** SCANNING THE TREE for tree-temporal model -- conditioned on total cases, using scalar hypergeometric distribution. */
 bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometricStandard() {
-    _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
+    _print.Printf("Scanning the tree ...\n", BasePrint::P_STDOUT);
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
 
     // Define the start and end windows with the zero index offset already incorporated.
@@ -3440,13 +3446,25 @@ bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometricStandard() {
     };
     // Initialize hypergeometric probability evaluation. Small C builds the dense
     // lookup; large C records scan state and evaluates requested tails on demand.
-	_hypergeometric_probability_lookup.calculateHG(_parameters.getScanRateType(), cases_collection, _TotalC, (int)_parameters.getDenseThreshold());
+	_hypergeometric_probability_lookup.calculateHG(_parameters.getScanRateType(), cases_collection, _TotalC, !_parameters.getMemoizedHypergeometric(), _parameters.getNumParallelProcessesToExecute());
+
+    const boost::posix_time::ptime constructionTime;
+    const TreeStatistics& treestats = getTreeStatistics();
+    unsigned int evaluated_nodes = 0;
+    unsigned int estimateAt = std::max(static_cast<unsigned int>(static_cast<double>(treestats._num_nodes_evaluated) * 0.1), 10U);
     // Define the minimum and maximum window lengths.
     for (size_t n=0; n < _Nodes.size(); ++n) {
         if (isEvaluated(*_Nodes[n])) {
             const NodeStructure& thisNode(*(_Nodes[n]));
             int CB = thisNode.getBrC(); // the total number of cases assigned to branch B, over all time
             if (!casesEvaluated(CB)) continue;
+            if (_print.GetIsCanceled()) return false;
+
+            //_print.Printf("node %u evaluated_nodes = %u\n", BasePrint::P_STDOUT, n, evaluated_nodes);
+
+            if (evaluated_nodes == 1 || evaluated_nodes % estimateAt)
+                ::ReportTimeEstimate(constructionTime, treestats._num_nodes_evaluated, evaluated_nodes, &_print, true);
+
             // always do simple cut
             iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
             for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
@@ -3572,6 +3590,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometricStandard() {
                 case Parameters::COMBINATORIAL:
                 default: throw prg_error("Unknown cut type (%d).", __func__, cutType);
             }
+            ++evaluated_nodes;
         }
     }
     rankCutsAndReportMostLikely();
@@ -3581,7 +3600,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometricStandard() {
 
 /** SCANNING THE TREE for tree-temporal model -- conditioned on total cases, using DOW-adjusted hypergeometric distribution. */
 bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometricDayOfWeek() {
-    _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
+    _print.Printf("Scanning the tree ....\n", BasePrint::P_STDOUT);
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
 
     // Define the start and end windows with the zero index offset already incorporated.
@@ -3612,9 +3631,9 @@ bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometricDayOfWeek() {
         return spatialAreaCases >= 2 && spatialAreaCases <= _TotalC - 2;
     };
 
-    // Initialize hypergeometric probability evaluation. Small C builds the dense
-    // lookup; large C records scan state and evaluates requested tails on demand.
-	_hypergeometric_probability_lookup.calculateHG(_parameters.getScanRateType(), cases_collection, _TotalC, (int)_parameters.getDenseThreshold());
+    // Initialize hypergeometric probability evaluation. There are two options for 
+    // obtaining requested tails: pre-calculated lookup, on demand.
+	_hypergeometric_probability_lookup.calculateHG(_parameters.getScanRateType(), cases_collection, _TotalC, !_parameters.getMemoizedHypergeometric(), _parameters.getNumParallelProcessesToExecute());
 
     // Converts a cumulative branch count array into S_d values: the number of
     // spatial branch cases on each day-of-week across the full study period.
@@ -3644,12 +3663,23 @@ bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometricDayOfWeek() {
         totalCasesByDay[t % totalCasesByDay.size()] += _totalcases_by_timeinterval[t];
 
 
+    const boost::posix_time::ptime constructionTime;
+    const TreeStatistics& treestats = getTreeStatistics();
+    unsigned int evaluated_nodes = 0;
+    unsigned int estimateAt = std::max(static_cast<unsigned int>(static_cast<double>(treestats._num_nodes_evaluated) * 0.1), 10U);
     // Define the minimum and maximum window lengths.
     for (size_t n=0; n < _Nodes.size(); ++n) {
         if (isEvaluated(*_Nodes[n])) {
             const NodeStructure& thisNode(*(_Nodes[n]));
             int CB = thisNode.getBrC(); // the total number of cases assigned to branch B, over all time
             if (!casesEvaluated(CB)) continue;
+            if (_print.GetIsCanceled()) return false;
+
+            //_print.Printf("node %u evaluated_nodes = %u\n", BasePrint::P_STDOUT, n, evaluated_nodes);
+
+            if (evaluated_nodes == 1 || evaluated_nodes % estimateAt)
+                ::ReportTimeEstimate(constructionTime, treestats._num_nodes_evaluated, evaluated_nodes, &_print, true);
+
             // always do simple cut
             iMaxEndWindow = std::min(endWindow.getEnd(), startWindow.getEnd() + window->maximum());
             for (iWindowEnd=endWindow.getStart(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
@@ -3792,7 +3822,8 @@ bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometricDayOfWeek() {
                 case Parameters::COMBINATORIAL:
                 default: throw prg_error("Unknown cut type (%d).", __func__, cutType);
             }
-        }
+            ++evaluated_nodes;
+        }        
     }
     rankCutsAndReportMostLikely();
     return _Cut.size() != 0;
@@ -3801,7 +3832,7 @@ bool ScanRunner::scanTreeTemporalConditionNodeTimeHypergeometricDayOfWeek() {
 
 /** SCANNING THE TREE for temporal model -- conditioned on the total cases across nodes and time. */
 bool ScanRunner::scanTreeTemporalConditionNodeTime() {
-    _print.Printf("Scanning the tree.\n", BasePrint::P_STDOUT);
+    _print.Printf("Scanning the tree ...\n", BasePrint::P_STDOUT);
     Loglikelihood_t calcLogLikelihood(AbstractLoglikelihood::getNewLoglikelihood(*this));
 
     // Define the start and end windows with the zero index offset already incorporated.

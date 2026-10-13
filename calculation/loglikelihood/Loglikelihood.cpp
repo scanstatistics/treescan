@@ -48,7 +48,7 @@ AbstractLoglikelihood * AbstractLoglikelihood::getNewLoglikelihood(const Paramet
         */
         case Parameters::TREETIME:
             if (parameters.getConditionalType() == Parameters::NODEANDTIME) {
-                if (parameters.getSTPasHypergeometric())
+                if (parameters.isHypergeometric())
                     return new HypergeometricLoglikelihood(parameters);
                 return new PoissonLoglikelihood(TotalC, TotalN, parameters);
             }

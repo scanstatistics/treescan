@@ -1505,11 +1505,11 @@ const char * ResultsFileWriter::getRecurranceIntervalClass(const RecurrenceInter
 std::string& ResultsFileWriter::getRecurranceIntervalAsString(const RecurrenceInterval_t& ri, std::string& buffer) {
     if (ri.first < 1.0)
         return printString(buffer, "%.0lf %s%s", ri.second, "day", (ri.second < 1.5 ? "" : "s"));
-    else if (ri.first <= 10.0)
+    else if (std::round(ri.first * 10.0) / 10.0 < 10.0) {
         return printString(buffer, "%.1lf %s%s", ri.first, "year", (ri.first < 1.05 ? "" : "s"));
-    else {
+    } else {
         std::string buffer2;
-        return printString(buffer, "%s %s", humanize(ri.first, buffer2, 1).c_str(), "years");
+        return printString(buffer, "%s %s", humanize(ri.first, buffer2, 0).c_str(), "years");
     }
 }
 

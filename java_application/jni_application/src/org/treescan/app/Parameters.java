@@ -31,6 +31,8 @@ public class Parameters implements Cloneable {
     public enum TemporalGraphReportType {MLC_ONLY, X_MCL_ONLY, SIGNIFICANT_ONLY}    
     /** p-values reporting type */
     public enum PValueReportingType { STANDARD_PVALUE, TERMINATION_PVALUE };
+    /** tree-time, node-time model */
+    public enum NodeTimeModelType { POISSON_APPROXIMATION, HYPERGEOMETRIC_DISTRIBUTION };    
     public class CreationVersion {
     	public int _major;
     	public int _minor;
@@ -126,7 +128,7 @@ public class Parameters implements Cloneable {
     private int _early_term_threshold=50; /** early termination threshold */
     private boolean _report_data_as_percentage=false;
     private String _results_title="";
-    
+    private NodeTimeModelType _node_time_model_type=NodeTimeModelType.POISSON_APPROXIMATION;
     private ArrayList<InputSourceSettings>     _input_sources;
 
     public Parameters() {
@@ -239,10 +241,13 @@ public class Parameters implements Cloneable {
           if (_early_term_threshold != rhs._early_term_threshold) return false;
           if (_report_data_as_percentage != rhs._report_data_as_percentage) return false;
           if (!_results_title.equals(rhs._results_title)) return false;
+          if (_node_time_model_type != rhs._node_time_model_type) return false;
               
           return true;
     }
     
+    public NodeTimeModelType getNodeTimeModelType() { return _node_time_model_type; }
+    public void setNodeTimeModelType(int ord){try {_node_time_model_type = NodeTimeModelType.values()[ord];} catch (ArrayIndexOutOfBoundsException e) {ThrowEnumException(ord, NodeTimeModelType.values());}}
     public final String getResultsTitle() { return _results_title; }
     public void setResultsTitle(final String s) { _results_title = s; }    
     public boolean getRptDataAsPct() { return _report_data_as_percentage; }

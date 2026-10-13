@@ -259,12 +259,12 @@ BOOST_FIXTURE_TEST_CASE( test_conditional_bernoulli_power_estimation, bernoulli_
             case 1 : BOOST_REQUIRE_CLOSE( alpha05, 0.019, 0.001 );
                      BOOST_REQUIRE_CLOSE( alpha01, 0.019, 0.001 );
                      BOOST_REQUIRE_CLOSE( alpha001, 0.001, 0.001 ); break;
-            case 2 : BOOST_REQUIRE_CLOSE( alpha05, 0.044, 0.001 );
-                     BOOST_REQUIRE_CLOSE( alpha01, 0.044, 0.001 );
-                     BOOST_REQUIRE_CLOSE( alpha001, 0.003, 0.001 ); break;
-            case 3 : BOOST_REQUIRE_CLOSE( alpha05, 0.049, 0.001 );
-                     BOOST_REQUIRE_CLOSE( alpha01, 0.049, 0.001 );
-                     BOOST_REQUIRE_CLOSE( alpha001, 0.003, 0.001 ); break;
+            case 2 : BOOST_REQUIRE_CLOSE( alpha05, 0.048, 0.001 );
+                     BOOST_REQUIRE_CLOSE( alpha01, 0.048, 0.001 );
+                     BOOST_REQUIRE_CLOSE( alpha001, 0.005, 0.001 ); break;
+            case 3 : BOOST_REQUIRE_CLOSE( alpha05, 0.054, 0.001 );
+                     BOOST_REQUIRE_CLOSE( alpha01, 0.054, 0.001 );
+                     BOOST_REQUIRE_CLOSE( alpha001, 0.005, 0.001 ); break;
             default : break;
         }
         getCSVRow(stream, data);

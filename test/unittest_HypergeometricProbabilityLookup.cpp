@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE( high_rate_lookup_returns_negative_upper_tail_probabilities
     std::set<count_t> caseWindows;
     caseWindows.insert(4);
 
-    lookup.calculateHG(Parameters::HIGHRATE, caseWindows, 10);
+    lookup.calculateHG(Parameters::HIGHRATE, caseWindows, 10, true);
 
     // This exercises the dense lookup path, where all probabilities are
     // precomputed for a small total case count C.
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE( low_rate_lookup_returns_negative_lower_tail_probabilities 
     std::set<count_t> caseWindows;
     caseWindows.insert(4);
 
-    lookup.calculateHG(Parameters::LOWRATE, caseWindows, 10);
+    lookup.calculateHG(Parameters::LOWRATE, caseWindows, 10, true);
 
     // This uses the same dense distribution as the high-rate test, but verifies
     // that the low-rate scan reads the opposite tail of the distribution.
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE( high_or_low_rate_lookup_keeps_both_tails_in_one_range ) {
     std::set<count_t> caseWindows;
     caseWindows.insert(4);
 
-    lookup.calculateHG(Parameters::HIGHORLOWRATE, caseWindows, 10);
+    lookup.calculateHG(Parameters::HIGHORLOWRATE, caseWindows, 10, true);
 
     // HIGHORLOWRATE is the case where both tails can be queried for the same S
     // and T. This protects the trimmed storage range from dropping either side.
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE( large_case_count_uses_on_demand_probability_cache ) {
     std::set<count_t> caseWindows;
     caseWindows.insert(4);
 
-    lookup.calculateHG(Parameters::HIGHRATE, caseWindows, 10000);
+    lookup.calculateHG(Parameters::HIGHRATE, caseWindows, 10000, false);
 
     // C=10000 is above the dense table threshold, so the lookup should switch
     // to the memoized on-demand path instead of allocating a full S/T/x table.
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE( on_demand_probability_handles_extreme_upper_tail_without_z
     std::set<count_t> caseWindows;
     caseWindows.insert(4372);
 
-    lookup.calculateHG(Parameters::HIGHRATE, caseWindows, 7000);
+    lookup.calculateHG(Parameters::HIGHRATE, caseWindows, 7000, false);
 
     // Regression case from a very concentrated cluster. The true upper-tail
     // probability is smaller than ordinary double arithmetic can represent, so
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE( on_demand_probability_cache_statistics_report_entries_and_
     std::set<count_t> caseWindows;
     caseWindows.insert(4);
 
-    lookup.calculateHG(Parameters::HIGHRATE, caseWindows, 10000);
+    lookup.calculateHG(Parameters::HIGHRATE, caseWindows, 10000, false);
 
     // The on-demand cache starts empty after initialization. It should grow only
     // when a probability is actually requested.
@@ -449,17 +449,18 @@ BOOST_AUTO_TEST_CASE( probability_cache_lock_records_acquisitions_without_conten
     HypergeometricProbabilityLookup::CountByDay_t spatialCasesByDay = { 5, 5, 5, 5, 5, 5, 5 };
     HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = { 4, 4, 4, 4, 4, 4, 4 };
 
+    // Reading the statistics locks every shard but must not count those acquisitions, or the
+    // report would inflate the numbers it exists to report - once per shard, every call.
     HypergeometricProbabilityLookup::ProbabilityCacheStatistics statistics = lookup.getProbabilityCacheStatistics();
-    const size_t acquisitionsForOneReport = statistics.lockAcquisitions;
-    BOOST_CHECK_EQUAL(acquisitionsForOneReport, 1U); // reading the statistics takes the lock itself
+    BOOST_CHECK_EQUAL(statistics.lockAcquisitions, 0U);
     BOOST_CHECK_EQUAL(statistics.lockContentions, 0U);
 
-    // One miss takes the lock to check the caches, once per weekday to look up the day PMF,
-    // once per weekday to store it, and once to record the result. Nothing else is running,
-    // so every acquisition must be uncontended and no wait time can accrue.
+    // One miss takes a shard lock to check the caches, one per weekday to look up the day
+    // PMF, one to store the day PMF that missed, and one to record the result. Nothing else
+    // is running, so every acquisition must be uncontended and no wait time can accrue.
     lookup.getStratifiedProbabilityFor(Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 15);
     statistics = lookup.getProbabilityCacheStatistics();
-    BOOST_CHECK(statistics.lockAcquisitions > acquisitionsForOneReport);
+    BOOST_CHECK(statistics.lockAcquisitions > 0U);
     BOOST_CHECK_EQUAL(statistics.lockContentions, 0U);
     BOOST_CHECK_EQUAL(statistics.lockWaitNanoseconds, 0U);
     BOOST_CHECK_EQUAL(statistics.maxLockWaitNanoseconds, 0U);
@@ -472,9 +473,41 @@ BOOST_AUTO_TEST_CASE( probability_cache_lock_records_acquisitions_without_conten
     // reports the first scan's contention.
     lookup.clear();
     statistics = lookup.getProbabilityCacheStatistics();
-    BOOST_CHECK_EQUAL(statistics.lockAcquisitions, 1U);
+    BOOST_CHECK_EQUAL(statistics.lockAcquisitions, 0U);
     BOOST_CHECK_EQUAL(statistics.lockContentions, 0U);
     BOOST_CHECK_EQUAL(statistics.lockHoldSamples, 0U);
+}
+BOOST_AUTO_TEST_CASE( stratified_caches_spread_across_shards_and_still_total_correctly ) {
+    HypergeometricProbabilityLookup lookup;
+    HypergeometricProbabilityLookup::CountByDay_t totalCasesByDay = { 40, 40, 40, 40, 40, 40, 40 };
+    HypergeometricProbabilityLookup::CountByDay_t windowCasesByDay = { 8, 8, 8, 8, 8, 8, 8 };
+
+    // Enough distinct margin sets to land in more than one shard, so the aggregation over
+    // shards is actually exercised rather than reading a single populated one.
+    const count_t marginSets = 40;
+    for (count_t s = 1; s <= marginSets; ++s) {
+        HypergeometricProbabilityLookup::CountByDay_t spatialCasesByDay = { s, s, s, s, s, s, s };
+        lookup.getStratifiedProbabilityFor(Parameters::HIGHRATE, totalCasesByDay, spatialCasesByDay, windowCasesByDay, 7);
+    }
+    HypergeometricProbabilityLookup::ProbabilityCacheStatistics statistics = lookup.getProbabilityCacheStatistics();
+
+    // Every margin set was distinct and asked about once, so the totals summed back out of
+    // the shards have to match exactly what went in.
+    BOOST_CHECK_EQUAL(statistics.uniqueStratifiedMarginSets, static_cast<size_t>(marginSets));
+    BOOST_CHECK_EQUAL(statistics.requests, static_cast<size_t>(marginSets));
+    BOOST_CHECK_EQUAL(statistics.cacheMisses, static_cast<size_t>(marginSets));
+    BOOST_CHECK_EQUAL(statistics.cacheHits, 0U);
+    BOOST_CHECK_EQUAL(statistics.massConservationChecks, static_cast<size_t>(marginSets));
+    BOOST_CHECK_EQUAL(statistics.convolutionCount, static_cast<size_t>(marginSets) * 6U);
+    BOOST_CHECK_EQUAL(statistics.dayPmfRequests, static_cast<size_t>(marginSets) * 7U);
+    BOOST_CHECK_EQUAL(statistics.estimatedMemoryBytes,
+        statistics.tailCacheBytes + statistics.marginSetCacheBytes + statistics.dayPmfCacheBytes);
+
+    // The shard count is a power of two, and the work genuinely reached several shards
+    // rather than piling into one.
+    BOOST_CHECK(statistics.shards >= 64U);
+    BOOST_CHECK_EQUAL(statistics.shards & (statistics.shards - 1U), 0U);
+    BOOST_CHECK(statistics.maxShardAcquisitions < statistics.lockAcquisitions);
 }
 BOOST_AUTO_TEST_CASE( stratified_margin_set_cache_stores_only_the_tail_the_scan_rate_reads ) {
     HypergeometricProbabilityLookup::CountByDay_t totalCasesByDay = { 500, 500, 500, 500, 500, 500, 500 };

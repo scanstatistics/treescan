@@ -3,11 +3,11 @@
 #define __TREESCAN_H
 //*****************************************************************************
 /** Current version information */
-#define VERSION_ID      "12"  /** incremental version identifier - this value must
+#define VERSION_ID      "15"  /** incremental version identifier - this value must
                                   be incremented for each released version in order
                                   for update feature to function correctly */
 #define VERSION_MAJOR   "2"
-#define VERSION_MINOR   "4"
+#define VERSION_MINOR   "5"
 #define VERSION_RELEASE "0"
 #define VERSION_PHASE   "" // testing phase name - leave blank for release
 #define VERSION_DATE    "Not Released"

@@ -442,6 +442,8 @@ void IniParameterFileAccess::WriteAdvancedAnalysisAdjustmentsSettings(IniFile& W
     std::string s;
     try {
         WriteIniParameter(WriteFile, Parameters::DAYOFWEEK_ADJUSTMENT, GetParameterString(Parameters::DAYOFWEEK_ADJUSTMENT, s).c_str(), GetParameterComment(Parameters::DAYOFWEEK_ADJUSTMENT));
+        WriteIniParameter(WriteFile, Parameters::NODETIME_MODEL_TYPE, GetParameterString(Parameters::NODETIME_MODEL_TYPE, s).c_str(), GetParameterComment(Parameters::NODETIME_MODEL_TYPE));
+        WriteIniParameter(WriteFile, Parameters::MEMOIZED_HYPERGEOMETRIC, GetParameterString(Parameters::MEMOIZED_HYPERGEOMETRIC, s).c_str(), GetParameterComment(Parameters::MEMOIZED_HYPERGEOMETRIC));
         WriteIniParameter(WriteFile, Parameters::APPLY_EXCLUSION_RANGES, GetParameterString(Parameters::APPLY_EXCLUSION_RANGES, s).c_str(), GetParameterComment(Parameters::APPLY_EXCLUSION_RANGES));
         WriteIniParameter(WriteFile, Parameters::EXCLUSION_RANGES, GetParameterString(Parameters::EXCLUSION_RANGES, s).c_str(), GetParameterComment(Parameters::EXCLUSION_RANGES));
     } catch (prg_exception& x) {
