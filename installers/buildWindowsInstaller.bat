@@ -22,13 +22,13 @@ set treescan64dll=%fileshare%\treescan\build\treescan\library\x64\Release\treesc
 set treescanguiexe=%fileshare%\treescan\build\treescan\java_application\jni_application\dist\TreeScan.exe
 set treescaninstaller=%fileshare%\treescan\installers\v.%treescanversion%.x\install-%treescanversionf%_windows.exe
 
-set javajdkx64=%fileshare%\treescan\build\packages\java\jdk-25.0.4.1+1_windows_x64
+set javajdkx64=%fileshare%\treescan\build\packages\java\jdk-25.0.5.1_2_windows_x64
 set runtimeoutputx64=%fileshare%\treescan\build\treescan\installers\java\jre_x64
 
 set innosetup="C:\Program Files (x86)\Inno Setup 6\iscc.exe"
 set innoiss=%fileshare%\treescan\build\treescan\installers\inno-setup\treescan.iss
 
-set signtool=%fileshare%\imsadmin\ims.codesign\AzureSignTool.exe
+set signtool=%fileshare%\imsadmin\ims.codesign\AzureSignTool-x64.exe
 set timestamp=http://timestamp.digicert.com/
 set du=https://www.treescan.org/
 
